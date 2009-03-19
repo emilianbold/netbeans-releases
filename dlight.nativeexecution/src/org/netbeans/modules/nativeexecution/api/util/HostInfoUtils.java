@@ -211,7 +211,7 @@ public final class HostInfoUtils {
             hostInfo.put(execEnv, getLocalHostInfo());
         } else {
             Session session =
-                    ConnectionManager.getInstance().getConnectionSession(execEnv);
+                    ConnectionManager.getInstance().getSession(execEnv);
             hostInfo.put(execEnv, getRemoteHostInfo(session));
         }
     }

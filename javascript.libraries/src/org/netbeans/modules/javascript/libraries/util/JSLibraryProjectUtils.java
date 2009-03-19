@@ -81,7 +81,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javascript.libraries.provider.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.javascript.libraries.ui.AddLibraryPanel;
 import org.openide.DialogDescriptor;

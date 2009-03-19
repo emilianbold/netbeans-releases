@@ -60,7 +60,7 @@ final class BuddyListCellRenderer extends JLabel implements ListCellRenderer, UI
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         // #93658: GTK needs name to render cell renderer "natively"
-        setName("ComboBox.listRenderer");
+        setName("ComboBox.listRenderer"); // NOI18N
         // NOI18N
         if (value instanceof Buddy) {
             Buddy pkgitem = (Buddy) value;
@@ -86,6 +86,6 @@ final class BuddyListCellRenderer extends JLabel implements ListCellRenderer, UI
     @Override
     public String getName() {
         String name = super.getName();
-        return name == null ? "ComboBox.renderer" : name;
+        return name == null ? "ComboBox.renderer" : name; // NOI18N
     }
 }

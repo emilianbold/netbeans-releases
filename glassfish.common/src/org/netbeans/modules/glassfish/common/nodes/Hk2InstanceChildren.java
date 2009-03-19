@@ -41,22 +41,14 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.glassfish.spi.PluggableNodeProvider;
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -66,7 +58,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Peter Williams
  */
-public class Hk2InstanceChildren extends Children.Keys<Node> implements Refreshable, ChangeListener {
+public class Hk2InstanceChildren extends Children.Keys<Hk2ItemNode> implements Refreshable, ChangeListener {
     
     private GlassfishInstance serverInstance;
     
@@ -76,7 +68,7 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
     }
 
     public void updateKeys(){
-        Vector<Node> keys = new Vector<Node>();
+        Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
         if(serverInstance.getServerState() == ServerState.RUNNING) {
             keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
                     new Hk2ApplicationsChildren(serverInstance.getLookup()),
@@ -86,10 +78,6 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
                     new Hk2ResourceContainers(serverInstance.getLookup()),
                     NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources"),
                     Hk2ItemNode.RESOURCES_FOLDER));
-            List<Node> pluggableNodes = getExtensionNodes();
-            for (Iterator itr = pluggableNodes.iterator(); itr.hasNext();) {
-                keys.add((Node)itr.next());
-            }
         }
         setKeys(keys);
     }
@@ -101,11 +89,11 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
     
     @Override
     protected void removeNotify() {
-        Collection<Node> noKeys = java.util.Collections.emptySet();
+        Collection<Hk2ItemNode> noKeys = java.util.Collections.emptySet();
         setKeys(noKeys);
     }
     
-    protected org.openide.nodes.Node[] createNodes(Node key) {
+    protected org.openide.nodes.Node[] createNodes(Hk2ItemNode key) {
         return new Node [] { key };
     }
 
@@ -116,41 +104,4 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
             }
         });
     }
-
-    List<Node> getExtensionNodes() {
-       List<Node> nodesList = new ArrayList<Node>();
-       CommonServerSupport serverSupport = serverInstance.getCommonSupport();
-       Iterator ps = Lookup.getDefault().lookupAll(PluggableNodeProvider.class).iterator();
-       while (ps.hasNext()) {
-           PluggableNodeProvider nep = (PluggableNodeProvider)ps.next();
-           if (nep != null) {
-               try {
-                   Node node = nep.getPluggableNode(serverSupport.getInstanceProperties());
-                   if (node != null) {
-                       nodesList.add(node);
-                   }
-               } catch (Exception ex) {
-                   Logger.getLogger("glassfish-common").log(Level.SEVERE,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()));
-                   Logger.getLogger("glassfish-common").log(Level.FINER,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()), ex);
-               } catch (AssertionError ae) {
-                   Logger.getLogger("glassfish-common").log(Level.SEVERE,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()+".")); // NOI18N
-                   Logger.getLogger("glassfish-common").log(Level.FINER,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()), ae);
-               }
-            }
-       }
-       return nodesList;
-   }
-
 }

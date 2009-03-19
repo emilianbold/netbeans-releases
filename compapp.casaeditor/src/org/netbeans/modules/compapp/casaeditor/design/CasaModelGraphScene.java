@@ -478,7 +478,8 @@ implements PropertyChangeListener, CasaValidationListener {
 
             widget.setEditable(mModel.isEditable(port));
             // only soap binding support WSIT configuration.
-            if (bindingType.equalsIgnoreCase("SOAP")) { // NOI18N
+            if (bindingType.equalsIgnoreCase("SOAP") || // NOI18N
+                    bindingType.equalsIgnoreCase("SOAP12")) { // NOI18N
                 widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
             }
             widget.initializeGlassLayer(mGlassLayer);

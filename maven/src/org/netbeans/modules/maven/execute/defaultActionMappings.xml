@@ -208,5 +208,5 @@ made subject to such option by the copyright holder.
             <jpda.stopclass>${packageClassName}</jpda.stopclass>
         </properties>
     </action>
-    
+
 </actions>

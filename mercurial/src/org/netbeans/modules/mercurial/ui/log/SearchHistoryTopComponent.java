@@ -79,6 +79,19 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         initComponents(repositoryUrl, localRoot, revision);
     }
 
+    /**
+     * Support for openning file history with a specific DiffResultsView
+     * @param file it's history shall be shown
+     * @param fac factory creating a specific DiffResultsView - just override its createDiffResultsView method
+     */
+    SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
+        this();
+        initComponents(new File[] {file}, null, null, null, null);
+        shp.setDiffResultsViewFactory(fac);
+        // showing only one file - so disable the show all changepaths options
+        shp.disableFileChangesOption(false);
+    }
+
     public void search() {        
         shp.executeSearch();
         shp.setSearchCriteria(false);
@@ -146,5 +159,14 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
 
     public String getSetupDisplayName() {
         return getDisplayName();
+    }
+    
+    /**
+     * Provides an initial diff view. To display a specific one, override createDiffResultsView.
+     */
+    public static class DiffResultsViewFactory {
+        DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+            return new DiffResultsView(panel, results);
+        }
     }
 }

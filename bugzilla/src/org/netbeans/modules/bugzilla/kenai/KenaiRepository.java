@@ -42,7 +42,7 @@ package org.netbeans.modules.bugzilla.kenai;
 import java.awt.Image;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  */
 public class KenaiRepository extends BugzillaRepository {
 
-    static final String ICON_PATH = "org/netbeans/modules/bugzilla/resources/kenai-small.png";
+    static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png";
     private String urlParam;
     private Query[] definedQueries;
     private Image icon;
@@ -64,7 +64,9 @@ public class KenaiRepository extends BugzillaRepository {
         super(repoName, url, user, password);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        userMail = user + "@"+ host; // NOI18N XXX escape @?
+        // NOI18N XXX escape @?
+        // XXX what if user already mail address?
+        userMail = user + "@"+ host; 
         this.product = product;
     }
 
@@ -75,7 +77,7 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public Query createQuery() {
-        KenaiQuery q = new KenaiQuery(null, this, null, product, false);
+        KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
     }
 
@@ -103,6 +105,7 @@ public class KenaiRepository extends BugzillaRepository {
                     this,
                     url.toString(),
                     product,
+                    true,
                     true);
 
             url = new StringBuffer();
@@ -114,6 +117,7 @@ public class KenaiRepository extends BugzillaRepository {
                     this,
                     url.toString(),
                     product,
+                    true,
                     true);
 
             definedQueries = new Query[] {myIssues, allIssues};

@@ -68,12 +68,23 @@ public abstract class IssueCache {
         this.nameSpace = nameSpace;
     }
 
+    /**
+     * Creates a new Issue for the given taskdata
+     * @param taskData
+     * @return
+     */
     protected abstract Issue createIssue(TaskData taskData);
 
+    /**
+     * Sets new task data in the issue. Mind synchrone reentrant calls
+     * on the cache for the given issue.
+     *
+     * @param issue
+     * @param taskData
+     */
     protected abstract void setTaskData(Issue issue, TaskData taskData);
 
-    public synchronized Issue setIssueData(String id, TaskData taskData) throws IOException {
-        Issue issue;
+    public Issue setIssueData(String id, TaskData taskData) throws IOException {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
@@ -85,8 +96,10 @@ public abstract class IssueCache {
                 entry.issue = createIssue(taskData);
                 BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                 readIssue(entry);
+            } else {
+                BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
+                setTaskData(entry.issue, taskData);
             }
-            
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
                     BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
@@ -100,6 +113,7 @@ public abstract class IssueCache {
                         // keep old values
                     }
                 } else {
+                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
@@ -111,13 +125,9 @@ public abstract class IssueCache {
                         entry.status= Issue.ISSUE_STATUS_NEW;
                     }
                 }
-            }
-            issue = entry.issue;
+            }            
+            return entry.issue;
         }
-        BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-        setTaskData(issue, taskData);
-
-        return issue;
     }
 
     public void setSeen(String id, boolean seen) throws IOException {
@@ -151,11 +161,12 @@ public abstract class IssueCache {
         return seen;
     }
 
-    public synchronized Map<String, String> getSeenAttributes(String id) {
+    public Map<String, String> getSeenAttributes(String id) {
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
             entry = getCache().get(id);
             if(entry == null) {
+                assert !SwingUtilities.isEventDispatchThread();
                 entry = createNewEntry(id);
                 readIssue(entry);
             }

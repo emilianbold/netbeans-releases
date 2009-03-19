@@ -114,7 +114,7 @@ public class ChatNotifications {
                 final ActionListener l = new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
-                        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(arg0);
+                        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(arg0); // NOI18N
                         ChatTopComponent.getDefault().setActive(chatRoomName);
                     }
                 };
@@ -132,7 +132,7 @@ public class ChatNotifications {
     }
 
     void addPrivateMessage(Message msg) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {

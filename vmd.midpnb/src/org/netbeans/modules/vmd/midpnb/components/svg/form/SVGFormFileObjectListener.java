@@ -51,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
@@ -65,6 +66,7 @@ import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
@@ -108,6 +110,16 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
     }
 
     public void fileDeleted(FileEvent fe) {
+        if (component == null || component.get() == null || fe == null) {
+            return;
+        }
+        Project project = MidpProjectSupport.getProjectForDocument(component.get().getDocument());
+        if (project == null) {
+            return;
+        }
+        if (fe.getFile() == null) {
+            return;
+        }
         regenerateComponents(fe.getFile());
         fe.getFile().removeFileChangeListener(this);
         ActiveViewSupport.getDefault().removeActiveViewListener(this);
@@ -121,7 +133,7 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
     }
 
     private void regenerateComponents(FileObject fe) {
-        if (component == null || component.get() == null || component.get().getDocument() == null) {
+        if (component == null || component.get() == null || component.get().getDocument() == null || fe == null) {
             return;
         }
         final DesignComponent svgForm = component.get();
@@ -129,6 +141,11 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
     }
 
     public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm, final DataEditorView.Kind activatedView) {
+        Project project = MidpProjectSupport.getProjectForDocument(svgForm.getDocument());
+        if (project == null) {
+            return;
+        }
+
         InputStream is = null;
         try {
             if (fo.isValid()) {
@@ -140,20 +157,10 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
         if (fo == null && is == null) {
             return;
         }
+        
         //Updating Screen Designer
-        SwingUtilities.invokeLater(new Runnable() {
+        updateScreenDesigner(svgForm);
 
-            public void run() {
-                svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
-
-                    public void run() {
-                        ScreenDisplayPresenter sdp = svgForm.getPresenter(ScreenDisplayPresenter.class);
-                        ScreenDeviceInfo di = ScreenSupport.getDeviceInfo(svgForm.getDocument());
-                        sdp.reload(di);
-                    }
-                });
-            }
-        });
         Object[][] idsArray = SVGFormImageParser.getComponentsInformation(is);
 
         final Map<String, String> exisitngIDs = new HashMap<String, String>();
@@ -234,6 +241,26 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
                 }
             }
         }
+    }
+
+    private static void updateScreenDesigner(final DesignComponent svgForm){
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        Project project = MidpProjectSupport.getProjectForDocument(svgForm.getDocument());
+                        if (project == null) {
+                            return;
+                        }
+                        ScreenDisplayPresenter sdp = svgForm.getPresenter(ScreenDisplayPresenter.class);
+                        ScreenDeviceInfo di = ScreenSupport.getDeviceInfo(svgForm.getDocument());
+                        sdp.reload(di);
+                    }
+                });
+            }
+        });
     }
 
     private static void addComponents(Map<String, String> ids, 

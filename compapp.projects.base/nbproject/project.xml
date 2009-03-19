@@ -311,19 +311,21 @@
                 <friend>org.netbeans.modules.aspect.project</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.compapp.projects.dtelpro</friend>
+                <friend>org.netbeans.modules.compapp.xmlproject</friend>
                 <friend>org.netbeans.modules.di.project</friend>
                 <friend>org.netbeans.modules.edm.project</friend>
                 <friend>org.netbeans.modules.etl.project</friend>
                 <friend>org.netbeans.modules.iep.project</friend>
+                <friend>org.netbeans.modules.soa.ui</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
-                <friend>org.netbeans.modules.workflow.project</friend>
+                <friend>org.netbeans.modules.wlm.project</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
-                <friend>org.netbeans.modules.compapp.xmlproject</friend>
                 <package>org.netbeans.modules.compapp.projects.base</package>
                 <package>org.netbeans.modules.compapp.projects.base.queries</package>
                 <package>org.netbeans.modules.compapp.projects.base.spi</package>
                 <package>org.netbeans.modules.compapp.projects.base.ui</package>
                 <package>org.netbeans.modules.compapp.projects.base.ui.customizer</package>
+                <package>org.netbeans.modules.compapp.projects.base.ui.customizer.catalog</package>
                 <package>org.netbeans.modules.compapp.projects.base.ui.wizards</package>
                 <package>org.netbeans.modules.compapp.projects.common</package>
                 <package>org.netbeans.modules.compapp.projects.common.ui</package>

@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.compapp.catd;
 
+import org.netbeans.modules.compapp.catd.n2m.Output;
+import org.netbeans.modules.compapp.catd.n2m.Input;
 import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -69,6 +71,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -108,11 +111,13 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.compapp.catd.util.EditableProperties;
+import org.netbeans.modules.compapp.catd.n2m.Send;
+import org.netbeans.modules.compapp.catd.n2m.Wait;
 
+import org.netbeans.modules.compapp.catd.n2m.WaitTillNextTick;
+import org.netbeans.modules.compapp.catd.util.Util;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
-import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeDiff;
 import org.netbeans.modules.xml.xdm.diff.NodeInfo;
 
@@ -163,7 +168,6 @@ public class ConfiguredTest extends TestCase {
         this(name, methodName);
         this.mProperties = testProperties;
         mIndent = "  "; // NOI18N
-
     }
 
     /**
@@ -214,11 +218,11 @@ public class ConfiguredTest extends TestCase {
 
         Properties props = System.getProperties();
         System.out.println(props);
-
+        String context = props.getProperty("org.netbeans.modules.compapp.catd.context");
         //Load the list of tests that needs to be exercised. The list is a comma seperated
         //value list. Refer to org.netbeans.modules.compapp.test.ui.actions.TestcaseTestAction
         //to know more about how the properties are set.
-        Properties testcasesProps = loadProperties("test/selected-tests.properties");
+        Properties testcasesProps = Util.loadProperties("test/selected-tests.properties");
         String testCasesCSV = (String) testcasesProps.get("testcases");
         String[] testCaseNames = testCasesCSV.split(",");
 
@@ -271,37 +275,73 @@ public class ConfiguredTest extends TestCase {
             for (int testCnt = 0; testCnt < testPropertiesFiles.length; testCnt++) {
                 String testPropertiesFile = testPropertiesFiles[testCnt].getAbsolutePath();
                 String testName = inputDirName;
-                Properties testProps = loadProperties(testPropertiesFile);
-                testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
-                testProps.put("absoluteinputdir", inputDirAbsolutePath);
-                testProps.put("inputdirname", inputDirName);
+                Properties testProps = null;
+                // The reason we don't do testProps=Util.loadProperties(testPropertiesFile, context)
+                // at this point is that testPropertiesFile may be context specific (for example,
+                // Invoke_oracle_solaris.properties), hence will be ignored anyway.
 
                 // Invoke.properties files define simple service invocation tests
                 if (testPropertiesFile.endsWith("Invoke.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testInboundSOAPRequest", testProps));
                 } // Concurrent.properties files define concurrency service invocation tests
                 else if (testPropertiesFile.endsWith("Concurrent.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName); 
                     suite.addTest(new ConfiguredTest(testName, "testConcurrentSOAPRequest", testProps));
                 } // FaultHandling.properties files define tests of BC error handling
                 else if (testPropertiesFile.endsWith("FaultHandling.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testFaultHandlingSOAPRequest", testProps));
                 } // FaultHandling.properties files define tests of BC error handling
                 else if (testPropertiesFile.endsWith("N2M.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testN2MInboundSOAPRequest", testProps));
                 } // Feed.properties files define file feeder tests
                 else if (testPropertiesFile.endsWith("Feed.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testFileRequest", testProps));
                 } // Ftp.properties files define ftp bc driver tests
                 else if (testPropertiesFile.endsWith("Ftp.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testFtpRequest", testProps));
                 } // Correlation.properties files define concurrency service invocation tests
                 else if (testPropertiesFile.endsWith("Correlation.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testCorrelationSOAPRequest", testProps));
                 } // Correlation.properties files define concurrency service invocation tests
                 else if (testPropertiesFile.endsWith("ConcurrentCorrelation.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testConcurrentCorrelationSOAPRequest", testProps));
                 } // conc_correlation.properties files define concurrency service invocation tests
                 else if (testPropertiesFile.endsWith("conc_correlation.properties")) {
+                    testProps = Util.loadProperties(testPropertiesFile, context);
+                    testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
+                    testProps.put("absoluteinputdir", inputDirAbsolutePath);
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testConcCorrelationSOAPRequest", testProps));
                 }
             }
@@ -309,7 +349,7 @@ public class ConfiguredTest extends TestCase {
 
         return suite;
     }
-
+    
     protected static String stackTraceElementToString(StackTraceElement[] ste) {
         String s = "";
         for (int i = 0; i < ste.length; i++) {
@@ -1796,7 +1836,7 @@ public class ConfiguredTest extends TestCase {
                 boolean logDetails = false;
                 startTime = System.currentTimeMillis();
                 for (; invokeCount < mNoOfInvokes; invokeCount++) {
-                    mReplies[invokeCount] = sendMessage(logPrefix, logDetails, mDestination, mInputMessage, null, null, mSoapAction);
+                    mReplies[invokeCount] = Util.sendMessage(logPrefix, logDetails, mConnection, mDestination, mInputMessage, null, null, mSoapAction);
                 }
                 endTime = System.currentTimeMillis();
             } catch (Throwable ex) {
@@ -1839,7 +1879,7 @@ public class ConfiguredTest extends TestCase {
             System.out.println(logPrefix + " destination: " + destination + " input message file: " + testMsgFile.getAbsolutePath() + " comparison output file: " + testExpectedOutputFile.getAbsolutePath());
         }
         SOAPMessage message = loadMessage(logPrefix, logDetails, testMsgFile);
-        SOAPMessage response = sendMessage(logPrefix, logDetails, destination, message, expectedHttpStatus, expectedHttpWarning, soapAction);
+        SOAPMessage response = Util.sendMessage(logPrefix, logDetails, mConnection, destination, message, expectedHttpStatus, expectedHttpWarning, soapAction);
         checkExpectedOutput(logPrefix, logDetails, response, testExpectedOutputFile, comparisonType);
     }
 
@@ -1853,7 +1893,7 @@ public class ConfiguredTest extends TestCase {
             System.out.println(logPrefix + " destination: " + destination + " input message file: " + testMsgFileName + " comparison output file: " + testExpectedOutputFileName);
         }
         SOAPMessage message = loadMessage(logPrefix, logDetails, testMsgFileName);
-        SOAPMessage response = sendMessage(logPrefix, logDetails, destination, message, expectedHttpStatus, expectedHttpWarning, soapAction);
+        SOAPMessage response = Util.sendMessage(logPrefix, logDetails, mConnection, destination, message, expectedHttpStatus, expectedHttpWarning, soapAction);
         checkExpectedOutput(logPrefix, logDetails, response, testExpectedOutputFileName, comparisonType);
     }
 
@@ -1904,189 +1944,6 @@ public class ConfiguredTest extends TestCase {
             System.out.println("\n" + logPrefix + " REQUEST:\n" + os.toString() + "\n");
         }
         return message;
-    }
-
-    /**
-     * Send a soap message
-     * @param destination URL to send to
-     * @param message message to send
-     * @param expectedHttpStatus expected http status code or null if success is expected
-     * @return reply soap message
-     */
-    SOAPMessage sendMessage(String logPrefix,
-            boolean logDetails,
-            String destination,
-            SOAPMessage message,
-            String expectedHttpStatus,
-            String expectedHttpWarning,
-            String soapAction) throws SOAPException, Exception {
-
-        // Add soapAction if not null
-        if (soapAction != null) {
-            MimeHeaders hd = message.getMimeHeaders();
-            hd.setHeader("SOAPAction", soapAction);
-        }
-
-        // Store standard error output temporarily if we expect a certain error as we do not want
-        // to see the SAAJ output in this case
-        java.io.PrintStream origErr = null;
-        java.io.ByteArrayOutputStream bufferedErr = null;
-        java.io.PrintStream stdErr = null;
-        if ((expectedHttpStatus != null && !expectedHttpStatus.startsWith("2")) || expectedHttpWarning != null) {
-            origErr = System.err;
-            bufferedErr = new java.io.ByteArrayOutputStream();
-            stdErr = new java.io.PrintStream(bufferedErr);
-            System.setErr(stdErr);
-        }
-
-        // Send the message and get a reply
-        SOAPMessage reply = null;
-        long start = 0;
-        if (logDetails) {
-            start = System.currentTimeMillis();
-        }
-
-        // Currently only deal with http soap bc because soap binding is the 
-        // only supported binding type in test driver.
-        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
-
-            String nbUserDir = System.getProperty("NetBeansUserDir");
-            
-            ServerInstance serverInstance = getServerInstance(nbUserDir);
-
-            if (serverInstance == null) {
-                throw new RuntimeException("Unknown server instance.");
-            } else {
-            // Translate ${HttpDefaultPort} first
-            String httpDefaultPort = "HttpDefaultPort";
-            if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
-                try {
-                    ConfigurationService configService =
-                            AdministrationServiceHelper.getConfigurationService(serverInstance);
-                    Map<String, Object> configMap =
-                            configService.getComponentConfigurationAsMap(
-                            "sun-http-binding", "server");
-                    Object httpDefaultPortValue = configMap.get(httpDefaultPort);
-                    System.out.println("");
-                    if (httpDefaultPortValue != null) {
-                        int httpDefaultPortIntValue =
-                                Integer.parseInt(httpDefaultPortValue.toString());
-                        if (httpDefaultPortIntValue != -1) {
-                            destination = destination.replace("${" + httpDefaultPort + "}",
-                                    "" + httpDefaultPortIntValue);
-                            System.out.println("Replace '${HttpDefaultPort}' in WSDL soap location by '" +
-                                    httpDefaultPortIntValue + "' defined in sun-http-binding.");
-                        } else {
-                            System.out.println("WARNING: 'HttpDefaultPort' is not defined in sun-http-binding.");
-                        }
-                    } else {
-                        System.out.println("WARNING: 'HttpDefaultPort' is not found in sun-http-binding's component configuration.");
-                    }
-                } catch (Exception ex) {
-                    if (stdErr != null) {
-                        System.setErr(origErr);
-                        stdErr.flush();
-                        stdErr.close();
-                        origErr.print(bufferedErr.toString());
-                    }
-                    throw ex;
-                }
-            }
-
-            // Translate ${HttpsDefaultPort} next
-            String httpsDefaultPort = "HttpsDefaultPort";
-            if (destination.indexOf("${" + httpsDefaultPort + "}") != -1) {
-                try {
-                    ConfigurationService configService =
-                            AdministrationServiceHelper.getConfigurationService(serverInstance);
-                    Map<String, Object> configMap =
-                            configService.getComponentConfigurationAsMap(
-                            "sun-http-binding", "server");
-                    Object httpsDefaultPortValue = configMap.get(httpsDefaultPort);
-                    System.out.println("");
-                    if (httpsDefaultPortValue != null) {
-                        int httpsDefaultPortIntValue =
-                                Integer.parseInt(httpsDefaultPortValue.toString());
-                        if (httpsDefaultPortIntValue != -1) {
-                            destination = destination.replace("${" + httpsDefaultPort + "}",
-                                    "" + httpsDefaultPortIntValue);
-                            System.out.println("Replace '${HttpsDefaultPort}' in WSDL soap location by '" +
-                                    httpsDefaultPortIntValue + "' defined in sun-http-binding.");
-                        } else {
-                            System.out.println("WARNING: 'HttpsDefaultPort' is not defined in sun-http-binding.");
-                        }
-                    } else {
-                        System.out.println("WARNING: 'HttpsDefaultPort' is not found in sun-http-binding's component configuration.");
-                    }
-                } catch (Exception ex) {
-                    if (stdErr != null) {
-                        System.setErr(origErr);
-                        stdErr.flush();
-                        stdErr.close();
-                        origErr.print(bufferedErr.toString());
-                    }
-                    throw ex;
-                }
-            }
-            }
-        }
-
-        boolean httpSuccess = true;
-        try {
-            reply = mConnection.call(message, destination);
-        } catch (SOAPException ex) {
-            httpSuccess = false;
-            // This currently relies on the implementation details
-            // to check for the HTTP status as no standard way is currently provide by saaj
-            // It expectes an exception message of the format "Bad response: (404Error"
-            // - where 404 is the status code in this example
-            if (expectedHttpStatus == null || (expectedHttpWarning != null && bufferedErr.toString().indexOf(expectedHttpWarning) < 0)) {
-                if (stdErr != null) {
-                    System.setErr(origErr);
-                    stdErr.flush();
-                    stdErr.close();
-                    origErr.print(bufferedErr.toString());
-                }
-                throw ex;
-            } else {
-                if (ex.getMessage().indexOf(expectedHttpStatus) > -1) {
-                    if (logDetails) {
-                        System.out.println(logPrefix + " Expected HTTP status code " + expectedHttpStatus + " found in reply. ");
-                    }
-                } else {
-                    if (stdErr != null) {
-                        System.setErr(origErr);
-                        stdErr.flush();
-                        stdErr.close();
-                        origErr.print(bufferedErr.toString());
-                    }
-                    fail(logPrefix + " Expected HTTP status code " + expectedHttpStatus + " NOT found in reply: " + ex.getMessage());
-                }
-            }
-        }
-        long end = 0;
-        if (logDetails) {
-            end = System.currentTimeMillis();
-        }
-
-        // Ensure standard error isn't redirected/buffered anymore
-        if (origErr != null) {
-            System.setErr(origErr);
-            if (stdErr != null) {
-                stdErr.close();
-            }
-        }
-
-        if (logDetails) {
-            System.out.println(logPrefix + " Call took " + (end - start) + " ms");
-        }
-
-        // If the test expected the call to fail, check that it did.
-        if (expectedHttpStatus != null && httpSuccess && !expectedHttpStatus.startsWith("2")) {
-            fail(logPrefix + " Call returned an unexpected 'success' HTTP status code instead of the expected HTTP status code " + expectedHttpStatus);
-        }
-
-        return reply;
     }
 
     /**
@@ -2347,7 +2204,11 @@ public class ConfiguredTest extends TestCase {
     static String formatString(File file) throws TransformerException {
         // Check the output
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute("indent-number", new Integer(2));
+        try {
+            transformerFactory.setAttribute("indent-number", new Integer(2));
+        } catch (IllegalArgumentException e) {
+            // ignore 
+        }
 
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -2370,7 +2231,11 @@ public class ConfiguredTest extends TestCase {
     static ByteArrayOutputStream replyAsByteArrayOS(String logPrefix, boolean logDetails, SOAPMessage reply) throws TransformerException, SOAPException {
         // Check the output
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute("indent-number", new Integer(2));
+        try {
+            transformerFactory.setAttribute("indent-number", new Integer(2));
+        } catch (IllegalArgumentException e) {
+            // ignore 
+        }
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -2480,21 +2345,6 @@ public class ConfiguredTest extends TestCase {
             len = reader.read(buff);
         }
         return output.toString();
-    }
-
-    /**
-     * Utility method to load a properties file
-     */
-    static Properties loadProperties(String propertiesFile) throws IOException {
-        Properties props = new Properties();
-        // EditableProperties takes case of encoding.
-        EditableProperties editableProps = new EditableProperties();
-        editableProps.load(new FileInputStream(propertiesFile));
-        for (String key : editableProps.keySet()) {
-            props.put(key, editableProps.getProperty(key));
-        }
-
-        return props;
     }
 
     /**
@@ -2688,7 +2538,7 @@ public class ConfiguredTest extends TestCase {
             }
             // script
             File scriptFile = new File(inputDir + File.separator + mProperties.getProperty("scriptFile"));
-            List taskList = loadScript(scriptFile, inputTable);
+            List taskList = loadN2MScript(scriptFile, inputTable);
             for (int i = 0, I = taskList.size(); i < I; i++) {
                 Runnable r = (Runnable) taskList.get(i);
                 r.run();
@@ -3318,7 +3168,7 @@ public class ConfiguredTest extends TestCase {
         return strBuf.toString();
     }
 
-    private static String[] parseCommand(String command) {
+    private static String[] parseN2MCommand(String command) {
         StringTokenizer st = new StringTokenizer(command, " ");
         List<String> list = new ArrayList<String>();
         while (st.hasMoreTokens()) {
@@ -3327,7 +3177,7 @@ public class ConfiguredTest extends TestCase {
         return list.toArray(new String[0]);
     }
 
-    private List loadScript(File scriptFile, Map<String, Input> inputTable) {
+    private List loadN2MScript(File scriptFile, Map<String, Input> inputTable) {
         List<Runnable> taskList = new ArrayList<Runnable>();
         BufferedReader fileIn = null;
         try {
@@ -3341,13 +3191,21 @@ public class ConfiguredTest extends TestCase {
                     continue; // skip comment
 
                 }
-                String[] cmd = parseCommand(line);
+                String[] cmd = parseN2MCommand(line);
                 if ("send".startsWith(cmd[0])) {
                     // send input.0 3
-                    taskList.add(new Send(inputTable.get(cmd[1]), cmd[2]));
+                    String destination = mProperties.getProperty("destination");
+                    String httpWarning = mProperties.getProperty("httpwarning");
+                    taskList.add(new Send(destination, httpWarning, mConnection, inputTable.get(cmd[1]), cmd[2]));
                 } else if ("wait".startsWith(cmd[0])) {
                     // wait 3
                     taskList.add(new Wait(cmd[1]));
+                } else if ("wait-till-next-tick".startsWith(cmd[0])) {
+                    if (cmd.length == 2) {
+                        taskList.add(new WaitTillNextTick(cmd[1]));
+                    } else if (cmd.length > 2) {   
+                        taskList.add(new WaitTillNextTick(cmd[1], cmd[2]));
+                    }    
                 }
             }
         } catch (Exception e) {
@@ -3364,57 +3222,6 @@ public class ConfiguredTest extends TestCase {
         return taskList;
     }
 
-    class Send implements Runnable {
-
-        String mExpectedHttpWarning;
-        String mDestination;
-        Input mInput;
-        int mBatches;
-
-        public Send(Input input, String batches) throws Exception {
-            mDestination = mProperties.getProperty("destination");
-            mExpectedHttpWarning = mProperties.getProperty("httpwarning");
-
-            mInput = input;
-            mBatches = Integer.parseInt(batches);
-        }
-
-        public void run() {
-            String action = mInput.getAction();
-            for (int i = 0; i < mBatches; i++) {
-                try {
-                    String data = mInput.nextData();
-//                    System.out.println("data: " + data);
-                    SOAPMessage message = mMessageFactory.createMessage();
-                    message.getMimeHeaders().addHeader("soapaction", action);
-                    SOAPPart soapPart = message.getSOAPPart();
-                    soapPart.setContent(new StreamSource(new StringReader(data)));
-                    message.saveChanges();
-                    sendMessage(mInput.getName(), false, mDestination, message, null, mExpectedHttpWarning, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    class Wait implements Runnable {
-
-        long miliSec = 1000L;
-
-        public Wait(String secondsStr) throws Exception {
-            miliSec = Math.max(1L, Math.round(1000 * Double.parseDouble(secondsStr)));
-        }
-
-        public synchronized void run() {
-            try {
-                wait(miliSec);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     /**
      * Short form of the standard println API.
      * @param mesg The message.
@@ -3429,44 +3236,6 @@ public class ConfiguredTest extends TestCase {
      */
     static void print(Object mesg) {
         System.out.print(mesg);
-    }
-
-    /**
-     * Gets the server instance configuration.
-     * 
-     * @param netBeansUserDir   NetBeans user directory
-     * @return  server instance configuration
-     */
-    private static ServerInstance getServerInstance(String netBeansUserDir) {
-        ServerInstance instance = null;
-        
-        if (netBeansUserDir != null) {
-            String j2eeServerInstanceUrl = null;
-            try {
-                Properties privateProps = loadProperties("nbproject/private/private.properties");
-                j2eeServerInstanceUrl = (String) privateProps.get("j2ee.server.instance");
-            } catch (IOException ex) {
-                System.err.println("Error: Failed to load project properties.");
-            }
-
-            if (j2eeServerInstanceUrl != null) {
-                String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
-                File settingsFile = new File(settingsFileName);
-                if (settingsFile.exists()) {
-                    ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
-                    List<ServerInstance> list = settings.getServerInstances();
-                    for (ServerInstance serverInstance : list) {
-                        String url = serverInstance.getUrl();
-                        if (j2eeServerInstanceUrl.equals(url)) {
-                            instance = serverInstance;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return instance;
     }
 
     public final static void main(String[] args) {
@@ -3491,7 +3260,7 @@ public class ConfiguredTest extends TestCase {
         String path = "C:\\Documents and Settings\\jqian\\Desktop\\108234\\AssignNamespacesJBI\\";
         //String path = args[0]; //"C:\\Alaska_DriverTest\\catdsrc\\";
 
-        Properties testcasesProps = loadProperties(path + "test/selected-tests.properties");
+        Properties testcasesProps = Util.loadProperties(path + "test/selected-tests.properties");
         String testCasesCSV = (String) testcasesProps.get("testcases");
         String[] testCaseNames = testCasesCSV.split(",");
         List testCases = Arrays.asList(testCaseNames);
@@ -3522,7 +3291,7 @@ public class ConfiguredTest extends TestCase {
                         for (int testCnt = 0; testCnt < testPropertiesFiles.length; testCnt++) {
                             String testPropertiesFile = testPropertiesFiles[testCnt].getAbsolutePath();
                             String testName = inputDirName;
-                            Properties testProps = loadProperties(testPropertiesFile);
+                            Properties testProps = Util.loadProperties(testPropertiesFile);
                             testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
                             testProps.put("absoluteinputdir", inputDirAbsolutePath);
                             testProps.put("inputdirname", inputDirName);

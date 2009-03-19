@@ -132,4 +132,11 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
    */
   public abstract Collection<DataTableMetadata> getDataTablesMetadata();
 
+
+  /**
+   * Returns name which will be used to filter indicator data
+   * provider which will be currently used
+   * @return data provider name
+   */
+  public abstract String getName();
 }

@@ -635,6 +635,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (includeMakefileDescription) {
             descriptions.add(createCodeAssistantDescription(project, compilerSet, null, null, isCompileConfiguration));
         }
+        //add all which are not included yet
+        List<CustomizerNode> nodes  = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
+        for (CustomizerNode cN : nodes){
+            if (!descriptions.contains(cN)){
+                descriptions.add(cN);
+            }
+        }
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
 

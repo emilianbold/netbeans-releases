@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
@@ -71,10 +70,9 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 
@@ -86,17 +84,17 @@ public class BugzillaIssue extends Issue {
 
     private TaskData data;
     private BugzillaRepository repository;
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm"; // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     private IssueController controller;
     private IssueNode node;
     
-    static final String LABEL_NAME_ID           = "bugzilla.issue.id";
-    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";
-    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";
-    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";
-    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";
+    static final String LABEL_NAME_ID           = "bugzilla.issue.id"; // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity"; // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority"; // NOI18N
+    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status"; // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution"; // NOI18N
+    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary"; // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -119,7 +117,7 @@ public class BugzillaIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
-        SUMMARY(TaskAttribute.SUMMARY),
+        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
         STATUS(TaskAttribute.STATUS),
         PRIORITY(TaskAttribute.PRIORITY),
         RESOLUTION(TaskAttribute.RESOLUTION),
@@ -143,12 +141,11 @@ public class BugzillaIssue extends Issue {
         URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
         KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
         SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
-        DESCRIPTION(TaskAttribute.DESCRIPTION),
+        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey()),
         CREATION(TaskAttribute.DATE_CREATION),
         MODIFICATION(TaskAttribute.DATE_MODIFICATION),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false),
-        DATE_MODIFICATION(BugzillaAttribute.DELTA_TS.getKey(), false);
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
         private final String key;
         private boolean singleAttribute;
@@ -187,8 +184,8 @@ public class BugzillaIssue extends Issue {
     @Override
     public String getDisplayName() {
         return data.isNew() ?
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") :
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()});
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
     }
 
     @Override
@@ -200,24 +197,24 @@ public class BugzillaIssue extends Issue {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
             DESCRIPTORS = new ColumnDescriptor[] {
-                new ColumnDescriptor(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"),
-                                                  loc.getString("CTL_Issue_ID_Desc")),
-                new ColumnDescriptor(LABEL_NAME_SEVERITY, String.class,
-                                                  loc.getString("CTL_Issue_Severity_Title"),
-                                                  loc.getString("CTL_Issue_Severity_Desc")),
-                new ColumnDescriptor(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"),
-                                                  loc.getString("CTL_Issue_Priority_Desc")),
-                new ColumnDescriptor(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"),
-                                                  loc.getString("CTL_Issue_Status_Desc")),
-                new ColumnDescriptor(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"),
-                                                  loc.getString("CTL_Issue_Resolution_Desc")),
-                new ColumnDescriptor(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"),
-                                                  loc.getString("CTL_Issue_Summary_Desc"))
+                new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                                  loc.getString("CTL_Issue_Severity_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
             };
         }
         return DESCRIPTORS;
@@ -233,7 +230,7 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public String toString() {
-        String str = getID() + " : "  + getSummary();
+        String str = getID() + " : "  + getSummary(); // NOI18N
         return str;
     }
 
@@ -255,19 +252,12 @@ public class BugzillaIssue extends Issue {
                     case REPORTER_NAME:
                     case QA_CONTACT_NAME:
                     case ASSIGNED_TO_NAME:
-                        continue;
-                    case DATE_MODIFICATION:
-                        value = getDateModification(data);
-                        break;
+                        continue;                    
                     default:    
                         value = getFieldValue(field);
                 }
-                if(value != null && !value.trim().equals("")) {
-                    if(field == IssueField.DATE_MODIFICATION) {
-                        attributes.put(Issue.ATTR_DATE_MODIFICATION, value);
-                    } else {
-                        attributes.put(field.key, value);
-                    }
+                if(value != null && !value.trim().equals("")) {                    
+                    attributes.put(field.key, value);
                 }
             }
         }
@@ -388,7 +378,7 @@ public class BugzillaIssue extends Issue {
         try {
             if(taskData.isNew()) {
                 return null;
-            }
+                }
             return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -413,22 +403,15 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        if(data != null && !data.isPartial() && taskData.isPartial()) {
-            // XXX something (a query perhaps) set new partial taskdata, yet this
-            // issue contains already complete ones. Refresh!
-            // XXX the issue cache is supposed to be used in a generec way
-            // this should be also solved on a higher level then in each
-            // particular bugtracking system
-            TaskData td = BugzillaUtil.getTaskData(repository, getID());
-            if(td != null) {
-                data = td;
-            }
-        } else {
-            data = taskData;
-        }
+        assert !taskData.isPartial();
+        data = taskData;
         attributes = null; // reset
-        ((BugzillaIssueNode)getNode()).fireDataChanged();
-        fireDataChanged();
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                ((BugzillaIssueNode)getNode()).fireDataChanged();
+                fireDataChanged();
+            }
+        });
     }    
 
     TaskData getTaskData() {
@@ -447,19 +430,12 @@ public class BugzillaIssue extends Issue {
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
-            return a != null ? a.getValue() : "";
+            return a != null ? a.getValue() : ""; // NOI18N
         } else {
             List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
-            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
+            // returning 0 would set status MODIFIED instead of NEW
+            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
-    }
-
-    public static String getDateModification(TaskData newData) {
-        TaskAttribute a = newData.getRoot().getMappedAttribute(IssueField.DATE_MODIFICATION.key);
-        if(a == null) {
-            a = newData.getRoot().getMappedAttribute("bug"); // XXX HACK
-        }
-        return a != null ? a.getValue() : "";
     }
 
     /**
@@ -500,7 +476,11 @@ public class BugzillaIssue extends Issue {
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
-            return a != null ? a.getValues() : Collections.EMPTY_LIST;
+            if(a != null) {
+                return a.getValues();
+            } else {
+                return Collections.emptyList();
+            }
         } else {
             List<String> ret = new ArrayList<String>();
             ret.add(getFieldValue(f));
@@ -606,7 +586,7 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
+    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
@@ -667,7 +647,7 @@ public class BugzillaIssue extends Issue {
         BugzillaCommand submitCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                submit();
+                submitAndRefresh();
             }
         };
         repository.getExecutor().execute(submitCmd);
@@ -683,26 +663,48 @@ public class BugzillaIssue extends Issue {
     @Override
     public void attachPatch(File file, String description) {
         refresh();
-        try {
-            addAttachment(file, null, description, null, true);
-            refresh();
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+        addAttachment(file, null, description, null, true);
+        refresh();
     }
 
-    void submit() throws CoreException {
+    void submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-        RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
-        // XXX evaluate rr
+
+        final boolean wasNew = data.isNew();
+        final boolean wasSeenAlready = !wasNew && repository.getIssueCache().wasSeen(getID());
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+                // XXX evaluate rr
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    // Ugly hack
+                    BugzillaIssue issue = (BugzillaIssue)repository.getIssue(rr.getTaskId());
+                    data = issue.getTaskData();
+                }
+                // it was the user who made the changes, so preserve the seen status if seen already
+                if (wasSeenAlready) {
+                    try {
+                        repository.getIssueCache().setSeen(getID(), true);
+                        // it was the user who made the changes, so preserve the seen status if seen already
+                    } catch (IOException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
-    public void refresh() {
+    public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, getID());
+            if(td == null) {
+                return false;
+            }
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
@@ -710,6 +712,7 @@ public class BugzillaIssue extends Issue {
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
+        return true;
     }
 
 
@@ -830,9 +833,15 @@ public class BugzillaIssue extends Issue {
             return url;
         }
 
-        public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
+        public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-            Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
+            BugzillaCommand cmd = new BugzillaCommand() {
+                @Override
+                public void execute() throws CoreException, IOException, MalformedURLException {
+                    Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
+                }
+            };
+            repository.getExecutor().execute(cmd);
         }
     }
 

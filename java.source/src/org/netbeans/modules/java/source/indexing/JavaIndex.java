@@ -120,9 +120,16 @@ public class JavaIndex {
     public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue, final boolean markDirty) throws IOException {
         Properties p = loadProperties(root);
         final String current = p.getProperty(attributeName);
-        if ((attributeValue != null && attributeValue.equals(current))
-                || (attributeValue == null && current == null))
+        if (current == null) {
+            if (attributeValue != null) {
+                p.setProperty(attributeName, attributeValue);
+                storeProperties(root, p);
+            }
             return false;
+        }
+        if (current.equals(attributeValue)) {
+            return false;
+        }
         if (attributeValue != null) {
             p.setProperty(attributeName, attributeValue);
         } else {
@@ -133,7 +140,7 @@ public class JavaIndex {
 //        }
         storeProperties(root, p);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue +" markDirty: " + markDirty); //NOI18N
+            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue); //NOI18N
         }
         return true;
     }

@@ -59,4 +59,10 @@ public class HudsonInstanceConstants {
      * preferred jobs for the instance, list of job names, separated by |
      */
     public static final String INSTANCE_PREF_JOBS = "pref_jobs";
+
+    /**
+     * Nonsalient jobs for the instance, list of job names, separated by |
+     */
+    public static final String INSTANCE_SUPPRESSED_JOBS = "suppressed_jobs";
+
 }

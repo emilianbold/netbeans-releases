@@ -758,26 +758,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fileAndHandler.preprocHandler == null) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
         }
-        boolean done = false;
         if (validator != null) {
+            // fill up needed collections based on validation
             if (fileAndHandler.fileImpl.validate()) {
                 if (validator.arePropertiesChanged(nativeFile)) {
                     if (TraceFlags.TRACE_VALIDATION) {
                         System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
                     }
                     reparseOnPropertyChanged.add(nativeFile);
-                    done = true;
                 }
             } else {
                 if (TraceFlags.TRACE_VALIDATION) {
                     System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());
                 }
                 reparseOnEdit.add(fileAndHandler.fileImpl);
-                done = true;
             }
-        }
-        if (!done && (isSourceFile || needParseOrphan)) {
-            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+        } else {
+            // put directly into parser queue if needed
+            if (isSourceFile || needParseOrphan) {
+                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+            }
         }
     }
 
@@ -900,7 +900,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (!file.getFile().exists()) {
                 removedPhysically.add(file);
             } else if (projectFiles != null) { // they might be null for library
-                if (!projectFiles.contains(file.getAbsolutePath())) {
+                if (!projectFiles.contains(file.getAbsolutePath().toString())) {
                     candidates.add(file);
                 }
             }
@@ -1079,11 +1079,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler.State state;
         state = createPreprocHandler(nativeFile).getState();
         File file = nativeFile.getFile();
-        FileContainer.Entry entry = getFileContainer().getEntry(file);
+        FileContainer fileContainer = getFileContainer();
+        FileContainer.Entry entry = fileContainer.getEntry(file);
         synchronized (entry.getLock()) {
             entry.invalidateStates();
             entry.setState(state, null);
         }
+        fileContainer.put();
         return state;
     }
 
@@ -1115,6 +1117,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *          false if file was included before
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+        boolean updateFileContainer = false;
         try {
             disposeLock.readLock().lock();
             if (disposing) {
@@ -1188,6 +1191,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     } else {
                         entry.setState(newState, null);
                     }
+                    updateFileContainer = true;
                 }
                 entryModCount = entry.getModCount();
             }
@@ -1278,11 +1282,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         traceIncludeScheduling(csmFile, newState, pcState, clean,
                                 statesToParse, statesToKeep);
                     }
+                    updateFileContainer = true;
                 }
             }
             return csmFile;
         } finally {
             disposeLock.readLock().unlock();
+            if (updateFileContainer) {
+                getFileContainer().put();
+            }
         }
     }
 
@@ -1693,7 +1701,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFile(file);
     }
 
-    protected final void removeFile(File file) {
+    protected final void removeFile(CharSequence file) {
         getFileContainer().removeFile(file);
     }
 
@@ -2562,7 +2570,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     DeclarationContainer getDeclarationsSorage() {
         DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
-        if (dc == null) {
+        if (dc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
         return dc != null ? dc : DeclarationContainer.empty();
@@ -2570,7 +2578,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-        if (fc == null) {
+        if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
         return fc != null ? fc : FileContainer.empty();
@@ -2578,7 +2586,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-        if (gc == null) {
+        if (gc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
         }
         return gc != null ? gc : GraphContainer.empty();
@@ -2586,7 +2594,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
-        if (cc == null) {
+        if (cc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
         }
         return cc != null ? cc : ClassifierContainer.empty();

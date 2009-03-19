@@ -44,6 +44,8 @@ package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.nodes.AbstractNode;
@@ -95,6 +97,13 @@ public class PropertiesNode extends AbstractNode{
     }
     
     public void updateNode(Sheet sheet) {
+        if (component == null || component.get() == null) {
+            return;
+        }
+
+        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(component.get().getDocument());
+        if (context == null)
+            return;
         setSheet(sheet);
         setName(createName());
     }

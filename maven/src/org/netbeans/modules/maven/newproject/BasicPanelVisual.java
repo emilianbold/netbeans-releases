@@ -155,6 +155,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 btnSetupNewer.getAccessibleContext().getAccessibleName());
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
+
+        txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
     }
     
     
@@ -221,8 +223,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_GroupId")); // NOI18N
 
-        txtGroupId.setText("com.mycompany");
-
         lblVersion.setLabelFor(txtVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_Version")); // NOI18N
 
@@ -240,7 +240,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         jScrollPane1.setViewportView(tblAdditionalProps);
         tblAdditionalProps.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnSetupNewer, "Set Up Newer &Maven");
+        org.openide.awt.Mnemonics.setLocalizedText(btnSetupNewer, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BTN_SetupNewer.text")); // NOI18N
         btnSetupNewer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSetupNewerActionPerformed(evt);
@@ -253,11 +253,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(453, Short.MAX_VALUE))
+                .addContainerGap(475, Short.MAX_VALUE))
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(btnSetupNewer)
                 .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -560,6 +560,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         d.putProperty("name", name); //NOI18N
         d.putProperty("artifactId", txtArtifactId.getText().trim()); //NOI18N
         d.putProperty("groupId", txtGroupId.getText().trim()); //NOI18N
+        MavenSettings.getDefault().setLastArchetypeGroupId(txtGroupId.getText().trim());
         d.putProperty("version", txtVersion.getText().trim()); //NOI18N
         d.putProperty("package", txtPackage.getText().trim()); //NOI18N
         if (tblAdditionalProps.isVisible()) {

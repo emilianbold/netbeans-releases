@@ -75,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.ProjectSpecificSecurity;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
@@ -169,7 +170,7 @@ public class BindingPanel extends SectionInnerPanel {
         addrChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         // detect and fill appropriate config options
-        WSStackVersion wsStackVersion = Util.getHighestWSStackVersion(project);
+        WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion))) {

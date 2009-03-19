@@ -44,7 +44,6 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -59,18 +58,14 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.commons.httpclient.HttpException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
+import javax.swing.text.JTextComponent;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -131,73 +126,91 @@ public class IssuePanel extends javax.swing.JPanel {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                         reloadForm(false);
+                    } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                        updateFieldStatuses();
                     }
                 }
             });
         }
         this.issue = issue;
-        try {
-            initCombos();
-            reloadForm(true);
-            GroupLayout layout = (GroupLayout)getLayout();
-            if (issue.getTaskData().isNew()) {
-                if (productCombo.getParent() == null) {
-                    layout.replace(productField, productCombo);
-                }
-            } else {
-                if (productField.getParent() == null) {
-                    layout.replace(productCombo, productField);
-                }
+        initCombos();
+        reloadForm(true);
+        GroupLayout layout = (GroupLayout)getLayout();
+        if (issue.getTaskData().isNew()) {
+            if (productCombo.getParent() == null) {
+                layout.replace(productField, productCombo);
             }
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+        } else {
+            if (productField.getParent() == null) {
+                layout.replace(productCombo, productField);
+            }
         }
     }
 
     private void reloadForm(boolean force) {
         reloading = true;
-        String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
-        String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
-        headerLabel.setText(headerTxt);
-        reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
-        reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
-        reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
-        reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
-        reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
-        reloadField(force, osCombo, BugzillaIssue.IssueField.OS);
-        reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
-        String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
-        initStatusCombo(status);
-        reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
-        String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
-        if ("DUPLICATE".equals(initialResolution)) { // NOI18N
-            duplicateField.setEditable(false);
-            duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-            duplicateField.setBackground(getBackground());
+        boolean isNew = issue.getTaskData().isNew();
+        headerLabel.setVisible(!isNew);
+        summaryLabel.setVisible(isNew);
+        summaryField.setVisible(isNew);
+        statusCombo.setEnabled(!isNew);
+        addCommentLabel.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
+        reportedLabel.setVisible(!isNew);
+        reportedField.setVisible(!isNew);
+        modifiedLabel.setVisible(!isNew);
+        modifiedField.setVisible(!isNew);
+        separator.setVisible(!isNew);
+        commentsPanel.setVisible(!isNew);
+        attachmentsLabel.setVisible(!isNew);
+        attachmentsPanel.setVisible(!isNew);
+        refreshButton.setVisible(!isNew);
+        cancelButton.setVisible(!isNew);
+        if (isNew) {
+            // Preselect the first product
+            productCombo.setSelectedIndex(0);
+            initStatusCombo("NEW"); // NOI18N
         } else {
-            JTextField field = new JTextField();
-            duplicateField.setEditable(true);
-            duplicateField.setBorder(field.getBorder());
-            duplicateField.setBackground(field.getBackground());
+            String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
+            String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
+            headerLabel.setText(headerTxt);
+            reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
+            reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
+            reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
+            reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
+            reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
+            reloadField(force, osCombo, BugzillaIssue.IssueField.OS);
+            reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
+            String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
+            initStatusCombo(status);
+            reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
+            String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
+            if ("DUPLICATE".equals(initialResolution)) { // NOI18N
+                duplicateField.setEditable(false);
+                duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+                duplicateField.setBackground(getBackground());
+            } else {
+                JTextField field = new JTextField();
+                duplicateField.setEditable(true);
+                duplicateField.setBorder(field.getBorder());
+                duplicateField.setBackground(field.getBackground());
+            }
+            reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
+            reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
+            if (usingTargetMilestones) {
+                reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
+            }
+            reloadField(force, urlField, BugzillaIssue.IssueField.URL);
+            reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS);
+            format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+            String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
+            reportedField.setText(reportedTxt);
+            modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
+            reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO);
+            reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT);
+            reloadField(force, ccField, BugzillaIssue.IssueField.CC);
+            reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON);
+            reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS);
         }
-        reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
-        reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
-        if (usingTargetMilestones) {
-            reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
-        }
-        reloadField(force, urlField, BugzillaIssue.IssueField.URL);
-        reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS);
-        format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-        String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
-        reportedField.setText(reportedTxt);
-        modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
-        reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO);
-        reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT);
-        reloadField(force, ccField, BugzillaIssue.IssueField.CC);
-        reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON);
-        reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS);
         commentsPanel.setIssue(issue);
         attachmentsPanel.setIssue(issue);
         if (force) {
@@ -232,78 +245,80 @@ public class IssuePanel extends javax.swing.JPanel {
         return currentValue;
     }
 
-    private void initCombos() throws CoreException, IOException {
-        Bugzilla bugzilla = Bugzilla.getInstance();
+    private void initCombos() {
         BugzillaRepository repository = issue.getRepository();
-        productCombo.setModel(toComboModel(bugzilla.getProducts(repository)));
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
+        }
+        productCombo.setModel(toComboModel(bc.getProducts()));
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
-        platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
-        osCombo.setModel(toComboModel(bugzilla.getOSs(repository)));
+        platformCombo.setModel(toComboModel(bc.getPlatforms()));
+        osCombo.setModel(toComboModel(bc.getOSs()));
         // Do not support MOVED resolution (yet?)
-        List<String> resolutions = new LinkedList<String>(bugzilla.getResolutions(repository));
+        List<String> resolutions = new LinkedList<String>(bc.getResolutions());
         resolutions.remove("MOVED"); // NOI18N
         resolutionCombo.setModel(toComboModel(resolutions));
-        priorityCombo.setModel(toComboModel(bugzilla.getPriorities(repository)));
-        severityCombo.setModel(toComboModel(bugzilla.getSeverities(repository)));
+        priorityCombo.setModel(toComboModel(bc.getPriorities()));
+        severityCombo.setModel(toComboModel(bc.getSeverities()));
         // stausCombo and resolution fields are filled in reloadForm
     }
 
     private void initStatusCombo(String status) {
-        try {
-            // Init statusCombo - allowed transitions (heuristics):
-            // Open -> Open-Unconfirmed-Reopened+Resolved
-            // Resolved -> Reopened+Close
-            // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-            Bugzilla bugzilla = Bugzilla.getInstance();
-            BugzillaRepository repository = issue.getRepository();
-            List<String> allStatuses = bugzilla.getStatusValues(repository);
-            List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
-            List<String> statuses = new LinkedList<String>();
-            String unconfirmed = "UNCONFIRMED"; // NOI18N
-            String reopened = "REOPENED"; // NOI18N
-            String resolved = "RESOLVED"; // NOI18N
-            if (openStatuses.contains(status)) {
-                statuses.addAll(openStatuses);
-                if (!unconfirmed.equals(status)) {
-                    statuses.remove(unconfirmed);
-                }
-                if (!reopened.equals(status)) {
-                    statuses.remove(reopened);
-                }
-                statuses.add(resolved);
+        // Init statusCombo - allowed transitions (heuristics):
+        // Open -> Open-Unconfirmed-Reopened+Resolved
+        // Resolved -> Reopened+Close
+        // Close-Resolved -> Reopened+Resolved+(Close with higher index)
+        BugzillaRepository repository = issue.getRepository();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
+        }
+        List<String> allStatuses = bc.getStatusValues();
+        List<String> openStatuses = bc.getOpenStatusValues();
+        List<String> statuses = new LinkedList<String>();
+        String unconfirmed = "UNCONFIRMED"; // NOI18N
+        String reopened = "REOPENED"; // NOI18N
+        String resolved = "RESOLVED"; // NOI18N
+        if (openStatuses.contains(status)) {
+            statuses.addAll(openStatuses);
+            if (!unconfirmed.equals(status)) {
+                statuses.remove(unconfirmed);
+            }
+            if (!reopened.equals(status)) {
+                statuses.remove(reopened);
+            }
+            statuses.add(resolved);
+        } else {
+            if (allStatuses.contains(reopened)) {
+                statuses.add(reopened);
             } else {
-                if (allStatuses.contains(reopened)) {
-                    statuses.add(reopened);
-                } else {
-                    // Pure guess
-                    statuses.addAll(openStatuses);
-                    statuses.remove(unconfirmed);
-                }
-                if (resolved.equals(status)) {
-                    List<String> closedStatuses = new LinkedList<String>(allStatuses);
-                    closedStatuses.removeAll(openStatuses);
-                    statuses.addAll(closedStatuses);
-                } else {
-                    statuses.add(resolved);
-                    if(!status.equals("")) {
-                        for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
-                            String s = allStatuses.get(i);
-                            if (!openStatuses.contains(s)) {
-                                statuses.add(s);
-                            }
+                // Pure guess
+                statuses.addAll(openStatuses);
+                statuses.remove(unconfirmed);
+            }
+            if (resolved.equals(status)) {
+                List<String> closedStatuses = new LinkedList<String>(allStatuses);
+                closedStatuses.removeAll(openStatuses);
+                statuses.addAll(closedStatuses);
+            } else {
+                statuses.add(resolved);
+                if(!status.equals("")) {
+                    for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
+                        String s = allStatuses.get(i);
+                        if (!openStatuses.contains(s)) {
+                            statuses.add(s);
                         }
                     }
                 }
-                resolvedIndex = statuses.indexOf(resolved);
             }
-            statusCombo.setModel(toComboModel(statuses));
-            statusCombo.setSelectedItem(status);
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+            resolvedIndex = statuses.indexOf(resolved);
         }
+        statusCombo.setModel(toComboModel(statuses));
+        statusCombo.setSelectedItem(status);
     }
 
     private ComboBoxModel toComboModel(List<String> items) {
@@ -331,7 +346,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
-        boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
+        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
             label.setBackground(HIGHLIGHT_COLOR);
@@ -349,12 +364,12 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(field, combo.getSelectedItem().toString());
     }
 
-    private void storeFieldValue(BugzillaIssue.IssueField field, JTextField textField) {
-        storeFieldValue(field, textField.getText());
+    private void storeFieldValue(BugzillaIssue.IssueField field, JTextComponent textComponent) {
+        storeFieldValue(field, textComponent.getText());
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, String value) {
-        if (!value.equals(initialValues.get(field))) {
+        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field))) {
             issue.setFieldValue(field, value);
         }
     }
@@ -425,7 +440,7 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyCommentsPanel = new javax.swing.JPanel();
         attachmentsLabel = new javax.swing.JLabel();
         dummyAttachmentsPanel = new javax.swing.JPanel();
-        jSeparator1 = new javax.swing.JSeparator();
+        separator = new javax.swing.JSeparator();
         headerLabel = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         duplicateField = new javax.swing.JTextField();
@@ -435,6 +450,8 @@ public class IssuePanel extends javax.swing.JPanel {
         dependsOnButton = new javax.swing.JButton();
         osLabel = new javax.swing.JLabel();
         osCombo = new javax.swing.JComboBox();
+        summaryField = new javax.swing.JTextField();
+        summaryLabel = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -538,7 +555,7 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyAttachmentsPanel.setLayout(dummyAttachmentsPanelLayout);
         dummyAttachmentsPanelLayout.setHorizontalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 386, Short.MAX_VALUE)
+            .add(0, 382, Short.MAX_VALUE)
         );
         dummyAttachmentsPanelLayout.setVerticalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -569,21 +586,19 @@ public class IssuePanel extends javax.swing.JPanel {
 
         osCombo.addActionListener(formListener);
 
+        summaryLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(headerLabel)
-                .addContainerGap(494, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(454, Short.MAX_VALUE)
-                .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(attachmentsLabel)
@@ -601,15 +616,16 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(keywordsLabel)
                     .add(dummyLabel2)
                     .add(addCommentLabel)
-                    .add(osLabel))
+                    .add(osLabel)
+                    .add(summaryLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .add(submitButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(osCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
@@ -653,7 +669,12 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(qaContactField)
                                 .add(duplicateField))))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE))
+                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(summaryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
+                .add(10, 10, 10))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(450, Short.MAX_VALUE)
+                .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -746,6 +767,10 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(dummyLabel2))
                     .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(summaryLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addCommentLabel)
                     .add(scrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -754,9 +779,9 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(submitButton)
                     .add(cancelButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE))
+                .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, severityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -824,31 +849,33 @@ public class IssuePanel extends javax.swing.JPanel {
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
-        String product = productCombo.getSelectedItem().toString();
-        try {
-            Object component = componentCombo.getSelectedItem();
-            Object version = versionCombo.getSelectedItem();
-            Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-            componentCombo.setModel(toComboModel(bugzilla.getComponents(repository, product)));
-            versionCombo.setModel(toComboModel(bugzilla.getVersions(repository, product)));
-            List<String> targetMilestones = bugzilla.getTargetMilestones(repository, product);
-            usingTargetMilestones = (targetMilestones.size() != 0);
-            targetMilestoneCombo.setModel(toComboModel(targetMilestones));
-            // Attempt to keep selection
-            componentCombo.setSelectedItem(component);
-            versionCombo.setSelectedItem(version);
-            if (usingTargetMilestones) {
-                targetMilestoneCombo.setSelectedItem(targetMilestone);
-            }
-            targetMilestoneLabel.setVisible(usingTargetMilestones);
-            targetMilestoneCombo.setVisible(usingTargetMilestones);
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
         }
+        String product = productCombo.getSelectedItem().toString();
+        Object component = componentCombo.getSelectedItem();
+        Object version = versionCombo.getSelectedItem();
+        Object targetMilestone = targetMilestoneCombo.getSelectedItem();
+        componentCombo.setModel(toComboModel(bc.getComponents(product)));
+        versionCombo.setModel(toComboModel(bc.getVersions(product)));
+        List<String> targetMilestones = bc.getTargetMilestones(product);
+        usingTargetMilestones = (targetMilestones.size() != 0);
+        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
+        // Attempt to keep selection
+        if (component != null) {
+            componentCombo.setSelectedItem(component);
+        }
+        if (version != null) {
+            versionCombo.setSelectedItem(version);
+        }
+        if (usingTargetMilestones && (targetMilestone != null)) {
+            targetMilestoneCombo.setSelectedItem(targetMilestone);
+        }
+        targetMilestoneLabel.setVisible(usingTargetMilestones);
+        targetMilestoneCombo.setVisible(usingTargetMilestones);
     }//GEN-LAST:event_productComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
@@ -889,6 +916,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        boolean isNew = issue.getTaskData().isNew();
+        if (isNew) {
+            storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
+            storeFieldValue(BugzillaIssue.IssueField.DESCRIPTION, addCommentArea);
+        }
         storeFieldValue(BugzillaIssue.IssueField.PRODUCT, productCombo);
         storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
         storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
@@ -915,7 +947,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
-        if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
+        if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
         String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
@@ -925,38 +957,28 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                boolean wasNew = issue.getTaskData().isNew();
                 try {
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        try {
-                            if (attachment.file.exists()) {
-                                if (attachment.description.trim().length() == 0) {
-                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
-                                }
-                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
-                            } else {
-                                // PENDING notify user
+                        if (attachment.file.exists()) {
+                            if (attachment.description.trim().length() == 0) {
+                                attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
                             }
-                        } catch (HttpException hex) {
-                            hex.printStackTrace();
-                        } catch (IOException ioex) {
-                            ioex.printStackTrace();
-                        } catch (CoreException cex) {
-                            cex.printStackTrace();
+                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        } else {
+                            // PENDING notify user
                         }
                     }
-                    issue.submit();
-                } catch (CoreException cex) {
-                    IStatus status = cex.getStatus();
-                    if (!(status instanceof BugzillaStatus)) {
-                        System.err.println(status.getMessage());
+                    issue.submitAndRefresh();
+                    if (wasNew) {
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                BugzillaIssue newIssue = (BugzillaIssue)issue.getRepository().getIssueCache().getIssue(issue.getID());
+                                setIssue(newIssue);
+                            }
+                        });
                     }
-                    if (status instanceof RepositoryStatus) {
-                        RepositoryStatus rStatus = (RepositoryStatus)status;
-                        System.err.println(rStatus.getHtmlMessage());
-                    }
-                    cex.printStackTrace();
                 } finally {
-                    issue.refresh();
                     handle.finish();
                     reloadFormInAWT(true);
                 }
@@ -1071,7 +1093,6 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel headerLabel;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton keywordsButton;
     private javax.swing.JTextField keywordsField;
     private javax.swing.JLabel keywordsLabel;
@@ -1095,11 +1116,14 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
     private javax.swing.JScrollPane scrollPane1;
+    private javax.swing.JSeparator separator;
     private javax.swing.JComboBox severityCombo;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JButton submitButton;
+    private javax.swing.JTextField summaryField;
+    private javax.swing.JLabel summaryLabel;
     private javax.swing.JComboBox targetMilestoneCombo;
     private javax.swing.JLabel targetMilestoneLabel;
     private javax.swing.JTextField urlField;

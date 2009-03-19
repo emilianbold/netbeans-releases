@@ -70,6 +70,8 @@ public class JbiExtensionAttribute implements Serializable {
      * Whether to generate this attribute in codegen.
      */
     private boolean codeGen;
+    
+    private String defaultValue;
 
     /**
      * Constructs a JbiExtensionAttribute.
@@ -81,7 +83,7 @@ public class JbiExtensionAttribute implements Serializable {
      */
     public JbiExtensionAttribute(String name, String displayName, 
             String type, String description) {
-        this(name, displayName, type, description, true);
+        this(name, displayName, type, description, true, "");
     }
 
     /**
@@ -96,11 +98,18 @@ public class JbiExtensionAttribute implements Serializable {
     public JbiExtensionAttribute(String name, String displayName,
             String type, String description,
             boolean codeGen) {
+        this(name, displayName, type, description, codeGen, "");
+    }
+    
+    public JbiExtensionAttribute(String name, String displayName,
+            String type, String description,
+            boolean codeGen, String defaultValue) {
         this.name = name;
         this.displayName = displayName;
         this.type = type;
         this.description = description;
         this.codeGen = codeGen;
+        this.defaultValue = defaultValue;
     }
 
     /**
@@ -148,6 +157,10 @@ public class JbiExtensionAttribute implements Serializable {
         return this.codeGen;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -156,6 +169,7 @@ public class JbiExtensionAttribute implements Serializable {
                 .append(" displayName=").append(getDisplayName())
                 .append(" type=").append(getType())
                 .append(" codeGen=").append(getCodeGen())
+                .append(" defaultValue=").append(getDefaultValue())
                 .append(" description=").append(getDescription());
 
         return sb.toString();

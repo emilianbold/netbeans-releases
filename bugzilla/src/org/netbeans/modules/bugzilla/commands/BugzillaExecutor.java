@@ -39,35 +39,31 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.RepositoryPanel;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * Executes commands against one bugzilla Repository
+ * Executes commands against one bugzilla Repository handles errors
  * 
  * @author Tomas Stupka
  */
 public class BugzillaExecutor {
-    public static final String HTTP_ERROR_NOT_FOUND = "Http error: Not Found";
 
-    private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";
+    private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
+    private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -76,81 +72,204 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd) {
+        execute(cmd, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handleExceptions) {
         try {
             cmd.execute();
-        } catch (CoreException ex) {
-            if(handleException(ex)) {
-                execute(cmd);
-            } else {
-                notifyError(ex);
+
+            cmd.setFailed(false);
+            cmd.setErrorMessage(null);
+
+        } catch (CoreException ce) {
+            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this);
+            if(handler != null) {
+
+                String msg = handler.getMessage();
+
+                cmd.setFailed(true);
+                cmd.setErrorMessage(msg);
+
+                if(handleExceptions) {
+                    if(handler.handle()) {
+                        // execute again
+                        execute(cmd);
+                    } else {
+                        // notify user cancel
+                        notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                    }
+                }
             }
+
+            return;
+                
         } catch(MalformedURLException me) {
+            cmd.setFailed(true); // should not happen
+            cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
         } catch(IOException ioe) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ioe);
+            cmd.setFailed(true);
+            cmd.setErrorMessage(ioe.getMessage());
+
+            if(!handleExceptions) {
+                return;
+            }
+
+            handleIOException(ioe);
         } 
     }
 
-    public static boolean isAuthenticate(CoreException ce) {
-        IStatus status = ce.getStatus();
-        return INVALID_USERNAME_OR_PASSWORD.equals(ce.getMessage()) ||
-               status != null && INVALID_USERNAME_OR_PASSWORD.equals(status.getMessage()); // XXX
+    public boolean handleIOException(IOException io) {
+        Bugzilla.LOG.log(Level.SEVERE, null, io); 
+        return true;
     }
 
-    public static boolean isNotFound(CoreException ce) {
-        IStatus status = ce.getStatus();
-        return HTTP_ERROR_NOT_FOUND.equals(ce.getMessage()) ||
-               status != null && HTTP_ERROR_NOT_FOUND.equals(status.getMessage()); // XXX
+    private static void notifyErrorMessage(String msg) {
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg, 
+                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
     }
 
-    public boolean handleException(CoreException ce) {
-        if(isAuthenticate(ce)) {
-            return handleAuthenticate(ce);
+    private static abstract class ExceptionHandler {
+
+        protected String errroMsg;
+        protected CoreException ce;
+        protected BugzillaExecutor executor;
+
+        protected ExceptionHandler(CoreException ce, String msg, BugzillaExecutor executor) {
+            this.errroMsg = msg;
+            this.ce = ce;
+            this.executor = executor;
         }
-        return false;
-    }
 
-    private boolean handleAuthenticate(CoreException ce) {
-        final BugtrackingController controller = repository.getController();
-        RepositoryPanel rp = (RepositoryPanel) controller.getComponent();
-        final DialogDescriptor dd = new DialogDescriptor(rp, NbBundle.getMessage(BugzillaExecutor.class, "LBL_Authenticate"));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor) {
+            String errormsg = getAuthenticateError(ce);
+            if(errormsg != null && INVALID_USERNAME_OR_PASSWORD.equals(errormsg.trim().toLowerCase())) {
+                return new AuthenticationHandler(
+                        ce,
+                        errormsg,
+                        executor);
+            }
+            errormsg = getNotFoundError(ce);
+            if(errormsg != null) {
+                return new NotFoundHandler(
+                        ce, 
+                        errormsg,
+                        executor);
+            }
 
-        controller.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_CHANGED)) {
-                    dd.setValid(controller.isValid());
+            return new DefaultHandler(ce, null, null, executor);
+        }
+
+        abstract boolean handle();
+
+        private static String getAuthenticateError(CoreException ce) {
+            String msg = getMessage(ce);
+            if(msg != null && INVALID_USERNAME_OR_PASSWORD.equals(msg.trim().toLowerCase())) {
+                return "Invalid Username or Password"; // XXX bundle me
+            }
+            return null;
+        }
+
+        private static String getNotFoundError(CoreException ce) {
+            IStatus status = ce.getStatus();
+            Throwable t = status.getException();
+            if(t instanceof UnknownHostException) {
+                return "Host not found";
+            }
+            String msg = getMessage(ce);
+            if(msg != null && HTTP_ERROR_NOT_FOUND.equals(msg.trim().toLowerCase())) {
+                return "Host not found";
+            }
+            return null;
+        }
+
+
+        static String getMessage(CoreException ce) {
+            String msg = ce.getMessage();
+            if(msg != null && !msg.trim().equals("")) {                             // NOI18N
+                return msg;
+            }
+            IStatus status = ce.getStatus();
+            msg = status != null ? status.getMessage() : null;
+            return msg != null ? msg.trim() : null;
+        }
+
+        String getMessage() {
+            return errroMsg;
+        }
+
+        private static void notifyError(CoreException ce) {
+            IStatus status = ce.getStatus();
+            if (status instanceof RepositoryStatus) {
+                RepositoryStatus rs = (RepositoryStatus) status;
+                String html = rs.getHtmlMessage();
+                if(html != null && !html.trim().equals("")) {                       // NOI18N
+                    final HtmlPanel p = new HtmlPanel();
+                    p.setHtml(html);
+                    NotifyDescriptor descriptor = new NotifyDescriptor (
+                        p,
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_RemoteResponse"),
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.INFORMATION_MESSAGE,
+                        new Object[] {NotifyDescriptor.OK_OPTION},
+                        NotifyDescriptor.OK_OPTION);
+                    DialogDisplayer.getDefault().notify(descriptor);
+    //                 XXX show in browser ?
+                    return;
                 }
             }
-        });
-        dialog.setVisible(true);
-        return dd.getValue() == DialogDescriptor.OK_OPTION;
-    }
-
-    private void notifyError(CoreException ce) {
-        IStatus status = ce.getStatus();
-        if (status instanceof RepositoryStatus) {
-            RepositoryStatus rs = (RepositoryStatus) status;
-            String html = rs.getHtmlMessage();
-            if(html != null && !html.trim().equals("")) {
-                final HtmlPanel p = new HtmlPanel();
-                p.setHtml(html);
-                BugzillaUtil.show(p, "html", "ok");
-//                 XXX show in browser ?
-            }
-        } else if (status instanceof BugzillaStatus) {
-            BugzillaStatus bs = (BugzillaStatus) status;
-            String msg = bs.getMessage();
-            notifyErrorMessage(msg);
-        } else {
-            String msg = status.getMessage();
+            String msg = getMessage(ce);
             notifyErrorMessage(msg);
         }
-    }
 
-    private void notifyErrorMessage(String msg) {
-        NotifyDescriptor nd = new NotifyDescriptor(msg, NbBundle.getMessage(BugzillaExecutor.class, "LBLError"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
-        DialogDisplayer.getDefault().notify(nd);
+        private static class AuthenticationHandler extends ExceptionHandler {
+            public AuthenticationHandler(CoreException ce, String msg, BugzillaExecutor executor) {
+                super(ce, msg, executor);
+            }
+            @Override
+            String getMessage() {
+                return errroMsg;
+            }
+            @Override
+            protected boolean handle() {
+                return BugtrackingUtil.editRepository(executor.repository, errroMsg);
+            }
+        }
+        private static class NotFoundHandler extends ExceptionHandler {
+            public NotFoundHandler(CoreException ce, String msg, BugzillaExecutor executor) {
+                super(ce, msg, executor);
+            }
+            @Override
+            String getMessage() {
+                return errroMsg;
+            }
+            @Override
+            protected boolean handle() {
+                return BugtrackingUtil.editRepository(executor.repository, errroMsg);
+            }
+        }
+        private static class DefaultHandler extends ExceptionHandler {
+            public DefaultHandler(CoreException ce, String msg, BugzillaCommand cmd, BugzillaExecutor executor) {
+                super(ce, msg, executor);
+            }
+            @Override
+            String getMessage() {
+                return errroMsg;
+            }
+            @Override
+            protected boolean handle() {
+                notifyError(ce);
+                return false;
+            }
+        }
     }
 }
 

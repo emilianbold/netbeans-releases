@@ -87,6 +87,14 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         //getAccess().setAutoSync(true);
         mRefCacheSupport = new RefCacheSupport(this);
     }
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public RefCacheSupport getRefCacheSupport() {
+        return mRefCacheSupport;
+    }
     
     /**
      *

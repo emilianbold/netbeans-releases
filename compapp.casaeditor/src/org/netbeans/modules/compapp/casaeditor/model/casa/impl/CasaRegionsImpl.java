@@ -41,12 +41,7 @@
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
 import java.util.List;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.GenericExtensibilityElement;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaBindings;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaLink;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegions;

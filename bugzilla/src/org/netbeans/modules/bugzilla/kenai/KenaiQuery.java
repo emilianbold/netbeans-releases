@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
 
@@ -49,22 +49,19 @@ import org.netbeans.modules.bugzilla.query.QueryController;
  */
 public class KenaiQuery extends BugzillaQuery {
     private String product;
+    private boolean predefinedQuery = false;
 
-    public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved) {
+    public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved, boolean predefined) {
         super(name, repository, urlParameters, saved);
         this.product = product;
+        this.predefinedQuery = predefined;
+        controller = createControler(repository, this, urlParameters);
     }
 
     @Override
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
-        KenaiQueryController c = new KenaiQueryController(r, q, parameters, product);
+        KenaiQueryController c = new KenaiQueryController(r, q, parameters, product, predefinedQuery);
         return c;
-    }
-
-    @Override
-    public void refresh() {
-        getController(); // XXX force table creation
-        super.refresh();
     }
 
 }

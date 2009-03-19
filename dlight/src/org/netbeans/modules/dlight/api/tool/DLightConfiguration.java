@@ -43,6 +43,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -100,7 +102,8 @@ public final class DLightConfiguration {
     private DLightConfiguration(FileObject configurationRoot, ToolsConfiguration toolsConfiguration) {
         this.toolsConfiguration = toolsConfiguration;
         this.rootFolder = configurationRoot;
-        this.configurationOptions = null;//getConfigurationOptions();
+        this.configurationOptions = getConfigurationOptions();
+        
     }
 
     /**
@@ -142,7 +145,7 @@ public final class DLightConfiguration {
 
             InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
             if (ic == null) {
-                String message = "D-Light tool configuration " + child.getName() + " not found";
+                String message = "D-Light options configuration " + child.getName() + " not found";
                 Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
                 continue;
             }
@@ -180,18 +183,30 @@ public final class DLightConfiguration {
     }
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
-
-        public void setup() {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
+        private boolean turnState = false;
 
         public void turnCollectorsState(boolean turnState) {
-            // throw new UnsupportedOperationException("Not supported yet.");
+            this.turnState = turnState;
         }
 
-        public boolean getCollectorsState() {
+        public boolean areCollectorsTurnedOn() {
+            return turnState;
+        }
+
+        public List<DLightTool> getToolsSet() {
+            return DLightConfiguration.this.toolsConfiguration.getToolsSet();
+        }
+
+        public List<DataCollector> getCollectors(DLightTool tool) {
+            return tool.getCollectors();
+        }
+
+        public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
+            return tool.getIndicatorDataProviders();
+        }
+
+        public boolean validateToolsRequiredUserInteraction() {
             return false;
-        //throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

@@ -170,7 +170,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
         return collector.getArgs();
     }
 
-    public Future<ValidationStatus> validate(DLightTarget target) {
+    public ValidationStatus validate(DLightTarget target) {
         return collector.validate(target);
     }
 

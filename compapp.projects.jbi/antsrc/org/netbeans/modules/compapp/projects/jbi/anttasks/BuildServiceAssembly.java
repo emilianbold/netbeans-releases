@@ -116,6 +116,7 @@ public class BuildServiceAssembly extends Task {
     private static final String SOAP_BC = "sun-http-binding";
     
     private boolean saInternalRouting = true;
+    private boolean bcAutoConnect = true;
     
     // 03/26/07 Ignore Concreate WSDL ports in J2EE projects, T. Li
     private boolean ignoreJ2EEPorts = true;
@@ -216,6 +217,7 @@ public class BuildServiceAssembly extends Task {
         // todo: set the default to false for now... 03/15/06
         // jbiRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_ROUTING)), true);
         saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
+        bcAutoConnect = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_ROUTING_BC_AUTOCONNECT)), true);
 
         // 09.29.09, IZ#145136 update project catalog before validation of wsdls...
         updateFromSUCatalog(catalogDirLoc, projDirLoc + "Catalog.xml");
@@ -292,8 +294,8 @@ public class BuildServiceAssembly extends Task {
             // Resolve connections
             log("Resolving connections...");
             ConnectionResolver connectionResolver = 
-                    new ConnectionResolver(this, showLog, saInternalRouting);          
-            connectionResolver.resolveConnections(mRepo, oldCasaDocument);            
+                    new ConnectionResolver(this, showLog, saInternalRouting);
+            connectionResolver.resolveConnections(mRepo, !bcAutoConnect, oldCasaDocument);
             
             // Write connections to connections.xml
             log("Writing connections out to connections.xml...");
@@ -405,9 +407,11 @@ public class BuildServiceAssembly extends Task {
             // )4/03/08, generated OSGi supported manifest.mf (minimum entries)
             String osgisupport = p.getProperty(JbiProjectProperties.OSGI_SUPPORT);
             String projName = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-            if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
+
+            // 02/04/09, IZ#153580, always generated OSGi manifest
+            //  if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
                 generateOSGiManifest(buildMetaInfDir, projName);
-            }
+            // }
 
             // 9/12/07, filter out unconnected JavaEE endpoints
             log("Filtering Java EE Endpoints...");
@@ -415,8 +419,7 @@ public class BuildServiceAssembly extends Task {
             // 01/25/08, disabled, see IZ#115609 and 113026
             // filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
-            e.printStackTrace();
-            log("Build SA Failed: " + e.toString());
+            log("ERROR: " + e.toString(), Project.MSG_ERR);
         } finally {
             try {
                 if (genericBCJar != null) {
@@ -519,9 +522,11 @@ public class BuildServiceAssembly extends Task {
                 return; // no catalog..
             }
 
+            boolean brandNewPrjCatalog = false;
             File prjCatalog = new File(prjCatalogFileLoc);
             if (!prjCatalog.exists()) { // create one...
                 prjCatalog.createNewFile();
+                brandNewPrjCatalog = true;
             }
 
             boolean fileUpdate = false;
@@ -529,29 +534,29 @@ public class BuildServiceAssembly extends Task {
             DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = fact.newDocumentBuilder();
             Document doc = null;
-            try {
-                doc = builder.parse(prjCatalog);
-            } catch (Exception ex) {
-                // create a new doc
-                doc = builder.newDocument();
-                Element elm = doc.createElement(XML_CATALOG_CATALOG);
-                elm.setAttribute(XML_CATALOG_XMLNS, XML_CATALOG_URN);
-                elm.setAttribute(XML_CATALOG_PREFER, XML_CATALOG_SYSTEM);
-                doc.appendChild(elm);
+            if (brandNewPrjCatalog) {
+                doc = createNewCatalogDocument(builder);
+            } else {
+                try {
+                    doc = builder.parse(prjCatalog);
+                } catch (Exception ex) {
+                    doc = createNewCatalogDocument(builder);
+                }
             }
-             Element root = doc.getDocumentElement();
-             NodeList catalogNodes = doc.getElementsByTagName(XML_CATALOG_NEXTCATALOG); // NOI18N
-             for (int i = 0; i < catalogNodes.getLength(); i++) {
-                 Element catalogNode = (Element) catalogNodes.item(i);
-                 String catalog = catalogNode.getAttribute(XML_CATALOG_CATALOG); // NOI18N
-                 //System.out.println("next Catalog: " + catalogFiles.contains(catalog) + ", " + catalog);
-                 if (catalogFiles.contains(catalog)) { // OK, remove from List
-                     catalogFiles.remove(catalog);
-                 } else { // remove from project catalog
-                     root.removeChild(catalogNode);
-                     fileUpdate = true;
-                 }
-             }
+
+            Element root = doc.getDocumentElement();
+            NodeList catalogNodes = doc.getElementsByTagName(XML_CATALOG_NEXTCATALOG); // NOI18N
+            for (int i = 0; i < catalogNodes.getLength(); i++) {
+                Element catalogNode = (Element) catalogNodes.item(i);
+                String catalog = catalogNode.getAttribute(XML_CATALOG_CATALOG); // NOI18N
+                //System.out.println("next Catalog: " + catalogFiles.contains(catalog) + ", " + catalog);
+                if (catalogFiles.contains(catalog)) { // OK, remove from List
+                    catalogFiles.remove(catalog);
+                } else { // remove from project catalog
+                    root.removeChild(catalogNode);
+                    fileUpdate = true;
+                }
+            }
 
             // add new su catalogs...
             for (String catalog : catalogFiles) {
@@ -576,6 +581,30 @@ public class BuildServiceAssembly extends Task {
             log("Exception: A processing error occurred; " + ex);
         }
     }
+
+    private Document createNewCatalogDocument(DocumentBuilder builder) {
+        Document doc = builder.newDocument();
+        Element elm = doc.createElement(XML_CATALOG_CATALOG);
+        elm.setAttribute(XML_CATALOG_XMLNS, XML_CATALOG_URN);
+        elm.setAttribute(XML_CATALOG_PREFER, XML_CATALOG_SYSTEM);
+        doc.appendChild(elm);
+        return doc;
+    }
+
+    private boolean isValid(File file) {
+        boolean validCatalog = false;
+        // parse content one...
+        try {
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = fact.newDocumentBuilder();
+            Document doc = builder.parse(file);
+            validCatalog = true;
+        } catch (Exception ex) {
+            // invalid catalog...
+            log("Skip Invalid SU Catalog:\n    "+file.getAbsolutePath()); 
+        }
+        return validCatalog;
+    }
     
     // catalogDirLoc: <compapp>/src/jbiServiceUnits/META-INF
     private void MergeSeJarCatalogs(String catalogDirLoc) { 
@@ -594,7 +623,10 @@ public class BuildServiceAssembly extends Task {
         for (File child : children) {
             File catalogFile = new File(child, "catalog.xml"); //SU_CATALOGXML_PATH);
             if (catalogFile.exists()) {
-                catalogFiles.add(catalogFile);
+                // check for valid catalog format...
+                if (isValid(catalogFile)) {
+                    catalogFiles.add(catalogFile);
+                }
             }
         }
         
@@ -793,52 +825,54 @@ public class BuildServiceAssembly extends Task {
      *
      * @param ciFileLoc    file location for ComponentInformation.xml
      */
-    private List<String> loadBindingComponentNames(String ciFileLoc) {
+    private List<String> loadBindingComponentNames(String ciFileLoc) throws Exception {
         List<String> ret = new ArrayList<String>();
         
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(false);
-            
-            Document document =
-                    factory.newDocumentBuilder().parse(new File(ciFileLoc));
-            NodeList compInfoNodeList = document.getElementsByTagName("component-info");
-            
-            for (int i = 0, isize = compInfoNodeList.getLength(); i < isize; i++) {
-                Element compInfo = (Element) compInfoNodeList.item(i);
-                Element typeElement = (Element) compInfo.getElementsByTagName("type").item(0);                
-                String compType = typeElement.getFirstChild().getNodeValue();
-                if (compType.equalsIgnoreCase("binding")) {
-                    Element nameElement = (Element) compInfo.getElementsByTagName("name").item(0);
-                    String compName = nameElement.getFirstChild().getNodeValue();
-                    ret.add(compName);
-                }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+
+        File ciFile = new File(ciFileLoc);
+        if (!ciFile.exists()) {
+            throw new FileNotFoundException(ciFileLoc + " is missing.");
+        }
+
+        Document document =
+                factory.newDocumentBuilder().parse(ciFile);
+        NodeList compInfoNodeList = document.getElementsByTagName("component-info");
+
+        for (int i = 0, isize = compInfoNodeList.getLength(); i < isize; i++) {
+            Element compInfo = (Element) compInfoNodeList.item(i);
+            Element typeElement = (Element) compInfo.getElementsByTagName("type").item(0);
+            String compType = typeElement.getFirstChild().getNodeValue();
+            if (compType.equalsIgnoreCase("binding")) {
+                Element nameElement = (Element) compInfo.getElementsByTagName("name").item(0);
+                String compName = nameElement.getFirstChild().getNodeValue();
+                ret.add(compName);
             }
-        } catch (Exception e) {
-            log(e.getMessage() + " : " + ciFileLoc);
         }
         
         return ret;
     }
     
-    private void loadAssemblyInfo(String asiFileLoc) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(false);
-            factory.setNamespaceAware(true);
-            
-            jbiDocument = factory.newDocumentBuilder().parse(new File(asiFileLoc));
-            
-            // Load service unit jar names
-            suJarNames = new ArrayList<String>();
-            NodeList jarNodeList = jbiDocument.getElementsByTagName("artifacts-zip");
-            for (int i = 0, isize = jarNodeList.getLength(); i < isize; i++) {
-                Node jarNode = jarNodeList.item(i);
-                String jarName = jarNode.getFirstChild().getNodeValue();
-                suJarNames.add(jarName);
-            }
-        } catch (Exception e) {
-            log(e.getMessage() + " : " + asiFileLoc);
+    private void loadAssemblyInfo(String asiFileLoc) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(true);
+
+        File asiFile = new File(asiFileLoc);
+        if (!asiFile.exists()) {
+            throw new FileNotFoundException(asiFileLoc + " is missing.");
+        }
+
+        jbiDocument = factory.newDocumentBuilder().parse(new File(asiFileLoc));
+
+        // Load service unit jar names
+        suJarNames = new ArrayList<String>();
+        NodeList jarNodeList = jbiDocument.getElementsByTagName("artifacts-zip");
+        for (int i = 0, isize = jarNodeList.getLength(); i < isize; i++) {
+            Node jarNode = jarNodeList.item(i);
+            String jarName = jarNode.getFirstChild().getNodeValue();
+            suJarNames.add(jarName);
         }
     }
     
@@ -1030,7 +1064,7 @@ public class BuildServiceAssembly extends Task {
             }
             
         } catch (IOException ex) {
-            log("Operation aborted due to : " + ex);
+            log("ERROR: Operation aborted due to : " + ex, Project.MSG_ERR);
         } finally {
             try {
                 newJar.close();

@@ -54,13 +54,15 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbPerformanceTest;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -74,68 +76,79 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         super(name);
     }
 
-    /**
-     * Set-up the services and project
-     */
-//    @Override
-//    protected void setUp() throws IOException, InterruptedException {
-//        clearWorkDir();
-//        String work = getWorkDirPath();
-//        System.setProperty("netbeans.user", work);
-//        projectDir = openProject("SimpleJ2SEApp", getDataDir());
-//        File projectSourceRoot = new File(getWorkDirPath(), "SimpleJ2SEApp.src".replace('.', File.separatorChar));
-//        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
-//
-//        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-//        source = createSourcePath(projectDir);
-//        compile = createEmptyPath();
-//    }
-
     public void testOpenDocuments()
             throws IOException, InterruptedException, ExecutionException {
         // logging is used to obtain data about consumed time
         Logger timer = Logger.getLogger("TIMER.RefactoringSession");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
+        ClassIndexManager.getDefault();
+        Thread.sleep(29000);
+        System.err.println("Starting...");
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
         FileObject testFile = getProjectDir().getFileObject("/src/bsh/This.java");
         JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
         
-        final WhereUsedQuery wuq = new WhereUsedQuery(Lookup.EMPTY);
         src.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("bsh.This");
-                TypeMirror mirror = klass.getSuperclass();
+                TypeMirror mirror = klass.getInterfaces().get(1); // java.lang.Runnable
                 Element object = controller.getTypes().asElement(mirror);
-                wuq.setRefactoringSource(Lookups.singleton(TreePathHandle.create(object, controller)));
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
                 ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
-                wuq.getContext().add(cpi);
+                wuq[0].getContext().add(cpi);
             }
         }, false);
         
-        wuq.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
-        wuq.prepare(rs);
+        Problem p = wuq[0].preCheck();
+        if (p != null) {
+            System.err.println(p.getMessage());
+        }
+        p = wuq[0].checkParameters();
+        if (p != null) {
+            System.err.println(p.getMessage());
+        }
+        wuq[0].prepare(rs);
         rs.doRefactoring(false);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
-        System.err.println(elems.size());
-        for (RefactoringElement e : elems) {
-            System.err.println(e.getText());
+        StringBuilder sb = new StringBuilder();
+                sb.append("Symbol: '").append("java.lang.Runnable").append("'");
+        sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
+        try {
+            long prepare = getHandler().get("refactoring.prepare");
+            NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+            d.name = "refactoring.prepare"+" (" + "java.lang.Runnable" + ", usages:" + elems.size() + ")";
+            d.value = prepare;
+            d.unit = "ms";
+            d.runOrder = 0;
+            sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
+            Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
+            System.err.println("Time: " + prepare);
+        } catch (Exception ex) {
+            sb.append("Cannot collect usages: ").append(ex.getCause());
         }
+        getLog().append(sb);
+        System.err.println(sb);
+
         src = null;
+        wuq[0] = null;
         System.gc(); System.gc();
+        
         Log.assertInstances("Some instances of parser were not GCed");
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().clusters(".*").addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(false));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(true));
     }
 }

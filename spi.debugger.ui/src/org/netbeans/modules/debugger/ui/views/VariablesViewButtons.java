@@ -52,6 +52,7 @@ import javax.swing.JToggleButton;
 import org.netbeans.modules.debugger.ui.actions.AddWatchAction;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -62,11 +63,13 @@ public class VariablesViewButtons {
     public static final String SHOW_WATCHES = "show_watches"; // NOI18N
     public static final String SHOW_EVALUTOR_RESULT = "show_evaluator_result"; // NOI18N
 
+    public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
+
     public static JToggleButton createShowWatchesButton() {
         JToggleButton button = createToggleButton(
                 SHOW_WATCHES,
                 "org/netbeans/modules/debugger/resources/watchesView/watch_16.png",
-                "Show watches inside Variables view"
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Watches")
             );
         button.addActionListener(new ShowWatchesActionListener(button));
         return button;
@@ -76,7 +79,7 @@ public class VariablesViewButtons {
         JToggleButton button = createToggleButton(
                 SHOW_EVALUTOR_RESULT,
                 "org/netbeans/modules/debugger/resources/watchesView/Watch.gif",
-                "Show evaluator result inside Variables view"
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Result")
             );
         button.addActionListener(new ShowResultActionListener(button));
         return button;
@@ -85,7 +88,7 @@ public class VariablesViewButtons {
     public static JButton createNewWatchButton() {
         JButton button = createButton(
                 "org/netbeans/modules/debugger/resources/watchesView/Field.gif",
-                "Create new watch"
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Create_New_Watch")
             );
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -96,12 +99,12 @@ public class VariablesViewButtons {
     }
 
     public static boolean isWatchesViewNested() {
-        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
         return preferences.getBoolean(SHOW_WATCHES, false);
     }
 
     public static boolean isResultsViewNested() {
-        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
         return preferences.getBoolean(SHOW_EVALUTOR_RESULT, false);
     }
 
@@ -135,7 +138,7 @@ public class VariablesViewButtons {
     }
 
     private static boolean isButtonSelected(String name) {
-        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
         if (name.equals(SHOW_WATCHES)) {
             return preferences.getBoolean(SHOW_WATCHES, false);
         } else if (name.equals(SHOW_EVALUTOR_RESULT)) {
@@ -145,7 +148,7 @@ public class VariablesViewButtons {
     }
 
     private static void setButtonSelected(String name, boolean selected) {
-        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N [TODO]
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N [TODO]
         preferences.putBoolean(name, selected);
     }
 

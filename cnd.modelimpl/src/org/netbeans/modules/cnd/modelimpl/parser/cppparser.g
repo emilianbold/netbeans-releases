@@ -682,7 +682,7 @@ public translation_unit:
 protected
 template_explicit_specialization
 	:
-	LITERAL_template LESSTHAN GREATERTHAN
+	LITERAL_template LESSTHAN GREATERTHAN   
 	(
 	// Template explicit specialisation function definition (VK 30/05/06)
 		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
@@ -692,21 +692,17 @@ template_explicit_specialization
 		}
 		function_definition
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
-	// Template explicit specialisation ctor definition 
-		(ctor_declarator[true] 
-		  (COLON        // DEFINITION :ctor_initializer
-		   |LCURLY       // DEFINITION (compound Statement) ?
-	 	  )
-                )=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0b[%d]: template " +
-				"explicit-specialisation ctor definition\n", LT(1).getLine());
-		}
-		ctor_definition
-		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+    |
+        // Template explicit specialisation ctor definition
+        (   ctor_decl_spec ctor_declarator[true]
+            ( COLON         // DEFINITION :ctor_initializer
+            | LCURLY        // DEFINITION (compound Statement) ?
+            )
+        ) =>
+        {if(statementTrace >= 1) printf("template_explicit_specialization_0b[%d]: template " + "explicit-specialisation ctor definition\n", LT(1).getLine());}
+        ctor_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
+    |
 	// Template explicit specialisation dtor definition
 		(dtor_declarator[true] LCURLY)=>
 		{if(statementTrace >= 1)
@@ -1327,29 +1323,29 @@ member_declaration
 		}
 		dtor_head[true] dtor_body	// Definition
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
-	|
-		// Function declaration
-		(declaration_specifiers[false, false]	function_declarator[false, false] (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_6[%d]: Function declaration\n",
-				LT(1).getLine());
-		}
-		declaration[declOther]
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
-	|  
-		// Function definition
-		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
-		{beginFieldDeclaration();
-		 if (statementTrace>=1) 
-			printf("member_declaration_7[%d]: Function definition\n",
-				LT(1).getLine());
-		}
-		function_definition
-		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
-	|  
-		// Member without a type (I guess it can only be a function declaration
-		// or definition)
-		((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
+    |
+        // Function declaration
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[false, false]
+            (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_6[%d]: Function declaration\n", LT(1).getLine());}
+        declaration[declOther]
+        { #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+    |
+        // Function definition
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[true, false]
+            LCURLY
+        ) =>
+        {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
+        function_definition
+        { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+    |
+        // Member without a type (I guess it can only be a function declaration or definition)
+        ((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
 		{beginFieldDeclaration();
                 if( reportOddWarnings ) {
                     printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
@@ -1595,7 +1591,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
-                |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
+        |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
+        |   (options {greedy=true;} : attribute_specification!)
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
@@ -2132,42 +2129,49 @@ function_direct_declarator [boolean definition]
         
 protected
 function_direct_declarator_2 [boolean definition] 
-	{String q; CPPParser.TypeQualifier tq;}
-	:
-		/* predicate indicate that plain ID is ok here; this counteracts any
-		 * other predicate that gets hoisted (along with this one) that
-		 * indicates that an ID is a type or whatever.  E.g.,
-		 * another rule testing isTypeName() alone, implies that the
-		 * the ID *MUST* be a type name.  Combining isTypeName() and
-		 * this predicate in an OR situation like this one:
-		 * ( declaration_specifiers ... | function_declarator ... )
-		 * would imply that ID can be a type name OR a plain ID.
-		 */
+    {String q; CPPParser.TypeQualifier tq;}
+    :
+    /* predicate indicate that plain ID is ok here; this counteracts any
+     * other predicate that gets hoisted (along with this one) that
+     * indicates that an ID is a type or whatever.  E.g.,
+     * another rule testing isTypeName() alone, implies that the
+     * the ID *MUST* be a type name.  Combining isTypeName() and
+     * this predicate in an OR situation like this one:
+     * ( declaration_specifiers ... | function_declarator ... )
+     * would imply that ID can be a type name OR a plain ID.
+     */
 /*
 		(	// fix prompted by (isdigit)() in xlocnum
 			LPAREN q = qualified_id { declaratorID(q, qiFun); } RPAREN
 		|
 			q = qualified_id { declaratorID(q, qiFun);}
 		)
-*/              q = idInBalanceParensHard { declaratorID(q, qiFun);}
+*/
+        q = idInBalanceParensHard { declaratorID(q, qiFun);}
+        function_parameters
+    ;
 
-		LPAREN
-		{
-		    //functionParameterList();
-		    if (K_and_R == false) {
-			    in_parameter_list = true;
-		    }
-		}
-		(parameter_list)? 
-		{
-		    if (K_and_R == false) {
-	  		in_parameter_list = false;
-		    } else {
-			in_parameter_list = true;
-		    }
-		}
-		RPAREN
-	;
+function_parameters
+    :
+    LPAREN
+    (
+        (LPAREN) => function_parameters
+    |
+        {   //functionParameterList();
+            if (K_and_R == false) {
+                in_parameter_list = true;
+            }
+        }
+        (parameter_list)?
+        {   if (K_and_R == false) {
+                in_parameter_list = false;
+            } else {
+                in_parameter_list = true;
+            }
+        }
+    )
+    RPAREN
+    ;
 
 protected
 function_params
@@ -3108,6 +3112,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   POINTERTO
             |   NOT    
             |   TILDE
+            |   ELLIPSIS
 
             |   balanceParensInExpression
             |   balanceSquaresInExpression

@@ -53,7 +53,6 @@ import com.sun.perseus.model.Time;
 import com.sun.perseus.model.UpdateAdapter;
 import com.sun.perseus.util.SVGConstants;
 import java.awt.AWTEvent;
-import java.awt.AWTEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -753,15 +752,71 @@ public final class PerseusController {
     public static SVGRect getSafeBBox(SVGLocatableElement elem) {
         SVGRect bBox = elem.getBBox();
         if ( bBox == null) {
-            //TODO solve the issue with null bounding box
             SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
             ModelNode child = ((ModelNode)elem).getFirstChildNode();
-            if (child != null && child instanceof SVGLocatableElement) {
-                bBox = ((SVGLocatableElement) child).getBBox();
+            SVGRect tmpBBox = null;
+            while (child != null && bBox == null){
+                if (child instanceof SVGLocatableElement) {
+                    tmpBBox = getSafeBBox((SVGLocatableElement) child);
+                    bBox = calculateMaxBBox(bBox, tmpBBox);
+                    child = child.getNextSiblingNode();
+                }
             }
         }
         return bBox;
     }
+
+    public static SVGRect getFullBBox(SVGLocatableElement elem) {
+        SVGRect bBox = elem.getBBox();
+        if (bBox == null) {
+            SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
+            ModelNode child = ((ModelNode) elem).getFirstChildNode();
+            SVGRect tmpBBox = null;
+            while (child != null) {
+                if (child instanceof SVGLocatableElement) {
+                    tmpBBox = getFullBBox((SVGLocatableElement) child);
+                    bBox = calculateMaxBBox(bBox, tmpBBox);
+                    child = child.getNextSiblingNode();
+                }
+            }
+        }
+        return bBox;
+    }
+
+    /*
+    public static SVGRect getMaxBBox(SVGLocatableElement elem) {
+        SVGRect bBox = elem.getBBox();
+        SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
+        ModelNode child = ((ModelNode) elem).getFirstChildNode();
+        SVGRect tmpBBox = null;
+        while (child != null) {
+            if (child instanceof SVGLocatableElement) {
+                    SceneManager.log(Level.SEVERE, "        element:" + child); //NOI18N
+                tmpBBox = getMaxBBox((SVGLocatableElement) child);
+                bBox = calculateMaxBBox(bBox, tmpBBox);
+                child = child.getNextSiblingNode();
+            }
+        }
+        return bBox;
+    }*/
+
+    private static SVGRect calculateMaxBBox(SVGRect bBox, SVGRect tmpBBox) {
+        if (bBox == null) {
+            bBox = tmpBBox;
+        } else if (tmpBBox != null) {
+            float x1 = Math.min(bBox.getX(), tmpBBox.getX());
+            float y1 = Math.min(bBox.getY(), tmpBBox.getY());
+            float x2 = Math.max(bBox.getWidth() + bBox.getX(), tmpBBox.getWidth() + tmpBBox.getX());
+            float y2 = Math.max(bBox.getHeight() + bBox.getY(), tmpBBox.getHeight() + tmpBBox.getY());
+
+            bBox.setX(x1);
+            bBox.setY(y1);
+            bBox.setWidth(x2 - x1);
+            bBox.setHeight(y2 - y1);
+        }
+        return bBox;
+    }
+
         
     protected static Document getOwnerDocument(Node elem) {
         Node parent;

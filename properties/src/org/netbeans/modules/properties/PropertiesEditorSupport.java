@@ -736,7 +736,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** Support for firing of vetoable changes. */
         private transient VetoableChangeSupport vetoSupp;
-            
+
+        private transient EnvironmentListener envListener;
             
         /** Constructor.
          * @param obj this support should be associated with
@@ -745,7 +746,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             LOG.finer("PropertiesEditorSupport(<PropertiesFileEntry>)");//NOI18N
             LOG.finer(" - new Environment(<PropertiesFileEntry>)");     //NOI18N
             this.entry = entry;
-            entry.getFile().addFileChangeListener(new EnvironmentListener(this));
+            envListener = new EnvironmentListener(this);
+            entry.getFile().addFileChangeListener(envListener);
             entry.addPropertyChangeListener(this);
         }
         /** Getter for the file to work on.
@@ -949,7 +951,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 
             fileObject = newFile;
             LOG.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
-            fileObject.addFileChangeListener (new EnvironmentListener(this));
+            if (envListener != null)
+                fileObject.removeFileChangeListener(envListener);
+            envListener = new EnvironmentListener(this);
+            fileObject.addFileChangeListener (envListener);
 
             if (lockAgain) { // refresh lock
                 try {
@@ -1148,6 +1153,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                           + FileUtil.getFileDisplayName(evt.getFile()));
                 LOG.finer(" - current file: "                           //NOI18N
                           + FileUtil.getFileDisplayName((FileObject) evt.getSource()));
+            }
+            //see #160338
+            if (evt.firedFrom(SaveImpl.DEFAULT)) {
+                return;
             }
             Environment environment = reference.get();
             if (environment != null) {

@@ -48,9 +48,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -71,7 +69,6 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -135,9 +132,9 @@ public class LLDataCollector
             try {
                 File agentLibraryLocal = locateAgentLibrary(env);
                 if (agentLibraryLocal != null) {
-                CommonTasksSupport.uploadFile(
-                        agentLibraryLocal.getAbsolutePath(), env,
-                        getRemotePath(env, agentLibraryLocal), 644, null).get();
+                    CommonTasksSupport.uploadFile(
+                            agentLibraryLocal.getAbsolutePath(), env,
+                            getRemotePath(env, agentLibraryLocal), 644, null).get();
                 }
                 File monitorExecutableLocal = locateMonitorExecutable(env);
                 CommonTasksSupport.uploadFile(
@@ -218,6 +215,7 @@ public class LLDataCollector
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.bridge(new MonitorOutputProcessor());
             }
@@ -260,25 +258,18 @@ public class LLDataCollector
     }
 
 // validation stuff ////////////////////////////////////////////////////////////
+    public ValidationStatus validate(final DLightTarget objectToValidate) {
+        if (validationStatus.isValid()) {
+            return validationStatus;
+        }
 
-    public Future<ValidationStatus> validate(final DLightTarget objectToValidate) {
-        Callable<ValidationStatus> validationTask = new Callable<ValidationStatus>() {
+        ValidationStatus oldStatus = validationStatus;
+        ValidationStatus newStatus = doValidation(objectToValidate);
 
-            public ValidationStatus call() throws Exception {
-                if (validationStatus.isValid()) {
-                    return validationStatus;
-                }
+        notifyStatusChanged(oldStatus, newStatus);
 
-                ValidationStatus oldStatus = validationStatus;
-                ValidationStatus newStatus = doValidation(objectToValidate);
-
-                notifyStatusChanged(oldStatus, newStatus);
-
-                validationStatus = newStatus;
-                return newStatus;
-            }
-        };
-        return DLightExecutorService.submit(validationTask, "Validation of LLDataCollector "); // NOI18N
+        validationStatus = newStatus;
+        return newStatus;
     }
 
     public void invalidate() {
@@ -296,6 +287,7 @@ public class LLDataCollector
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
+
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }

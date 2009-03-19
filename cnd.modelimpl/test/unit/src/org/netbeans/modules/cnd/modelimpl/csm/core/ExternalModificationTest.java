@@ -78,7 +78,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
 
         writeFile(sourceFile, "void " + oldName + "() {};");
 
-        final TraceModelBase traceModel = new TraceModelBase();
+        final TraceModelBase traceModel = new TraceModelBase(true);
         //traceModel.setUseSysPredefined(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
         ModelImpl model = traceModel.getModel();
@@ -106,7 +106,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         File headerFile = new File(workDir, "test.h");
         headerFile.delete();
 
-        final TraceModelBase traceModel = new TraceModelBase();
+        final TraceModelBase traceModel = new TraceModelBase(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
         final CsmProject project = traceModel.getProject();
 
@@ -139,7 +139,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         File headerFile2 = new File(workDir, "test2.h");
         headerFile2.delete();
 
-        final TraceModelBase traceModel = new TraceModelBase();
+        final TraceModelBase traceModel = new TraceModelBase(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
         final CsmProject project = traceModel.getProject();
 

@@ -266,8 +266,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     }
     
     public void run() {
-        if (current != null) {
-            File file = FileUtil.toFile(current.getPrimaryFile());
+        DataObject currentFile = current;
+        if (currentFile != null) {
+            File file = FileUtil.toFile(currentFile.getPrimaryFile());
             // can be null for stuff in jars?
             if (file != null) {
                 try {
@@ -324,7 +325,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             }
             
             //now attach the listener to the textcomponent
-            final EditorCookie.Observable ec = current.getLookup().lookup(EditorCookie.Observable.class);
+            final EditorCookie.Observable ec = currentFile.getLookup().lookup(EditorCookie.Observable.class);
             if (ec == null) {
                 //how come?
                 return;

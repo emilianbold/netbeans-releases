@@ -1456,8 +1456,11 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
 
         private void init(BundleStructure structure) {
+            PropertiesFileEntry entry;
             for(int i=0; i< structure.getEntryCount(); i++) {
-                managers.add(structure.getNthEntry(i).getPropertiesEditor().getUndoRedoManager());
+                entry = structure.getNthEntry(i);
+                if (entry != null)
+                    managers.add(entry.getPropertiesEditor().getUndoRedoManager());
             }
         }
 

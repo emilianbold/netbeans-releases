@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -74,7 +76,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private Context context;
     private int indentationSize;
 
-    protected static final boolean DEBUG = false;
+    private static final Logger LOG = Logger.getLogger(AbstractIndenter.class.getName());
+
+    protected static final boolean DEBUG = LOG.isLoggable(Level.FINE);
 
     public static boolean inUnitTestRun = false;
 
@@ -138,7 +142,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      * @return offset representing stable start for formatting
      */
     abstract protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset,
-            AbstractIndenter.OffsetRanges rangesToIgnore);
+            AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException;
 
     /**
      * Calculate and return list of indentation commands for the given line.
@@ -149,7 +153,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      *  is known about next line yet
      * @return list of indentation commands to apply when formatting this line
      */
-    abstract protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent);
+    abstract protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, 
+            List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException;
 
     /**
      * Is this whitespace token?
@@ -251,9 +256,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 //            }
 //        }
 
-        if (DEBUG) {
-            //System.err.println(">> TokenHierarchy of file to be indented:");
-            //System.err.println(org.netbeans.api.lexer.TokenHierarchy.get(doc));
+        // debug these only when FINER logging is requested - it clutters output
+        if (LOG.isLoggable(Level.FINER)) {
+            System.err.println(">> TokenHierarchy of file to be indented:");
+            System.err.println(org.netbeans.api.lexer.TokenHierarchy.get(doc));
         }
 
         // create chunks of our language from the document:
@@ -1058,7 +1064,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                 }
 
-                // firstNonWhite must e within our language:
+                // firstNonWhite must be within our language:
                 if (firstNonWhite < rowStartOffset) {
                     firstNonWhite = rowStartOffset;
                 }
@@ -1210,6 +1216,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         boolean beingFormatted = line != null ? line.index >= lineStart : false;
         int thisLineIndent = 0;
         List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
+        int preservedLineIndentation = -1;
 
         // iterate over indent commands for the given line and calculate line's indentation
         for (IndentCommand ii : currentLineIndents) {
@@ -1258,6 +1265,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 case PRESERVE_INDENTATION:
                     if (update) {
                         line.preserveThisLineIndent = true;
+                        // first formattable line (in indentation mode) should be
+                        // formatted even though it's got PRESERVE_INDENTATION command;
+                        // but only if fixed indent size for the command was set
+                        if (line.index == lineStart && ii.getFixedIndentSize() != -1 && context.isIndent()) {
+                            preservedLineIndentation = ii.getFixedIndentSize();
+                        }
                     }
                     break;
             }
@@ -1270,51 +1283,28 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         // check whether value needs to be adjusted:
         int lineIndentAdjustment = 0;
-        if (line == null) {
-            // we are checking preliminary indent: just use line adjustment from last line:
-            Line previousLine = findPreviousLine(lines, lines.get(lines.size()-1).index+1, true, true);
-            if (previousLine != null) {
-                lineIndentAdjustment = previousLine.indentationAdjustment;
-            }
-        } else if (!beingFormatted) {
-            if (!line.emptyLine && !isContinueLine(line)) {
-                // non empty line which is not continuation can be used to calculate
-                // line adjustment
-                //
-                // what is this line adjustment??
-                //
-                // it is difference between our calculated indentation and
-                // line's current indentation, eg.:
-                //
-                //                     CURRENT   CALCULATED   ADJUSTMENT
-                // 01:if (a) {         0         0            0
-                // 02: if (b) {        1         4            -3
-                // 03:  if (c)         2         8            -6
-                // 04:      smth();              12
-                //
-                // if only line 4 is being indented than calculated indent 12
-                // needs to be adjusted by -6 which is current-ident - calculated-indent
-                // of previous (non-empty and non-continuation) line (2 - 8 = -6);
-                // resulting indentation for line 4 will be 12 + (-6) = 6
-                //
-                lineIndentAdjustment = line.existingLineIndent - lineIndentation;
-            } else {
-                // find previous non-empty and non-continuation line and grab its line
-                // adjustment
-                Line previousNonEmptyNonContinueLine = findPreviousLine(lines, line.index, false, false);
-                if (previousNonEmptyNonContinueLine != null) {
-                    lineIndentAdjustment = previousNonEmptyNonContinueLine.indentationAdjustment;
-                }
-            }
-        } else if (line.index == lineStart) {
-            // this is first line being formatted so grab line adjustment from
-            // previous line
-            Line previousLine = findPreviousLine(lines, line.index, true, true);
-            if (previousLine != null) {
-                lineIndentAdjustment = previousLine.indentationAdjustment;
-            }
+        if (line != null && !line.preserveThisLineIndent && !beingFormatted && !line.emptyLine) {
+            // calculate line adjustment for this line
+            //
+            // what is this line adjustment??
+            //
+            // it is difference between our calculated indentation and
+            // line's current indentation, eg.:
+            //
+            //                     CURRENT   CALCULATED   ADJUSTMENT
+            // 01:if (a) {         0         0            0
+            // 02: if (b) {        1         4            -3
+            // 03:  if (c)         2         8            -6
+            // 04:      smth();              12
+            //
+            // if only line 4 is being indented than calculated indent 12
+            // needs to be adjusted by -6 which is current-ident - calculated-indent
+            // of previous (non-empty and non-continuation) line (2 - 8 = -6);
+            // resulting indentation for line 4 will be 12 + (-6) = 6
+            //
+            lineIndentAdjustment = line.existingLineIndent - lineIndentation;
         }
-
+        
         // update last command on line with lineIndentAdjustment. last command on
         // line represents overall line indentation and there should be adjusted
         IndentCommand ii = currentLineIndents.get(currentLineIndents.size()-1);
@@ -1331,6 +1321,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             line.indentation = lineIndentation;
             line.indentationAdjustment = lineIndentAdjustment;
         }
+
+        if (preservedLineIndentation != -1) {
+            // in this case override line's indentation:
+            line.indentation = preservedLineIndentation;
+            assert line.indentationAdjustment == 0;
+        }
+
         return currentLineIndents.get(currentLineIndents.size()-1).getCalculatedIndentation();
     }
 
@@ -1368,11 +1365,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return null;
     }
 
-    private Line findPreviousLine(List<Line> lines, int index, boolean canBeEmpty, boolean canBeContinue) {
+    private Line findPreviousLine(List<Line> lines, int index, 
+            boolean canBeEmpty, boolean canBeContinue, boolean canBePreserved) {
         for (int i = lines.size()-1; i>=0; i--) {
             Line l = lines.get(i);
             if (l.index < index) {
-                if ((canBeEmpty || !l.emptyLine) && (canBeContinue || !isContinueLine(l))) {
+                if ((canBeEmpty || !l.emptyLine) && (canBeContinue || !isContinueLine(l)) &&
+                        (canBePreserved || !l.preserveThisLineIndent)) {
                     return l;
                 }
             }
@@ -1455,7 +1454,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         indentedLines = generateBlockIndentsForForeignLanguage(indentedLines, suggestedIndentsForOtherLines);
 
         // set line indent for preserved lines:
-        updateIndentationForPreservedLines(indentedLines);
+        updateIndentationForPreservedLines(indentedLines, context.isIndent() ? lineStart : -1);
 
        // DEBUG info:
         if (DEBUG) {
@@ -1564,7 +1563,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return line;
     }
 
-    private void updateIndentationForPreservedLines(List<Line> indentedLines) throws BadLocationException {
+    private void updateIndentationForPreservedLines(List<Line> indentedLines, int lineToBeIndented) throws BadLocationException {
         // iterate through lines and ignore all lines with line.indentThisLine == false
         // search for line.preserveThisLineIndent and apply indent calculated using
         // last non-preserveThisLineIndent's line indent
@@ -1577,7 +1576,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (lineBeforePreserveIndent != null) {
                     int originalFirstLineIndent = IndentUtils.lineIndent(getDocument(), lineBeforePreserveIndent.offset);
                     int originalCurrentLineIndent = IndentUtils.lineIndent(getDocument(), line.offset);
-                    line.indentation = lineBeforePreserveIndent.indentation + (originalCurrentLineIndent-originalFirstLineIndent);
+                    // do not alter indentation of 'lineToBeIndented'
+                    if (lineToBeIndented == -1 || line.index != lineToBeIndented) {
+                        line.indentation = lineBeforePreserveIndent.indentation + (originalCurrentLineIndent-originalFirstLineIndent);
+                    }
                 } else {
                     assert false : "lineBeforePreserveIndent was not found: "+indentedLines;
                 }
@@ -1807,14 +1809,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     return true;
                 }
                 if (start >= or.getStart() && start <= or.getEnd()) {
+                    assert or.getEnd()+1 <= end : ""+start+"-"+end+" range="+or;
                     start = or.getEnd()+1;
                     changed = true;
-                    assert start < end;
                 }
                 if (end >= or.getStart() && end <= or.getEnd()) {
+                    assert start <= or.getStart()-1 : ""+start+"-"+end+" range="+or;
                     end = or.getStart()-1;
                     changed = true;
-                    assert start < end;
                 }
             }
             if (changed) {

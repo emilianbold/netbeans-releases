@@ -187,12 +187,22 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
             set.put(new PropertySupport[] {
                 new HudsonJobProperty(JOB_NAME,
                         NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Name"),
-                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Name"),
-                        true, false),
-                        new HudsonJobProperty(JOB_URL,
+                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Name")),
+                new HudsonJobProperty(JOB_URL,
                         NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Url"),
-                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url"),
-                        true, false)
+                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url")),
+                new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE,
+                        "Watched", // XXX I18N
+                        "Whether you wish to be notified of failures in this job.") { // XXX I18N
+                    public Boolean getValue() {
+                        return isSalient();
+                    }
+                    public void setValue(Boolean val) {
+                        if (!getValue().equals(val)) {
+                            instance.setSalient(HudsonJobImpl.this, val);
+                        }
+                    }
+                }
             });
         }
         
@@ -262,25 +272,17 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     public HudsonInstanceImpl getInstance() {
         return instance;
     }
+
+    public boolean isSalient() {
+        return instance.isSalient(this);
+    }
     
-    private class HudsonJobProperty extends PropertySupport<String> {
-        
-        private String key;
-        
-        public HudsonJobProperty(String key, String name, String desc, boolean read, boolean write) {
-            super(key, String.class, name, desc, read, write);
-            
-            this.key = key;
+    private class HudsonJobProperty extends PropertySupport.ReadOnly<String> {
+        public HudsonJobProperty(String key, String name, String desc) {
+            super(key, String.class, name, desc);
         }
-        
-        @Override
-        public void setValue(String value) {
-            putProperty(key, value);
-        }
-        
-        @Override
-        public String getValue() {
-            return properties.getProperty(key, String.class);
+        public @Override String getValue() {
+            return properties.getProperty(getName(), String.class);
         }
     }
 }

@@ -205,7 +205,7 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @param uri is the Namespace URI, or the empty string if the element has no Namespace URI or
      *        if Namespace processing is not being performed.
-     * @param localName is the The local name (without prefix), or the empty string if Namespace
+     * @param localName is the local name (without prefix), or the empty string if Namespace
      *        processing is not being performed.
      * @param qName is the qualified name (with prefix), or the empty string if qualified names are
      *        not available.
@@ -342,7 +342,7 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @param uri is the Namespace URI, or the empty string if the element has no Namespace URI or
      *        if Namespace processing is not being performed.
-     * @param localName is the The local name (without prefix), or the empty string if Namespace
+     * @param localName is the local name (without prefix), or the empty string if Namespace
      *        processing is not being performed.
      * @param qName is the qualified name (with prefix), or the empty string if qualified names are
      *        not available.
