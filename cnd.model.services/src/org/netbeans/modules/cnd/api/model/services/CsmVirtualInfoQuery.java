@@ -74,7 +74,8 @@ public abstract class CsmVirtualInfoQuery {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmVirtualInfoQuery getDefault() {
+    public static CsmVirtualInfoQuery getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultQuery != null) {
             return defaultQuery;
         }
