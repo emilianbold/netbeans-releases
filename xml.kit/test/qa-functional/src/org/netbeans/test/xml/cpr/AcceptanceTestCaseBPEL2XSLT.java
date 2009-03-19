@@ -79,7 +79,7 @@ import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.api.project.ProjectInformation;
+// import org.netbeans.api.project.ProjectInformation;
 import javax.swing.ListModel;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.awt.Rectangle;

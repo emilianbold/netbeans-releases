@@ -45,7 +45,7 @@ import junit.framework.TestSuite;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
-import org.netbeans.api.project.ProjectInformation;
+// import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
