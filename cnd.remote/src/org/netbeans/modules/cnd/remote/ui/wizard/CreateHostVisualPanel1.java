@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
