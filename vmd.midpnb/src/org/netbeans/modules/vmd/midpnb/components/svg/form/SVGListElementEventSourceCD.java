@@ -129,11 +129,15 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
                 new DeletePresenter() {
                     @Override
                     protected void delete() {
+                        if (getComponent().getParentComponent() == null) {
+                            return;
+                        }
                         PropertyValue arrayValue = getComponent().getParentComponent().readProperty(SVGListCD.PROP_ELEMENTS);
                         if (arrayValue.getArray() != null) {
                             for (PropertyValue value : arrayValue.getArray()) {
                                 if (value.getComponent() == getComponent()) {
                                     ArraySupport.remove(getComponent().getParentComponent(), SVGListCD.PROP_ELEMENTS, getComponent());
+                                    break;
                                 }
                             }
                         }
@@ -150,6 +154,9 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
                 // general
                 new GoToSourcePresenter () {
                     protected boolean matches (GuardedSection section) {
+                        if (getComponent().getParentComponent() == null) {
+                            return false;
+                        }
                         return MultiGuardedSection.matches(section, getComponent().getParentComponent().getComponentID() + "-getter" , 1); // NOI18N
                     }
                 }
