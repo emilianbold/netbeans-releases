@@ -293,7 +293,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             return;
         }
         
-        for (File file : files) {             
+        for (File file : files) {
+            file = FileUtil.normalizeFile(file);
             // collect files parents and store them for the refresh
             for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
                 FileObject fo;
