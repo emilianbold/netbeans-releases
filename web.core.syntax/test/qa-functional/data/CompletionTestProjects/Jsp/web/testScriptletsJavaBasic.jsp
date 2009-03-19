@@ -58,16 +58,18 @@ Card
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
 <%--CC
-<% LinkedList l = new LinkedList();l.|
+<% LinkedList l = new LinkedList();l.| %>
 void clear ()
-<% LinkedList l = new LinkedList();l.clear()
+<% LinkedList l = new LinkedList();l.clear(); %>
 --%>
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
 <%--CC
-<% org.test.TestBean t = new org.test.TestBean(); t.|
+<% org.test.TestBean t = new org.test.TestBean(); t.| %>
 void setName (String name )
-<% org.test.TestBean t = new org.test.TestBean(); t.setName(name)
+<% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>
 --%>
+
+
     </body>
 </html>
