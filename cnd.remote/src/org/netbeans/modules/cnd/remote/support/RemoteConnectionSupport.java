@@ -75,7 +75,12 @@ public abstract class RemoteConnectionSupport {
             boolean retry = false;
             do {
                 try {
-                    ConnectionManager.getInstance().connectTo(env, ui.getPassword().toCharArray(), false);
+                    String passwd = ui.getPassword();
+                    if (passwd == null) {
+                        ConnectionManager.getInstance().connectTo(env);
+                    } else {
+                        ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), false);
+                    }
                 } catch (IOException ex) {
                     log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
                     String msg = ex.getMessage();
