@@ -1401,7 +1401,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 if (keep) {
                     if (!pair.state.isCleaned()) {
-                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), null);
+                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
                 } else {
@@ -1461,7 +1461,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
                 if (!old.state.isCleaned()) {
-                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                 }
                 statesToKeep.add(old);
             } else {
@@ -1469,7 +1469,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (!old.pcState.isSubset(pcState)) {
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
-                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                     }
                     statesToKeep.add(old);
                 }
