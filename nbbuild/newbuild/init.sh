@@ -12,7 +12,9 @@ create_test_result() {
         FAILURES="$3"
     fi
 
-    FILE="$WORKSPACE/results/TEST-.$1.xml"
+    mkdir -p $WORKSPACE/results
+
+    FILE="$WORKSPACE/results/TEST-$1.xml"
     echo '<?xml version="1.0" encoding="UTF-8" ?>' >$FILE
     echo '<testsuite errors="0" failures="'$FAILURES'" name="'$1'" tests="1" time="1">' >>$FILE
     echo '  <properties>' >>$FILE
