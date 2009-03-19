@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.output2;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import junit.framework.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 
 /**
+ * Node for a single netbeans project.
  *
- * @author mkleint
+ * @author Jan Becicka
  */
-public class AbstractLinesTest extends TestCase {
+public class NbProjectNode extends LeafNode {
 
-    public AbstractLinesTest(String testName) {
-        super(testName);
+    private final NbProjectHandle prj;
+
+    private JLabel lbl;
+    private JPanel panel;
+
+    public NbProjectNode( NbProjectHandle prj, TreeListNode parent ) {
+        super( parent );
+        assert prj!=null;
+        this.prj = prj;
     }
 
-    public void testEscapePattern() throws Exception {
-        doTestSingle("[", "hello[world", "helloworld]");
-        doTestSingle("[a-z]", "hello[a-z]world", "helloworld");
-        doTestSingle("(abc*ef)", "xx(abc*ef)xx", "abcdef");
-        doTestSingle("(abc*ef", "xx(abc*efxx", "abcdef");
-        doTestSingle("^abc", "xx(^abc*efxx", "abcdef");
-        doTestSingle("\\d", "xx\\defxx", "8475");
+    @Override
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        if( panel == null ) {
+            panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            lbl= new JLabel(prj.getDisplayName(), prj.getIcon(), JLabel.HORIZONTAL);
+            lbl.setBorder(new EmptyBorder(0, 5, 0, 0));
+            lbl.setOpaque(false);
+            panel.add(lbl, BorderLayout.WEST);
+            final JPanel inner = new JPanel();
+            inner.setOpaque(false);
+            panel.add(inner, BorderLayout.CENTER);
+            panel.setOpaque(false);
+            panel.validate();
+        }
+        lbl.setForeground(foreground);
+        return panel;
     }
-    
-    private void doTestSingle(String find, String success, String failure) {
-        Pattern patt = AbstractLines.escapePattern(find);
-        assertTrue(patt.matcher(success).find());
-        assertFalse(patt.matcher(failure).find());
+
+    @Override
+    public ActionListener getDefaultAction() {
+        return SourceAccessor.getDefault().getDefaultAction(prj);
     }
-    
 }

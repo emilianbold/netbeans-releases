@@ -53,10 +53,13 @@ import java.lang.ref.SoftReference;
 import java.util.Vector;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbPreferences;
 
 class FindDialogPanel extends javax.swing.JPanel {
 
     static final long serialVersionUID =5048678953767663114L;
+    private static final String KEY_REGEXP = "regExp"; // NOI18N
+    private static final String KEY_MATCHCASE = "matchCase"; // NOI18N
 
     private static Reference<FindDialogPanel> panel = null;
     private JButton acceptButton;
@@ -64,8 +67,12 @@ class FindDialogPanel extends javax.swing.JPanel {
     
     /** Initializes the Form */
     FindDialogPanel() {
+        regExp = NbPreferences.forModule(Controller.class).getBoolean(KEY_REGEXP, false);
+        matchCase = NbPreferences.forModule(Controller.class).getBoolean(KEY_MATCHCASE, false);
         initComponents();
         acceptButton = new JButton();
+        Mnemonics.setLocalizedText(chbRegExp, NbBundle.getMessage(FindDialogPanel.class, "LBL_Use_RegExp"));
+        Mnemonics.setLocalizedText(chbMatchCase, NbBundle.getMessage(FindDialogPanel.class, "LBL_Match_Case"));
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(FindDialogPanel.class, "ACSN_Find"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FindDialogPanel.class, "ACSD_Find"));
@@ -73,12 +80,10 @@ class FindDialogPanel extends javax.swing.JPanel {
         acceptButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FindDialogPanel.class, "ACSD_FindBTN"));
 
         findWhat.setModel(new DefaultComboBoxModel(history));
-        findWhat.addActionListener(new ActionListener() {
+        findWhat.getEditor().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (e.getActionCommand().equals("comboBoxEdited")) { // NOI18N
-                    acceptButton.doClick();
-                }
+                acceptButton.doClick();
             }
         });
         findWhatLabel.setFocusable(false);
@@ -130,10 +135,13 @@ class FindDialogPanel extends javax.swing.JPanel {
 
         findWhatLabel = new javax.swing.JLabel();
         findWhat = new javax.swing.JComboBox();
+        chbRegExp = new javax.swing.JCheckBox();
+        chbMatchCase = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         findWhatLabel.setLabelFor(findWhat);
+        findWhatLabel.setText(org.openide.util.NbBundle.getMessage(FindDialogPanel.class, "LBL_Find_What")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -149,18 +157,36 @@ class FindDialogPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 50;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 5);
         add(findWhat, gridBagConstraints);
+
+        chbRegExp.setSelected(regExp());
+        chbRegExp.setText(org.openide.util.NbBundle.getMessage(FindDialogPanel.class, "LBL_Use_RegExp")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 5);
+        add(chbRegExp, gridBagConstraints);
+
+        chbMatchCase.setSelected(matchCase());
+        chbMatchCase.setText(org.openide.util.NbBundle.getMessage(FindDialogPanel.class, "LBL_Match_Case")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 5);
+        add(chbMatchCase, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox chbMatchCase;
+    private javax.swing.JCheckBox chbRegExp;
     protected javax.swing.JComboBox findWhat;
     protected javax.swing.JLabel findWhatLabel;
     // End of variables declaration//GEN-END:variables
 
 
-    String getPattern() {
+    private String getPattern() {
         return (String) findWhat.getSelectedItem();
     }
 
@@ -176,6 +202,10 @@ class FindDialogPanel extends javax.swing.JPanel {
         }
     }
 
+    private static String result;
+    private static boolean regExp;
+    private static boolean matchCase;
+
     static String getResult(String selection, String dlgTitle, String comboLabel, String buttonText) {
         final FindDialogPanel findPanel = getPanel();
         Mnemonics.setLocalizedText(findPanel.acceptButton, NbBundle.getMessage(FindDialogPanel.class, buttonText));
@@ -188,12 +218,30 @@ class FindDialogPanel extends javax.swing.JPanel {
         DialogDescriptor dd = new DialogDescriptor(findPanel, NbBundle.getMessage(FindDialogPanel.class, dlgTitle),
                 true, new Object[] {findPanel.acceptButton, DialogDescriptor.CANCEL_OPTION}, findPanel.acceptButton,
                 DialogDescriptor.RIGHT_ALIGN, null, null);
-        Object result = DialogDisplayer.getDefault().notify(dd);
-        if (result.equals(findPanel.acceptButton)) {
+        Object res = DialogDisplayer.getDefault().notify(dd);
+        if (res.equals(findPanel.acceptButton)) {
             findPanel.updateHistory();
-            return findPanel.getPattern();
+            regExp = findPanel.chbRegExp.getModel().isSelected();
+            matchCase  = findPanel.chbMatchCase.getModel().isSelected();
+            NbPreferences.forModule(FindDialogPanel.class).putBoolean(KEY_REGEXP, regExp);
+            NbPreferences.forModule(FindDialogPanel.class).putBoolean(KEY_MATCHCASE, matchCase);
+            result = findPanel.getPattern();
+            return result;
         } else {
+            result = null;
             return null;
         }
+    }
+
+    static String result() {
+        return result;
+    }
+
+    static boolean regExp() {
+        return regExp;
+    }
+
+    static boolean matchCase() {
+        return matchCase;
     }
 }
