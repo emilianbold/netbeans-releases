@@ -798,7 +798,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         boolean validRoot = false;
         for (int i = 0; i < roots.length; i++) {
             FileObject root = FileUtil.toFileObject(roots[i]);
-            if (fsv.isFloppyDrive(roots[i]) || !roots[i].exists()) {
+            if (!roots[i].exists()) {
                assertNull(root);
                continue; 
             }
