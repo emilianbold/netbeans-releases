@@ -126,11 +126,6 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         return false;
     }     
     
-    protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
-        return new APTMacroMapSnapshot(parent);
-    }
-
-    
     private static final class APTPredefinedMacroImpl implements APTMacro {
         private APTToken macro;
         

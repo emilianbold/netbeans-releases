@@ -64,5 +64,9 @@ public interface DataCollectorFactory<T extends DataCollectorConfiguration> {
      */
     String getID();
 
+    /**
+     * This method is invoked to notify new session will be started
+     * This can be used by the factory to reset some data
+     */
     public void reset();
 }
