@@ -1056,6 +1056,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             // note, currentButtonsPanel may be null
             if (currentButtonsPanel != null) {
                 currentButtonsPanel.revalidate();
+            }
+            if (currentButtonsPanel != null) {
                 currentButtonsPanel.repaint();
             }
             if (fo != null) fo.requestFocus();
