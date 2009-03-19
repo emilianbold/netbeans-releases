@@ -39,46 +39,57 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.openide.util.NbBundle;
 
 /**
- * Node for project's sources section.
+ * Node for a single netbeans project.
  *
- * @author S. Aubrecht, Jan Becicka
+ * @author Jan Becicka
  */
-public class SourceListNode extends SectionNode {
+public class NbProjectNode extends LeafNode {
 
-    public SourceListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    private final NbProjectHandle prj;
+
+    private JLabel lbl;
+    private JPanel panel;
+
+    public NbProjectNode( NbProjectHandle prj, TreeListNode parent ) {
+        super( parent );
+        assert prj!=null;
+        this.prj = prj;
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor accessor = SourceAccessor.getDefault();
-        List<SourceHandle> sources = accessor.getSources(project);
-        for (SourceHandle s : sources) {
-            res.add(new SourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this));
-            }
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        if( panel == null ) {
+            panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            lbl= new JLabel(prj.getDisplayName(), prj.getIcon(), JLabel.HORIZONTAL);
+            lbl.setBorder(new EmptyBorder(0, 5, 0, 0));
+            lbl.setOpaque(false);
+            panel.add(lbl, BorderLayout.WEST);
+            final JPanel inner = new JPanel();
+            inner.setOpaque(false);
+            panel.add(inner, BorderLayout.CENTER);
+            panel.setOpaque(false);
+            panel.validate();
         }
-        return res;
+        lbl.setForeground(foreground);
+        return panel;
     }
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this ) );
-        }
-        return res;
+    @Override
+    public ActionListener getDefaultAction() {
+        return SourceAccessor.getDefault().getDefaultAction(prj);
     }
 }
