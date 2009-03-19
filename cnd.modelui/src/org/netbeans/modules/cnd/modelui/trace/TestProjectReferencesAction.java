@@ -42,7 +42,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -170,7 +169,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             
         TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics,
                 (reportUnresolved == null) ? true : reportUnresolved.booleanValue()), out, err, new CsmProgressAdapter() {
-            private AtomicInteger handled = new AtomicInteger(0);
+            private volatile int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {
                 err.flush();
@@ -180,8 +179,8 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             }
 
             @Override
-            public void fileParsingStarted(CsmFile file) {
-                handle.progress("Analyzing " + file.getName(), handled.getAndIncrement()); // NOI18N
+            public synchronized void fileParsingStarted(CsmFile file) {
+                handle.progress("Analyzing " + file.getName(), ++handled); // NOI18N
             }
 
             @Override

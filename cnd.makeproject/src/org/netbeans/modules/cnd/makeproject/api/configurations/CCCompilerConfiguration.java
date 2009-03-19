@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class CCCompilerConfiguration extends CCCCompilerConfiguration implements AllOptionsProvider {
+public class CCCompilerConfiguration extends CCCCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
     // Constructors
     public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master) {
         super(baseDir, master);

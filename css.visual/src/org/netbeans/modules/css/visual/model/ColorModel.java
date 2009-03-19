@@ -79,7 +79,7 @@ public class ColorModel {
 
     public void setColor(String newColor){
         setColor(Color.BLACK);
-        if(newColor.startsWith(CssRuleContent.NOT_SET)){
+        if(newColor.startsWith(Utils.NOT_SET)){
             return;
         }else if(newColor.startsWith("#")){ //NOI18N
             // Hex Color - #FFFFFF
@@ -139,7 +139,7 @@ public class ColorModel {
     
     public class ColorList extends DefaultComboBoxModel{
         public ColorList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(Iterator iter=colorNameHexMap.keySet().iterator(); iter.hasNext();){
                 addElement(iter.next());
             }

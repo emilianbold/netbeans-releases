@@ -37,15 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * QueryPanel.java
- *
- * Created on Oct 14, 2008, 5:45:44 PM
- */
-
 package org.netbeans.modules.bugzilla.query;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -78,10 +71,13 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byLastChange;
     private JComponent tableComponent;
     private NoContentPanel noContentPanel;
+    private QueryController controller;
 
     /** Creates new form QueryPanel */
-    public QueryPanel(JComponent tableComponent) {
+    public QueryPanel(JComponent tableComponent, QueryController controller) {
         initComponents();
+        this.controller = controller;
+
         Font f = new JLabel().getFont();
         int s = f.getSize();
         nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -146,6 +142,18 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setRenderer(new FilterCellRenderer());
         validate();
         repaint();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        controller.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.removeNotify();
     }
 
     void setQueryRunning(boolean running) {

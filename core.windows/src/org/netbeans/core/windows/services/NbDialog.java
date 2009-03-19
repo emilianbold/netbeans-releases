@@ -46,11 +46,6 @@ import org.openide.util.HelpCtx;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.openide.WizardDescriptor;
-import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
 
 // XXx Before as org.netbeans.core.NbDialog
 
@@ -67,7 +62,6 @@ final class NbDialog extends NbPresenter {
     */
     public NbDialog (DialogDescriptor d, Frame owner) {
         super (d, owner, d.isModal ());
-        initGlassPane(d);
     }
 
     /** Creates a new Dialog from specified DialogDescriptor
@@ -76,7 +70,6 @@ final class NbDialog extends NbPresenter {
     */
     public NbDialog (DialogDescriptor d, Dialog owner) {
         super (d, owner, d.isModal ());
-        initGlassPane(d);
     }
 
     /** Geter for help.
@@ -105,144 +98,5 @@ final class NbDialog extends NbPresenter {
     @Override
     protected Object[] getClosingOptions () {
         return ((DialogDescriptor)descriptor).getClosingOptions ();
-    }
-
-    private GlassPane gp;
-    private void initGlassPane( DialogDescriptor dd ) {
-        if( !(dd instanceof WizardDescriptor) )
-            return;
-        WizardDescriptor wd = (WizardDescriptor) dd;
-        Object imageName = wd.getProperty("OverlayImageName"); //NOI18N
-        if( !(imageName instanceof String) )
-            return;
-        Image img = ImageUtilities.loadImage(imageName.toString(), true); //NOI18N
-        if( null == img )
-            return;
-        gp = new GlassPane(img);
-        setGlassPane( gp );
-    }
-
-    private static class GlassPane extends JComponent implements Runnable {
-        /** background image */
-        Image image;
-
-        /** helper variables for passing image between threads and painting
-         * methods */
-        Image tempImage;
-
-        /** helper variables for passing image between threads and painting
-         * methods */
-        Image image2Load;
-
-        /** true if loading of image is in progress, false otherwise */
-        boolean loadPending = false;
-
-        /** sync lock for image variables access */
-        private final Object IMAGE_LOCK = new Object();
-
-        /** Constrcuts panel with given image on background.
-         * @param im background image, null means default image
-         */
-        public GlassPane(Image im) {
-            loadImage(im);
-            setLayout(new BorderLayout());
-            setOpaque(false);
-            super.setVisible(true);
-        }
-
-        @Override
-        public void setVisible(boolean aFlag) {
-            //we want to be always visible
-        }
-
-        /** Overriden to paint backround image */
-        @Override
-        protected void paintComponent(Graphics g) {
-            if (image != null) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-                int y = getHeight() - image.getHeight(this) - 20;
-                g2d.drawImage(image, 20, y, this);
-            } else if (image2Load != null) {
-                loadImageInBackground(image2Load);
-                image2Load = null;
-            }
-        }
-
-        private void loadImage(Image im) {
-            // check image and just set variable if fully loaded already
-            MediaTracker mt = new MediaTracker(this);
-            mt.addImage(im, 0);
-
-            if (mt.checkID(0)) {
-                image = im;
-
-                if (isShowing()) {
-                    repaint();
-                }
-
-                return;
-            }
-
-            // start loading in background or just mark that loading should
-            // start when paint is invoked
-            if (isShowing()) {
-                loadImageInBackground(im);
-            } else {
-                synchronized (IMAGE_LOCK) {
-                    image = null;
-                }
-
-                image2Load = im;
-            }
-        }
-
-        private void loadImageInBackground(Image image) {
-            synchronized (IMAGE_LOCK) {
-                tempImage = image;
-
-                // coalesce with previous task if hasn't really started yet
-                if (loadPending) {
-                    return;
-                }
-
-                loadPending = true;
-            }
-
-            // 30ms is safety time to ensure code will run asynchronously
-            RequestProcessor.getDefault().post(this, 30);
-        }
-
-        /** Loads image stored in image2Load variable.
-         * Then invokes repaint when image is fully loaded.
-         */
-        public void run() {
-            Image localImage;
-
-            // grab value
-            synchronized (IMAGE_LOCK) {
-                localImage = tempImage;
-                tempImage = null;
-                loadPending = false;
-            }
-
-            // actually loads image
-            ImageIcon localImageIcon = new ImageIcon(localImage);
-            boolean shouldRepaint = false;
-
-            synchronized (IMAGE_LOCK) {
-                // don't commit results if another loading was started after us
-                if (!loadPending) {
-                    image = localImageIcon.getImage();
-
-                    // keep repaint call out of sync section
-                    shouldRepaint = true;
-                }
-            }
-
-            if (shouldRepaint) {
-                repaint();
-            }
-        }
     }
 }

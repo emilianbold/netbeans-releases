@@ -38,10 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -235,7 +232,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 int i;
                 StringBuilder sb = new StringBuilder();
 
-                while ((i = is.read()) != (int) '\n') {
+                while (true) {
+                    i = is.read();
+                    if (i < 0 || i == '\n') {
+                        break;
+                    }
                     sb.append((char) i);
                 }
 
@@ -265,39 +266,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         if (pid == null) {
             // was unable to get real pid
             setState(State.ERROR);
-
-            // Try to read stderr...
-            final InputStream errorStream = getErrorStream();
-            if (errorStream != null) {
-                Callable<Integer> readErrorTask = new Callable<Integer>() {
-
-                    public Integer call() {
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(errorStream));
-                        String s = null;
-                        try {
-                            while ((s = reader.readLine()) != null) {
-                                System.err.println(s);
-                            }
-                        } catch (IOException ex) {
-                        }
-
-                        return -1;
-                    }
-                };
-
-                Future<Integer> result =
-                        NativeTaskExecutorService.submit(readErrorTask,
-                        "Read error from " + id); // NOI18N
-                try {
-                    result.get(3, TimeUnit.SECONDS);
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                } catch (TimeoutException ex) {
-                    result.cancel(true);
-                }
-
-            }
         } else {
             setState(State.RUNNING);
         }
