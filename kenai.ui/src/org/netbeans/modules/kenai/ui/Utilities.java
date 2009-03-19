@@ -74,7 +74,7 @@ public class Utilities {
         return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
     }
 
-    public static boolean isLoggedIn() {
+    public static boolean isUserLoggedIn() {
         if (Kenai.getDefault().getPasswordAuthentication() == null) {
             return false;
         }

@@ -37,42 +37,31 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.java.j2seproject.api;
 
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
- *
- * @author Tomas Stupka
+ * Ability to verify whether the project is currently sharable, and if not to make it so.
+ * Will be in lookup of a j2seproject.
+ * @since org.netbeans.modules.java.j2seproject/1 1.24
  */
-public class KenaiQueryController extends QueryController {
-    private String product;
-    private boolean predefinedQuery;
+public interface J2SEProjectSharability {
 
-    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product, boolean predefinedQuery) {
-        super(repository, query, urlParameters);
-        this.product = product;
-        this.predefinedQuery = predefinedQuery;
-    }
+    /**
+     * Checks whether the project is currently sharable.
+     * @return true if it is self-contained, false if it has external file references
+     * @see AntProjectHelper#isSharableProject
+     */
+    boolean isSharable();
 
-    @Override
-    public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
-    }
-
-    @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        if(predefinedQuery) {
-            // overide - for predefined kenai queries are those always disabled
-            panel.modifyButton.setEnabled(false);
-            panel.removeButton.setEnabled(false);
-        }
-    }
-
+    /**
+     * Offers to make the project sharable.
+     * This should be called in EQ and just opens some GUI.
+     * The user may or may not proceed.
+     * @see SharableLibrariesUtils#showMakeSharableWizard
+     */
+    void makeSharable();
 
 }

@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.hudson.j2seproject;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -49,9 +52,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectSharability;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -63,21 +68,21 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
     @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=200)
     public static class Factory implements ProjectHudsonJobCreatorFactory {
         public ProjectHudsonJobCreator forProject(Project project) {
-            J2SEPropertyEvaluator eval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            if (eval == null) {
+            J2SEProjectSharability shar = project.getLookup().lookup(J2SEProjectSharability.class);
+            if (shar == null) {
                 return null;
             }
-            return new JobCreator(project, eval);
+            return new JobCreator(project, shar);
         }
     }
 
     private final Project project;
-    private final J2SEPropertyEvaluator eval;
+    private final J2SEProjectSharability shar;
     private final HudsonSCM.Configuration scm;
 
-    public JobCreator(Project project, J2SEPropertyEvaluator eval) {
+    public JobCreator(Project project, J2SEProjectSharability shar) {
         this.project = project;
-        this.eval = eval;
+        this.shar = shar;
         scm = Helper.prepareSCM(FileUtil.toFile(project.getProjectDirectory()));
         initComponents();
     }
@@ -90,13 +95,22 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         return this;
     }
 
-    public String error() {
+    public ConfigurationStatus status() {
         if (scm == null) {
             return Helper.noSCMError();
         }
-        // XXX check uiProperties.getProject().getAntProjectHelper().isSharableProject()
-        // (if false, try something like CustomizerLibraries.librariesBrowseActionPerformed)
-        return null;
+        if (!shar.isSharable()) {
+            String msg = "Global libraries should be copied to a dedicated libraries folder."; // XXX I18N
+            JButton button = new JButton();
+            Mnemonics.setLocalizedText(button, "&Copy Libraries..."); // XXX I18N
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    shar.makeSharable();
+                }
+            });
+            return ConfigurationStatus.withWarning(msg).withExtraButton(button);
+        }
+        return ConfigurationStatus.valid();
     }
 
     public void addChangeListener(ChangeListener listener) {}
