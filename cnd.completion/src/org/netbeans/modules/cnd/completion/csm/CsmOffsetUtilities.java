@@ -191,7 +191,7 @@ public class CsmOffsetUtilities {
             }
             // check if offset is before parameters
             CsmFunctionParameterList paramList = fun.getParameterList();
-//            if (paramList != null) {
+            if (paramList != null) {
                 if (CsmOffsetUtilities.isInObject(paramList, offset)) {
                     return true;
                 }
@@ -203,7 +203,7 @@ public class CsmOffsetUtilities {
                     }
                     return true;
                 }
-//            }
+            }
             // check initializer list for constructors
             if (CsmKindUtilities.isConstructor(fun)) {
                 Collection<CsmExpression> izers = ((CsmInitializerListContainer) fun).getInitializerList();

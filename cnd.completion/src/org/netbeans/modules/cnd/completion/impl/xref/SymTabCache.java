@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.csm;
+package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,55 +49,53 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
  *
  * @author Alexander Simon
  */
-public class SymTabCache {
-    private static ThreadLocal<Map<CacheEntry, Result>> threadCache = new ThreadLocal<Map<CacheEntry, Result>>();
+public final class SymTabCache {
 
-    private SymTabCache() {
+    private Map<CacheEntry, Result> cache = new HashMap<CacheEntry, Result>();
+
+    /*package-local*/ SymTabCache() {
     }
 
-    private static synchronized Map<CacheEntry, Result> getCache(){
-        Map<CacheEntry, Result> cache = threadCache.get();
-        if (cache == null) {
-            cache = new HashMap<CacheEntry, Result>();
-            threadCache.set(cache);
-        }
+    private Map<CacheEntry, Result> getCache(){
         return cache;
     }
 
-    /*package-local*/ static Result get(CacheEntry key){
+    public Result get(CacheEntry key){
         return getCache().get(key);
     }
 
-    /*package-local*/ static Result put(CacheEntry key, Result value){
+    public void clear(){
+        getCache().clear();
+    }
+
+    public Result put(CacheEntry key, Result value){
         return getCache().put(key, value);
     }
 
-    /*package-local*/ static void setScope(CsmUID uid){
-        Iterator<CacheEntry> it = SymTabCache.getCache().keySet().iterator();
+    public void setScope(CsmUID uid){
+        Iterator<CacheEntry> it = getCache().keySet().iterator();
         if (it.hasNext()) {
             CacheEntry entry = it.next();
             if (!entry.getScope().equals(uid)){
-                //System.err.println("Clear cache:"+entry.getScope());
-                //System.err.println("          ->"+uid);
-                SymTabCache.getCache().clear();
+                getCache().clear();
             }
         }
     }
 
-    /*package-local*/ static class CacheEntry {
+    public static final class CacheEntry {
         private int resolve;
         private int hide;
         private String name;
         private CsmUID scope;
 
-        /*package-local*/ CacheEntry(int resolve, int hide, String name, CsmUID scope){
+        public CacheEntry(int resolve, int hide, String name, CsmUID scope){
             this.resolve = resolve;
             this.hide = hide;
             this.name = name;
             this.scope = scope;
         }
 
-        /*package-local*/ CsmUID getScope(){
+        public CsmUID getScope(){
             return scope;
         }
 
