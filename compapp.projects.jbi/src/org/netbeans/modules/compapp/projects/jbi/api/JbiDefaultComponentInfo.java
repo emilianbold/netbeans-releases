@@ -324,6 +324,8 @@ public class JbiDefaultComponentInfo {
             JbiBindingInfo biinfo = new JbiBindingInfo(id, bindingType, icon, desc, ns);
             singleton.bindingInfoHash.put(id, biinfo);
             singleton.bindingInfoList.add(biinfo);
+        } else {
+            System.err.println("WARNING: missing icon for JBI binding component " + id);
         }
     }
     /**

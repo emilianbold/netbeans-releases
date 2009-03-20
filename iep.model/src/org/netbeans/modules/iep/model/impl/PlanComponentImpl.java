@@ -12,7 +12,6 @@ import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.w3c.dom.Element;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 
 public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 
@@ -24,6 +23,7 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
         super(model, element);
     }
     
+    @Override
     public IEPComponent createChild (Element childEl) {
         IEPComponent child = null;
         
@@ -34,7 +34,7 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
             }
             if (localName.equals(COMPONENT_CHILD)) {
                     String name = childEl.getAttribute("name");
-                    if(name != null) {
+                    if(name.length() != 0) {
                         if(name.equals(ModelConstants.COMPONENT_OPERATORS)) {
                             child = new OperatorComponentContainerImpl(getModel(), childEl);
                         } else if(name.equals(ModelConstants.COMPONENT_LINKS)) {
@@ -53,7 +53,8 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
         return child;
     }
     
-     public void accept(IEPVisitor visitor) {
+    @Override
+    public void accept(IEPVisitor visitor) {
         visitor.visitPlanComponent(this);
     }
      

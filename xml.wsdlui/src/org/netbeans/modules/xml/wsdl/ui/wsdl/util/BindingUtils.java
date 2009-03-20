@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -55,11 +54,11 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
-import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.wsdl.ui.wizard.PartnerLinkTypeGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.PortTypeGenerator;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -189,5 +188,10 @@ public class BindingUtils {
     
     public static QName getPartnerLinkTypeRoleQName() {
         return mPartnerLinkTypeRoleQName;
-    }    
+    }
+
+    public static String getPartnerLinkTypeComment() {
+        return NbBundle.getMessage(PartnerLinkTypeGenerator.class,
+                                "LBL_partnerLinkType_comment");
+    }
 }

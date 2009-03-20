@@ -235,6 +235,9 @@ public class DeployServiceAssembly extends Task {
         // 4/11/08, copy SA over to autodeploy directory if OSGi is enabled
         Project p = this.getProject();
         String osgisupport = p.getProperty(JbiProjectProperties.OSGI_SUPPORT);
+
+        // 02/04/09, IZ#153580, disable fuji deployment
+        /*
         if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
             
             String osgiDirPath = 
@@ -265,7 +268,8 @@ public class DeployServiceAssembly extends Task {
                 }
             }
             return;
-        }            
+        }
+        */
             
         if (serviceAssemblyID != null && 
                 serviceAssemblyID.equals("${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}")) {
