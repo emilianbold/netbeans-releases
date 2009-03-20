@@ -37,48 +37,59 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.kenai.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.api.RecentProjects;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
- * Node for project's sources section.
  *
- * @author S. Aubrecht, Jan Becicka
+ * @author Jan Becicka
  */
-public class SourceListNode extends SectionNode {
+public class RecentProjectsCache {
 
-    public SourceListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    private static RecentProjectsCache instance;
+    private HashMap<URL, NbProjectHandleImpl> map = new HashMap<URL, NbProjectHandleImpl>();
+
+    public static synchronized RecentProjectsCache getDefault() {
+        if (instance==null) {
+            instance = new RecentProjectsCache();
+        }
+        return instance;
     }
 
-    @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor accessor = SourceAccessor.getDefault();
-        List<SourceHandle> sources = accessor.getSources(project);
-        for (SourceHandle s : sources) {
-            res.add(new SourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this));
+    public NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
+        NbProjectHandleImpl handle = map.get(url);
+        if (handle==null) {
+            for (Project p: OpenProjects.getDefault().getOpenProjects()) {
+                if (p.getProjectDirectory().getURL().equals(url)) {
+                    handle = new NbProjectHandleImpl(p);
+                    map.put(url, handle);
+                    break;
+                }
+            }
+            for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
+                if (i.getURL().equals(url)) {
+                    handle = new NbProjectHandleImpl(i);
+                    map.put(url, handle);
+                    break;
+                }
+
             }
         }
-        return res;
+        return handle;
     }
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this ) );
-        }
-        return res;
+    public NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
+        NbProjectHandleImpl nbph = new NbProjectHandleImpl(p);
+        map.put(p.getProjectDirectory().getURL(), nbph);
+        return nbph;
     }
+
 }
