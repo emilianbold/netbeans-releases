@@ -198,12 +198,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
   }
 
   public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
-    try {
       return stackStorage.getHotSpotFunctions(metric, limit);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-      return new ArrayList<FunctionCall>();
-    }
   }
 
   @Override

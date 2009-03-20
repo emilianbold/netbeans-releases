@@ -47,6 +47,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -182,31 +183,35 @@ public class SQLStackStorage {
         return result;
     }
 
-    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) throws SQLException {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-        PreparedStatement select = sqlStorage.prepareStatement(
-            "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
-            "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
-        select.setMaxRows(limit);
-        ResultSet rs = select.executeQuery();
-        while (rs.next()) {
-            Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            String func_name = rs.getString(2);
-            if (demanglingService != null){
-                try {
-                    func_name = demanglingService.demangle(func_name).get();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
+    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit){
+        try{
+            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            PreparedStatement select = sqlStorage.prepareStatement(
+                "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
+                "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
+            select.setMaxRows(limit);
+            ResultSet rs = select.executeQuery();
+            while (rs.next()) {
+                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                String func_name = rs.getString(2);
+                if (demanglingService != null){
+                    try {
+                        func_name = demanglingService.demangle(func_name).get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
             }
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
-        }
-        rs.close();
-        return result;
+            rs.close();
+            return result;
+        }catch(SQLException ex){
+        }                    
+        return Collections.emptyList();
     }
 
 ////////////////////////////////////////////////////////////////////////////////
