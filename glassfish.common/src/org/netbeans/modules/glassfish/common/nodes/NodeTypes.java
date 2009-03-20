@@ -45,7 +45,7 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 public class NodeTypes {
     
-    private static HashMap nodeTree;
+    private static HashMap<String, String[]> nodeTree;
 
     public static final String APPLICATIONS = "APPLICATIONS";
     public static final String EARS = "EARS";
@@ -65,7 +65,7 @@ public class NodeTypes {
         GlassfishModule.CONN_RESOURCE, GlassfishModule.CONN_CONNECTION_POOL, GlassfishModule.ADMINOBJECT_RESOURCE };
     
     static {
-        nodeTree = new HashMap();
+        nodeTree = new HashMap<String, String[]>();
         nodeTree.put(APPLICATIONS, APPLICATIONS_TREE);
         nodeTree.put(RESOURCES, RESOURCES_TREE);
         nodeTree.put(GlassfishModule.JDBC, JDBC_TREE);
@@ -83,7 +83,7 @@ public class NodeTypes {
      * @return All the children types for the node name passed.
      */
     static String[] getChildTypes(String type){
-        return (String[]) nodeTree.get(type);
+        return nodeTree.get(type);
     }
         
 }
