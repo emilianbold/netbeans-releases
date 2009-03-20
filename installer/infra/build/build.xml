@@ -430,7 +430,7 @@
                 prefix="swdp"/>
 	    -->
             <get
-                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_07/archive/fcs/b12/bundles/"
+                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_07-ml/archive/fcs/latest/bundles/"
                 dest="${temp.file}"/>
 	    <sjsam-buildnumber
 	        file="${temp.file}" 
