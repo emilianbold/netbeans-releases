@@ -325,22 +325,14 @@ public class ArchetypeWizardUtils {
         if (fDir != null) {
             // the archetype generation didn't fail.
             resultSet.add(fDir);
-            addJavaRootFolders(fDir);
+            processProjectFolder(fDir);
             // Look for nested projects to open as well:
             Enumeration e = fDir.getFolders(true);
             while (e.hasMoreElements()) {
                 FileObject subfolder = (FileObject) e.nextElement();
                 if (ProjectManager.getDefault().isProject(subfolder)) {
                     resultSet.add(subfolder);
-                    addJavaRootFolders(subfolder);
-                }
-            }
-            Project prj = ProjectManager.getDefault().findProject(fDir);
-            if (prj != null) {
-                NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-                if (nbprj != null) { //#147006 how can this happen?
-                    // maybe when the archetype contains netbeans specific project files?
-                    prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    processProjectFolder(subfolder);
                 }
             }
         }
@@ -348,7 +340,7 @@ public class ArchetypeWizardUtils {
         return resultSet;
     }
 
-    private static void addJavaRootFolders(FileObject fo) {
+    private static void processProjectFolder(FileObject fo) {
         try {
             Project prj = ProjectManager.getDefault().findProject(fo);
             if (prj == null) { //#143596
@@ -369,6 +361,7 @@ public class ArchetypeWizardUtils {
                         file.mkdirs();
                     }
                 }
+                watch.downloadDependencyAndJavadocSource();
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -382,6 +375,7 @@ public class ArchetypeWizardUtils {
         if (earDirFO == null) {
             return;
         }
+        //TODO this will save the file twice - suboptimal
         if (ejbVi != null) {
             // EAR ---> ejb
             ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.getGroupId(), //NOI18N

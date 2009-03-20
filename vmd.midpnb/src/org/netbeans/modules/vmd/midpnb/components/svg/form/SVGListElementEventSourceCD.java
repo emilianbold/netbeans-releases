@@ -77,6 +77,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.w3c.dom.svg.SVGElement;
 
 public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
@@ -104,7 +105,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP)
+                new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP)
         );
     }
 
@@ -118,7 +119,8 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InspectorPositionPresenter.class);
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, true, true);
+        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, SVGListCD.PROP_ELEMENTS);
         super.gatherPresenters(presenters);
     }
@@ -129,18 +131,22 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
                 new DeletePresenter() {
                     @Override
                     protected void delete() {
+                        if (getComponent().getParentComponent() == null) {
+                            return;
+                        }
                         PropertyValue arrayValue = getComponent().getParentComponent().readProperty(SVGListCD.PROP_ELEMENTS);
                         if (arrayValue.getArray() != null) {
                             for (PropertyValue value : arrayValue.getArray()) {
                                 if (value.getComponent() == getComponent()) {
                                     ArraySupport.remove(getComponent().getParentComponent(), SVGListCD.PROP_ELEMENTS, getComponent());
+                                    break;
                                 }
                             }
                         }
                     }
                 },
                 // info
-                InfoPresenter.create(new SVGListElementresolver()),
+                InfoPresenter.create(SVGElementSupport.createListElementInfoResolver()),
                 //properties
                 createPropertiesPresenter(),
                 //flow
@@ -150,6 +156,9 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
                 // general
                 new GoToSourcePresenter () {
                     protected boolean matches (GuardedSection section) {
+                        if (getComponent().getParentComponent() == null) {
+                            return false;
+                        }
                         return MultiGuardedSection.matches(section, getComponent().getParentComponent().getComponentID() + "-getter" , 1); // NOI18N
                     }
                 }
@@ -157,7 +166,8 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     }
 
     private static String getName(DesignComponent component) {
-        return (String) component.readProperty(PROP_STRING).getPrimitiveValue();
+        
+        return MidpValueSupport.getHumanReadableString (component.readProperty (PROP_STRING));
     }
 
     private class SVGListElementresolver implements InfoPresenter.Resolver {
@@ -171,6 +181,9 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         }
 
         public boolean isEditable(DesignComponent component) {
+            if (component.readProperty(PROP_STRING).getKind() == PropertyValue.Kind.USERCODE) {
+                return false;
+            }
             return true;
         }
 
@@ -179,6 +192,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         }
 
         public void setEditableName(DesignComponent component, String enteredName) {
+            component.writeProperty(PROP_STRING, MidpTypes.createStringValue(enteredName));
         }
 
         public Image getIcon(DesignComponent component, IconType iconType) {
@@ -195,7 +209,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         }
 
         protected String getDisplayName() {
-            return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
+            return getName(getComponent());
         }
 
         protected String getOrder() {
@@ -204,6 +218,9 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
         @Override
         protected boolean canRename () {
+            if (getComponent().readProperty(PROP_STRING).getKind() == PropertyValue.Kind.USERCODE) {
+                return false;
+            }
             return getComponent () != null;
         }
 

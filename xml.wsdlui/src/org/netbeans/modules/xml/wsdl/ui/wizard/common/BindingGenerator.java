@@ -50,8 +50,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard.common;
 
-import org.netbeans.modules.xml.wsdl.ui.wizard.*;
-import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,6 +74,8 @@ import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
+import org.netbeans.modules.xml.wsdl.ui.wizard.Command;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WsdlGenerationUtil;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 

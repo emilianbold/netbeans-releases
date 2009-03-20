@@ -85,8 +85,10 @@ import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
+import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -438,6 +440,11 @@ public class CosChecker implements PrerequisitesChecker {
                     if ("jpda.stopclass".equals(entry.getKey())) {//NOI18N
                         continue;
                     }
+                    if (DefaultReplaceTokenProvider.METHOD_NAME.equals(entry.getKey())) {
+                        params.put("methodname", entry.getValue()); // NOI18N
+                        actionName = ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ? SingleMethod.COMMAND_RUN_SINGLE_METHOD : SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
+                        continue;
+                    }
                     //TODO do these have preference to ones defined in surefire plugin?
                     if (!jvmPropNames.contains((String) entry.getKey())) {
                         jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
@@ -697,9 +704,9 @@ public class CosChecker implements PrerequisitesChecker {
             return JavaRunner.QUICK_RUN;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             return JavaRunner.QUICK_DEBUG;
-        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
+        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST;
-        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST_DEBUG;
         }
         assert false : "Cannot convert " + actionName + " to quick actions.";

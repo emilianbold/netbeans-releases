@@ -43,15 +43,13 @@ package org.netbeans.modules.compapp.projects.jbi.api;
 
 import org.openide.filesystems.FileObject;
 
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 
-import java.net.URL;
 import java.util.*;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -141,10 +139,10 @@ public class JbiInstalledProjectPluginInfo {
      */
     public static boolean isInternalSubproject(Project parent, Project child) {
         if ((parent != null) && (child != null)) {
-            String pPath = parent.getProjectDirectory().getPath();
-            String cPath = child.getProjectDirectory().getPath();
-            if ((pPath != null) && (cPath != null)) {
-                return cPath.startsWith(pPath);
+            FileObject jbiPrjDir = parent.getProjectDirectory();
+            FileObject projDir = child.getProjectDirectory();
+            if (FileUtil.isParentOf(jbiPrjDir, projDir)) {
+                return true;
             }
         }
         return false;
