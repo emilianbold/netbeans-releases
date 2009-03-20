@@ -464,6 +464,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (dobj == null) {
             dobj = EditorContextBridge.getContext().getMostRecentDataObject();
         }
+        if (dobj == null) {
+            return false;
+        }
         try {
             return dobj.equals(DataObject.find(getFileObject()));
         } catch(DataObjectNotFoundException doe) {
