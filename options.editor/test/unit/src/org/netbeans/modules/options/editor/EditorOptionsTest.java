@@ -73,6 +73,7 @@ public class EditorOptionsTest extends NbTestCase {
             new URL[] {
                 getClass().getClassLoader().getResource("org/netbeans/modules/options/editor/mf-layer.xml"),
                 getClass().getClassLoader().getResource("org/netbeans/modules/options/keymap/mf-layer.xml"),
+                getClass().getClassLoader().getResource("org/netbeans/modules/options/editor/test-layer.xml"),
             },
             getWorkDir(),
             new Object[] {},
