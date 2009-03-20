@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -60,7 +61,7 @@ public class NbProjectNode extends LeafNode {
 
     private final NbProjectHandle prj;
 
-    private JLabel lbl;
+    private LinkButton btn;
     private JPanel panel;
 
     public NbProjectNode( NbProjectHandle prj, TreeListNode parent ) {
@@ -71,20 +72,14 @@ public class NbProjectNode extends LeafNode {
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if( panel == null ) {
-            panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            lbl= new JLabel(prj.getDisplayName(), prj.getIcon(), JLabel.HORIZONTAL);
-            lbl.setBorder(new EmptyBorder(0, 5, 0, 0));
-            lbl.setOpaque(false);
-            panel.add(lbl, BorderLayout.WEST);
-            final JPanel inner = new JPanel();
-            inner.setOpaque(false);
-            panel.add(inner, BorderLayout.CENTER);
+        if (null == panel) {
+            panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
-            panel.validate();
+            btn = new LinkButton(prj.getDisplayName(), prj.getIcon(), getDefaultAction()); //NOI18N
+            panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 25, 0, 0), 0, 0));
+            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
-        lbl.setForeground(foreground);
+        btn.setForeground(foreground, isSelected);
         return panel;
     }
 
