@@ -44,7 +44,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.mercurial.api.Mercurial;
@@ -88,14 +88,14 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             
             final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
-            final KenaiProjectFeature feature = sourcesInfo.feature;
+            final KenaiFeature feature = sourcesInfo.feature;
 
             if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
-                            Subversion.checkoutRepositoryFolder(feature.getLocation().toExternalForm(), sourcesInfo.relativePaths,
+                            Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
                                 new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
 
                         } catch (MalformedURLException ex) {
@@ -108,7 +108,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                     public void run() {
                         try {
 
-                            Mercurial.cloneRepository(feature.getLocation().toExternalForm(), new File(sourcesInfo.localFolderPath),
+                            Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
                             
                         } catch (MalformedURLException ex) {

@@ -71,7 +71,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -200,7 +200,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     Iterator<KenaiService> serviceIter = services.iterator();
                     while (serviceIter.hasNext()) {
                         KenaiService service = serviceIter.next();
-                        if (service.getType() == KenaiFeature.SOURCE) {
+                        if (service.getType() == Type.SOURCE) {
                             repoList.add(service);
                         }
                     }
@@ -208,7 +208,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     while (serviceIter.hasNext()) {
 
                         KenaiService service = serviceIter.next();
-                        if (service.getType() == KenaiFeature.ISSUES) {
+                        if (service.getType() == Type.ISSUES) {
                             issuesList.add(service);
                         }
                     }
