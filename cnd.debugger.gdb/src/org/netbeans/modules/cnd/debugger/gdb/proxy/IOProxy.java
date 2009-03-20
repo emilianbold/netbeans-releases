@@ -336,7 +336,7 @@ public abstract class IOProxy {
             String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp.run(execEnv, "sh -c \"mkfifo " + name + ";echo " + name + "\"", null) == 0) { // NOI18N
-                return cp.getOutput();
+                return cp.getOutput().trim();
             }
             return null;
         }
