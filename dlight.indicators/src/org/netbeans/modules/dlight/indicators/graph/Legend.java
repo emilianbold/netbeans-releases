@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -66,8 +67,8 @@ public class Legend extends JPanel {
 
         setBackground(GraphColors.LEGEND_COLOR);
         setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-        setMinimumSize(new java.awt.Dimension(80, 80));
-        setPreferredSize(new java.awt.Dimension(80, 80));
+        setMinimumSize(new Dimension(80, 60));
+        setPreferredSize(new Dimension(80, 60));
 
         for (GraphDescriptor descriptor : descriptors) {
             JLabel label = new JLabel(descriptor.getDescription(), new ColorIcon(descriptor.getColor()), SwingConstants.LEADING);
