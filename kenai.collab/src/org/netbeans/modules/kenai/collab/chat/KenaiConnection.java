@@ -275,7 +275,12 @@ public class KenaiConnection implements PropertyChangeListener {
                         tryConnect();
                     } else {
                         for (MultiUserChat muc : getChats()) {
-                            muc.leave();
+                            try {
+                                muc.leave();
+                            } catch (IllegalStateException e) {
+                                //we can ignore exceptions on logout
+                                XMPPLOG.log(Level.FINE, null, e);
+                            }
                         }
                         chats.clear();
                         connection.disconnect();

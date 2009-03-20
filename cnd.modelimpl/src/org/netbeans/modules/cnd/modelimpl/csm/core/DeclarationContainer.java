@@ -58,7 +58,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
@@ -78,6 +77,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Storage for project or namespace declarations.
@@ -126,8 +126,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         return EMPTY;
     }
 
-    public void removeDeclaration(CsmDeclaration decl) {
+    public void removeDeclaration(CsmOffsetableDeclaration decl) {
         CharSequence uniqueName = CharSequenceKey.create(decl.getUniqueName());
+        CsmUID<CsmOffsetableDeclaration> anUid = RepositoryUtils.put(decl);
         Object o = null;
         try {
             declarationsLock.writeLock().lock();
@@ -141,7 +142,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                 int k = size;
                 for (int i = 0; i < size; i++) {
                     CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                    if (isSameFile(uid, (CsmOffsetableDeclaration) decl)) {
+                    if (UIDUtilities.isSameFile(uid, anUid)) {
                         uids[i] = null;
                         k--;
                     } else {
@@ -175,7 +176,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         put();
     }
 
-    private void removeFriend(CsmDeclaration decl) {
+    private void removeFriend(CsmOffsetableDeclaration decl) {
         if (CsmKindUtilities.isFriendClass(decl)) {
             CsmFriendClass cls = (CsmFriendClass) decl;
             CharSequence name = CharSequenceKey.create(cls.getName());
@@ -215,7 +216,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[]) o;
                 boolean find = false;
                 for (int i = 0; i < uids.length; i++) {
-                    if (isSameFile(uids[i], uid)) {
+                    if (UIDUtilities.isSameFile(uids[i], uid)) {
                         uids[i] = uid;
                         find = true;
                         break;
@@ -233,7 +234,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             } else if (o instanceof CsmUID) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>) o;
-                if (isSameFile(oldUid, uid)) {
+                if (UIDUtilities.isSameFile(oldUid, uid)) {
                     declarations.put(name, uid);
                 } else {
                     CsmUID[] uids = new CsmUID[]{uid, oldUid};
@@ -468,25 +469,5 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private void read(DataInput aStream) throws IOException {
         UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(declarations, aStream, UniqueNameCache.getManager());
-    }
-
-    private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
-        return isSameFile(uid1.getObject(), uid2.getObject());
-    }
-
-    private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmOffsetableDeclaration decl2) {
-        return isSameFile(uid1.getObject(), decl2);
-    }
-
-    private boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2) {
-        if (decl1 != null && decl2 != null) {
-            CsmFile file1 = decl1.getContainingFile();
-            CsmFile file2 = decl2.getContainingFile();
-            if (file1 != null && file2 != null) {
-                return file1.equals(file2);
-            }
-        }
-        // assert?
-        return false;
     }
 }

@@ -495,7 +495,7 @@ public final class TargetExecutor implements Runnable {
         handle.start();
         setEnabledEQ(sa, true);
         setEnabledEQ(ra, false);
-        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle);
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
         
         } finally {
             if (io != null) {

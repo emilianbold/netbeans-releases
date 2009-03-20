@@ -110,4 +110,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#154792 : Completion fails on question mark
         performTest("iz154792.cpp", 6, 34, "iz154792.cpp", 2, 5);
     }
+
+    public void test151619() throws Exception {
+        // IZ#151619 : completion parser fails on complex template instantiation
+        performTest("iz151619.cpp", 6, 14, "iz151619.cpp", 3, 5);
+        performTest("iz151619.cpp", 7, 14, "iz151619.cpp", 3, 5);
+    }
 }

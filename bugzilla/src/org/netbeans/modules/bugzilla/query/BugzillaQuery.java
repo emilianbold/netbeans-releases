@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -75,9 +74,7 @@ public class BugzillaQuery extends Query {
     private boolean firstRun = true;
 
     public BugzillaQuery(BugzillaRepository repository) {
-        super();
-        this.repository = repository;
-        controller = createControler(repository, this, urlParameters);
+        this(null, repository, null, false, -1);
     }
 
     protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
@@ -90,13 +87,18 @@ public class BugzillaQuery extends Query {
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {
-        this(repository);
+        this(name, repository, urlParameters, true, lastRefresh);
+    }
+
+    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh) {
+        this.repository = repository;
+        this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
         this.setLastRefresh(lastRefresh);
-        this.saved = true;
+        controller = createControler(repository, this, urlParameters);
     }
-    
+
     @Override
     public String getDisplayName() {
         return name;

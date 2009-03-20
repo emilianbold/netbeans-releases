@@ -51,7 +51,7 @@ import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class KenaiSupportImpl extends KenaiSupport {
 
@@ -61,8 +61,10 @@ public class KenaiSupportImpl extends KenaiSupport {
             return null;
         }
         KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
-        for (KenaiProjectFeature f : features) {
-            if(!f.getName().equals("bz")) { // XXX constant?                // NOI18N
+        for (KenaiProjectFeature f : features) {            
+            if(!f.getName().equals("bz") && 
+               !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
+            {
                 return null;
             }
             String host = f.getLocation().getHost();

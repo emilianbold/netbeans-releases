@@ -43,23 +43,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.openide.awt.HtmlBrowser;
 
 /**
  *
@@ -126,6 +131,11 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     public ActionListener getFindIssueAction(ProjectHandle project) {
         final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
+            // XXX dummy jira impl to open the jira page in a browser
+            ActionListener l = getJiraListener(project);
+            if(l != null) {
+                return l;
+            }
             return null;
         }
         return new ActionListener() {
@@ -144,6 +154,11 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     public ActionListener getCreateIssueAction(ProjectHandle project) {
         final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
+            // XXX dummy jira impl to open the jira page in a browser
+            ActionListener l = getJiraListener(project);
+            if(l != null) {
+                return l;
+            }
             return null;
         }
         return new ActionListener() {
@@ -213,4 +228,50 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             }
         }
     }
+
+    private ActionListener getJiraListener(ProjectHandle handle) {
+        KenaiProject project = KenaiRepositories.getKenaiProject(handle);
+        if(project == null) {
+            return null;
+        }
+        KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
+        String jiraUrl= null;
+        for (KenaiProjectFeature f : features) {
+            if(!f.getName().equals("jira") &&
+               !f.getLocation().toString().contains("kenai.com/jira")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
+            {
+                return null;
+            }
+            // http://testkenai.com/jira/secure/CreateIssue!default.jspa?pname=
+
+            jiraUrl = f.getLocation().toString();
+            break;
+        }
+        if(jiraUrl == null) {
+            return null;
+        }
+        final URL url;
+        try {
+            url = new URL(jiraUrl);
+        } catch (MalformedURLException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                        if (displayer != null) {
+                            displayer.showURL (url);
+                        } else {
+                            // XXX nice error message?
+                            BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
+                        }
+                    }
+                });
+            }
+        };
+    }
+
 }

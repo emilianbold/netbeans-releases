@@ -45,4 +45,19 @@ public abstract class SourceAccessor {
      */
     //maybe same as 'get'?
     public abstract ActionListener getDefaultAction( SourceHandle source );
+
+    /**
+     * Get default action for project. Typically opens it.
+     * @param prj
+     * @return default action on Project
+     */
+    public abstract ActionListener getDefaultAction( NbProjectHandle prj );
+
+    /**
+     * Default action for "other" link
+     * Should open project chooser
+     * @param src
+     * @return
+     */
+    public abstract ActionListener getOpenOtherAction(SourceHandle src);
 }

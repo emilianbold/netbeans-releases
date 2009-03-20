@@ -19,6 +19,7 @@
 
 chown_dir=$1
 unpack_dir=$2
+jdk_home=$3
 set -e
 
 echo Changing ownership for $chown_dir
@@ -31,7 +32,7 @@ for x in `find . -name \*.jar.pack` ; do
     if [ -f "$jar" ] ; then
         continue
     fi
-    /System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/unpack200 $x $jar
+    $jdk_home/bin/unpack200 $x $jar
     chmod `stat -f %Lp $x` $jar && touch -r $x $jar
     rm $x
 done

@@ -83,6 +83,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -154,8 +155,8 @@ public class BridgeImpl implements BridgeInterface {
         return null;
     }
     
-    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err,
-                       Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle) {
+    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties,
+            int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
         if (!classpathInitialized) {
             classpathInitialized = true;
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
@@ -184,7 +185,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback, handle);
+        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback, handle, io);
         Vector<String> targs;
         try {
             project = new Project();

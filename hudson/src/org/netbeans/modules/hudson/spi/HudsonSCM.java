@@ -51,6 +51,7 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.util.Utilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -134,6 +135,14 @@ public interface HudsonSCM {
         public static String xpath(String expr, Element xml) {
             // XXX just move to some other API package?
             return Utilities.xpath(expr, xml);
+        }
+
+        /**
+         * Just notify the user that a diff will be shown for a given path.
+         * @param path a path, probably somehow repo-relative
+         */
+        public static void noteWillShowDiff(String path) {
+            StatusDisplayer.getDefault().setStatusText("Loading diff for " + path + "..."); // XXX I18N
         }
 
         /**
