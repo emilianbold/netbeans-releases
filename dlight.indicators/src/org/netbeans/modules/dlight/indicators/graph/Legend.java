@@ -36,76 +36,84 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
+import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 /**
- * Convenient base class for indicator components.
+ * Graph legend.
  *
  * @author Alexey Vladykin
  */
-public abstract class AbstractIndicatorPanel extends JPanel {
+public class Legend extends JPanel {
 
-    protected static final Color TEXT_COLOR = new Color(49, 78, 114);
-    protected static final Color BORDER_COLOR = new Color(114, 138, 132);
+    public Legend(List<GraphDescriptor> descriptors, List<GraphDetail> details) {
+        super(new GridBagLayout());
 
-    protected AbstractIndicatorPanel() {
-        initComponents();
-    }
+        setBackground(GraphColors.LEGEND_COLOR);
+        setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        setMinimumSize(new java.awt.Dimension(80, 80));
+        setPreferredSize(new java.awt.Dimension(80, 80));
 
-    private void initComponents() {
-        setLayout(new GridBagLayout());
-        GridBagConstraints c;
+        for (GraphDescriptor descriptor : descriptors) {
+            JLabel label = new JLabel(descriptor.getDescription(), new ColorIcon(descriptor.getColor()), SwingConstants.LEADING);
+            label.setForeground(GraphColors.TEXT_COLOR);
+            label.setFont(label.getFont().deriveFont(10f));
+            GridBagConstraints c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.weightx = 1.0;
+            c.insets = new Insets(4, 4, 0, 4);
+            add(label, c);
+        }
 
-        JLabel label = new JLabel(getTitle());
-        label.setFont(label.getFont().deriveFont(label.getFont().getStyle() | java.awt.Font.BOLD));
-        label.setForeground(TEXT_COLOR);
-        c = new java.awt.GridBagConstraints();
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 1.0;
-        c.insets = new Insets(12, 12, 0, 12);
-        add(label, c);
-
-        JComponent graph = createGraph();
-        graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(100, 80));
-        graph.setPreferredSize(new Dimension(100, 80));
-
-        c = new GridBagConstraints();
-        c.fill = java.awt.GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        c.insets = new java.awt.Insets(6, 12, 12, 0);
-        add(graph, c);
-
-        JComponent legendPanel = createLegend();
-        legendPanel.setBackground(Color.WHITE);
-        legendPanel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        legendPanel.setMinimumSize(new Dimension(100, 80));
-        legendPanel.setPreferredSize(new Dimension(100, 80));
-
-        c = new GridBagConstraints();
-        c.fill = java.awt.GridBagConstraints.BOTH;
-        c.weighty = 1.0;
-        c.insets = new java.awt.Insets(6, -1, 12, 12);
-        add(legendPanel, c);
+        add(Box.createVerticalGlue(), c);
     }
 
-    protected abstract String getTitle();
+    private static class ColorIcon implements Icon {
 
-    protected abstract JComponent createGraph();
+        private static final int WIDTH = 10;
+        private static final int HEIGHT = 10;
+        private final Color color;
 
-    protected abstract JComponent createLegend();
+        public ColorIcon(Color color) {
+            this.color = color;
+        }
 
+        public int getIconWidth() {
+            return WIDTH;
+        }
+
+        public int getIconHeight() {
+            return HEIGHT;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setPaint(color);
+            g2.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
+            g2.setPaint(GraphColors.BORDER_COLOR);
+            g2.drawRect(x, y, WIDTH - 1, HEIGHT - 1);
+        }
+    }
 }

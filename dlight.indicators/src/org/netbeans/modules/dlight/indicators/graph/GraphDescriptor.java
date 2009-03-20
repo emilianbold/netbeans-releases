@@ -4,12 +4,19 @@ import java.awt.Color;
 
 public class GraphDescriptor {
 
-    public final Color color;
-    public final String description;
+    private final Color color;
+    private final String description;
 
     public GraphDescriptor(Color color, String description) {
-        super();
         this.color = color;
         this.description = description;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }
