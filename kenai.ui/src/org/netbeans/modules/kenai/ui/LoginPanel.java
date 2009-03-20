@@ -67,12 +67,14 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar.setVisible(false);
         error.setText(ex.getMessage());
         error.setVisible(true);
+        validate();
     }
 
     public void showProgress() {
         errorProgress.setVisible(true);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        validate();
     }
 
     /** This method is called from within the constructor to
