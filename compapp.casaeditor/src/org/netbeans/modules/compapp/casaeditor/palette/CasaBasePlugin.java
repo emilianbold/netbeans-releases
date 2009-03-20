@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
@@ -100,6 +99,8 @@ public class CasaBasePlugin implements CasaPalettePlugin {
                             bi.getIcon().getFile());
                     item.setDataObject(bi.getBindingComponentName()); // set the component name
                     bcItems.add(item);
+                } else {
+                    System.err.println("WARNING: JBI binding component template for " + bindingType + " is undefined.");
                 }
             }
         }

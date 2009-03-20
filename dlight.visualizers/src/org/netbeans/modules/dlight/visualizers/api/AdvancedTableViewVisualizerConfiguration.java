@@ -32,6 +32,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
 
     private final SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
     private final String nodeColumnName;
+    private final String nodeRowColumnID;
     private final DataTableMetadata dataTableMetadata;
     private NodeActionsProvider nodeActionProvider;
     private TableModel tableModelImpl;
@@ -46,11 +47,13 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
      * 
      * @param dataTableMetadata
      * @param nodeColumnName
+     * @param nodeRowColumnID 
      */
     public AdvancedTableViewVisualizerConfiguration(DataTableMetadata dataTableMetadata,
-        String nodeColumnName) {
+        String nodeColumnName, String nodeRowColumnID) {
         this.dataTableMetadata = dataTableMetadata;
         this.nodeColumnName = nodeColumnName;
+        this.nodeRowColumnID = nodeRowColumnID;
     }
 
     public void setEmptyRunningMessage(String emptyRuntimeMessage) {
@@ -89,6 +92,10 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
 
     String getNodeColumnName() {
         return nodeColumnName;
+    }
+
+    String getRowColumnID(){
+        return nodeRowColumnID;
     }
 
     TableModel getTableModel() {
@@ -168,6 +175,11 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         @Override
         public String getNodeColumnName(AdvancedTableViewVisualizerConfiguration configuration) {
             return configuration.getNodeColumnName();
+        }
+
+        @Override
+        public String getRowNodeColumnName(AdvancedTableViewVisualizerConfiguration configuration) {
+            return configuration.getRowColumnID();
         }
 
         @Override

@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -73,7 +74,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
  * @author Nick Krasilnikov
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver.class)
-public class IncludeResolverImpl extends CsmIncludeResolver {
+public final class IncludeResolverImpl extends CsmIncludeResolver {
+    private final Set<String> standardHeaders;
 
     public IncludeResolverImpl() {
         standardHeaders = new HashSet<String>();
@@ -171,8 +173,6 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
-    private HashSet<String> standardHeaders;
-    
     // Says is header standard or not
     private boolean isStandardHeader(List<String> sysIncsPaths, CsmFile header) {
         String bestSystemPath = getRelativePath(sysIncsPaths, header.getAbsolutePath().toString());

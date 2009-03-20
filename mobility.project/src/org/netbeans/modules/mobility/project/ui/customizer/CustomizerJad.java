@@ -522,8 +522,8 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
             assert data != null;
             map1 = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[0];
             map2 = data[1] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[1];
-            updateItemsFromMaps();
             map3 = data[2] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[2];
+            updateItemsFromMaps();
             fireTableDataChanged();
         }
         

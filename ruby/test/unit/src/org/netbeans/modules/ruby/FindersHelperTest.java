@@ -64,7 +64,7 @@ public class FindersHelperTest extends TestCase {
 
     public void testGetScopedBy() {
         List<FinderMethod> result =
-                FindersHelper.getFinderSignatures(FindersHelper.SCOPED_BY, Arrays.asList("name", "title"));
+                FindersHelper.getFinderSignatures("scoped_by_", Arrays.asList("name", "title"));
 
         assertEquals(4, result.size());
         // scoped_by methods should not have the *options hash
@@ -123,6 +123,18 @@ public class FindersHelperTest extends TestCase {
             }
         }
         return false;
+    }
+
+    public void testIsFinderMethod() {
+        assertTrue(FindersHelper.isFinderMethod("find_by_name"));
+        assertTrue(FindersHelper.isFinderMethod("find_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_all_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_last_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("scoped_by_title"));
+        assertTrue(FindersHelper.isFinderMethod("find"));
+
+        assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
+        assertFalse(FindersHelper.isFinderMethod("findery"));
     }
 
     public void testNextAttributeLocation() {

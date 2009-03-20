@@ -93,9 +93,9 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
     }
     
     public void disconnect() {
-        if (support != null) {
-            support.disconnect();
-        }
+//        if (support != null) {
+//            support.disconnect();
+//        }
     }
 
     public int waitFor() {

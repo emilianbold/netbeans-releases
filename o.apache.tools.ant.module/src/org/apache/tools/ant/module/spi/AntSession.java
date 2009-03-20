@@ -44,6 +44,8 @@ package org.apache.tools.ant.module.spi;
 import java.io.File;
 import java.net.URL;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
+import org.openide.windows.IOColors;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -221,6 +223,15 @@ public final class AntSession {
      */
     public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
         return impl.createStandardHyperlink(file, message, line1, column1, line2, column2);
+    }
+
+    /**
+     * Obtains the I/O handle for advanced operations such as {@link IOColors}.
+     * @return an I/O handle
+     * @since org.apache.tools.ant.module/3 3.35
+     */
+    public InputOutput getIO() {
+        return impl.getIO();
     }
     
     @Override

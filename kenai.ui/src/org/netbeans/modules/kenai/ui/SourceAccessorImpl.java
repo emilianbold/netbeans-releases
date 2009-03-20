@@ -39,26 +39,37 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JFileChooser;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Milan Kubec
+ * @author Milan Kubec, Jan Becicka
  */
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor {
@@ -78,12 +89,12 @@ public class SourceAccessorImpl extends SourceAccessor {
             // XXX
             Exceptions.printStackTrace(ex);
         }
-        KenaiProjectFeature features[] = null;
+        KenaiFeature features[] = null;
         if (project != null) {
-            features = project.getFeatures(KenaiFeature.SOURCE);
+            features = project.getFeatures(Type.SOURCE);
         }
-        for (KenaiProjectFeature feature : features) {
-            SourceHandle srcHandle = new SourceHandleImpl(feature);
+        for (KenaiFeature feature : features) {
+            SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
             handlesList.add(srcHandle);
             handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature));
         }
@@ -102,12 +113,68 @@ public class SourceAccessorImpl extends SourceAccessor {
         return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle));
     }
 
+    @Override
+    public ActionListener getDefaultAction(final NbProjectHandle prj) {
+        return new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                Project project = ((NbProjectHandleImpl) prj).getProject();
+                if (project!=null)
+                    OpenProjects.getDefault().open(new Project[]{project}, false);
+            }
+        };
+    }
+
+    @Override
+    public ActionListener getOpenOtherAction(final SourceHandle src) {
+
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ProjectChooser.setProjectsFolder(((SourceHandleImpl) src).getWorkingDirectory());
+                JFileChooser chooser = ProjectChooser.projectChooser();
+                chooser.setMultiSelectionEnabled(true);
+
+                int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow()); // Sow the chooser
+
+                if (option == JFileChooser.APPROVE_OPTION) {
+
+                    final File[] projectDirs;
+                    if (chooser.isMultiSelectionEnabled()) {
+                        projectDirs = chooser.getSelectedFiles();
+                    } else {
+                        projectDirs = new File[]{chooser.getSelectedFile()};
+                    }
+
+                    ArrayList<Project> projects = new ArrayList<Project>(projectDirs.length);
+                    for (File d : projectDirs) {
+                        try {
+                            Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
+                            projects.add(p);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    Project projectsArray[] = new Project[projects.size()];
+                    projects.toArray(projectsArray);
+
+
+                    OpenProjects.getDefault().open(
+                            projectsArray, // Put the project into OpenProjectList
+                            false);
+                }
+            }
+        };
+    }
+
     public static class ProjectAndFeature {
 
         public String projectName;
-        public KenaiProjectFeature feature;
+        public KenaiFeature feature;
 
-        public ProjectAndFeature(String name, KenaiProjectFeature ftr) {
+        public ProjectAndFeature(String name, KenaiFeature ftr) {
             projectName = name;
             feature = ftr;
         }

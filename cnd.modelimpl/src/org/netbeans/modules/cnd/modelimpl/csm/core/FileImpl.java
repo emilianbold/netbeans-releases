@@ -172,6 +172,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int errorCount = 0;
+    private int lastParseTime;
 
     public static enum State {
 
@@ -360,11 +361,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (handlers == DUMMY_HANDLERS) {
             handlers = getPreprocHandlers();
         }
+        long time;
         synchronized (stateLock) {
             switch (stateRef.get()) {
                 case INITIAL:
                 case PARTIAL:
                     state = State.BEING_PARSED;
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             _parse(preprocHandler);
@@ -380,6 +383,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }  // if not, someone marked it with new state
                         }
                         stateLock.notifyAll();
+                        lastParseTime = (int)(System.currentTimeMillis() - time);
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
@@ -388,6 +393,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 case MODIFIED:
                     state = State.BEING_PARSED;
                     boolean first = true;
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             if (first) {
@@ -408,6 +414,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         }
                         postParse();
                         stateLock.notifyAll();
+                        lastParseTime = (int)(System.currentTimeMillis() - time);
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
@@ -434,6 +442,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // FIXUP: there should be a notificator per project instead!
             Notificator.instance().reset();
         }
+    }
+
+    // returns parse/rearse time in milliseconds.
+    int getLastParseTime(){
+        return lastParseTime;
     }
 
     public boolean validate() {
@@ -1585,6 +1598,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
+        output.writeInt(lastParseTime);
         output.writeByte((byte)state.ordinal());
         try {
             staticLock.readLock().lock();
@@ -1619,6 +1633,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
         lastParsed = input.readLong();
+        lastParseTime = input.readInt();
         state = State.values()[input.readByte()];
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);

@@ -718,6 +718,9 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(nativeProjectFolder.getAbsolutePath()); // NOI18N
+            if (manualCA){
+                provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N
+            }
             map.put(DiscoveryWizardDescriptor.PROVIDER, provider);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
             DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);

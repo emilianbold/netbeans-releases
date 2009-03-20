@@ -98,7 +98,8 @@ public abstract class CsmFileReferences {
       /** Static method to obtain the CsmFileReferences implementation.
     * @return the resolver
     */
-   public static synchronized CsmFileReferences getDefault() {
+   public static CsmFileReferences getDefault() {
+       /*no need for sync synchronized access*/
        if (DEFAULT != null) {
            return DEFAULT;
        }

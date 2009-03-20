@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Andrei Badea
@@ -69,6 +70,7 @@ public class EarProviderTest extends NbTestCase {
      * Tests that the deployment descriptor and beans are returned correctly.
      */
     public void testPathsAreReturned() throws Exception {
+        MockLookup.setLayersAndInstances();
         File f = new File(getDataDir().getAbsolutePath(), "projects/EnterpriseApplication1");
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         EarProject earProject = project.getLookup().lookup(EarProject.class);

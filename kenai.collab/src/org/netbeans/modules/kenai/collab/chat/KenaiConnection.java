@@ -61,8 +61,8 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
 import org.openide.util.Exceptions;
@@ -275,7 +275,12 @@ public class KenaiConnection implements PropertyChangeListener {
                         tryConnect();
                     } else {
                         for (MultiUserChat muc : getChats()) {
-                            muc.leave();
+                            try {
+                                muc.leave();
+                            } catch (IllegalStateException e) {
+                                //we can ignore exceptions on logout
+                                XMPPLOG.log(Level.FINE, null, e);
+                            }
                         }
                         chats.clear();
                         connection.disconnect();
@@ -307,7 +312,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiProject prj) {
-         return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
+         return prj.getFeatures(KenaiService.Type.CHAT)[0].getName();
     }
 
     //TODO: my projects does not work so far

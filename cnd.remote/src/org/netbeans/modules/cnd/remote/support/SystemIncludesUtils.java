@@ -157,7 +157,9 @@ public class SystemIncludesUtils {
             }
 
             handle.progress(getMessage("SIU_Archiving") + " " + path, workunit++); // NOI18N
-            copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            RemoteCommandSupport rcs = new RemoteCommandSupport(copySupport.getExecutionEnvironment(), 
+                    "zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            rcs.run();
             handle.progress(getMessage("SIU_Downloading") + " " + path, workunit++); // NOI18N
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
@@ -165,7 +167,7 @@ public class SystemIncludesUtils {
             cleanupList.add(zipLocalPath);
             log.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N            
         }
-        copySupport.disconnect();
+//        copySupport.disconnect();
         for (String toDelete : cleanupList) {
             new File(toDelete).delete();
         }

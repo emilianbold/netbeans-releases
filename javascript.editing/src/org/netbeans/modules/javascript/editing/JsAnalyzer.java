@@ -322,8 +322,11 @@ public class JsAnalyzer implements StructureScanner {
                                 Node setNode = getPropertyNode.getParentNode();
                                 if (setNode.getType() == Token.SETPROP) {
                                     Node propertyNode = getPropertyNode.getNext();
+                                    if (propertyNode == null) {
+                                        break;
+                                    }
 
-                                    if (!Character.isLowerCase(propertyNode.getString().charAt(0))) {
+                                    if (propertyNode == null || !Character.isLowerCase(propertyNode.getString().charAt(0))) {
                                         break;
                                     }
 

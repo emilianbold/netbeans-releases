@@ -238,8 +238,13 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                             String message = "Will not load class " + name + " arbitrarily from one of " +
                                     cls.getClassLoader() + " and " + pcl + " starting from " + this +
                                     "; see http://wiki.netbeans.org/DevFaqModuleCCE";
-                            LOGGER.warning(message);
-                            throw new ClassNotFoundException(message);
+                            ClassNotFoundException cnfe = new ClassNotFoundException(message);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(Level.FINE, null, cnfe);
+                            } else {
+                                LOGGER.warning(message);
+                            }
+                            throw cnfe;
                         }
                     }
                 }

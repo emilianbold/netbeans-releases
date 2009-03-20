@@ -161,7 +161,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, type);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.WARNING); // NOI18N
+                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
             }
         }
         return template;
@@ -174,7 +174,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.WARNING); // NOI18N
+                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
             }
         }
         return template;
@@ -976,7 +976,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     } else {
                         classifier = originalType.getClassifier();
                     }
-                    if (CsmKindUtilities.isTemplate(classifier)) {
+                    if (CsmKindUtilities.isTemplate(classifier) &&
+                            !CsmKindUtilities.isTemplateParameter(classifier)) {
                         resolved = (CsmClassifier)Class.create(
                                 (CsmTemplate)classifier, instantiation.getMapping());
                         return resolved;

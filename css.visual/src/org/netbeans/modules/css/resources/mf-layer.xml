@@ -95,6 +95,12 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">
+
+                <file name="org-netbeans-modules-css-editor-CssCaretAwareSourceTask$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                
+
                 <folder name="Popup">
                     <file name="CssSeparator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

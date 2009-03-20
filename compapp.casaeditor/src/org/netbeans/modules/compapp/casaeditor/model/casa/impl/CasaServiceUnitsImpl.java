@@ -40,22 +40,13 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.Casa;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaBindingComponentServiceUnit;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaBindings;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnections;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPortTypes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegions;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceUnits;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServices;
 import org.w3c.dom.Element;
 
 /**

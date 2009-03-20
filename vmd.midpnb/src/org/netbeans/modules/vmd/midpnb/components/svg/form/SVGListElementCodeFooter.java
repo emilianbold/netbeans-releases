@@ -78,7 +78,13 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
                 continue;
             }
             Integer index = array.indexOf(value);
-            String string = (String) array.get(index).getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue().toString();
+            PropertyValue stringValue = array.get(index).getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING);
+            String string = null;
+            if (stringValue.getKind() == PropertyValue.Kind.USERCODE) {
+                string = stringValue.getUserCode();
+            } else {
+                string = (String) stringValue.getPrimitiveValue().toString();
+            }
             if (!initBlock) {
                 section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".addActionListener(new SVGActionListener() {\n"); //NOI18N
                 section.getWriter().write("public void actionPerformed(SVGComponent svgComponent) {\n");// NOI18N

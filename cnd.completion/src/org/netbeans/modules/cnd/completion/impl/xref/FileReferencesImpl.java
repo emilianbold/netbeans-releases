@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmExpandedTokenProcess
  * @author Sergey Grinev
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileReferences.class)
-public class FileReferencesImpl extends CsmFileReferences  {
+public final class FileReferencesImpl extends CsmFileReferences  {
 
     public FileReferencesImpl() {
         /*System.err.println("FileReferencesImpl registered");

@@ -58,7 +58,7 @@ public interface DocumentComponent<C extends DocumentComponent> extends Componen
     Element getPeer();
 
     /**
-     * @return string value of the given attribute.
+     * @return attribute string value or null if the attribute is currently undefined
      */
     String getAttribute(Attribute attribute);
     

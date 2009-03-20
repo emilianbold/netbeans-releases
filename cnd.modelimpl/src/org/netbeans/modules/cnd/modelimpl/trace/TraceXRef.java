@@ -257,8 +257,9 @@ public class TraceXRef extends TraceModel {
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
-        RequestProcessor rp = new RequestProcessor("TraceXRef", params.reportUnresolved ? 1 : Runtime.getRuntime().availableProcessors()); // NOI18N
+        RequestProcessor rp = new RequestProcessor("TraceXRef", params.numThreads); // NOI18N
         final CountDownLatch waitFinished = new CountDownLatch(allFiles.size());
+        long time = System.nanoTime();
         for (final CsmFile file : allFiles) {
             Runnable task = new Runnable() {
                 public void run() {
@@ -285,6 +286,7 @@ public class TraceXRef extends TraceModel {
         }
         try {
             waitFinished.await();
+            bag.setTime(System.nanoTime() - time);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -363,7 +365,16 @@ public class TraceXRef extends TraceModel {
             CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
-        out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
+        // get line num
+        CharSequence text = file.getText();
+        int lineCount = 1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\n') {
+                lineCount++;
+            }
+        }
+        bag.incrementLineCounter(lineCount);
+        out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
     }
 
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
@@ -438,7 +449,13 @@ public class TraceXRef extends TraceModel {
                                     CharSequence text = ref.getText();
                                     UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                                     if (unres == null) {
-                                        unres = new UnresolvedEntry(text, new RefLink(ref));
+                                        RefLink refLink;
+                                        if (params.reportUnresolved) {
+                                            refLink = new RefLink(ref);
+                                        } else {
+                                            refLink = null;
+                                        }
+                                        unres = new UnresolvedEntry(text, refLink);
                                         bag.addUnresolvedEntry(text, unres);
                                     }
                                     unres.increment();
@@ -803,6 +820,11 @@ public class TraceXRef extends TraceModel {
                 allUnresolvedPoints, unresolvedRatio, numMacroBasedUnresolvedPoints, unresolvedMacroBasedRatio,
                 numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio); // NOI18N
         printOut.println(unresolvedStatistics);
+        String performanceStatistics = String.format("Line count: %d, time %.0f ms, \nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
+        printOut.println(performanceStatistics);
+        if (!params.reportUnresolved) {
+            return;
+        }
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
             if (allUnresolvedPoints > 0) {
@@ -1089,15 +1111,12 @@ public class TraceXRef extends TraceModel {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
         public final boolean reportUnresolved;
-
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith) {
-            this(kinds, analyzeSmartAlgorith, true);
-        }
-
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved) {
+        public final int numThreads;
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
+            this.numThreads = numThreads;
         }
     }
 

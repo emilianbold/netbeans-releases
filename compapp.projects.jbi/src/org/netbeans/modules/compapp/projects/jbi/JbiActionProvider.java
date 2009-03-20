@@ -237,6 +237,8 @@ public class JbiActionProvider implements ActionProvider {
                     
                     // 4/11/08 OSGi support
                     Boolean osgiSupport = (Boolean) properties.get(JbiProjectProperties.OSGI_SUPPORT);
+                    // 02/04/09, IZ#153580, disable fuji deployment
+                    /*
                     if (osgiSupport) {
                         String osgiContainerDir = (String) properties.get(JbiProjectProperties.OSGI_CONTAINER_DIR);
                         if (osgiContainerDir == null || osgiContainerDir.trim().length() == 0) {
@@ -247,10 +249,10 @@ public class JbiActionProvider implements ActionProvider {
                             DialogDisplayer.getDefault().notify(d);
                             return;
                         }
-                    } else if (!JbiManager.isSelectedServer(project)) {
+                    } else*/ if (!JbiManager.isSelectedServer(project)) {
                         return;
                     }
-
+                    
                     // IZ#133733 Missing WSIT call back project when deploying CompApp                    
                     if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
                         command.equals(JbiProjectConstants.COMMAND_REDEPLOY)) {
@@ -351,33 +353,22 @@ public class JbiActionProvider implements ActionProvider {
                 }
 
 
-                final JbiBuildListener jbiBuildListener = getBuildListener(command);
+                JbiBuildListener jbiBuildListener = getBuildListener(command);
 
                 try {
-                    final ExecutorTask executorTask =
+                    ExecutorTask executorTask =
                             ActionUtils.runTarget(findBuildXml(), targetNames, p);
 
                     if (jbiBuildListener != null) {
-                        JbiBuildTask buildTask = new JbiBuildTask() {
-
-                            public boolean isFinished() {
-                                return executorTask.isFinished();
-                            }
-
-                            public int getResult() {
-                                return executorTask.result();
-                            }
-                        };
-                        jbiBuildListener.buildStarted(buildTask);
-
-                        executorTask.addTaskListener(new TaskListener() {
-
-                            public void taskFinished(Task task) {
-                                jbiBuildListener.buildCompleted(executorTask.result() == 0);
-                            }
-                        });
+                        jbiBuildListener.buildStarted();
                     }
 
+                    executorTask.waitFinished();
+                    
+                    if (jbiBuildListener != null) {
+                        jbiBuildListener.buildCompleted(executorTask.result() == 0);
+                    }
+                    
 //            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
 //                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
 //                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 

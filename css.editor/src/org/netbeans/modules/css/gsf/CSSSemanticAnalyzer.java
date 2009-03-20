@@ -47,6 +47,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -91,7 +92,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
 //
 //        ParserResult presult = presultIterator.next();
 //        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CSSGSFParserResult) result).root();
+        SimpleNode root = ((CssParserResult) result).root();
         final Snapshot snapshot = result.getSnapshot();
         
         if(root == null) {

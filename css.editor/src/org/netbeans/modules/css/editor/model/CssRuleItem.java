@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.css.editor.model;
 
-import javax.swing.text.BadLocationException;
-
 /**
  * An immutable representation of a css rule item eg.:
  *
@@ -52,12 +50,16 @@ import javax.swing.text.BadLocationException;
  */
 public final class CssRuleItem {
 
-    private Item key;
-    private Item value;
+    public Item key;
+    public Item value;
 
     //offset of colon key-value separator and ending semicolon of the item
     private int colon_offset;
     private int semicolon_offset;
+
+    public CssRuleItem(String key, String value) {
+        this(key, -1, value, -1, -1, -1);
+    }
 
     CssRuleItem(String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) {
         this.key = new Item(key, keyOffset);
@@ -76,6 +78,7 @@ public final class CssRuleItem {
         return value;
     }
 
+    @Override
     public String toString() {
         return "CssRuleItem[" + key + "; " + value + "]"; //NOI18N
     }
@@ -102,6 +105,10 @@ public final class CssRuleItem {
         private String name;
         private int offset;
 
+        public Item(String name) {
+            this(name, -1);
+        }
+
         Item(String name, int offset)  {
             this.name = name;
             this.offset = offset;
@@ -117,6 +124,7 @@ public final class CssRuleItem {
             return offset;
         }
 
+        @Override
         public String toString() {
             return "Item[" + name + "; " + offset + "]"; //NOI18N
         }

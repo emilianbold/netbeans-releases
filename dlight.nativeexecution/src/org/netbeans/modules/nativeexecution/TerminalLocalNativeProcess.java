@@ -62,86 +62,93 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
-    private final File pidFile;
+    private final String pidFileName;
     private final Process termProcess;
-//    private final PipedInputStream pin = new PipedInputStream();
-//    private final PipedOutputStream pout = new PipedOutputStream(pin);
 
 
     static {
+        isWindows = Utilities.isWindows();
+        String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
         File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
-        dorunScript = file.toString();
-        isWindows = Utilities.isWindows();
+        if (file != null) {
+            runScript = file.toString();
 
-        if (!isWindows) {
-            try {
-                new ProcessBuilder("/bin/chmod", "+x", dorunScript).start().waitFor(); // NOI18N
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (!isWindows) {
+                try {
+                    new ProcessBuilder("/bin/chmod", "+x", runScript).start().waitFor(); // NOI18N
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
+
+        dorunScript = runScript;
     }
 
     public TerminalLocalNativeProcess(final ExternalTerminal t,
             final NativeProcessInfo info) throws IOException {
         super(info);
 
-        ExternalTerminal terminal = t;
+        if (dorunScript == null) {
+            //throw new IOException("dorun not found"); // NOI18N
+            processError = new ByteArrayInputStream(
+                    "unable to start process in an external terminal - dorun script not found".getBytes()); // NOI18N
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processInput = null;
+            pidFileName = null;
+            termProcess = null;
+        } else {
+            ExternalTerminal terminal = t;
 
-        final String commandLine = info.getCommandLine();
-        final String workingDirectory = info.getWorkingDirectory(true);
-        final File wdir =
-                workingDirectory == null ? null : new File(workingDirectory);
+            final String commandLine = info.getCommandLine();
+            final String workingDirectory = info.getWorkingDirectory(true);
+            final File wdir =
+                    workingDirectory == null ? null : new File(workingDirectory);
 
-        pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
-        pidFile.deleteOnExit();
+            File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
+            pidFile.deleteOnExit();
 
-        String pidFileName = pidFile.toString();
+            String pidFName = pidFile.toString();
 
-        final ExternalTerminalAccessor terminalInfo =
-                ExternalTerminalAccessor.getDefault();
+            final ExternalTerminalAccessor terminalInfo =
+                    ExternalTerminalAccessor.getDefault();
 
-        if (terminalInfo.getTitle(terminal) == null) {
-            terminal = terminal.setTitle(commandLine);
+            if (terminalInfo.getTitle(terminal) == null) {
+                terminal = terminal.setTitle(commandLine);
+            }
+
+            String cmd = commandLine;
+
+            if (isWindows) {
+                pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+            }
+
+            pidFileName = pidFName;
+
+            List<String> command = terminalInfo.wrapCommand(
+                    info.getExecutionEnvironment(),
+                    terminal,
+                    dorunScript,
+                    "-p", pidFileName, // NOI18N
+                    "-x", terminalInfo.getPrompt(terminal), // NOI18N
+                    cmd);
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.environment().putAll(info.getEnvVariables());
+            pb.directory(wdir);
+
+            termProcess = pb.start();
+
+            processOutput = termProcess.getInputStream();
+            processError = termProcess.getErrorStream();
+            processInput = null;
+
+            waitPID();
         }
-
-        String cmd = commandLine;
-
-        if (isWindows) {
-            pidFileName = pidFileName.replaceAll("\\\\", "/");
-            cmd = cmd.replaceAll("\\\\", "/");
-        }
-
-
-        List<String> command = terminalInfo.wrapCommand(
-                info.getExecutionEnvironment(),
-                terminal,
-                dorunScript,
-                "-p", pidFileName, // NOI18N
-                "-x", terminalInfo.getPrompt(terminal), // NOI18N
-                cmd);
-
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().putAll(info.getEnvVariables());
-        pb.directory(wdir);
-
-        termProcess = pb.start();
-
-        processOutput = new ByteArrayInputStream(new byte[0]);
-        processError = new ByteArrayInputStream(new byte[0]);
-        processInput = null;
-
-        File realPidFile = new File(pidFileName); // NOI18N
-        while (!realPidFile.exists() || realPidFile.length() == 0) {
-            Thread.yield();
-        }
-
-        InputStream pidIS = new FileInputStream(realPidFile);
-        readPID(pidIS);
-        pidIS.close();
     }
 
     @Override
@@ -160,6 +167,17 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public int waitResult() throws InterruptedException {
+        int pid = -1;
+
+        try {
+            pid = getPID();
+        } catch (IllegalStateException ex) {
+        }
+
+        if (pid < 0) {
+            return -1;
+        }
+
         if (isWindows) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-0", "" + getPID()); // NOI18N
             while (true) {
@@ -181,22 +199,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        try {
-            processError.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        try {
-            processOutput.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
         int exitCode = -1;
-        
+
         try {
-            File resFile = new File(pidFile.getAbsolutePath() + ".res");
+            File resFile = new File(pidFileName + ".res"); // NOI18N
             resFile.deleteOnExit();
             exitCode = Integer.parseInt(new BufferedReader(new FileReader(resFile)).readLine().trim());
         } catch (IOException ex) {
@@ -219,5 +225,43 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     @Override
     public InputStream getErrorStream() {
         return processError;
+    }
+
+    private boolean isFinished() {
+        try {
+            termProcess.exitValue();
+            return true;
+        } catch (IllegalThreadStateException ex) {
+            return false;
+        }
+    }
+
+    private void waitPID() {
+        File realPidFile = new File(pidFileName); // NOI18N
+
+        while (true) {
+            if (realPidFile.exists() && realPidFile.length() > 0) {
+                try {
+                    InputStream pidIS = new FileInputStream(realPidFile);
+                    readPID(pidIS);
+                    pidIS.close();
+                    break;
+                } catch (IOException ex) {
+                    return;
+                }
+            }
+
+            if (isFinished() || Thread.currentThread().isInterrupted()) {
+                // use readPID(null) to initiate ERROR state...
+                readPID(null);
+                return;
+            }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }
