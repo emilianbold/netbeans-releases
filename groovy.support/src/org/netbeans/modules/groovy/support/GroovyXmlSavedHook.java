@@ -37,39 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.testrunner;
+package org.netbeans.modules.groovy.support;
 
-import java.awt.event.ActionEvent;
-import java.util.regex.Matcher;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.project.util.PhpUnit;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 
-public class JumpToCallStackAction extends AbstractAction {
-    private static final long serialVersionUID = -14558324203007090L;
+/**
+ *
+ * @author Petr Hejl
+ */
+@ProjectServiceProvider(service=ProjectXmlSavedHook.class, projectType="org-netbeans-modules-java-j2seproject")
+public class GroovyXmlSavedHook extends ProjectXmlSavedHook {
 
-    private final String callstackFrameInfo;
+    private final Project project;
 
-    public JumpToCallStackAction(String callstackFrameInfo) {
-        assert callstackFrameInfo != null;
-        this.callstackFrameInfo = callstackFrameInfo;
+    public GroovyXmlSavedHook(Project project) {
+        this.project = project;
     }
 
     @Override
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
+    protected void projectXmlSaved() throws IOException {
+        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
+        if (extender != null) {
+            extender.refreshBuildScript(false);
         }
-        return super.getValue(key);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
-        if (matcher.matches()) {
-            String path = matcher.group(1);
-            String line = matcher.group(2);
-            PhpProjectUtils.openFile(path, Integer.valueOf(line));
-        }
-    }
 }

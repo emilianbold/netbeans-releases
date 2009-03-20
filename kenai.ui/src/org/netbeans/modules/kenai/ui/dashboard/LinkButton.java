@@ -82,6 +82,22 @@ public class LinkButton extends JButton {
 
     /**
      * C'tor
+     * @param text 
+     * @param icon
+     * @param al Action to invoke when the button is pressed, can be null but
+     * the button is disabled then.
+     */
+    public LinkButton( String text, Icon icon, ActionListener al ) {
+        super(text);
+        setIcon(icon);
+        setPressedIcon(icon);
+
+        init(al);
+    }
+
+
+    /**
+     * C'tor
      * @param text
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.

@@ -37,39 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.testrunner;
+package org.netbeans.modules.bugzilla.kenai;
 
-import java.awt.event.ActionEvent;
-import java.util.regex.Matcher;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.project.util.PhpUnit;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 
-public class JumpToCallStackAction extends AbstractAction {
-    private static final long serialVersionUID = -14558324203007090L;
+/**
+ *
+ * @author Tomas Stupka
+ */
+public class KenaiConfiguration extends BugzillaConfiguration {
+    private List<String> products;
 
-    private final String callstackFrameInfo;
-
-    public JumpToCallStackAction(String callstackFrameInfo) {
-        assert callstackFrameInfo != null;
-        this.callstackFrameInfo = callstackFrameInfo;
+    public KenaiConfiguration(RepositoryConfiguration rc) {
+        super(rc);
+    }
+    
+    void setProducts(String product) {
+        // XXX check if product exists
+        ArrayList<String> l = new ArrayList<String>();
+        l.add(product);
+        this.products = Collections.unmodifiableList(l);
     }
 
     @Override
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
-        }
-        return super.getValue(key);
+    public List<String> getProducts() {
+        return products;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
-        if (matcher.matches()) {
-            String path = matcher.group(1);
-            String line = matcher.group(2);
-            PhpProjectUtils.openFile(path, Integer.valueOf(line));
-        }
-    }
 }

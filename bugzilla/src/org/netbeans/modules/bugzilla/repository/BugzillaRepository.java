@@ -42,19 +42,15 @@ package org.netbeans.modules.bugzilla.repository;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -66,7 +62,6 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -343,9 +338,12 @@ public class BugzillaRepository extends Repository {
      */
     public synchronized BugzillaConfiguration getConfiguration() {
         if(bc == null) {
-            bc = BugzillaConfiguration.create(this);
+            bc = createConfiguration();
         }
         return bc;
     }
 
+    protected BugzillaConfiguration createConfiguration() {
+        return BugzillaConfiguration.create(this, BugzillaConfiguration.class);
+    }
 }
