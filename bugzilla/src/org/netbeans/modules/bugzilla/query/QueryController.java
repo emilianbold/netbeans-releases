@@ -705,8 +705,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if (task != null) {
             task.cancel();
         }
-        repository.removeQuery(query);
-        query.fireQueryRemoved();
+        query.remove();
     }
 
     private synchronized void post(Runnable r) {

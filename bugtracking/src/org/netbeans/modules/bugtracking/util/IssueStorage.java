@@ -167,11 +167,11 @@ class IssueStorage {
             List<String> ids = new ArrayList<String>();
             while(true) {
                 String id = null;
-                try {
+            try {
                     id = readString(dis);
                 } catch (EOFException e) {
                     break;
-                }
+            }
                 ids.add(id);
             }
             return ids;
@@ -182,6 +182,21 @@ class IssueStorage {
             throw ioe;
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finished reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
+        }
+    }
+
+    public void removeQuery(String nameSpace, String queryName) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
+        try {
+            File folder = getNameSpaceFolder(nameSpace);
+            File query = new File(folder, encode(queryName));
+            if(!query.exists()) {
+                return;
+            }
+            BugtrackingUtil.deleteRecursively(query);
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         }
     }
 
