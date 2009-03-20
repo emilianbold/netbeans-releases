@@ -98,7 +98,7 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull("must set test.junit.jar", junitJarProp);
         junitJar = new File(junitJarProp);
         assertTrue("file " + junitJar + " exists", junitJar.isFile());
-        MockLookup.setInstances(new IOP(), new IFL());
+        MockLookup.setLayersAndInstances(new IOP(), new IFL());
     }
 
     private AntProjectHelper setupProject(String subFolder, int numberOfSourceFiles, boolean generateTests) throws Exception {

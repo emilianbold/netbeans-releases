@@ -239,7 +239,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public void setPlatform(PlatformConfiguration platform) {
+        developmentHost.removePropertyChangeListener(this.platform);
         this.platform = platform;
+        developmentHost.addPropertyChangeListener(this.platform);
     }
 
     public boolean isApplicationConfiguration() {

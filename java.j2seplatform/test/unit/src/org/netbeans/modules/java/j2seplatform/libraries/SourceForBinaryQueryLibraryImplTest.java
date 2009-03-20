@@ -60,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.netbeans.modules.masterfs.MasterURLMapper;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -71,14 +70,12 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
     
     public SourceForBinaryQueryLibraryImplTest(String testName) {
         super(testName);
-        MockLookup.setLookup(
-                Lookups.fixed(
-                    LibraryProviderImpl.getDefault(),
-                    new JavaPlatformProviderImpl(),
-                    new ArchiveURLMapper(),
-                    new J2SELibrarySourceForBinaryQuery(),
-                    new MasterURLMapper()
-                    ));
+        MockLookup.setInstances(
+                LibraryProviderImpl.getDefault(),
+                new JavaPlatformProviderImpl(),
+                new ArchiveURLMapper(),
+                new J2SELibrarySourceForBinaryQuery(),
+                new MasterURLMapper());
     }
     
     private String getBase() throws Exception {

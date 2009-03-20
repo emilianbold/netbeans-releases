@@ -462,6 +462,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //TODO: optimize
         DataObject dobj = EditorContextBridge.getContext().getCurrentDataObject();
         if (dobj == null) {
+            dobj = EditorContextBridge.getContext().getMostRecentDataObject();
+        }
+        if (dobj == null) {
             return false;
         }
         try {

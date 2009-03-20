@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.ejbjarproject.test;
+package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
-import org.openide.util.test.MockLookup;
+import java.io.File;
+import java.util.Map;
 
 /**
- * Common ancestor for all test classes.
  *
- * @author Andrei Badea, Radko Najman
+ * @author eu155513
  */
-public class TestBase extends NbTestCase {
-
-    private static final Repository REPOSITORY;
-
-    static {
-        MockLookup.init();
-        REPOSITORY = new RepositoryImpl();
-        setLookup(new Object[0]);
+public class EnvUtils {
+    private EnvUtils() {
+        
     }
 
-    public static void setLookup(Object[] instances) {
-        Object[] newInstances = new Object[instances.length + 1];
-        System.arraycopy(instances, 0, newInstances, 0, instances.length);
-        newInstances[newInstances.length - 1] = REPOSITORY;
-        MockLookup.setLayersAndInstances(newInstances);
+    public static String getKey(String envEntry) {
+        int idx = envEntry.indexOf('=');
+        if (idx != -1) {
+            return envEntry.substring(0, idx);
+        } else {
+            return envEntry;
+        }
     }
 
-    public TestBase(String name) {
-        super(name);
+    public static String getValue(String envEntry) {
+        int idx = envEntry.indexOf('=');
+        if (idx != -1) {
+            return envEntry.substring(idx + 1);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Converts environment array (of strings in 'a=b' format)
+     * into a map (key a, value b)
+     * if oldenv is not null then use it as a map
+     * @param env
+     * @return
+     */
+    public static void appendEnv(Map<String, String> oldenv, String[] env) {
+        for (String var : env) {
+            int idx = var.indexOf('=');
+            if (idx != -1) {
+                appendPath(oldenv, getKey(var), getValue(var));
+            }
+        }
+    }
+
+    /**
+     * Appends key=value pair to the env map.
+     * If key=oldvalue already existed in the map then new pair will be key=oldvalue:value
+     * (separator depends on the platform)
+     * @param env
+     * @param key
+     * @param value
+     * @return
+     */
+    public static boolean appendPath(Map<String, String> env, String key, String value) {
+        String oldVal = env.get(key);
+        if (oldVal != null) {
+            //TODO: check remote!
+            value = oldVal + File.pathSeparator + value;
+        }
+        return env.put(key, value) != null;
     }
 }
