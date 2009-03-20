@@ -78,7 +78,9 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     WSUtils.updateClients(prj, jaxWsSupport);
-                    MavenModelUtils.reactOnServerChanges(prj);
+                    if (jaxWsSupport.getServices().size() > 0) {
+                        MavenModelUtils.reactOnServerChanges(prj);
+                    }
                 }
             }
         };
