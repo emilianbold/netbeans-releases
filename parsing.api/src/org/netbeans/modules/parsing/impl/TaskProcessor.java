@@ -338,6 +338,8 @@ public class TaskProcessor {
                 }
                 if (!found) {
                     toRemove.add (task);
+                    // there was a modification in toRemove, wake up the thread
+                    requests.add(Request.NONE);
                 }
                 SourceAccessor.getINSTANCE().taskRemoved(source);
             }
@@ -585,8 +587,8 @@ public class TaskProcessor {
                                 }
                             }
                         }
-                        final Request r = requests.poll(2,TimeUnit.SECONDS);
-                        if (r != null) {
+                        final Request r = requests.take();
+                        if (r != null && r != Request.NONE) {
                             currentRequest.setCurrentTask(r);
                             try {                            
                                 final SourceCache sourceCache = r.cache;
@@ -765,22 +767,9 @@ public class TaskProcessor {
     //@ThreadSafe
     public static class Request {
         
-        static final Request DUMMY = new Request (new ParserResultTask(){
-            @Override
-            public int getPriority() {
-                return 0;
-            }
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return null;
-            }
-            @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(Result result, SchedulerEvent event) {
-            }
-        },null, false, false, null);
+        static final Request DUMMY = new Request ();
+
+        static final Request NONE = new Request();
         
         private final SchedulerTask task;
         private final SourceCache cache;
@@ -802,6 +791,25 @@ public class TaskProcessor {
             this.reschedule = reschedule;
             this.bridge = bridge;
             this.schedulerType = schedulerType;
+        }
+
+        private Request () {
+            this (new ParserResultTask(){
+                @Override
+                public int getPriority() {
+                    return 0;
+                }
+                @Override
+                public Class<? extends Scheduler> getSchedulerClass() {
+                    return null;
+                }
+                @Override
+                public void cancel() {
+                }
+                @Override
+                public void run(Result result, SchedulerEvent event) {
+                }
+            },null,false,false,null);
         }
         
         public @Override String toString () {            
