@@ -1088,7 +1088,6 @@ public class Dom4JNodeProxy implements org.dom4j.Element
        NodeList list = getProxyNode().getChildNodes();
        if(index >= list.getLength())
        {
-           System.out.println("Out of bounds");
            throw new IndexOutOfBoundsException();
        }
        

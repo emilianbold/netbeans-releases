@@ -109,13 +109,10 @@ public class JavaOperationUMLParserProcessor
     }
     
     //used only debugging parser tree, or reacting to it.
-    //there are System.out.println method calls commented out. To see the
-    //tokens and States coming from the parser, uncomment these calls.
     private synchronized String getIndent(int n) {
         StringBuffer sb = new StringBuffer(n);
         for (int i=0; i<n; i++)
             sb.append("   ") ;
-        
         return sb.toString() ;
     }
     

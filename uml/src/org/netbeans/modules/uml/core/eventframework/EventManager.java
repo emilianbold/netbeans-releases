@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.uml.core.eventframework;
 
-import java.util.ArrayList;
 import org.netbeans.modules.uml.common.ETSystem;
 
 import java.lang.ref.WeakReference;
@@ -173,17 +172,12 @@ public class EventManager<Element>
 		// In c++, this function takes a boolean as a parameter, but it is only
 		// set to true in WorkspaceEventDispatcherImpl::FireWSProjectPreSave
 		// so I am not sure how this isn't causing problems in c++ as well
-		//
-		//for (int i = 0; i < m_listeners.size(); i++)
 		for (int i = m_listeners.size() - 1; i >= 0 ; i--)
 		{
 			try
 			{
-				//if (validateSink(obj);
-			    //System.out.println("--EventManager.notifyListeners() m_listeners.elementAt(i).get() = "+m_listeners.elementAt(i).get());
 				func.execute(m_listeners.elementAt(i).get());
 			}
-			
 			catch (Exception e)
 			{
 				ETSystem.out.println("Error in notifyListeners");
@@ -198,12 +192,10 @@ public class EventManager<Element>
 		
 		cleanUp();
 		// See above for comment
-		//for (int i = 0; i < m_listeners.size(); i++)
 		for (int i = m_listeners.size() - 1; i >= 0 ; i--)
 		{
 			try
 			{
-				//validateSink(obj);
 				func.execute(params, m_listeners.elementAt(i).get());
 			}
 			
@@ -222,14 +214,11 @@ public class EventManager<Element>
 		// this instance and cause some listeners to be skipped
 		// see other notifier methods in this class for exact same comments
 		// as this was a problem in the past but this loop wasn't touched
-		// for (int i = 0; i < m_listeners.size(); i++)
 		for (int i = m_listeners.size()-1; i > -1 ; i--)
 		{
 			try
 			{
-				//validateSink(obj);
 				func.execute(m_listeners.elementAt(i).get());
-				
                                 //check the result and if required call dispatchCancelEvent
 				if (!func.isResultOK())
 				{
@@ -255,26 +244,6 @@ public class EventManager<Element>
 			}
 		}
 	}
-	
-        private void dispatchCancelledEvent(int whoCancelled, EventFunctor func)
-        {
-            // Since the notifyListenersWithQualifiedProceed iterates
-            // backward, I have to get the last few listeners
-            
-            ArrayList< Object > notifiedList = new ArrayList < Object >();
-            for(int i = m_listeners.size() - 1; i > whoCancelled; i--)
-            {
-                notifiedList.add(m_listeners.elementAt(i).get());
-            }
-            
-            Object[] notifiedListeners = new Object[notifiedList.size()];
-            notifiedList.toArray(notifiedListeners);
-            
-            Object canceledListener = m_listeners.elementAt(whoCancelled).get();
-            m_dispatcher.fireEventDispatchCancelled(notifiedListeners, 
-                                                    canceledListener, 
-                                                    null);
-        }
 	/**
 	 * @return
 	 */

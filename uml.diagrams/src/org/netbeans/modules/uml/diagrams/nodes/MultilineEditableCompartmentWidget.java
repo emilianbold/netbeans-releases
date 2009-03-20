@@ -257,7 +257,6 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
             }
             
             Rectangle tmp = toFit.getBounds();
-            //System.out.println("MultilineEditableCompartmentWidget - widgetbounds: "+ tmp.toString());
             if(getBorder() != null)
             {
                 Insets insets = getBorder().getInsets();

@@ -172,7 +172,6 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 }
                 else
                 {
-//                    System.out.println(" not a label... ");
                 }
             }
             edgeWriter.endContained();
@@ -198,7 +197,6 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 if (!(nodesList.contains(edgeReader.getSourcePE())) 
                         || !(nodesList.contains(edgeReader.getTargetPE())))
                 {
-//                    System.out.println(" invalid edge...");
                     return;
                 }
             }
