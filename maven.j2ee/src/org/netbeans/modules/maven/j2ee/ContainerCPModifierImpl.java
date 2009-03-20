@@ -129,10 +129,8 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         };
         FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
         if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).synchronousDependencyDownload();
+            project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
         }
 
     }

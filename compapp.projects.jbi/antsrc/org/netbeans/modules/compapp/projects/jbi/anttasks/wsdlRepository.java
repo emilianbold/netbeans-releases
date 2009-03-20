@@ -85,7 +85,8 @@ public class wsdlRepository {
     private Task task;
     
     private List<WSDLModel> wsdlModels = null;
-    
+    private List<WSDLModel> suModels = null;
+
     // mapping PortType QName to PortType
     private Map<String, PortType> portTypes = new HashMap<String, PortType>();
     
@@ -128,7 +129,7 @@ public class wsdlRepository {
         bcNsMap = buildBindingComponentMap(project);
         
         initLists();
-        
+
         //also look into all SE.jars
     }
     
@@ -230,7 +231,8 @@ public class wsdlRepository {
     
     private List<WSDLModel> getAllWsdlModels(Project project) {        
         List<WSDLModel> ret = new ArrayList<WSDLModel>();
-        
+        suModels = new ArrayList<WSDLModel>();
+
         WSDLModelFactory wsdlModelFactory = WSDLModelFactory.getDefault();
         
         for (File file : getAllWsdlFiles(project)) {
@@ -251,6 +253,10 @@ public class wsdlRepository {
                 
                 WSDLModel wm = wsdlModelFactory.createFreshModel(ms); 
                 ret.add(wm);
+
+                if (file.getAbsolutePath().contains("jbiServiceUnits")) { // NOI18N
+                    suModels.add(wm);
+                }
             } catch (CatalogModelException ex) {
                 ex.printStackTrace();
             }            
@@ -366,7 +372,11 @@ public class wsdlRepository {
                 }
             }
         }
-        
+
+        // todo: 10/17/08, added to handle large # of SU wsdls with unwanted ports...
+        String STR_SkipPorts = project.getProperty("skip.su.ports");  // NOI18N
+        boolean skipSuPorts = (STR_SkipPorts != null) && (STR_SkipPorts.equalsIgnoreCase("true"));
+
         for (WSDLModel wsdlModel : wsdlModels) {
             // todo: 03/26/07, skip J2EE project concrete wsdls..
             if (true) {  // (!isJavaEEWsdl(doc)) {
@@ -387,6 +397,8 @@ public class wsdlRepository {
                         String key = sQName + "." + p.getName(); 
                         if (ports.get(key) != null) {
                             System.out.println("Duplicate Port: " + key);
+                        } else if (skipSuPorts && isPortFromSU(p)) {
+                           // skip this port...
                         } else {
                             // Mapping port to binding component ID...
                             List<ExtensibilityElement> xts = p.getExtensibilityElements();
@@ -434,6 +446,10 @@ public class wsdlRepository {
                 }
             }
         }
+    }
+
+    private boolean isPortFromSU(Port p) {
+        return suModels.contains(p.getModel());
     }
     
     public String getBindingComponentName(Port p) {

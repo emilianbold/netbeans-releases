@@ -90,7 +90,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Milan Kuchtiak
  */
-final class WsdlPanel implements WizardDescriptor.FinishablePanel {
+public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     public static final String FILE_NAME = "FILE_NAME";
     
@@ -124,7 +124,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     private WSDLWizardContext context;
     private boolean mGeneratePartnerLinkType = true;
     
-    WsdlPanel(WSDLWizardContext context, Project project) {
+    public WsdlPanel(WSDLWizardContext context, Project project) {
         this.context = context;
         this.project = project;
     }
@@ -133,11 +133,11 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         return context;
     }
     
-    TemplateWizard getTemplateWizard() {
+    public TemplateWizard getTemplateWizard() {
         return templateWizard;
     }
     
-    void setNameTF(JTextField nameTF) {
+    public void setNameTF(JTextField nameTF) {
         gui.attachFileNameListener(nameTF);
         if(nameTF != null) {
             nameTF.getDocument().removeDocumentListener(mListener);//remove existing one
@@ -176,7 +176,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         return new HelpCtx(WsdlPanel.class);
     }
 
-    void cleanup() {
+    public void cleanup() {
         WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WSDLWizardConstants.TEMP_WSDLMODEL);
         if (tempModel != null) {
             DataObject dobj = ActionHelper.getDataObject(tempModel);

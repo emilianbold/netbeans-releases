@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardIterator;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -159,7 +160,7 @@ public class WSDLWizardContextImpl implements WSDLWizardContext {
 	return (WizardDescriptor) wiz;
     }
 
-    void addStep(ArrayList<String> virtualSteps) {
+    public void addStep(ArrayList<String> virtualSteps) {
         this.virtualSteps = virtualSteps;
     }
 

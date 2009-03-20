@@ -116,13 +116,8 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     // --------------- References ------------------
     @Override
     public void visit(ElementReference er) {
-        // # 105159, #130053
-        if (!isXdmDomUsed(er)) {
-            checkComponent(er);
-        }
         //
         NamedComponentReference<GlobalElement> geRef = er.getRef();
-
         if (geRef != null) {
             GlobalElement ge = geRef.get();
 
@@ -137,14 +132,8 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
         if (skipAttributes) {
             return;
         }
-        
-        // # 105159, #130053
-        if (!isXdmDomUsed(ar)) {
-            checkComponent(ar);
-        }
         //
         NamedComponentReference<GlobalAttribute> gaRef = ar.getRef();
-
         if (gaRef != null) {
             GlobalAttribute ga = gaRef.get();
             if (ga != null) {
@@ -429,17 +418,6 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     }
 
     //-----------------------------------------------
-    /**
-     * This auxiliary method is a workaround fro the issuer #130053
-     * @param sc
-     * @return
-     */
-    protected boolean isXdmDomUsed(SchemaComponent sc) {
-        org.w3c.dom.Element domElement = sc.getPeer();
-        String packageName = domElement.getClass().getPackage().getName();
-        return "org.netbeans.modules.xml.xdm.nodes".equals(packageName); // NOI18N
-
-    }
 
     protected String fastGetRefName(NamedComponentReference ref) {
         if (ref == null) {

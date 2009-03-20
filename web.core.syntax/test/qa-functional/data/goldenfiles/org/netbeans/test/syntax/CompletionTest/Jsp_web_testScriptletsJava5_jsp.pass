@@ -152,6 +152,7 @@ void doOptions (HttpServletRequest req , HttpS
 void doPost (HttpServletRequest req , HttpServ
 void doPut (HttpServletRequest req , HttpServl
 void doTrace (HttpServletRequest req , HttpSer
+do
 double
 Deprecated
 Double
