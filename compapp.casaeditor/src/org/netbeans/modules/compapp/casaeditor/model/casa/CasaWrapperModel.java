@@ -3281,15 +3281,30 @@ public class CasaWrapperModel extends CasaModel {
                 String oldServiceName = oldServiceQName.getLocalPart();
 
                 // Update casa port link href
-                CasaLink link = casaPort.getLink();
-                String linkHref = link.getHref();
-                linkHref = linkHref.replaceAll(
+                CasaLink casaPortLink = casaPort.getLink();
+                String casaPortLinkHref = casaPortLink.getHref();
+                casaPortLinkHref = casaPortLinkHref.replaceAll(
                         "/service\\[@name='" + oldServiceName + "'\\]", // NOI18N
                         "/service[@name='" + newServiceName + "']"); // NOI18N
-                link.setHref(linkHref);
+                casaPortLink.setHref(casaPortLinkHref);
 
-            // Update service link
-            // We could probably live without the update until the next build.
+                // Update service link (#160483)
+                String relativeWsdl =
+                        casaPortLinkHref.substring(0, casaPortLinkHref.indexOf("#")); // NOI18N
+                String serviceLinkHrefToBeUpdated =
+                        relativeWsdl + "#xpointer(/definitions/service[@name='" + // NOI18N
+                        oldServiceName + "'])"; // NOI18N
+
+                for (CasaLink serviceLink : casa.getServices().getLinks()) {
+                    String serviceLinkHref = serviceLink.getHref();
+                    if (serviceLinkHref.equals(serviceLinkHrefToBeUpdated)) {
+                        serviceLinkHref = serviceLinkHref.replaceAll(
+                                "/service\\[@name='" + oldServiceName + "'\\]", // NOI18N
+                                "/service[@name='" + newServiceName + "']"); // NOI18N
+                        serviceLink.setHref(serviceLinkHref);
+                        break;
+                    }
+                }
             }
 
             endpoint.setServiceQName(newServiceQName);
