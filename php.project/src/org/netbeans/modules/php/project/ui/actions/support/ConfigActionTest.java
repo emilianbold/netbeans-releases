@@ -48,6 +48,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
@@ -72,6 +74,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 class ConfigActionTest extends ConfigAction {
+    static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_LINE_CONVERTOR_FACTORY = new PhpUnitLineConvertorFactory();
     private static final String CWD = "."; // NOI18N
     final PhpCoverageProvider coverageProvider;
 
@@ -225,6 +228,7 @@ class ConfigActionTest extends ConfigAction {
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                     .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
                     .frontWindow(!phpUnit.supportedVersionFound())
+                    .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .showProgress(true);
             if (phpUnit.supportedVersionFound()) {
                 executionDescriptor = executionDescriptor
@@ -417,5 +421,12 @@ class ConfigActionTest extends ConfigAction {
                 }
             };
         }
+    }
+
+    static final class PhpUnitLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        public LineConvertor newLineConvertor() {
+            return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+        }
+
     }
 }
