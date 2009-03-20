@@ -94,7 +94,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -275,8 +274,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
-        final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
+        panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
         t[0] = rp.post(new Runnable() {
             public void run() {
                 handle.start();
@@ -285,7 +283,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 } finally {
                     enableFields(true);
                     handle.finish();
-                    panel.showRetrievingProgress(false, progressBar, null, !query.isSaved());
+                    panel.showRetrievingProgress(false, null, !query.isSaved());
                 }
             }
         });
@@ -723,8 +721,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         };
 
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
-        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+        panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
         notifyListener.setProgressHandle(handle);
         handle.start();
         
