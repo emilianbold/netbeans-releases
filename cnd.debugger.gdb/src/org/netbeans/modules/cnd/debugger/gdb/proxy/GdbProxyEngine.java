@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -375,7 +376,14 @@ public class GdbProxyEngine {
         if (ch1 == '&') {
             CommandInfo ci = getCommandInfo(msg);
             if (ci != null) {
-                tokenList.remove(ci);
+                synchronized (tokenList) {
+                    for (Iterator<CommandInfo> iter = tokenList.iterator(); iter.hasNext();) {
+                        CommandInfo info = iter.next();
+                        if (ci.getCommand().equals(info.getCommand())) {
+                            iter.remove();
+                        }
+                    }
+                }
                 currentToken = ci.getToken();
             }
         }
@@ -482,13 +490,9 @@ public class GdbProxyEngine {
         @Override
         public boolean equals(Object o) {
             if (o instanceof CommandInfo) {
-                CommandInfo ci = (CommandInfo) o;
-                return cmd.equals(ci.getCommand());
-            } else if (o instanceof String) {
-                return cmd.equals(o.toString());
-            } else {
-                return false;
+                return token == ((CommandInfo) o).token;
             }
+            return false;
         }
 
         @Override
