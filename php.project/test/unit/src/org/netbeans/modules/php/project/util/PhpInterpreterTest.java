@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
@@ -126,5 +127,27 @@ public class PhpInterpreterTest extends NbTestCase {
         assertEquals("3", parameters[1]);
         assertEquals("--repeat 3", parameters[2]);
         assertEquals("MyTest", parameters[3]);
+    }
+
+    public void testLinePattern0() {
+        Matcher matcher = PhpInterpreter.LINE_PATTERNS[0].matcher("Parse error: syntax error, unexpected T_STRING, expecting '(' in /home/gapon/NetBeansProjects/PhpProject1/Calculator.php on line 10");
+        assertTrue(matcher.matches());
+        assertEquals("/home/gapon/NetBeansProjects/PhpProject1/Calculator.php", matcher.group(1));
+        assertEquals("10", matcher.group(2));
+        assertTrue(PhpInterpreter.LINE_PATTERNS[0].matcher("Parse error: syntax error, unexpected T_STRING, expecting '(' in /h o m e/gapon/NetBeansProjects/PhpProject1/Calculator.php on line 10").matches());
+        assertTrue(PhpInterpreter.LINE_PATTERNS[0].matcher("Parse error: syntax error, unexpected T_STRING, expecting '(' in C:\\home\\gapon\\NetBeansProjects\\PhpProject1\\Calculator.php on line 10").matches());
+        assertTrue(PhpInterpreter.LINE_PATTERNS[0].matcher("Exception: hello world in /home/gapon/NetBeansProjects/PhpProject1/Calculator.php on line 16").matches());
+
+        assertFalse(PhpInterpreter.LINE_PATTERNS[0].matcher("").matches());
+    }
+
+    public void testLinePattern1() {
+        Matcher matcher = PhpInterpreter.LINE_PATTERNS[1].matcher("    0.0002     115808   1. {main}() /home/gapon/NetBeansProjects/PhpProject1/Calculator.php:0");
+        assertTrue(matcher.matches());
+        assertEquals("/home/gapon/NetBeansProjects/PhpProject1/Calculator.php", matcher.group(1));
+        assertEquals("0", matcher.group(2));
+        assertTrue(PhpInterpreter.LINE_PATTERNS[1].matcher("    0.0002     115808   1. {main}() /h o m e/gapon/NetBeansProjects/PhpProject1/Calculator.php:0").matches());
+
+        assertFalse(PhpInterpreter.LINE_PATTERNS[1].matcher("").matches());
     }
 }

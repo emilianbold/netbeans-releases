@@ -17,7 +17,7 @@ Failed asserting that two objects are equal.
 -(
 -)
 +77
-\ Chybí znak konce řádku na konci souboru
+\ Chybi znak konce radku na konci souboru
 
 
 /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56
