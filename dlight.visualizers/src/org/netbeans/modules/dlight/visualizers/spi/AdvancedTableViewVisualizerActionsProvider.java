@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,57 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.swing.JComponent;
+package org.netbeans.modules.dlight.visualizers.spi;
+
+import javax.swing.Action;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 
 /**
- * Thread usage indicator
- * @author Vladimir Kvashin
+ *
+ * @author mt154047
  */
-public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
+public interface  AdvancedTableViewVisualizerActionsProvider {
+    boolean hasActions(DataRow row);
 
-    private SyncIndicatorPanel panel;
-    private final Set<String> acceptedColumnNames;
+     AdvancedTableViewVisualizerActionsProvider getProviderFor(AdvancedTableViewVisualizerConfiguration configuration);
 
-    public SyncIndicator(SyncIndicatorConfiguration configuration) {
-        super(configuration);
-        this.acceptedColumnNames = new HashSet<String>();
-        for (Column column : getMetadataColumns()) {
-            acceptedColumnNames.add(column.getColumnName());
-        }
-    }
+     Action[] getActions(DataRow row);
 
-    @Override
-    public synchronized JComponent getComponent() {
-        if (panel == null) {
-            panel = new SyncIndicatorPanel();
-        }
-        return panel;
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> rows) {
-        int[][] values = new int[1][1];
-        for (DataRow row : rows) {
-            for (String column : row.getColumnNames()) {
-                if (acceptedColumnNames.contains(column)) {
-                    String value = row.getStringValue(column); //TODO: change to Long
-                    values[0][0] = (int) Float.parseFloat(value);
-                    panel.updated(values);
-                }
-            }
-        }
-    }
 }

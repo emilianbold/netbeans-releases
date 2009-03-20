@@ -712,7 +712,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             if( state != null && ! state.isCleaned() ) {
                 state = APTHandlersSupport.createCleanPreprocState(state);
             }
-            if ((data instanceof Collection)) {
+            if ((data instanceof Collection<?>)) {
                 @SuppressWarnings("unchecked")
                 Collection<StatePair> states = (Collection<StatePair>) data;
                 // check how many good old states are there

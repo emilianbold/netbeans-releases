@@ -66,7 +66,8 @@ public abstract class CsmFriendResolver {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmFriendResolver getDefault() {
+    public static CsmFriendResolver getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultResolver != null) {
             return defaultResolver;
         }

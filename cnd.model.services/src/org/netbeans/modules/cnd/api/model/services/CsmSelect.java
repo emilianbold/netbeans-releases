@@ -172,7 +172,7 @@ public class CsmSelect {
      * Static method to obtain the CsmSelect implementation.
      * @return the selector
      */
-    private static synchronized CsmSelectProvider getDefault() {
+    private static CsmSelectProvider getDefault() {
         return DEFAULT;
     }
     
