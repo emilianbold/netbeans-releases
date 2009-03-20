@@ -72,7 +72,7 @@ public final class OpenedEditors {
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    private static OpenedEditors DEFAULT;
+    private static OpenedEditors DEFAULT = new OpenedEditors();
     private final PropertyChangeListener componentListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             OpenedEditors.this.propertyChange(evt);
@@ -95,11 +95,7 @@ public final class OpenedEditors {
         stateChanged();
     }
 
-    public static synchronized OpenedEditors getDefault() {
-        if (DEFAULT == null) {
-            DEFAULT = new OpenedEditors();
-        }
-
+    public static OpenedEditors getDefault() {
         return DEFAULT;
     }
 

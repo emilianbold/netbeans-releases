@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,10 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -35,37 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.api.ruby.platform;
 
-import java.io.File;
-import org.openide.modules.InstalledFileLocator;
+package org.netbeans.modules.dlight.visualizers.spi;
 
-@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
-public final class InstalledFileLocatorImpl extends InstalledFileLocator {
+import javax.swing.Action;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 
-    public InstalledFileLocatorImpl() {
-    }
+/**
+ *
+ * @author mt154047
+ */
+public interface  AdvancedTableViewVisualizerActionsProvider {
+    boolean hasActions(DataRow row);
 
-    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
-        if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
-            File rubydebugDir = RubyTestBase.getDirectory("rubydebug.dir", true);
-            File cd = new File(rubydebugDir, "classic-debug.rb");
-            if (!cd.isFile()) {
-                throw new RuntimeException("classic-debug found in " + rubydebugDir);
-            }
-            return cd;
-        } else if (relativePath.equals("jruby-1.2.0")) {
-            return TestUtil.getXTestJRubyHome();
-        } else if (relativePath.equals("platform_info.rb")) {
-            String script = System.getProperty("xtest.platform_info.rb");
-            if (script == null) {
-                throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
-            }
-            return new File(script);
-        } else {
-            return null;
-        }
-    }
-    
+     AdvancedTableViewVisualizerActionsProvider getProviderFor(AdvancedTableViewVisualizerConfiguration configuration);
+
+     Action[] getActions(DataRow row);
+
 }

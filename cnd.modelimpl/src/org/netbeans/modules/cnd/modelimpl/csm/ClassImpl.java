@@ -634,6 +634,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return impl;
     }
 
+    protected void setTemplateDescriptor(TemplateDescriptor td) {
+        templateDescriptor = td;
+    }
+
     public CsmDeclaration.Kind getKind() {
         return this.kind;
     }
