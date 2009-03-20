@@ -66,8 +66,8 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     @Override
     protected Lookup createLookup(ClassLoader c) {
         MockLookup.setInstances(c);
+        Thread.currentThread().setContextClassLoader(c);
         Lookup l = Lookups.forPath("sub/path");
-        MockLookup.setInstances();
         return l;
     }
     
