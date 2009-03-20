@@ -45,16 +45,16 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import java.awt.Dialog;
 import java.util.Map;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject.State;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject.Step;
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -129,11 +129,15 @@ public class FollowUp extends JPanel {
 
     public static void showFollowUp(ImportProject importer, NativeProject project) {
         FollowUp panel = new FollowUp(importer, project);
-        DialogDescriptor descriptor = new DialogDescriptor(panel, getString("Dialog_Title"), // NOI18N
-                true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setVisible(true);
+        /*Notification notification =*/
+        NotificationDisplayer.getDefault().notify(getString("Dialog_Title"), // NOI18N
+                new ImageIcon(FollowUp.class.getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/configure.png")), // NOI18N
+                panel, panel, NotificationDisplayer.Priority.HIGH);
+        //DialogDescriptor descriptor = new DialogDescriptor(panel, getString("Dialog_Title"), // NOI18N
+        //        true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+        //        DialogDescriptor.DEFAULT_ALIGN, null, null);
+        //Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        //dlg.setVisible(true);
     }
 
     /** This method is called from within the constructor to
@@ -153,6 +157,7 @@ public class FollowUp extends JPanel {
         codeAssistance = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         projectCreated.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/check.png"))); // NOI18N
