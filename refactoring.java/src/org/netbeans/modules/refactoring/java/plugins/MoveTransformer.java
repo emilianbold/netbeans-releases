@@ -74,6 +74,7 @@ public class MoveTransformer extends RefactoringVisitor {
     private boolean moveToDefaulPackageProblem = false;
     private String originalPackage;
     private SourceUtilsEx.Cache cacheOfSrcFiles = new SourceUtilsEx.Cache();
+    private final Set<ElementHandle> classes2Move;
 
     public Problem getProblem() {
         return problem;
@@ -81,6 +82,7 @@ public class MoveTransformer extends RefactoringVisitor {
 
     public MoveTransformer(MoveRefactoringPlugin move) {
         this.move = move;
+        classes2Move = new HashSet<ElementHandle>(move.classes.values());
     }
     
     @Override
@@ -126,22 +128,22 @@ public class MoveTransformer extends RefactoringVisitor {
                             moveToDefaulPackageProblem = true;
                         }
                     }
-                }
-                FileObject[] fos = new FileObject[1];
-                if (isThisFileMoving && !isElementMoving(el)) {
-                    if (el.getKind() != ElementKind.PACKAGE
-                        && !move.filesToMove.contains(getFileObject(el, fos))
-                        && getPackageOf(el).toString().equals(originalPackage)
-                        && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
+                } else {
+                    if (isThisFileMoving) {
+                        if (el.getKind() != ElementKind.PACKAGE
+                                && getPackageOf(el).toString().equals(originalPackage)
+                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                                && !move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
-                }
-                if (!isThisFileMoving && !isElementMoving(el)) {
-                    if (el.getKind()!=ElementKind.PACKAGE && 
-                        move.filesToMove.contains(getFileObject(el, fos)) &&
-                        getPackageOf(el).toString().equals(originalPackage) && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
+                    } else {
+                        if (el.getKind()!=ElementKind.PACKAGE
+                                && getPackageOf(el).toString().equals(originalPackage)
+                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                                && move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
+                    }
                 }
             } else if (isPackageRename() && "*".equals(node.getIdentifier().toString())) { // NOI18N
                 ExpressionTree exprTree = node.getExpression();
@@ -176,17 +178,18 @@ public class MoveTransformer extends RefactoringVisitor {
                                 problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
                     }
                 } else {
+                    Boolean[] isElementMoving = new Boolean[1];
                     if (!isThisFileReferencingOldPackage
-                            && (!isElementMoving(el) && isTopLevelClass(el))
+                            && (isTopLevelClass(el) && !isElementMoving(el, isElementMoving))
                             && getPackageOf(el).toString().equals(originalPackage)) {
                         isThisFileReferencingOldPackage = true;
                     }
                     if (el.getKind() != ElementKind.PACKAGE
                             && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
-                            && !isElementMoving(el)
+                            && !isElementMoving(el, isElementMoving)
                             && getPackageOf(el).toString().equals(originalPackage)
                             && !move.filesToMove.contains(getFileObject(el))) {
-                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
+                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                     }
                 }
             }
@@ -197,13 +200,6 @@ public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject getFileObject(Element el) {
         return SourceUtilsEx.getFile(el, workingCopy.getClasspathInfo(), cacheOfSrcFiles);
-    }
-
-    private FileObject getFileObject(Element el, FileObject[] fos) {
-        if (fos[0] == null) {
-            fos[0] = getFileObject(el);
-        }
-        return fos[0];
     }
 
     private boolean isThisPackageMoving(PackageElement el) {
@@ -257,13 +253,21 @@ public class MoveTransformer extends RefactoringVisitor {
 //        return true;
 //    }
 
-    private boolean isElementMoving(Element el) {
-        for (ElementHandle handle:move.classes.values()) {
-            if (handle.signatureEquals(el)) {
-                return true;
-            }
+    private boolean isElementMoving(Element el, Boolean[] cache) {
+        if (cache[0] == null) {
+            cache[0] = isElementMoving(el);
         }
-        return false;
+
+        return cache[0];
+    }
+
+    private boolean isElementMoving(Element el) {
+        ElementKind kind = el.getKind();
+        if (!(kind.isClass() || kind.isInterface())) {
+            return false;
+        }
+        ElementHandle<Element> elHandle = ElementHandle.create(el);
+        return classes2Move.contains(elHandle);
     }
     
     private boolean isTopLevelClass(Element el) {
@@ -299,7 +303,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 //add import to old package
                 ExpressionTree newPackageName = cut.getPackageName();
                 if (newPackageName != null) {
-                    cut = insertImport(cut, newPackageName.toString() + ".*", null); // NOI18N
+                    cut = insertImport(cut, newPackageName.toString() + ".*", null, null); // NOI18N
                 } else {
                     if (!moveToDefaulPackageProblem) {
                         problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
@@ -313,21 +317,20 @@ public class MoveTransformer extends RefactoringVisitor {
         for (Element el:elementsToImport) {
             String newPackageName = getTargetPackageName(el);
             if (!"".equals(newPackageName)) { // NOI18N
-                cut = insertImport(cut, newPackageName + "." +el.getSimpleName(), el); // NOI18N
+                cut = insertImport(cut, newPackageName + "." +el.getSimpleName(), el, newPackageName); // NOI18N
             }
         }
         rewrite(node, cut);
         return result;
     }
 
-    private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig) {
+    private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig, String targetPkgOfOrig) {
         for (ImportTree tree: node.getImports()) {
             if (tree.getQualifiedIdentifier().toString().equals(imp)) 
                 return node;
             if (orig!=null) {
                 if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) { // NOI18N
-                    String pkgName = getTargetPackageName(orig);
-                    rewrite(tree.getQualifiedIdentifier(), make.Identifier(pkgName + ".*")); // NOI18N
+                    rewrite(tree.getQualifiedIdentifier(), make.Identifier(targetPkgOfOrig + ".*")); // NOI18N
                     return node;
                 }
             }
