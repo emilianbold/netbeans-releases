@@ -88,7 +88,7 @@ public class CopyTaskTest {
         Future<Integer> fresult = CommonTasksSupport.uploadFile(
                 srcFileName,
                 new ExecutionEnvironment(),
-                dstFileName, 777, err);
+                dstFileName, 0777, err);
 
         if (fresult == null) {
             System.out.println("Error: " + err.toString());
