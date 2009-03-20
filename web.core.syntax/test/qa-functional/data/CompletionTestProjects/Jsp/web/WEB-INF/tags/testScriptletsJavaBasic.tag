@@ -38,7 +38,7 @@ Integer getId ()
 <%--CC
 <% "Hello World !".| %>
 int hashCode ()
-<% "Hello World !".hashCode() %>
+<% "Hello World !".hashCode(); %>
 --%>
 
 </body>

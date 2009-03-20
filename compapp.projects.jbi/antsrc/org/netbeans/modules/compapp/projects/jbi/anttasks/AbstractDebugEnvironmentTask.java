@@ -59,7 +59,7 @@ public class AbstractDebugEnvironmentTask extends Task {
     
     private String netBeansUserDir;
     
-    // Current assumption about the the debug flag and debug port for any SE.
+    // Current assumption about the debug flag and debug port for any SE.
     // Otherwise, the SE needs to provide such info.
     protected static final String SERVICE_ENGINE_DEBUG_FLAG = "DebugEnabled"; // NOI18N
     protected static final String SERVICE_ENGINE_DEBUG_PORT = "DebugPort"; // NOI18N

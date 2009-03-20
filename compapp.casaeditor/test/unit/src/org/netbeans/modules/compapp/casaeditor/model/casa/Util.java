@@ -52,9 +52,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import javax.swing.text.Document;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
+//import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
+//import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModelFactory;
+//import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 
@@ -102,19 +102,19 @@ public class Util {
     }
     
     public static int count = 0;
-    public static JBIModel loadCasaModel(String resourcePath) throws Exception {
-        URI locationURI = new URI(resourcePath);
-        TestCatalogModel.getDefault().addURI(locationURI, getResourceURI(resourcePath));
-        ModelSource ms = TestCatalogModel.getDefault().getModelSource(locationURI);
-        return JBIModelFactory.getInstance().getModel(ms);
-    }
-    
-    public static JBIModel loadCasaModel(File schemaFile) throws Exception {
-        URI locationURI = new URI(schemaFile.getName());
-        TestCatalogModel.getDefault().addURI(locationURI, schemaFile.toURI());
-        ModelSource ms = TestCatalogModel.getDefault().getModelSource(locationURI);
-        return JBIModelFactory.getInstance().getModel(ms);
-    }
+//    public static JBIModel loadCasaModel(String resourcePath) throws Exception {
+//        URI locationURI = new URI(resourcePath);
+//        TestCatalogModel.getDefault().addURI(locationURI, getResourceURI(resourcePath));
+//        ModelSource ms = TestCatalogModel.getDefault().getModelSource(locationURI);
+//        return JBIModelFactory.getInstance().getModel(ms);
+//    }
+//
+//    public static JBIModel loadCasaModel(File schemaFile) throws Exception {
+//        URI locationURI = new URI(schemaFile.getName());
+//        TestCatalogModel.getDefault().addURI(locationURI, schemaFile.toURI());
+//        ModelSource ms = TestCatalogModel.getDefault().getModelSource(locationURI);
+//        return JBIModelFactory.getInstance().getModel(ms);
+//    }
        
     public static void dumpToStream(Document doc, OutputStream out) throws Exception{
         PrintWriter w = new PrintWriter(out);
@@ -131,9 +131,9 @@ public class Util {
         out.close();
     }
     
-    public static JBIModel dumpAndReloadModel(JBIModel sm) throws Exception {
-        return dumpAndReloadModel((Document) sm.getModelSource().getLookup().lookup(Document.class));
-    }
+//    public static JBIModel dumpAndReloadModel(JBIModel sm) throws Exception {
+//        return dumpAndReloadModel((Document) sm.getModelSource().getLookup().lookup(Document.class));
+//    }
     
     public static File dumpToTempFile(Document doc) throws Exception {
         File f = File.createTempFile("reg", "xml");
@@ -141,13 +141,13 @@ public class Util {
         return f;
     }
     
-    public static JBIModel dumpAndReloadModel(Document doc) throws Exception {
-        File f = dumpToTempFile(doc);
-        URI dumpURI = new URI("dummyDump" + count++);
-        TestCatalogModel.getDefault().addURI(dumpURI, f.toURI());
-        ModelSource ms = TestCatalogModel.getDefault().getModelSource(dumpURI);
-        return JBIModelFactory.getInstance().getModel(ms);
-    }
+//    public static JBIModel dumpAndReloadModel(Document doc) throws Exception {
+//        File f = dumpToTempFile(doc);
+//        URI dumpURI = new URI("dummyDump" + count++);
+//        TestCatalogModel.getDefault().addURI(dumpURI, f.toURI());
+//        ModelSource ms = TestCatalogModel.getDefault().getModelSource(dumpURI);
+//        return JBIModelFactory.getInstance().getModel(ms);
+//    }
     
     public static Document loadDocument(File f) throws Exception {
         InputStream in = new BufferedInputStream(new FileInputStream(f));

@@ -31,8 +31,6 @@ import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.actions.PropertiesAction;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -41,7 +39,7 @@ import org.openide.util.actions.SystemAction;
 public class ReadOnlyFilterNode extends FilterNode {
 
     public ReadOnlyFilterNode(Node original) {
-        super(original);
+        super(original, new ReadOnlyChildren(original));
     }
 
     @Override
