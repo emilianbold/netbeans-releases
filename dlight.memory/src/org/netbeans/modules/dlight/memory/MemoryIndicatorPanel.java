@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.dlight.indicators.graph.AbstractIndicatorPanel;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
+import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.openide.util.NbBundle;
 
@@ -27,7 +28,7 @@ class MemoryIndicatorPanel extends AbstractIndicatorPanel {
     private String measureKb;
     private JPanel legend;
     private long max;
-    private static final Color GRAPH_COLOR = new Color(0x53, 0x82, 0xA1);
+    private static final Color GRAPH_COLOR = GraphColors.COLOR_2;
 
     /*package*/ MemoryIndicatorPanel() {
         max = 0;
@@ -40,7 +41,7 @@ class MemoryIndicatorPanel extends AbstractIndicatorPanel {
     protected JComponent createGraph() {
         if (graph == null) {
             graph = new Graph(100, new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(getClass(), "graph.description")));
-            graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             graph.setMinimumSize(new Dimension(66, 32));
             graph.setPreferredSize(new Dimension(150, 80));
         }
@@ -72,23 +73,16 @@ class MemoryIndicatorPanel extends AbstractIndicatorPanel {
             lblMaxMeasure = new JLabel(measureKb);
     //        lblMaxMeasure.setFont(smallFont);
 
-            lblCurrLabel.setForeground(TEXT_COLOR);
-            lblCurrMeasure.setForeground(TEXT_COLOR);
-            lblCurrValue.setForeground(TEXT_COLOR);
-            lblMaxLabel.setForeground(TEXT_COLOR);
-            lblMaxMeasure.setForeground(TEXT_COLOR);
-            lblMaxValue.setForeground(TEXT_COLOR);
-
-    //        lblCurrLabel.setBorder(BorderFactory.createLineBorder(Color.RED));
-    //        lblCurrMeasure.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-    //        lblCurrValue.setBorder(BorderFactory.createLineBorder(Color.CYAN));
-    //        lblMaxLabel.setBorder(BorderFactory.createLineBorder(Color.RED));
-    //        lblMaxMeasure.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-    //        lblMaxValue.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+            lblCurrLabel.setForeground(GraphColors.TEXT_COLOR);
+            lblCurrMeasure.setForeground(GraphColors.TEXT_COLOR);
+            lblCurrValue.setForeground(GraphColors.TEXT_COLOR);
+            lblMaxLabel.setForeground(GraphColors.TEXT_COLOR);
+            lblMaxMeasure.setForeground(GraphColors.TEXT_COLOR);
+            lblMaxValue.setForeground(GraphColors.TEXT_COLOR);
 
             legend = new JPanel(new GridBagLayout());
             legend.setBackground(Color.WHITE);
-            legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             legend.setMinimumSize(new Dimension(100, 80));
             legend.setPreferredSize(new Dimension(100, 80));
 

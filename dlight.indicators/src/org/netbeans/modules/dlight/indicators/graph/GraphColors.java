@@ -36,74 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
- * Convenient base class for indicator components.
+ * Provides common colors for graph painting.
  *
  * @author Alexey Vladykin
  */
-public abstract class AbstractIndicatorPanel extends JPanel {
+public final class GraphColors {
 
-    protected AbstractIndicatorPanel() {
-        initComponents();
+    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
+    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
+    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
+    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
+
+    public static final Color BORDER_COLOR = new Color(114, 138, 132);
+    public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);
+    public static final Color GRADIENT_TOP_COLOR = Color.WHITE;
+    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3, 0x80);
+    public static final Color TEXT_COLOR = new Color(49, 78, 114);
+
+    private GraphColors() {
     }
-
-    private void initComponents() {
-        setLayout(new GridBagLayout());
-        GridBagConstraints c;
-
-        JLabel label = new JLabel(getTitle());
-        label.setFont(label.getFont().deriveFont(label.getFont().getStyle() | Font.BOLD));
-        label.setForeground(GraphColors.TEXT_COLOR);
-        c = new GridBagConstraints();
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 1.0;
-        c.insets = new Insets(12, 12, 0, 12);
-        add(label, c);
-
-        JComponent graph = createGraph();
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(100, 80));
-        graph.setPreferredSize(new Dimension(100, 80));
-
-        c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        c.insets = new Insets(6, 12, 12, 0);
-        add(graph, c);
-
-        JComponent legendPanel = createLegend();
-        legendPanel.setBackground(Color.WHITE);
-        legendPanel.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-        legendPanel.setMinimumSize(new Dimension(100, 80));
-        legendPanel.setPreferredSize(new Dimension(100, 80));
-
-        c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 1.0;
-        c.insets = new Insets(6, -1, 12, 12);
-        add(legendPanel, c);
-    }
-
-    protected abstract String getTitle();
-
-    protected abstract JComponent createGraph();
-
-    protected abstract JComponent createLegend();
-
 }

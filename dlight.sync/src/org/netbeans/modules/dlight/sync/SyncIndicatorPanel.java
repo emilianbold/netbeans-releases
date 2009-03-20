@@ -13,6 +13,7 @@ import javax.swing.SwingConstants;
 import org.netbeans.modules.dlight.indicators.graph.AbstractIndicatorPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
+import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.openide.util.NbBundle;
 
 class SyncIndicatorPanel extends AbstractIndicatorPanel {
@@ -23,7 +24,7 @@ class SyncIndicatorPanel extends AbstractIndicatorPanel {
     private JLabel lblLocksLabel;
     private JLabel lblLocksValue;
 
-    private static final Color GRAPH_COLOR = new Color(0xE7, 0x6F, 0x00);
+    private static final Color GRAPH_COLOR = GraphColors.COLOR_1;
 
     /*package*/ SyncIndicatorPanel() {
     }
@@ -37,7 +38,7 @@ class SyncIndicatorPanel extends AbstractIndicatorPanel {
         if (graph == null) {
             GraphDescriptor descriptorLocks = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(getClass(), "graph.description.locks")); // NOI18N
             graph = new Graph(100, descriptorLocks);
-            graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             graph.setMinimumSize(new Dimension(66, 32));
             graph.setPreferredSize(new Dimension(150, 80));
         }
@@ -51,12 +52,12 @@ class SyncIndicatorPanel extends AbstractIndicatorPanel {
             lblLocksValue = new JLabel("00%"); // NOI18N
             lblLocksValue.setHorizontalAlignment(SwingConstants.RIGHT);
 
-            lblLocksLabel.setForeground(TEXT_COLOR);
-            lblLocksValue.setForeground(TEXT_COLOR);
+            lblLocksLabel.setForeground(GraphColors.TEXT_COLOR);
+            lblLocksValue.setForeground(GraphColors.TEXT_COLOR);
 
             legend = new JPanel(new GridBagLayout());
             legend.setBackground(Color.WHITE);
-            legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             legend.setMinimumSize(new Dimension(100, 80));
             legend.setPreferredSize(new Dimension(100, 80));
 

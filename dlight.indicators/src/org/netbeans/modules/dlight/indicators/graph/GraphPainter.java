@@ -61,9 +61,9 @@ class GraphPainter {
     private final static Stroke outlineStroke = new BasicStroke(2.0f);
     private boolean optimize = Boolean.getBoolean("percentage.graph.optimize");
 
-    private Color gridColor = new Color(0xD7, 0xE0, 0xE3, 0x80);
-    private Color backgroundTopColor = Color.WHITE;
-    private Color backgroundBottomColor = new Color(0xD6, 0xE3, 0xF3);
+    private Color gridColor = GraphColors.GRID_COLOR;
+    private Color backgroundTopColor = GraphColors.GRADIENT_TOP_COLOR;
+    private Color backgroundBottomColor = GraphColors.GRADIENT_BOTTOM_COLOR;
 
     private final GraphDescriptor[] descriptors;
     private final int seriesCount;

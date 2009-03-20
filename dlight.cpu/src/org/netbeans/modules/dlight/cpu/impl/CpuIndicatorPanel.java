@@ -52,6 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.indicators.graph.AbstractIndicatorPanel;
+import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import org.openide.util.NbBundle;
@@ -61,8 +62,8 @@ import org.openide.util.NbBundle;
  */
 public class CpuIndicatorPanel extends AbstractIndicatorPanel {
 
-    private static final Color COLOR_SYS = new Color(0xFF, 0xC7, 0x26);
-    private static final Color COLOR_USR = new Color(0xB2, 0xBC, 0x00);
+    private static final Color COLOR_SYS = GraphColors.COLOR_3;
+    private static final Color COLOR_USR = GraphColors.COLOR_4;
 
     private final CpuIndicator indicator;
     private PercentageGraph graph;
@@ -88,7 +89,7 @@ public class CpuIndicatorPanel extends AbstractIndicatorPanel {
             graph = new PercentageGraph(
                     new GraphDescriptor(COLOR_SYS, "System"),
                     new GraphDescriptor(COLOR_USR, "User"));
-            graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             graph.setMinimumSize(new Dimension(66, 32));
             graph.setPreferredSize(new Dimension(150, 80));
 
@@ -111,17 +112,17 @@ public class CpuIndicatorPanel extends AbstractIndicatorPanel {
         if (legend == null) {
             lblSysLabel = new JLabel(NbBundle.getMessage(getClass(), "label.sys"));
             lblSysValue = new JLabel();
-            lblSysLabel.setForeground(TEXT_COLOR);
-            lblSysValue.setForeground(TEXT_COLOR);
+            lblSysLabel.setForeground(GraphColors.TEXT_COLOR);
+            lblSysValue.setForeground(GraphColors.TEXT_COLOR);
 
             lblUsrLabel = new JLabel(NbBundle.getMessage(getClass(), "label.usr"));
             lblUsrValue = new JLabel();
-            lblUsrLabel.setForeground(TEXT_COLOR);
-            lblUsrValue.setForeground(TEXT_COLOR);
+            lblUsrLabel.setForeground(GraphColors.TEXT_COLOR);
+            lblUsrValue.setForeground(GraphColors.TEXT_COLOR);
 
             legend = new JPanel(new GridBagLayout());
             legend.setBackground(Color.WHITE);
-            legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
             legend.setMinimumSize(new Dimension(100, 80));
             legend.setPreferredSize(new Dimension(100, 80));
 
