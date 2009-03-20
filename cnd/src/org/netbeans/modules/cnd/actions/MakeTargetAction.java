@@ -102,18 +102,20 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
 
                 Node activedNode = activeNodes[0];
                 MakeExecSupport mes = activedNode.getCookie(MakeExecSupport.class);
-                String[] targets = mes.getMakeTargetsArray();
+                if (mes != null) {
+                    String[] targets = mes.getMakeTargetsArray();
 
-                //popup.add(new PopupItemDefaultTarget(activedNode, getString("DEFAULT_TARGET"))); // NOI18N
-                //if (targets.length > 0)
-                //popup.add(new JSeparator());
-                for (int i = 0; i < targets.length; i++) {
-                    popup.add(new PopupItemTarget(activedNode, targets[i], -1));
+                    //popup.add(new PopupItemDefaultTarget(activedNode, getString("DEFAULT_TARGET"))); // NOI18N
+                    //if (targets.length > 0)
+                    //popup.add(new JSeparator());
+                    for (int i = 0; i < targets.length; i++) {
+                        popup.add(new PopupItemTarget(activedNode, targets[i], -1));
+                    }
+                    if (targets.length > 0) {
+                        popup.add(new JSeparator());
+                    }
+                    popup.add(new PopupItemAddTarget(activedNode));
                 }
-                if (targets.length > 0) {
-                    popup.add(new JSeparator());
-                }
-                popup.add(new PopupItemAddTarget(activedNode));
                 initialized = true;
             }
             return popup;
@@ -173,10 +175,12 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         /** Invoked when an action occurs. */
         public void actionPerformed(ActionEvent e) {
             MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
-            TargetEditor targetEditor = new TargetEditor(mes.getMakeTargetsArray(), null, null);
-            int ret = targetEditor.showOpenDialog((JFrame) WindowManager.getDefault().getMainWindow());
-            if (ret == TargetEditor.OK_OPTION) {
-                mes.setMakeTargets(targetEditor.getTargets());
+            if (mes != null) {
+                TargetEditor targetEditor = new TargetEditor(mes.getMakeTargetsArray(), null, null);
+                int ret = targetEditor.showOpenDialog((JFrame) WindowManager.getDefault().getMainWindow());
+                if (ret == TargetEditor.OK_OPTION) {
+                    mes.setMakeTargets(targetEditor.getTargets());
+                }
             }
         }
     }
