@@ -129,7 +129,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         return result;
     }
 
-    public void refreshBuildScript() {
+    public void refreshBuildScript(boolean checkProjectXml) {
         if (isGroovyEnabled()) {
             GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
             URL stylesheet = this.getClass().getClassLoader().getResource(GROOVY_BUILD_XSL);
@@ -149,7 +149,7 @@ public class GroovyProjectExtender implements GroovyFeature {
                     }
                 }
 
-                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, true);
+                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, checkProjectXml);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalStateException ex) {
