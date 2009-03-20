@@ -318,16 +318,31 @@ public final class NbMavenProject {
     } 
 
     /**
-     * asynchronous dependency download, scheduled to some time in the future.
+     * asynchronous dependency download, scheduled to some time in the future. Useful
+     * for cases when a 3rd party codebase calls maven classes and can do so repeatedly in one sequence.
      */
     public synchronized void triggerDependencyDownload() {
         task.schedule(1000);
     }
 
+    /**
+     * Not to be called from AWT, will wait til the project binary dependency resolution finishes.
+     */
     public synchronized void synchronousDependencyDownload() {
         assert !SwingUtilities.isEventDispatchThread() : " Not to be called from AWT, can take significant amount ot time to download dependencies from the network."; //NOI18N
         task.schedule(0);
         task.waitFinished();
+    }
+
+    /**
+     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode)
+     * Not to be called from AWT thread. The current thread will continue after downloading binaries and firing project change event.
+     *
+     */
+    public void downloadDependencyAndJavadocSource() {
+        synchronousDependencyDownload();
+        triggerSourceJavadocDownload(true);
+        triggerSourceJavadocDownload(false);
     }
 
 

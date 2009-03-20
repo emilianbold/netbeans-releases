@@ -57,6 +57,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 
+import org.netbeans.modules.compapp.projects.jbi.api.POJOHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 import org.netbeans.spi.project.SubprojectProvider;
@@ -88,6 +89,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
@@ -96,6 +98,8 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -340,7 +344,7 @@ public class JbiProjectProperties {
     
     public static final String OSGI_SUPPORT = "osgi.support"; // NOI18N
     public static final String OSGI_CONTAINER_DIR = "osgi.container.dir"; // NOI18N
-
+    
     //================== Start of JBI  =====================================//
     
     /**
@@ -454,6 +458,10 @@ public class JbiProjectProperties {
      * DOCUMENT ME!
      */
     public static final String JBI_ROUTING = "com.sun.jbi.routing"; // NOI18N
+    /**
+     * DOCUMENT ME!
+     */
+    public static final String JBI_ROUTING_BC_AUTOCONNECT = "com.sun.jbi.routing.bc.autoconnect"; // NOI18N
     /**
      * DOCUMENT ME!
      */
@@ -790,7 +798,7 @@ public class JbiProjectProperties {
                 if (EJB_PROJECT_NAME.equals(pd.name)) {
                     String projectName = ProjectUtils.getInformation(project).getDisplayName();
                     properties.put(pd.name, new PropertyInfo(pd, projectName, projectName));
-                }
+                } 
             } else {
                 // Standard properties
                 String raw = ((EditableProperties) eProps.get(pd.dest)).getProperty(pd.name);
@@ -1706,7 +1714,7 @@ public class JbiProjectProperties {
                 String file = classPathElement[i];
                 String propertyName = getAntPropertyName(file);
                 boolean inDeployment = manifestItems.contains(propertyName);
-                VisualClassPathItem cpItem;
+                VisualClassPathItem cpItem = null;
                 
                 // First try to find out whether the item is well known classpath
                 // in the J2SE project type
@@ -1741,15 +1749,45 @@ public class JbiProjectProperties {
                 } else {
                     Object os[] = refHelper.findArtifactAndLocation( file );
                     if ((os != null) && (os.length > 0) ) {
-                        AntArtifact artifact = (AntArtifact) os[0];
-                        // Sub project artifact
-                        String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(
-                                file
-                                );
-                        cpItem = new VisualClassPathItem(
-                                artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval,
-                                inDeployment
-                                );
+                        
+                        AntArtifact artifact  = null;
+                        if (os[0] == null){
+                            // POJO SE
+                            String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(
+                                    file
+                                    );
+
+                            FileObject fo = antProjectHelper.getProjectDirectory();
+                            FileObject pObj = fo.getFileObject(eval);
+                            Project proj = null;
+                            if (pObj != null){
+                                proj = FileOwnerQuery.getOwner(pObj);
+                            }
+                            if ((proj!= null &&  JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME.equals(proj.getClass().getName()))){
+                                AntArtifactProvider prov = proj.getLookup().lookup(AntArtifactProvider.class);
+                                AntArtifact[] projArtifacts = prov.getBuildArtifacts();
+                                AntArtifact actualArtifact = null;
+                                if (projArtifacts.length > 0 ) {
+                                    actualArtifact = prov.getBuildArtifacts()[0];
+                                }
+                                artifact = new POJOAntArtifact(proj,actualArtifact);
+                                cpItem = new VisualClassPathItem(
+                                        artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval,
+                                        inDeployment
+                                        );      
+                            }
+                        }
+                        if ( artifact == null) {
+                            artifact = (AntArtifact) os[0];
+                            // Sub project artifact
+                            String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(
+                                    file
+                                    );
+                            cpItem = new VisualClassPathItem(
+                                    artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval,
+                                    inDeployment
+                                    );
+                        }
                     } else {
                         // Standalone jar or property
                         String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(
@@ -1852,8 +1890,14 @@ public class JbiProjectProperties {
                         break;
                         
                     case VisualClassPathItem.TYPE_ARTIFACT:
-                        
                         AntArtifact aa = (AntArtifact) vcpi.getObject();
+                        //POJOSE: if this is J2SE project create POJOAntArtifact and use it instead of the 
+                        // default AntArtifact by J2SEProject. Reason for a POJOAntArtifact:The ant artifact type for J2SE project
+                        // is Jar which is 
+                        // treated by comp. app as JavaEE project. 
+                        if (aa != null &&  isPOJOProject(aa)) {
+                           aa = new POJOAntArtifact(aa.getProject(), aa);
+                        } 
                         // String reference = refHelper.addReference( aa, null );
                         String reference = aa == null ? vcpi.getRaw() : // prevent NPE thrown from older projects
                             refHelper.addReference(aa, aa.getArtifactLocations()[0]);
@@ -1886,6 +1930,10 @@ public class JbiProjectProperties {
             antProjectHelper.putPrimaryConfigurationData(data, true);
             
             return sb.toString();
+        }
+        
+        private boolean isPOJOProject(AntArtifact aa) {
+            return aa.getProject().getClass().getName().equals((JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME)) && POJOHelper.getProjectProperty(aa.getProject(), JbiProjectConstants.POJO_PROJECT_PROPERTY) != null;
         }
     }
     

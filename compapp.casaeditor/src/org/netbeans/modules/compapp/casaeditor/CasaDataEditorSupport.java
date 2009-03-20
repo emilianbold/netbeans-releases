@@ -83,7 +83,7 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.CasaModelFactory;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -517,7 +517,7 @@ implements
     
     private List<TopComponent> getAssociatedTopComponents() {
         // Create a list of TopComponents associated with the
-        // editor's schema data object, starting with the the
+        // editor's schema data object, starting with the
         // active TopComponent. Add all open TopComponents in
         // any mode that are associated with the DataObject.
         // [Note that EDITOR_MODE does not contain editors in
@@ -650,14 +650,14 @@ ErrorManager.getDefault().notify(ioe);
         
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             CasaDataEditorSupport editor = getCasaDataEditorSupport();
-	    boolean canClose = editor != null ? editor.canClose() : true;
-	    // during the shutdown sequence this is called twice. The first time
-	    // through the multi-view infrastructure. The second time is done through
-	    // the TopComponent close. If the file is dirty and the user chooses
-	    // to discard changes, the second time will also ask whether the
-	    // to save or discard changes. 
-	    if (canClose) {
-		myDataObject.setModified(false);
+        boolean canClose = editor != null ? editor.canClose() : true;
+        // during the shutdown sequence this is called twice. The first time
+        // through the multi-view infrastructure. The second time is done through
+        // the TopComponent close. If the file is dirty and the user chooses
+        // to discard changes, the second time will also ask whether the
+        // to save or discard changes. 
+        if (canClose) {
+        myDataObject.setModified(false);
                 
                 // discard changes to related models
                 CasaWrapperModel model = getModel(myDataObject);
@@ -676,8 +676,8 @@ ErrorManager.getDefault().notify(ioe);
                 }
                 
                 modelMap.remove(myDataObject);
-	    }
-	    return canClose;
+        }
+        return canClose;
         }
     }
 }

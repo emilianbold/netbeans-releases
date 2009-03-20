@@ -42,8 +42,6 @@ package org.netbeans.modules.xml.schema.model.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
@@ -54,6 +52,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.util.WeakListeners;
 
 /**
  * Class is intended to do optimized resolving of a schema model by an 
@@ -67,8 +66,8 @@ public class RefCacheSupport {
     private SchemaModel mSModel;
 
     // The caching map.
-    private WeakHashMap<SchemaModelReference, SchemaModelImpl> refModelCache =
-            new WeakHashMap<SchemaModelReference, SchemaModelImpl>();
+    private WeakHashMap<SchemaModelReference, SmAttachment> refModelCache =
+            new WeakHashMap<SchemaModelReference, SmAttachment>();
 
     // Listens self schema model.
     private PropertyChangeListener mPropertySelfListener = null;
@@ -84,8 +83,8 @@ public class RefCacheSupport {
      * It is mainly intended to be used by JUnit tests.
      * @return
      */
-    public Collection<SchemaModelImpl> getCachedModels() {
-        return Collections.unmodifiableCollection(refModelCache.values());
+    public int getCachedModelsSize() {
+        return refModelCache.size();
     }
 
     /**
@@ -93,7 +92,8 @@ public class RefCacheSupport {
      * @return
      */
     public SchemaModelImpl getCachedModel(SchemaModelReference ref) {
-        return refModelCache.get(ref);
+        SmAttachment sma = refModelCache.get(ref);
+        return sma == null ? null : sma.mSchemaModel;
     }
 
     /**
@@ -113,8 +113,9 @@ public class RefCacheSupport {
      */
     public SchemaModelImpl optimizedResolve(SchemaModelReference ref) {
         try {
-            SchemaModelImpl cachedModel = refModelCache.get(ref);
-            if (cachedModel != null) {
+            SmAttachment sma = refModelCache.get(ref);
+            if (sma != null) {
+                SchemaModelImpl cachedModel = sma.mSchemaModel;
                 State cachedModelState = cachedModel.getState();
                 if (cachedModelState == State.VALID) {
                     return cachedModel;
@@ -129,9 +130,7 @@ public class RefCacheSupport {
             SchemaModelImpl resolved = (SchemaModelImpl) ref.resolveReferencedModel();
             //
             if (resolved != null) {
-                refModelCache.put(ref, resolved);
-                lazySelfListenerInit();
-                startListening(resolved);
+                attach(ref, resolved);
             }
             return resolved;
         } catch (CatalogModelException ex) {
@@ -146,8 +145,8 @@ public class RefCacheSupport {
      * The method can be helpful for finalization. 
      */
     public void discardCache() {
-        for (SchemaModelImpl extSModel : refModelCache.values()) {
-           extSModel.removePropertyChangeListener(mPropertyExtListener);
+        for (SmAttachment sma : refModelCache.values()) {
+           sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
         }
         refModelCache.clear();
         mSModel.removePropertyChangeListener(mPropertySelfListener);
@@ -217,40 +216,47 @@ public class RefCacheSupport {
     }
 
     /**
-     * Starts listening changes of the specified external schema model.
+     * Creates attachment between a schema reference and the corresponding model.
+     * All required activities are made synchronized:
+     *  - new weak listener is created and subscribtion is adde to listen
+     * changes of the referenced model.
+     *  - the model and the listener is added to cache
      */
-    private synchronized void startListening(SchemaModel referencedModel) {
+    private synchronized void attach(SchemaModelReference ref, 
+            SchemaModelImpl referencedModel) {
+        //
+        lazySelfListenerInit();
+        //
         if (mPropertyExtListener == null) {
             initExtListener();
         }
-        referencedModel.addPropertyChangeListener(mPropertyExtListener);
-    }
-
-    /**
-     * Stops listening changes of the specified external schema model.
-     * @param referencedModel
-     */
-    private void stopListening(SchemaModel referencedModel) {
-        referencedModel.removePropertyChangeListener(mPropertyExtListener);
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(
+                mPropertySelfListener, referencedModel);
+        //
+        referencedModel.addPropertyChangeListener(weakListener);
+        //
+        refModelCache.put(ref, new SmAttachment(referencedModel, weakListener));
     }
 
     /**
      * Excludes a schema model from the cache.
      * @param referencedModel
      */
-    private void excludeModel(SchemaModel referencedModel) {
+    private synchronized void excludeModel(SchemaModel referencedModel) {
         //
         // Find cache entry to remove
         List<SchemaModelReference> toRemove = new ArrayList<SchemaModelReference>();
-        for (Entry<SchemaModelReference, SchemaModelImpl> entry : refModelCache.entrySet()) {
-           if (referencedModel.equals(entry.getValue())) {
+        for (Entry<SchemaModelReference, SmAttachment> entry : refModelCache.entrySet()) {
+           if (referencedModel.equals(entry.getValue().mSchemaModel)) {
                toRemove.add(entry.getKey());
            }
         }
         //
         // Remove
         for (SchemaModelReference smr : toRemove) {
-            stopListening(referencedModel);
+            SmAttachment sma = refModelCache.get(smr);
+            referencedModel.removePropertyChangeListener(sma.mPCL);
+            //
             refModelCache.remove(smr);
         }
     }
@@ -259,10 +265,10 @@ public class RefCacheSupport {
      * Excludes an Import/Include/Redefine from the cache.
      * @param sModelRef
      */
-    private void excludeModelRef(SchemaModelReference sModelRef) {
-        SchemaModelImpl sModel = refModelCache.get(sModelRef);
-        if (sModel != null) {
-            stopListening(sModel);
+    private synchronized void excludeModelRef(SchemaModelReference sModelRef) {
+        SmAttachment sma = refModelCache.get(sModelRef);
+        if (sma != null) {
+            sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
             refModelCache.remove(sModelRef);
         }
     }
@@ -300,6 +306,18 @@ public class RefCacheSupport {
                 }
             }
         };
+    }
+
+    private static class SmAttachment {
+        public SchemaModelImpl mSchemaModel;
+        public PropertyChangeListener mPCL;
+
+        public SmAttachment(SchemaModelImpl sModel, PropertyChangeListener pcl) {
+            assert sModel != null && pcl != null;
+            //
+            mSchemaModel = sModel;
+            mPCL = pcl;
+        }
     }
 
 }
