@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.sun.com/jbi/qos/message-tracking"
+            xmlns:tns="http://www.sun.com/jbi/qos/message-tracking"
+            elementFormDefault="qualified">
+    <xsd:element name="message-tracking">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="payload-query" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:attribute name="xpath" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="message-query" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:attribute name="property" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="tracking" type="xsd:boolean"/>
+            <xsd:attribute name="store-payload" type="xsd:boolean"/>
+            <xsd:attribute name="externalize-payload" type="xsd:boolean"/>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
