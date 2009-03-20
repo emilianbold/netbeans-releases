@@ -227,7 +227,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             parameters.put(parameter, t);
             return t;
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Bugzilla.LOG.log(Level.SEVERE, parameter, ex);
         }
         return null;
     }
