@@ -42,4 +42,5 @@ made subject to such option by the copyright holder.
 -->
 <project name="css.visual" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="test" depends="test-unit"/>
 </project>
