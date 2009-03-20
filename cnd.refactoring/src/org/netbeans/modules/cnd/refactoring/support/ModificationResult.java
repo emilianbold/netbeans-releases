@@ -47,9 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -279,10 +277,9 @@ public final class ModificationResult {
         final String oldText;
         final String newText;
         final String description;
-        private final CsmUID<CsmObject> thisObject;
         private boolean excluded;
 
-        public Difference(Kind kind, CsmObject ref, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
+        public Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
             this.kind = kind;
             this.startPos = startPos;
             this.endPos = endPos;
@@ -290,11 +287,6 @@ public final class ModificationResult {
             this.newText = newText;
             this.description = description;
             this.excluded = false;
-            this.thisObject = CsmRefactoringUtils.getHandler(ref);
-        }
-
-        public CsmObject getReferenceObject() {
-            return thisObject.getObject();
         }
 
         public Kind getKind() {
