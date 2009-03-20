@@ -43,7 +43,7 @@ package org.netbeans.modules.options.editor;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.core.startup.Main;
@@ -51,12 +51,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -97,9 +94,7 @@ public class EditorOptionsTest extends NbTestCase {
     }
     
     public void testOptionsCategories () {
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        for(OptionsCategory oc : getCategories()) {
             assertNotNull (oc.getCategoryName ());
             assertNotNull (oc.getIcon());
             assertNotNull (oc.getTitle ());
@@ -107,20 +102,15 @@ public class EditorOptionsTest extends NbTestCase {
     }
     
     public void testUpdateOk () {
-        List controllers = new ArrayList ();
-        List lookups = new ArrayList ();
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        List<OptionsPanelController> controllers = new ArrayList<OptionsPanelController>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for(OptionsCategory oc : getCategories()) {
             OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        Lookup masterLookup = new ProxyLookup(lookups.toArray (new Lookup [lookups.size ()]));
+        for(OptionsPanelController pc : controllers) {
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             pc.applyChanges ();
@@ -128,20 +118,15 @@ public class EditorOptionsTest extends NbTestCase {
     }
     
     public void testUpdateCancel () {
-        List controllers = new ArrayList ();
-        List lookups = new ArrayList ();
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        List<OptionsPanelController> controllers = new ArrayList<OptionsPanelController>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for(OptionsCategory oc : getCategories()) {
             OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        Lookup masterLookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+        for(OptionsPanelController pc : controllers) {
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             pc.cancel ();
@@ -149,20 +134,15 @@ public class EditorOptionsTest extends NbTestCase {
     }
     
     public void testOk () {
-        List controllers = new ArrayList ();
-        List lookups = new ArrayList ();
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        List<OptionsPanelController> controllers = new ArrayList<OptionsPanelController>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for(OptionsCategory oc : getCategories()) {
             OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        Lookup masterLookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+        for(OptionsPanelController pc : controllers) {
             JComponent c = pc.getComponent (masterLookup);
             pc.update();
             pc.applyChanges ();
@@ -172,22 +152,17 @@ public class EditorOptionsTest extends NbTestCase {
     public void testCancel () {
         
         // 1) load PanelControllers and init master lookup
-        List controllers = new ArrayList ();
-        List lookups = new ArrayList ();
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        List<OptionsPanelController> controllers = new ArrayList<OptionsPanelController>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for(OptionsCategory oc : getCategories()) {
             OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+        Lookup masterLookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
         
         // 2) create panels & call cancel on all PanelControllers
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        for(OptionsPanelController pc : controllers) {
             JComponent c = pc.getComponent (masterLookup);
             pc.update();
             pc.cancel ();
@@ -197,22 +172,17 @@ public class EditorOptionsTest extends NbTestCase {
     public void testChangedAndValid () {
         
         // 1) load PanelControllers and init master lookup
-        List controllers = new ArrayList ();
-        List lookups = new ArrayList ();
-        Iterator it = getCategories ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory oc = (OptionsCategory) it.next ();
+        List<OptionsPanelController> controllers = new ArrayList<OptionsPanelController>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for(OptionsCategory oc : getCategories()) {
             OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+        Lookup masterLookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
         
         // 2) create panels & call cancel on all PanelControllers
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        for(OptionsPanelController pc : controllers) {
             assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
             assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
             JComponent c = pc.getComponent (masterLookup);
@@ -235,9 +205,7 @@ public class EditorOptionsTest extends NbTestCase {
             assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
         }
         
-        it = controllers.iterator ();
-        while (it.hasNext ()) {
-            OptionsPanelController pc = (OptionsPanelController) it.next ();
+        for(OptionsPanelController pc : controllers) {
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
@@ -245,12 +213,13 @@ public class EditorOptionsTest extends NbTestCase {
         }
     }
 
-    private List getCategories () {
-        FileObject fo = FileUtil.getConfigFile ("OptionsDialog");
-        Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
-            getLookup ();
-        return new ArrayList (lookup.lookup (
-            new Lookup.Template (OptionsCategory.class)
-        ).allInstances ());
+    private Collection<? extends OptionsCategory> getCategories () {
+//        FileObject fo = FileUtil.getConfigFile ("OptionsDialog");
+//        Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
+//            getLookup ();
+//        return new ArrayList (lookup.lookup (
+//            new Lookup.Template (OptionsCategory.class)
+//        ).allInstances ());
+        return Lookups.forPath("OptionsDialog").lookupAll(OptionsCategory.class);
     }
 }
