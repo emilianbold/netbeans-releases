@@ -53,6 +53,8 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -64,7 +66,7 @@ public final class PhpUnit extends PhpProgram {
     public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
-    public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX+".php"; // NOI18N
+    public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
     public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
@@ -75,6 +77,9 @@ public final class PhpUnit extends PhpProgram {
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
+
+    static final String AT_I18N = NbBundle.getMessage(UnitTestRunner.class, "LBL_At").replace("{0}", ""); // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("(?:" + AT_I18N + ")?(.+):(\\d+)"); // NOI18N
 
     static int[] version = null;
 

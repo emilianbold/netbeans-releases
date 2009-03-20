@@ -42,13 +42,17 @@ package org.netbeans.modules.php.project.ui.actions.support;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.util.PhpProgram;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -61,6 +65,7 @@ import org.openide.util.Lookup;
  * @author Tomas Mysik
  */
 class ConfigActionScript extends ConfigAction {
+    static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
     private final FileObject sourceRoot;
 
     protected ConfigActionScript(PhpProject project) {
@@ -151,6 +156,7 @@ class ConfigActionScript extends ConfigAction {
                     .inputVisible(true)
                     .showProgress(true)
                     .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
                     .outProcessorFactory(redirector)
                     .postExecution(redirector);
 
@@ -191,6 +197,18 @@ class ConfigActionScript extends ConfigAction {
             }
             assert file != null : "Start file must be found";
             return FileUtil.toFile(file);
+        }
+    }
+
+    static final class PhpLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+
+        public LineConvertor newLineConvertor() {
+            LineConvertor[] lineConvertors = new LineConvertor[PhpInterpreter.LINE_PATTERNS.length];
+            int i = 0;
+            for (Pattern linePattern : PhpInterpreter.LINE_PATTERNS) {
+                lineConvertors[i++] = LineConvertors.filePattern(null, linePattern, null, 1, 2);
+            }
+            return LineConvertors.proxy(lineConvertors);
         }
     }
 }
