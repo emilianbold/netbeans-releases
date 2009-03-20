@@ -234,7 +234,7 @@ public class SnapshotTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
         Snapshot originalSnapshot = source.createSnapshot ();
-        System.out.println (originalSnapshot.getText ().length ());
+        //System.out.println (originalSnapshot.getText ().length ());
         Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
             originalSnapshot.create (0, 4, "text/jedna"),
             originalSnapshot.create ("123", "text/jedna"),
@@ -280,7 +280,7 @@ public class SnapshotTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
         Snapshot originalSnapshot = source.createSnapshot ();
-        System.out.println (originalSnapshot.getText ().length ());
+        //System.out.println (originalSnapshot.getText ().length ());
         Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
             originalSnapshot.create ("123", "text/jedna"),
         }));

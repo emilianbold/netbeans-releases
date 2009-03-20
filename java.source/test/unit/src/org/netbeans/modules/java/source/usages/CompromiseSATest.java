@@ -385,7 +385,7 @@ public class CompromiseSATest extends NbTestCase {
         StandardJavaFileManager fm = tool.getStandardFileManager(null, null, null);
         List<String> options = new LinkedList<String>();
         options.add ("-Xjcov");             // Make the compiler store end positions
-        options.add ("-g:");                // Enable some debug info
+//        options.add ("-g:");                // Enable some debug info
         options.add ("-g:lines" );	    // Make the compiler to maintain line table
         options.add("-g:vars" );	    // Make the compiler to maintain local variables table
         options.add ("-bootclasspath");
