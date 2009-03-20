@@ -39,47 +39,29 @@
 
 package org.netbeans.modules.groovy.support;
 
+import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 
 /**
  *
  * @author Petr Hejl
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
-public class GroovyLookupProvider implements LookupProvider {
+@ProjectServiceProvider(service=ProjectXmlSavedHook.class, projectType="org-netbeans-modules-java-j2seproject")
+public class GroovyXmlSavedHook extends ProjectXmlSavedHook {
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            return Lookup.EMPTY;
-        }
+    private final Project project;
 
-        return Lookups.fixed(new J2seProjectOpenedHook(project));
+    public GroovyXmlSavedHook(Project project) {
+        this.project = project;
     }
 
-    private static class J2seProjectOpenedHook extends ProjectOpenedHook {
-
-        private final Project project;
-
-        public J2seProjectOpenedHook(Project project) {
-            this.project = project;
-        }
-
-        @Override
-        protected void projectOpened() {
-            GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-            if (extender != null) {
-                extender.refreshBuildScript(true);
-            }
-        }
-
-        @Override
-        protected void projectClosed() {
-
+    @Override
+    protected void projectXmlSaved() throws IOException {
+        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
+        if (extender != null) {
+            extender.refreshBuildScript(false);
         }
     }
 
