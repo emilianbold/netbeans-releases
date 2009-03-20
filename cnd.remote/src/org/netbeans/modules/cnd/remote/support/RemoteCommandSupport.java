@@ -82,6 +82,9 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 pb = pb.addEnvironmentVariables(env);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
+                if (is == null) { // otherwise we can get an NPE in reader
+                    throw new IOException("process (" + process.getClass().getName() + ") returned null input stream"); //NOI18N
+                }
                 in = new BufferedReader(new InputStreamReader(is));
                 out = new StringWriter();
                 String line;

@@ -91,14 +91,17 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     private CsmClass enclosingClass;
     private ProgressListener listener = new ProgressListener() {
 
+        @Override
         public void start(ProgressEvent event) {
             fireProgressListenerStart(event.getOperationType(), event.getCount());
         }
 
+        @Override
         public void step(ProgressEvent event) {
             fireProgressListenerStep();
         }
 
+        @Override
         public void stop(ProgressEvent event) {
             fireProgressListenerStop();
         }
