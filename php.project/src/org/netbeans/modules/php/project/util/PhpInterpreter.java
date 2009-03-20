@@ -39,10 +39,16 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.util.regex.Pattern;
+
 /**
  * @author Tomas Mysik
  */
 public final class PhpInterpreter extends PhpProgram {
+    public static final Pattern[] LINE_PATTERNS = {
+        Pattern.compile(".+\\s+in\\s+(.+)\\s+on\\s+line\\s+(\\d+)"), // NOI18N
+        Pattern.compile(".+\\(\\)\\s+(.+):(\\d+)"), // NOI18N
+    };
 
     /**
      * {@inheritDoc}
