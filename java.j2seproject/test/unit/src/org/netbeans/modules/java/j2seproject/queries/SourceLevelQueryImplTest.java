@@ -85,9 +85,10 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     private ProjectManager pm;
     private Project pp;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
@@ -99,6 +100,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         }
     }
 
+    @Override
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
