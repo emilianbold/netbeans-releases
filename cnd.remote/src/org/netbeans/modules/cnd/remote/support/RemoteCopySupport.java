@@ -189,7 +189,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     }
 
     public boolean copyTo(String localFile, String remotePath) {
-        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0, null);
+        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0775, null);
         try {
             Integer i = result.get();
             if (i != null) {

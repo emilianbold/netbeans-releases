@@ -57,7 +57,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class TransportTestCase extends RemoteTestBase {
 
     static {
-        System.setProperty("CND_REMOTE_TESTUSERINFO", "rdtest:tester33@endif.russia");
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
     }
     public TransportTestCase(String testName) {
         super(testName);
@@ -129,7 +131,7 @@ public class TransportTestCase extends RemoteTestBase {
             String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
             HostInfoProvider hip = HostInfoProvider.getDefault();
-            assert hip.fileExists(execEnv, remoteFile);
+            assert hip.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
             String catCommand = "cat " + remoteFile;
             RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
 //            assert rcs2.run() == 0; // add more output
