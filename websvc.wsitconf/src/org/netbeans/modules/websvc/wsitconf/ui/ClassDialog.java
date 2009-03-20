@@ -187,6 +187,9 @@ public class ClassDialog {
         }
 
         private boolean isWantedClass(JavaSource js) {
+            if (extendingClass == null) {
+                return true;
+            }
             final Boolean[] subType = new Boolean[1];
             subType[0] = false;
             try {

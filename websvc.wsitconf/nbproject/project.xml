@@ -413,8 +413,10 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <friend>org.netbeans.modules.websvc.metro.samples</friend>
                 <friend>org.netbeans.modules.websvc.wsitest</friend>
+                <package>org.netbeans.modules.websvc.jaxwsruntimemodel</package>
                 <package>org.netbeans.modules.websvc.wsitconf.api</package>
                 <package>org.netbeans.modules.websvc.wsitconf.spi</package>
+                <package>org.netbeans.modules.websvc.wsitconf.ui</package>
                 <package>org.netbeans.modules.websvc.wsitconf.wsdlmodelext</package>
             </friend-packages>
         </data>

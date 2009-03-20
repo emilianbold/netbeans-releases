@@ -827,16 +827,16 @@ public final class NbMavenProjectImpl implements Project {
             }
             String toReturn = pr.getName();
             if (toReturn == null) {
-                String grId = NbMavenProjectImpl.this.getOriginalMavenProject().getGroupId();
-                String artId = NbMavenProjectImpl.this.getOriginalMavenProject().getArtifactId();
+                String grId = pr.getGroupId();
+                String artId = pr.getArtifactId();
                 if (grId != null && artId != null) {
                     toReturn = grId + ":" + artId; //NOI18N
 
                 } else {
-                    toReturn = org.openide.util.NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
+                    toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
             }
-            toReturn = toReturn + " (" + NbMavenProjectImpl.this.getOriginalMavenProject().getPackaging() + ")"; //NOI18N
+            toReturn = toReturn + " (" + pr.getPackaging() + ")"; //NOI18N
 
             return toReturn;
         }

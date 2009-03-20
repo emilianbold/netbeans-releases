@@ -38,21 +38,16 @@
  */
 package org.netbeans.modules.bugtracking.ui.search;
 
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
-import org.openide.util.Utilities;
 
 /**
  * ListCellRenderer for SearchResults

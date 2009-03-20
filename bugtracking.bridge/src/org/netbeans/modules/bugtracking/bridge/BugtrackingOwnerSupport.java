@@ -93,21 +93,31 @@ public class BugtrackingOwnerSupport {
         }
         return instance;
     }
-    
+
     public Repository getRepository(File file) {
-        return getRepository(file, null);
+        return getRepository(file, null, true);
+    }
+
+    public Repository getRepository(File file, boolean askIfUnknown) {
+        return getRepository(file, null, askIfUnknown);
     }
 
     public Repository getRepository(File file, String issueId) {
+        return getRepository(file, issueId, true);
+    }
+
+    public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
         //TODO - synchronization/threading
         Repository repo = fileToRepo.get(file);
         if(repo != null) {
-            LOG.log(Level.FINER, " found cached repository [" + repo + "] for file " + file); // NOI18N
+            LOG.log(Level.FINER, " found cached repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
+        } else {
+            LOG.log(Level.FINER, " no repository cached for file {1}", new Object[] {file}); // NOI18N
         }
 
-        if(repo == null) {
+        if(repo == null && askIfUnknown) {
             repo = getBugtrackingOwner(file, issueId);
-            LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
+            LOG.log(Level.FINER, " caching repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
             fileToRepo.put(file, repo);
         }
 
@@ -173,7 +183,7 @@ public class BugtrackingOwnerSupport {
     }
 
     /**
-     * 
+     *
      * @throws  javax.security.auth.login.LoginException
      *          if the user failed to log into Kenai
      */
@@ -208,7 +218,7 @@ public class BugtrackingOwnerSupport {
     /**
      * Checks whether the user is logged to Kenai. If he/she is not logged in,
      * displays the login dialog and allows the user is logged in.
-     * 
+     *
      * @return  {@code true} if the user has already been logged in
      *          or if he/she has successfuly logged in with the dialog;
      *          {@code false} otherwise
@@ -226,6 +236,41 @@ public class BugtrackingOwnerSupport {
     }
 
     private Repository getRepositoryFromPrefs(File file) {
+        String repoString = getRepositoryStringFromPrefs(file);
+        if ((repoString == null) || (repoString.length() == 0)) {
+            return null;
+        }
+
+        char firstChar = repoString.charAt(0);
+        if (firstChar == '?') {     //information about loose association
+            return null;
+        }
+
+        String repositoryName;
+        if (firstChar == '!') {
+            repositoryName = repoString.substring(1);
+            if (repositoryName.length() == 0) {
+                return null;
+            }
+        } else {
+            repositoryName = repoString;
+        }
+
+        return getRepositoryByName(repositoryName);
+    }
+
+    private Repository getRepositoryByName(String requestedName) {
+        Repository[] repositories = BugtrackingUtil.getKnownRepositories();
+        for (Repository repository : repositories) {
+            if (repository.getDisplayName().equals(requestedName)) {
+                return repository;
+            }
+        }
+
+        return null;
+    }
+
+    private String getRepositoryStringFromPrefs(File file) {
         String filePath;
         try {
             filePath = file.getCanonicalPath();
@@ -237,32 +282,30 @@ public class BugtrackingOwnerSupport {
         }
 
         String preferencesKey = REPOSITORY_FOR_FILE_PREFIX + filePath;
-        String requestedUrl = getPreferences().get(preferencesKey, null);
-        if ((requestedUrl == null) || (requestedUrl.length() == 0)) {
-            return null;
-        }
-
-        Repository[] repositories = BugtrackingUtil.getKnownRepositories();
-        for (Repository repository : repositories) {
-            if (repository.getUrl().equals(requestedUrl)) {
-                return repository;
-            }
-        }
-
-        return null;
+        return getPreferences().get(preferencesKey, null);
     }
 
-    private void storeRepositoryMappingToPrefs(File root, Repository repository) {
+    protected void storeRepositoryMappingToPrefs(File root, Repository repository) {
+        storeRepositoryMappingToPrefs(root, repository, true);
+    }
+
+    protected void storeRepositoryMappingToPrefs(File root, Repository repository, boolean strong) {
         String key, value;
 
         try {
             key = root.getCanonicalPath();
         } catch (IOException ex) {
-            LOG.throwing(getClass().getCanonicalName(), "storeMapping", //NOI18N
-                         ex);
+            LOG.throwing(getClass().getCanonicalName(),
+                "storeRepositoryMappingToPrefs",               //NOI18N
+                ex);
             return;
         }
-        value = repository.getUrl();
+
+        String repositoryName = repository.getDisplayName();
+        value = new StringBuilder(1 + repositoryName.length())
+                .append(strong ? '!' : '?')
+                .append(repositoryName)
+                .toString();
 
         getPreferences().put(REPOSITORY_FOR_FILE_PREFIX + key, value);
     }
