@@ -325,24 +325,24 @@ public class KenaiTest extends NbTestCase {
         assertFalse(authorized);
     }
 
-    @Test
-    /**
-     * Test of isAuthorized method of class Kenai
-     */
-    public void testIsAuthorized2() throws Exception {
-        System.out.println("testIsAuthorized2");
-        String name = UNITTESTUNIQUENAME;
-        try {
-            KenaiProject prj = instance.getProject(name);
-
-            boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
-            System.out.println("PROJECTS_ADMIN? " + authorized);
-            assertTrue(authorized);
-        } catch (KenaiErrorMessage mes) {
-            System.out.println(mes.getAsString());
-            throw mes;
-        }
-    }
+//    @Test
+//    /**
+//     * Test of isAuthorized method of class Kenai
+//     */
+//    public void testIsAuthorized2() throws Exception {
+//        System.out.println("testIsAuthorized2");
+//        String name = UNITTESTUNIQUENAME;
+//        try {
+//            KenaiProject prj = instance.getProject(name);
+//
+//            boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
+//            System.out.println("PROJECTS_ADMIN? " + authorized);
+//            assertTrue(authorized);
+//        } catch (KenaiErrorMessage mes) {
+//            System.out.println(mes.getAsString());
+//            throw mes;
+//        }
+//    }
 
     /**
      * Test of createProject method, of class Kenai.
@@ -377,7 +377,7 @@ public class KenaiTest extends NbTestCase {
         String description = "Test Description - FORUM";
         KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
         try {
-            KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.FORUM.getId(), null, null, null);
+            KenaiFeature feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
 
@@ -391,7 +391,7 @@ public class KenaiTest extends NbTestCase {
             name = "unittestfeature03";
             displayName = "Feature 3";
             description = "Test Description - LISTS";
-            feature = project.createProjectFeature(name, displayName, description, KenaiFeature.LISTS.getId(), null, null, null);
+            feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.LISTS.getId(), null, null, null);
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
 
@@ -406,7 +406,7 @@ public class KenaiTest extends NbTestCase {
                 name = "unittestfeature05";
                 displayName = "Feature 5";
                 description = "Test Description - WIKI";
-                feature = project.createProjectFeature(name, displayName, description, KenaiFeature.WIKI.getId(), null, null, null);
+                feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.WIKI.getId(), null, null, null);
                 fail("Second wiki feature was created for the project!");
             } catch (Throwable _t) {
                 // expected result
@@ -420,7 +420,7 @@ public class KenaiTest extends NbTestCase {
     @Test
     /**
      * Test of getFeatures method of class Kenai
-     * Note: This test also checks all methods from KenaiProjectFeature
+     * Note: This test also checks all methods from KenaiFeature
      */
     public void testGetFeatures() throws KenaiException {
         BufferedReader br = null;
@@ -431,7 +431,7 @@ public class KenaiTest extends NbTestCase {
             String line = null;
             System.out.println("getFeature");
             KenaiProject project = instance.getProject("java-inline");
-            for (KenaiProjectFeature feature : project.getFeatures()) {
+            for (KenaiFeature feature : project.getFeatures()) {
                 System.out.println("===");
                 // Check feature's name
                 line = br.readLine().trim();
@@ -553,11 +553,11 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
-        _suite.addTest(new KenaiTest("testIsAuthorized2"));
+//        _suite.addTest(new KenaiTest("testIsAuthorized2"));
         _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-//        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
         return _suite;
     }
     ;

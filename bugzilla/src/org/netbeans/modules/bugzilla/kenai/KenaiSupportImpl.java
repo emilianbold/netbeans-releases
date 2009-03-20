@@ -45,9 +45,9 @@ import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 
 /**
  *
@@ -60,8 +60,8 @@ public class KenaiSupportImpl extends KenaiSupport {
         if(project == null) {
             return null;
         }
-        KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
-        for (KenaiProjectFeature f : features) {            
+        KenaiFeature[] features = project.getFeatures(Type.ISSUES);
+        for (KenaiFeature f : features) {
             if(!f.getName().equals("bz") && 
                !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
             {

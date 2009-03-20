@@ -39,52 +39,54 @@
 
 package org.netbeans.modules.kenai.api;
 
+import org.netbeans.modules.kenai.api.KenaiService.Type;
+
 /**
  * Enumerates possible activities of a Kenai user.
- *
+ * TODO: do we need this class at all?
  * @author Maros Sandor
  */
 public enum KenaiActivity {
 
-    FORUM_READ      (KenaiFeature.FORUM,    "read"),
-    FORUM_CREATE    (KenaiFeature.FORUM,    "create"),
-    FORUM_UPDATE    (KenaiFeature.FORUM,    "update"),
-    FORUM_DELETE    (KenaiFeature.FORUM,    "delete"),
-    FORUM_ADMIN     (KenaiFeature.FORUM,    "admin"),
+    FORUM_READ      (Type.FORUM,    "read"),
+    FORUM_CREATE    (Type.FORUM,    "create"),
+    FORUM_UPDATE    (Type.FORUM,    "update"),
+    FORUM_DELETE    (Type.FORUM,    "delete"),
+    FORUM_ADMIN     (Type.FORUM,    "admin"),
 
-    ISSUES_CREATE   (KenaiFeature.ISSUES,   "create"),
-    ISSUES_READ     (KenaiFeature.ISSUES,   "read"),
-    ISSUES_WRITE    (KenaiFeature.ISSUES,   "write"),
+    ISSUES_CREATE   (Type.ISSUES,   "create"),
+    ISSUES_READ     (Type.ISSUES,   "read"),
+    ISSUES_WRITE    (Type.ISSUES,   "write"),
 
-    LISTS_ADMIN     (KenaiFeature.LISTS,    "admin"),
-    LISTS_ARCHIVE   (KenaiFeature.LISTS,    "archive"),
-    LISTS_CLOSE     (KenaiFeature.LISTS,    "close"),
-    LISTS_CREATE    (KenaiFeature.LISTS,    "create"),
-    LISTS_MODERATE  (KenaiFeature.LISTS,    "moderate"),
-    LISTS_SEND      (KenaiFeature.LISTS,    "send"),
-    LISTS_SUBSCRIBE (KenaiFeature.LISTS,    "subscribe"),
+    LISTS_ADMIN     (Type.LISTS,    "admin"),
+    LISTS_ARCHIVE   (Type.LISTS,    "archive"),
+    LISTS_CLOSE     (Type.LISTS,    "close"),
+    LISTS_CREATE    (Type.LISTS,    "create"),
+    LISTS_MODERATE  (Type.LISTS,    "moderate"),
+    LISTS_SEND      (Type.LISTS,    "send"),
+    LISTS_SUBSCRIBE (Type.LISTS,    "subscribe"),
 
-    WIKI_DELETE     (KenaiFeature.WIKI,     "delete"),
-    WIKI_READ       (KenaiFeature.WIKI,     "read"),
-    WIKI_WRITE      (KenaiFeature.WIKI,     "write"),
+    WIKI_DELETE     (Type.WIKI,     "delete"),
+    WIKI_READ       (Type.WIKI,     "read"),
+    WIKI_WRITE      (Type.WIKI,     "write"),
 
-    PROJECTS_READ   (KenaiFeature.PROJECTS, "read"),
-    PROJECTS_CREATE (KenaiFeature.PROJECTS, "create"),
-    PROJECTS_UPDATE (KenaiFeature.PROJECTS, "update"),
-    PROJECTS_DELETE (KenaiFeature.PROJECTS, "delete"),
-    PROJECTS_ADMIN  (KenaiFeature.PROJECTS, "admin"),
+//    PROJECTS_READ   (Type.PROJECTS, "read"),
+//    PROJECTS_CREATE (Type.PROJECTS, "create"),
+//    PROJECTS_UPDATE (Type.PROJECTS, "update"),
+//    PROJECTS_DELETE (Type.PROJECTS, "delete"),
+//    PROJECTS_ADMIN  (Type.PROJECTS, "admin"),
 
-    SOURCE_READ     (KenaiFeature.SOURCE,   "read"),
-    SOURCE_WRITE    (KenaiFeature.SOURCE,   "write"),
+    SOURCE_READ     (Type.SOURCE,   "read"),
+    SOURCE_WRITE    (Type.SOURCE,   "write"),
 
-    PUBLIC_READ     (KenaiFeature.PUBLIC,   "read"),
+    //PUBLIC_READ     (Type.PUBLIC,   "read"),
 
-    API_READ        (KenaiFeature.API,      "read"),
+//    API_READ        (Type.API,      "read"),
 
-    PROFILES_READ   (KenaiFeature.PROFILES, "read"),
-    PROFILES_CREATE (KenaiFeature.PROFILES, "create"),
-    PROFILES_UPDATE (KenaiFeature.PROFILES, "update"),
-    PROFILES_DELETE (KenaiFeature.PROFILES, "delete")
+//    PROFILES_READ   (Type.PROFILES, "read"),
+//    PROFILES_CREATE (Type.PROFILES, "create"),
+//    PROFILES_UPDATE (Type.PROFILES, "update"),
+//    PROFILES_DELETE (Type.PROFILES, "delete")
             ;
 
     static KenaiActivity valueOf(String featureText, String activityText) {
@@ -95,15 +97,15 @@ public enum KenaiActivity {
         return null;
     }
 
-    private final KenaiFeature feature;
+    private final Type feature;
     private final String name;
 
-    KenaiActivity(KenaiFeature feature, String name) {
+    KenaiActivity(Type feature, String name) {
         this.feature = feature;
         this.name = name;
     }
 
-    public KenaiFeature getFeature() {
+    public Type getFeature() {
         return feature;
     }
 

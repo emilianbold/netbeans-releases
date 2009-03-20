@@ -71,6 +71,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock1"));
 //        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock2"));
 //        suite.addTest(new ForLoopTest("test120270"));
+//        suite.addTest(new ForLoopTest("testForEachLoop160488"));
         return suite;
     }
 
@@ -531,6 +532,59 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testForEachLoop160488() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (ttt : java.util.Collections.emptyList()) {}\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (Object ttt : java.util.Collections.emptyList()) {}\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                EnhancedForLoopTree foor = (EnhancedForLoopTree) stmts.get(0);
+                VariableTree vt = foor.getVariable();
+                VariableTree newVt = make.Variable(
+                        vt.getModifiers(),
+                        "ttt",
+                        make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.Object")),
+                        null
+                );
+                workingCopy.rewrite(vt, newVt);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
