@@ -219,7 +219,6 @@ public class ShowHideListCompartmentAction extends SceneNodeAction
                         } 
                         else
                         {
-//                        System.out.println(" mgr compName = "+mgr.getCollapsibleCompartmentName());
                         }
                     }
                 }

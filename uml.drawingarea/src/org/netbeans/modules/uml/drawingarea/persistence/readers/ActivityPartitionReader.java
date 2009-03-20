@@ -173,7 +173,6 @@ class ActivityPartitionReader implements GraphNodeReader {
             }
             else
             {
-//                System.out.println("  engine.createWidget is returning null.... ");
             }
         }
         catch (Exception e)
