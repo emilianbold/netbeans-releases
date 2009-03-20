@@ -816,7 +816,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     panel.showNoContentPanel(false);
-                    panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                    if(query.contains(issue)) {
+                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                    }
                 }
             });
         }
