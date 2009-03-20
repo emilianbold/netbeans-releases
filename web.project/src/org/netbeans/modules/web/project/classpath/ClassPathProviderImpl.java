@@ -251,6 +251,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             cp = getSourcepath(fileType);
         } else if (type.equals("classpath/packaged")) { // NOI18N
             cp = getPackagedClasspath(fileType);
+        } else if (type.equals("js/library")) { // NOI18N
+            cp = getSourcepath(FileType.WEB_SOURCE);
         }
         return cp;
     }
