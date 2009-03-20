@@ -73,7 +73,6 @@ public class MoveTransformer extends RefactoringVisitor {
     private Problem problem;
     private boolean moveToDefaulPackageProblem = false;
     private String originalPackage;
-    private String targetPackageName;
     private SourceUtilsEx.Cache cacheOfSrcFiles = new SourceUtilsEx.Cache();
 
     public Problem getProblem() {
@@ -93,9 +92,6 @@ public class MoveTransformer extends RefactoringVisitor {
         elementsToImport = new HashSet<Element>();
         isThisFileReferencingOldPackage = false;
         elementsAlreadyImported = new HashSet<Element>();
-        if (!isPackageRename()) {
-            targetPackageName = move.getTargetPackageName(null);
-        }
     }
     
     @Override
@@ -151,12 +147,10 @@ public class MoveTransformer extends RefactoringVisitor {
                 ExpressionTree exprTree = node.getExpression();
                 TreePath exprPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), exprTree);
                 Element elem = workingCopy.getTrees().getElement(exprPath);
-                if (elem != null && elem.getKind() == ElementKind.PACKAGE) {
+                if (elem != null && elem.getKind() == ElementKind.PACKAGE && isThisPackageMoving((PackageElement) elem)) {
                     String newPackageName = getTargetPackageName(elem);
-                    if (!newPackageName.equals(elem.toString())) {
-                        Tree nju = make.MemberSelect(make.Identifier(newPackageName), "*"); // NOI18N
-                        rewrite(node, nju);
-                    }
+                    Tree nju = make.MemberSelect(make.Identifier(newPackageName), "*"); // NOI18N
+                    rewrite(node, nju);
                 }
             }
         }
@@ -171,6 +165,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (!isThisFileMoving) {
                     if (isElementMoving(el)) {
                         if (!elementsAlreadyImported.contains(el)) {
+                            String targetPackageName = getTargetPackageName(el);
                             if (!RetoucheUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
                                 elementsToImport.add(el);
                         }
@@ -211,10 +206,12 @@ public class MoveTransformer extends RefactoringVisitor {
         return fos[0];
     }
 
+    private boolean isThisPackageMoving(PackageElement el) {
+        return move.packages.contains(el.getQualifiedName().toString());
+    }
+
     private String getTargetPackageName(Element el) {
-        return isPackageRename()
-                ? move.getTargetPackageName(getFileObject(el))
-                : targetPackageName;
+        return move.getTargetPackageName(getFileObject(el));
     }
     
     private TypeElement getTypeElement(Element e) {
@@ -259,7 +256,7 @@ public class MoveTransformer extends RefactoringVisitor {
 //        //TODO: correctly implement
 //        return true;
 //    }
-    
+
     private boolean isElementMoving(Element el) {
         for (ElementHandle handle:move.classes.values()) {
             if (handle.signatureEquals(el)) {
@@ -324,13 +321,12 @@ public class MoveTransformer extends RefactoringVisitor {
     }
 
     private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig) {
-        String pkgName = null;
         for (ImportTree tree: node.getImports()) {
             if (tree.getQualifiedIdentifier().toString().equals(imp)) 
                 return node;
             if (orig!=null) {
                 if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) { // NOI18N
-                    pkgName = (pkgName != null) ? pkgName : getTargetPackageName(orig);
+                    String pkgName = getTargetPackageName(orig);
                     rewrite(tree.getQualifiedIdentifier(), make.Identifier(pkgName + ".*")); // NOI18N
                     return node;
                 }
