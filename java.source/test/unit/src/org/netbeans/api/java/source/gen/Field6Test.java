@@ -101,7 +101,7 @@ public class Field6Test extends GeneratorTest {
                     ModifiersTree mods = make.Modifiers(Collections.<Modifier>emptySet());
                     PrimitiveTypeTree type = make.PrimitiveType(TypeKind.INT);
                     VariableTree var = make.Variable(mods, "field1", type, null);
-                    ClassTree copy = make.addClassMember(node, var);
+                    ClassTree copy = make.insertClassMember(node, 0, var);
                     this.copy.rewrite(node, copy);
                     return null;
                 }

@@ -231,6 +231,7 @@ public class InstantRenamePerformerTest extends NbTestCase {
         doc.addUndoableEditListener(um);
         doc.putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         
         C p = new C();
         

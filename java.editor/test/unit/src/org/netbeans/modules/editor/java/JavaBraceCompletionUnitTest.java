@@ -822,6 +822,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                         Document doc = pane.getDocument();
                         // Required by Java's default key typed
                         doc.putProperty(Language.class, JavaTokenId.language());
+                        doc.putProperty("mimeType", "text/x-java");
                         int caretOffset = textWithPipe.indexOf('|');
                         String text;
                         if (caretOffset != -1) {

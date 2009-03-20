@@ -56,7 +56,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
@@ -74,13 +74,13 @@ import org.openide.util.WeakListeners;
  */
 public class SourceHandleImpl extends SourceHandle implements PropertyChangeListener {
 
-    private KenaiProjectFeature feature;
+    private KenaiFeature feature;
     private Preferences prefs;
     private ProjectHandle projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects.";
 
-    public SourceHandleImpl(final ProjectHandle projectHandle, KenaiProjectFeature ftr) {
+    public SourceHandleImpl(final ProjectHandle projectHandle, KenaiFeature ftr) {
         feature = ftr;
         if ("mercurial".equals(feature.getService())) {
             prefs= NbPreferences.forModule(Mercurial.class);

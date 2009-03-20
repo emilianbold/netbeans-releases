@@ -246,6 +246,7 @@ public abstract class TestBase extends NbTestCase {
             Document doc = ec.openDocument();
             
             doc.putProperty(Language.class, JavaTokenId.language());
+            doc.putProperty("mimeType", "text/x-java");
             
             return doc;
         } else {
