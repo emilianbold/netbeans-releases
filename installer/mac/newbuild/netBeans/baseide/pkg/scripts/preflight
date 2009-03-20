@@ -31,7 +31,9 @@ if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
     cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans/"$NB_CLUSTER_DIR";
     current_buildnumber=`cat build_info | sed '/Number/!d;s/Number:[ \t]*//'`
     if [ "$current_buildnumber" != "$NETBEANS_BUILDNUMBER" ] ; then
-        mv -f "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR".back
+        backup_dir_name=`echo "$NETBEANS_INSTALL_DIR" | sed "s/\.app$/\_backup\.app/g"`
+        [ -d "$backup_dir_name" ] && rm -rf "$backup_dir_name"
+        mv -f "$NETBEANS_INSTALL_DIR" "$backup_dir_name"
     fi
 fi
 

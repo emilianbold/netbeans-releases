@@ -95,6 +95,7 @@ public class ExtensionPropertyHelper {
             CasaComponent casaExtPoint,
             Sheet sheet,
             String extensionType,
+            String extensionSubType,
             String extensionTarget) {
 
         JbiInstalledExtensionInfo installedExtInfo =
@@ -127,8 +128,9 @@ public class ExtensionPropertyHelper {
             });
 
             for (JbiExtensionInfo extInfo : extInfoList) {
-                if (!(extInfo.getNameSpace().equals(eeNamespace)) ||
-                        !(extensionType.equals(extInfo.getType()))) {
+                if (! extInfo.getNameSpace().equals(eeNamespace) ||
+                        ! extensionType.equals(extInfo.getType()) ||
+                        extInfo.getSubType() != null && ! extInfo.getSubType().equals(extensionSubType)) {
                     continue;
                 }
 
@@ -164,6 +166,10 @@ public class ExtensionPropertyHelper {
                 continue;
             }
 
+            if (extInfo.getSubType() != null && ! extInfo.getSubType().equals(extensionSubType)) {
+                continue;
+            }
+
             String extInfoTarget = extInfo.getTarget();
             if (!Pattern.matches(extInfoTarget, extensionTarget)) {
 //            if (!(extensionTarget.equals(extInfoTarget)) &&
@@ -181,7 +187,8 @@ public class ExtensionPropertyHelper {
                 QName qname = new QName(namespace, extElement.getName());
                 if (!existingTopEEQNames.contains(qname)) {
                     // extElement doesn't have a corresponding CASA 
-                    // extensibility element yet               
+                    // extensibility element yet  
+                    //System.out.println("create non-exisiting property: " + extElement.getName());
                     createNonExistingProperties(node, document,
                             extElement, extPropertySet,
                             casaExtPoint, null, null, namespace, extInfo.getProvider(), true);
@@ -289,9 +296,10 @@ public class ExtensionPropertyHelper {
                     String attrType = attr.getType();
                     String attrDescription = attr.getDescription();
                     boolean codeGen = attr.getCodeGen();
+                    String defaultValue = attr.getDefaultValue();
 
                     if (codeGen) {
-                        lastEE.setAttribute(attrName, ""); // NOI18N
+                        lastEE.setAttribute(attrName, defaultValue);
 
                     }
 
@@ -309,6 +317,7 @@ public class ExtensionPropertyHelper {
             List<JbiExtensionElement> childExtElements = extElement.getElements();
             if (childExtElements != null) {
                 for (JbiExtensionElement childElement : childExtElements) {
+                    //System.out.println("create non-existing property: " + childElement.getName());
                     createNonExistingProperties(node, document,
                             childElement, extSheetSet,
                             casaExtPoint, firstEE, lastEE, namespace, provider,
@@ -432,7 +441,7 @@ public class ExtensionPropertyHelper {
                         break;
                     }
                 }
-                assert found;
+//                assert found;
             }
         }
     }

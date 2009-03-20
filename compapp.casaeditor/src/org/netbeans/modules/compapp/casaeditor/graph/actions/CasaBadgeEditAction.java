@@ -63,6 +63,17 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges.Badge;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui.ExtensibilityElementConfigurationUtils;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorComponent;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Actions;
@@ -165,6 +176,32 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
             nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
 
+            // bring up binding panels if editor configuration is provided
+            if (editNodeRef instanceof CasaNode) {
+                Object data = ((CasaNode)editNodeRef).getData();
+                CasaWrapperModel model = ((CasaNode)editNodeRef).getModel();
+                if ((data != null) && (data instanceof CasaPort)) {
+                    CasaPort casaPort = (CasaPort) data;
+                    Port port = model.getLinkedWSDLPort(casaPort);
+
+                    String direction = getDirection(casaPort);
+                    if (direction != null) {
+                        
+		        String bType = model.getBindingType(casaPort);
+			LocalizedTemplateGroup bindingType = CasaWrapperModel.getBindingType(bType);
+
+			String namespace = bindingType.getNamespace();
+                        ExtensibilityElementConfigurationEditorProvider provider =
+                                ConfigurationEditorProviderFactory.getDefault()
+                                .getConfigurationProvider(namespace);
+                        if (provider != null) {
+                            ExtensibilityElementConfigurationUtils.configureBinding(provider, port, direction);
+                            return State.CONSUMED;
+                        }
+                    }
+                }
+            }
+           
             propertySheetPanel.setNodes(new Node[] { editNodeRef });
 
             final Object[] options = new Object[] {Constants.CLOSE};
@@ -214,4 +251,23 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
         return State.CONSUMED;
     }
+    
+    private static String getDirection(CasaPort casaPort) {
+        String direction = null;
+        
+        CasaWrapperModel model = (CasaWrapperModel) casaPort.getModel();
+        CasaConsumes consumes = casaPort.getConsumes();
+        CasaProvides provides = casaPort.getProvides();
+        boolean consumesActivelyConnected = model.getConnections(consumes, false).size() > 0;
+        boolean providesActivelyConnected = model.getConnections(provides, false).size() > 0;
+        if (consumesActivelyConnected && providesActivelyConnected) {
+            direction = ExtensibilityElementConfigurationEditorComponent.BI_DIRECTION;
+        } else if (consumesActivelyConnected && !providesActivelyConnected) {
+            direction = ExtensibilityElementConfigurationEditorComponent.BC_TO_BP_DIRECTION;
+        } else if (!consumesActivelyConnected && providesActivelyConnected) {
+            direction = ExtensibilityElementConfigurationEditorComponent.BP_TO_BC_DIRECTION;            
+        }
+        
+        return direction;        
+    }    
 }

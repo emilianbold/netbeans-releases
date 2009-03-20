@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -100,7 +101,8 @@ public class PersistenceHelper {
             Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);  
             
             if (puElement != null) {
-                String puName = puElement.getAttribute(NAME_ATTR);
+                Attr puNameNode = puElement.getAttributeNode(NAME_ATTR);
+                String puName = puNameNode == null ? null : puNameNode.getValue();
                 
                 String provider;
                 NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);

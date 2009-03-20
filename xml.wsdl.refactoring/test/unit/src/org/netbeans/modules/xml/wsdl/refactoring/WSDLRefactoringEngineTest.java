@@ -121,7 +121,7 @@ public class WSDLRefactoringEngineTest extends TestCase {
         
         // BindingInput.getInput is just implicit and should not be changed
         BindingInput bi = (BindingInput) Util.findByXpath(model, "/definitions/binding/operation/input");
-        assertNull(((AbstractDocumentComponent)bi).getPeer().getAttribute("name"));
+        assertNull(((AbstractDocumentComponent)bi).getPeer().getAttributeNode("name"));
     }
     
     public void testBinding() throws Exception {
@@ -180,7 +180,7 @@ public class WSDLRefactoringEngineTest extends TestCase {
 
         BindingInput fixed1 = (BindingInput) Util.findByXpath(model, "/definitions/binding/operation[@name='find_binding']/input");
         // Still have binding/input@name implicit.
-        assertNull(((AbstractDocumentComponent)fixed1).getPeer().getAttribute("name"));
+        assertNull(((AbstractDocumentComponent)fixed1).getPeer().getAttributeNode("name"));
     }
     
     public void testOutput() throws Exception {
@@ -192,7 +192,7 @@ public class WSDLRefactoringEngineTest extends TestCase {
 
         BindingOutput fixed1 = (BindingOutput) Util.findByXpath(model, "/definitions/binding/operation[@name='find_binding']/output");
         // Still have binding/output@name implicit.
-        assertNull(((AbstractDocumentComponent)fixed1).getPeer().getAttribute("name"));
+        assertNull(((AbstractDocumentComponent)fixed1).getPeer().getAttributeNode("name"));
     }
 
     public void testPortType() throws Exception {

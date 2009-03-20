@@ -173,10 +173,6 @@ public class MavenProjectRestSupport extends RestSupport {
 
     private void addSwdpLibrary() throws IOException {
         if (!hasSwdpLibrary()) { //platform does not have swdp library, so add defaults {restapi, restlib}
-            Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-            if (restapiLibrary != null) {
-                addSwdpLibrary(classPathTypes, restapiLibrary);
-            }
             Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
             if (swdpLibrary != null) {
                 addSwdpLibrary(classPathTypes, swdpLibrary);

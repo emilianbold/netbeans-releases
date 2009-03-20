@@ -264,8 +264,8 @@ public class SimpleTest extends NbTestCase {
         model.getDefinitions().setTypes(model.getFactory().createTypes());
         model.endTransaction();
         assertNull(model.getDefinitions().getTypes().getPeer().getPrefix());
-        assertNull(model.getDefinitions().getTypes().getPeer().getAttribute("xmlns:wsdl"));
-        assertNull(model.getDefinitions().getTypes().getPeer().getAttribute("xmlns"));
+        assertNull(model.getDefinitions().getTypes().getPeer().getAttributeNode("xmlns:wsdl"));
+        assertNull(model.getDefinitions().getTypes().getPeer().getAttributeNode("xmlns"));
         //Util.dumpToFile(model.getBaseDocument(), new File(getWorkDir(), "test.wsdl"));
     }
 }
