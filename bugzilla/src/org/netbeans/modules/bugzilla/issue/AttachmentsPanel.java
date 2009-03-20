@@ -238,15 +238,17 @@ public class AttachmentsPanel extends JPanel {
         if (deletedListener == null) {
             deletedListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    for (AttachmentPanel panel : newAttachments) {
-                        if (!panel.isDeleted()) {
-                            return;
+                    if (AttachmentPanel.PROP_DELETED.equals(evt.getPropertyName())) {
+                        for (AttachmentPanel panel : newAttachments) {
+                            if (!panel.isDeleted()) {
+                                return;
+                            }
                         }
+                        // The last attachment deleted
+                        noneLabel.setVisible(true);
+                        switchHelper();
+                        updateCreateNewButton(true);
                     }
-                    // The last attachment deleted
-                    noneLabel.setVisible(true);
-                    switchHelper();
-                    updateCreateNewButton(true);
                 }
             };
         }

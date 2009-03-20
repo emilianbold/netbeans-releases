@@ -54,9 +54,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
@@ -89,11 +89,11 @@ public class SourceAccessorImpl extends SourceAccessor {
             // XXX
             Exceptions.printStackTrace(ex);
         }
-        KenaiProjectFeature features[] = null;
+        KenaiFeature features[] = null;
         if (project != null) {
-            features = project.getFeatures(KenaiFeature.SOURCE);
+            features = project.getFeatures(Type.SOURCE);
         }
-        for (KenaiProjectFeature feature : features) {
+        for (KenaiFeature feature : features) {
             SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
             handlesList.add(srcHandle);
             handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature));
@@ -172,9 +172,9 @@ public class SourceAccessorImpl extends SourceAccessor {
     public static class ProjectAndFeature {
 
         public String projectName;
-        public KenaiProjectFeature feature;
+        public KenaiFeature feature;
 
-        public ProjectAndFeature(String name, KenaiProjectFeature ftr) {
+        public ProjectAndFeature(String name, KenaiFeature ftr) {
             projectName = name;
             feature = ftr;
         }
