@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.util.ImageUtilities;
@@ -130,4 +131,12 @@ public class KenaiRepository extends BugzillaRepository {
         }
         return definedQueries;
     }
+
+    @Override
+    protected BugzillaConfiguration createConfiguration() {
+        KenaiConfiguration c = BugzillaConfiguration.create(this, KenaiConfiguration.class);
+        c.setProducts(product);
+        return c;
+    }
+
 }

@@ -338,9 +338,12 @@ public class BugzillaRepository extends Repository {
      */
     public synchronized BugzillaConfiguration getConfiguration() {
         if(bc == null) {
-            bc = BugzillaConfiguration.create(this);
+            bc = createConfiguration();
         }
         return bc;
     }
 
+    protected BugzillaConfiguration createConfiguration() {
+        return BugzillaConfiguration.create(this, BugzillaConfiguration.class);
+    }
 }
