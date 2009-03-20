@@ -196,6 +196,12 @@ public class BugzillaQuery extends Query {
         refresh();
     }
 
+    void remove() {
+        repository.removeQuery(this);
+        repository.getIssueCache().removeQuery(name);
+        fireQueryRemoved();
+    }
+
     @Override
     public int getIssueStatus(Issue issue) {
         String id = issue.getID();
