@@ -738,7 +738,10 @@ public class BugzillaIssue extends Issue {
         public Comment(TaskAttribute a) {
             Date d = null;
             try {
-                d = CC_DATE_FORMAT.parse(a.getMappedAttribute(TaskAttribute.COMMENT_DATE).getValue());
+                String s = a.getMappedAttribute(TaskAttribute.COMMENT_DATE).getValue();
+                if(s != null && !s.trim().equals("")) {
+                    d = CC_DATE_FORMAT.parse(s);
+                }
             } catch (ParseException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
@@ -783,7 +786,10 @@ public class BugzillaIssue extends Issue {
             id = ta.getValue();
             Date d = null;
             try {
-                d = CC_DATE_FORMAT.parse(ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DATE).getValues().get(0));// XXX value or values?
+                String s = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DATE).getValue();
+                if(s != null && !s.trim().equals("")) {
+                    d = CC_DATE_FORMAT.parse(s);
+                }
             } catch (ParseException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }

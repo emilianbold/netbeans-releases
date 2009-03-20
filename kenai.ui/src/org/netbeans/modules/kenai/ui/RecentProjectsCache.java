@@ -64,7 +64,7 @@ public class RecentProjectsCache {
         return instance;
     }
 
-    public NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
+    public synchronized NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
         NbProjectHandleImpl handle = map.get(url);
         if (handle==null) {
             for (Project p: OpenProjects.getDefault().getOpenProjects()) {
@@ -86,8 +86,12 @@ public class RecentProjectsCache {
         return handle;
     }
 
-    public NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
-        NbProjectHandleImpl nbph = new NbProjectHandleImpl(p);
+    public synchronized NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
+        NbProjectHandleImpl nbph = map.get(p.getProjectDirectory().getURL());
+        if (nbph!=null) {
+            return nbph;
+        }
+        nbph  = new NbProjectHandleImpl(p);
         map.put(p.getProjectDirectory().getURL(), nbph);
         return nbph;
     }

@@ -37,54 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.bugzilla.kenai;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionListener;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 
 /**
- * Node for a single netbeans project.
  *
- * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public class NbProjectNode extends LeafNode {
+public class KenaiConfiguration extends BugzillaConfiguration {
+    private List<String> products;
 
-    private final NbProjectHandle prj;
-
-    private LinkButton btn;
-    private JPanel panel;
-
-    public NbProjectNode( NbProjectHandle prj, TreeListNode parent ) {
-        super( parent );
-        assert prj!=null;
-        this.prj = prj;
+    public KenaiConfiguration(RepositoryConfiguration rc) {
+        super(rc);
+    }
+    
+    void setProducts(String product) {
+        // XXX check if product exists
+        ArrayList<String> l = new ArrayList<String>();
+        l.add(product);
+        this.products = Collections.unmodifiableList(l);
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if (null == panel) {
-            panel = new JPanel(new GridBagLayout());
-            panel.setOpaque(false);
-            btn = new LinkButton(prj.getDisplayName(), prj.getIcon(), getDefaultAction()); //NOI18N
-            panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 25, 0, 0), 0, 0));
-            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        }
-        btn.setForeground(foreground, isSelected);
-        return panel;
+    public List<String> getProducts() {
+        return products;
     }
 
-    @Override
-    public ActionListener getDefaultAction() {
-        return SourceAccessor.getDefault().getDefaultAction(prj);
-    }
 }
