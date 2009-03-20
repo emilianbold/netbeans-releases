@@ -38,9 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wsdl.ui.wizard;
+package org.netbeans.modules.xml.wsdl.ui.wizard.common;
 
-import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyChangeEvent;
@@ -80,6 +79,12 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.api.property.CatalogHelper;
+import org.netbeans.modules.xml.wsdl.ui.wizard.Utilities;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardBindingConfigurationWrapperStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardContextImpl;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WizardAbstractConfigurationStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WizardNewWSDLStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WsdlPanel;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.BindingUtils;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ui.ProjectConstants;
@@ -95,7 +100,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.ChangeSupport;
-import org.openide.windows.TopComponent;
 
 public class WSDLWizardIterator implements TemplateWizard.Iterator {
 

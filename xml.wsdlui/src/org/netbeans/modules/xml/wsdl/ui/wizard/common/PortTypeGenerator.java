@@ -48,9 +48,8 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.xml.wsdl.ui.wizard;
+package org.netbeans.modules.xml.wsdl.ui.wizard.common;
 
-import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -62,6 +61,9 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.wizard.Command;
+import org.netbeans.modules.xml.wsdl.ui.wizard.OperationGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.PartnerLinkTypeGenerator;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Comment;
@@ -152,7 +154,7 @@ public class PortTypeGenerator implements Command {
                     WSDLComponent role = children.get(0);
                     Element pltElement = mPartnerLinkTypeElement.getPeer();
                     Element roleElement = role.getPeer();
-                    this.mComment = this.mModel.getAccess().getDocumentRoot().createComment(NbBundle.getMessage(PortTypeGenerator.class, "LBL_partnerLinkType_comment"));
+                    this.mComment = this.mModel.getAccess().getDocumentRoot().createComment(NbBundle.getMessage(PartnerLinkTypeGenerator.class, "LBL_partnerLinkType_comment"));
                     this.mModel.getAccess().insertBefore(pltElement, this.mComment, roleElement, (AbstractDocumentComponent) this.mPartnerLinkTypeElement);
                 }
             }
