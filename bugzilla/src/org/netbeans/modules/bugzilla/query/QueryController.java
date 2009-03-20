@@ -349,25 +349,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
-            // XXX nice errro msg?
-            return;
-        }
-        List<String> products = bc.getProducts();
-        Iterator<String> i = products.iterator();
-        while (i.hasNext()) {
-            String p = i.next();
-            if (!p.equals(product)) {
-                i.remove();
-            }
-        }
-        productParameter.setParameterValues(toParameterValues(products));
         productParameter.setAlwaysDisabled(true);
-        if (panel.productList.getModel().getSize() > 0) {
-            panel.productList.setSelectedIndex(0);
-            populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-        }
     }
 
     public void insertUpdate(DocumentEvent e) {
