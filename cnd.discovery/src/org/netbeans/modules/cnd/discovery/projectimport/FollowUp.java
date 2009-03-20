@@ -173,7 +173,7 @@ public class FollowUp extends JPanel {
             String text = MessageFormat.format(getString("Details.String"), // NOI18N
                     sourceFilesExcluded, sourceFiles,
                     headerFilesExcluded, headerFiles);
-            detailsTextPane.setContentType("text/html");
+            detailsTextPane.setContentType("text/html"); // NOI18N
             detailsTextPane.setText(text);
             details.setVisible(true);
             detailsPane.setVisible(true);
