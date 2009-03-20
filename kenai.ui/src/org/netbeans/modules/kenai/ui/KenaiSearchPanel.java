@@ -73,9 +73,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -365,8 +365,8 @@ public class KenaiSearchPanel extends JPanel {
                     if (PanelType.OPEN.equals(panelType)) {
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
-                        KenaiProjectFeature[] repos = project.getFeatures(KenaiFeature.SOURCE);
-                        for (KenaiProjectFeature repo : repos) {
+                        KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
+                        for (KenaiFeature repo : repos) {
                             if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
                                 addElement(new KenaiProjectSearchInfo(project, repo, pattern));
                             }
@@ -408,7 +408,7 @@ public class KenaiSearchPanel extends JPanel {
     public static class KenaiProjectSearchInfo {
 
         public KenaiProject kenaiProject;
-        public KenaiProjectFeature kenaiFeature;
+        public KenaiFeature kenaiFeature;
         public String searchPattern;
 
         public KenaiProjectSearchInfo(KenaiProject kprj, String ptrn) {
@@ -417,7 +417,7 @@ public class KenaiSearchPanel extends JPanel {
             kenaiFeature = null;
         }
 
-        public KenaiProjectSearchInfo(KenaiProject kprj, KenaiProjectFeature ftr, String ptrn) {
+        public KenaiProjectSearchInfo(KenaiProject kprj, KenaiFeature ftr, String ptrn) {
             kenaiProject = kprj;
             kenaiFeature = ftr;
             searchPattern = ptrn;

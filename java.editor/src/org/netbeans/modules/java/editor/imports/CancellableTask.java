@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,79 +37,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.java.editor.imports;
 
-import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressHandle;
+import org.openide.util.Cancellable;
 
 /**
- *
- * @author Jan Becicka
+ * Cancellable task for use with Progress API
+ * @author Max Sauer
  */
-public final class KenaiService {
+class CancellableTask implements Task<CompilationController>, Cancellable {
 
-    private ServicesListItem sli;
+    private AtomicBoolean cancel = new AtomicBoolean(false);
+    private ProgressHandle handle;
+    private Runnable runnable;
 
-    KenaiService(ServicesListItem sli) {
-        this.sli=sli;
+    public CancellableTask(Runnable runnable) {
+        this.runnable = runnable;
     }
 
-    public String getDescription() {
-        return sli.description;
+    public void setHandle(ProgressHandle handle) {
+        this.handle = handle;
     }
 
-    public String getName() {
-        return sli.name;
+    public boolean cancel() {
+        cancel.set(true);
+        handle.finish();
+        return true;
     }
 
-    public String getDisplayName() {
-        return sli.display_name;
-    }
-
-    public Type getType() {
-        return Type.forId(sli.type);
-    }
-
-    @Override
-    public String toString() {
-        return "KenaiService " + getName();
-    }
-
-    public static enum Type {
-
-        FORUM("forum"),
-        ISSUES("issues"),
-        LISTS("lists"),
-        SOURCE("scm"),
-        WIKI("wiki"),
-        CHAT("chat"),
-        DOWNLOADS("downloads"),
-        UNKNOWN("unknown");
-        private String id;
-
-        Type(String id) {
-            this.id = id;
+    public void run(CompilationController parameter) throws Exception {
+        if (!cancel.get()) {
+            runnable.run();
         }
-
-        public String getId() {
-            return id;
-        }
-
-        public static Type forId(String id) {
-            if (id.equals(SOURCE.id)) {
-                return SOURCE;
-            } else {
-                try {
-                    return Type.valueOf(id.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    return UNKNOWN;
-                }
-            }
-        }
+        handle.finish();
     }
 }
