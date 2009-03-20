@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.output2;
+package org.netbeans.modules.dlight.visualizers.spi.support;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import junit.framework.*;
+import org.netbeans.modules.dlight.visualizers.spi.AdvancedTableViewVisualizerActionsProvider;
+import org.netbeans.modules.dlight.visualizers.api.*;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
  *
- * @author mkleint
+ * @author mt154047
  */
-public class AbstractLinesTest extends TestCase {
+public final class GoToSourceActionProvider implements AdvancedTableViewVisualizerActionsProvider{
 
-    public AbstractLinesTest(String testName) {
-        super(testName);
+    public boolean hasActions(DataRow row){
+        return false;
     }
 
-    public void testEscapePattern() throws Exception {
-        doTestSingle("[", "hello[world", "helloworld]");
-        doTestSingle("[a-z]", "hello[a-z]world", "helloworld");
-        doTestSingle("(abc*ef)", "xx(abc*ef)xx", "abcdef");
-        doTestSingle("(abc*ef", "xx(abc*efxx", "abcdef");
-        doTestSingle("^abc", "xx(^abc*efxx", "abcdef");
-        doTestSingle("\\d", "xx\\defxx", "8475");
+    public Action[] getActions(DataRow row) {
+
+        //we should find the proper implementator which can provide
+        //ask if there are some services which can provide this info
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
-    private void doTestSingle(String find, String success, String failure) {
-        Pattern patt = AbstractLines.escapePattern(find);
-        assertTrue(patt.matcher(success).find());
-        assertFalse(patt.matcher(failure).find());
+
+    public AdvancedTableViewVisualizerActionsProvider getProviderFor(AdvancedTableViewVisualizerConfiguration configuration) {
+        //try to find someone who can give the information about source line
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return this;
     }
-    
+
 }

@@ -257,7 +257,7 @@ public class TraceXRef extends TraceModel {
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
-        RequestProcessor rp = new RequestProcessor("TraceXRef", params.reportUnresolved ? 1 : Runtime.getRuntime().availableProcessors()); // NOI18N
+        RequestProcessor rp = new RequestProcessor("TraceXRef", params.numThreads); // NOI18N
         final CountDownLatch waitFinished = new CountDownLatch(allFiles.size());
         long time = System.nanoTime();
         for (final CsmFile file : allFiles) {
@@ -1111,15 +1111,12 @@ public class TraceXRef extends TraceModel {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
         public final boolean reportUnresolved;
-
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith) {
-            this(kinds, analyzeSmartAlgorith, true);
-        }
-
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved) {
+        public final int numThreads;
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
+            this.numThreads = numThreads;
         }
     }
 

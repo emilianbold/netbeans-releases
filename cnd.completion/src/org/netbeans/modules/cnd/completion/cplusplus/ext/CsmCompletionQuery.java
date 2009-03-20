@@ -1281,9 +1281,10 @@ abstract public class CsmCompletionQuery {
                                             lastType = null;
                                             cont = false;
                                         } else {
-                                            // IZ#143044
+                                            // IZ#143044, IZ#160677
                                             // There is no need for searching in parents for global declarations/definitions
-                                            boolean inspectParentClasses = (this.contextElement != null);
+                                            // in case of csope access
+                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier);
                                             List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
@@ -1430,6 +1431,17 @@ abstract public class CsmCompletionQuery {
                             lastType = CsmCompletion.BOOLEAN_TYPE;
                             // nobreak;
 
+                        case PLUS:
+                        case MINUS:
+                            if (findType && mtdList.isEmpty() && lastType == null) {
+                                if (item.getParameterCount() > 0) {
+                                    lastType = resolveType(item.getParameter(0));
+                                    staticOnly = false;
+                                }
+                                break;
+                            }
+                            // nobreak;
+                            
                         case LTLT: // Always binary
                         case GTGT:
 //                    case RUSHIFT:
@@ -1439,8 +1451,6 @@ abstract public class CsmCompletionQuery {
                         case BAR:
                         case CARET:
                         case PERCENT:
-                        case PLUS:
-                        case MINUS:
                             if (findType && !mtdList.isEmpty()) {
                                 List<CsmType> typeList = getTypeList(item, 0);
                                 Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, false);

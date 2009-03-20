@@ -256,8 +256,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmNamespace findNamespace(CharSequence qualifiedName, boolean findInLibraries) {
         CsmNamespace result = findNamespace(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findNamespace(qualifiedName);
                 if (result != null) {
                     break;
@@ -309,8 +309,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
         CsmClassifier result = findClassifier(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findClassifier(qualifiedName);
                 if (result != null) {
                     break;
@@ -435,7 +435,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public final void unregisterDeclaration(CsmDeclaration decl) {
+    public final void unregisterDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
             traceRegistration("unregistered " + decl + " UID " + UIDs.get(decl)); //NOI18N
         }
@@ -1101,7 +1101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final void debugInvalidateFiles() {
         getFileContainer().debugClearState();
-        for (Iterator it = getLibraries().iterator(); it.hasNext();) {
+        for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.debugInvalidateFiles();
         }
@@ -1401,7 +1401,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 if (keep) {
                     if (!pair.state.isCleaned()) {
-                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), null);
+                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
                 } else {
@@ -1461,7 +1461,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
                 if (!old.state.isCleaned()) {
-                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                 }
                 statesToKeep.add(old);
             } else {
@@ -1469,7 +1469,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (!old.pcState.isSubset(pcState)) {
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
-                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                     }
                     statesToKeep.add(old);
                 }
@@ -2503,7 +2503,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * for tests only
      */
-    public static List testGetRestoredFiles() {
+    public static List<String> testGetRestoredFiles() {
         return testRestoredFiles;
     }
     private static List<String> testRestoredFiles = null;

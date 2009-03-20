@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
@@ -50,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's sources section.
  *
- * @author S. Aubrecht
+ * @author S. Aubrecht, Jan Becicka
  */
 public class SourceListNode extends SectionNode {
 
@@ -63,8 +64,20 @@ public class SourceListNode extends SectionNode {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         SourceAccessor accessor = SourceAccessor.getDefault();
         List<SourceHandle> sources = accessor.getSources(project);
-        for( SourceHandle s : sources ) {
-            res.add( new SourceNode( s, this ) );
+        for (SourceHandle s : sources) {
+            res.add(new SourceNode(s, this));
+            res.addAll(getRecentProjectsNodes(s));
+            if (s.getWorkingDirectory() != null) {
+                res.add(new OpenNbProjectNode(s, this));
+            }
+        }
+        return res;
+    }
+
+    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
+        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
+        for( NbProjectHandle s : handle.getRecentProjects()) {
+            res.add( new NbProjectNode( s, this ) );
         }
         return res;
     }

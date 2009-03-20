@@ -37,76 +37,59 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.kenai.ui;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.net.URL;
+import java.util.HashMap;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.api.RecentProjects;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Jan Becicka
  */
-public class ExtProcessRemoteCommandSupport extends RemoteConnectionSupport {
+public class RecentProjectsCache {
 
-    private final String cmd;
-    private final Map<String, String> env;
+    private static RecentProjectsCache instance;
+    private HashMap<URL, NbProjectHandleImpl> map = new HashMap<URL, NbProjectHandleImpl>();
 
-    public ExtProcessRemoteCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        super(execEnv);
-        this.cmd = cmd;
-        this.env = env;
+    public static synchronized RecentProjectsCache getDefault() {
+        if (instance==null) {
+            instance = new RecentProjectsCache();
+        }
+        return instance;
+    }
 
-        if (!isFailedOrCancelled()) {
-            log.fine("ExtProcessRemoteCommandSupport<Init>: Running [" + cmd + "] on " + env);
-            try {
-                channel = createChannel();
-            } catch (JSchException jse) {
+    public NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
+        NbProjectHandleImpl handle = map.get(url);
+        if (handle==null) {
+            for (Project p: OpenProjects.getDefault().getOpenProjects()) {
+                if (p.getProjectDirectory().getURL().equals(url)) {
+                    handle = new NbProjectHandleImpl(p);
+                    map.put(url, handle);
+                    break;
+                }
+            }
+            for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
+                if (i.getURL().equals(url)) {
+                    handle = new NbProjectHandleImpl(i);
+                    map.put(url, handle);
+                    break;
+                }
+
             }
         }
+        return handle;
     }
 
-    public InputStream getInputStream() throws IOException {
-        return channel.getInputStream();
+    public NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
+        NbProjectHandleImpl nbph = new NbProjectHandleImpl(p);
+        map.put(p.getProjectDirectory().getURL(), nbph);
+        return nbph;
     }
 
-    public OutputStream getOutputStream() throws IOException {
-        return channel.getOutputStream();
-    }
-
-    public InputStream getErrorStream() throws IOException {
-        return channel.getExtInputStream();
-    }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        StringBuilder cmdline = new StringBuilder();
-
-        if (env != null) {
-            cmdline.append(ShellUtils.prepareExportString(env));
-        }
-        cmdline.append(cmd);
-
-        echannel.setCommand(ShellUtils.wrapCommand(executionEnvironment, cmdline.toString()));
-        echannel.connect();
-        return echannel;
-    }
-
-    public int waitFor() {
-        while (channel != null && !channel.isClosed() && channel.isConnected()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-        }
-        return getExitStatus();
-
-    }
 }
-
