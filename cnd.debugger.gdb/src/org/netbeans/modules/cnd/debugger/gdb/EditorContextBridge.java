@@ -535,6 +535,14 @@ public class EditorContextBridge {
             return dobj;
         }
 
+        public DataObject getMostRecentDataObject() {
+            DataObject dobj = cp1.getMostRecentDataObject();
+            if (dobj == null) {
+                dobj = cp2.getMostRecentDataObject();
+            }
+            return dobj;
+        }
+
         public FileObject getCurrentFileObject() {
             FileObject fo = cp1.getCurrentFileObject();
             if (fo == null) {
