@@ -38,27 +38,21 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.Color;
-
 /**
- * Provides common colors for graph painting.
  *
  * @author Alexey Vladykin
  */
-public final class GraphColors {
+public abstract class GraphDetail {
 
-    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
-    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
-    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
-    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
+    private final String name;
 
-    public static final Color BORDER_COLOR = new Color(114, 138, 132);
-    public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);
-    public static final Color GRADIENT_TOP_COLOR = Color.WHITE;
-    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3, 0x80);
-    public static final Color LEGEND_COLOR = Color.WHITE;
-    public static final Color TEXT_COLOR = new Color(49, 78, 114);
-
-    private GraphColors() {
+    public GraphDetail(String name) {
+        this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public abstract String getValue();
 }

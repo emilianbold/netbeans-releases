@@ -337,7 +337,7 @@ class GraphPainter {
         for (int ser = 0; ser < seriesCount; ser++) {
             int value = currData[ser];
             value = value * height / scale;
-            Color color = descriptors[ser].color;
+            Color color = descriptors[ser].getColor();
             int yStart = yEnd - value;
             if (TRACE) {
                 System.err.printf("\t\tser=%d value=%x yStart=%d yEnd=%d color=%s\n", ser, value, yStart, yEnd, color);
