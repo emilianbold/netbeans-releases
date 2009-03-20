@@ -427,8 +427,15 @@
                 file="${temp.file}" 
                 prefix="swdp"/>
 	    -->
+            <if property="gf.ml.build.type" value="">
+            <set property="javaeesdk.build.location" value="${glassfish.builds.host}/java/re/javaeesdk/5.0_07/archive"/>
+	    </if>
+            <if property="gf.ml.build.type" value="ml">
+            <set property="javaeesdk.build.location" value="${glassfish.builds.host}/java/re/javaeesdk/5.0_07-ml/archive"/>
+	    </if>
+
             <get
-                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_07/archive/fcs/b12/bundles/"
+                src="${javaeesdk.build.location}/fcs/latest/bundles/"
                 dest="${temp.file}"/>
 	    <sjsam-buildnumber
 	        file="${temp.file}" 
@@ -564,6 +571,7 @@ swdp.macro.number=${swdp.macro.number}
 
 	<!-- Java EE SDK component properties -->
         <echo file="${environment.properties}" append="true">
+javaeesdk.build.location=${javaeesdk.build.location}
 portalpack.builds.host=${portalpack.builds.host}
 
 javaeesdk-firstcup.milestone.number=${javaeesdk-firstcup.milestone.number}
