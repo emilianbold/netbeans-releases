@@ -94,7 +94,7 @@ public class EjbJarPersistenceProviderTest extends NbTestCase {
 
     @Override
     public void setUp() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project
