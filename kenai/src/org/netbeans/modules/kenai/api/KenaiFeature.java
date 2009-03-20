@@ -39,41 +39,73 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.kenai.FeatureData;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
+
 /**
- * Enumerates types of Kenai features.
  *
  * @author Maros Sandor
+ * @author Jan Becicka
  */
-public enum KenaiFeature {
+public final class KenaiFeature {
 
-    FORUM("forum"),
-    ISSUES("issues"),
-    LISTS("lists"),
-    SOURCE("scm"),
-    WIKI("wiki"),
-    PROJECTS("projects"),
-    PUBLIC("public"),
-    API("api"),
-    PROFILES("profiles"),
-    CHAT("chat"),
-    DOWNLOADS("downloads");
-
-    private final String id;
-
-    KenaiFeature(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public static KenaiFeature forId(String id) {
-        if (id.equals(SOURCE.id)) {
-            return SOURCE;
-        } else {
-            return KenaiFeature.valueOf(id.toUpperCase());
+    private FeatureData featureData;
+    private URL webL;
+    private URI loc;
+    
+    KenaiFeature(FeatureData data) {
+        this.featureData = data;
+        try {
+            try {
+                this.loc = featureData.url == null ? null : new URI(featureData.url);
+                assert loc!=null?loc.isAbsolute():true;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
+        } catch (MalformedURLException malformedURLException) {
+            try {
+                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url", "https://kenai.com") + featureData.web_url);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), ex);
+            }
+            Logger.getLogger(KenaiFeature.class.getName()).log(Level.FINE, malformedURLException.getMessage(), malformedURLException);
         }
-
     }
+
+    public String getName() {
+        return featureData.name;
+    }
+
+    public Type getType() {
+        return Type.forId(featureData.type);
+    }
+
+    public String getService() {
+        return featureData.service;
+    }
+
+    public URI getLocation() {
+        return loc;
+    }
+
+    public URL getWebLocation() {
+        return webL;
+    }
+
+    public String getDisplayName() {
+        return featureData.display_name;
+    }
+
+    @Override
+    public String toString() {
+        return "KenaiFeature " + getName() + ", url=" + getLocation() ;
+    }
+
 }

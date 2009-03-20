@@ -77,6 +77,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -243,6 +244,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } while (state != RepositoryUpdater.State.ACTIVE);
     }
 
+    @RandomlyFails
     public void testPathAddedRemovedChanged () throws Exception {
         //Empty regs test
         RepositoryUpdater ru = RepositoryUpdater.getDefault();
@@ -397,7 +399,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
     }
 
-
+    @RandomlyFails
     public void testIndexers () throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");

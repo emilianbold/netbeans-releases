@@ -274,7 +274,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     public static Collection<? extends ElementHandle<TypeElement>> getRelatedTypes (final File source, final File root) throws IOException {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
         final File classFolder = JavaIndex.getClassFolder(root);
-        String path = FileObjects.getRelativePath(root, source);
+        String path = FileObjects.stripExtension(FileObjects.getRelativePath(root, source));
         File file = new File (classFolder, path + '.' + FileObjects.RS); //NOI18N
         boolean cont = true;
         if (file.exists()) {
