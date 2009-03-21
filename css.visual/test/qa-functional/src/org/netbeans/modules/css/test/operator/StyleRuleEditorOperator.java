@@ -56,11 +56,11 @@ public class StyleRuleEditorOperator extends NbDialogOperator{
     private static final String radioHtmlElement = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "HTML_ELELEMT");
     private static final String radioElementID = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "ELEMENT_ID_LBL");
     private static final String addRule = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "ADD_RULE_LBL");
-    private static final String moveUp = Bundle.getString("org.netbeans.modules.css.editor.Bundle", "MOVE_RULE_UP_LBL");
-    private static final String moveDown = Bundle.getString("org.netbeans.modules.css.editor.Bundle", "MOVE_RULE_DOWN_LBL");
+    private static final String moveUp = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "MOVE_RULE_UP_LBL");
+    private static final String moveDown = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "MOVE_RULE_DOWN_LBL");
 
     public StyleRuleEditorOperator() {
-        super(Bundle.getString("org.netbeans.modules.css.editor.Bundle", "STYLE_RULE_EDITOR_TITLE"));
+        super(Bundle.getString("org.netbeans.modules.css.actions.Bundle", "STYLE_RULE_EDITOR_TITLE"));
     }
     
     public void up(String item){

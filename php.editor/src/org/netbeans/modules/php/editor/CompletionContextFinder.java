@@ -575,16 +575,23 @@ class CompletionContextFinder {
 
     static CompletionContext getCompletionContextInComment(TokenSequence<PHPTokenId> tokenSeq, final int caretOffset, ParserResult info) {
         Token<PHPTokenId> token = tokenSeq.token();
-        if (token.text().length() == 0) {
+        CharSequence text = token.text();
+
+        if (text == null || text.length() == 0) {
             return CompletionContext.NONE;
         }
-        CharSequence text = token.text();
+        
         int offset = caretOffset - tokenSeq.offset() -1;
-        char charAt = text.charAt(offset--);
-        while(-1 < offset && !Character.isWhitespace(charAt) && charAt != '$') {
-            charAt = text.charAt(offset);
-            offset--;
+        char charAt = 0;
+        
+        if (offset > -1) {
+            charAt = text.charAt(offset--);
+            while (-1 < offset && !Character.isWhitespace(charAt) && charAt != '$') {
+                charAt = text.charAt(offset);
+                offset--;
+            }
         }
+
         if (offset < text.length() && charAt == '$') {
             return CompletionContext.STRING;
         }

@@ -118,7 +118,7 @@ public class J2SEActionProviderTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new SimplePlatformProvider());
+        MockLookup.setLayersAndInstances(new SimplePlatformProvider());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
