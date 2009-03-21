@@ -40,7 +40,6 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,10 +83,8 @@ public final class IndexResult {
         if (cachedUrl == null) {
             URL url = null;
             try {
-                url = root.toURI().resolve(spi.getSourceName()).toURL();
+                url = new URL(root, spi.getSourceName());
             } catch (MalformedURLException ex) {
-                LOG.log(Level.WARNING, null, ex);
-            } catch (URISyntaxException ex) {
                 LOG.log(Level.WARNING, null, ex);
             }
 

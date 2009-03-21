@@ -40,8 +40,8 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -87,27 +87,19 @@ public final class JsClassPathProvider implements ClassPathProvider {
     private static FileObject getJsStubs() {
         if (jsStubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
-            File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-javascript-editing.jar", null, false);
-
-            if (clusterFile != null) {
-                File jsStubs =
-                        new File(clusterFile.getParentFile().getParentFile().getAbsoluteFile(),
-                        "jsstubs"); // NOI18N
-                assert jsStubs.exists() && jsStubs.isDirectory() : "No stubs found";
-                jsStubsFO = FileUtil.toFileObject(jsStubs);
-            } else {
-                // During test?
-                // HACK - TODO use mock
-                String jsDir = System.getProperty("xtest.js.home");
-                if (jsDir == null) {
-                    throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-                }
-                File jsStubs = new File(jsDir + File.separator + "jsstubs");
-                if (jsStubs.exists()) {
-                    jsStubsFO = FileUtil.toFileObject(jsStubs);
+            File allstubs = InstalledFileLocator.getDefault().locate("jsstubs/allstubs.zip", "org.netbeans.modules.javascript.editing", false);
+            if (allstubs == null) {
+                // Probably inside unit test.
+                try {
+                    File moduleJar = new File(JsClassPathProvider.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    allstubs = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/allstubs.zip");
+                } catch (URISyntaxException x) {
+                    assert false : x;
+                    return null;
                 }
             }
+            assert allstubs.isFile() : allstubs;
+            jsStubsFO = FileUtil.getArchiveRoot(FileUtil.toFileObject(allstubs));
         }
         return jsStubsFO;
     }

@@ -1020,7 +1020,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 }
                 return compPattern.matcher(str).find();
             } else {
-                return matchCase ? str.contains(pattern) : str.toLowerCase().matches(pattern);
+                return matchCase ? str.contains(pattern) : str.toLowerCase().contains(pattern);
             }
         }
 
