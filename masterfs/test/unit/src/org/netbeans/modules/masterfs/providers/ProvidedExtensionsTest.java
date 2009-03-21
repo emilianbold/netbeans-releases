@@ -436,7 +436,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends InterceptionListenerTest.AnnotationProviderImpl  {
-        private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl();
+        private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this);
         public InterceptionListener getInterceptionListener() {
             return impl;
         }
@@ -458,6 +458,15 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static boolean implsDeleteRetVal = false;
         
         public static FileLock lock;
+        private final AnnotationProviderImpl provider;
+
+        public ProvidedExtensionsImpl() {
+            this(null);
+        }
+
+        public ProvidedExtensionsImpl(AnnotationProviderImpl p) {
+            this.provider = p;
+        }
         
         public void clear() {
             implsMoveCalls = 0;
