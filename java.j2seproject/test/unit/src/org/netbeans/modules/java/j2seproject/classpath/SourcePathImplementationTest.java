@@ -68,6 +68,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
 import org.openide.util.Mutex;
+import org.openide.util.test.MockLookup;
 
 public class SourcePathImplementationTest extends NbTestCase {
 
@@ -87,6 +88,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        MockLookup.setLayersAndInstances();
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
