@@ -79,7 +79,7 @@ public final class CommonTasksSupport {
      * @param dstExecEnv execution environment that describes destination host
      * @param dstFileName destination filename on the host, specified by
      *        <tt>dstExecEnv</tt>
-     * @param mask file mode creation mask (see uname(1), chmod(1))
+     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal)
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
      * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion 
@@ -263,7 +263,7 @@ public final class CommonTasksSupport {
                     workUnitFactor = 1;
                 }
 
-                String command = String.format("C0%03d %d %s\n", // NOI18N
+                String command = String.format("C0%03o %d %s\n", // NOI18N
                         mask, filesize, srcFile.getName());
                 buffer.put(command.getBytes(), 0, command.length());
 
