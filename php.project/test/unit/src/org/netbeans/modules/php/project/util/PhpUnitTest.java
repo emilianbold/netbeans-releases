@@ -42,8 +42,6 @@ package org.netbeans.modules.php.project.util;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
-import org.openide.util.NbBundle;
 import static org.junit.Assert.*;
 
 /**

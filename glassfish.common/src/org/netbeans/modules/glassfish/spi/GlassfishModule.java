@@ -288,6 +288,13 @@ public interface GlassfishModule {
     public AppDesc [] getModuleList(String container);
     
     /**
+     * Map of the resources of specified type currently deployed on the server.
+     *
+     * @return map of resources current deployed.
+     */
+    public Map<String, ResourceDesc> getResourcesMap(String type);
+
+    /**
      * Returns the current server state (stopped, running, etc.)
      * 
      * @return current server state as an enum.  See enum declaration for 

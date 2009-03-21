@@ -150,7 +150,7 @@ public final class CssModel {
                                 int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
                                 int colonOffset = colons.get(i);
 
-                                CssRuleItem ruleItem = new CssRuleItem(property.image(), property.startOffset(), value.image(), value.startOffset(), colonOffset, semicolonOffset);
+                                CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
 
                                 ruleItems.add(ruleItem);
                             }

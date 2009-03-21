@@ -47,6 +47,9 @@ import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -96,6 +99,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final String nodeColumnName;
     private final String nodeRowColumnID;
     private final ExplorerManager explorerManager;
+    private Future task;
+    private final Object queryLock = new Object();
+    private final Object uiLock = new Object();
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
@@ -134,10 +140,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-    }
+ 
 
 
 
@@ -150,7 +153,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         super.addNotify();
         addComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-        onTimer();
+        asyncFillModel();
         if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
@@ -162,6 +165,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
+        synchronized(queryLock){
+            if (task != null){
+                if (!task.isDone()){
+                    task.cancel(true);
+                }
+            }
+        }
         if (timerHandler != null) {
             timerHandler.stopTimer();
         }
@@ -182,7 +192,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void setLoadingContent() {
-        isEmptyContent = true;
+        isEmptyContent = false;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JLabel label = new JLabel(NbBundle.getMessage(AdvancedTableViewVisualizer.class, "Loading")); // NOI18N
@@ -208,8 +218,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     protected void updateList(List<DataRow> list) {
-        setNonEmptyContent();
-        this.explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
+        synchronized(uiLock){
+            setNonEmptyContent();
+            this.explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
+        }
     }
 
 
@@ -267,25 +279,47 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void asyncFillModel() {
-        // Set node root fo parent explorer manager
-        DLightExecutorService.submit(new Runnable() {
+        synchronized(queryLock){
+            if (task != null){
+                if (!task.isDone()){
+                    task.cancel(true);
+                }
+            }
+            task = DLightExecutorService.submit(new Callable<Boolean>() {
 
-            public void run() {
-                final List<DataRow> list = provider.queryData(configuration.getMetadata());
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
+                public Boolean call() {
+                    Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>(){
 
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
+                        public List<DataRow> call() throws Exception {
+                            return provider.queryData(configuration.getMetadata());
                         }
 
-                        updateList(list);
+                    },  "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+                    try{
+                        final List<DataRow> list = queryDataTask.get();
+                        final boolean isEmptyConent = list == null || list.isEmpty();
+                        UIThread.invoke(new Runnable() {
+                            public void run() {
+                                setContent(isEmptyConent);
+                                if (isEmptyConent) {
+                                    return;
+                                }
+
+                                updateList(list);
+                            }
+                        });
+                        return Boolean.valueOf(true);
+                    }catch(ExecutionException ex){
+                        Thread.currentThread().interrupt();
+                    }catch(InterruptedException e){
+                        Thread.currentThread().interrupt();
                     }
-                });
-            }
-        }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
+                    return Boolean.valueOf(false);
+                }
+            }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
+        }
+
+
     }
 
     public AdvancedTableViewVisualizerConfiguration getVisualizerConfiguration() {

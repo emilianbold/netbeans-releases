@@ -95,7 +95,7 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
         PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
-                project, Collections.singleton(ClassPath.SOURCE), Collections.singleton(ClassPath.BOOT),
+                project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();

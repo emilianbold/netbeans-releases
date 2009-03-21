@@ -62,7 +62,7 @@ public class ProjectSupportTest extends NbTestCase {
 
     /** Set up. */
     protected void setUp() throws IOException {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         System.out.println("########  "+getName()+"  #######");
     }

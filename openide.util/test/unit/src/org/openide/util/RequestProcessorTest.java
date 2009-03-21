@@ -177,7 +177,8 @@ public class RequestProcessorTest extends NbTestCase {
         rp = null;
         assertGC("runnable should be collected", wr);
     } /**/  
-    
+
+    @RandomlyFails
     public void testScheduleAndIsFinished() throws InterruptedException {
         class Run implements Runnable {
             public boolean run;
