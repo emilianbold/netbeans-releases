@@ -89,7 +89,7 @@ public final class TestUtil extends ProxyLookup {
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
     public static void setLookup(Object[] instances) {
-        MockLookup.setInstances(instances);
+        MockLookup.setLayersAndInstances(instances);
     }
     
     private static boolean warned = false;

@@ -303,6 +303,9 @@ public class OpenProjectListSettings {
                     return FileUtil.normalizeFile(f);
                 }
             }
+            if (Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
+                return FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir", ""))); // NOI18N
+            }
             File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
             if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
                 String nbPrjDirName = NbBundle.getMessage(OpenProjectListSettings.class, "DIR_NetBeansProjects");
