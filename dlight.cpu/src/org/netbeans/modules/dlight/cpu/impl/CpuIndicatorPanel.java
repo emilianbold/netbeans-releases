@@ -36,129 +36,75 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.cpu.impl;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.dlight.indicators.graph.AbstractIndicatorPanel;
+import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
+import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.GraphDetail;
+import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
  */
-public class CpuIndicatorPanel extends AbstractIndicatorPanel {
+public class CpuIndicatorPanel extends GraphPanel<PercentageGraph, Legend> {
 
-    private static final Color COLOR_SYS = new Color(0xFF, 0xC7, 0x26);
-    private static final Color COLOR_USR = new Color(0xB2, 0xBC, 0x00);
-
-    private final CpuIndicator indicator;
-    private PercentageGraph graph;
-    private JPanel legend;
-    private JLabel lblSysLabel;
-    private JLabel lblSysValue;
-    private JLabel lblUsrLabel;
-    private JLabel lblUsrValue;
+    private static final Color COLOR_SYS = GraphColors.COLOR_1;
+    private static final Color COLOR_USR = GraphColors.COLOR_3;
+    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
+    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
 
     /*package*/ CpuIndicatorPanel(CpuIndicator indicator) {
-        this.indicator = indicator;
+        super(getTitle(), createGraph(indicator), createLegend(), null, null);
     }
 
-    @Override
-    protected String getTitle() {
+    private static String getTitle() {
         return NbBundle.getMessage(CpuIndicatorPanel.class, "indicator.title"); // NOI18N
     }
 
-    @Override
-    protected JComponent createGraph() {
-        if (graph == null) {
+    private static PercentageGraph createGraph(final CpuIndicator indicator) {
+        PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
+        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setMinimumSize(new Dimension(80, 60));
+        graph.setPreferredSize(new Dimension(80, 60));
 
-            graph = new PercentageGraph(
-                    new GraphDescriptor(COLOR_SYS, "System"),
-                    new GraphDescriptor(COLOR_USR, "User"));
-            graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-            graph.setMinimumSize(new Dimension(66, 32));
-            graph.setPreferredSize(new Dimension(150, 80));
+        MouseListener ml = new MouseAdapter() {
 
-
-            MouseListener ml = new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() > 1) {
-                        indicator.fireActionPerformed();
-                    }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1) {
+                    indicator.fireActionPerformed();
                 }
-            };
-            graph.addMouseListener(ml);
-        }
+            }
+        };
+        graph.addMouseListener(ml);
         return graph;
     }
 
-    @Override
-    protected JComponent createLegend() {
-        if (legend == null) {
-            lblSysLabel = new JLabel(NbBundle.getMessage(getClass(), "label.sys"));
-            lblSysValue = new JLabel();
-            lblSysLabel.setForeground(TEXT_COLOR);
-            lblSysValue.setForeground(TEXT_COLOR);
-
-            lblUsrLabel = new JLabel(NbBundle.getMessage(getClass(), "label.usr"));
-            lblUsrValue = new JLabel();
-            lblUsrLabel.setForeground(TEXT_COLOR);
-            lblUsrValue.setForeground(TEXT_COLOR);
-
-            legend = new JPanel(new GridBagLayout());
-            legend.setBackground(Color.WHITE);
-            legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-            legend.setMinimumSize(new Dimension(100, 80));
-            legend.setPreferredSize(new Dimension(100, 80));
-
-            GridBagConstraints c = new GridBagConstraints();
-            c.insets = new Insets(0, 6, 0, 0);
-            c.anchor = GridBagConstraints.WEST;
-            c.gridy = 0;
-            c.gridx = 0;
-            legend.add(lblSysLabel, c);
-            c.gridx = 1;
-            legend.add(lblSysValue, c);
-
-            c.insets = new Insets(0, 6, 0, 0);
-            c.anchor = GridBagConstraints.WEST;
-            c.gridy = 1;
-
-            c.gridx = 0;
-            legend.add(lblUsrLabel, c);
-            c.gridx = 1;
-            legend.add(lblUsrValue, c);
-        }
-        return legend;
+    private static Legend createLegend() {
+        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<GraphDetail>emptyList());
     }
 
     /*package*/ void addData(int sys, int usr) {
-        graph.addData(sys, usr);
+        getGraph().addData(sys, usr);
     }
 
     /*package*/ void setSysValue(int v) {
-        lblSysValue.setText(formatValue(v));
+        //getLegend().setSysValue(formatValue(v));
     }
 
     /*package*/ void setUsrValue(int v) {
-        lblUsrValue.setText(formatValue(v));
+        //getLegend().setUsrValue(formatValue(v));
     }
 
-    private String formatValue(int value) {
-        return String.format("%02d%%", value);
-    }
 }

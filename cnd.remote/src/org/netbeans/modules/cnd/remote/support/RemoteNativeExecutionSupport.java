@@ -102,7 +102,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 }
                 try {
                     Thread.sleep(100); // according to jsch samples
-                } catch (Exception ee) {
+                } catch (InterruptedException ie) {
                 }
 //            } while (!channel.isClosed());
 
@@ -128,7 +128,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             in.close();
 
         } catch (InterruptedException ie) {
-            log.log(Level.WARNING, ie.getMessage(), ie);
+            // this occurs, for example, when user stops running program - need no report
         } catch (IOException ioe) {
             log.log(Level.WARNING, ioe.getMessage(), ioe);
         } catch (Exception ex) {

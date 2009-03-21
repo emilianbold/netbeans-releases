@@ -262,7 +262,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         assert newName != null;
         PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
         PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
-        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, newName, descr);
+        Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
         return diff;
     }
 }
