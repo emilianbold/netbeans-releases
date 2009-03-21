@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.refactoring.api;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -61,19 +63,35 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     private Set<CsmVisibility> fieldModifiers;
     private boolean alwaysUseAccessors;
     private boolean methodInline;
-    
+    private final CsmFile declFile;
+    private final CsmFile defFile;
+    private final CsmClass enclosingClass;
     /**
      * Creates a new instance of EncapsulateFieldRefactoring
      * @param field field to refactor
      */
-    public EncapsulateFieldRefactoring(CsmField field) {
+    public EncapsulateFieldRefactoring(CsmField field, CsmFile declFile, CsmFile defFile) {
         super(Lookups.fixed(field));
+        this.enclosingClass = field.getContainingClass();
+        this.declFile = declFile;
+        this.defFile = defFile;
     }
     
     public CsmField getSourceField() {
         return getRefactoringSource().lookup(CsmField.class);
     }
-    
+
+    public CsmClass getEnclosingClass() {
+        return enclosingClass;
+    }
+
+    public CsmFile getClassDeclarationFile() {
+        return this.declFile;
+    }
+
+    public CsmFile getClassDefinitionFile() {
+        return this.defFile;
+    }
     /**
      * Getter for property getterName
      * @return Value of property getterName
