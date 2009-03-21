@@ -66,6 +66,7 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
+import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -376,6 +377,16 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         }
         return result;
+    }
+
+    public Map<String, ResourceDesc> getResourcesMap(String type) {
+        CommandRunner mgr = new CommandRunner(getInstanceProperties());
+        Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
+        List<ResourceDesc> resourcesList = mgr.getResources(type);
+        for (ResourceDesc resource : resourcesList) {
+            resourcesMap.put(resource.getName(), resource);
+        }
+        return resourcesMap;
     }
 
     public ServerState getServerState() {
