@@ -77,7 +77,7 @@ public class J2SESharabilityQueryTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );
