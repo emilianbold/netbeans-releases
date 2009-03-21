@@ -172,7 +172,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     };
 
     public void testCreateProject() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         File proj = getWorkDir();
         clearWorkDir();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N

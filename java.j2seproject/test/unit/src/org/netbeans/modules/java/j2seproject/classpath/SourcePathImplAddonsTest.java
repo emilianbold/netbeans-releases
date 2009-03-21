@@ -57,6 +57,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test's adding generate source in addons directory to source classpath.
@@ -75,6 +76,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
+        MockLookup.setLayersAndInstances();
         projdir = scratch.createFolder("proj001");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj001",null,null,null); //NOI18N
