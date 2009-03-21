@@ -140,7 +140,7 @@ public class InterceptionListenerTest extends NbTestCase  {
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends AnnotationProvider  {
-        private InterceptionListenerImpl impl = new InterceptionListenerImpl();
+        private InterceptionListenerImpl impl = new InterceptionListenerImpl(this);
         public String annotateName(String name, java.util.Set files) {
             java.lang.StringBuffer sb = new StringBuffer(name);
             Iterator it = files.iterator();
@@ -180,6 +180,11 @@ public class InterceptionListenerTest extends NbTestCase  {
         private int beforeDeleteCalls = 0;
         private int deleteSuccessCalls = 0;
         private int deleteFailureCalls = 0;
+        private final AnnotationProviderImpl provider;
+
+        public InterceptionListenerImpl(AnnotationProviderImpl provider) {
+            this.provider = provider;
+        }
         
         public void clear() {
             beforeCreateCalls = 0;

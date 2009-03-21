@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor;
 
 import java.net.URL;
+import java.util.Collection;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
@@ -123,7 +124,7 @@ public class NbEditorToolBarTest extends NbTestCase {
 
     /**
      * Tests that the action context for the context-aware toolbar actions
-     * is null if there is no Lookup.Provider ancestor and no DataObject
+     * contains the editor pane if there is no Lookup.Provider ancestor and no DataObject
      * corresponding to the current document.
      */
     public void testActionContextNullWhenNoDataObject() {
@@ -133,7 +134,12 @@ public class NbEditorToolBarTest extends NbTestCase {
         parent.add(editor);
 
         Lookup actionContext = NbEditorToolBar.createActionContext(editor);
-        assertNull(actionContext);
+        // changed when fixing #127757
+        //assertNull(actionContext);
+        assertNotNull(actionContext);
+        Collection<?> all = actionContext.lookupAll(Object.class);
+        assertEquals("Expecting singleton Lookup", 1, all.size());
+        assertSame("Expecting the editor pane", editor, all.iterator().next());
     }
 
     /**
