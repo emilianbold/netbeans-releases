@@ -78,9 +78,10 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     private Project pp;
     AntProjectHelper helper;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceForBinaryQuery(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
@@ -88,6 +89,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
         Properties p = System.getProperties();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
@@ -98,7 +100,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
     private void prepareProject () throws IOException {
         scratch = TestUtil.makeScratchDir(this);
-        projdir = scratch.createFolder("proj");        
+        projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
