@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
@@ -49,6 +50,7 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -89,15 +91,17 @@ public class TestRestServicesAction extends NodeAction  {
                     }
                 } else {
                     // if there is a rest support (e.g. in Maven projects)
-                    FileObject resourcesFolder = prj.getProjectDirectory().getFileObject("src/main/resources"); //NOI18N
-                    if (resourcesFolder != null) {
+                    RestSupport rs = prj.getLookup().lookup(RestSupport.class);
+                    if (rs != null) {
                         try {
-                            FileObject restFolder = resourcesFolder.getFileObject("rest"); //NOI18N
-                            if (restFolder == null) {
-                                restFolder = resourcesFolder.createFolder("rest"); //NOI18N
+                            File testFolder = FileUtil.toFile(prj.getProjectDirectory());
+                            FileObject testFO = rs.generateTestClient(testFolder);
+                            if (testFO != null) {
+                                URL url = testFO.getURL();
+                                if (url != null) {
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                                }
                             }
-                            RestSupport rs = prj.getLookup().lookup(RestSupport.class);
-                            FileObject testFO = rs.generateTestClient(FileUtil.toFile(restFolder));
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
