@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -127,10 +128,10 @@ public abstract class ClassIndexImpl {
         }
     }
     
-    public void typesEvent (final Iterable<? extends ElementHandle<TypeElement>> added, final Iterable<? extends ElementHandle<TypeElement>> removed, final Iterable<? extends ElementHandle<TypeElement>> changed) {
-        final ClassIndexImplEvent a = added != null ? new ClassIndexImplEvent(this, added) : null;
-        final ClassIndexImplEvent r = removed != null ? new ClassIndexImplEvent(this, removed) : null;
-        final ClassIndexImplEvent ch = changed != null ? new ClassIndexImplEvent(this, changed) : null;
+    public void typesEvent (final Collection<? extends ElementHandle<TypeElement>> added, final Collection<? extends ElementHandle<TypeElement>> removed, final Collection<? extends ElementHandle<TypeElement>> changed) {
+        final ClassIndexImplEvent a = added == null || added.isEmpty() ? null : new ClassIndexImplEvent(this, added);
+        final ClassIndexImplEvent r = removed == null || removed.isEmpty() ? null : new ClassIndexImplEvent(this, removed);
+        final ClassIndexImplEvent ch = changed == null || changed.isEmpty() ? null : new ClassIndexImplEvent(this, changed);
         typesEvent(a, r, ch);
     }
 
