@@ -71,6 +71,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     private ExecutorTask executorTask;
     private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
 
+    // VK: this is just to tie two pieces of logic together:
+    // first is in determining the type of console for remote;
+    // second is in canCancel
+    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
+
     public void init(ProjectActionEvent pae) {
         this.pae = pae;
     }
@@ -128,8 +133,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 }
                 if (!conf.getDevelopmentHost().isLocalhost()) {
-                    //TODO: only output window for remote for now
-                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
+                        //TODO: only output window for remote for now
+                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    }
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     if (HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
@@ -264,6 +271,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (pae.getType() != ProjectActionEvent.Type.RUN) {
             return true;
         } else {
+            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
+                if (!((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().isLocalhost()) {
+                    return true;
+                }
+            }
             int consoleType = pae.getProfile().getConsoleType().getValue();
             if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                 consoleType = RunProfile.getDefaultConsoleType();

@@ -153,7 +153,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(false && EXPERIMENTAL);
+        jCheckAccess.setEnabled(EXPERIMENTAL);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboAccess.setEnabled(false && EXPERIMENTAL);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);

@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.refactoring.support;
 
 import java.awt.Toolkit;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +72,8 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
@@ -317,11 +320,11 @@ public class GeneratorUtils {
 //    }
 //
 
-    private static final class InsertInfo {
-        final CloneableEditorSupport ces;
-        final PositionRef start;
-        final PositionRef end;
-        final int dot;
+    public static final class InsertInfo {
+        public final CloneableEditorSupport ces;
+        public final PositionRef start;
+        public final PositionRef end;
+        public final int dot;
 
         public InsertInfo(CloneableEditorSupport ces, int dot, PositionRef start, PositionRef end) {
             this.ces = ces;
@@ -333,12 +336,66 @@ public class GeneratorUtils {
     }
 
     /**
+     * 
+     * @param clazz
+     * @return { declaration file, definition file } definition file could be the same as declaration
+     */
+    public static CsmFile[] getDeclarationDefinitionFiles(CsmClass clazz) {
+        CsmFile declFile =  CsmRefactoringUtils.getCsmFile(clazz);
+        CsmFile defFile = declFile;
+        if (declFile.isHeaderFile()) {
+            Iterator<CsmFunction> extDefs = getAllOutOfClassMethodDefinitions(clazz).iterator();
+            boolean found = false;
+            while (extDefs.hasNext() && !found) {
+                CsmFunction def = extDefs.next();
+                defFile = CsmRefactoringUtils.getCsmFile(def);
+                if (!declFile.equals(defFile)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                CsmFile source = findSource(declFile);
+                if (source != null) {
+                    defFile = source;
+                }
+            }
+        }
+        return new CsmFile[] { declFile, defFile };
+    }
+
+    private static CsmFile findSource(CsmFile header) {
+        String name = getFileName(header.getAbsolutePath());
+
+        Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
+
+        for (CsmFile f : includers) {
+            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath()), name)) {
+                // we found source file with the same name
+                // as header and with dependency to it. Best shot.
+                return f;
+            }
+        }
+
+        // look for random namesake
+        for (CsmFile f : header.getProject().getSourceFiles()) {
+            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath().toString()), name)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private static String getFileName(CharSequence file) {
+        String name = new File(file.toString()).getName();
+        return name;
+    }
+    /**
      * returns two elements array. The first contains information about declarations,
      * the second about definitions
      * @param path
-     * @return
+     * @return [decl insert point; definition insert point]
      */
-    private static InsertInfo[] getInsertPositons(CsmContext path, CsmClass enclClass, InsertPoint insPt) {
+    public static InsertInfo[] getInsertPositons(CsmContext path, CsmClass enclClass, InsertPoint insPt) {
         int declPos = -1;
         int defPos = -1;
         CsmFile declFile = null;
@@ -380,6 +437,8 @@ public class GeneratorUtils {
             }
             if (insPt.getElementDeclaration() != null) {
                 declPos = insPt.getElementDeclaration().getEndOffset();
+            } else if (insPt.getIndex() == Integer.MIN_VALUE) {
+                declPos = enclClass.getLeftBracketOffset() + 1;
             }
         }
         if (declPos < 0) {
@@ -406,6 +465,9 @@ public class GeneratorUtils {
             // let's try to put after last public method
             if (lastPublicMethod != null) {
                 declPos = lastPublicMethod.getEndOffset();
+                if (declFile == null) {
+                    declFile = CsmRefactoringUtils.getCsmFile(lastPublicMethod);
+                }
                 CsmFunctionDefinition def = lastPublicMethod.getDefinition();
                 if (def != null && def != lastPublicMethod) {
                     defFile = CsmRefactoringUtils.getCsmFile(def);
@@ -420,11 +482,15 @@ public class GeneratorUtils {
         }
         if (defFile == null) {
             Iterator<CsmFunction> extDefs = getAllOutOfClassMethodDefinitions(enclClass).iterator();
-            if (extDefs.hasNext()) {
+            while (extDefs.hasNext()) {
                 CsmFunction def = extDefs.next();
                 defFile = CsmRefactoringUtils.getCsmFile(def);
                 defPos = def.getEndOffset();
+                if (insPt.getIndex() != Integer.MAX_VALUE) {
+                    break;
+                }
             }
+
         }
         CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(declFile);
         CloneableEditorSupport classDefEditor = CsmUtilities.findCloneableEditorSupport(defFile);
