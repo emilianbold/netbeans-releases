@@ -76,6 +76,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
     @Override
     void store(WizardDescriptor settings) {
         GrailsPlatform.getDefault().removeChangeListener(this);
+        settings.putProperty( /*XXX Define somewhere */ "setAsMain", // NOI18N
+                setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE );
     }
 
     @Override

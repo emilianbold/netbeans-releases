@@ -52,7 +52,7 @@ public interface JbiBuildListener {
     /**
      * Notified before a compapp's build-related Ant task gets started.
      */
-    void buildStarted(JbiBuildTask task);
+    void buildStarted();
     
     /**
      * Notified after a compapp's build-related Ant task is compleleted.

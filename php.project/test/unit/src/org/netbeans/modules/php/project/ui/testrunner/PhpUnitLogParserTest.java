@@ -104,7 +104,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertFalse(testCase.isError());
         assertEquals(Status.FAILED, testCase.getStatus());
         assertEquals(2, testCase.getStacktrace().length);
-        assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybí znak konce řádku na konci souboru", testCase.getStacktrace()[0]);
+        assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybi znak konce radku na konci souboru", testCase.getStacktrace()[0]);
         assertEquals("at /home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace()[1]);
 
         testCase = testSuite.getTestCases().get(2);

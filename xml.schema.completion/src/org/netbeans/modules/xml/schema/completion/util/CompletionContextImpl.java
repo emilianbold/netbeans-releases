@@ -71,6 +71,7 @@ import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.util.Lookup;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -449,22 +450,26 @@ public class CompletionContextImpl extends CompletionContext {
         
         //if the tag declares a namespace and is diff from default, then it is root
         String prefix = CompletionUtil.getPrefixFromTag(thisTag.getTagName());
-        String namespace = null;
-        if(prefix==null)
-            namespace = thisTag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE);
-        else
-            namespace = thisTag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
-        if(namespace != null && !namespace.equals(defaultNamespace)) {            
-            //see if it declares a schemaLocation or noNamespaceSchemaLocation
-            String sl = getAttributeValue(thisTag, XSI_SCHEMALOCATION);
-            if(sl != null)
-                this.schemaLocation = sl;
-            String nnsl = getAttributeValue(thisTag, XSI_NONS_SCHEMALOCATION);
-            if(nnsl != null)
-                this.noNamespaceSchemaLocation = nnsl;
-            if(prefix != null)
-                declaredNamespaces.put(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix, namespace);
-            return true;
+        Attr namespaceAttr = null;
+        if(prefix==null) {
+            namespaceAttr = thisTag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE);
+        } else {
+            namespaceAttr = thisTag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
+        }
+        if(namespaceAttr != null) {
+            String namespace = namespaceAttr.getValue();
+            if(!namespace.equals(defaultNamespace)) {
+                //see if it declares a schemaLocation or noNamespaceSchemaLocation
+                String sl = getAttributeValue(thisTag, XSI_SCHEMALOCATION);
+                if(sl != null)
+                    this.schemaLocation = sl;
+                String nnsl = getAttributeValue(thisTag, XSI_NONS_SCHEMALOCATION);
+                if(nnsl != null)
+                    this.noNamespaceSchemaLocation = nnsl;
+                if(prefix != null)
+                    declaredNamespaces.put(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix, namespace);
+                return true;
+            }
         }
         
         //handle no namespace
@@ -492,19 +497,23 @@ public class CompletionContextImpl extends CompletionContext {
         String prefix = CompletionUtil.getPrefixFromTag(tagName);
         String lName = CompletionUtil.getLocalNameFromTag(tagName);        
         if(prefix == null) {
-            String ns = tag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE);
-            if(ns == null)
+            Attr attrNode = tag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE);
+            if(attrNode == null) {
                 qname = new QName(defaultNamespace, lName);
-            else
+            } else {
+                String ns = attrNode.getValue();
                 qname = new QName(ns, lName);
+            }
         } else {
             //first try ns declaration in the tag
-            String ns = tag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
-            if(ns != null)
+            Attr attrNode = tag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
+            if(attrNode != null) {
+                String ns = attrNode.getValue();
                 qname = new QName(ns, lName, prefix); //NOI18N
-            else
+            } else {
                 qname = new QName(declaredNamespaces.
                         get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N
+            }
         }
         return qname;
     }

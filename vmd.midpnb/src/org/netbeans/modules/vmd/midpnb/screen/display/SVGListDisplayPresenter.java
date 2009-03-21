@@ -134,7 +134,7 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
             for (PropertyValue propertyValue : propsList) {
                 PropertyValue stringValue = propertyValue.getComponent().
                         readProperty(SVGListElementEventSourceCD.PROP_STRING);
-                itemsList.add(stringValue.getPrimitiveValue().toString());
+                itemsList.add((String)stringValue.getPrimitiveValue());
             }
         }
         return itemsList;

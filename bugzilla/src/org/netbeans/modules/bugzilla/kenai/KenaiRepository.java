@@ -41,7 +41,9 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.awt.Image;
 import java.text.MessageFormat;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.util.ImageUtilities;
@@ -53,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class KenaiRepository extends BugzillaRepository {
 
-    static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png";
+    static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private String urlParam;
     private Query[] definedQueries;
     private Image icon;
@@ -64,9 +66,9 @@ public class KenaiRepository extends BugzillaRepository {
         super(repoName, url, user, password);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        // NOI18N XXX escape @?
+        // XXX escape @?
         // XXX what if user already mail address?
-        userMail = user + "@"+ host; 
+        userMail = user + "@"+ host; // NOI18N
         this.product = product;
     }
 
@@ -79,6 +81,11 @@ public class KenaiRepository extends BugzillaRepository {
     public Query createQuery() {
         KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
+    }
+
+    @Override
+    public Issue createIssue() {
+        return super.createIssue();
     }
 
     @Override
@@ -113,7 +120,7 @@ public class KenaiRepository extends BugzillaRepository {
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
             KenaiQuery allIssues = 
                 new KenaiQuery(
-                    NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"),
+                    NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
                     this,
                     url.toString(),
                     product,
@@ -124,4 +131,12 @@ public class KenaiRepository extends BugzillaRepository {
         }
         return definedQueries;
     }
+
+    @Override
+    protected BugzillaConfiguration createConfiguration() {
+        KenaiConfiguration c = BugzillaConfiguration.create(this, KenaiConfiguration.class);
+        c.setProducts(product);
+        return c;
+    }
+
 }

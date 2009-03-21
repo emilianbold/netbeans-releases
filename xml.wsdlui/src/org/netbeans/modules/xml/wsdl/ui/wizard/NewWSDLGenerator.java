@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.PortTypeGenerator;
 import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
 import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.HashMap;
