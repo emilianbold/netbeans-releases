@@ -146,7 +146,7 @@ public class SystemIncludesUtils {
             log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
-            String zipRemotePath = "/tmp/" + System.getProperty("user.name") + '/' + zipRemote; // NOI18N
+            String zipRemotePath = "/tmp/" + System.getProperty("user.name") + '-' + zipRemote; // NOI18N
             String zipLocalPath; 
             File zipLocalFile;
             try {
