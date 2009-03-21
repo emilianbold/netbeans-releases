@@ -36,11 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -54,12 +53,21 @@ import javax.swing.JPanel;
  *
  * @author Alexey Vladykin
  */
-public abstract class AbstractIndicatorPanel extends JPanel {
+public class GraphPanel<G extends JComponent, L extends JComponent> extends JPanel {
 
-    protected static final Color TEXT_COLOR = new Color(49, 78, 114);
-    protected static final Color BORDER_COLOR = new Color(114, 138, 132);
+    private static final int PADDING = 12;
+    private final String title;
+    private final G graph;
+    private final L legend;
+    private final JComponent hAxis;
+    private final JComponent vAxis;
 
-    protected AbstractIndicatorPanel() {
+    public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis) {
+        this.title = title;
+        this.graph = graph;
+        this.legend = legend;
+        this.hAxis = hAxis;
+        this.vAxis = vAxis;
         initComponents();
     }
 
@@ -67,45 +75,70 @@ public abstract class AbstractIndicatorPanel extends JPanel {
         setLayout(new GridBagLayout());
         GridBagConstraints c;
 
-        JLabel label = new JLabel(getTitle());
-        label.setFont(label.getFont().deriveFont(label.getFont().getStyle() | java.awt.Font.BOLD));
-        label.setForeground(TEXT_COLOR);
-        c = new java.awt.GridBagConstraints();
+        JLabel label = new JLabel(title);
+        Font labelFont = label.getFont();
+        label.setFont(labelFont.deriveFont(labelFont.getStyle() | Font.BOLD));
+        label.setForeground(GraphColors.TEXT_COLOR);
+        c = new GridBagConstraints();
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
-        c.insets = new Insets(12, 12, 0, 12);
+        c.insets = new Insets(PADDING, vAxis == null ? PADDING : 0, 0, PADDING);
         add(label, c);
 
-        JComponent graph = createGraph();
-        graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(100, 80));
-        graph.setPreferredSize(new Dimension(100, 80));
+        if (vAxis != null) {
+            c = new GridBagConstraints();
+            c.fill = GridBagConstraints.VERTICAL;
+            c.weighty = 1.0;
+            c.insets = new Insets(PADDING / 2, PADDING, 0, 0);
+            add(vAxis, c);
+        }
+
+        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+//        graph.setMinimumSize(new Dimension(100, 80));
+//        graph.setPreferredSize(new Dimension(100, 80));
 
         c = new GridBagConstraints();
-        c.fill = java.awt.GridBagConstraints.BOTH;
+        c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        c.insets = new java.awt.Insets(6, 12, 12, 0);
+        c.insets = new Insets(PADDING / 2, vAxis == null ? PADDING : 0, hAxis == null ? PADDING : 0, 0);
         add(graph, c);
 
-        JComponent legendPanel = createLegend();
-        legendPanel.setBackground(Color.WHITE);
-        legendPanel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        legendPanel.setMinimumSize(new Dimension(100, 80));
-        legendPanel.setPreferredSize(new Dimension(100, 80));
-
+        legend.setBackground(Color.WHITE);
+        legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+//        legend.setMinimumSize(new Dimension(100, 80));
+//        legend.setPreferredSize(new Dimension(100, 80));
         c = new GridBagConstraints();
-        c.fill = java.awt.GridBagConstraints.BOTH;
+        c.fill = GridBagConstraints.BOTH;
+        c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 1.0;
-        c.insets = new java.awt.Insets(6, -1, 12, 12);
-        add(legendPanel, c);
+        c.insets = new Insets(PADDING / 2, -1, hAxis == null ? PADDING : 0, PADDING);
+        add(legend, c);
+
+        if (hAxis != null) {
+            c = new GridBagConstraints();
+            c.gridx = vAxis == null ? 0 : 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1.0;
+            c.insets = new Insets(0, vAxis == null ? PADDING : 0, PADDING, 0);
+            add(hAxis, c);
+        }
     }
 
-    protected abstract String getTitle();
+    protected final G getGraph() {
+        return graph;
+    }
 
-    protected abstract JComponent createGraph();
+    protected final L getLegend() {
+        return legend;
+    }
 
-    protected abstract JComponent createLegend();
+    protected final JComponent getHorizontalAxis() {
+        return hAxis;
+    }
 
+    protected final JComponent getVerticalAxis() {
+        return vAxis;
+    }
 }
