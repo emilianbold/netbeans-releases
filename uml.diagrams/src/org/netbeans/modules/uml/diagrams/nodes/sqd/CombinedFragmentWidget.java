@@ -370,8 +370,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         InteractionOperandWidget ret=null;
         
         if (operands.get(op) != null) {
-            //it was already added, log to track possile perfomance
-//            System.out.println("***WARNING: "+"Operand is already added, op:"+op.getConstraintsAsString()+"; ");
+            //it was already added
         } else {
             InteractionOperandWidget opW = new InteractionOperandWidget(getScene());
             ret=opW;
@@ -964,7 +963,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void loadDependencies(NodeInfo nodeReader) {
         Collection nodeLabels = nodeReader.getLabels();
         //do we have any node labels here? guess not..
-//        System.out.println(" NodeLabels = "+nodeLabels.toString());
     }
     
 }

@@ -43,6 +43,8 @@ package org.netbeans.modules.mobility.svgcore.options;
 
 import java.io.File;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.mobility.svgcore.snippets.gradientlook.SVGSnipetsProviderGradient;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -69,7 +71,6 @@ public class SvgcoreSettings {
         }
     }
         
-    
     public static synchronized SvgcoreSettings getDefault() {
         if (svgcoreSettings == null) {
             svgcoreSettings = new SvgcoreSettings();
@@ -94,7 +95,11 @@ public class SvgcoreSettings {
     }
     
     public final String getCurrentSnippet() {
-        return prefs.get(PROP_CURRENT_SNIPPET, null);
+        String currentSnippet = prefs.get(PROP_CURRENT_SNIPPET, null);
+        if (currentSnippet == null) {
+            return NbBundle.getMessage(SVGSnipetsProviderGradient.class, "LBL_SNIPPET_DISPLAY_NAME");
+        }
+        return currentSnippet;
     }
 
     final void setCurrentSnippet(String currentSnippet) {
