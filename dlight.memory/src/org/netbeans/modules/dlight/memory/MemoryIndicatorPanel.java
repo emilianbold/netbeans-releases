@@ -26,7 +26,7 @@ import org.openide.util.NbBundle;
 
     /*package*/ MemoryIndicatorPanel() {
         graph = createGraph();
-        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, createLegend(), null, null);
+        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
         max = 0;
     }
 
@@ -43,6 +43,8 @@ import org.openide.util.NbBundle;
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
+        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
+        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
         return graph;
     }
 
