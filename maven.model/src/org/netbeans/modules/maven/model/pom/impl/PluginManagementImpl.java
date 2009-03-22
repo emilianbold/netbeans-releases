@@ -88,6 +88,25 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
         }
     }
 
+    public Plugin findPluginById(String groupId, String artifactId) {
+        assert groupId != null;
+        assert artifactId != null;
+        List<Plugin> plugs = getPlugins();
+        if (plugs != null) {
+            for (Plugin plug : plugs) {
+                String plugGroupId = plug.getGroupId();
+                if (plugGroupId == null) {
+                    plugGroupId = "org.apache.maven.plugins"; //the default groupId
+                }
+                if (groupId.equals(plugGroupId) && artifactId.equals(plug.getArtifactId())) {
+                    return plug;
+                }
+            }
+        }
+        return null;
+    }
+
+
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
