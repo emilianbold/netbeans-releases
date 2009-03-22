@@ -44,6 +44,7 @@ package org.netbeans.core.output2;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
@@ -59,7 +60,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
@@ -72,6 +72,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
@@ -246,8 +247,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     private boolean hasOutputListeners = false;
 
-    public void documentChanged() {
-        if (filtOut != null) {
+    public void documentChanged(OutputPane pane) {
+        if (filtOut != null && pane == origPane) {
             filtOut.readFrom(io.out());
         }
         boolean hadOutputListeners = hasOutputListeners;
@@ -665,12 +666,24 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             origPane = getOutputPane();
             filtOut = new FilteredOutput(pattern, regExp, matchCase);
             setOutputPane(filtOut.getPane());
-            filtOut.readFrom(io.out());
-            installKBActions();
+            try {
+                waitCursor(true);
+                filtOut.readFrom(io.out());
+                installKBActions();
+            } finally {
+                waitCursor(false);
+            }
         }
         validate();
         getOutputPane().repaint();
         requestFocus();
+    }
+
+    private void waitCursor(boolean enable) {
+        RootPaneContainer root = ((RootPaneContainer) getTopLevelAncestor());
+        Cursor cursor = Cursor.getPredefinedCursor(enable ? Cursor.WAIT_CURSOR : Cursor.DEFAULT_CURSOR);
+        root.getGlassPane().setCursor(cursor);
+        root.getGlassPane().setVisible(enable);
     }
 
     OutWriter getOut() {
@@ -1032,7 +1045,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             return out;
         }
 
-        void readFrom(OutWriter orig) {
+        synchronized void readFrom(OutWriter orig) {
             AbstractLines lines = (AbstractLines) orig.getLines();
             while (readCount < lines.getLineCount()) {
                 try {

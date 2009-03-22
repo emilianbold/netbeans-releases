@@ -2953,7 +2953,7 @@ public class UMLParsingIntegrator
         
         if (beginSpace != null && typeName != null && typeName.length() > 0)
         {
-            String packageName = resolvePackageFromUMLName(typeName);
+            String packageName = resolveNameSpaceFromUMLName(typeName);
             String shortTypeName = resolveTypeNameFromUMLName(typeName);
             
             Node packageNode = m_Packages.get(packageName);
@@ -3270,8 +3270,7 @@ public class UMLParsingIntegrator
         int loc = typeName.lastIndexOf("::");
         if ((loc > 0) && (clazz != null))
         {
-            String namespaceName = resolvePackageFromUMLName(typeName);
-            
+            String namespaceName = resolveNameSpaceFromUMLName(typeName);
             StringBuffer query = new StringBuffer("./UML:ResDeps/UML:Dependency[ ends-with( @supplier, '");
             query.append(namespaceName);
             query.append("')]");
@@ -4614,7 +4613,7 @@ public class UMLParsingIntegrator
                         
                         String typeNameStr = typeName;
                         String shortTypeName = resolveTypeNameFromUMLName(typeNameStr);
-                        String packageName = resolvePackageFromUMLName(typeNameStr);
+                        String packageName = resolveNameSpaceFromUMLName(typeNameStr);
                         
                         if (packageName != null && packageName.length() > 0)
                         {
@@ -5983,19 +5982,27 @@ public class UMLParsingIntegrator
                         // DOM node that will represent the package until we
                         // find one. DON'T add the package that matches
                         // the passed in name.
-                        if (!fullyQualified.equals(name))
+                         if (!fullyQualified.equals(name))
                         {
                             // Before we create a package, let's make sure that the current token is not a class
                             // rather than a package
                             
                             if (m_SymbolTable.get(token) == null)
                             {
-                                
-                                Node newNode = XMLManip.createElement(document, "UML:Package");
-                                if (newNode != null)
+                                //it still may be a class from library, we assume it based on java notation regarding first pachage chanracter case
+                                if(Character.isUpperCase(token.charAt(0)))
                                 {
-                                    XMLManip.setAttributeValue(newNode, "name", token);
-                                    addPackage(newNode, fullyQualified);
+                                    //it should be class nae as start from uppercase letter
+                                    break;
+                                }
+                                else
+                                {
+                                    Node newNode = XMLManip.createElement(document, "UML:Package");
+                                    if (newNode != null)
+                                    {
+                                        XMLManip.setAttributeValue(newNode, "name", token);
+                                        addPackage(newNode, fullyQualified);
+                                    }
                                 }
                             }
                             else
@@ -6138,8 +6145,13 @@ public class UMLParsingIntegrator
         }
         return retVal;
     }
-    
-    protected String resolvePackageFromUMLName(String fullName)
+
+    /**
+     * just get all before namespace separator '::'
+     * @param fullName
+     * @return
+     */
+    protected String resolveNameSpaceFromUMLName(String fullName)
     {
         String retVal = null;
         int pos = fullName.lastIndexOf("::");
@@ -6149,11 +6161,36 @@ public class UMLParsingIntegrator
         }
         return retVal;
     }
+
+    /**
+     * get all before '::' if start with lowercase (i.e. package in java convension)
+     * @param fullName
+     * @return
+     */
+    protected String resolvePackageFromUMLName(String fullName)
+    {
+        String retVal = null;
+        for(int pos=fullName.lastIndexOf("::");fullName!=null && fullName.lastIndexOf("::")!=-1;pos=fullName.lastIndexOf("::"))
+        {
+            String tmpRetVal=fullName.substring(0, pos);
+            int prevPos=tmpRetVal.lastIndexOf("::");
+            if(prevPos==-1)prevPos=0;
+            else prevPos+=2;
+            String parent=tmpRetVal.substring(prevPos, pos);
+            if (Character.isLowerCase(parent.charAt(0)))
+            {
+                retVal = fullName.substring(0, pos);
+                break;
+            }
+            fullName=tmpRetVal;
+        }
+        return retVal;
+    }
     
     protected Node retrievePackage(String fullyQualifiedName, Document pDoc, boolean bNameIsOnlyPackage)
     {
         Node pPackage = null;
-        String packageName = bNameIsOnlyPackage ? fullyQualifiedName : resolvePackageFromUMLName(fullyQualifiedName);
+        String packageName = bNameIsOnlyPackage ? fullyQualifiedName : resolveNameSpaceFromUMLName(fullyQualifiedName);
         if (packageName != null)
         {
             Node node = m_Packages.get(packageName);
@@ -7657,7 +7694,7 @@ public class UMLParsingIntegrator
         
         try
         {
-            String packageName = resolvePackageFromUMLName(typeName);
+            String packageName = resolveNameSpaceFromUMLName(typeName);
             String shortTypeName = resolveTypeNameFromUMLName(typeName);
             
             Node node = m_Packages.get(packageName);
@@ -7837,7 +7874,7 @@ public class UMLParsingIntegrator
         
         try
         {
-            String packageName = resolvePackageFromUMLName(typeName);
+            String packageName = resolveNameSpaceFromUMLName(typeName);
             String shortTypeName = resolveTypeNameFromUMLName(typeName);
             
             // We have a potential situation where the qualified name coming in is actually
@@ -7862,7 +7899,7 @@ public class UMLParsingIntegrator
                         if (named != null)
                         {
                             String fullName = named.getQualifiedName();
-                            String fullPackName = resolvePackageFromUMLName(typeName);
+                            String fullPackName = resolveNameSpaceFromUMLName(typeName);
                             
                             if ((fullPackName.length() > 0) && fullPackName.equals(packageName))
                             {
@@ -7876,9 +7913,19 @@ public class UMLParsingIntegrator
             else
             {
                 String fullName = resolveInnerClassName(typeName, clazzNode);
-                if(!typeName.equals(fullName))
+                //above resolve do not work well with library classes, so recheck based on java convensions
+                String namespaceName = resolveNameSpaceFromUMLName(typeName);
+                String packageNamespace=resolvePackageFromUMLName(typeName);
+                boolean gotInner=false;
+                if((""+namespaceName).length()!=(""+packageNamespace).length())
+                {   //99% it's inner class(100% for java library classes) but because we just parse and do not compile in general we can do nothing with remaining 1% yet.
+                    //also we have a problem with libraries only because own classes are parsed/created on previous step when libary still need to be created
+                    gotInner=true;
+                }
+                //
+                if(!typeName.equals(fullName) || gotInner)
                 {
-                    String outerClass = resolvePackageFromUMLName(fullName);
+                    String outerClass = resolveNameSpaceFromUMLName(fullName);
                     
                     // First make sure (or create) that the outer class exist
                     // in the system.

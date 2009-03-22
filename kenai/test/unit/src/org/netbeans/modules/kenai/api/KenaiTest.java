@@ -179,20 +179,6 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     /**
-     * Test of getProject method of class Kenai
-     */
-    public void testGetProjectGit() throws Exception {
-        System.out.println("testGetProject");
-        String name = "git-test";
-        KenaiProject prj = instance.getProject(name);
-        System.out.println("Project: " + prj.getName());
-        if (!prj.getName().equals("git-test")) {
-            fail("Call to getProject failed.");
-        }
-    }
-
-    @Test
-    /**
      * Test of getDisplayName method of class KenaiProject
      */
     public void testGetDisplayName() throws Exception {
@@ -419,7 +405,7 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     /**
-     * Test of getFeatures method of class Kenai
+     * Test of getFeatures method of class Kenai<br />
      * Note: This test also checks all methods from KenaiFeature
      */
     public void testGetFeatures() throws KenaiException {
@@ -460,6 +446,72 @@ public class KenaiTest extends NbTestCase {
                 // Check feature's web location
                 line = br.readLine().trim();
                 assertEquals(line, feature.getWebLocation().toString());
+                System.out.println(feature.getWebLocation().toString());
+            }
+        } catch (IOException ex) {
+            fail("Failure while reading the features-java-inline.data golden file.");
+        } catch (KenaiErrorMessage mes) {
+            System.out.println(mes.getAsString());
+            throw mes;
+        }
+    }
+
+    @Test
+    /**
+     * Test of getFeatures method of class Kenai<br />
+     * Note: This test also checks all methods from KenaiFeature
+     */
+    public void testGetFeaturesGolden() throws KenaiException {
+        BufferedReader br = null;
+        boolean doAsserts = true; //set false to list all features returned by json to stdout
+        try {
+            System.out.println("testGetFeatures");
+            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-golden.data";
+            br = new BufferedReader(new FileReader(_fileName));
+            String line = null;
+            System.out.println("getFeature");
+            KenaiProject project = instance.getProject("golden-project-1");
+            for (KenaiFeature feature : project.getFeatures()) {
+                System.out.println("===");
+                // Check feature's name
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    assertEquals(line, feature.getName());
+                }
+                System.out.println(feature.getName());
+                // Check feature's type
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    assertEquals(line, feature.getType().toString());
+                }
+                System.out.println(feature.getType().toString());
+                // Check feature's display name
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    assertEquals(line, feature.getDisplayName());
+                }
+                System.out.println(feature.getDisplayName());
+                // Check feature's location
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    if (line.equals("null")) { // feature is not present
+                        assertEquals(null, feature.getLocation());
+                    } else {
+                        assertEquals(line, feature.getLocation().toString());
+                    }
+                }
+                System.out.println(feature.getLocation());
+                // Check feature's service
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    assertEquals(line, feature.getService());
+                }
+                System.out.println(feature.getService());
+                // Check feature's web location
+                if (doAsserts) {
+                    line = br.readLine().trim();
+                    assertEquals(line, feature.getWebLocation().toString());
+                }
                 System.out.println(feature.getWebLocation().toString());
             }
         } catch (IOException ex) {
@@ -531,6 +583,8 @@ public class KenaiTest extends NbTestCase {
         Collection<KenaiProject> result = instance.getMyProjects();
         System.out.println("size: " + result.size());
 
+        KenaiProject myprj = instance.getProject("my-project-1");
+        assertTrue("My project was not found.", result.contains(myprj));
         for (KenaiProject prj : result) {
             System.out.println("My projects: " + prj.getDisplayName());
         }
@@ -542,7 +596,6 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testSearchProjectsLessSpecific"));
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
         _suite.addTest(new KenaiTest("testGetProject"));
-        _suite.addTest(new KenaiTest("testGetProjectGit"));
         _suite.addTest(new KenaiTest("testGetDescription"));
         _suite.addTest(new KenaiTest("testGetDisplayName"));
         _suite.addTest(new KenaiTest("testGetWebLocation"));
@@ -555,6 +608,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testIsAuthorized"));
 //        _suite.addTest(new KenaiTest("testIsAuthorized2"));
         _suite.addTest(new KenaiTest("testGetFeatures"));
+        _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
         _suite.addTest(new KenaiTest("testGetMyProjects"));

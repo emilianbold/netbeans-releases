@@ -658,10 +658,6 @@ public class GenerateCodeAction extends CookieAction
         int lastindex = query.length() - 1;
         query.delete(lastindex-3, lastindex);
         query.append("]"); // NOI18N
-        
-//        System.out.println();
-//        System.out.println("Gen Code query: " + query.toString());
-//        System.out.println();
         return query.toString();
     }
     

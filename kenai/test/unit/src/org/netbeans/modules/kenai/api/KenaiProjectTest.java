@@ -51,9 +51,7 @@ import org.junit.Test;
  */
 public class KenaiProjectTest {
 
-    static String UNITTESTUNIQUENAME = "unittestuniquename01";
-//    private static String uname = null;
-//    private static String passw = null;
+    static String UNITTESTUNIQUENAME = "golden-project-1";
 
     public KenaiProjectTest() {
     }
@@ -80,8 +78,16 @@ public class KenaiProjectTest {
      */
     @Test
     public void testForRepositorySvn() throws Exception {
-        System.out.println("forRepositoryHg");
-        String uri = "https://testkenai.com/svn/unittestuniquename01~source-code-repository";
+        System.out.println("forRepositorySvn");
+        KenaiFeature[] features = Kenai.getDefault().getProject(UNITTESTUNIQUENAME).getFeatures(KenaiService.Type.SOURCE);
+        String uri = "";
+        for (int i = 0; i < features.length; i++) {
+            KenaiFeature kenaiFeature = features[i];
+            if (kenaiFeature.getDisplayName().contains("Svn")) {
+                uri = kenaiFeature.getLocation().toString();
+                break;
+            }
+        }
         KenaiProject result = KenaiProject.forRepository(uri);
         assert result.getName().equals(UNITTESTUNIQUENAME);
     }
@@ -90,15 +96,23 @@ public class KenaiProjectTest {
      */
     @Test
     public void testForRepositoryHg() throws Exception {
-        System.out.println("forRepositorySvn");
-        String uri = "https://testkenai.com/hg/unittestuniquename01~source-code-repository2";
+        System.out.println("forRepositoryHg");
+        KenaiFeature[] features = Kenai.getDefault().getProject(UNITTESTUNIQUENAME).getFeatures(KenaiService.Type.SOURCE);
+        String uri = "";
+        for (int i = 0; i < features.length; i++) {
+            KenaiFeature kenaiFeature = features[i];
+            if (kenaiFeature.getDisplayName().contains("Hg")) {
+                uri = kenaiFeature.getLocation().toString();
+                break;
+            }
+        }
         KenaiProject result = KenaiProject.forRepository(uri);
         assert result.getName().equals(UNITTESTUNIQUENAME);
     }
 
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
-        assert KenaiProject.checkName("uniquenamebond007") == null;
+        assert KenaiProject.checkName("non-existing-project") == null;
         assert KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken");
     }
 }

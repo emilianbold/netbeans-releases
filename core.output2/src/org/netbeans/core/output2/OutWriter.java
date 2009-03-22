@@ -486,7 +486,6 @@ class OutWriter extends PrintWriter {
                 lines.setColor(i, c);
             }
         }
-        lines.fire();
     }
 
     /**
