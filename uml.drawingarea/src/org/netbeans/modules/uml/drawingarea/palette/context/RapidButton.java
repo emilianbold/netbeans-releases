@@ -72,10 +72,6 @@ public class RapidButton extends Widget
         
         this.descriptor = descriptor;
         
-        if(descriptor == null)
-        {
-            System.out.println("Test");
-        }
         WidgetAction[] actions = descriptor.createActions(scene);
         for(WidgetAction curAction : actions)
         {

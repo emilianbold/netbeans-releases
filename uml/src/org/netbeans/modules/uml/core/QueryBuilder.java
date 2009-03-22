@@ -524,7 +524,8 @@ public class QueryBuilder implements IQueryBuilder
 						
 						if (result != null && result.length() > 0)
 						{
-							XMLManip.setAttributeValue(retNode, iter.m_AttrName, result);
+                            String attrname=iter.m_AttrName;
+							XMLManip.setAttributeValue(retNode, attrname , result);
 						}
 					}
 				}

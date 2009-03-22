@@ -4650,7 +4650,6 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
    // Accelerator handler
 	protected void onAcceleratorAction(String accelerator)
 	{
-		System.out.println(accelerator);
 		if (accelerator.equals(ProjectTreeResources.getString("IDS_CTRLD")))
 		{
 			NewDiagramAction action = new NewDiagramAction(this);

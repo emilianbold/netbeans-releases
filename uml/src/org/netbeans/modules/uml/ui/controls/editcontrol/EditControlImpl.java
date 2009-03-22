@@ -426,19 +426,9 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       //something is typed
       int currPos = getCurrentPosition();
       m_InitialLoc = currPos;
-      //System.out.println("handleTypedChar:currPos1="+currPos);
       
       IEditControlField field = getCurrentField();
       String toIns = Character.toString(ch);
-      //    String toIns = "";
-      //      if (e.isShiftDown())
-      //      {
-      //         toIns = String.valueOf(Character.toString(ch));
-      //      }
-      //      else
-      //      {
-      //         toIns = String.valueOf(Character.toLowerCase(ch));
-      //      }
       boolean selectedText = false;
       setSel(m_Field.getSelectionStart(), m_Field.getSelectionEnd());
       if (m_SelectionEndPos != m_SelectionStartPos)
@@ -466,14 +456,12 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
                {
                   if (selectedText)
                   {
-                     //System.out.println("handleTypedChar:currPos2="+currPos);
                      m_Field.setCaretPosition(currPos + 1);
                   }
                   else
                   {
                      if (text.length() > m_InitialLoc)
                      {
-                       //System.out.println("handleTypedChar:m_InitialLoc="+m_InitialLoc);
                         m_Field.setCaretPosition(m_InitialLoc + 1);
                      }
                      else
