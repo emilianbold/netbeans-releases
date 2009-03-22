@@ -64,6 +64,15 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+/**
+ * Implemented abilities:
+ * <ul>
+ * <li>Move file(s)</li>
+ * <li>Move folder(s)</li>
+ * <li>Rename folder</li>
+ * <li>Rename package</li>
+ * </ul>
+ */
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
@@ -71,6 +80,10 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     final boolean isRenameRefactoring;
     ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
     HashMap<FileObject,ElementHandle> classes;
+    /** list of folders grouped by source roots */
+    List<List<FileObject>> foldersToMove = new ArrayList<List<FileObject>>();
+    /** collection of packages that will change its name */
+    Set<String> packages;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap<FileObject, Set<FileObject>>();
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
@@ -286,9 +299,27 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             
         }
     }
+
+    private void initPackages() {
+        if (foldersToMove.isEmpty()) {
+            packages = Collections.emptySet();
+            return;
+        } else {
+            packages = new HashSet<String>();
+        }
+        
+        for (List<FileObject> folders : foldersToMove) {
+            ClassPath cp = ClassPath.getClassPath(folders.get(0), ClassPath.SOURCE);
+            for (FileObject folder : folders) {
+                String pkgName = cp.getResourceName(folder, '.', false);
+                packages.add(pkgName);
+            }
+        }
+    }
     
     public Problem prepare(RefactoringElementsBag elements) {
         initClasses();
+        initPackages();
         
         Set<FileObject> a = getRelevantFiles();
         Problem p = checkProjectDeps(a);
@@ -349,6 +380,10 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private void setup(Collection fileObjects, String postfix, boolean recursively) {
+        setup(fileObjects, postfix, recursively, null);
+    }
+    
+    private void setup(Collection fileObjects, String postfix, boolean recursively, List<FileObject> sameRootList) {
         for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
             FileObject fo = (FileObject) i.next();
             if (RetoucheUtils.isJavaFile(fo)) {
@@ -365,7 +400,16 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                     if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
                         col.add(fo2);
                 }
-                setup(col, postfix +(addDot?".":"") +fo.getName(), recursively); // NOI18N
+                List<FileObject> curRootList = sameRootList;
+                if (sameRootList == null) {
+                    curRootList = new ArrayList<FileObject>();
+                    foldersToMove.add(curRootList);
+                }
+                curRootList.add(fo);
+                setup(col,
+                        postfix + (addDot ? "." : "") + fo.getName(), // NOI18N
+                        recursively,
+                        curRootList);
             }
         }
     }

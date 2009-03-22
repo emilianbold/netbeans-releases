@@ -46,11 +46,9 @@
 package org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Vector;
 
 import org.dom4j.Document;
 import org.dom4j.Node;
@@ -62,7 +60,6 @@ import org.netbeans.modules.uml.core.generativeframework.ITemplateManager;
 import org.netbeans.modules.uml.core.generativeframework.IVariableFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IDataTypeKind;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.ITokenKind;
@@ -1198,60 +1195,6 @@ public class LanguageManager implements ILanguageManager
                 }
             }
         }
-
-//	private void getLibraries(Node pLanguageNode, ILanguage pLang) 
-//        {
-//            List pNodeList = pLanguageNode.selectNodes("Libraries/Library");
-//            String home = getConfigLocation();
-////            home = InstalledFileLocator.getDefault().locate(
-////                "modules/languagedefs", "org.netbeans.modules.uml", false).getAbsolutePath();
-//            
-//            if (pNodeList != null) 
-//            {
-//                int count = pNodeList.size();
-//                for (int i=0; i<count; i++) 
-//                {
-//                    Node pNode = (Node)pNodeList.get(i);
-//                    String name = XMLManip.getAttributeValue(pNode, "name");
-//                    String path = XMLManip.getAttributeValue(pNode, "path");
-//                    //System.out.println("home="+home + " path="+path);
-//                    
-//                    // Convert file separator, if any, in the path to platform-specific file separator.
-//                    // Fix for CR # 6389098
-//                    String token = null;
-//                    if(path != null && path.length() > 0) 
-//                    {
-//                        if (path.indexOf("\\") != -1) {
-//                            token = "\\";
-//                        } else if (path.indexOf("/") != -1) {
-//                            token = "/";
-//                        }
-//                        if (token != null) {
-//                            path = path.replace(token, File.separator ).trim();
-//                        }
-//                    }
-//                    //System.out.println("path after="+path);
-//                    
-//                    String fulPath = "";
-//                    if (home != null && home.length() > 0) 
-//                    {
-//                        // Get the directory separator right:
-//                        // fulPath = new File(home, path).toString();
-//                        File aFile = new File(home, path);
-//                        if (aFile != null) 
-//                        {
-//                            try {
-//                                fulPath = aFile.getCanonicalPath();
-//                            } catch (IOException ex) {
-//                                ex.printStackTrace();
-//                            }
-//                        }
-//                        //System.out.println("fullPath(toString)="+fulPath);
-//                    }
-//                    pLang.addLibrary(name, fulPath);
-//                }
-//            }
-//        }
         
 	/**
 	 * Retrieve the DOM node that specifies how to format a
@@ -1298,7 +1241,6 @@ public class LanguageManager implements ILanguageManager
 			{
 				Node pNode = (Node)pNodeList.get(i);
 				String name = XMLManip.getAttributeValue(pNode, "type");
-				//String location = XMLManip.getAttributeValue(pNode, "location");
 				
 				if (name != null && name.length() > 0)
 				{
@@ -1481,7 +1423,7 @@ public class LanguageManager implements ILanguageManager
 		
 		boolean userdefined = XMLManip.getAttributeBooleanValue(pNode, 
                                                                         "userdefined");
-		retVal.setUserDefined(userdefined);;
+		retVal.setUserDefined(userdefined);
 		
 		boolean defaultValue = XMLManip.getAttributeBooleanValue(pNode, 
                                                                          "default", 

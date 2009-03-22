@@ -83,6 +83,7 @@ public final class MavenModelUtils {
     private static final String JAXWS_GROUP_ID = "org.codehaus.mojo"; //NOI18N
     private static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
     private static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
+    private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
 
     private MavenModelUtils() { }
 
@@ -214,12 +215,9 @@ public final class MavenModelUtils {
                     POMQName.createQName("webResources", model.getPOMQNames().isNSAware()));
             config.addExtensibilityElement(webResources);
         }
-        //TODO how to recognize if the correct resource element is present???
-
-        POMExtensibilityElement res = findChild(webResources.getExtensibilityElements(), "resource");
-        //we check for presense only, we should iterate all and check the internals.
-        if (res == null) {
-            res = model.getFactory().createPOMExtensibilityElement(
+       //check for resource containing jax-ws-catalog.xml
+        if (!hasResource(webResources, JAXWS_CATALOG)) {
+            POMExtensibilityElement  res = model.getFactory().createPOMExtensibilityElement(
                     POMQName.createQName("resource", model.getPOMQNames().isNSAware()));
             webResources.addExtensibilityElement(res);
             POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(
@@ -238,7 +236,7 @@ public final class MavenModelUtils {
 
             POMExtensibilityElement include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
                     model.getPOMQNames().isNSAware()));
-            include.setElementText("jax-ws-catalog.xml");
+            include.setElementText(JAXWS_CATALOG);
             in.addExtensibilityElement(include);
             include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
                     model.getPOMQNames().isNSAware()));
@@ -553,6 +551,22 @@ public final class MavenModelUtils {
         if (WSUtils.isWeb(prj)) {
             WSUtils.checkNonJSR109Entries(prj);
         }
+    }
+
+    private static boolean hasResource(POMExtensibilityElement webResources, String resourceName) {
+        List<POMExtensibilityElement> resources = webResources.getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement res : resources) {
+           POMExtensibilityElement includesEl = findChild(res.getExtensibilityElements(), "includes"); //NOI18N
+           if (includesEl != null) {
+               List<POMExtensibilityElement> includes = includesEl.getChildren(POMExtensibilityElement.class);
+               for (POMExtensibilityElement include : includes) {
+                   if (resourceName.equals(include.getElementText())) {
+                       return true;
+                   }
+               }
+           }
+        }
+        return false;
     }
 
 }
