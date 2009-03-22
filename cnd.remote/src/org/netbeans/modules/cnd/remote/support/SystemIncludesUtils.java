@@ -121,8 +121,7 @@ public class SystemIncludesUtils {
         }
         boolean success = false;
         try {
-            RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
-            success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
+            success = load(tempIncludesStorageFolder.getAbsolutePath(), execEnv, paths, handle);
             log.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
             if (success) {
                 log.fine("SystemIncludesUtils.doLoad renaming " + tempIncludesStorageFolder + " to " + includesStorageFolder); // NOI18N
@@ -138,7 +137,7 @@ public class SystemIncludesUtils {
     }
     private static final String tempDir = System.getProperty("java.io.tmpdir");
 
-    private static boolean load(String storageFolder, RemoteCopySupport copySupport, Collection<String> paths, ProgressHandle handle) {
+    private static boolean load(String storageFolder, ExecutionEnvironment execEnv, Collection<String> paths, ProgressHandle handle) {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
         List<String> cleanupList = new ArrayList<String>();
@@ -146,7 +145,7 @@ public class SystemIncludesUtils {
             log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
-            String zipRemotePath = "/tmp/" + copySupport.getUser() + '-' + zipRemote; // NOI18N
+            String zipRemotePath = "/tmp/" + execEnv.getUser() + '-' + zipRemote; // NOI18N
             String zipLocalPath; 
             File zipLocalFile;
             try {
@@ -157,11 +156,16 @@ public class SystemIncludesUtils {
             }
 
             handle.progress(getMessage("SIU_Archiving") + " " + path, workunit++); // NOI18N
-            RemoteCommandSupport rcs = new RemoteCommandSupport(copySupport.getExecutionEnvironment(), 
+            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv,
                     "zip -r -q " + zipRemotePath + " " + path); //NOI18N
             rcs.run();
+
             handle.progress(getMessage("SIU_Downloading") + " " + path, workunit++); // NOI18N
+            RemoteCopySupport copySupport = new RemoteCopySupport(execEnv);
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
+            rcs = new RemoteCommandSupport(execEnv, "rm " + zipRemotePath); //NOI18N
+            rcs.run();
+            
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
             cleanupList.add(zipLocalPath);
