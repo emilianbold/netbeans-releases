@@ -190,13 +190,6 @@ public class SwingScrollWidget extends Widget {
                 viewBounds.height = viewportBounds.height;
                 viewBoundsChanged = true;
             }
-            
-            System.out.printf("View (%d x %d) Scroll (%dx%d) Going to change: %s\n",
-                              viewBounds.width, 
-                              viewBounds.height,
-                              viewportBounds.width,
-                              viewportBounds.height,
-                              viewBoundsChanged);
 
             if(viewBoundsChanged == true)
             {

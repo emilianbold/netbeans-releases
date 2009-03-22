@@ -74,14 +74,12 @@ public class FeatureMoveAction extends WidgetAction.Adapter
     @Override
     public State mousePressed(Widget widget, WidgetMouseEvent event)
     {
-//        return State.createLocked(widget, this);
         return widget.getState().isSelected() == true ? State.CHAIN_ONLY : State.REJECTED;
     }
 
     @Override
     public State mouseReleased(Widget widget, WidgetMouseEvent event)
     {
-//        System.out.println("Mouse Released");
         return State.REJECTED;
     }
     

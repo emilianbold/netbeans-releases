@@ -200,18 +200,25 @@ public class SVGComboBox extends SVGComponent implements
         return myModel;
     }
     
-    public void setModel( ComboBoxModel model ){
+    public void setModel( final ComboBoxModel model ){
         if ( myModel != null ){
             myModel.removeDataListener( this );
         }
         myModel = model;
         model.addDataListener( this );
-
-        if ( model != null && model.getSize()>0 ){
+        
+        /*if ( model != null && model.getSize()>0 ){
             setSelected( model.getElementAt(0));
-        }
-
+        }*/
+        
         myList.setModel( model );
+
+        if (model != null && model.getSize() > 0) {
+            if ( model != null && model.getSize()>0 ){
+                setSelected( model.getElementAt(0));
+            }
+        }
+       
     }
     
     public ComboBoxEditor getEditor(){
@@ -366,30 +373,31 @@ public class SVGComboBox extends SVGComponent implements
     }
     
     private void setSelected( Object value ){
-        mySelectedValue = value;
-        int size = getModel().getSize();
-        boolean found = false;
-        for ( int i=0; i<size ; i++ ){
-            Object obj = getModel().getElementAt( i );
-            if ( value == null ){
-                if ( obj == null ){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
+        synchronized (myUILock) {
+            mySelectedValue = value;
+            int size = getModel().getSize();
+            boolean found = false;
+            for (int i = 0; i < size; i++) {
+                Object obj = getModel().getElementAt(i);
+                if (value == null) {
+                    if (obj == null) {
+                        getModel().setSelectedIndex(i);
+                        myIndex = i;
+                        found = true;
+                    }
+                } else {
+                    if (value.equals(obj)) {
+                        getModel().setSelectedIndex(i);
+                        myIndex = i;
+                        found = true;
+                    }
                 }
             }
-            else {
-                if ( value.equals(obj)){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
-                }
+            if (!found) {
+                myIndex = -1;
+                myList.getSelectionModel().clearSelection();
+                getModel().setSelectedIndex(-1);
             }
-        }
-        if ( !found ){
-            myIndex = -1;
-            myList.getSelectionModel().clearSelection();
-            getModel().setSelectedIndex( -1 );
         }
     }
     

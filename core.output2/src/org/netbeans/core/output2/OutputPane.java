@@ -65,7 +65,7 @@ class OutputPane extends AbstractOutputPane {
     @Override
     protected void documentChanged() {
         super.documentChanged();
-        findOutputTab().documentChanged();
+        findOutputTab().documentChanged(this);
     }
 
     protected void caretEnteredLine(int line) {

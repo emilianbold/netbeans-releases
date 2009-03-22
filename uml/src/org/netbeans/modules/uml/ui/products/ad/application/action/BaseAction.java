@@ -489,8 +489,6 @@ public class BaseAction extends AbstractAction
        
        if(retVal instanceof AbstractButton)
        {
-//           System.out.println("Got a button: " + getText());
-           
            AbstractButton btn = (AbstractButton)retVal;
            
            Integer keyCode = (Integer) getValue(Action.MNEMONIC_KEY);

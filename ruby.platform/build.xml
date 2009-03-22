@@ -56,9 +56,7 @@ made subject to such option by the copyright holder.
             <include name="preindexed/"/>
             <include name="rubystubs/"/>
             <include name="jsstubs/"/>
-            <!--  not supported in parsing API
-            <include name="jruby-1.2.0/**/netbeans-index-*.zip"/>
-            -->
+            <include name="jruby-1.1.4/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
     
@@ -86,8 +84,10 @@ made subject to such option by the copyright holder.
         </chmod>
         -->
 
+        <!-- No preindexing in parsing API
         <unzip dest="${cluster}" src="external/preindexed.zip"/>
         <unzip dest="${cluster}" src="external/preindexed-native.zip"/>
+        -->
     </target>
 
 </project>

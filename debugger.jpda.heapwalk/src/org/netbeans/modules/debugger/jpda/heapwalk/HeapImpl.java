@@ -90,6 +90,10 @@ public class HeapImpl implements Heap {
         return javaClasses;
     }
     
+    public List getBiggestObjectsByRetainedSize(int number) {
+        return null;
+    }
+ 
     public Instance getInstanceByID(long id) {
          return null;
     }
