@@ -96,7 +96,7 @@ class GraphPainter {
         this.width = width;
         this.height = height;
         seriesCount = descriptors.length;
-        data = new CyclicArray<int[]>(width);
+        data = new CyclicArray<int[]>(1000);
 //        initCacheImage();
     }
 
@@ -124,7 +124,6 @@ class GraphPainter {
 
     public void setSize(int width, int height) {
         synchronized (dataLock) {
-            data.setCapacity(width / PIXELS_PER_SAMPLE);
             paintAll = true;
             this.height = height;
             this.width = width;
@@ -174,7 +173,6 @@ class GraphPainter {
                         String.format("New data size %d differs from series count %d", //NOI18N
                         newData.length, seriesCount));
             }
-            data.setCapacity(getWidth() / PIXELS_PER_SAMPLE);
 
             if (data.add(newData.clone())) {
                 dataWindowScroll++;
@@ -282,18 +280,19 @@ class GraphPainter {
         if (height < 1) {
             return;
         }
-        int sampleLimit = Math.min(width / PIXELS_PER_SAMPLE, data.size()) - 1;
-        if (0 < sampleLimit) {
+        int sampleCount = Math.min(width / PIXELS_PER_SAMPLE, data.size()) - 1;
+        if (0 < sampleCount) {
+            int firstSample = Math.max(0, data.size() - sampleCount);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 g2.setStroke(LINE_STROKE);
                 g2.setColor(descriptors[ser].getColor());
                 int lastx = 0;
                 int lasty = 0;
-                for (int sample = 1; sample < sampleLimit; ++sample) {
-                    int prevValue = data.get(sample - 1)[ser] * height / scale;
-                    int currValue = data.get(sample)[ser] * height / scale;
-                    g.drawLine(left + PIXELS_PER_SAMPLE * (sample - 1) , top + height - 1 - prevValue,
-                               lastx = left + PIXELS_PER_SAMPLE * sample, lasty = top + height - 1 - currValue);
+                for (int i = 1; i < sampleCount; ++i) {
+                    int prevValue = data.get(firstSample + i - 1)[ser] * height / scale;
+                    int currValue = data.get(firstSample + i)[ser] * height / scale;
+                    g.drawLine(left + PIXELS_PER_SAMPLE * (i - 1) , top + height - 1 - prevValue,
+                               lastx = left + PIXELS_PER_SAMPLE * i, lasty = top + height - 1 - currValue);
                 }
                 g2.setStroke(BALL_STROKE);
                 g2.setColor(Color.WHITE);
