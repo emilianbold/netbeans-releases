@@ -44,7 +44,9 @@ package org.netbeans.modules.tasklist.todo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -72,20 +74,20 @@ import org.openide.util.NbBundle;
  * @author Trond Norbye
  */
 public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeListener {
-    
+
     private static final String GROUP_NAME = "nb-tasklist-todo"; //NOI18N
-    
+
     private Pattern regexp = null;
     private Callback callback;
-    
-    /** 
-     * Creates a new instance of TodoTaskProvider 
-     * 
+
+    /**
+     * Creates a new instance of TodoTaskProvider
+     *
      */
     TodoTaskScanner( String displayName, String description ) {
         super( displayName, description, "Advanced/ToDo" ); //NOI18N
     }
-    
+
     public static TodoTaskScanner create() {
         return new TodoTaskScanner( NbBundle.getBundle( TodoTaskScanner.class ).getString( "LBL_todotask" ), //NOI18N
                 NbBundle.getBundle( TodoTaskScanner.class ).getString( "HINT_todotask" ) ); //NOI18N
@@ -94,21 +96,21 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
     public List<? extends Task> scan( FileObject resource ) {
         if( !isSupported( resource ) )
             return null;
-        
+
         if( Settings.getDefault().isScanCommentsOnly() ) {
             return scanComments( resource );
         }
         return scanAll( resource );
     }
-    
+
     private List<? extends Task> scanAll( FileObject resource ) {
         List<Task> tasks = null;
 
         Collection<String> patterns = Settings.getDefault().getPatterns();
-        
+
         try {
             String text = getContent( resource );
-            
+
             int index = 0;
             int lineno = 1;
             int len = text.length();
@@ -118,7 +120,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 int begin = matcher.start();
                 int end   = matcher.end();
 
-                // begin should be the beginning of this line (but avoid 
+                // begin should be the beginning of this line (but avoid
                 // clash if I have two tokens on the same line...
                 char c = 'a'; // NOI18N
                 int nonwhite = begin;
@@ -128,9 +130,9 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                     }
                     --begin;
                 }
-                
+
                 begin = nonwhite;
-                
+
                 // end should be the last "nonwhite" character on this line...
                 nonwhite = end;
                 while (end < len) {
@@ -151,12 +153,12 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                     }
                     ++idx;
                 }
-                
+
                 index = end;
-                
+
                 String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
                 description = trim( description, patterns );
-                
+
                 Task task = Task.create( resource, GROUP_NAME, description, lineno );
                 if( null == tasks ) {
                     tasks = new LinkedList<Task>();
@@ -171,15 +173,15 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
         }
         return null == tasks ? getEmptyList() : tasks;
     }
-     
+
     private List<? extends Task> scanComments( FileObject resource ) {
         String ext = resource.getExt().toLowerCase();
         String mime = FileUtil.getMIMEType( resource );
-            
+
         String lineComment = Settings.getDefault().getLineComment( ext, mime );
         String blockCommentStart = Settings.getDefault().getBlockCommentStart( ext, mime );
         String blockCommentEnd = Settings.getDefault().getBlockCommentEnd( ext, mime );
-        
+
         SourceCodeCommentParser sccp = new SourceCodeCommentParser( lineComment, blockCommentStart, blockCommentEnd );
 
         Collection<String> patterns = Settings.getDefault().getPatterns();
@@ -192,7 +194,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
             sccp.setText( text );
 
             SourceCodeCommentParser.CommentRegion reg = new SourceCodeCommentParser.CommentRegion();
-        
+
             Matcher matcher = getScanRegexp().matcher( text );
             int len = text.length();
             int lineno = 1;
@@ -204,7 +206,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 // Done searching the document... bail out..
                 return getEmptyList();
             }
-            
+
             while (index < len && matcher.find(index)) {
                 int begin = matcher.start();
                 int end   = matcher.end();
@@ -214,7 +216,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 do {
                     goahead = true;
 
-                    // A match within the source comment?                   
+                    // A match within the source comment?
                     if (begin < reg.start) {
                         toosoon = true;
                         // too soon.. get next match
@@ -224,7 +226,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                             // Done searching the document... bail out..
                             return null == tasks ? getEmptyList() : tasks;
                         }
-                    } 
+                    }
                 } while (!goahead);
 
                 if (toosoon) {
@@ -233,7 +235,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                     continue;
                 }
 
-                // begin should be the beginning of this line (but avoid 
+                // begin should be the beginning of this line (but avoid
                 // clash if I have two tokens on the same line...
                 char c = 'a'; // NOI18N
                 int nonwhite = begin;
@@ -243,9 +245,9 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                     }
                     --begin;
                 }
-                
+
                 begin = nonwhite;
-                
+
                 // end should be the last "nonwhite" character on this line...
                 nonwhite = end;
                 while (end < len) {
@@ -265,9 +267,9 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                     }
                     ++idx;
                 }
-                
+
                 index = end;
-                
+
                 String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
                 description = trim( description, patterns );
 
@@ -285,7 +287,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
         }
         return null == tasks ? getEmptyList() : tasks;
     }
-    
+
     private boolean isSupported( FileObject file ) {
         if( null == file || file.isFolder() )
             return false;
@@ -349,12 +351,20 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
         }
         return regexp;
     }
-    
+
     private String getContent( FileObject fileObject ) throws IOException {
+        InputStream input = null;
+        try {
+            input = fileObject.getInputStream();
+        } catch( FileNotFoundException fnfE ) {
+            //file was deleted
+        }
+        if( null == input )
+            return "";
         char[] buf = new char[1024*64];
         StringBuffer sb = new StringBuffer();
         Charset charset = FileEncodingQuery.getEncoding( fileObject );
-        Reader r = new BufferedReader( new InputStreamReader( fileObject.getInputStream(), charset ) );
+        Reader r = new BufferedReader( new InputStreamReader( input, charset ) );
         int len;
         try {
             while (true) {
@@ -366,8 +376,8 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
             r.close();
         }
         return sb.toString();
-    }    
-    
+    }
+
     private List<? extends Task> getEmptyList() {
         List<? extends Task> res = Collections.emptyList();
         return res;
@@ -391,7 +401,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 callback.refreshAll();
         }
     }
-    
+
     @Override
     public void notifyPrepare() {
         getScanRegexp();
