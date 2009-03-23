@@ -20,15 +20,15 @@ public abstract class BuildHandle {
      * The name of property which is fired when the status of this build has changed.
      * The property value is the new build status.
      */
-    public static final String PROP_STATUS = "status";
+    public static final String PROP_STATUS = "status"; // NOI18N
 
     public enum Status {
         
-        RUNNING( "running", ColorManager.getDefault().getDefaultForeground() ),
-        FAILED( "failed", ColorManager.getDefault().getErrorColor() ),
-        STABLE( "stable", ColorManager.getDefault().getStableBuildColor() ),
-        UNSTABLE( "unstable", ColorManager.getDefault().getUnstableBuildColor() ),
-        UNKNOWN( "unknown", ColorManager.getDefault().getDisabledColor() );
+        RUNNING( "running", ColorManager.getDefault().getDefaultForeground() ), // NOI18N
+        FAILED( "failed", ColorManager.getDefault().getErrorColor() ), // NOI18N
+        STABLE( "stable", ColorManager.getDefault().getStableBuildColor() ), // NOI18N
+        UNSTABLE( "unstable", ColorManager.getDefault().getUnstableBuildColor() ), // NOI18N
+        UNKNOWN( "unknown", ColorManager.getDefault().getDisabledColor() ); // NOI18N
 
         private final Color c;
         private final String displayName;

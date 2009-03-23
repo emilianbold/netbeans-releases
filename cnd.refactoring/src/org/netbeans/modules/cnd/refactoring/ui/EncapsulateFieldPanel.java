@@ -439,7 +439,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .add(layout.createSequentialGroup()
                 .add(jLblTitle)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jButtonSelectAll)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -473,7 +473,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 .add(jInlineMethods)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckAccess)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {jComboAccess, jComboField, jComboInsertPoint, jComboJavadoc, jComboSort}, org.jdesktop.layout.GroupLayout.VERTICAL);

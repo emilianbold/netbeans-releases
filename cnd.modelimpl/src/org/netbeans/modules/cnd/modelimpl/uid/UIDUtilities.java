@@ -151,6 +151,35 @@ public class UIDUtilities {
         return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
 
+    public static int getProjectID(CsmUID<CsmFile> uid) {
+        if (uid instanceof KeyBasedUID) {
+            return KeyUtilities.getProjectIndex(((KeyBasedUID) uid).getKey());
+        }
+        return -1;
+    }
+
+    public static boolean isProjectFile(CsmUID<CsmProject> uid1, CsmUID<CsmFile> uid2) {
+        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+            if (i1 >= 0 && i2 >=0) {
+                return i1 == i2;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSameProject(CsmUID<CsmFile> uid1, CsmUID<CsmFile> uid2) {
+        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+            if (i1 >= 0 && i2 >=0) {
+                return i1 == i2;
+            }
+        }
+        return false;
+    }
+
     public static boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
         if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
             int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid1).getKey());
