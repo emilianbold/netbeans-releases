@@ -148,6 +148,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -1005,10 +1006,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } catch (EvaluationException e) {
             InvalidExpressionException iee = new InvalidExpressionException (e);
             iee.initCause (e);
+            Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
             throw iee;
         } catch (EvaluationException2 e) {
             InvalidExpressionException iee = new InvalidExpressionException (e);
             iee.initCause (e);
+            Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
             throw iee;
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException isex = new InvalidExpressionException(itsex.getLocalizedMessage());
@@ -1017,10 +1020,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } catch (InternalException e) {
             InvalidExpressionException isex = new InvalidExpressionException(e.getLocalizedMessage());
             isex.initCause(e);
+            Exceptions.attachMessage(isex, "Expression = '"+expression.getExpression()+"'");
             throw isex;
         } catch (RuntimeException rex) {
             Throwable cause = rex.getCause();
             if (cause instanceof InvalidExpressionException) {
+                Exceptions.attachMessage(cause, "Expression = '"+expression.getExpression()+"'");
                 throw (InvalidExpressionException) cause;
             } else {
                 throw rex;
