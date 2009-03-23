@@ -110,6 +110,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 //        }
 
         String dataCollectorSelectName = options.getDataCollectorName();//DTrace or SunStudio
+        if (dataCollectorSelectName == null || dataCollectorSelectName.trim().equals("")){
+            dataCollectorSelectName = "SunStudio";//NOI18N
+        }
         DLightCollectorString = DTRACE;
         DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
 

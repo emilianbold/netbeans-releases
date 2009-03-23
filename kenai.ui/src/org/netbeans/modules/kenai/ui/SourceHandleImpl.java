@@ -181,9 +181,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private boolean isUnder(FileObject projectDirectory) {
-        if (getWorkingDirectory()==null)
+        final File workingDirectory = getWorkingDirectory();
+        if (workingDirectory==null)
             return false;
-        return FileUtil.isParentOf(FileUtil.toFileObject(getWorkingDirectory()), projectDirectory);
+        final FileObject foForWD = FileUtil.toFileObject(workingDirectory);
+        if (foForWD==null)
+            return false;
+        return FileUtil.isParentOf( foForWD,projectDirectory);
     }
 
     private void storeRecent() {
