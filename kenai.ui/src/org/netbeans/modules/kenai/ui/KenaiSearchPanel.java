@@ -388,19 +388,16 @@ public class KenaiSearchPanel extends JPanel {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
                     if (PanelType.OPEN.equals(panelType)) {
-                        System.out.println("Adding element; " + project);
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
                         KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
                         for (KenaiFeature repo : repos) {
                             if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
-                                System.out.println("Adding element; " + project);
                                 addElement(new KenaiProjectSearchInfo(project, repo, pattern));
                             }
                         }
                     }
                     if (stopLoading) {
-                        System.out.println("Thread stopped!");
                         return;
                     }
                 }
