@@ -429,6 +429,15 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (issue != null) {
+            // Hack - reset any previous modifications when the issue window is reopened
+            reloadForm(true);
+        }
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
