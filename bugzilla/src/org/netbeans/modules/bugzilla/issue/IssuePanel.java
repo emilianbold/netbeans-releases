@@ -139,19 +139,17 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                 }
             });
-            if (issue.getTaskData().isNew()) {
-                summaryField.getDocument().addDocumentListener(new DocumentListener() {
-                    public void insertUpdate(DocumentEvent e) {
-                        changedUpdate(e);
-                    }
-                    public void removeUpdate(DocumentEvent e) {
-                        changedUpdate(e);
-                    }
-                    public void changedUpdate(DocumentEvent e) {
-                        updateMessagePanel();
-                    }
-                });
-            }
+            summaryField.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    updateMessagePanel();
+                }
+            });
         }
         this.issue = issue;
         initCombos();
@@ -172,8 +170,6 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
         headerLabel.setVisible(!isNew);
-        summaryLabel.setVisible(isNew);
-        summaryField.setVisible(isNew);
         statusCombo.setEnabled(!isNew);
         addCommentLabel.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
@@ -194,6 +190,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
             headerLabel.setText(headerTxt);
+            reloadField(force, summaryField, BugzillaIssue.IssueField.SUMMARY);
             reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
             reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
             reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
@@ -411,16 +408,18 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private boolean noSummary = false;
     private void updateMessagePanel() {
-        if (issue.getTaskData().isNew() && (summaryField.getText().trim().length() == 0)) {
+        if (summaryField.getText().trim().length() == 0) {
             if (!noSummary) {
                 noSummary = true;
                 messagePanel.removeAll();
                 submitButton.setEnabled(false);
                 JLabel noSummaryLabel = new JLabel();
                 noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/info.png"))); // NOI18N
+                String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
                 messagePanel.add(noSummaryLabel);
                 messagePanel.setVisible(true);
+                messagePanel.revalidate();
             }
         } else {
             if (noSummary) {
@@ -987,9 +986,9 @@ public class IssuePanel extends javax.swing.JPanel {
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         boolean isNew = issue.getTaskData().isNew();
         if (isNew) {
-            storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
             storeFieldValue(BugzillaIssue.IssueField.DESCRIPTION, addCommentArea);
         }
+        storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
         storeFieldValue(BugzillaIssue.IssueField.PRODUCT, productCombo);
         storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
         storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
