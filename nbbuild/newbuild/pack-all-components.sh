@@ -42,6 +42,9 @@ pack_all_components()
     rm -rf $NB_ALL/nbbuild/netbeans/extra
 
     cd $NB_ALL/nbbuild/netbeans
+    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
+    rm -rf soa*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
 
