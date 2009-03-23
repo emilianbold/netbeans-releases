@@ -39,22 +39,18 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -158,27 +154,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         if (!env.isEmpty()) {
             File envFile = new File(envFileName);
-            BufferedWriter writer = new BufferedWriter(new FileWriter(envFile));
-
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    writer.append(var + "=\"" + env.get(var) + "\"\n"); // NOI18N
-                    writer.append("export " + var + "\n"); // NOI18N
-                }
-            }
-
-            writer.flush();
-            writer.close();
+            OutputStream fos = new FileOutputStream(envFile);
+            EnvWriter ew = new EnvWriter(fos);
+            ew.write(env);
+            fos.close();
         }
 
         termProcess = pb.start();

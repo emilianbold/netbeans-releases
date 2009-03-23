@@ -45,9 +45,9 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
@@ -138,27 +138,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
         processInput.flush();
 
-        if (!env.isEmpty()) {
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-            
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    log.fine(var + "=\"" + env.get(var) + // NOI18N
-                            "\" && export " + var); // NOI18N
-                    processInput.write((var + "=\"" + env.get(var) + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
-                    processInput.flush();
-                }
-            }
-        }
+        EnvWriter ew = new EnvWriter(processInput);
+        ew.write(env);
 
         if (wdir != null) {
             processInput.write(("cd \"" + wdir + "\"\n").getBytes()); // NOI18N
