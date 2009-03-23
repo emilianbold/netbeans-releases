@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface BuildBase extends POMComponent {
+public interface BuildBase extends PluginContainer {
 
 //  <!--xs:complexType name="BuildBase">
 //    <xs:all>
@@ -86,15 +86,6 @@ public interface BuildBase extends POMComponent {
     public PluginManagement getPluginManagement();
     public void setPluginManagement(PluginManagement pluginManagement);
 
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    public List<Plugin> getPlugins();
-    public void addPlugin(Plugin plugin);
-    public void removePlugin(Plugin plugin);
-
-    Plugin findPluginById(String groupId, String artifactId);
 
     /**
      * POM RELATED PROPERTY
