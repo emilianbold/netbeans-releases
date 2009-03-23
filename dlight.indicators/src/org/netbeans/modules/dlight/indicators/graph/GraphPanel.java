@@ -83,20 +83,18 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
-        c.insets = new Insets(PADDING, vAxis == null ? PADDING : 0, 0, PADDING);
+        c.insets = new Insets(PADDING, PADDING, 0, PADDING);
         add(label, c);
 
         if (vAxis != null) {
             c = new GridBagConstraints();
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
-            c.insets = new Insets(PADDING / 2, PADDING, 0, 0);
+            c.insets = new Insets(PADDING / 2, PADDING, hAxis == null? PADDING : 0, 0);
             add(vAxis, c);
         }
 
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-//        graph.setMinimumSize(new Dimension(100, 80));
-//        graph.setPreferredSize(new Dimension(100, 80));
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -107,8 +105,6 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
 
         legend.setBackground(Color.WHITE);
         legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-//        legend.setMinimumSize(new Dimension(100, 80));
-//        legend.setPreferredSize(new Dimension(100, 80));
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;
