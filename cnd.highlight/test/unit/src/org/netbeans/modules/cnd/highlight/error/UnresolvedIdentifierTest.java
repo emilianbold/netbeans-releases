@@ -182,6 +182,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         Logger.getLogger("cnd.logger").removeHandler(h);
     }
 
+    public void testIZ151054() throws Exception {
+        // IZ#151054 : False recognition of operator ->
+        performStaticTest("iz151054.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
