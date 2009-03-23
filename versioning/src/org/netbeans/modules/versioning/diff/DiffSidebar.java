@@ -288,6 +288,11 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private Point scrollToDifference(Difference diff) {
         int lineStart = diff.getSecondStart() - 1;
         int lineEnd = diff.getSecondEnd() - 1;
+        if (lineStart == -1) {
+            // the change was delete starting on the first line, show the diff on the next line
+            // since in this case the file cannot be empty, 0 index does not throw BLE
+            lineStart = 0;
+        }
         if (diff.getType() == Difference.DELETE) {
             lineEnd = lineStart;
         }
