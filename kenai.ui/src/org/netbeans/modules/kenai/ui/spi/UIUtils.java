@@ -53,6 +53,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
@@ -183,8 +184,13 @@ public final class UIUtils {
                             try {
                                 Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
                                 loginPanel.getRootPane().getParent().setVisible(false);
-                            } catch (KenaiException ex) {
-                                loginPanel.showError(ex);
+                            } catch (final KenaiException ex) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        loginPanel.showError(ex);
+                                    }
+
+                                });
                             }
                         }
                     });
@@ -210,6 +216,8 @@ public final class UIUtils {
             loginPanel.setUsername(uname);
             loginPanel.setPassword(new String(decode(password)).toCharArray());
         }
+        d.pack();
+        loginPanel.clearStatus();
         d.setVisible(true);
 
         return loginPanel.getClientProperty("cancel")==null;

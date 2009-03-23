@@ -66,9 +66,6 @@ public final class DLightSessionContext {
 
     private DLightSessionContext(){
         map = new ConcurrentHashMap<String, String>();
-        //by default we now have the following: collectors
-        map.put("useCollectors", "false");//NOI18N
-        map.put("collectors", "SunStudio");//NOI18N
     }
 
     public String get(String key){

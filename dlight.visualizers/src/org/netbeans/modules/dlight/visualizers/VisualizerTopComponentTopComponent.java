@@ -49,7 +49,6 @@ import javax.swing.JTabbedPane;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.openide.awt.TabbedPaneFactory;
-import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -57,20 +56,19 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer, ExplorerManager.Provider {
+public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer{
 
     private static VisualizerTopComponentTopComponent instance;
     private static final String PREFERRED_ID = "VisualizerTopComponentTopComponent";
     //private List<JComponent> visualizerComponents = new ArrayList<JComponent>();
-    private CloseListener closeListener = new CloseListener();
+    //private CloseListener closeListener = new CloseListener();
     private JPanel performanceMonitorViewsArea = new JPanel();
-    private JTabbedPane tabbedPane = null;
-    private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
-    private ExplorerManager explorerManager;
+//    private JTabbedPane tabbedPane = null;
+    //private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
+    
 
     private VisualizerTopComponentTopComponent() {
         initComponents();
-        explorerManager = new ExplorerManager();
         initPerformanceMonitorViewComponents();
         setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "CTL_VisualizerTopComponentTopComponent"));
         setToolTipText(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "HINT_VisualizerTopComponentTopComponent"));
@@ -150,22 +148,31 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     public void addVisualizer(String toolName, Visualizer view) {
         JComponent viewComponent = view.getComponent();
-        if (visualizerComponents.get(toolName) == null) {//no component - add new one
-            tabbedPane.addTab(toolName, viewComponent);
-//      visualizerComponents.put(tool, view);
-        } else {
-            //we should remove the tabs and add
-            int index = tabbedPane.indexOfTab(toolName);
-            closePerformanceMonitor(visualizerComponents.get(toolName));
-            tabbedPane.insertTab(toolName, null, viewComponent, toolName, index);
-            tabbedPane.setSelectedComponent(viewComponent);
-        }
-
-        visualizerComponents.put(toolName, view);
+//        if (visualizerComponents.get(toolName) == null) {//no component - add new one
+//            tabbedPane.addTab(toolName, viewComponent);
+////      visualizerComponents.put(tool, view);
+//        } else {
+//            //we should remove the tabs and add
+//            int index = tabbedPane.indexOfTab(toolName);
+//            if (index != -1){
+//                closePerformanceMonitor(visualizerComponents.get(toolName));
+//                tabbedPane.insertTab(toolName, null, viewComponent, toolName, index);
+//                tabbedPane.setSelectedComponent(viewComponent);
+//            }else{
+//                tabbedPane.addTab(toolName, viewComponent);
+//                tabbedPane.setSelectedComponent(viewComponent);
+//            }
+//        }
+//
+//        visualizerComponents.put(toolName, view);
+        this.performanceMonitorViewsArea.removeAll();
+        this.performanceMonitorViewsArea.setLayout(new BorderLayout());
+        this.performanceMonitorViewsArea.add(viewComponent);
+        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details",  toolName));//NOI18N
         validate();
         repaint();
     }
-
+    
     public void showup() {
         open();
         requestActive();
@@ -175,9 +182,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         closePerformanceMonitor(v);
     }
 
-    public ExplorerManager getExplorerManager() {
-        return explorerManager;
-    }
+    
 
     static final class ResolvableHelper implements Serializable {
 
@@ -193,46 +198,39 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     private void initPerformanceMonitorViewComponents() {
         setLayout(new BorderLayout());
-        tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
-        tabbedPane.addPropertyChangeListener(closeListener);
+//        tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+//        tabbedPane.addPropertyChangeListener(closeListener);
         performanceMonitorViewsArea.setLayout(new BorderLayout());
-        performanceMonitorViewsArea.add(tabbedPane, BorderLayout.CENTER);
+   //     performanceMonitorViewsArea.add(tabbedPane, BorderLayout.CENTER);
         this.add(performanceMonitorViewsArea, BorderLayout.CENTER);
     }
 
     public void closePerformanceMonitor(Visualizer view) {
 //    view.stopMonitor();
         JComponent viewComponent = view.getComponent();
-        closePerformanceMonitor(viewComponent);
+//        closePerformanceMonitor(viewComponent);
+        performanceMonitorViewsArea.remove(viewComponent);
     }
 
-    private void closePerformanceMonitor(JComponent viewComponent) {
-        visualizerComponents.remove(viewComponent);
+//    private void closePerformanceMonitor(JComponent viewComponent) {
+//        visualizerComponents.remove(viewComponent);
+//
+//        if (tabbedPane != null) {
+//            tabbedPane.remove(viewComponent);
+//        }
+//        performanceMonitorViewsArea.remove(viewComponent);
+//        viewComponent = null;
+//        validate();
+//        repaint();
+//    }
 
-        if (tabbedPane != null) {
-            tabbedPane.remove(viewComponent);
-//      if (tabbedPane.getTabCount() == 1) {
-//        JComponent tabComponent = (JComponent) tabbedPane.getComponent(0);
-//        tabbedPane.remove(tabComponent);
-//        performanceMonitorViewsArea.remove(tabbedPane);
-//        tabbedPane = null;
-//        performanceMonitorViewsArea.add(tabComponent);
-//      }
-        } else {
-            performanceMonitorViewsArea.remove(viewComponent);
-        }
-        viewComponent = null;
-        validate();
-        repaint();
-    }
-
-    private class CloseListener implements PropertyChangeListener {
-
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-                closePerformanceMonitor((JComponent) evt.getNewValue());
-            }
-        }
-    }
+//    private class CloseListener implements PropertyChangeListener {
+//
+//        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+//            if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+//                closePerformanceMonitor((JComponent) evt.getNewValue());
+//            }
+//        }
+//    }
 
 }

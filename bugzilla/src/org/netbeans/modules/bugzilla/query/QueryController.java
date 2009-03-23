@@ -66,8 +66,6 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -138,21 +136,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.repository = repository;
         this.query = query;
         
-        panel = new QueryPanel(query.getTableComponent());
-        panel.addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                if(QueryController.this.query.isSaved() && !QueryController.this.query.wasRun()) {
-                    onRefresh();
-                }
-            }
-            public void ancestorRemoved(AncestorEvent event) {
-                onCancelChanges();
-                if(task != null) {
-                    task.cancel();
-                }
-            }
-            public void ancestorMoved(AncestorEvent event) { }
-        });
+        panel = new QueryPanel(query.getTableComponent(), this);
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -223,6 +207,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
         postPopulate(urlParameters);
     }
 
+    void addNotify() {
+        if(query.isSaved() && !query.wasRun()) {
+            onRefresh();
+        }
+    }
+
+    void removeNotify() {
+        onCancelChanges();
+        if(task != null) {
+            task.cancel();
+        }
+    }
+
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
         try {
             Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
@@ -230,7 +227,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             parameters.put(parameter, t);
             return t;
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Bugzilla.LOG.log(Level.SEVERE, parameter, ex);
         }
         return null;
     }
@@ -352,25 +349,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
-            // XXX nice errro msg?
-            return;
-        }
-        List<String> products = bc.getProducts();
-        Iterator<String> i = products.iterator();
-        while (i.hasNext()) {
-            String p = i.next();
-            if (!p.equals(product)) {
-                i.remove();
-            }
-        }
-        productParameter.setParameterValues(toParameterValues(products));
         productParameter.setAlwaysDisabled(true);
-        if (panel.productList.getModel().getSize() > 0) {
-            panel.productList.setSelectedIndex(0);
-            populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-        }
     }
 
     public void insertUpdate(DocumentEvent e) {

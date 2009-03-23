@@ -58,12 +58,13 @@ public class TestIssues extends CSSTest {
     }
     
     public void test105562(){/*move end bracket, 105574 end semicolon should be added*/
-        String insertion = "h2{font-size: 10px}\n";
+        String insertion = "h2{font-size: 10px   }\n";
         EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(1);
         eop.insert(insertion);
         eop.setCaretPositionToLine(1);
-        StyleBuilderOperator styleOper= new StyleBuilderOperator().invokeBuilder();
+        waitUpdate();
+        StyleBuilderOperator styleOper= new StyleBuilderOperator("h2").invokeBuilder();
         FontPaneOperator fontPane = (FontPaneOperator) styleOper.setPane(FONT);
         JListOperator fontFamilies = fontPane.fontFamilies();
         fontFamilies.selectItem(3);
@@ -74,20 +75,18 @@ public class TestIssues extends CSSTest {
         String rule = text.substring(0, text.indexOf('}'));
         assertTrue("SEMICOLON ADDED", rule.contains("font-size: 10px;"));
         assertTrue("FONT FAMILY SOULD BE GENERATED INSIDE RULE",rule.contains("font-family: "+selected));
-        eop.closeDiscardAll();
     }     
     
     public void test105568(){
-        String insertion = "h1{\ntext-decoration    : overline;\n}";
+        String insertion = "h1{\ntext-decoration   : overline;\n}";
         EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(1);
         eop.insert(insertion);
         eop.setCaretPositionToLine(1);
-        StyleBuilderOperator styleOper= new StyleBuilderOperator();
+        StyleBuilderOperator styleOper= new StyleBuilderOperator("h1");
         waitUpdate();
         FontPaneOperator fontPane = (FontPaneOperator) styleOper.setPane(FONT);
         assertTrue(fontPane.isOverline());
-        eop.closeDiscardAll();
     }
     
 }

@@ -246,7 +246,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
-                    case CPPTokenTypes.CSM_USER_TYPE_CAST:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
                         child = token.getFirstChild();
                         if (child != null) {
                             if (hasFriendPrefix(child)) {
@@ -286,6 +287,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
                             try {
@@ -630,6 +632,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ClassImpl impl = new ClassImpl(null, ast, file);
         impl.init(scope, ast, register);
         return impl;
+    }
+
+    protected void setTemplateDescriptor(TemplateDescriptor td) {
+        templateDescriptor = td;
     }
 
     public CsmDeclaration.Kind getKind() {

@@ -40,8 +40,10 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.awt.event.ActionEvent;
+import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.util.NbBundle;
 
 public class JumpToCallStackAction extends AbstractAction {
@@ -63,13 +65,11 @@ public class JumpToCallStackAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        int idx = callstackFrameInfo.lastIndexOf(":"); // NOI18N
-        if (idx == -1) {
-            return;
+        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
+        if (matcher.matches()) {
+            String path = matcher.group(1);
+            String line = matcher.group(2);
+            PhpProjectUtils.openFile(path, Integer.valueOf(line));
         }
-        // XXX remove "at " prefix from file name
-        assert idx > 3;
-        String path = callstackFrameInfo.substring(3, idx);
-        PhpProjectUtils.openFile(path, Integer.valueOf(callstackFrameInfo.substring(idx + 1)));
     }
 }

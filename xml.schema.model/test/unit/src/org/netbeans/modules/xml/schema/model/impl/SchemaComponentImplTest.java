@@ -264,17 +264,17 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals(XMLConstants.W3C_XML_SCHEMA_NS_URI, ge.getPeer().getNamespaceURI());
         Annotation ann = factory.createAnnotation();
         ge.setAnnotation(ann);
-        assertNull(ann.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(ann.getPeer().getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         Documentation doc = factory.createDocumentation();
         ann.addDocumentation(doc);
-        assertNull(doc.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(doc.getPeer().getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         Element copy = (Element) ge.getPeer().cloneNode(true);
         
         model.startTransaction();
         model.getSchema().addElement(ge);
         model.endTransaction();
         
-        assertNull(ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(ge.getPeer().getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         assertEquals("element", ((Element)ge.getPeer()).getTagName());
         
         GlobalElement geCopy = (GlobalElement) model2.getFactory().create(copy, model2.getSchema());
@@ -282,7 +282,7 @@ public class SchemaComponentImplTest extends TestCase {
         model2.getSchema().addElement(geCopy);
         model2.endTransaction();
         
-        assertNull(ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(ge.getPeer().getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         assertEquals("xs:element", ((Element)geCopy.getPeer()).getTagName());
     }
     
@@ -309,7 +309,7 @@ public class SchemaComponentImplTest extends TestCase {
         seq.addContent(er, 0);
         model.endTransaction();
         
-        assertNull(er.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE+":po"));
+        assertNull(er.getPeer().getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE+":po"));
     }
     
 }

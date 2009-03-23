@@ -77,7 +77,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     private FileObject zippedfile;
     
     protected @Override void setUp() throws Exception {
-        MockLookup.setInstances(TestUtil.testProjectFactory());
+        MockLookup.setLayersAndInstances(TestUtil.testProjectFactory());
         ProjectManager.getDefault().reset();
         FileOwnerQuery.reset();
         scratch = TestUtil.makeScratchDir(this);

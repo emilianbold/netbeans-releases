@@ -63,7 +63,6 @@ public class Graph extends JComponent {
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
                 graph.setSize(getWidth(), getHeight());
-                graph.setBackgroundColor(getBackground());
             }
             public void ancestorRemoved(AncestorEvent event) {}
             public void ancestorMoved(AncestorEvent event) {}
@@ -162,23 +161,23 @@ public class Graph extends JComponent {
         }
      }
 
-    @Override
-    public String getToolTipText() {
-        int[] last = graph.getLastData();
-        GraphDescriptor[] descriptors = graph.getDescriptors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>");
-        for (int i = 0; i < descriptors.length; i++) {
-            Color color = descriptors[i].color;
-            String strColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
-            String font = String.format("<font color=\"%s\"/>", strColor);
-            String strValue = formatValue(last[i]);
-            sb.append(String.format("<tr><td>%s%s</td><td>%s %s</td></tr>\n", font, descriptors[i].description, font, strValue));
-        }
-        sb.append("</html>");
-        System.err.printf("TOOLTIP:\n%s\n", sb.toString());
-        return sb.toString();
-    }
+//    @Override
+//    public String getToolTipText() {
+//        int[] last = graph.getLastData();
+//        GraphDescriptor[] descriptors = graph.getDescriptors();
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("<html>");
+//        for (int i = 0; i < descriptors.length; i++) {
+//            Color color = descriptors[i].color;
+//            String strColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
+//            String font = String.format("<font color=\"%s\"/>", strColor);
+//            String strValue = formatValue(last[i]);
+//            sb.append(String.format("<tr><td>%s%s</td><td>%s %s</td></tr>\n", font, descriptors[i].description, font, strValue));
+//        }
+//        sb.append("</html>");
+//        System.err.printf("TOOLTIP:\n%s\n", sb.toString());
+//        return sb.toString();
+//    }
 
     protected String formatValue(int value) {
         return String.format("%d", value);

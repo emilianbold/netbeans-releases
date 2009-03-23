@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
@@ -154,13 +153,18 @@ public abstract class IssueNode extends AbstractNode {
     }
 
     protected void fireDataChanged() {
-        Property[] properties = getProperties();
-        for (Property p : properties) {
-            if(p instanceof IssueNode.IssueProperty) {
-                String pName = ((IssueProperty)p).getName();
-                firePropertyChange(pName, null, null);
+        // table sortes isn't thread safe
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Property[] properties = getProperties();
+                for (Property p : properties) {
+                    if(p instanceof IssueNode.IssueProperty) {
+                        String pName = ((IssueProperty)p).getName();
+                        firePropertyChange(pName, null, null);
+                    }
+                }
             }
-        }
+        });
     }
 
     /**

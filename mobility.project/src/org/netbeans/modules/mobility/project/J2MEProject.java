@@ -374,6 +374,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             channel = in.getChannel();
             ByteBuffer buf = ByteBuffer.allocate((int) file.length());
             channel.read(buf);
+            buf.rewind();
             CharBuffer chars = UTF8.decode(buf);
             result = PROJECT_PATTERN.matcher(chars).lookingAt();
         } catch (IOException ioe) {

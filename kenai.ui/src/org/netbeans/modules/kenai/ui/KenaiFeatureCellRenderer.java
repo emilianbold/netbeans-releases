@@ -57,7 +57,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.KenaiFeatureListItem;
 import org.openide.util.NbBundle;
 
@@ -134,7 +134,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         }
 
         KenaiProject project = ((KenaiFeatureListItem) value).project;
-        KenaiProjectFeature feature = ((KenaiFeatureListItem) value).feature;
+        KenaiFeature feature = ((KenaiFeatureListItem) value).feature;
 
         if (feature != null) {
             if (index == -1) {

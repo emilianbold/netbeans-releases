@@ -1717,6 +1717,7 @@ public class DocumentationControl extends ApplicationView
             }
         }
         
+        @Override
         public boolean isEnabled()
         {
             //always enabled
@@ -2285,7 +2286,6 @@ public class DocumentationControl extends ApplicationView
     //	Accelerator handler
     protected void onAcceleratorAction(String accelerator)
     {
-        //System.out.println("Documentation accelerator="+accelerator);
         if (accelerator.equals(DocumentationResources.getString("IDSCTRLB"))) // Bold
         {
             //m_TextPane.requestFocus();

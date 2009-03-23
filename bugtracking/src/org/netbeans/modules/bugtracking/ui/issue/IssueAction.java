@@ -47,8 +47,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,27 +77,22 @@ public class IssueAction extends SystemAction {
     }
 
     public static void openIssue(final Issue issue, final Repository repository) {
-        if (System.getProperty("netbeans.bugtracking.allowIssueCreation") == null) { // NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor("Comming soon...", "Info", NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE, null, null);
-            DialogDisplayer.getDefault().notify(nd);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    IssueTopComponent tc = null;
-                    if(issue != null) {
-                        tc = IssueTopComponent.find(issue);
-                    }
-                    if(tc == null) {
-                        tc = new IssueTopComponent();
-                    }
-                    tc.initNewIssue(repository);
-                    if(!tc.isOpened()) {
-                        tc.open();
-                    }
-                    tc.requestActive();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                IssueTopComponent tc = null;
+                if(issue != null) {
+                    tc = IssueTopComponent.find(issue);
                 }
-            });
-        }
+                if(tc == null) {
+                    tc = new IssueTopComponent();
+                }
+                tc.initNewIssue(repository);
+                if(!tc.isOpened()) {
+                    tc.open();
+                }
+                tc.requestActive();
+            }
+        });
     }
 
     public static void closeIssue(final Issue issue) {

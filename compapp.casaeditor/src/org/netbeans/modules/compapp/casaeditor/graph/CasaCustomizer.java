@@ -59,7 +59,6 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.GradientRectangleColorScheme;
 import org.openide.DialogDisplayer;
@@ -116,11 +115,11 @@ public class CasaCustomizer {
     private static final String S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE = "BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE";   // NOI18N
     private static final String S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE = "BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE";     // NOI18N
     private static final String S_BOOLEAN_CLASSIC_QOS_STYLE = "BOOLEAN_CLASSIC_QOS_STYLE";                     // NOI18N
-    
+
+    private static final String S_BOOLEAN_DISABLE_VALIDATION = "BOOLEAN_DISABLE_VALIDATION";                     // NOI18N
+
     public static final String PROPERTY_CHANGE = "Customizer_Property_Changed";             // NOI18N
 
-    //private Font FONT_BC_HEADER = new Font("Helvetica", Font.BOLD, 14);    
-    
     private Map<String, Color> mColorsMap = new LinkedHashMap<String, Color>();
     private Map<String, Font> mFontsMap   = new LinkedHashMap<String, Font>();
     private Map<String, Boolean> mStylesMap   = new LinkedHashMap<String, Boolean>();
@@ -419,7 +418,10 @@ public class CasaCustomizer {
 //    public void setBOOLEAN_CLASSIC_QOS_STYLE(boolean value) {
 //        mStylesMap.put(S_BOOLEAN_CLASSIC_QOS_STYLE, value);
 //    }
-    
+    public Boolean getBOOLEAN_DISABLE_VALIDATION() {
+        return mStylesMap.get(S_BOOLEAN_DISABLE_VALIDATION);
+    }
+
     
     public GradientRectangleColorScheme getGradientINT_SU_BACKGROUND() {
         return mGradientsMap.get(S_COLOR_SU_INTERNAL_BACKGROUND);
@@ -788,7 +790,8 @@ public class CasaCustomizer {
         stylesMap.put(S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE, "false");          // NOI18N
         stylesMap.put(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE, "true");          // NOI18N
         stylesMap.put(S_BOOLEAN_CLASSIC_QOS_STYLE, "true");      // NOI18N
-        
+        stylesMap.put(S_BOOLEAN_DISABLE_VALIDATION, "false");      // NOI18N
+
         return stylesMap;
     }
     

@@ -335,7 +335,7 @@ public abstract class IOProxy {
             // need to have a general way of getting temp files folder on remote host
             String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp.run(execEnv, "mkfifo " + name + ";echo " + name, null) == 0) { // NOI18N
+            if (cp.run(execEnv, "sh -c \"mkfifo " + name + ";echo " + name + "\"", null) == 0) { // NOI18N
                 return cp.getOutput().trim();
             }
             return null;
@@ -344,12 +344,12 @@ public abstract class IOProxy {
         @Override
         public void stop() {
             super.stop();
-            if (inProvider != null) {
-                inProvider.disconnect();
-            }
-            if (outProvider != null) {
-                outProvider.disconnect();
-            }
+//            if (inProvider != null) {
+//                inProvider.disconnect();
+//            }
+//            if (outProvider != null) {
+//                outProvider.disconnect();
+//            }
             // delete files
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp != null) {

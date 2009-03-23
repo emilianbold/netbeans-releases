@@ -46,15 +46,14 @@ import java.util.Random;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -62,7 +61,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Jindrich Sedek
  */
-public class CSSTest extends JellyTestCase {
+public class CSSTest extends J2eeTestCase {
     protected static final String newFileName = "newFileName";
     protected static final int rootRuleLineNumber = 15;
     protected static final String projectName = "CSSTestProject";
@@ -75,13 +74,18 @@ public class CSSTest extends JellyTestCase {
     @Override
     public void setUp() throws Exception{
         super.setUp();
-        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         System.out.println("running" + this.getName());
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        EditorOperator.closeDiscardAll();
+        super.tearDown();
+    }
+
     protected void waitUpdate(){
         try{
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         }catch (InterruptedException exc){
             throw new JemmyException("INTERUPTION", exc);
         }
@@ -96,6 +100,7 @@ public class CSSTest extends JellyTestCase {
     }
     
     protected String getRootRuleText(){
+        waitUpdate();
         String content = new EditorOperator(newFileName).getText();
         String root = content.substring(content.indexOf("root"));
         String rule = root.substring(root.indexOf('{'), root.indexOf('}'));
@@ -135,6 +140,7 @@ public class CSSTest extends JellyTestCase {
     }
     
     protected void checkAtrribute(String attributeName, JComboBoxOperator operator, boolean ignoreLastItem) {
+        openFile(newFileName);
         int size = getSize(operator);
         assertFalse("SOME ITEMS", size == 0);
         //--------INSERT ONCE--------//
@@ -157,31 +163,34 @@ public class CSSTest extends JellyTestCase {
         waitUpdate();
         assertFalse("REMOVING", getRootRuleText().contains(attributeName));
     }
-    
+
     public static Test suite() {
-        TestSuite suite = new NbTestSuite("TestCSS");
-        suite.addTest(new TestBasic("testNewCSS"));
-        suite.addTest(new TestBasic("testAddRule"));
-        suite.addTest(new TestBasic("testNavigator"));
-        suite.addTest(new TestFontSettings("testSetFontFamily"));
-        suite.addTest(new TestFontSettings("testChangeFontFamily"));
-        suite.addTest(new TestFontSettings("testChangeFontSize"));
-        suite.addTest(new TestFontSettings("testChangeFontWeight"));
-        suite.addTest(new TestFontSettings("testChangeFontStyle"));
-        suite.addTest(new TestFontSettings("testChangeFontVariant"));
-        suite.addTest(new TestFontSettings("testDecoration"));
-        suite.addTest(new TestFontSettings("testChangeFontColor"));
-        suite.addTest(new TestIssues("test105562"));
-        suite.addTest(new TestIssues("test105568"));
-        suite.addTest(new TestBackgroundSettings("testTile"));
-        suite.addTest(new TestBackgroundSettings("testScroll"));
-        suite.addTest(new TestBackgroundSettings("testHPosition"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CSSTest.class);
+        addServerTests(conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
-    
-    public static void main(String[] args) throws Exception {
-        TestRunner.run(new TestFontSettings("testChangeFontSize"));
-        //TestRunner.run(suite());
+
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            addTest(new TestBasic("testNewCSS"));
+            addTest(new TestBasic("testAddRule"));
+//            addTest(new TestBasic("testNavigator"));
+            addTest(new TestFontSettings("testSetFontFamily"));
+            addTest(new TestFontSettings("testChangeFontFamily"));
+            addTest(new TestFontSettings("testChangeFontSize"));
+            addTest(new TestFontSettings("testChangeFontWeight"));
+            addTest(new TestFontSettings("testChangeFontStyle"));
+            addTest(new TestFontSettings("testChangeFontVariant"));
+            addTest(new TestFontSettings("testDecoration"));
+            addTest(new TestFontSettings("testChangeFontColor"));
+            addTest(new TestIssues("test105562"));
+//            addTest(new TestIssues("test105568"));
+            addTest(new TestBackgroundSettings("testTile"));
+            addTest(new TestBackgroundSettings("testScroll"));
+            addTest(new TestBackgroundSettings("testHPosition"));
+        }
     }
-    
 }

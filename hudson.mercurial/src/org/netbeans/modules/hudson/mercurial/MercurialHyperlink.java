@@ -82,6 +82,7 @@ class MercurialHyperlink implements OutputListener {
     }
 
     public void outputLineAction(OutputEvent ev) {
+        Helper.noteWillShowDiff(file.getName());
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {

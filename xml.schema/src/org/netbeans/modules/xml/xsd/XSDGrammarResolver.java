@@ -50,6 +50,7 @@ import org.xml.sax.EntityResolver;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.w3c.dom.Attr;
 
 /**
  * Resolves XSDGrammars and Namespaces
@@ -138,8 +139,11 @@ class XSDGrammarResolver implements GrammarQuery {
         // find location of schema
         Namespace ns = findNamespaceByURI(Namespace.XSI_NAMESPACE_URI);
         String prefix = ns.getPrefix().concat(":");
-        String schema = element.getAttribute(prefix.concat(Namespace.XSI_LOCATION));
-        if (schema == null) {
+        String schema = null;
+        Attr attr = element.getAttributeNode(prefix.concat(Namespace.XSI_LOCATION));
+        if (attr != null) {
+            schema = attr.getValue();
+        } else {
             schema = element.getAttribute(prefix.concat(Namespace.XSI_NO_NAMESPACE_LOCATION));
         }
         

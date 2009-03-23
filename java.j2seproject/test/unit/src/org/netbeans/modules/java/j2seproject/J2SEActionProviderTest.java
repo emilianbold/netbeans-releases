@@ -118,7 +118,7 @@ public class J2SEActionProviderTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new SimplePlatformProvider());
+        MockLookup.setLayersAndInstances(new SimplePlatformProvider());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
@@ -364,7 +364,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("Unexpected target name", "run-test-with-main", targets[0]);
         assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
-        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
+        assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("run.class"));
 
         // test COMMAND_DEBUG_SINGLE
 
@@ -413,9 +413,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         }
         assertNotNull("Must found some targets for COMMAND_DEBUG_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_SINGLE", 1, targets.length);
-        assertEquals("Unexpected target name", "debug-test", targets[0]);
+        assertEquals("Unexpected target name", "debug-test-with-main", targets[0]);
         assertEquals("There must be two target parameters", 2, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("test.class"));
+        assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("debug.class"));
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
 
         // test COMMAND_RUN
@@ -617,7 +617,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertFalse("COMMAND_TEST_SINGLE must be disabled on one test", enabled);
+        assertTrue("COMMAND_TEST_SINGLE must be enabled on one test", enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
@@ -633,7 +633,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertTrue("COMMAND_TEST_SINGLE must be enabled on source files which has associated tests", enabled);
+        assertFalse("COMMAND_TEST_SINGLE must be enabled on source files which has associated tests", enabled);
 
         context = Lookups.fixed(someSource1, someSource3);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
@@ -647,7 +647,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, context);
-        assertFalse("COMMAND_DEBUG_TEST_SINGLE must be disabled on test files", enabled);
+        assertTrue("COMMAND_DEBUG_TEST_SINGLE must be enabled on test files", enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, context);

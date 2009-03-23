@@ -874,7 +874,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         request.index.getMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
 
                     for (IndexedFunction method : methods){
-                        if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
+                        if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext) {
                             for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                                 if (!invalidProposalsForClsMembers.contains(method.getName())) {
                                     proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));

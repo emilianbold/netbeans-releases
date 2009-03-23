@@ -346,7 +346,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         assert startOffset <= endOffset;
         PositionRef startPos = ces.createPositionRef(startOffset, Bias.Forward);
         PositionRef endPos = ces.createPositionRef(endOffset, Bias.Backward);
-        diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldText.toString(), newText.toString(), descr); // NOI18N
+        diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldText.toString(), newText.toString(), descr); // NOI18N
 
         return diff;
     }
@@ -412,6 +412,10 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             endOffset = offset;
         }
 
+        @Override
+        public String toString() {
+            return origParamsText + "[" + startOffset + "-" + endOffset +"] params:" + paramText; // NOI18N
+        }
     }
     
     private final static class FunParamsTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
@@ -527,7 +531,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         private void finishParam(int offset) {
             assert curParamStartOffset > 0;
             try {
-                String paramText = (offset - 1 <= curParamStartOffset) ? "" : doc.getText(curParamStartOffset, offset - curParamStartOffset); // NOI18N
+                String paramText = (offset <= curParamStartOffset) ? "" : doc.getText(curParamStartOffset, offset - curParamStartOffset); // NOI18N
                 if (!funInfo.paramText.isEmpty() || paramText.trim().length() != 0) {
                     funInfo.addParam(paramText);
                 }

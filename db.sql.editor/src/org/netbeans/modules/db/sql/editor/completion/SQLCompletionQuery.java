@@ -164,6 +164,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         substitutionOffset = 0;
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
         SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
+        if (kind == null) {
+            return items;
+        }
         switch (kind) {
             case SELECT:
                 statement = SelectStatementAnalyzer.analyze(env.getTokenSequence(), quoter);

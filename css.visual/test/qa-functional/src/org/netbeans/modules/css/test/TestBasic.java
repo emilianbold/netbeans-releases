@@ -44,7 +44,6 @@ import java.io.File;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
@@ -52,7 +51,6 @@ import org.netbeans.jemmy.operators.AbstractButtonOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.css.test.operator.StyleRuleEditorOperator;
 
 /**
@@ -60,27 +58,25 @@ import org.netbeans.modules.css.test.operator.StyleRuleEditorOperator;
  * @author Jindrich Sedek
  */
 public class TestBasic extends CSSTest{
-    private static final String fileType = Bundle.getString("org.netbeans.modules.web.core.Bundle", "Templates/JSP_Servlet/CascadeStyleSheet.css");
     private static final String wizardTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_NewFileWizard_Title");
     private static final String createRuleAction = Bundle.getString("org.netbeans.modules.css.actions.Bundle", "Create_Rule");
     
     public TestBasic(String name) {
         super(name);
     }
-    
+
     public void testNewCSS() throws Exception {
-        File dataDir = this.getDataDir();
-        ProjectSupport.openProject(dataDir + File.separator + projectName);
-        new NbDialogOperator("Open Project").close();// close server reference problem
-        System.out.println("running testNewCSS + " + dataDir + projectName);
+        File projectFile = new File (getDataDir(), projectName);
+        openProjects(projectFile.getAbsolutePath());
+        System.out.println("running testNewCSS + " + projectFile);
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke(wizardTitle);
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Web");
-        nfwo.selectFileType(fileType);
+        nfwo.selectCategory("Other");
+        nfwo.selectFileType("Cascading Style Sheet");
         nfwo.next();
-        WizardOperator newCSSFile = new WizardOperator("New CSS File");
+        WizardOperator newCSSFile = new WizardOperator("New Cascading Style Sheet");
         new JTextFieldOperator(newCSSFile, 0).setText(newFileName);//FileName
-        new JTextFieldOperator(newCSSFile, 2).setText("css");//Folder
+        new JTextFieldOperator(newCSSFile, 2).setText("web/css");//Folder
         newCSSFile.finish();
         String text = new EditorOperator(newFileName).getText();
         assertTrue(text.contains("root"));
@@ -89,7 +85,7 @@ public class TestBasic extends CSSTest{
     }
     
     public void testAddRule() throws Exception{
-        EditorOperator eop = new EditorOperator(newFileName);
+        EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(rootRuleLineNumber);
         AbstractButtonOperator abo = eop.getToolbarButton(createRuleAction);
         abo.push();

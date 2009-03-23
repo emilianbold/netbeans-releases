@@ -91,14 +91,17 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     private CsmClass enclosingClass;
     private ProgressListener listener = new ProgressListener() {
 
+        @Override
         public void start(ProgressEvent event) {
             fireProgressListenerStart(event.getOperationType(), event.getCount());
         }
 
+        @Override
         public void step(ProgressEvent event) {
             fireProgressListenerStep();
         }
 
+        @Override
         public void stop(ProgressEvent event) {
             fireProgressListenerStop();
         }
@@ -224,8 +227,12 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<CsmVisibility> methodModifier, Set<CsmVisibility> fieldModifier, 
             boolean alwaysUseAccessors, boolean methodInline) {
         refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
+        CsmFile[] declDefFiles = null;
         for (EncapsulateFieldInfo info : refactorFields) {
-            EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField());
+            if (declDefFiles == null) {
+                declDefFiles = GeneratorUtils.getDeclarationDefinitionFiles(info.getField().getContainingClass());
+            }
+            EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField(), declDefFiles[0], declDefFiles[1]);
             ref.setGetterName(info.getGetterName());
             ref.setSetterName(info.getSetterName());
             ref.setMethodModifiers(methodModifier);
@@ -338,16 +345,19 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 
     @Override
     protected void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
-        if (refactoring.isAlwaysUseAccessors()) {
-            for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
-                ref.processFile(csmFile, mr, outProblem);
-            }
-        } else {
-            // only generate definitions/declarations
-            Collection<EncapsulateFieldInfo> fieldsInfo = refactoring.getRefactorFields();
-            for (EncapsulateFieldInfo fieldInfo : fieldsInfo) {
-
-            }
+        for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
+            ref.processFile(csmFile, mr, outProblem);
         }
+//        if (refactoring.isAlwaysUseAccessors()) {
+//            for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
+//                ref.processFile(csmFile, mr, outProblem);
+//            }
+//        } else {
+//            // only generate definitions/declarations
+//            Collection<EncapsulateFieldInfo> fieldsInfo = refactoring.getRefactorFields();
+//            for (EncapsulateFieldInfo fieldInfo : fieldsInfo) {
+//
+//            }
+//        }
     }
 }    

@@ -151,6 +151,28 @@ public class UIDUtilities {
         return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
 
+    public static boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
+        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
+            int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid1).getKey());
+            int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid2).getKey());
+            if (i1 >= 0 && i2 >=0) {
+                return i1 == i2;
+            }
+        }
+        return isSameFile(uid1.getObject(), uid2.getObject());
+    }
+
+    private static boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2) {
+        if (decl1 != null && decl2 != null) {
+            CsmFile file1 = decl1.getContainingFile();
+            CsmFile file2 = decl2.getContainingFile();
+            if (file1 != null && file2 != null) {
+                return file1.equals(file2);
+            }
+        }
+        return false;
+    }
+
     public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid) {
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID) uid).getKey();

@@ -53,7 +53,6 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Utilities;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,13 +70,12 @@ public class WaitMessageHandler {
         return null;
     }
     
-    public static void addToScene(CasaModelGraphScene scene, JbiBuildTask task) {
+    public static void addToScene(CasaModelGraphScene scene) {
         // This is already in the EDT.
         if (getBuildMessageWidget(scene) == null) {
             WaitMessageWidget messageWidget = new WaitMessageWidget(
                     scene,
                     NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage3"));
-            messageWidget.setTask(task);
             messageWidget.setAnimationText(
                     NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage1"),
                     NbBundle.getMessage(WaitMessageHandler.class, "LBL_WaitMessage2"),
@@ -103,7 +101,7 @@ public class WaitMessageHandler {
     private static class WaitMessageWidget extends LabelWidget {
         
         private static final Font FONT_MESSAGE = 
-                new Font("SansSerif", Font.BOLD, 16);
+                new Font("SansSerif", Font.BOLD, 16);  // use logical font name
         
         private static final Border BORDER = 
                 BorderFactory.createCompositeBorder(
@@ -119,7 +117,7 @@ public class WaitMessageHandler {
         private boolean mIsLockPosition;
         
         private Runnable mCurrentAnimator;
-        private JbiBuildTask mBuildTask;
+//        private JbiBuildTask mBuildTask;
         
         
         /**
@@ -152,10 +150,7 @@ public class WaitMessageHandler {
             }
         }
         
-        public void setTask(JbiBuildTask task) {
-            mBuildTask = task;
-        }
-        
+        @Override
         protected void notifyAdded() {
             super.notifyAdded();
             
@@ -213,10 +208,7 @@ public class WaitMessageHandler {
                         }
                     }
                     private void checkTaskFinished() {
-                        if (
-                                !isForcingCleanup &&
-                                mBuildTask != null &&
-                                mBuildTask.isFinished()) {
+                        if (!isForcingCleanup ) {
                             // The standard task listener should fire a completion
                             // notification, but sometimes this does not happen.
                             // We give the task listener a few seconds but if it
@@ -237,6 +229,7 @@ public class WaitMessageHandler {
             }
         }
         
+        @Override
         protected void notifyRemoved() {
             super.notifyRemoved();
             

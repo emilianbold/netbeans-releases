@@ -148,7 +148,8 @@ final class OnePassCompileWorker extends CompileWorker {
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
                                 ));
-                        Exceptions.printStackTrace(t);
+// XXX: commenting out because of #160618
+//                        Exceptions.printStackTrace(t);
                     }
                 }
             }
@@ -239,7 +240,8 @@ final class OnePassCompileWorker extends CompileWorker {
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
                                 ));
-                        Exceptions.printStackTrace(t);
+// XXX: commenting out because of #160618
+//                        Exceptions.printStackTrace(t);
                     }
                 }
             }

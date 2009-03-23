@@ -41,22 +41,13 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.Set;
-import java.util.logging.Logger;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
@@ -87,7 +78,7 @@ public class ModuleConfigurationImpl implements
     ModuleConfigurationImpl(J2eeModule module) throws ConfigurationException {
         this.module = module;
         this.config = new Hk2Configuration(module);
-        addSampleDatasource();
+        ResourcesHelper.addSampleDatasource(module);
     }
 
     // ------------------------------------------------------------------------
@@ -176,51 +167,5 @@ public class ModuleConfigurationImpl implements
         config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
 
-    private void addSampleDatasource() {
-        File f = module.getResourceDirectory();
-        if(null != f && f.exists()){
-            f = f.getParentFile();
-        }
-        if (null != f) {
-            Project p = FileOwnerQuery.getOwner(f.toURI());
-            if (null != p) {
-                J2eeModuleProvider jmp = getProvider(p);
-                if (null != jmp) {
-                    DeploymentManager dm = getDeploymentManager(jmp);
-                    if (dm instanceof Hk2DeploymentManager) {
-                        GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
-                        String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR); 
-                        String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-                        if (commonSupport.getServerState() != ServerState.RUNNING) {
-                            DomainEditor de = new DomainEditor(gfdir, domain, false);
-                            de.createSampleDatasource();
-                        }
-                    }
-                }
-            } else {
-                Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
-            }
-        } else {
-            Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
-        }
-    }
-
-    static private J2eeModuleProvider getProvider(Project project) {
-        J2eeModuleProvider provider = null;
-        if (project != null) {
-            org.openide.util.Lookup lookup = project.getLookup();
-            provider = lookup.lookup(J2eeModuleProvider.class);
-        }
-        return provider;
-    }
-
-    static private DeploymentManager getDeploymentManager(J2eeModuleProvider provider) {
-        DeploymentManager dm = null;
-        InstanceProperties ip = provider.getInstanceProperties();
-        if (ip != null) {
-            dm = ip.getDeploymentManager();
-        }
-        return dm;
-    }
-}
+ }
 

@@ -43,6 +43,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -63,11 +64,12 @@ public class CssModelTest extends TestBase {
         String content = "h1 { color: red; }";
         //                0123456789012345678
         //                0         1
-        
+
         Document doc = getDocument(content);
         Source source = Source.create(doc);
         final Result[] _result = new Result[1];
         ParserManager.parse(Collections.singleton(source), new UserTask() {
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 _result[0] = resultIterator.getParserResult();
@@ -75,9 +77,10 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
+        assertTrue(result instanceof CssParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create(result);
+        CssModel model = CssModel.create((CssParserResult) result);
         assertNotNull(model);
 
         List<CssRule> rules = model.rules();
@@ -109,4 +112,44 @@ public class CssModelTest extends TestBase {
 
     }
 
+    public void testWsAfterPropertyName() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = "h1 { color : red; }";
+        //                0123456789012345678
+        //                0         1
+
+        Document doc = getDocument(content);
+        Source source = Source.create(doc);
+        final Result[] _result = new Result[1];
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                _result[0] = resultIterator.getParserResult();
+            }
+        });
+
+        Result result = _result[0];
+        assertTrue(result instanceof CssParserResult);
+        assertNotNull(result);
+
+        CssModel model = CssModel.create((CssParserResult) result);
+        assertNotNull(model);
+
+        List<CssRule> rules = model.rules();
+        assertNotNull(rules);
+        assertEquals(1, rules.size());
+
+
+        CssRuleItem item = rules.get(0).items().get(0);
+        assertNotNull(item);
+
+        CssRuleItem.Item property = item.key();
+        assertNotNull(property);
+
+        //whitespace between the property name and the semicolon must not be present
+        //in the property name
+        assertEquals("color", property.name());
+        assertEquals(5, property.offset());
+
+    }
 }

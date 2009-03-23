@@ -184,8 +184,8 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
      *   if that attribute does not have a specified or default value.
      */
     public String getAttribute(String name) {
-	Attribute attribute = getAttributeNode(name);
-	return attribute!=null?attribute.getValue():null;
+        Attribute attribute = getAttributeNode(name);
+        return attribute != null ? attribute.getValue() : "";
     }
     
     /**
@@ -933,7 +933,7 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
         if (namespace == null) return;
         
         String prefix = getPrefix();
-        if (prefix == null && getAttribute(XMLConstants.XMLNS_ATTRIBUTE) != null) {
+        if (prefix == null && getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE) != null) {
             prefix = XMLConstants.DEFAULT_NS_PREFIX;
         }
         if (prefix != null) {

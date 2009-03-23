@@ -42,8 +42,6 @@
 package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Container;
-import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
@@ -56,13 +54,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.text.completion.XMLCompletionQuery;
-import org.netbeans.modules.xml.text.completion.GrammarManager;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 
 /**
@@ -277,7 +275,8 @@ public final class NodeSelector {
         
         public Object getValue() {
             try {
-                return ownerElem.getAttribute(propName);
+                Attr attrNode = ownerElem.getAttributeNode(propName);
+                return attrNode != null ? attrNode.getValue() : null;
             } catch (DOMException ex) {
                 // #29618 lifetime problem
                 canWrite = false;
