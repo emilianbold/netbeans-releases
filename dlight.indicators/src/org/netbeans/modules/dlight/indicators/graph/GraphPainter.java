@@ -41,11 +41,13 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import org.netbeans.modules.dlight.indicators.graph.Graph.AxisOrientation;
 
 /**
  * A delegate that is responsible for painting,
@@ -295,6 +297,15 @@ class GraphPainter {
         }
         paintedDataCount = arrivedDataCount;
         g2.setStroke(oldStroke);
+    }
+
+    public void drawAxis(Graphics g, AxisOrientation orientation, Dimension size) {
+        Graphics2D g2 = (Graphics2D)g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setFont(g2.getFont().deriveFont(10f));
+        g2.setColor(GraphColors.TEXT_COLOR);
+        g2.drawString(Integer.toString(getUpperLimit()), 0, 10);
+        g2.drawString(Integer.toString(0), 0, (int)size.getHeight());
     }
 
     /** for tracing/debugging purposes */
