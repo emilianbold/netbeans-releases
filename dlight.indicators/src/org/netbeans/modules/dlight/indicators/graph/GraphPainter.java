@@ -224,13 +224,13 @@ class GraphPainter {
 
     /** gets grid size in pixels */
     private int getGridSize() {
-        return 8;
+        return 10;
     }
 
     /** Should be called under synchronized (dataLock) */
     private int scrolled() {
         if (paintedDataCount > data.size()) {
-            return  paintedDataCount - data.size();
+            return paintedDataCount - data.size();
         } else {
             return 0;
         }
@@ -251,13 +251,20 @@ class GraphPainter {
     private void paintGrid(Graphics g, int x, int y, int w, int h) {
         int gridSize = getGridSize();
         g.setColor(gridColor);
-        int scrolled = scrolled();
+        int scrolled = PIXELS_PER_SAMPLE * scrolled();
         int dx = (scrolled > 0) ? gridSize - scrolled%gridSize : 0;
         for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
             g.drawLine(gridX, y, gridX, y+h-1);
         }
         for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
             g.drawLine(x, gridY, x+w-1, gridY);
+        }
+        g.setColor(GraphColors.BORDER_COLOR);
+        for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
+            g.drawLine(gridX, y+h-1, gridX, y+h-5);
+        }
+        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
+            g.drawLine(x, gridY, x+4, gridY);
         }
     }
 
