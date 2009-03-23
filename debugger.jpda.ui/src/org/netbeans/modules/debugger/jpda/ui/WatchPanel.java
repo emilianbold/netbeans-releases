@@ -227,9 +227,10 @@ public class WatchPanel {
         Runnable runnable = new Runnable() {
             public void run() {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-                if (eui != null) {
-                    eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+                if (eui == null) {
+                    return ;
                 }
+                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
                 // Do not draw text limit line
                 try {
                     java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
