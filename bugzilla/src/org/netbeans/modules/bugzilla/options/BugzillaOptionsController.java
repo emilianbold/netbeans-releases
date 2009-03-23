@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.bugzilla.options;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.spi.options.OptionsPanelController;
 
@@ -49,12 +51,16 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Tomas Stupka
  */
-public final class BugzillaOptionsController extends OptionsPanelController implements ActionListener {
+public final class BugzillaOptionsController extends OptionsPanelController implements DocumentListener {
     
     private final BugzillaOptionsPanel panel;
-        
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private boolean valid = false;
+
     public BugzillaOptionsController() {
         panel = new BugzillaOptionsPanel();
+        panel.issuesTextField.getDocument().addDocumentListener(this);
+        panel.queriesTextField.getDocument().addDocumentListener(this);
     }
     
     public void update() {
@@ -77,11 +83,8 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     }
     
     public boolean isValid() {
-        String queryRefresh = panel.queriesTextField.getText().trim();
-        String issueRefresh = panel.issuesTextField.getText().trim();
-
-        return isValidRefreshValue(queryRefresh) &&
-               isValidRefreshValue(issueRefresh);
+        validate(false);
+        return valid;
     }
 
     private boolean isValidRefreshValue(String s) {
@@ -89,6 +92,7 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
             try {
                 Integer.parseInt(s);
             } catch (NumberFormatException e) {
+                panel.errorLabel.setText("Invalid value."); // XXX bundle me
                 return false;
             }
         }
@@ -109,14 +113,40 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     }
     
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        
+        support.addPropertyChangeListener(l);
     }
     
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        
+        support.removePropertyChangeListener(l);
     }
-    
-    public void actionPerformed(ActionEvent evt) {
-        
+
+    public void insertUpdate(DocumentEvent e) {
+        validate(true);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        validate(true);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        validate(true);
+    }
+
+    private void validate(boolean fireEvents) {
+        boolean oldValid = valid;
+        panel.errorLabel.setVisible(false);
+        panel.errorLabel.setText("");
+
+        String queryRefresh = panel.queriesTextField.getText().trim();
+        String issueRefresh = panel.issuesTextField.getText().trim();
+
+        valid = isValidRefreshValue(queryRefresh) &&
+                isValidRefreshValue(issueRefresh);
+
+        panel.errorLabel.setVisible(!valid);
+
+        if(fireEvents && oldValid != valid) {
+            support.firePropertyChange(new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, oldValid, valid));
+        }
     }
 }

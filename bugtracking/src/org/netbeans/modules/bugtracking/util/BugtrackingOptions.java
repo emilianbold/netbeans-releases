@@ -41,11 +41,10 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -78,8 +77,12 @@ public class BugtrackingOptions extends AdvancedOption {
         private BugtrackingOptionsPanel panel;
         private boolean initialized = false;
         private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
-        
-        private void init(Lookup masterLookup) {
+
+        public Controller() {
+            init();
+        }
+
+        private void init() {
             if (initialized) return;
             initialized = true;
             panel = new BugtrackingOptionsPanel();
@@ -92,55 +95,68 @@ public class BugtrackingOptions extends AdvancedOption {
                 String category = option.getDisplayName();
                 OptionsPanelController controller = option.create();
                 categoryToController.put(category, controller);
-                panel.addPanel(category, controller.getComponent(masterLookup));
             }
         }
         
         public JComponent getComponent(Lookup masterLookup) {
-            init(masterLookup);
+            for(Entry<String, OptionsPanelController> entry : categoryToController.entrySet()) {                                
+                panel.addPanel(entry.getKey(), entry.getValue().getComponent(masterLookup));
+            }
             return panel;
         }
         
         public void removePropertyChangeListener(PropertyChangeListener l) {
+            for (OptionsPanelController c: categoryToController.values()) {
+                c.removePropertyChangeListener(l);
+            }
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
+            for (OptionsPanelController c: categoryToController.values()) {
+                c.addPropertyChangeListener(l);
+            }
         }
         
         public void update() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).update();
+            Iterator<OptionsPanelController> it = categoryToController.values().iterator();
+            while (it.hasNext()) {
+                it.next().update();
+            }
         }
         
         public void applyChanges() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).applyChanges();
+            Iterator<OptionsPanelController> it = categoryToController.values().iterator();
+            while (it.hasNext()) {
+                it.next().applyChanges();
+            }
         }
         
         public void cancel() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).cancel();
+            Iterator<OptionsPanelController> it = categoryToController.values().iterator();
+            while (it.hasNext()) {
+                it.next().cancel();
+            }
         }
         
         public boolean isValid() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                if (!((OptionsPanelController) it.next()).isValid())
+            Iterator<OptionsPanelController> it = categoryToController.values().iterator();
+            while (it.hasNext()) {
+                if (!it.next().isValid()) {
                     return false;
+                }
+            }
             return true;
         }
         
         public boolean isChanged() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                if (((OptionsPanelController) it.next()).isChanged())
+            Iterator<OptionsPanelController> it = categoryToController.values().iterator();
+            while (it.hasNext()) {
+                if (it.next().isChanged()) {
                     return true;
+                }
+            }
             return false;
         }
-        
         
         public HelpCtx getHelpCtx() {
             return new HelpCtx(BugtrackingOptions.class);

@@ -40,6 +40,11 @@
  */
 package org.netbeans.modules.bugzilla.options;
 
+import java.awt.Color;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
+
 /**
  *
  * @author Tomas Stupka
@@ -49,6 +54,10 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
     /** Creates new form SvnOptionsPanel */
     public BugzillaOptionsPanel() {
         initComponents();
+        errorLabel.setForeground(new Color(153,0,0));
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"); //NOI18N
+        errorLabel.setIcon(new ImageIcon(img));
+        errorLabel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -89,6 +98,8 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.jLabel4.text")); // NOI18N
 
+        errorLabel.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.errorLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,7 +120,10 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(queriesTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel4)))
+                        .add(jLabel4))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(errorLabel)))
                 .addContainerGap(127, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -124,7 +138,9 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
                     .add(jLabel3)
                     .add(queriesTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel4))
-                .add(257, 257, 257)
+                .add(221, 221, 221)
+                .add(errorLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -139,6 +155,7 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     final javax.swing.JTextField issuesTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
