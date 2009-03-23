@@ -88,6 +88,7 @@ import java.util.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collections;
 
 /**
@@ -382,7 +383,13 @@ public class JDBCWizardSelectionPanelUI extends javax.swing.JPanel implements Li
                 this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
     
     		    final String[][] tableList = DBMetaData.getTablesAndViews("", this.selectedConnection.getSchema(), "", true,connection);
-    		    if ("ORACLE".equalsIgnoreCase(this.dbtype) && DBMetaData.getDatabaseMajorVersion(connection) >= 10) { // NOI18N
+                Integer oracleMajorVersion = null;
+                try {
+                    oracleMajorVersion = DBMetaData.getDatabaseMajorVersion(connection);
+                } catch (SQLException x) {
+                    // #155003: ignore this
+                }
+    		    if ("ORACLE".equalsIgnoreCase(this.dbtype) && oracleMajorVersion != null && oracleMajorVersion >= 10) { // NOI18N
                     recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
                 } else {
                     recycleBinTables = Collections.EMPTY_LIST;
