@@ -67,7 +67,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     @Override
     public JComponent getComponent() {
-        return panel;
+        return panel.getPanel();
     }
 
     public void reset() {
