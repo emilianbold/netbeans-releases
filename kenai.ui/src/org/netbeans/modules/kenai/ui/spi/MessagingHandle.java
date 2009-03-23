@@ -18,12 +18,12 @@ public abstract class MessagingHandle {
      * The name of Integer property which is fired when the count of online members
      * has changed for this project. The property value is the new count of online members.
      */
-    public static final String PROP_ONLINE_COUNT = "onlineCount";
+    public static final String PROP_ONLINE_COUNT = "onlineCount"; // NOI18N
     /**
      * The name of Integer property which is fired when the count of messages
      * has changed for this project. The property value is the new count of messages.
      */
-    public static final String PROP_MESSAGE_COUNT = "messageCount";
+    public static final String PROP_MESSAGE_COUNT = "messageCount"; // NOI18N
 
     /**
      * @return Number of online project members or -1 if the user isn't logged in
