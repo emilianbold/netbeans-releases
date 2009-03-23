@@ -48,6 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.StyledDocument;
+import org.openide.awt.Mnemonics;
 
 
 /**
@@ -137,8 +138,8 @@ public abstract class InfoPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        stringLabel.setText(bundle.getString("CTL_StringLabel"));
         stringLabel.setLabelFor(stringText);
+        Mnemonics.setLocalizedText(stringLabel, bundle.getString("CTL_StringLabel")); // NOI18N 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -158,8 +159,8 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         add(stringText, gridBagConstraints);
 
-        foundInLabel.setText(bundle.getString("CTL_FoundInLabel"));
         foundInLabel.setLabelFor(foundInText);
+        Mnemonics.setLocalizedText(foundInLabel, bundle.getString("CTL_FoundInLabel")); // NOI18N 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -183,8 +184,8 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(foundInText, gridBagConstraints);
 
-        componentLabel.setText(bundle.getString("CTL_ComponentLabel"));
         componentLabel.setLabelFor(componentText);
+        Mnemonics.setLocalizedText(componentLabel, bundle.getString("CTL_ComponentLabel")); // NOI18N 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -208,8 +209,8 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(componentText, gridBagConstraints);
 
-        propertyLabel.setText(bundle.getString("CTL_PropertyLabel"));
         propertyLabel.setLabelFor(propertyText);
+        Mnemonics.setLocalizedText(propertyLabel, bundle.getString("CTL_PropertyLabel")); // NOI18N 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
