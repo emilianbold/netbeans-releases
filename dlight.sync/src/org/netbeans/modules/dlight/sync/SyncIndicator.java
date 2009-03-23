@@ -69,7 +69,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         if (panel == null) {
             panel = new SyncIndicatorPanel();
         }
-        return panel;
+        return panel.getPanel();
     }
 
     public void reset() {
