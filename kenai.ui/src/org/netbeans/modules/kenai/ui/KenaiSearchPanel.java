@@ -387,6 +387,10 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
+                    //TODO: remove me as soon as projects.json?full=true is 
+                    //implemented on kenai.com
+                    project.getDescription();
+                    //end of TODO
                     if (PanelType.OPEN.equals(panelType)) {
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
