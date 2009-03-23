@@ -586,6 +586,26 @@ public class ProjectsRootNode extends AbstractNode {
             return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
         }
 
+        /** Get display name used for logging as original display name can cause deadlock issue #160512 */
+        private String getLogName() {
+            String original = super.getDisplayName();
+            if (files != null && files.iterator().hasNext()) {
+                try {
+                    original = files.iterator().next().getFileSystem().getStatus().annotateName(original, files);
+                } catch (FileStateInvalidException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            }
+            return original;
+        }
+        
+        /** Special version of to Strign used for logging as original toString uses display name
+         * => can cause deadlock issue #160512 */
+        private String toStringForLog() {
+            return getClass().getName() + "@" + Integer.toHexString(hashCode()) //NOI18N
+                   + "[Name=" + getName() + ", displayName=" + getLogName() + "]"; //NOI18N
+        }
+
         public @Override String getHtmlDisplayName() {
             String htmlName = getOriginal().getHtmlDisplayName();
             String dispName = null;
@@ -651,10 +671,18 @@ public class ProjectsRootNode extends AbstractNode {
                 fireDisplayNameChange( null, null );
             }
             if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
-                OpenProjectList.log(Level.FINER, "replacing for {0}", this);
+                if (this instanceof ProjectsRootNode.BadgingNode) {
+                    OpenProjectList.log(Level.FINER, "replacing for {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                } else {
+                    OpenProjectList.log(Level.FINER, "replacing for {0}", this);
+                }
                 Project p = getLookup().lookup(Project.class);
                 if (p == null) {
-                    OpenProjectList.log(Level.FINE, "no project in lookup {0}", this);
+                    if (this instanceof ProjectsRootNode.BadgingNode) {
+                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                    } else {
+                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", this);
+                    }
                     return;
                 }
                 FileObject fo = p.getProjectDirectory();
@@ -703,7 +731,11 @@ public class ProjectsRootNode extends AbstractNode {
                         OpenProjectList.log(Level.FINER, "no search info {0}", bl);
                         bl.setMyLookups(n.getLookup());
                     }
-                    OpenProjectList.log(Level.FINER, "done {0}", this);
+                    if (this instanceof ProjectsRootNode.BadgingNode) {
+                        OpenProjectList.log(Level.FINER, "done {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                    } else {
+                        OpenProjectList.log(Level.FINER, "done {0}", this);
+                    }
                     }
                     setProjectFiles();
                 } else {
