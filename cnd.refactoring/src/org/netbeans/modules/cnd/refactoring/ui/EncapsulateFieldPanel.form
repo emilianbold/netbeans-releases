@@ -60,8 +60,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLblTitle" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="jButtonSelectAll" linkSize="4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -71,9 +71,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButtonSelectSetters" linkSize="4" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollField" min="0" pref="0" max="32767" attributes="1"/>
+                  <Component id="jScrollField" min="0" pref="0" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblInsertPoint" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jComboInsertPoint" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -98,11 +98,11 @@
                   <Component id="jLblAccessVis" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jComboAccess" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jInlineMethods" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jCheckAccess" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
