@@ -141,7 +141,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     public void visit(Project target) {
         Project t = target;
         if (t != null && !t.isInDocumentModel()) {
-            t = null;
+            t = t.getModel().getProject();
         }
         //ordered by appearance in pom schema..
         POMQNames names = parent.getPOMQNames();
