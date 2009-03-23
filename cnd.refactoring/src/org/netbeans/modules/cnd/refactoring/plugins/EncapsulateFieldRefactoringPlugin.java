@@ -41,29 +41,28 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
@@ -72,17 +71,13 @@ import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils.InsertInfo;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
 /**
@@ -90,6 +85,7 @@ import org.openide.util.Utilities;
  * @author Tomas Hurka
  * @author Jan Becicka
  * @author Jan Pokorsky
+ * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefactoringPlugin {
     
@@ -209,6 +205,13 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         }
         return p;
     }
+
+    private void addDiff(InsertInfo declInsert, CharSequence text, final String mtdName, String bundle, ModificationResult mr, FileObject fo) throws MissingResourceException {
+        CharSequence declText = FormattingSupport.getFormattedText(getDoc(declInsert.ces), declInsert.dot, text);
+        String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, bundle, mtdName); // NOI8N
+        Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, "\n" + declText, descr); // NOI18N
+        mr.addDifference(fo, declDiff);
+    }
     
     private Problem fastCheckParameters(String getter, String setter) {
         
@@ -292,8 +295,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             for (CsmMember elm : c.getMembers()) {
                 if (CsmKindUtilities.isMethod(elm)) {
                     CsmMethod m = (CsmMethod) elm;
-                    if (name.contentEquals(m.getName())
-                            && compareParams(params, m.getParameters())
+                    if (name.contentEquals(m.getName()) && compareParams(params, m.getParameters())
                             /*&& isAccessible(clazz, m)*/) {
                         return m;
                     }
@@ -329,9 +331,11 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     private static boolean compareParams(Collection<? extends CsmVariable> params1, Collection<? extends CsmVariable> params2) {
         if (params1.size() == params2.size()) {
             Iterator<? extends CsmVariable> it1 = params1.iterator();
-            for (CsmVariable ve : params2) {
-                if ((ve.getType() == null && it1.next().getType() == null)
-                  || (!ve.getType().equals(it1.next().getType()))){
+            for (CsmVariable ve2 : params2) {
+                CsmVariable ve1 = it1.next();
+                CsmType type2 = ve2.getType();
+                CsmType type1 = ve1.getType();
+                if ((type2 == null && type1 == null) || !GeneratorUtils.isSameType(type2, type1)) {
                     return false;
                 }
             }
@@ -371,37 +375,39 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 DeclarationGenerator.Kind declKind = refactoring.isMethodInline() ? DeclarationGenerator.Kind.INLINE_DEFINITION : DeclarationGenerator.Kind.DECLARATION;
                 // create declaration
                 InsertInfo declInsert = insertPositons[0];
-                final StringBuilder text = new StringBuilder();
                 if (getterName != null) {
-                    text.append(DeclarationGenerator.createGetter(field, getterName, declKind));
+                    CharSequence text = DeclarationGenerator.createGetter(field, getterName, declKind);
+                    addDiff(declInsert, text,
+                            getterName,
+                            refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
+                            mr, fo);
                 }
                 if (setterName != null) {
-                    text.append(DeclarationGenerator.createSetter(field, setterName, declKind));
+                    CharSequence text = DeclarationGenerator.createSetter(field, setterName, declKind);
+                    addDiff(declInsert, text,
+                            setterName,
+                            refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
+                            mr, fo);
                 }
-                ces = declInsert.ces;
-                String indent = getIndent(csmFile, ces.getDocument(), declInsert.start);
-                String declText = getFormattedText(csmFile, text.toString(), indent);
-                String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "EncapsulateFieldInsertDeclartion"); // NOI8N
-                Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, "", declText, descr); // NOI18N
-                mr.addDifference(fo, declDiff);
             }
             if (!refactoring.isMethodInline() && csmFile.equals(classDefinitionFile)) {
                 // create definition
                 DeclarationGenerator.Kind defKind = DeclarationGenerator.Kind.EXTERNAL_DEFINITION;
                 InsertInfo defInsert = insertPositons[1];
-                final StringBuilder text = new StringBuilder();
                 if (getterName != null) {
-                    text.append(DeclarationGenerator.createGetter(field, getterName, defKind));
+                    CharSequence text = DeclarationGenerator.createGetter(field, getterName, defKind);
+                    addDiff(defInsert, text,
+                            getterName,
+                            "EncapsulateFieldInsertDefinition", // NOI18N
+                            mr, fo);
                 }
                 if (setterName != null) {
-                    text.append(DeclarationGenerator.createSetter(field, setterName, defKind));
+                    CharSequence text = DeclarationGenerator.createSetter(field, setterName, defKind);
+                    addDiff(defInsert, text,
+                            setterName,
+                            "EncapsulateFieldInsertDefinition", // NOI18N
+                            mr, fo);
                 }
-                ces = defInsert.ces;
-                String indent = getIndent(csmFile, ces.getDocument(), defInsert.start);
-                String declText = getFormattedText(csmFile, text.toString(), indent);
-                String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "EncapsulateFieldInsertDefinition"); // NOI8N
-                Difference declDiff = new Difference(Difference.Kind.INSERT, defInsert.start, defInsert.end, "", declText, descr); // NOI18N
-                mr.addDifference(fo, declDiff);
             }
             if (refactoring.isAlwaysUseAccessors()) {
                 // change all references
@@ -411,56 +417,19 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         // replace all useges
     }
 
-    private String getFormattedText(CsmFile csmFile, String content, String indent) {
+    private Document getDoc(CloneableEditorSupport ces) {
+        Document doc = null;
         try {
-            FileSystem fs = FileUtil.createMemoryFileSystem();
-            FileObject root = fs.getRoot();
-            FileObject data = FileUtil.createData(root, csmFile.getAbsolutePath().toString());
-            Writer writer = new OutputStreamWriter(data.getOutputStream());
             try {
-                writer.append(content);
-                writer.flush();
-            } finally {
-                writer.close();
+                doc = ces.openDocument();
+            } catch (UserQuestionException ex) {
+                ex.confirmed();
+                doc = ces.openDocument();
             }
-            DataObject dob = DataObject.find(data);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
-            if (ec != null) {
-                StyledDocument doc = ec.openDocument();
-                Reformat fmt = Reformat.get(doc);
-                fmt.lock();
-                try {
-                    try {
-                        fmt.reformat(0, doc.getLength());
-                    } catch (BadLocationException ex) {
-                    }
-                } finally {
-                    fmt.unlock();
-                }
-                final String text = doc.getText(0, doc.getLength());
-                StringBuilder declText = new StringBuilder("\n"); // NOI18N
-                final int len = text.length();
-                for (int i = 0; i < len; i++) {
-                    final char charAt = text.charAt(i);                    
-                    if (charAt == '\n') { // NOI18N
-                        if (i < len - 1) {
-                            declText.append(charAt);
-                            declText.append(indent);
-                        }
-                    } else {
-                        declText.append(charAt);
-                    }
-                }
-                return declText.toString();
-            }
-        } catch (BadLocationException ex) {
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return content;
-    }
-
-    private String getIndent(CsmFile file, StyledDocument document, PositionRef start) {
-        return file.isHeaderFile() ? "    " : "";// NOI18N
+        return doc;
     }
 //    @Override
 //    public Problem prepare(RefactoringElementsBag bag) {
