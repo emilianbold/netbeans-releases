@@ -41,9 +41,11 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -62,9 +64,13 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils.InsertInfo;
@@ -367,7 +373,8 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         final String getterName = refactoring.getGetterName();
         final String setterName = refactoring.getSetterName();
         // prepare to generate declaration/definition
-        if ((getterName != null || setterName != null) && (csmFile.equals(classDeclarationFile) || csmFile.equals(classDefinitionFile))) {
+        if (((getterName != null && refactoring.getDefaultGetter() == null) || (setterName != null && refactoring.getDefaultSetter() == null)) && (csmFile.equals(classDeclarationFile) || csmFile.equals(classDefinitionFile))) {
+//      SortBy sortBy = refactoring.getContext().lookup(SortBy.class);
             fo = CsmUtilities.getFileObject(csmFile);
             CsmClass enclosing = refactoring.getEnclosingClass();
             InsertInfo[] insertPositons = GeneratorUtils.getInsertPositons(null, enclosing, insPt);
@@ -375,14 +382,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 DeclarationGenerator.Kind declKind = refactoring.isMethodInline() ? DeclarationGenerator.Kind.INLINE_DEFINITION : DeclarationGenerator.Kind.DECLARATION;
                 // create declaration
                 InsertInfo declInsert = insertPositons[0];
-                if (getterName != null) {
+                if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, declKind);
                     addDiff(declInsert, text,
                             getterName,
                             refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
                             mr, fo);
                 }
-                if (setterName != null) {
+                if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, declKind);
                     addDiff(declInsert, text,
                             setterName,
@@ -394,14 +401,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 // create definition
                 DeclarationGenerator.Kind defKind = DeclarationGenerator.Kind.EXTERNAL_DEFINITION;
                 InsertInfo defInsert = insertPositons[1];
-                if (getterName != null) {
+                if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, defKind);
                     addDiff(defInsert, text,
                             getterName,
                             "EncapsulateFieldInsertDefinition", // NOI18N
                             mr, fo);
                 }
-                if (setterName != null) {
+                if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, defKind);
                     addDiff(defInsert, text,
                             setterName,
@@ -409,12 +416,24 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                             mr, fo);
                 }
             }
-            if (refactoring.isAlwaysUseAccessors()) {
-                // change all references
+        }
+        // change references
+        if (refactoring.isAlwaysUseAccessors()) {
+            fo = fo != null ? fo : CsmUtilities.getFileObject(csmFile);
+            ces = ces != null ? ces : CsmUtilities.findCloneableEditorSupport(csmFile);
+            // do not interrupt refactoring
+            Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(field, csmFile, CsmReferenceKind.ALL, null);
+            if (refs.size() > 0) {
+                List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+                Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+
+                    public int compare(CsmReference o1, CsmReference o2) {
+                        return o1.getStartOffset() - o2.getStartOffset();
+                    }
+                });
+                processRefactoredReferences(sortedRefs, fo, ces, mr, outProblem);
             }
         }
-//        SortBy sortBy = refactoring.getContext().lookup(SortBy.class);
-        // replace all useges
     }
 
     private Document getDoc(CloneableEditorSupport ces) {
@@ -430,6 +449,19 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             Exceptions.printStackTrace(ex);
         }
         return doc;
+    }
+
+    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr, AtomicReference<Problem> outProblem) {
+        for (CsmReference curRef : sortedRefs) {
+            CsmObject encl = CsmRefactoringUtils.getEnclosingElement(curRef);
+            // change in functions, but not in constructors/destructors
+            if (CsmKindUtilities.isFunction(encl)) {
+                if (!CsmKindUtilities.isConstructor(encl) && CsmKindUtilities.isDestructor(encl)
+                    && !encl.equals(refactoring.getDefaultGetter()) && !encl.equals(refactoring.getDefaultSetter())) {
+                    System.err.println(fo.getNameExt() + " refToChange: " + curRef);
+                }
+            }
+        }
     }
 //    @Override
 //    public Problem prepare(RefactoringElementsBag bag) {
