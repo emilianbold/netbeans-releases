@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import org.netbeans.api.project.ProjectInformation;
@@ -248,9 +249,8 @@ public class MakeActionProvider implements ActionProvider {
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
         final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
 
-        // vv: leaving all logic to be later called from EDT
-        // (although I'm not sure all of below need to be done in EDT)
-        Runnable actionWorker = new Runnable() {
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
+        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
 
             public void run() {
                 // Add actions to do
@@ -261,14 +261,14 @@ public class MakeActionProvider implements ActionProvider {
                     Configuration[] confs = batchConfigurationSelector.getSelectedConfs();
                     if (batchCommand != null && confs != null) {
                         for (int i = 0; i < confs.length; i++) {
-                            addAction(actionEvents, projectName, pd, (MakeConfiguration) confs[i], batchCommand, context);
+                            addAction(actionEvents, projectName, pd, (MakeConfiguration) confs[i], batchCommand, context, cancelled);
                         }
                     } else {
                         // Close button
                         return;
                     }
                 } else {
-                    addAction(actionEvents, projectName, pd, conf, command, context);
+                    addAction(actionEvents, projectName, pd, conf, command, context, cancelled);
                 }
 
                 // Execute actions
@@ -276,11 +276,15 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
+            public boolean cancel() {
+                cancelled.set(true);
+                return true;
+            }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void runActionWorker(ExecutionEnvironment exeEnv, Runnable actionWorker) {
+    private static void runActionWorker(ExecutionEnvironment exeEnv, ModalMessageDlg.CancellableTask actionWorker) {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
@@ -293,22 +297,27 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
-        Runnable actionWorker = new Runnable() {
-
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
+        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
             public void run() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
-                addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
+                addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
+            }
+            public boolean cancel() {
+                cancelled.set(true);
+                return true;
             }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final Runnable actionWorker) {
+    private static void invokeRemoteHostAction(final ServerRecord record, final ModalMessageDlg.CancellableTask actionWorker) {
+        ModalMessageDlg.CancellableTask csmWorker;
         if (!record.isDeleted() && record.isOnline()) {
-            actionWorker.run();
+            csmWorker = actionWorker;
         } else {
             String message;
             int res = JOptionPane.NO_OPTION;
@@ -324,34 +333,33 @@ public class MakeActionProvider implements ActionProvider {
                 message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             }
-            if (res == JOptionPane.YES_OPTION) {
-                // start validation phase
-                final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                Runnable csmWorker = new Runnable() {
-
-                    public void run() {
-                        try {
-                            record.validate(true);
-                            // initialize compiler sets for remote host if needed
-                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
-                            csm.initialize(true, true);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-                Runnable edtWorker = new Runnable() {
-
-                    public void run() {
-                        if (record.isOnline()) {
-                            actionWorker.run();
-                        }
-                    }
-                };
-                String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
-                ModalMessageDlg.runLongTask(mainWindow, csmWorker, edtWorker, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
+            if (res != JOptionPane.YES_OPTION) {
+                return;
             }
+            // start validation phase
+            csmWorker = new ModalMessageDlg.CancellableTask() {
+                public boolean cancel() {
+                    return actionWorker.cancel();
+                }
+                public void run() {
+                    try {
+                        record.validate(true);
+                        // initialize compiler sets for remote host if needed
+                        CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+                        csm.initialize(true, true);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (record.isOnline()) {
+                        actionWorker.run();
+                    }
+                }
+            };
         }
+        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getName());
+        String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
+        ModalMessageDlg.runLongCancellableTask(mainWindow, csmWorker, null, title, msg);
     }
 
     class BatchConfigurationSelector implements ActionListener {
@@ -414,7 +422,9 @@ public class MakeActionProvider implements ActionProvider {
     public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
     public static final String REMOTE_BASE_PATH = "~/NetBeansProjects/remote"; //NOI18N
 
-    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
+    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, 
+            MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
+            AtomicBoolean cancelled) throws IllegalArgumentException {
         String[] targetNames;
         boolean validated = false;
         lastValidation = false;
@@ -455,6 +465,9 @@ public class MakeActionProvider implements ActionProvider {
                 actionEvent = ProjectActionEvent.Type.RUN;
             }
 
+            if (cancelled.get()) {
+                return; // getPlatformInfo() might be costly for remote host
+            }
             PlatformInfo pi = conf.getPlatformInfo();
 
             if (targetName.equals("save")) { // NOI18N
@@ -503,7 +516,7 @@ public class MakeActionProvider implements ActionProvider {
                     }
                 }
             } else if (targetName.equals("run") || targetName.equals("debug") || targetName.equals("debug-stepinto") || targetName.equals("debug-load-only")) { // NOI18N
-                if (!validateBuildSystem(pd, conf, validated)) {
+                if (!validateBuildSystem(pd, conf, validated, cancelled)) {
                     return;
                 }
                 validated = true;
@@ -561,6 +574,9 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
                         if (userPath == null) {
+                                if (cancelled.get()) {
+                                    return; // getEnv() might be costly for remote host
+                                }
                             userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
                         }
                         path = path + ";" + userPath; // NOI18N
@@ -592,6 +608,9 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
+                                if (cancelled.get()) {
+                                    return; // getEnv() might be costly for remote host
+                                }
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
@@ -617,6 +636,9 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
+                                if (cancelled.get()) {
+                                    return; // getEnv() might be costly for remote host
+                                }
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
@@ -631,6 +653,9 @@ public class MakeActionProvider implements ActionProvider {
                             platform == Platform.PLATFORM_SOLARIS_SPARC ||
                             platform == Platform.PLATFORM_LINUX) {
                         // Make sure DISPLAY variable has been set
+                        if (cancelled.get()) {
+                            return; // getEnv() might be costly for remote host
+                        }
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
@@ -694,7 +719,7 @@ public class MakeActionProvider implements ActionProvider {
                 if (conf.isCompileConfiguration() && !validateProject(conf)) {
                     break;
                 }
-                if (validateBuildSystem(pd, conf, validated)) {
+                if (validateBuildSystem(pd, conf, validated, cancelled)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
                     String args = "";
@@ -751,7 +776,7 @@ public class MakeActionProvider implements ActionProvider {
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
 //                    break;
 //                }
-                if (validateBuildSystem(pd, conf, validated)) {
+                if (validateBuildSystem(pd, conf, validated, cancelled)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
                     String args = ""; // NOI18N
@@ -776,7 +801,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
-                if (validateBuildSystem(pd, conf, validated)) {
+                if (validateBuildSystem(pd, conf, validated, cancelled)) {
                     Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
                     while (it.hasNext()) {
                         Node node = it.next();
@@ -1041,7 +1066,8 @@ public class MakeActionProvider implements ActionProvider {
         return cmd;
     }
 
-    public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
+    private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
+            boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1064,6 +1090,9 @@ public class MakeActionProvider implements ActionProvider {
             ServerRecord record = serverList.get(env);
             assert record != null;
             record.validate(false);
+            if (cancelled.get()) {
+                return false;
+            }
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
@@ -1104,6 +1133,10 @@ public class MakeActionProvider implements ActionProvider {
         Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
 
+        if (cancelled.get()) {
+            return false;
+        }
+
         PlatformInfo pi = conf.getPlatformInfo();
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
@@ -1120,17 +1153,29 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         // Check compilers
+        if (cancelled.get()) {
+            return false;
+        }
         if (cRequired && !exists(cTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
+        }
+        if (cancelled.get()) {
+            return false;
         }
         if (cppRequired && !exists(cppTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
+        if (cancelled.get()) {
+            return false;
+        }
         if (fRequired && !exists(fTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
+        }
+        if (cancelled.get()) {
+            return false;
         }
         if (asRequired && !exists(asTool.getPath(), pi)) {
             //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
@@ -1141,6 +1186,9 @@ public class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
 
+        if (cancelled.get()) {
+            return false;
+        }
         if (runBTA) {
             if (conf.getDevelopmentHost().isLocalhost()) {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
@@ -1174,6 +1222,9 @@ public class MakeActionProvider implements ActionProvider {
                     lastValidation = false;
                 }
             } else {
+                if (cancelled.get()) {
+                    return false;
+                }
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
