@@ -124,6 +124,21 @@ public class StorageTest extends NbTestCase {
         assertAttribute(ie2.getSeenAttributes(), "dummy6", "dummy6");
         assertAttribute(ie2.getSeenAttributes(), "dummy7", "dummy5");
 
+        // create another query
+        String qName2 = "SomeQuery2";
+        storage.storeQuery(url, qName2, new String[] {id1, id2});
+        issues = storage.readQuery(url, qName2);
+        assertEquals(2, issues.size());
+
+        // remove it
+        storage.removeQuery(url, qName2);
+        issues = storage.readQuery(url, qName2);
+        // it's gone
+        assertEquals(0, issues.size());
+        // first query still exists
+        issues = storage.readQuery(url, qName);
+        assertEquals(2, issues.size());
+
     }
 
     private void assertAttribute(Map<String, String> attrs, String attr, String value) {

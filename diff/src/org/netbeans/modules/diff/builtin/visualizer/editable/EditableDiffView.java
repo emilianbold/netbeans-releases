@@ -204,7 +204,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         adjustPreferredSizes();
                         return;
                     }
-
+                    
                     jEditorPane1.getScrollPane().setBorder(null);
                     jEditorPane2.getScrollPane().setBorder(null);
                     jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
@@ -217,7 +217,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         setSource1(ss1);
                         setSource2(ss2);
                     } catch (IOException ioex) {
-                        org.openide.ErrorManager.getDefault().notify(ioex);
+                        Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Diff source unavailable", ioex);
                     }
                     
                     if (!secondSourceAvailable) {
@@ -251,11 +251,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                  SwingUtilities.invokeAndWait(awtTask);
             }
         } catch (InterruptedException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+                    + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
         } catch (InvocationTargetException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+                    + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
         }
 
         if (binaryDiff) {
@@ -592,7 +592,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private int computeCurrentDifference() {
-        if (manager == null) return 0;
+        // jViewport == null iff initialization failed
+        if (manager == null || jViewport2 == null) return 0;
         Rectangle viewRect = jViewport2.getViewRect();
         int bottom = viewRect.y + viewRect.height * 4 / 5;
         DiffViewManager.DecoratedDifference [] ddiffs = manager.getDecorations();

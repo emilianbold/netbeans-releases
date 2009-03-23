@@ -158,6 +158,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         repoPanel.setVisible(false);
         setNameAndTooltip();
+        issue.addPropertyChangeListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -314,6 +315,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentClosed() {
         openIssues.remove(this);
+        issue.removePropertyChangeListener(this);
     }
 
     /**
@@ -350,7 +352,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
-            issue.removePropertyChangeListener(this);
+            setNameAndTooltip();
         } 
     }
 

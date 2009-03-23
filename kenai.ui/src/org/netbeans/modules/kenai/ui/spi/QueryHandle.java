@@ -18,7 +18,7 @@ public abstract class QueryHandle {
      * The name of property which is fired when any/all query results have changed.
      * The property value should be ideally the list of new QueryResultHandles.
      */
-    public static final String PROP_QUERY_RESULT = "queryResult";
+    public static final String PROP_QUERY_RESULT = "queryResult"; // NOI18N
 
     /**
      * 
