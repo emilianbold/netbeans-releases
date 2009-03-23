@@ -147,7 +147,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         logWriter = new PrintWriter(getLog());
         
         log("setUp preparing project.");
-        projectHelper = new TestModelHelper();
+        projectHelper = new TestModelHelper(true);
         File projectDir;
         if (performInWorkDir) {
             workDirBasedProject = new File(getWorkDir(), "project"); // NOI18N
@@ -177,7 +177,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        projectHelper.shutdown();
+        projectHelper.shutdown(true);
         outputWriter.flush();
         logWriter.flush();
         outputWriter.close();

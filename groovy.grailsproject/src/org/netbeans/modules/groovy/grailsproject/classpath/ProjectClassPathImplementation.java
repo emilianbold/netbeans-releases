@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -57,18 +58,21 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.SwingUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation {
+final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+
+    private static final Logger LOGGER = Logger.getLogger(ProjectClassPathImplementation.class.getName());
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -80,6 +84,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
     private File pluginsDir;
 
+    private File globalPluginsDir;
+
     private PluginsLibListener listenerPluginsLib;
 
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
@@ -88,8 +94,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
-        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(
-                GrailsProjectConfig.forProject(project));
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(config);
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
 
         return impl;
     }
@@ -101,72 +109,88 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         return this.resources;
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                this.resources = null;
+            }
+            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+        }
+    }
+
     private List<PathResourceImplementation> getPath() {
         assert Thread.holdsLock(this);
-
-        // When called from EDT we do not return plugin classpath immediately
-        // as it may take really long time. It usually happens when project is
-        // opened on startup and file is visible in editor. Does not happen
-        // much in CSL.
-        if (SwingUtilities.isEventDispatchThread()
-                && GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-            // lib directory from project root
-            addLibs(projectRoot, result);
-
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    synchronized (ProjectClassPathImplementation.this) {
-                        ProjectClassPathImplementation.this.resources = null;
-                    }
-                    ProjectClassPathImplementation.this.support.firePropertyChange(
-                            ClassPathImplementation.PROP_RESOURCES, null, null);
-                }
-            });
-
-            return Collections.unmodifiableList(result);
-        }
 
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
         addLibs(projectRoot, result);
 
 
-        if (pluginsDir == null) {
-            this.pluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
+        File oldPluginsDir = pluginsDir;
+        File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
+
+        if (pluginsDir == null || !pluginsDir.equals(currentPluginsDir)) {
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            this.pluginsDir = currentPluginsDir;
         }
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                List<GrailsPlugin> plugins = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
+                List<GrailsPlugin> plugins = new GrailsPluginSupport((GrailsProject) projectConfig.getProject())
                         .loadInstalledPlugins11();
                 Set<String> pluginDirs = new HashSet<String>();
                 for (GrailsPlugin plugin : plugins) {
                     pluginDirs.add(plugin.getDirName());
                 }
 
-                addPlugin(result, pluginDirs);
+                addPlugins(pluginsDir, result, pluginDirs);
             } else {
-                addPlugin(result, null);
+                addPlugins(pluginsDir, result, null);
             }
+        }
+
+        // TODO philosophical question: Is the global plugin boot or compile classpath?
+        File oldGlobalPluginsDir = globalPluginsDir;
+        File currentGlobalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
+        if (globalPluginsDir == null || !globalPluginsDir.equals(currentGlobalPluginsDir)) {
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            this.globalPluginsDir = currentGlobalPluginsDir;
+        }
+
+        if (globalPluginsDir != null && globalPluginsDir.isDirectory()) {
+            addPlugins(globalPluginsDir, result, null);
         }
 
         if (listenerPluginsLib == null) {
             File libDir = FileUtil.normalizeFile(new File(projectRoot, "lib")); // NOI18N
 
             listenerPluginsLib = new PluginsLibListener(this);
-
-            // it is weakly referenced
-            FileUtil.addFileChangeListener(listenerPluginsLib, pluginsDir);
             FileUtil.addFileChangeListener(listenerPluginsLib, libDir);
         }
+
+        // project plugins listener
+        updateListener(listenerPluginsLib, oldPluginsDir, currentPluginsDir);
+
+        // global plugins listener
+        updateListener(listenerPluginsLib, oldGlobalPluginsDir, currentGlobalPluginsDir);
 
         return Collections.unmodifiableList(result);
     }
 
-    private void addPlugin(List<PathResourceImplementation> result, Set<String> names) {
-        for (String name : pluginsDir.list()) {
-            File file = new File(pluginsDir, name);
+    private void updateListener(FileChangeListener listener, File oldDir, File newDir) {
+        if (oldDir == null || !oldDir.equals(newDir)) {
+            if (oldDir != null) {
+                FileUtil.removeFileChangeListener(listener, oldDir);
+            }
+            if (newDir != null) {
+                FileUtil.addFileChangeListener(listener, newDir);
+            }
+        }
+    }
+
+    private void addPlugins(File dir, List<PathResourceImplementation> result, Set<String> names) {
+        for (String name : dir.list()) {
+            File file = new File(dir, name);
             if (file.isDirectory() && (names == null || names.contains(name))) {
                 // lib directories of installed plugins
                 addLibs(file, result);
@@ -194,8 +218,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             }
         }
     }
-
-
 
     // XXX I am handling plugin sources as 'library' for owning project, is that correct?
     private static void addSources(File root, List<PathResourceImplementation> result) {

@@ -1,6 +1,6 @@
 Code completion result for source line:
 w = /b\|ar/
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    \0 The NUL character (\u0000)              null
 KEYWORD    \B Non-word boundary                       null

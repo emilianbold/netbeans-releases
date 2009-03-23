@@ -66,4 +66,7 @@ public final class DtraceDataCollectorFactory
     public String getID() {
         return DTDCConfigurationAccessor.getDefault().getID();
     }
+
+    public void reset() {
+    }
 }

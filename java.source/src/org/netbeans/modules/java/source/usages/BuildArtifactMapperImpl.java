@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
@@ -240,7 +241,7 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            File index = Index.getClassFolder(sr.getURL(), true);
+            File index = JavaIndex.getClassFolder(sr.getURL(), true);
 
             if (index == null) {
                 return false;
@@ -348,7 +349,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
-            target.setLastModified(MINIMAL_TIMESTAMP);
+            //target.setLastModified(MINIMAL_TIMESTAMP); see 156153
         } finally {
             if (ins != null) {
                 try {

@@ -71,15 +71,14 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
     {
         scene = actionContext.lookup(DesignerScene.class);
         pe = actionContext.lookup(IPresentationElement.class);
-        IElement e = pe.getFirstSubject();
         if (scene != null && pe != null)
         {
             Widget widget = scene.findWidget(pe);
             if (widget instanceof ActivityPartitionWidget)
-        {
-            activityPartitionWidget = (ActivityPartitionWidget) widget;
-            return this;
-        }
+            {
+                activityPartitionWidget = (ActivityPartitionWidget) widget;
+                return this;
+            }
         }
         return null;
     }

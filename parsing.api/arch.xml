@@ -182,7 +182,6 @@ Microsystems, Inc. All Rights Reserved.
     
     Parsing API contains support for high priority 
     <api name="ParsingAPI" type="export" category="devel" group="java" url="@TOP@index.html"/>
-    <api name="ParsingSPI" type="import" category="devel" group="java" url="@TOP@index.html"/>
   </p>
   <p>
       

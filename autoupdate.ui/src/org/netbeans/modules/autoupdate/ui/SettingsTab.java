@@ -82,6 +82,7 @@ import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -701,11 +702,11 @@ private class Listener implements ListSelectionListener,  TableModelListener {
                 UpdateUnitProvider u = (UpdateUnitProvider) value;
                 CATEGORY state = u.getCategory();
                 if (CATEGORY.BETA.equals(state)) {
-                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"))); // NOI18N
+                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-beta.png", false)); // NOI18N
                 } else if (CATEGORY.COMMUNITY.equals(state)) {
-                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"))); // NOI18N
+                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-community.png", false)); // NOI18N
                 } else if (CATEGORY.STANDARD.equals(state)) {
-                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"))); // NOI18N
+                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-standard.png", false)); // NOI18N
                 }
                 renderComponent.setText (u.getDisplayName());
                 renderComponent.setHorizontalAlignment(SwingConstants.LEFT);

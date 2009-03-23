@@ -55,7 +55,6 @@ import org.openide.execution.NbClassPath;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.windows.WindowManager;
 
 /**
  * Panel for editing entries in the classpath.
@@ -301,7 +300,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
 
         chooser.setDialogTitle(getString("CTL_FileSystemPanel.Jar_Dialog_Title"));
         chooser.setMultiSelectionEnabled( true );
-        if (chooser.showDialog(WindowManager.getDefault ().getMainWindow (),
+        if (chooser.showDialog(this,
                                getString("CTL_Approve_Button_Title"))
                 == JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
@@ -334,7 +333,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             chooser.setCurrentDirectory(lastDirFolder);
         }
 
-        if (chooser.showDialog(WindowManager.getDefault ().getMainWindow (),
+        if (chooser.showDialog(this,
                                getString("CTL_Approve_Button_Title"))
                 == JFileChooser.APPROVE_OPTION) {
             File f = chooser.getSelectedFile();
@@ -392,7 +391,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
                 chooser.setSelectedFile(selectedF);
             }
 
-            if (chooser.showDialog(WindowManager.getDefault ().getMainWindow (),
+            if (chooser.showDialog(this,
                                    getString("CTL_Approve_Button_Title"))
                     == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
@@ -425,7 +424,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             chooser.setSelectedFile(selectedF);
 
             chooser.setDialogTitle(getString("CTL_Edit_Jar_Dialog_Title"));
-            if (chooser.showDialog(WindowManager.getDefault ().getMainWindow (),
+            if (chooser.showDialog(this,
                                    getString("CTL_Approve_Button_Title"))
                     == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();

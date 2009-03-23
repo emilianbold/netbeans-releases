@@ -115,7 +115,7 @@ public class OpenJ2EEFilesWithOpenedEditorTest extends OpenJ2EEFilesTest {
     @Override
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Source Packages|test|TestSessionRemote.java"));
     }
     
 }

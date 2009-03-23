@@ -54,7 +54,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ImportNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -63,9 +72,14 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
-import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -128,9 +142,30 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         final List<ClassNode> resultList = new ArrayList<ClassNode>();
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
+//            try {
+//                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+//                    public void run(GroovyParserResult result) throws Exception {
+//                        AstRootElement astRootElement = result.getRootElement();
+//                        if (astRootElement != null) {
+//                            ModuleNode moduleNode = astRootElement.getModuleNode();
+//                            if (moduleNode != null) {
+//                                resultList.addAll(moduleNode.getClasses());
+//                            }
+//                        }
+//                    }
+//                    public void cancel() {}
+//                }, false);
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
             try {
-                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-                    public void run(GroovyParserResult result) throws Exception {
+                Source source = Source.create(fo);
+                // FIXME can we move this out of task (?)
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+
                         AstRootElement astRootElement = result.getRootElement();
                         if (astRootElement != null) {
                             ModuleNode moduleNode = astRootElement.getModuleNode();
@@ -139,9 +174,8 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                             }
                         }
                     }
-                    public void cancel() {}
-                }, false);
-            } catch (Exception ex) {
+                });
+            } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }

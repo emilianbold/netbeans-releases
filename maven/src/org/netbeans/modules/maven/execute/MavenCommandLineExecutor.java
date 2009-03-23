@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import hidden.org.codehaus.plexus.util.StringUtils;
 import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
@@ -215,7 +215,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
         
     private static List<String> createMavenExecutionCommand(RunConfig config) {
-        File mavenHome = MavenExecutionSettings.getDefault().getCommandLinePath();
+        File mavenHome = MavenSettings.getDefault().getCommandLinePath();
         
         List<String> toRet = new ArrayList<String>();
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
@@ -260,10 +260,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.isShowError()) {
             toRet.add("--errors");//NOI18N
         }
-        if (!MavenExecutionSettings.getDefault().isUsePluginRegistry()) {
+        if (!MavenSettings.getDefault().isUsePluginRegistry()) {
             toRet.add("--no-plugin-registry");//NOI18N
         }
-        String checksum = MavenExecutionSettings.getDefault().getChecksumPolicy();
+        String checksum = MavenSettings.getDefault().getChecksumPolicy();
         if (checksum != null) {
             if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(checksum)) {
                 toRet.add("--strict-checksums");//NOI18N

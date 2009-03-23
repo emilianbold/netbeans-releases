@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.libs.smack</code-name-base>
+          <module-dependencies/>
+            <public-packages>
+                <package>com.jcraft.jzlib</package>
+                <package>org.jivesoftware.smack</package>
+                <package>org.jivesoftware.smack.debugger</package>
+                <package>org.jivesoftware.smack.filter</package>
+                <package>org.jivesoftware.smack.packet</package>
+                <package>org.jivesoftware.smack.provider</package>
+                <package>org.jivesoftware.smack.sasl</package>
+                <package>org.jivesoftware.smack.util</package>
+                <package>org.jivesoftware.smack.util.collections</package>
+                <package>org.jivesoftware.smackx</package>
+                <package>org.jivesoftware.smackx.bookmark</package>
+                <package>org.jivesoftware.smackx.filetransfer</package>
+                <package>org.jivesoftware.smackx.muc</package>
+                <package>org.jivesoftware.smackx.packet</package>
+                <package>org.jivesoftware.smackx.provider</package>
+                <package>org.jivesoftware.smackx.search</package>
+                <package>org.jivesoftware.smackx.workgroup</package>
+                <package>org.jivesoftware.smackx.workgroup.agent</package>
+                <package>org.jivesoftware.smackx.workgroup.ext.forms</package>
+                <package>org.jivesoftware.smackx.workgroup.ext.history</package>
+                <package>org.jivesoftware.smackx.workgroup.ext.macros</package>
+                <package>org.jivesoftware.smackx.workgroup.ext.notes</package>
+                <package>org.jivesoftware.smackx.workgroup.packet</package>
+                <package>org.jivesoftware.smackx.workgroup.settings</package>
+                <package>org.jivesoftware.smackx.workgroup.user</package>
+                <package>org.jivesoftware.smackx.workgroup.util</package>
+                <package>org.xmlpull.mxp1</package>
+                <package>org.xmlpull.v1</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/smack.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/smackx.jar</runtime-relative-path>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

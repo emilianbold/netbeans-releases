@@ -81,9 +81,6 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         
         LOG = Logger.getLogger("Test." + getName());
         
-        Lookup.getDefault().lookup(ModuleInfo.class);
-        assertEquals(MainLookup.class, Lookup.getDefault().getClass());
-
         root = FileUtil.getConfigRoot();
         for (FileObject fo : root.getChildren()) {
             fo.delete();
@@ -91,7 +88,7 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         
         super.setUp();
     }
-    
+
     public void testLoadFromTheSFS() throws Exception {
         doLoad("inst/sub");
     }

@@ -39,23 +39,21 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
  * @author marek
  */
-public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
+public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -68,7 +66,9 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
         cancelled = true;
     }
 
-    public void run(CompilationInfo ci) throws Exception {
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
 
         cancelled = false; //resume
         
@@ -78,15 +78,15 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
-        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
-        if(!presultIterator.hasNext()) {
-            return;
-        }
+//        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+//        if(!presultIterator.hasNext()) {
+//            return;
+//        }
+//
+//        ParserResult presult = presultIterator.next();
+//        final TranslatedSource source = presult.getTranslatedSource();
         
-        ParserResult presult = presultIterator.next();
-        final TranslatedSource source = presult.getTranslatedSource();
-        
-        HtmlParserResult htmlResult = (HtmlParserResult) presult;
+        HtmlParserResult htmlResult = (HtmlParserResult) result;
         
         if (cancelled) {
             return;
@@ -96,12 +96,12 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
         Set<TagAttribute> ids = htmlResult.elementsIds();
         for(TagAttribute ta : ids) {
             int start = ta.getValueOffset();
-            if (source != null) {
-                start = source.getLexicalOffset(start);
+//            if (source != null) {
+                start = result.getSnapshot().getOriginalOffset(start);
                 if (start == -1) {
                     start = 0;
                 }
-            }
+//            }
             
             // We assume that the start and end are always mapped to the same delta,
             // e.g. tags don't span embedding regions
@@ -113,5 +113,15 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
         semanticHighlights = highlights;
 
+    }
+
+    @Override
+    public int getPriority() {
+        return 500; //XXX find out some reasonable number
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return null; //todo  what to return????
     }
 }

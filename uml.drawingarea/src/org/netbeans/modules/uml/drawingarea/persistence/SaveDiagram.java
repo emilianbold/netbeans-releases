@@ -43,7 +43,6 @@ package org.netbeans.modules.uml.drawingarea.persistence;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.cookies.SaveCookie;
@@ -66,7 +65,6 @@ public class SaveDiagram implements SaveCookie {
     }
 
     public synchronized void save() throws IOException {
-//        System.out.println(" !!!!!!!!!!!! Begin Saving... !!!!!!!!!!!!!!!!!!");
         //custom logic to save uml diagrams
         if (scene != null) {
             
@@ -85,8 +83,5 @@ public class SaveDiagram implements SaveCookie {
         if (dobj instanceof UMLDiagramDataObject) {
             ((UMLDiagramDataObject)dobj).setDirty(false, scene);
         }
-
-
-//         System.out.println(" !!!!!!!!!!!! END Saving... !!!!!!!!!!!!!!!!!!");
     }
 }

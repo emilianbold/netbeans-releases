@@ -43,6 +43,7 @@ package org.netbeans.test.editor.suites.keybindings;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 import junit.framework.Test;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -55,11 +56,8 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -91,7 +89,7 @@ public class KeyMapTest extends JellyTestCase {
         newProjectOper.finish();
         newProjectOper.waitClosed();
         try {
-            RepositoryUpdater.getDefault().waitScanFinished();
+            SourceUtils.waitScanFinished();
         } catch (InterruptedException ex) {
             fail("Waiting for project scanning was interupted. Other tests will fail.");
         }

@@ -65,6 +65,11 @@ final class FileKey extends ProjectFileNameBasedKey {
     public String toString() {
 	return "FileKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
     }
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_FILE_KEY + super.hashCode();
+    }
     
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();

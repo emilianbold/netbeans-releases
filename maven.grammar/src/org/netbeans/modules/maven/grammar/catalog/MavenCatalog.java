@@ -156,7 +156,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
      * @return InputSource for publicId/systemId 
      */    
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
-        if (POM_4_0_0.equals(systemId) || POM_ALT_4_0_0.endsWith(systemId)) {
+        if (POM_4_0_0.equals(systemId) || POM_ALT_4_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_POM_4_0_0);
         } else if (SETTINGS_1_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_SETTINGS_1_0_0);

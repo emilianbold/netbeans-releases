@@ -40,7 +40,7 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.openide.filesystems.FileObject;
@@ -50,7 +50,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author PetrPisl
  */
-public class PHPDocCommentParserTest extends GsfTestBase {
+public class PHPDocCommentParserTest extends CslTestBase {
 
     public PHPDocCommentParserTest(String testName) {
         super(testName);

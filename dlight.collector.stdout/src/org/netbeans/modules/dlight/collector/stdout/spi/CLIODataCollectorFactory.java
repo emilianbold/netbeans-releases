@@ -66,4 +66,7 @@ public final class CLIODataCollectorFactory
                 CLIODCConfigurationAccessor.getDefault();
         return access.getCLIODCConfigurationID();
     }
+
+    public void reset() {
+    }
 }

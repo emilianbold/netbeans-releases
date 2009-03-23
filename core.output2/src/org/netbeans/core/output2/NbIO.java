@@ -42,6 +42,7 @@
 package org.netbeans.core.output2;
 
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import javax.swing.*;
@@ -51,7 +52,10 @@ import java.io.Reader;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOPosition;
 import org.openide.windows.IOTab;
 
 /** Implementation of InputOutput.  Implements calls as a set of
@@ -72,6 +76,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private IOContainer ioContainer;
     private Lookup lookup;
     private IOTabImpl ioTab;
+    private IOColorsImpl ioColors;
 
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
@@ -273,7 +278,8 @@ class NbIO implements InputOutput, Lookup.Provider {
     public synchronized Lookup getLookup() {
         if (lookup == null) {
             ioTab = new IOTabImpl();
-            lookup = Lookups.fixed(ioTab);
+            ioColors = new IOColorsImpl();
+            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl());
         }
         return lookup;
     }
@@ -425,6 +431,10 @@ class NbIO implements InputOutput, Lookup.Provider {
         return ioTab != null ? ioTab.getToolTipText() : null;
     }
 
+    Color getColor(IOColors.OutputType type) {
+        return ioColors != null ? ioColors.getColor(type) : AbstractLines.DEF_COLORS[type.ordinal()];
+    }
+
     private class IOTabImpl extends IOTab {
         Icon icon;
         String toolTip;
@@ -449,6 +459,57 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void setToolTipText(String text) {
             toolTip = text;
             post(NbIO.this, IOEvent.CMD_SET_TOOLTIP, toolTip);
+        }
+    }
+
+    private class IOPositionImpl extends IOPosition {
+
+        @Override
+        protected Position currentPosition() {
+            OutWriter out = out();
+            int size = 0;
+            if (out != null) {
+                size = out.getLines().getCharCount();
+            }
+            return new PositionImpl(size);
+        }
+    }
+
+    private class PositionImpl implements IOPosition.Position {
+        private int pos;
+
+        public PositionImpl(int pos) {
+            this.pos = pos;
+        }
+
+        public void scrollTo() {
+            post(NbIO.this, IOEvent.CMD_SCROLL, new Integer(pos));
+        }
+    }
+
+    private class IOColorLinesImpl extends IOColorLines {
+
+        @Override
+        protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
+            OutWriter out = out();
+            if (out != null) {
+                out.print(text, listener, important, color, true);
+            }
+        }
+    }
+
+    private class IOColorsImpl extends IOColors {
+        Color[] clrs = new Color[4];
+
+        @Override
+        protected Color getColor(OutputType type) {
+            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.DEF_COLORS[type.ordinal()];
+        }
+
+        @Override
+        protected void setColor(OutputType type, Color color) {
+            clrs[type.ordinal()] = color;
+            post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
     }
 }

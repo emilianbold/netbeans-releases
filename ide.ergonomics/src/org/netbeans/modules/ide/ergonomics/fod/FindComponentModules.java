@@ -247,6 +247,9 @@ public final class FindComponentModules {
                 break;
             }
             for (UpdateElement el : toAdd) {
+                if (el == null) {
+                    continue;
+                }
                 if (ocForEnable.canBeAdded (el.getUpdateUnit (), el)) {
                     OperationContainer.OperationInfo<OperationSupport> inf = ocForEnable.add (el);
                     if (inf == null) {

@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
+import java.util.HashMap;
+import javax.swing.JToggleButton;
+
 /**
  *
  * @author treyspiva
@@ -54,4 +57,5 @@ public interface DesignerTools
     public static final String INTERACTIVE_ZOOM = "INTERACTIVE_ZOOM";
     public static final String NAVIGATE_LINK = "NAVIGATE_LINK";
     public static final String READ_ONLY = "READ_ONLY";
+    public HashMap<String,JToggleButton> mapToolToButton=new HashMap<String,JToggleButton>();
 }

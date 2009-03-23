@@ -253,7 +253,7 @@ public abstract class BaseTestCase extends NbTestCase {
             }
             return true;
         }
-        System.err.println("initRemoteUserInfo:debug. No info found");
+//        System.err.println("initRemoteUserInfo:debug. No info found");
         return false;
     }
 

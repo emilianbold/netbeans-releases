@@ -48,13 +48,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -62,8 +58,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -74,13 +69,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -118,18 +109,12 @@ public class RefactoringUtils {
         return PhpSourcePath.MIME_TYPE.equals(fo.getMIMEType());
     }
 
-    public static Program getRoot(CompilationInfo info) {
-        PHPParseResult result = getParseResult(info);
-        return (result != null) ? result.getProgram() : null;
-    }
-
-    public static PHPParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(PhpSourcePath.MIME_TYPE, 0);
-        return ((PHPParseResult) result);
+    public static Program getRoot(ParserResult info) {
+        return (info instanceof PHPParseResult) ? ((PHPParseResult)info).getProgram() : null;
     }
 
     public static Source getSource(Document doc) {
-        Source source = Source.forDocument(doc);
+        Source source = Source.create(doc);
         return source;
     }
 
@@ -344,47 +329,47 @@ public class RefactoringUtils {
         }
     }
 
-    public static ClasspathInfo getClasspathInfoFor(FileObject... files) {
-        assert files.length > 0;
-        Set<URL> dependentRoots = new HashSet<URL>();
-        for (FileObject fo : files) {
-            Project p = null;
-            if (fo != null) {
-                p = FileOwnerQuery.getOwner(fo);
-            }
-            if (p != null) {
-                assert fo != null;
-                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (classPath == null) {
-                    Logger.getLogger(RefactoringUtils.class.getName()).log(
-                            Level.WARNING, "ClassPath.getClassPath(fo, ClassPath.SOURCE) == null for fo: " + fo.getPath());//NOI18N
-                    continue;
-                }
-                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                }
-            } else {
-                for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root : cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
-                    }
-                }
-            }
-        }
-
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
-        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
-        if (boot == null || compile == null) { // 146499
-            return null;
-        }
-
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
-    }
+//    public static ClasspathInfo getClasspathInfoFor(FileObject... files) {
+//        assert files.length > 0;
+//        Set<URL> dependentRoots = new HashSet<URL>();
+//        for (FileObject fo : files) {
+//            Project p = null;
+//            if (fo != null) {
+//                p = FileOwnerQuery.getOwner(fo);
+//            }
+//            if (p != null) {
+//                assert fo != null;
+//                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//                if (classPath == null) {
+//                    Logger.getLogger(RefactoringUtils.class.getName()).log(
+//                            Level.WARNING, "ClassPath.getClassPath(fo, ClassPath.SOURCE) == null for fo: " + fo.getPath());//NOI18N
+//                    continue;
+//                }
+//                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
+//                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+//                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+//                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+//                }
+//            } else {
+//                for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(PhpProject.SOURCE_CP)) {
+//                    for (FileObject root : cp.getRoots()) {
+//                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+//                    }
+//                }
+//            }
+//        }
+//
+//        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
+//        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
+//        if (boot == null || compile == null) { // 146499
+//            return null;
+//        }
+//
+//        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
+//        return cpInfo;
+//    }
 
     public static boolean isOutsidePhp(Lookup lookup, FileObject fo) {
         if (RefactoringUtils.isPhpFile(fo)) {
@@ -417,7 +402,7 @@ public class RefactoringUtils {
         return false;
     }
     
-    public static List<ASTNode> underCaret(CompilationInfo info, final int offset) {
+    public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
 
             private Stack<ASTNode> result;
@@ -468,7 +453,7 @@ public class RefactoringUtils {
         return value.substring(1, value.length() - 1);
     }
 
-    public static FileObject resolveInclude(CompilationInfo info, Include include) {
+    public static FileObject resolveInclude(ParserResult info, Include include) {
         Expression e = include.getExpression();
 
         if (e instanceof ParenthesisExpression) {
@@ -489,9 +474,9 @@ public class RefactoringUtils {
         return null;
     }
 
-    private static FileObject resolveRelativeFile(CompilationInfo info, String name) {
+    private static FileObject resolveRelativeFile(ParserResult info, String name) {
         PhpSourcePath psp = null;
-        Project p = FileOwnerQuery.getOwner(info.getFileObject());
+        Project p = FileOwnerQuery.getOwner(info.getSnapshot().getSource().getFileObject());
 
         if (p != null) {
             psp = p.getLookup().lookup(PhpSourcePath.class);
@@ -501,9 +486,9 @@ public class RefactoringUtils {
             FileObject result;
 
             if (psp != null) {
-                result = psp.resolveFile(info.getFileObject().getParent(), name);
+                result = psp.resolveFile(info.getSnapshot().getSource().getFileObject().getParent(), name);
             } else {
-                result = info.getFileObject().getParent().getFileObject(name);
+                result = info.getSnapshot().getSource().getFileObject().getParent().getFileObject(name);
             }
 
             if (result != null) {

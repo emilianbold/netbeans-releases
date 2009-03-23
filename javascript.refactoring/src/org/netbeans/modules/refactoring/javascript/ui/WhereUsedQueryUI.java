@@ -43,12 +43,10 @@ package org.netbeans.modules.refactoring.javascript.ui;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.javascript.RetoucheUtils;
 import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 import org.netbeans.modules.refactoring.javascript.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -70,12 +68,13 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(JsElementCtx jmiObject, CompilationInfo info) {
+    public WhereUsedQueryUI(JsElementCtx jmiObject) {
         this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(jmiObject);
-        if (classpathInfoFor != null) {
-            this.query.getContext().add(classpathInfoFor);
-        }
+// XXX: parsingapi
+//        ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(jmiObject);
+//        if (classpathInfoFor != null) {
+//            this.query.getContext().add(classpathInfoFor);
+//        }
         this.element = jmiObject;
         name = jmiObject.getName();
         kind = jmiObject.getKind();
@@ -100,7 +99,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (kind == ElementKind.METHOD) {
             setForMethod();
             return query.checkParameters();
@@ -118,13 +117,13 @@ public class WhereUsedQueryUI implements RefactoringUI {
             query.setRefactoringSource(Lookups.singleton(element));
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
     }
     
     private void setForClass() {
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
-        query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {

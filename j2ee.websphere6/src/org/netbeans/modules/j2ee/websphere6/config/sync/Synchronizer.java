@@ -99,10 +99,11 @@ public abstract class Synchronizer {
     private LinkedList <File> list = new LinkedList <File> ();
     
     public void addSyncFile(File file) {
-        FileObject obj = FileUtil.toFileObject(file);
+        FileObject obj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if(!list.contains(file)) {
             list.add(file);
             obj.addFileChangeListener(new FileChangeAdapter() {
+                @Override
                 public void fileChanged(FileEvent event) {
                     syncDescriptors();
                 }

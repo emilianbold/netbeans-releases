@@ -4,6 +4,6 @@ JAVA=nb-base, nb-javase, nb-webcommon, nb-javaee, nb-javame, nb-ergonomics, glas
 RUBY=nb-base, nb-webcommon, nb-ruby, glassfish-mod
 CND=nb-base, nb-cnd
 PHP=nb-base, nb-webcommon, nb-php
-FULL=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-soa, nb-ruby, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
+FULL=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
 HIDDEN=openesb, nb-base, nb-webcommon, nb-ergonomics
 

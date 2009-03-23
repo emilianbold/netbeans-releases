@@ -153,7 +153,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         rootURL = src.toURL();
         
-        Index.setCacheFolder(cache);
+        IndexUtil.setCacheFolder(cache);
         
         a       = new File(pack, "A.java");
         b       = new File(pack, "B.java");

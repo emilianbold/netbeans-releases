@@ -38,30 +38,30 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import org.netbeans.modules.nativeexecution.support.ObservableAction;
-import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import java.util.concurrent.ExecutionException;
+import java.awt.event.ActionEvent;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.util.Collections;
+import com.jcraft.jsch.UserInfo;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
-import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.support.RemoteUserInfoProvider;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,146 +73,213 @@ import org.openide.util.NbBundle;
  * @see ExecutionEnvironment
  */
 public final class ConnectionManager {
-    // Instance of the ConnectionManager
 
-    private static ConnectionManager instance;
+    private final static Object lock = new String(ConnectionManager.class.getName());
+    private final static java.util.logging.Logger log = Logger.getInstance();
+
+    // Instance of the ConnectionManager
+    private final static ConnectionManager instance;
 
     // Map that contains all connected sessions;
-    private Map<String, Session> sessions = null;
-
-    // Provider of 'ConnectTo...' actions
-    private ActionsProvider actionsProvider = null;
+    private final Map<String, Session> sessions;
 
     // Actual sessions pool
     private final JSch jsch;
 
 
     static {
+        instance = new ConnectionManager();
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
     }
 
     private ConnectionManager() {
-        this.jsch = new JSch();
+        jsch = new JSch();
+
+        try {
+            jsch.setKnownHosts(System.getProperty("user.home") + // NOI18N
+                    "/.ssh/known_hosts"); // NOI18N
+        } catch (JSchException ex) {
+            log.warning("Unable to setKnownHosts for jsch. " + ex.getMessage()); // NOI18N
+        }
+
+        sessions = new HashMap<String, Session>();
     }
 
     /**
      * Returns instance of <tt>ConnectionManager</tt>.
      * @return instance of <tt>ConnectionManager</tt>
      */
-    public static synchronized ConnectionManager getInstance() {
-        if (instance == null) {
-            instance = new ConnectionManager();
-        }
-
+    public static ConnectionManager getInstance() {
         return instance;
     }
 
     /**
-     * Returns the ssh session for requested <tt>ExecutionEnvironment</tt>.
-     * If open <tt>Session</tt> already exists for specified
-     * <tt>ExecutionEnvironment</tt>, existent one is returned. <br>
-     * If no <tt>Session</tt> existed for the execution environment before the
-     * call of the method, <tt>Session</tt> is created and authorization is
-     * performed.
+     * Returns the ssh session for requested <tt>ExecutionEnvironment</tt>
+     * or <tt>null</tt> if no active session exists.
      *
      * @param execEnv - execution environment to get <tt>Session</tt> for.
      *
-     * @return <tt>null</tt> on error; <br>
-     *         New or already existent <tt>Session</tt> for specified
+     * @return <tt>null</tt> if no active (connected) session exist; <br>
+     *         Already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
-    synchronized Session getConnectionSession(final ExecutionEnvironment env) {
+
+    /* package-visible */
+    Session getSession(final ExecutionEnvironment env) {
         final String sessionKey = env.toString();
-        Session session = null;
 
-        if (sessions == null) {
-            sessions = Collections.synchronizedMap(
-                    new HashMap<String, Session>());
-        }
+        synchronized (lock) {
+            Session session = sessions.get(sessionKey);
 
-        if (sessions.containsKey(sessionKey)) {
-            session = sessions.get(sessionKey);
-            if (session.isConnected()) {
-                return session;
+            if (session != null && !session.isConnected()) {
+                sessions.remove(sessionKey);
+                return null;
             }
+
+            return session;
         }
+    }
 
-        final String user = env.getUser();
-        final String host = env.getHost();
-        final int sshPort = env.getSSHPort();
+    /**
+     *
+     * @param env <tt>ExecutionEnvironment</tt> to connect to.
+     * @param password password to be used for identification
+     * @param storePassword indicates whether to store the password (in
+     * encrypted form) for further refference or not
+     * @return <tt>true</tt> if this call to the function has initiated a new
+     * connection to the <tt>env</tt>
+     * @throws java.lang.Throwable
+     */
+    public boolean connectTo(
+            final ExecutionEnvironment env,
+            char[] password,
+            boolean storePassword) throws IOException, CancellationException {
 
-        final Callable<Session> connectionTask = new Callable<Session>() {
+        synchronized (lock) {
+            if (getSession(env) != null) {
+                // just return if already connected ...
+                return false;
+            }
 
-            public Session call() throws Exception {
-                Session result = null;
-                try {
-                    if (sessions.containsKey(sessionKey)) {
-                        result = sessions.get(sessionKey);
-                    } else {
+            if (password != null) {
+                PasswordManager.getInstance().put(env, password, storePassword);
+            }
+
+            return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
+        }
+    }
+
+    /**
+     *
+     * @param env
+     * @return  true only if call to this method initiated new connection...
+     * @throws java.lang.Throwable
+     */
+    public boolean connectTo(
+            final ExecutionEnvironment env) throws IOException, CancellationException {
+        synchronized (lock) {
+            boolean result = false;
+
+            try {
+                result = connectTo(env, PasswordManager.getInstance().get(env), false);
+            } catch (ConnectException ex) {
+                if (ex.getMessage().equals("Auth fail")) { // NOI18N
+                    // Try with user-interaction
+                    result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                } else {
+                    throw ex;
+                }
+            }
+
+            return result;
+        }
+    }
+
+    private boolean doConnect(
+            final ExecutionEnvironment env,
+            final UserInfo userInfo) throws IOException, CancellationException {
+        synchronized (lock) {
+            Callable<Session> connectRunnable = new Callable<Session>() {
+
+                public Session call() throws Exception {
+                    final String user = env.getUser();
+                    final String host = env.getHost();
+                    final int sshPort = env.getSSHPort();
+
+                    try {
                         synchronized (jsch) {
-                            result = jsch.getSession(user, host, sshPort);
-                            result.setUserInfo(
-                                    RemoteUserInfo.getUserInfo(env, true));
+                            Session session = jsch.getSession(user, host, sshPort);
+                            session.setUserInfo(userInfo);
+                            session.connect();
+                            return session;
                         }
+                    } catch (JSchException e) {
+                        if (e.getMessage().equals("Auth fail")) { // NOI18N
+                            throw new ConnectException(e.getMessage());
+                        } else if (e.getMessage().equals("Auth cancel")) { // NOI18N
+                            throw new CancellationException(e.getMessage());
+                        }
+
+                        Throwable cause = e.getCause();
+                        
+                        if (cause != null && cause instanceof IOException) {
+                            throw (IOException)cause;
+                        }
+
+                        // Should not happen
+                        throw new IOException(e.getMessage());
+                    }
+                }
+            };
+
+            final Future<Session> connectResult = NativeTaskExecutorService.submit(
+                    connectRunnable, "Connect to " + env.toString()); // NOI18N
+
+            final Cancellable cancelConnection = new Cancellable() {
+
+                public boolean cancel() {
+                    return connectResult.cancel(true);
+                }
+            };
+
+            ProgressHandle ph = ProgressHandleFactory.createHandle(
+                    loc("ConnectionManager.Connecting", // NOI18N
+                    env.toString()), cancelConnection);
+
+            ph.start();
+
+            Session session = null;
+
+            try {
+                session = connectResult.get();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    if (cause instanceof IOException) {
+                        throw (IOException)cause;
                     }
 
-                    result.connect();
-                } catch (JSchException e) {
-                    NotifyDescriptor nd =
-                            new NotifyDescriptor.Message(e.getMessage());
-                    DialogDisplayer.getDefault().notify(nd);
-                    result = null;
+                    if (cause instanceof CancellationException) {
+                        throw (CancellationException)cause;
+                    }
                 }
-                return result;
+                // Should not happen
+                throw new IOException(ex.getMessage());
+            } finally {
+                ph.finish();
             }
-        };
 
-        final Callable<String> c = new Callable<String>() {
-
-            public String call() throws Exception {
-                throw new UnsupportedOperationException("Not supported yet.");
+            if (session != null) {
+                sessions.put(env.toString(), session);
+//            HostInfoUtils.updateHostInfo(env);
+                log.info("New connection established: " + env.toString()); // NOI18N
+                return true;
             }
-        };
 
-        NativeTaskExecutorService.submit(c, "a");
-
-
-        final Future<Session> futureSession =
-                NativeTaskExecutorService.submit(connectionTask, 
-                "Connect to " + sessionKey); // NOI18N
-
-        final Cancellable cancelConnection = new Cancellable() {
-
-            public boolean cancel() {
-                return futureSession.cancel(true);
-            }
-        };
-
-        ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("ConnectionManager.Connecting", // NOI18N
-                env.toString()), cancelConnection);
-
-        ph.start();
-
-        try {
-            session = futureSession.get();
-        } catch (CancellationException ex) {
-            // User canceled connection...
-            session = null;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            ph.finish();
+            return false;
         }
-
-        if (session != null) {
-            sessions.put(sessionKey, session);
-            HostInfoUtils.updateHostInfo(env);
-        }
-
-        return session;
     }
 
     /**
@@ -223,19 +290,17 @@ public final class ConnectionManager {
      * localhost environment. false otherwise.
      */
     public boolean isConnectedTo(ExecutionEnvironment execEnv) {
-        if (execEnv.isLocal()) {
-            return true;
-        }
+        synchronized (lock) {
+            if (execEnv.isLocal()) {
+                return true;
+            }
 
-        if (sessions == null) {
+            if (sessions.containsKey(execEnv.toString())) {
+                return sessions.get(execEnv.toString()).isConnected();
+            }
+
             return false;
         }
-
-        if (sessions.containsKey(execEnv.toString())) {
-            return sessions.get(execEnv.toString()).isConnected();
-        }
-
-        return false;
     }
 
     /**
@@ -250,110 +315,52 @@ public final class ConnectionManager {
      * @return action to be used to connect to the <tt>execEnv</tt>.
      * @see Action
      */
-    public synchronized AsynchronousAction getConnectToAction(
+    public AsynchronousAction getConnectToAction(
             final ExecutionEnvironment execEnv, final Runnable onConnect) {
-        if (actionsProvider == null) {
-            actionsProvider = new ActionsProvider();
+
+        return new ConnectToAction(execEnv, onConnect);
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(ConnectionManager.class, key, params);
+    }
+
+    /**
+     * onConnect will be invoked ONLY if this action has initiated a new
+     * connection.
+     */
+    private static class ConnectToAction
+            extends AbstractAction implements AsynchronousAction {
+
+        private final static ConnectionManager cm = ConnectionManager.getInstance();
+        private final ExecutionEnvironment env;
+        private final Runnable onConnect;
+
+        private ConnectToAction(ExecutionEnvironment execEnv, Runnable onConnect) {
+            this.env = execEnv;
+            this.onConnect = onConnect;
         }
 
-        ObservableAction<Boolean> result =
-                actionsProvider.getConnectAction(execEnv);
+        public void actionPerformed(ActionEvent e) {
+            NativeTaskExecutorService.submit(new Runnable() {
 
-        if (onConnect != null) {
-            /*
-             * TODO: FIXME. This is not correct (though it works)...
-             * The problem is that we get the same connect action for
-             * the same execEnv for everyone who requested this action,
-             * but on *every* request we add additional listener.
-             *
-             * So, speaking about our implementation, we will invoke
-             * revalidateSessions() as many times as many tools we have... But,
-             * because we do not do validation if it is already in progress, in
-             * 'works'...
-             * 
-             * Still need to be fixed.
-             */
-
-            result.addObservableActionListener(new ObservableActionListener<Boolean>() {
-
-                public void actionStarted(Action source) {
-                }
-
-                public void actionCompleted(Action source, Boolean result) {
-                    if (result != null && result.booleanValue() == true) {
-                        onConnect.run();
+                public void run() {
+                    try {
+                        invoke();
+                    } catch (Throwable ex) {
+                        log.warning(ex.getMessage());
                     }
                 }
-            });
+            }, "Connecting to " + env.toString()); // NOI18N
         }
 
-        return result;
-    }
+        public void invoke() throws IOException, CancellationException {
+            boolean newConnectionEstablished = cm.connectTo(env);
 
-    private static class ActionsProvider
-            implements ObservableActionListener<Boolean> {
-        // Map that contains currently running "ConnectTo" actions.
-        // In case of subsequent requests for connection - the same task will
-        // be returned.
-
-        private final Map<ExecutionEnvironment, ConnectAction> hash =
-                Collections.synchronizedMap(
-                new HashMap<ExecutionEnvironment, ConnectAction>());
-
-        private ObservableAction<Boolean> getConnectAction(
-                ExecutionEnvironment execEnv) {
-            ConnectAction ca = null;
-
-            synchronized (hash) {
-                if (hash.containsKey(execEnv)) {
-                    ca = hash.get(execEnv);
-                } else {
-                    ca = new ConnectAction(execEnv);
-                    ca.addObservableActionListener(this);
-                    hash.put(execEnv, ca);
-                }
-
-                return ca;
+            if (newConnectionEstablished) {
+                onConnect.run();
             }
         }
-
-        public void actionCompleted(Action source, Boolean result) {
-            ConnectAction ca = (ConnectAction) source;
-            hash.remove(ca.getExecEnv());
-        }
-
-        public void actionStarted(Action source) {
-        }
-
-        private static class ConnectAction extends ObservableAction<Boolean> {
-
-            private final ExecutionEnvironment execEnv;
-
-            public ConnectAction(final ExecutionEnvironment execEnv) {
-                super(loc("ConnectionManager.ConnectToAction.text", // NOI18N
-                        execEnv.toString()));
-                this.execEnv = execEnv;
-            }
-
-            private ExecutionEnvironment getExecEnv() {
-                return execEnv;
-            }
-
-            @Override
-            public Boolean performAction() {
-                ConnectionManager cm = ConnectionManager.getInstance();
-
-                if (cm.isConnectedTo(execEnv)) {
-                    return true;
-                }
-
-                return cm.getConnectionSession(execEnv) != null;
-            }
-        }
-    }
-
-    private static String loc(String key, Object... params) {
-        return NbBundle.getMessage(ConnectionManager.class, key, params);
     }
 
     private static final class ConnectionManagerAccessorImpl
@@ -361,7 +368,7 @@ public final class ConnectionManager {
 
         @Override
         public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env) {
-            return mgr.getConnectionSession(env);
+            return mgr.getSession(env);
         }
     }
 }

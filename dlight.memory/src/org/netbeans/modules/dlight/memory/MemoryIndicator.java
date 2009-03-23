@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -46,41 +48,39 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 
 /**
- * Mmory usage indicator
+ * Memory usage indicator
  * @author Vladimir Kvashin
  */
 public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     private final MemoryIndicatorPanel panel;
-    //private final String colName;
+    private final Set<String> acceptedColumnNames;
 
     public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
         super(configuration);
         this.panel = new MemoryIndicatorPanel();
-      //  this.colName = configuration.getColName();
+        this.acceptedColumnNames = new HashSet<String>();
+        for (Column column : getMetadataColumns()) {
+            acceptedColumnNames.add(column.getColumnName());
+        }
     }
 
     @Override
     public JComponent getComponent() {
-        return panel;
+        return panel.getPanel();
     }
 
     public void reset() {
     }
 
-    public void updated(List<DataRow> data) {
-        List<Column> columns = getMetadataColumns();
-        for (DataRow lastRow : data) {
-            List<String> colNames = lastRow.getColumnNames();
-            for (Column c: columns){
-                if (colNames.contains(c.getColumnName())){
-                    String value = lastRow.getStringValue(c.getColumnName()); //TODO: change to Long
-                    if (value != null){
-                        panel.setValue(Long.parseLong(value));
-                    }
+    public void updated(List<DataRow> rows) {
+        for (DataRow row : rows) {
+            for (String column : row.getColumnNames()) {
+                if (acceptedColumnNames.contains(column)) {
+                    String value = row.getStringValue(column); //TODO: change to Long
+                    panel.setValue(Long.parseLong(value));
                 }
             }
-
         }
     }
 }

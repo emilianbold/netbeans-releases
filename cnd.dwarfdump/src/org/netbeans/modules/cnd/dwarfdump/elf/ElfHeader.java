@@ -94,10 +94,10 @@ public class ElfHeader {
     }
     
     public int getNumberOfSectionHeaders() {
-        return e_shnum;
+        return e_shnum & 0xFFFF;
     }
     
-    public short getELFStringTableSectionIndex() {
-        return e_shstrndx;
+    public int getELFStringTableSectionIndex() {
+        return e_shstrndx & 0xFFFF;
     }
 }

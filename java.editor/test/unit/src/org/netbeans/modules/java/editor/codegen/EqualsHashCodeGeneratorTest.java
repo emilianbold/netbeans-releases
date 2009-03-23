@@ -290,10 +290,10 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "        if (this.b != other.b) {\n" +
                         "            return false;\n" +
                         "        }\n" +
-                        "        if (Arrays.equals(this.x, other.x)) {\n" +
+                        "        if (!Arrays.equals(this.x, other.x)) {\n" +
                         "            return false;\n" +
                         "        }\n" +
-                        "        if (Arrays.deepEquals(this.y, other.y)) {\n" +
+                        "        if (!Arrays.deepEquals(this.y, other.y)) {\n" +
                         "            return false;\n" +
                         "        }" +
                         "        if ((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {\n" +

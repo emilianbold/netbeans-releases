@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -73,7 +72,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -129,6 +127,7 @@ public final class DtraceDataCollector
     private boolean isSlave;
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
+    private IndicatorDataProvideHandler handler;
 
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
@@ -175,11 +174,13 @@ public final class DtraceDataCollector
                 cfgInfo.getIndicatorFiringFactor(configuration);
     }
 
+    void setIndicatorDataProviderHanlder(IndicatorDataProvideHandler handler) {
+        this.handler = handler;
+    }
+
     public String getName() {
         return "DTrace";//NOI18N
     }
-
-
 
     void setProcessLineCallback(ProcessLineCallback callback) {
         this.callback = callback;
@@ -243,7 +244,7 @@ public final class DtraceDataCollector
             scriptPath = "/tmp/" + script.getName(); // NOI18N
 
             Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        localScriptPath, execEnv, scriptPath, 777, null);
+                    localScriptPath, execEnv, scriptPath, 777, null);
             try {
                 copyResult.get();
             } catch (InterruptedException ex) {
@@ -266,7 +267,7 @@ public final class DtraceDataCollector
         return dataTablesMetadata;
     }
 
-    /** 
+    /**
      * override this if you need to add extra parameters to the DTrace script
      */
     protected String getCollectorTaskExtraParams() {
@@ -289,7 +290,13 @@ public final class DtraceDataCollector
 
         synchronized (indicatorDataBuffer) {
             if (!indicatorDataBuffer.isEmpty()) {
-                notifyIndicators(indicatorDataBuffer);
+                if (isSlave) {
+                    if (handler != null) {
+                        handler.notify(indicatorDataBuffer);
+                    }
+                } else {
+                    notifyIndicators(indicatorDataBuffer);
+                }
                 indicatorDataBuffer.clear();
             }
         }
@@ -345,6 +352,12 @@ public final class DtraceDataCollector
         // /usr/sbin/dtrace exists...
         // check for permissions ...
         SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
+
+        if (sps == null) {
+            return ValidationStatus.invalidStatus(
+                    "No privileges support for " + execEnv.toString()); // NOI18N
+        }
+
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
 
         if (!status) {
@@ -363,8 +376,8 @@ public final class DtraceDataCollector
                 }
             };
 
-        AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
-                requiredPrivilegesList, onPrivilegesGranted);
+            AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
+                    requiredPrivilegesList, onPrivilegesGranted);
 
             result = result.merge(ValidationStatus.unknownStatus(
                     loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
@@ -374,26 +387,18 @@ public final class DtraceDataCollector
         return result;
     }
 
-    public Future<ValidationStatus> validate(final DLightTarget target) {
-        Callable<ValidationStatus> valiationTask =
-                new Callable<ValidationStatus>() {
+    public ValidationStatus validate(final DLightTarget target) {
+        if (validationStatus.isValid()) {
+            return validationStatus;
+        }
 
-                    public ValidationStatus call() throws Exception {
-                        if (validationStatus.isValid()) {
-                            return validationStatus;
-                        }
+        ValidationStatus oldStatus = validationStatus;
+        ValidationStatus newStatus = doValidation(target);
 
-                        ValidationStatus oldStatus = validationStatus;
-                        ValidationStatus newStatus = doValidation(target);
+        notifyStatusChanged(oldStatus, newStatus);
 
-                        notifyStatusChanged(oldStatus, newStatus);
-
-                        validationStatus = newStatus;
-                        return newStatus;
-                    }
-                };
-
-        return DLightExecutorService.submit(valiationTask, "Validation of DTraceDataCollector " + configuration.getID()); // NOI18N
+        validationStatus = newStatus;
+        return newStatus;
     }
 
     public void invalidate() {
@@ -495,8 +500,14 @@ public final class DtraceDataCollector
                 synchronized (indicatorDataBuffer) {
                     indicatorDataBuffer.add(dataRow);
                     if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
-                        notifyIndicators(indicatorDataBuffer);
-                        indicatorDataBuffer.clear();
+                        if (isSlave) {
+                            if (handler != null) {
+                                handler.notify(indicatorDataBuffer);
+                            }
+                        } else {
+                            notifyIndicators(indicatorDataBuffer);
+                            indicatorDataBuffer.clear();
+                        }
                     }
                 }
             }
@@ -528,5 +539,10 @@ public final class DtraceDataCollector
         public InputProcessor newInputProcessor(InputProcessor p) {
             return InputProcessors.copying(new OutputStreamWriter(System.err));
         }
+    }
+
+    interface IndicatorDataProvideHandler {
+
+        void notify(List<DataRow> list);
     }
 }

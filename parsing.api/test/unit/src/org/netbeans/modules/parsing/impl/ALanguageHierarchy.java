@@ -20,7 +20,7 @@ class ALanguageHierarchy extends LanguageHierarchy<ALanguageHierarchy.ATokenId> 
     }
 
     @Override
-    protected Lexer createLexer (LexerRestartInfo info) {
+    protected Lexer<ATokenId> createLexer (LexerRestartInfo<ATokenId> info) {
         return new ALexer (info);
     }
 
@@ -55,9 +55,9 @@ class ALanguageHierarchy extends LanguageHierarchy<ALanguageHierarchy.ATokenId> 
 
     private class ALexer implements Lexer<ATokenId> {
 
-        private LexerRestartInfo info;
+        private LexerRestartInfo<ATokenId> info;
 
-        public ALexer (LexerRestartInfo info) {
+        public ALexer (LexerRestartInfo<ATokenId> info) {
             super ();
             this.info = info;
         }

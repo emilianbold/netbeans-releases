@@ -140,7 +140,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
                                                                                                     // NetBeans suite
                                                                                                     // ask first subproject for its JavaPlatform
 
-            SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
             Set subProjects;
 
             if (ProfilerLogger.isDebug()) {

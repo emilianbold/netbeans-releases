@@ -49,6 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -95,7 +96,7 @@ public class ParserManagerTest extends NbTestCase {
         assertTrue(called[0]);
         assertEquals(1, FooParserFactory.createParserCount);
         assertEquals(1, FooParser.parseCount);
-        assertEquals(1, FooParser.getResultCount);        
+        assertEquals(1, FooParser.getResultCount);
         called[0] = false;
         ParserManager.parse("text/foo", new UserTask() {
             @Override
@@ -124,7 +125,12 @@ public class ParserManagerTest extends NbTestCase {
 
     }
 
+    @RandomlyFails
     public void testParseWhenScanFinished () throws Exception {
+        RUEmulator emulator = new RUEmulator();
+        Utilities.setIndexingStatus(emulator);
+        emulator.setScanningInProgress(true);
+
         FileUtil.setMIMEType ("foo", "text/foo");
         final FileObject workDir = FileUtil.toFileObject (getWorkDir ());
         final FileObject testFile = FileUtil.createData (workDir, "test.foo");
@@ -144,9 +150,6 @@ public class ParserManagerTest extends NbTestCase {
         final Future<Void> future2 = ParserManager.parseWhenScanFinished(sources, tt2);
         assertEquals(0, tt2.called);
         assertFalse (future2.isDone());
-
-        RUEmulator emulator = new RUEmulator();
-        Utilities.setIndexingStatus(emulator);
 
         final CountDownLatch countDown = new CountDownLatch(1);
         final TestTask tt3 = new TestTask(countDown);
@@ -190,18 +193,19 @@ public class ParserManagerTest extends NbTestCase {
 
     private static class RUEmulator extends ParserResultTask implements Utilities.IndexingStatus {
 
-        private volatile boolean finished = true;
+        private volatile boolean scanning = false;
 
+        public void setScanningInProgress(boolean scanning) {
+            this.scanning = scanning;
+        }
+        
         public void scan () {
+            scanning = true;
             Utilities.scheduleSpecialTask(this);
         }
 
-        public void reset () {
-            finished = true;
-        }
-
         public boolean isScanInProgress() {
-            return finished;
+            return scanning;
         }
 
         @Override
@@ -220,7 +224,13 @@ public class ParserManagerTest extends NbTestCase {
 
         @Override
         public void run(Result result, SchedulerEvent event) {
-            finished = false;
+            try {
+                // just to simulate that indexing takes some time
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+            scanning = false;
         }
 
     }
@@ -256,7 +266,7 @@ public class ParserManagerTest extends NbTestCase {
         public void removeChangeListener (ChangeListener changeListener) {
         }
 
-        public String toString () {
+        public @Override String toString () {
             return "FooParser";
         }
     }

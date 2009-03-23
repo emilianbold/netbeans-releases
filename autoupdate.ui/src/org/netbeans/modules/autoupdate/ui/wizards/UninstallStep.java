@@ -331,7 +331,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                         }
                     }
                 };
-                InstallStep.notifyRestartNeeded (onMouseClick, getBundle ("UninstallSupport_RestartNeeded"), false);
+                InstallStep.notifyRestartNeeded (onMouseClick, getBundle ("UninstallSupport_RestartNeeded"));
                 return ;
             }
         } else {

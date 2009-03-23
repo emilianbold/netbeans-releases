@@ -62,6 +62,7 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,6 +78,9 @@ public class ProjectPanel extends javax.swing.JPanel {
     public static final String PROJECT_MAIN = "setAsMain"; // NOI18N
     public static final String PROJECT_CREATE_MIDLET = "CreateMidlet"; // NOI18N
     public static final String PROJECT_COPY_SOURCES = "CopySources"; //NOI18N
+
+    /** path length limitation for Windows OS */
+    private static final int WINDOWS_MAX_PATH_LENGTH = 255;
     
     /** Creates new form ProjectPanel */
     public ProjectPanel(boolean showCreateMIDlet, boolean showSetAsMain, boolean showCopySources) {
@@ -457,7 +461,12 @@ public class ProjectPanel extends javax.swing.JPanel {
         }
         
         public boolean isValid() {
-            if (component.getProjectName().length() == 0) {
+            String projectName = component.getProjectName();
+            if (projectName.length() == 0
+                    || projectName.indexOf('/') >= 0 //NOI18N
+                    || projectName.indexOf('\\') >= 0 //NOI18N
+                    || projectName.indexOf(':') >= 0 //NOI18N
+                    || projectName.indexOf("\"") >= 0) {      //NOI18N
                 showError(NbBundle.getMessage(ProjectPanel.class, "ERR_Project_InvalidProjectsName")); // NOI18N
                 return false;
             }
@@ -490,10 +499,14 @@ public class ProjectPanel extends javax.swing.JPanel {
                 showError(NbBundle.getMessage(ProjectPanel.class, "ERR_Project_ProjectAlreadyExists")); // NOI18N
                 return false;
             }
-            if (!isLatin1(component.getProjectName())) //NOI18N
+            if (!isLatin1(component.getProjectName())) {
                 showError(NbBundle.getMessage(ProjectPanel.class, "WARN_Project_InvalidCharacters")); // NOI18N
-            else
+            } else if (Utilities.isWindows()
+                    && component.getCreated().length() > WINDOWS_MAX_PATH_LENGTH) {
+                showError(NbBundle.getMessage(ProjectPanel.class, "WARN_Project_PathLengthExceeding")); // NOI18N
+            } else {
                 showError(null);
+            }
             return true;
         }
         
@@ -525,10 +538,21 @@ public class ProjectPanel extends javax.swing.JPanel {
         }
         
         void checkValid() {
-            component.setCreated(component.getProjectsHome() + File.separator + component.getProjectName());
+            updateCreatedFolderPath();
             if (isValid() != valid) {
                 valid ^= true;
                 fireStateChange();
+            }
+        }
+
+        public void updateCreatedFolderPath(){
+            String projectName = component.getProjectName();
+            String projectFolder = component.getProjectsHome();
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            if (projFolderPath.endsWith(File.separator)) {
+                component.setCreated(projFolderPath + projectName);
+            } else {
+                component.setCreated(projFolderPath + File.separator + projectName);
             }
         }
         

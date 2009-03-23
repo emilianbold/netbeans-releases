@@ -61,7 +61,7 @@ public class RemoteFileTestCase extends BaseTestCase {
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             final String tmpFile = getTempName();
             assert cmd.run(getExecutionEnvironment(), "rm "+ tmpFile + "; touch " + tmpFile, null) == 0;
-            File remoteFile = RemoteFile.create(getHKey(), tmpFile);
+            File remoteFile = RemoteFile.create(getExecutionEnvironment(), tmpFile);
             assert remoteFile instanceof RemoteFile;
             assert remoteFile.exists();
             assert remoteFile.isFile();
@@ -80,7 +80,7 @@ public class RemoteFileTestCase extends BaseTestCase {
             final String tempDir = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             assert cmd.run(getExecutionEnvironment(), String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3; ", tempDir), null) == 0;
-            File remoteFile = RemoteFile.create(getHKey(), tempDir);
+            File remoteFile = RemoteFile.create(getExecutionEnvironment(), tempDir);
             assert remoteFile instanceof RemoteFile;
             assert !remoteFile.isFile();
             assert remoteFile.isDirectory();
@@ -103,7 +103,7 @@ public class RemoteFileTestCase extends BaseTestCase {
             final String tempFile = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             assert cmd.run(getExecutionEnvironment(), String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile), null) == 0;
-            BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getHKey(), tempFile) ));
+            BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getExecutionEnvironment(), tempFile) ));
             int i = 1;
             while (true) {
                 String line = in.readLine();

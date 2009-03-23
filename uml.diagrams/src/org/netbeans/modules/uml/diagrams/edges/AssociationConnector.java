@@ -462,7 +462,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
 
         edgeWriter.setSrcAnchorID(PersistenceUtil.findAnchor(this.getSourceAnchor()));
         edgeWriter.setTargetAnchorID(PersistenceUtil.findAnchor(this.getTargetAnchor()));
-
+        setEdgeWriterValues(edgeWriter, this);
         //begin the association edge
         edgeWriter.beginGraphEdge();
         // now get all the children of the widget

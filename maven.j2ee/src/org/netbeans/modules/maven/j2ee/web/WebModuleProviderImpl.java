@@ -40,7 +40,6 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import java.util.ArrayList;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -76,12 +75,9 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     
     private String serverInstanceID;
 
-    static final String ATTRIBUTE_CONTEXT_PATH = "WebappContextPath"; //NOI18N
-    private NbMavenProject mavenproject;
     
     public WebModuleProviderImpl(Project proj) {
         project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
         implementation = new WebModuleImpl(project, this);
         moduleChange = new ModuleChangeReporterImpl();
     }

@@ -179,7 +179,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 try {
                     is = new GZIPInputStream(is);
                 } catch (IOException e) {
-                    ERR.log (Level.SEVERE,
+                    ERR.log (Level.INFO,
                             "The file at " + toParse +
                             ", corresponding to the catalog at " + p.getUpdateCenterURL() +
                             ", does not look like the gzip file, trying to parse it as the pure xml" , e);

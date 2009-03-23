@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -50,6 +51,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
     private final static String[] constText = new String[APTTokenTypes.LAST_LEXER_FAKE_RULE];
+    private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_LEXER_FAKE_RULE];
     
     protected int type = INVALID_TYPE;
     protected int offset;
@@ -129,6 +131,11 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         
         // more
         constText[DEFINED]              ="defined"; // NOI18N
+
+        for (int i = 0; i < constText.length; i++) {
+            String str = constText[i];
+            constTextID[i] = CharSequenceKey.create(str);
+        }
     }
     
     @Override
@@ -152,8 +159,13 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
     }
 
     @Override
+    public CharSequence getTextID() {
+        return constTextID[getType()];
+    }
+
+    @Override
     public int getEndOffset() {
-        return getOffset() + getText().length();
+        return getOffset() + getTextID().length();
         //return endOffset;
     }
 
@@ -164,7 +176,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public int getEndColumn() {
-        return getColumn() + getText().length();
+        return getColumn() + getTextID().length();
     }
 
     @Override

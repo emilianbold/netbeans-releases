@@ -56,10 +56,10 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 
     protected final int fileNameIndex;
 
-    protected ProjectFileNameBasedKey(String prjName, String fileName) {
+    protected ProjectFileNameBasedKey(String prjName, CharSequence fileName) {
         super(prjName);
         assert fileName != null;
-        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
+        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName.toString());
     }
 
     protected ProjectFileNameBasedKey(FileImpl file) {
@@ -99,6 +99,10 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
         ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) obj;
 
         return this.fileNameIndex == other.fileNameIndex;
+    }
+
+    /*package-local*/int getProjectFileIndex(){
+        return fileNameIndex;
     }
 
     protected String getFileName() {

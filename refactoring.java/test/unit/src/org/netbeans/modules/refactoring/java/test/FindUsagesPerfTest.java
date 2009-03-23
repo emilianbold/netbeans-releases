@@ -73,11 +73,11 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
         // logging is used to obtain data about consumed time
         Logger timer = Logger.getLogger("TIMER.RefactoringSession");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
@@ -125,7 +125,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                     sb.append("Symbol: '").append(element.resolveElement(controller).getSimpleName()).append("'");
                     sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
                     try {
-                        long prepare = handler.get("refactoring.prepare");
+                        long prepare = getHandler().get("refactoring.prepare");
                         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
                         d.name = "refactoring.prepare"+" ("+element.resolveElement(controller).getSimpleName()+", usages:"+elems.size()+")";
                         d.value = prepare;

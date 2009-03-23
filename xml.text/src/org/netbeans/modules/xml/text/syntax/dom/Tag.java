@@ -131,8 +131,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     
     public String getAttribute(String name) {
         Attr attribute = getAttributeNode(name);
-        if (attribute == null) return null;
-        return attribute.getValue();
+        return attribute != null ? attribute.getValue() : "";
     }
     
     public final void setAttribute(String name, String value) {

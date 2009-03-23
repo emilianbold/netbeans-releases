@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -77,28 +78,32 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         showCustomizer(null);
     }
 
-    public void showCustomizer(String preselectedCategory) {
-        Dialog dialog = PROJECT_2_DIALOG.get(project);
-        if (dialog != null) {
-            dialog.setVisible(true);
-            return;
-        }
-        IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
-                project.getRefHelper(), project.getHelper());
-        PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
-        Lookup context = Lookups.fixed(project, uiProperties);
+    public void showCustomizer(final String preselectedCategory) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                Dialog dialog = PROJECT_2_DIALOG.get(project);
+                if (dialog != null) {
+                    dialog.setVisible(true);
+                    return;
+                }
+                IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                        project.getRefHelper(), project.getHelper());
+                PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
+                Lookup context = Lookups.fixed(project, uiProperties);
 
-        OptionListener optionListener = new OptionListener(project);
-        StoreListener storeListener = new StoreListener(uiProperties);
-        dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
-                optionListener, storeListener, null);
-        dialog.addWindowListener(optionListener);
-        dialog.setTitle(MessageFormat.format(
-                NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Customizer_Title"),
-                ProjectUtils.getInformation(project).getDisplayName()));
+                OptionListener optionListener = new OptionListener(project);
+                StoreListener storeListener = new StoreListener(uiProperties);
+                dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
+                        optionListener, storeListener, null);
+                dialog.addWindowListener(optionListener);
+                dialog.setTitle(MessageFormat.format(
+                        NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Customizer_Title"),
+                        ProjectUtils.getInformation(project).getDisplayName()));
 
-        PROJECT_2_DIALOG.put(project, dialog);
-        dialog.setVisible(true);
+                PROJECT_2_DIALOG.put(project, dialog);
+                dialog.setVisible(true);
+            }
+        });
     }
 
     private class StoreListener implements ActionListener {

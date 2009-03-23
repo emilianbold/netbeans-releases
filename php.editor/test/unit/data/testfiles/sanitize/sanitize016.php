@@ -15,7 +15,7 @@ class test {
 
     }
 
-    public function name(){^
+    /*marker*/public function name(){
 
 class hello {
     function __construct() {

@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;

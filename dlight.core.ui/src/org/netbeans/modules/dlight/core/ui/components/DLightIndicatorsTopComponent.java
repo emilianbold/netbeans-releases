@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,20 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.core.ui.components;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.Serializable;
+import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.util.ImageUtilities;
@@ -60,127 +59,125 @@ import org.openide.windows.WindowManager;
  */
 final class DLightIndicatorsTopComponent extends TopComponent {
 
-  private static DLightIndicatorsTopComponent instance;
-  private DLightSession session;
-  /** path to the icon used by the component and its open action */
-  static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png";
-  private static final String PREFERRED_ID = "DLightIndicatorsTopComponent";
-  private boolean isInitialized = false;
+    private static DLightIndicatorsTopComponent instance;
+    private DLightSession session;
+    /** path to the icon used by the component and its open action */
+    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png";
+    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent";
 
-  DLightIndicatorsTopComponent() {
-    setSession(null);
-    init();
-  }
-
-  @Override
-  public void open() {
-    if (!isInitialized) {
-      init();
-    }
-    super.open();
-  }
-
-  private void init() {
-    if (isInitialized){
-        return;
-    }
-    setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
-    setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
-    setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-    isInitialized = true;
-  }
-
-  public void setSession(DLightSession session) {
-    this.session = session;
-    removeAll();
-    setLayout(new BorderLayout());
-    if (session != null) {
-//            JPanel indicatorsPane = new JPanel(new RowLayoutManager());
-      JPanel indicatorsPane = new JPanel();
-      indicatorsPane.setLayout(new GridBagLayout());
-      GridBagConstraints c = new GridBagConstraints();
-      c.gridx = 0;
-      c.fill = GridBagConstraints.NONE;
-      c.anchor = GridBagConstraints.WEST;
-      c.insets = new Insets(6, 6, 6, 6);
-      int row = 0;
-      for (Indicator indicator : session.getIndicators()) {
-        JComponent indicatorComponent = indicator.getComponent();
-        c.gridy = row++;
-        indicatorsPane.add(indicatorComponent, c);
-      }
-      add(indicatorsPane, BorderLayout.NORTH);
-    } else {
-      add(new JLabel("<Empty>"));
+    private DLightIndicatorsTopComponent() {
+        setSession(null);
+        setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
+        //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
+//            if (WindowManager.getDefault().findMode("navigator") != null){
+//                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+//            }
+//        }
     }
 
-    repaint();
-  }
+    public void setSession(DLightSession session) {
+        this.session = session;
+        removeAll();
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        if (session != null) {
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setBorder(BorderFactory.createEmptyBorder());
+            JSplitPane prevSplit = null;
+            List<Indicator> indicators = session.getIndicators();
+            for (int i = 0; i < indicators.size(); ++i) {
+                JComponent component = indicators.get(i).getComponent();
+                if (i + 1 < indicators.size()) {
+                    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+                    splitPane.setBorder(BorderFactory.createEmptyBorder());
+                    splitPane.setContinuousLayout(true);
+                    splitPane.setDividerSize(5);
+                    splitPane.setResizeWeight(1.0 / (indicators.size() - i));
+                    splitPane.setTopComponent(component);
+                    component = splitPane;
+                }
+                if (prevSplit == null) {
+                    scrollPane.setViewportView(component);
+                } else {
+                    prevSplit.setBottomComponent(component);
+                }
+                if (component instanceof JSplitPane) {
+                    prevSplit = (JSplitPane)component;
+                }
+            }
+            add(scrollPane);
+        } else {
+            add(new JLabel("<Empty>"));
+        }
 
-  /**
-   * Gets default instance. Do not use directly: reserved for *.settings files only,
-   * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-   * To obtain the singleton instance, use {@link #findInstance}.
-   */
-  public static synchronized DLightIndicatorsTopComponent getDefault() {
-    if (instance == null) {
-      instance = new DLightIndicatorsTopComponent();
-    }
-    return instance;
-  }
-
-  /**
-   * Obtain the DLightIndicatorsTopComponent instance. Never call {@link #getDefault} directly!
-   */
-  public static synchronized DLightIndicatorsTopComponent findInstance() {
-    TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-    if (win == null) {
-      Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-          "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-      return getDefault();
-    }
-    if (win instanceof DLightIndicatorsTopComponent) {
-      return (DLightIndicatorsTopComponent) win;
-    }
-    Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-        "There seem to be multiple components with the '" + PREFERRED_ID +
-        "' ID. That is a potential source of errors and unexpected behavior.");
-    return getDefault();
-  }
-
-  @Override
-  public int getPersistenceType() {
-    return TopComponent.PERSISTENCE_NEVER;
-  }
-
-  @Override
-  public void componentOpened() {
-
-  }
-
-  @Override
-  public void componentClosed() {
-    // TODO add custom code on component closing
+        repaint();
     }
 
-  /** replaces this in object stream */
-  @Override
-  public Object writeReplace() {
-    return new ResolvableHelper();
-  }
-
-  @Override
-  protected String preferredID() {
-    return PREFERRED_ID;
-  }
-
-  static final class ResolvableHelper implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    public Object readResolve() {
-      return DLightIndicatorsTopComponent.getDefault();
+    /**
+     * Gets default instance. Do not use directly: reserved for *.settings files only,
+     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
+     * To obtain the singleton instance, use {@link #findInstance}.
+     */
+    public static synchronized DLightIndicatorsTopComponent getDefault() {
+        if (instance == null) {
+            instance = new DLightIndicatorsTopComponent();
+        }
+        return instance;
     }
-  }
+
+    /**
+     * Obtain the DLightIndicatorsTopComponent instance. Never call {@link #getDefault} directly!
+     */
+    public static synchronized DLightIndicatorsTopComponent findInstance() {
+        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+        if (win == null) {
+            Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
+                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+            return getDefault();
+        }
+        if (win instanceof DLightIndicatorsTopComponent) {
+            return (DLightIndicatorsTopComponent) win;
+        }
+        Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
+            "There seem to be multiple components with the '" + PREFERRED_ID +
+            "' ID. That is a potential source of errors and unexpected behavior.");
+        return getDefault();
+    }
+
+    @Override
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
+    @Override
+    public void componentOpened() {
+        // TODO add custom code on component opening
+    }
+
+    @Override
+    public void componentClosed() {
+        // TODO add custom code on component closing
+    }
+
+    /** replaces this in object stream */
+    @Override
+    public Object writeReplace() {
+        return new ResolvableHelper();
+    }
+
+    @Override
+    protected String preferredID() {
+        return PREFERRED_ID;
+    }
+
+    final static class ResolvableHelper implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public Object readResolve() {
+            return DLightIndicatorsTopComponent.getDefault();
+        }
+    }
 
 }

@@ -69,6 +69,12 @@ import org.openide.util.RequestProcessor;
 @NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=450)
 public class RestServicesNodeFactory implements NodeFactory {
 
+
+    @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=90)
+    public static RestServicesNodeFactory mavenproject() {
+        return new RestServicesNodeFactory();
+    }
+
     /** Creates a new instance of WebServicesNodeFactory */
     public RestServicesNodeFactory() {
     }

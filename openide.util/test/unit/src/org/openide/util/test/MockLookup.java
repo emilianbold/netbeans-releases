@@ -42,6 +42,7 @@
 package org.openide.util.test;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import static junit.framework.Assert.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -55,6 +56,7 @@ public class MockLookup extends ProxyLookup {
 
     private static MockLookup DEFAULT;
     private static boolean making = false;
+    private static volatile boolean ready;
 
     static {
         making = true;
@@ -79,7 +81,6 @@ public class MockLookup extends ProxyLookup {
         assertTrue(making);
         assertNull(DEFAULT);
         DEFAULT = this;
-        setInstances();
     }
 
     /**
@@ -88,7 +89,11 @@ public class MockLookup extends ProxyLookup {
      * and you want to ensure that any users of mock lookup will see the correct default lookup right away,
      * even if they have not yet called {@link #setLookup} or {@link #setInstances}.
      */
-    public static void init() {}
+    public static void init() {
+        if (!ready) {
+            setInstances();
+        }
+    }
 
     /**
      * Sets the global default lookup with zero or more delegate lookups.
@@ -97,6 +102,7 @@ public class MockLookup extends ProxyLookup {
      * Most of the time you should use {@link #setInstances} instead.
      */
     public static void setLookup(Lookup... lookups) {
+        ready = true;
         DEFAULT.setLookups(lookups);
     }
 
@@ -108,6 +114,22 @@ public class MockLookup extends ProxyLookup {
     public static void setInstances(Object... instances) {
         ClassLoader l = MockLookup.class.getClassLoader();
         setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
+    }
+    /**
+     * Sets the global default lookup with some fixed instances and
+     * content read from Services folder from system file system.
+     * Will also include (at a lower priority) a {@link ClassLoader},
+     * and services found from <code>META-INF/services/*</code> in the classpath.
+     */
+    public static void setLayersAndInstances(Object... instances) {
+        ClassLoader l = MockLookup.class.getClassLoader();
+        if (l != Lookup.getDefault().lookup(ClassLoader.class)) {
+            setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
+        }
+        Lookup projects = Lookups.forPath("Services");
+        Collection<?> initialize = projects.lookupAll(Object.class);
+        //System.err.println("all: " + initialize);
+        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), projects, Lookups.singleton(l));
     }
 
 }

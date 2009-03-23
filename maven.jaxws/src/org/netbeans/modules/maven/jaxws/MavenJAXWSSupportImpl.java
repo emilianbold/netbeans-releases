@@ -88,7 +88,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     public void addService(JaxWsService service) {
         services.add(service);
 
-        if (!WSUtils.isJsr109Supported(prj)) {
+        if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
 
             if (generateNonJsr109Stuff == null) {
                 FileObject ddFolder = getDeploymentDescriptorFolder();
@@ -102,7 +102,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
             if (generateNonJsr109Stuff) {
                 // modify web.xml file
                 try {
-                    WSUtils.addServiceEntriesToDD(prj, service);
+                    WSUtils.addServiceToDD(prj, service);
                 } catch (IOException ex) {
                     Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot add service elements to web.xml file", ex); //NOI18N
@@ -123,7 +123,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
 
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
-            WSUtils.addSunJaxWsEntries(ddFolder, service);
+            WSUtils.addSunJaxWsEntry(ddFolder, service);
         } else{
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
@@ -151,11 +151,11 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
                 }
             }
         }
-        if (!WSUtils.isJsr109Supported(prj)) {
+        if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
 
             // modify web.xml file
             try {
-                WSUtils.removeServiceEntriesFromDD(prj, service);
+                WSUtils.removeServiceFromDD(prj, service);
             } catch (IOException ex) {
                 Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                         "Cannot remove services from web.xml", ex); //NOI18N
@@ -175,7 +175,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     private void removeSunJaxWsEntries(JaxWsService service) throws IOException {
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
-            WSUtils.removeSunJaxWsEntries(ddFolder, service);
+            WSUtils.removeSunJaxWsEntry(ddFolder, service);
         } else{
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);

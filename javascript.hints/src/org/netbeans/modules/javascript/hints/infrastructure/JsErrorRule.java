@@ -41,10 +41,10 @@ package org.netbeans.modules.javascript.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.ErrorRule;
-import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 
 public abstract class JsErrorRule implements ErrorRule, UserConfigurableRule {
 
@@ -54,8 +54,7 @@ public abstract class JsErrorRule implements ErrorRule, UserConfigurableRule {
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public abstract void run(JsRuleContext context, Error error,
-             List<Hint> result);
+    public abstract void run(JsRuleContext context, Error error, List<Hint> result);
 
 
 //    public void run(org.netbeans.modules.gsf.spi.hints.JsRuleContext context, List<Hint> result) {

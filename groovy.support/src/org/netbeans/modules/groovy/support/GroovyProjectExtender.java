@@ -62,8 +62,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -93,7 +91,7 @@ public class GroovyProjectExtender implements GroovyFeature {
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
 
     private final Project project;
-    private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
+    //private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
     private GroovyCustomizerPanel panel;
 
     public GroovyProjectExtender(Project project) {
@@ -117,21 +115,21 @@ public class GroovyProjectExtender implements GroovyFeature {
      */
     public boolean enableGroovy() {
         boolean result = addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
-        if (result) {
-            gsfClassPath = registerGsfClassPath(project);
-        }
+//        if (result) {
+//            gsfClassPath = registerGsfClassPath(project);
+//        }
         return result;
     }
 
     public boolean disableGroovy() {
         boolean result = removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
-        if (result) {
-            unregisterGsfClassPath();
-        }
+//        if (result) {
+//            unregisterGsfClassPath();
+//        }
         return result;
     }
 
-    public void refreshBuildScript() {
+    public void refreshBuildScript(boolean checkProjectXml) {
         if (isGroovyEnabled()) {
             GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
             URL stylesheet = this.getClass().getClassLoader().getResource(GROOVY_BUILD_XSL);
@@ -151,7 +149,7 @@ public class GroovyProjectExtender implements GroovyFeature {
                     }
                 }
 
-                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, true);
+                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, checkProjectXml);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalStateException ex) {
@@ -170,38 +168,38 @@ public class GroovyProjectExtender implements GroovyFeature {
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
     }
 
-    static org.netbeans.modules.gsfpath.api.classpath.ClassPath registerGsfClassPath(Project project) {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups.length > 0) {
-            FileObject[] roots = new FileObject[groups.length];
-            for (int i = 0; i < groups.length; i++) {
-                roots[i] = groups[i].getRootFolder();
-            }
-            org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath = ClassPathSupport.createClassPath(roots);
-            GlobalPathRegistry.getDefault().register(
-                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-            return gsfClassPath;
-        }
-        return null;
-    }
+//    static org.netbeans.modules.gsfpath.api.classpath.ClassPath registerGsfClassPath(Project project) {
+//        Sources sources = ProjectUtils.getSources(project);
+//        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+//        if (groups.length > 0) {
+//            FileObject[] roots = new FileObject[groups.length];
+//            for (int i = 0; i < groups.length; i++) {
+//                roots[i] = groups[i].getRootFolder();
+//            }
+//            org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath = ClassPathSupport.createClassPath(roots);
+//            GlobalPathRegistry.getDefault().register(
+//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
+//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
+//            return gsfClassPath;
+//        }
+//        return null;
+//    }
 
-    private void unregisterGsfClassPath() {
-        if (gsfClassPath != null) {
-            GlobalPathRegistry.getDefault().unregister(
-                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-            gsfClassPath = null;
-        }
-    }
+//    private void unregisterGsfClassPath() {
+//        if (gsfClassPath != null) {
+//            GlobalPathRegistry.getDefault().unregister(
+//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
+//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
+//            gsfClassPath = null;
+//        }
+//    }
 
-    static void unregisterGsfClassPath(Project project) {
-        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-        if (extender != null) {
-            extender.unregisterGsfClassPath();
-        }
-    }
+//    static void unregisterGsfClassPath(Project project) {
+//        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
+//        if (extender != null) {
+//            extender.unregisterGsfClassPath();
+//        }
+//    }
 
     /**
      * Add groovy-all.jar on classpath

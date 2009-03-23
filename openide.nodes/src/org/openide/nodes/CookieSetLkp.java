@@ -96,7 +96,7 @@ final class CookieSetLkp extends AbstractLookup {
             int index = 0;
             while (it.hasNext()) {
                 Lookup.Item item = it.next();
-                assert item instanceof AbstractLookup.Pair;
+                assert item instanceof AbstractLookup.Pair : "Not Pair: " + item;
 
                 if (clazz.isAssignableFrom(item.getType())) {
                     if (index < instances.length) {

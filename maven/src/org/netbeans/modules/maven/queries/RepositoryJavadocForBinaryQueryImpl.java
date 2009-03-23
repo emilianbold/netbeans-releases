@@ -52,6 +52,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -90,6 +92,11 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         if (jarFO != null) {
             File jarFile = FileUtil.toFile(jarFO);
             if (jarFile != null) {
+                //hack for javaee5 jar docs which we ship with netbeans and which are not in any maven repository
+                if (jarFile.getPath().endsWith("javaee/javaee-api/5/javaee-api-5.jar")) { //NOI18N
+                    return new Javaee5Result();
+                }
+
 //                String name = jarFile.getName();
                 File parent = jarFile.getParentFile();
                 if (parent != null) {
@@ -158,5 +165,39 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         }
         
     }
+
+    private class Javaee5Result implements JavadocForBinaryQuery.Result {
+        private final List<ChangeListener> listeners;
+
+        Javaee5Result() {
+            listeners = new ArrayList<ChangeListener>();
+        }
+        public void addChangeListener(ChangeListener changeListener) {
+            synchronized (listeners) {
+                listeners.add(changeListener);
+            }
+        }
+
+        public void removeChangeListener(ChangeListener changeListener) {
+            synchronized (listeners) {
+                listeners.remove(changeListener);
+            }
+        }
+        public URL[] getRoots() {
+                try {
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                    if (j2eeDoc != null) {
+                        URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
+                        url = new URL(url + "docs/api/"); //NOI18N
+                        return new URL[]{url};
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return new URL[0];
+        }
+
+    }
+
     
 }

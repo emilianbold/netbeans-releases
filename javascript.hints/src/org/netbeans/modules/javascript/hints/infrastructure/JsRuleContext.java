@@ -47,7 +47,7 @@ import org.netbeans.modules.javascript.editing.AstPath;
  * 
  * @author Tor Norbye
  */
-public class JsRuleContext extends org.netbeans.modules.gsf.api.RuleContext {
+public class JsRuleContext extends org.netbeans.modules.csl.api.RuleContext {
     public AstPath path;
     public Node node;
     public boolean remove;

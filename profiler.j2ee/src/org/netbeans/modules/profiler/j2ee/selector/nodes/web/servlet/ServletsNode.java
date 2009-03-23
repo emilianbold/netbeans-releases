@@ -129,7 +129,9 @@ public class ServletsNode extends ContainerNode {
                     public void run(CompilationController controller)
                              throws Exception {
                         for (ServletMapping mapping : webApp.getServletMapping()) {
-                            TypeElement type = controller.getElements().getTypeElement(servlet2class.get(mapping.getServletName()));
+                            String clazz = servlet2class.get(mapping.getServletName());
+
+                            TypeElement type = clazz != null ? controller.getElements().getTypeElement(clazz) : null;
 
                             if (type != null) {
                                 servlets.add(new ServletNode(cpInfo, type, mapping.getServletName(), mapping.getUrlPattern(),

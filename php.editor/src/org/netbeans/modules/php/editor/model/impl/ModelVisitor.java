@@ -45,10 +45,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -117,13 +117,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
     private ModelBuilder modelBuilder;
-    private CompilationInfo info;
+    private ParserResult info;
 
-    public ModelVisitor(CompilationInfo info) {
+    public ModelVisitor(ParserResult info) {
         this(info, -1);
     }
 
-    public ModelVisitor(CompilationInfo info, int offset) {
+    public ModelVisitor(ParserResult info, int offset) {
         this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
         //var2TypeName = new HashMap<String, String>();
@@ -133,7 +133,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         this.info = info;
     }
 
-    public CompilationInfo getCompilationInfo() {
+    public ParserResult getCompilationInfo() {
         return this.info;
     }
 
@@ -740,7 +740,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return fileScope.getAllOccurences(declaration);
     }
 
-    public static IndexScope getIndexScope(CompilationInfo info) {
+    public static IndexScope getIndexScope(ParserResult info) {
         return new IndexScopeImpl(info);
     }
 

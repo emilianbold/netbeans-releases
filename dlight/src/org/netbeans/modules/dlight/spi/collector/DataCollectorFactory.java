@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.collector;
 
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -48,20 +47,26 @@ import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
  */
 public interface DataCollectorFactory<T extends DataCollectorConfiguration> {
 
-  /**
-   * Returns newly created instance of  {@link DataCollector} using
-   * {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration}
-   * @param configuration configuration used to create new DataColelctor for
-   * @return data colletor new instance
-   */
-  DataCollector<T> create(T configuration);
-  /**
-   * Unique id, it is used by infrastructure to compare with the
-   *  {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration#getID()}
-   *  to find the proper factory.
-   * @return unique ID, should be the same as configuration  id this factory can create Data Collector for
-   *
-   */
-  String getID();
+    /**
+     * Returns newly created instance of  {@link DataCollector} using
+     * {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration}
+     * @param configuration configuration used to create new DataColelctor for
+     * @return data colletor new instance
+     */
+    DataCollector<T> create(T configuration);
 
+    /**
+     * Unique id, it is used by infrastructure to compare with the
+     *  {@link org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration#getID()}
+     *  to find the proper factory.
+     * @return unique ID, should be the same as configuration  id this factory can create Data Collector for
+     *
+     */
+    String getID();
+
+    /**
+     * This method is invoked to notify new session will be started
+     * This can be used by the factory to reset some data
+     */
+    public void reset();
 }

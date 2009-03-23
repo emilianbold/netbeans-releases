@@ -80,9 +80,11 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return NbBundle.getBundle (WatchesNodeModel.class).
                 getString ("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof JPDAWatch) {
-            /*if (isEmptyWatch(o)) {
-                return "<html><font color=\"#808080\">&lt;Enter new watch&gt;</font></html>";
-            }*/
+            if (isEmptyWatch(o)) {
+                return "<html><font color=\"#808080\">&lt;" +
+                    NbBundle.getBundle (WatchesNodeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint") +
+                    "&gt;</font></html>";
+            }
             return ((JPDAWatch) o).getExpression ();
         }
         return super.getDisplayName (o);
@@ -122,7 +124,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
     }
     
     public boolean canRename(Object node) throws UnknownTypeException {
-        return false;//(node instanceof JPDAWatch);
+        return node instanceof JPDAWatch;
     }
 
     public boolean canCopy(Object node) throws UnknownTypeException {

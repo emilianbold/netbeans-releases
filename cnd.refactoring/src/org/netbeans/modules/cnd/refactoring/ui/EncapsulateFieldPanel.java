@@ -130,7 +130,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private static final int MOD_DEFAULT_INDEX = 2;
     private static final int MOD_PRIVATE_INDEX = 3;
 
-    private static final Class[] columnTypes = new Class[] {
+    private static final Class<?>[] columnTypes = new Class<?>[] {
         CsmField.class, java.lang.Boolean.class, AccessorInfo.class, java.lang.Boolean.class, AccessorInfo.class
     };
     
@@ -153,7 +153,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(false && EXPERIMENTAL);
+        jCheckAccess.setEnabled(EXPERIMENTAL);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboAccess.setEnabled(false && EXPERIMENTAL);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
@@ -631,9 +631,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
-        List rows = model.getDataVector();
-        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
-            List row = (List) rowIt.next();
+        List<?> rows = model.getDataVector();
+        for (Iterator<?> rowIt = rows.iterator(); rowIt.hasNext();) {
+            List<?> row = (List<?>) rowIt.next();
             String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
             String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
             if (getterName != null || setterName != null) {
@@ -737,7 +737,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
          * @return  class which is used in the column
          */
         @Override
-        public Class getColumnClass(int columnIndex) {
+        public Class<?> getColumnClass(int columnIndex) {
             return columnTypes[columnIndex];
         }
 

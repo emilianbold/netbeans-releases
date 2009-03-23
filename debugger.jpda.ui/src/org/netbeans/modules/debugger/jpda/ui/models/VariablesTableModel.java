@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -55,6 +56,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -65,6 +67,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -75,6 +78,7 @@ public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;
     private Set<ModelListener> listeners = new HashSet<ModelListener>();
+    private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
 
     public VariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -136,15 +140,30 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return ">" + e + "<";
+                    // return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
                 try {
-                    return w.getValue ();
+                        return w.getValue ();
                 } finally {
                     fireChildrenChange(row);
                 }
             } else 
             if (row instanceof Variable) {
                 try {
-                    return ((Variable) row).getValue ();
+                    if (VariablesViewButtons.isShowValuesAsString()) {
+                        if (row instanceof ObjectVariable) {
+                            ObjectVariable objVar = (ObjectVariable) row;
+                            StringBuffer buf = new StringBuffer();
+                            buf.append(getShort(objVar.getType()));
+                            buf.append(" (#");
+                            buf.append(objVar.getUniqueID());
+                            buf.append(')');
+                            return buf.toString();
+                        } else {
+                            return ((Variable) row).getValue ();
+                        }
+                    } else {
+                        return ((Variable) row).getValue ();
+                    }
                 } finally {
                     fireChildrenChange(row);
                 }
@@ -332,6 +351,6 @@ public class VariablesTableModel implements TableModel, Constants {
             p.close();
             m += " \n"+s.toString();
         }
-        return ">" + m + "<";
+        return BoldVariablesTableModelFilterFirst.toHTML(">" + m + "<", false, false, Color.RED);
     }
 }

@@ -103,6 +103,12 @@ NAMESPACE DEFINITIONS for std_2 (std_2)
     resolver_typedef_string.h  [11:1/173-24:2/499]
     resolver_typedef_string.h  [26:1/501-28:2/563]
 NAMESPACE std_2 (std_2) 
+    CLASS allocator<typename _Alloc> (std_2::allocator ) [12:5/195-13:21/241] lcurly=240 SCOPE: std_2 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT char_traits<class _CharT> (std_2::char_traits ) [15:5/251-16:24/297] lcurly=296 SCOPE: std_2 
+        BASE CLASSES:
+        MEMBERS:
     CLASS basic_string<typename _CharT,typename _Traits=char_traits<_CharT>,typename _Alloc=allocator<_CharT>> (std_2::basic_string ) [18:5/307-21:6/445] lcurly=438 SCOPE: std_2 
         BASE CLASSES:
         MEMBERS:

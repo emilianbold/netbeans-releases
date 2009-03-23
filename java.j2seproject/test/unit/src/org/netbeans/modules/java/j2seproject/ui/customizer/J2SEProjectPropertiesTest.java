@@ -51,6 +51,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 public class J2SEProjectPropertiesTest extends NbTestCase {
 
@@ -61,8 +62,9 @@ public class J2SEProjectPropertiesTest extends NbTestCase {
     private J2SEProject p;
     private J2SEProjectProperties pp;
 
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null);
         p = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));

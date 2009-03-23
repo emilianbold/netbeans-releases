@@ -47,14 +47,14 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter.LineBalance;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;

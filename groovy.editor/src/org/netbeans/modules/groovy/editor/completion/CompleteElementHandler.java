@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import java.util.Collections;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
@@ -48,13 +49,14 @@ import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,13 +67,13 @@ public final class CompleteElementHandler {
 
     private static final Logger LOG = Logger.getLogger(CompleteElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private CompleteElementHandler(CompilationInfo info) {
+    private CompleteElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static CompleteElementHandler forCompilationInfo(CompilationInfo info) {
+    public static CompleteElementHandler forCompilationInfo(ParserResult info) {
         return new CompleteElementHandler(info);
     }
 
@@ -198,13 +200,20 @@ public final class CompleteElementHandler {
 
     private ClassDefinition loadDefinition(ClassNode node) {
         // FIXME index is broken when invoked on start
-        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return new ClassDefinition(node, null);
+        }
+
+        // FIXME parsing API
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                        Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
             return new ClassDefinition(node, null);
         }
 
-        Set<IndexedClass> classes = index.getClasses(node.getName(), NameKind.EXACT_NAME, true, false, false);
+        Set<IndexedClass> classes = index.getClasses(node.getName(), QuerySupport.Kind.EXACT, true, false, false);
 
         if (!classes.isEmpty()) {
             IndexedClass indexed = classes.iterator().next();

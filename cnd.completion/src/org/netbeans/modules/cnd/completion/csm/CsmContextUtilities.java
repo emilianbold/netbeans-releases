@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -481,6 +482,12 @@ public class CsmContextUtilities {
                 List<CsmNamedElement> listByName = CsmSortUtilities.filterList(decls, strPrefix, match, caseSensitive);
                 list.addAll(listByName);
                 for (CsmDeclaration elem : decls) {
+                    if (CsmKindUtilities.isTypedef(elem)) {
+                        CsmClassifier classifier = ((CsmTypedef)elem).getType().getClassifier();
+                        if (CsmOffsetUtilities.isInObject(elem, classifier) && !CsmOffsetUtilities.sameOffsets(elem, classifier)) {
+                            elem = classifier;
+                        }
+                    }
                     if (CsmKindUtilities.isEnum(elem)) {
                         listByName = CsmSortUtilities.filterList(((CsmEnum)elem).getEnumerators(), strPrefix, match, caseSensitive);
                         list.addAll(listByName);
@@ -527,9 +534,10 @@ public class CsmContextUtilities {
         for (int i = context.size() - 1; 0 <= i; --i) {
             CsmScope scope = context.get(i).getScope();
             int offset = context.getOffset();
-            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
-                break;
-            } else if (CsmKindUtilities.isFunction(scope)
+//            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
+//                break;
+//            } else
+            if (CsmKindUtilities.isFunction(scope)
                     && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
                 return (CsmFunction)scope;
             }

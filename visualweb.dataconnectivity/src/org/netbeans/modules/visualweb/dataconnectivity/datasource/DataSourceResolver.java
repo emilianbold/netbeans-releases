@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
+import java.awt.Cursor;
 import java.io.IOException;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
@@ -80,7 +81,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -274,7 +274,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         project = currentProj;
         ModelSet.addModelSetsListener(modelingListener);
         topComponent = TopComponent.getRegistry().getActivated();
-        topComponent.setCursor(Utilities.createProgressCursor(topComponent));
+        topComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "LBL_ProgressBar"); //NOI18N
         
         try {

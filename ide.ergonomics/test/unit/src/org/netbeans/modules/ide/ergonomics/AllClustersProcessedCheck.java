@@ -41,7 +41,10 @@ package org.netbeans.modules.ide.ergonomics;
 
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 
 /**
  *
@@ -89,5 +92,11 @@ public class AllClustersProcessedCheck extends NbTestCase {
         if (sb.length() > 0) {
             fail("Cannot find some clusters:\n" + sb);
         }
+    }
+
+    public void testVerifyThatAllErgoClustersAreDisabled() {
+        CharSequence log = Log.enable("org.netbeans.modules.ide.ergonomics", Level.ALL);
+        int cnt = FeatureManager.dumpModules();
+        assertEquals("No module enabled:\n" + log, 0, cnt);
     }
 }

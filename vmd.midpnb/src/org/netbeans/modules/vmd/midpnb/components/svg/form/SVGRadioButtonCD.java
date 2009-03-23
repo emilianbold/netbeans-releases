@@ -158,7 +158,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ().
                 addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT)).
-                addSetters(MidpSetter.createSetter("setText", 
+                addSetters(MidpSetter.createSetter("setText",             // NOI18N
                         MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
                                 PROP_TEXT));
     }
@@ -171,7 +171,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID ),
+               // new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID ),
                 //delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter( 
                         SVGRadioButtonCD.PROP_BUTTON_GROUP )

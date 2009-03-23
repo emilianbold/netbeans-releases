@@ -55,7 +55,7 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
     
     public DbgpEngineProvider (ContextProvider contextProvider) {
         myContext = contextProvider;
-        myProvider = StartActionProviderImpl.getInstance();
+        myProvider = SessionManager.getInstance();
         myServices = new Object[ ] { myProvider };
     }
 
@@ -106,7 +106,7 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
     
     private ContextProvider myContext;
     
-    private StartActionProviderImpl myProvider;
+    private SessionManager myProvider;
     
     private Object[] myServices;
 

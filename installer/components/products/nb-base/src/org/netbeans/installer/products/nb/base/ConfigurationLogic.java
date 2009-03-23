@@ -92,7 +92,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File platformCluster = new File(installLocation, PLATFORM_CLUSTER);
         final File nbCluster = new File(installLocation, NB_CLUSTER);
         final File ideCluster = new File(installLocation, IDE_CLUSTER);
-        final File gsfCluster = new File(installLocation, GSF_CLUSTER);
 
         /////////////////////////////////////////////////////////////////////////////
         final File jdkHome = new File(
@@ -119,7 +118,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             NetBeansUtils.addCluster(installLocation, PLATFORM_CLUSTER);
             NetBeansUtils.addCluster(installLocation, NB_CLUSTER);
             NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
-            NetBeansUtils.addCluster(installLocation, GSF_CLUSTER);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.clusters"), // NOI18N
@@ -158,7 +156,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //    SystemUtils.removeIrrelevantFiles(platformCluster);
         //    SystemUtils.removeIrrelevantFiles(nbCluster);
         //    SystemUtils.removeIrrelevantFiles(ideCluster);
-        //    SystemUtils.removeIrrelevantFiles(gsfCluster);
         //} catch (IOException e) {
         //    throw new InstallationException(
         //            getString("CL.install.error.irrelevant.files"), // NOI18N
@@ -174,7 +171,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //    SystemUtils.correctFilesPermissions(platformCluster);
         //    SystemUtils.correctFilesPermissions(nbCluster);
         //    SystemUtils.correctFilesPermissions(ideCluster);
-        //    SystemUtils.correctFilesPermissions(gsfCluster);
         //} catch (IOException e) {
         //    throw new InstallationException(
         //            getString("CL.install.error.files.permissions"), // NOI18N
@@ -540,6 +536,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         product.setProperty("uninstallation.timestamp",
                 new Long(System.currentTimeMillis()).toString());
 
+        if (Boolean.getBoolean("remove.netbeans.userdir")) {
+            try {
+                progress.setDetail(getString("CL.uninstall.remove.userdir")); // NOI18N
+                LogManager.logIndent("Removing NetBeans userdir... ");
+                File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
+                LogManager.log("... NetBeans userdir location : " + userDir);
+                if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {
+                    FileUtils.deleteFile(userDir, true);
+                }
+                LogManager.log("... NetBeans userdir totally removed");
+            } catch (IOException e) {
+                LogManager.log("Can`t remove NetBeans userdir", e);
+            } finally {
+                LogManager.unindent();
+            }
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         //remove cluster/update files
         try {
@@ -547,7 +560,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             String[] clusterNames = new String[]{
                PLATFORM_CLUSTER,
                IDE_CLUSTER,
-               GSF_CLUSTER,
                NB_CLUSTER
             };          
             for(String cluster : clusterNames) {
@@ -706,8 +718,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "{nb-cluster}"; // NOI18N
     public static final String IDE_CLUSTER =
             "{ide-cluster}"; // NOI18N    
-    public static final String GSF_CLUSTER =
-            "{gsf-cluster}"; // NOI18N    
     
     public static final String PLATFORM_UID =
             "nb-platform"; // NOI18N

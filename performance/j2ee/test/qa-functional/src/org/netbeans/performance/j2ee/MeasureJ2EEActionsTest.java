@@ -63,17 +63,12 @@ public class MeasureJ2EEActionsTest  {
         System.setProperty("suitename", MeasureJ2EEActionsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Actions suite");
         
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(DeployTest.class)
-        .addTest(ExpandEJBNodesProjectsViewTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandEJBNodesProjectsViewTest.class)
         .addTest(CreateNewFileTest.class)
-        .addTest(MeasureCallEjbActionTest.class)
-        .addTest(MeasureEntityBeanActionTest.class)
-        .addTest(MeasureSessionBeanActionTest.class)
-        .addTest(MeasureWebServiceActionTest.class)
         .addTest(OpenJ2EEFilesTest.class)
         .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
         .addTest(CreateJ2EEProjectTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
 
         return suite;
     }

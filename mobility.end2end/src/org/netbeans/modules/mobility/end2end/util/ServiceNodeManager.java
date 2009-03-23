@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodData;
@@ -143,7 +144,11 @@ public class ServiceNodeManager {
         }
 
         private Sources getSources() {
-            return ProjectUtils.getSources(Util.getServerProject(cfg));
+            Project project = Util.getServerProject(cfg);
+            if ( project == null ){
+                return null;
+            }
+            return ProjectUtils.getSources(project);
         }
 
         private volatile boolean running = false;
@@ -153,13 +158,20 @@ public class ServiceNodeManager {
                 run();
             }
             Sources sources = getSources();
+            if ( sources == null ){
+                return;
+            }
             ref1 = WeakListeners.change(this, sources);
             sources.addChangeListener(ref1);
         }
 
         @Override
         protected synchronized void removeNotify() {
-            getSources().removeChangeListener(ref1);
+            Sources sources = getSources();
+            if ( sources == null ){
+                return;
+            }
+            sources.removeChangeListener(ref1);
             synchronized (hookedListeners) {
                 removeListeners();
             }
@@ -215,31 +227,39 @@ public class ServiceNodeManager {
             running = true;
             try {
             Sources sources = getSources();
-            SourceGroup[] groups = sources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
+
             // Add all paths to the ClasspathInfo structure
             List<ClasspathInfo> classpaths = new ArrayList();
             HashMap<Object, Object> newHooks = new HashMap();
-            for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (!sg.getName().equals("${test.src.dir}")) {
-                    classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
-                    synchronized (hookedListeners) {
-                        PropertyChangeListener l = (PropertyChangeListener)hookedListeners.get(sg);
-                        if (l == null) {
-                            l = WeakListeners.propertyChange(this, sg);
-                            sg.addPropertyChangeListener(l);
-                            hookedListeners.put(sg, l);
+
+            if ( sources != null ) {
+                SourceGroup[] groups = sources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA );
+                    for (SourceGroup sg : groups) {
+                        if (!sg.getName().equals("${test.src.dir}")) {
+                            classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
+                            synchronized (hookedListeners) {
+                                PropertyChangeListener l =
+                                        (PropertyChangeListener) hookedListeners.get(sg);
+                                if (l == null) {
+                                    l = WeakListeners.propertyChange(this, sg);
+                                    sg.addPropertyChangeListener(l);
+                                    hookedListeners.put(sg, l);
+                                }
+                                newHooks.put(sg, l);
+                            }
+                            FileObject root = sg.getRootFolder();
+                            addFCListener(root, newHooks);
+                            Enumeration<? extends FileObject> en = root.getChildren(true);
+                            while (en.hasMoreElements()) {
+                                FileObject fo = en.nextElement();
+                                if (fo.isFolder() || fo.getExt().equals("java")) {
+                                    addFCListener(fo, newHooks); //NOI18N
+                                }
+                            }
                         }
-                        newHooks.put(sg, l);
-                    }
-                    FileObject root = sg.getRootFolder();
-                    addFCListener(root, newHooks);
-                    Enumeration<? extends FileObject> en = root.getChildren(true);
-                    while(en.hasMoreElements()) {
-                        FileObject fo = en.nextElement();
-                        if (fo.isFolder() || fo.getExt().equals("java")) addFCListener(fo, newHooks); //NOI18N
                     }
                 }
-            }
             synchronized (hookedListeners) {
                 hookedListeners.keySet().removeAll(newHooks.keySet());
                 removeListeners();

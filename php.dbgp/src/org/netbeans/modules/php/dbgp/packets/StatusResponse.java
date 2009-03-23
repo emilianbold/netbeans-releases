@@ -40,11 +40,11 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
-import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.SessionProgress;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.w3c.dom.Node;
 
@@ -63,12 +63,12 @@ public class StatusResponse extends DbgpResponse {
         super(node);
     }
     
-    public Status getStatus(){
+    public Status getStatus() {
         String status = getAttribute( getNode() , STATUS );
         return Status.forString(status);
     }
     
-    public Reason getReason(){
+    public Reason getReason() {
         String reason = getAttribute( getNode(), REASON );
         return Reason.forString( reason );
     }
@@ -77,36 +77,50 @@ public class StatusResponse extends DbgpResponse {
      * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
      */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( getStatus() == Status.BREAK && getReason() == Reason.OK ) {
-            StackGetCommand getCommand = new StackGetCommand( 
-                    session.getTransactionId() );
-            session.sendCommandLater( getCommand );
-            IDESessionBridge bridge = session.getBridge();
+    public void process( DebugSession dbgSession, DbgpCommand command ) {
+        Status status = getStatus();
+        Reason reason = getReason();
+        assert status != null;
+        assert reason != null;
+        dbgSession.setStatus(status);
+        if (status.isBreak() &&  reason.isOK()) {
+            StackGetCommand getCommand = new StackGetCommand(dbgSession.getTransactionId());
+            dbgSession.sendCommandLater(getCommand);
+            IDESessionBridge bridge = dbgSession.getBridge();
             if (bridge != null) {
                 bridge.setSuspended( true );
-                ThreadsModel threadsModel = bridge.getThreadsModel();
-                if (threadsModel != null) {
-                    threadsModel.updateSession( session );
-                }
+                updateThreadsModel(bridge, dbgSession);
             }
-        }
-        else if ( (getStatus() == Status.STOPPING || getStatus() == Status.STOPPED)
-                && getReason() == Reason.OK ) 
-        {
-            StopCommand stopCommand = new StopCommand( session.getTransactionId() );
-            session.sendCommandLater(stopCommand);
-            session.stop();            
-            if (session.getOptions().isDebugForFirstPageOnly()) {
-                SessionProgress sp = SessionProgress.forSessionId(session.getSessionId()); 
+        } else if ((status.isStopping() || status.isStopped()) && reason.isOK()) {
+            StopCommand stopCommand = new StopCommand( dbgSession.getTransactionId() );
+            dbgSession.sendCommandLater(stopCommand);
+            dbgSession.cancel();
+            if (dbgSession.getOptions().isDebugForFirstPageOnly()) {
+                SessionProgress sp = SessionProgress.forSessionId(dbgSession.getSessionId());
                 if (sp != null) {
                     sp.cancel();
+                    return;
                 }
-            } else {
-                StartActionProviderImpl.getInstance().start(session);
+            }
+            setNextSessionAsCurrent();
+        }
+    }
+
+    //written with js debugger in mind (although probably would be  better to handle it in js code)
+    private void setNextSessionAsCurrent() {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            if (session.lookupFirst(null, DebugSession.class) == null) {
+                DebuggerManager.getDebuggerManager().setCurrentSession(session);
+                break;
             }
         }
     }
 
+    private static void updateThreadsModel(IDESessionBridge bridge, DebugSession dbgSession) {
+        ThreadsModel threadsModel = bridge.getThreadsModel();
+        if (threadsModel != null) {
+            threadsModel.updateSession(dbgSession);
+        }
+    }
 }

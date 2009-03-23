@@ -94,7 +94,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new TestLibraryProvider());
+        MockLookup.setLayersAndInstances(new TestLibraryProvider());
         clearWorkDir();
         scratch = FileUtil.toFileObject(getWorkDir());
         FileObject projdir = scratch.createFolder("proj");  //NOI18N

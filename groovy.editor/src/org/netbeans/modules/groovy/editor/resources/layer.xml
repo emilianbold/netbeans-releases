@@ -10,7 +10,7 @@
         </folder>
     </folder>
     
-    <folder name="gsf-hints">
+    <folder name="csl-hints">
         <folder name="text">
             <folder name="x-groovy">
                 <folder name="selection">
@@ -99,7 +99,7 @@
         </folder>
     </folder>
     
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-groovy">
                 <file name="language.instance">

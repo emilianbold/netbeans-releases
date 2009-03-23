@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;

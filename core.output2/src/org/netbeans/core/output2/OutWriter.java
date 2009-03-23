@@ -46,6 +46,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
@@ -85,11 +86,6 @@ class OutWriter extends PrintWriter {
     /** The Lines object that will be used for reading data out of the 
      * storage */
     private AbstractLines lines = new LinesImpl();
-    
-    /** Flag set if one of several exceptions occurred while writing which
-     * mean the process doing the writing was brutally terminated.  Data will
-     * be readable but not writable if set to true */
-    private boolean terminated = false;
     
     /** Flag set if a write failed due to disk space limits.  Subsequent
      * instances will use HeapStorage in this case */
@@ -173,22 +169,18 @@ class OutWriter extends PrintWriter {
      * @param bb
      * @throws IOException
      */
-    public synchronized void write(ByteBuffer bb, boolean completeLine) throws IOException {
-        if (checkError() || terminated) {
+    public synchronized void write(ByteBuffer bb, boolean completeLine) {
+        if (checkError()) {
             return;
         }
         closed = false;
         int start = -1;
         try {
             start = getStorage().write(bb);
-        } catch (java.nio.channels.ClosedByInterruptException cbie) {
-            //Execution termination has sent ThreadDeath to the process in the
-            //middle of a write
-            threadDeathClose();
         } catch (java.nio.channels.AsynchronousCloseException ace) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
-            threadDeathClose();
+            onWriteException();
         } catch (IOException ioe) {
             //Out of disk space
             if (ioe.getMessage().indexOf("There is not enough space on the disk") != -1) { //NOI18N
@@ -204,16 +196,16 @@ class OutWriter extends PrintWriter {
                 //open for reads - if there's a problem there too, the error
                 //flag will be set when a read is attempted
                 Exceptions.printStackTrace(ioe);
-                threadDeathClose();
+                onWriteException();
             }
+        }
+        if (checkError()) {
+            return;
         }
         int length = bb.limit();
         lineLength = lineLength + length;
         if (start >= 0 && lineStart == -1) {
             lineStart = start;
-        }
-        if (terminated) {
-            return;
         }
         lines.lineUpdated(lineStart, lineLength, completeLine);
         if (completeLine) {
@@ -231,8 +223,8 @@ class OutWriter extends PrintWriter {
      * a writable one.  Typically this happens when an executing process was sent Thread.stop()
      * in the middle of a write.
      */
-    void threadDeathClose() {
-        terminated = true;
+    void onWriteException() {
+        trouble = true;
         if (Controller.LOG) Controller.log (this + " Close due to termination");
         ErrWriter err = owner.writer().err();
         if (err != null) {
@@ -262,7 +254,6 @@ class OutWriter extends PrintWriter {
         if (lines != null) {
             lines.clear();
         }
-        trouble = true;
         if (Controller.LOG) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
         owner = null;
         disposed = true;
@@ -324,7 +315,7 @@ class OutWriter extends PrintWriter {
                 lines.fire();
             }
         } catch (IOException ioe) {
-            handleException (ioe);
+            onWriteException();
         }
     }
 
@@ -345,7 +336,7 @@ class OutWriter extends PrintWriter {
                 lines.fire();
             }
         } catch (IOException e) {
-            handleException(e);
+            onWriteException();
         }
     }
 
@@ -402,11 +393,11 @@ class OutWriter extends PrintWriter {
     static private final int writeBuffSize = 16*1024;
     private final String tabReplacement = "        ";
     public synchronized int doWrite(CharSequence s, int off, int len) {
-        int lineCount = 0;
         if (checkError() || len == 0) {
-            return lineCount;
+            return 0;
         }
 
+        int lineCount = 0;
         try {
             boolean written = false;
             ByteBuffer byteBuff = getStorage().getWriteBuffer(writeBuffSize * 2);
@@ -437,7 +428,7 @@ class OutWriter extends PrintWriter {
                 write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
             }
         } catch (IOException ioe) {
-            handleException(ioe);
+            onWriteException();
         }
         lines.delayedFire();
         return lineCount;
@@ -469,26 +460,34 @@ class OutWriter extends PrintWriter {
         doWrite(s, 0, s.length());
     }
 
-    public synchronized void println(String s, OutputListener l) throws IOException {
+    public synchronized void println(String s, OutputListener l) {
         println(s, l, false);
     }
 
-    public synchronized void println(String s, OutputListener l, boolean important) throws IOException {
+    public synchronized void println(String s, OutputListener l, boolean important) {
+        print(s, l, important, null, true);
+    }
+
+    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean addLS) {
+        int addedCount = doWrite(s, 0, s.length());
+        if (addLS) {
+            println();
+            addedCount++;
+        }
         if (checkError()) {
             return;
         }
-        int addedCount = doWrite(s, 0, s.length());
-        println();
-        addedCount++;
         int newCount = lines.getLineCount()-1;
         for (int i = newCount - addedCount; i < newCount; i++) {
-            lines.addListener(i, l, important);
-            //#48485 we should update the UI, since the lines are in the model
-            // and jump next/previous can't jump to appropriate place.
-            lines.fire();
+            if (l != null) {
+                lines.addListener(i, l, important);
+            }
+            if (c != null) {
+                lines.setColor(i, c);
+            }
         }
     }
-        
+
     /**
      * A useless writer object to pass to the superclass constructor.  We override all methods
      * of it anyway.
@@ -520,10 +519,6 @@ class OutWriter extends PrintWriter {
 
         protected boolean isDisposed() {
              return OutWriter.this.disposed;
-        }
-
-        protected boolean isTrouble() {
-            return OutWriter.this.trouble;
         }
 
         public Object readLock() {

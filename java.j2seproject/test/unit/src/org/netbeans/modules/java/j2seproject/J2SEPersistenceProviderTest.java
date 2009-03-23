@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -98,6 +99,7 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         // setup the project
         FileObject scratch = TestUtil.makeScratchDir(this);
         final FileObject projdir = scratch.createFolder("proj");
+        MockLookup.setLayersAndInstances();
         // issue 90762: prevent AntProjectHelper from firing changes in a RP thread, which interferes with tests
         // see APH.fireExternalChange
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

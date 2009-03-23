@@ -46,7 +46,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -57,7 +56,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -115,11 +114,13 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
 
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
-        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
-        latch.await();
+//        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
+//        latch.await();
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
 
         JavaSource js = JavaSource.forFileObject(data);
         

@@ -40,13 +40,12 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -364,10 +363,10 @@ class CachingSupport {
 
 
     private List<? extends InterfaceScope> getCachedInterfaces(final String... queryName) {
-        return getCachedInterfaces(NameKind.EXACT_NAME, queryName);
+        return getCachedInterfaces(QuerySupport.Kind.EXACT, queryName);
     }
 
-    private List<? extends InterfaceScope> getCachedInterfaces(final NameKind nameKind, final String... queryName) {
+    private List<? extends InterfaceScope> getCachedInterfaces(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(ifaceScopes, new ModelUtils.ElementFilter<InterfaceScope>() {
             public boolean isAccepted(InterfaceScope element) {
                 return element.getPhpKind().equals(PhpKind.IFACE) &&
@@ -377,10 +376,10 @@ class CachingSupport {
     }
 
     private List<? extends ClassScope> getCachedClasses(final String... queryName) {
-        return getCachedClasses(NameKind.EXACT_NAME, queryName);
+        return getCachedClasses(QuerySupport.Kind.EXACT, queryName);
     }
 
-    private List<? extends ClassScope> getCachedClasses(final NameKind nameKind, final String... queryName) {
+    private List<? extends ClassScope> getCachedClasses(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(classScopes, new ModelUtils.ElementFilter<ClassScope>() {
             public boolean isAccepted(ClassScope element) {
                 return element.getPhpKind().equals(PhpKind.CLASS) &&
@@ -390,10 +389,10 @@ class CachingSupport {
     }
 
        private List<? extends FieldElement> getCachedFields(ClassScope clsScope, String queryName,final int... modifiers) {
-        return getCachedFields(NameKind.EXACT_NAME, clsScope, queryName, modifiers);
+        return getCachedFields(QuerySupport.Kind.EXACT, clsScope, queryName, modifiers);
     }
 
-    private List<? extends FieldElement> getCachedFields(final NameKind nameKind, final ClassScope clsScope, final String queryName, final int... modifiers) {
+    private List<? extends FieldElement> getCachedFields(final QuerySupport.Kind nameKind, final ClassScope clsScope, final String queryName, final int... modifiers) {
         List<FieldElement> toFilter = fldElems.get(clsScope);
         if (toFilter == null) return Collections.emptyList();
         return ModelUtils.filter(toFilter, new ModelUtils.ElementFilter<FieldElement>() {
@@ -406,10 +405,10 @@ class CachingSupport {
         });
     }
        private List<? extends ClassConstantElement> getCachedClassConstants(ClassScopeImpl clsScope, String queryName) {
-        return getCachedClassConstants(NameKind.EXACT_NAME, clsScope, queryName);
+        return getCachedClassConstants(QuerySupport.Kind.EXACT, clsScope, queryName);
     }
 
-    private List<? extends ClassConstantElement> getCachedClassConstants(final NameKind nameKind, final ClassScopeImpl clsScope, final String queryName) {
+    private List<? extends ClassConstantElement> getCachedClassConstants(final QuerySupport.Kind nameKind, final ClassScopeImpl clsScope, final String queryName) {
         List<ClassConstantElement> toFilter = clzConstantElems.get(clsScope);
         if (toFilter == null) return Collections.emptyList();
         return ModelUtils.filter(toFilter, new ModelUtils.ElementFilter<ClassConstantElement>() {
@@ -421,10 +420,10 @@ class CachingSupport {
     }
 
     private List<? extends MethodScope> getCachedMethods(TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
-        return getCachedMethods(NameKind.EXACT_NAME, typeScope, queryName, modifiers);
+        return getCachedMethods(QuerySupport.Kind.EXACT, typeScope, queryName, modifiers);
     }
 
-    private List<? extends MethodScope> getCachedMethods(final NameKind nameKind, 
+    private List<? extends MethodScope> getCachedMethods(final QuerySupport.Kind nameKind, 
             TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
         List<MethodScope> toFilter = methodScopes.get(typeScope);
         if (toFilter == null) return Collections.emptyList();
@@ -446,10 +445,10 @@ class CachingSupport {
     }
 
     private Collection<? extends InterfaceScope> getCachedIfaces(final String... queryName) {
-        return getCachedIfaces(NameKind.EXACT_NAME, queryName);
+        return getCachedIfaces(QuerySupport.Kind.EXACT, queryName);
     }
 
-    private Collection<? extends InterfaceScope> getCachedIfaces(final NameKind nameKind, final String... queryName) {
+    private Collection<? extends InterfaceScope> getCachedIfaces(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(ifaceScopes, new ModelUtils.ElementFilter<InterfaceScope>() {
             public boolean isAccepted(InterfaceScope element) {
                 return (queryName.length == 0 || ScopeImpl.nameKindMatch(element.getName(), nameKind, queryName));
@@ -458,19 +457,19 @@ class CachingSupport {
     }
 
     private Collection<? extends TypeScope> getCachedTypes(final String... queryName) {
-        return getCachedTypes(NameKind.EXACT_NAME, queryName);
+        return getCachedTypes(QuerySupport.Kind.EXACT, queryName);
     }
 
     @SuppressWarnings("unchecked")
-    private Collection<? extends TypeScope> getCachedTypes(final NameKind nameKind, final String... queryName) {
+    private Collection<? extends TypeScope> getCachedTypes(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.merge(getCachedClasses(nameKind, queryName),getCachedIfaces(nameKind, queryName));
     }
 
     public List<? extends FunctionScope> getCachedFunctions(final String... queryName) {
-        return getCachedFunctions(NameKind.EXACT_NAME, queryName);
+        return getCachedFunctions(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public List<? extends FunctionScope> getCachedFunctions(final NameKind nameKind, final String... queryName) {
+    public List<? extends FunctionScope> getCachedFunctions(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(fncScopes, new ModelUtils.ElementFilter<FunctionScope>() {
             public boolean isAccepted(FunctionScope element) {
                 return element.getPhpKind().equals(PhpKind.FUNCTION)  &&
@@ -480,10 +479,10 @@ class CachingSupport {
     }
 
     public List<? extends ConstantElement> getCachedConstants(final String... queryName) {
-        return getCachedConstants(NameKind.EXACT_NAME, queryName);
+        return getCachedConstants(QuerySupport.Kind.EXACT, queryName);
     }
 
-    private List<? extends ConstantElement> getCachedConstants(final NameKind nameKind, final String... queryName) {
+    private List<? extends ConstantElement> getCachedConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(constantScopes, new ModelUtils.ElementFilter<ConstantElement>() {
             public boolean isAccepted(ConstantElement element) {
                 return element.getPhpKind().equals(PhpKind.CONSTANT)  &&

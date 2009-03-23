@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * File and offset -based key
@@ -69,7 +70,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         assert kind.length() == 1;
-        this.name = name;
+        this.name = NameCache.getManager().getString(name);
         this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
     }
 
@@ -117,7 +118,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         aStream.writeInt(this.endOffset);
         aStream.writeInt(this.hashCode);
         assert this.name != null;
-        aStream.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, aStream);
     }
 
     protected OffsetableKey(DataInput aStream) throws IOException {
@@ -125,8 +126,8 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
-        this.name = NameCache.getManager().getString(aStream.readUTF());
-        assert this.name != null;
+        this.name = PersistentUtils.readUTF(aStream, NameCache.getManager());
+        assert this.name instanceof TinyCharSequence;
     }
 
     @Override
@@ -140,6 +141,8 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
             return false;
         }
         OffsetableKey other = (OffsetableKey) obj;
+        assert name instanceof TinyCharSequence;
+        assert other.name instanceof TinyCharSequence;
         return this.startOffset == other.startOffset &&
                 this.endOffset == other.endOffset &&
                 this.getKind() == other.getKind() &&

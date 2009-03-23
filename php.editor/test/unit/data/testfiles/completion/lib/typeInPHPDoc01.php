@@ -1,16 +1,16 @@
 <?php
 $ahoj = 10;
-class Magazine {
+class PhpDoc01Magazine {
     public $pages;
 }
 
-class News {
+class PhpDoc01News {
     public $content;
 }
 
 /**
  *
- * @return News|   text| text
+ * @return PhpDoc01News|PhpDoc01   text| text
  */
 function test() {
     return 'ahoj';

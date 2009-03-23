@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.Map;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,31 +60,32 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
+    }
+
     private RubyTypeInferencer getInferencer(String file, String caretLine, boolean findMethod) throws Exception {
         FileObject fo = getTestFile("testfiles/" + file);
-        BaseDocument doc = getDocument(fo);
-        GsfTestCompilationInfo info = getInfo(fo);
-        Node root = AstUtilities.getRoot(info);
-        initializeRegistry();
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue("No caret marker (^) in caretLine: " + caretLine, caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = info.getText().indexOf(caretLine);
-            assertTrue("unable to find offset for give carretLine: " + caretLine, lineOffset != -1);
-            caretOffset = lineOffset + caretDelta;
+            Source source = Source.create(fo);
+            caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(source, caretOffset);
         }
 
+        BaseDocument doc = getDocument(fo);
+        ParserResult parserResult = getParserResult(fo);
+        Node root = AstUtilities.getRoot(parserResult);
+        initializeRegistry();
+        RubyIndex index = RubyIndex.get(parserResult);
         AstPath path = new AstPath(root, caretOffset);
         Node node = path.leaf();
 
         if (findMethod) {
             MethodDefNode method = AstUtilities.findMethodAtOffset(root, caretOffset);
             assertNotNull(method);
-
             root = method;
         }
 

@@ -42,20 +42,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -72,11 +70,9 @@ public class JsRenameHandler implements InstantRenamer {
     public JsRenameHandler() {
     }
 
-    public boolean isRenameAllowed(CompilationInfo info, int caretOffset,
-            String[] explanationRetValue) {
-        Node root = AstUtilities.getRoot(info);
-
-        if (root == null) {
+    public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        if (jspr == null) {
             if (explanationRetValue != null) {
                 explanationRetValue[0] = NbBundle.getMessage(JsRenameHandler.class, "NoRenameWithErrors");
             }
@@ -84,11 +80,12 @@ public class JsRenameHandler implements InstantRenamer {
             return false;
         }
 
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc == null) {
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
             return false;
         }
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(info.getSnapshot(), astOffset);
         if (ts != null && ts.token().id() == JsTokenId.BLOCK_COMMENT) {
             TokenSequence<JsCommentTokenId> cts = ts.embedded(JsCommentTokenId.language());
             boolean canRename = false;
@@ -104,12 +101,7 @@ public class JsRenameHandler implements InstantRenamer {
             return canRename;
         }
         
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return false;
-        }
-
-        AstPath path = new AstPath(root, astOffset);
+        AstPath path = new AstPath(jspr.getRootNode(), astOffset);
         Node closest = path.leaf();
 
         switch (closest.getType()) {
@@ -127,23 +119,28 @@ public class JsRenameHandler implements InstantRenamer {
         return false;
     }
 
-    public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+    public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         JsParseResult rpr = AstUtilities.getParseResult(info);
         if (rpr == null) {
             return Collections.emptySet();
         }
 
         Node root = rpr.getRootNode();
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (root == null || doc == null) {
+        if (root == null) {
             return Collections.emptySet();
         }
+        
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
+            return Collections.emptySet();
+        }
+
         String parameterName = null;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(info.getSnapshot(), astOffset);
         if (ts != null && ts.token().id() == JsTokenId.BLOCK_COMMENT) {
             TokenSequence<JsCommentTokenId> cts = ts.embedded(JsCommentTokenId.language());
             if (cts != null) {
-                parameterName = getParameterName(cts, caretOffset);
+                parameterName = getParameterName(cts, astOffset);
             } else {
                 return Collections.emptySet();
             }
@@ -167,7 +164,7 @@ public class JsRenameHandler implements InstantRenamer {
                     // Found the parameter list.
                     assert seenFunction;
                     foundArg = true;
-                    caretOffset = ts.offset()+1;
+                    astOffset = ts.offset()+1;
                     break;
                 } else if (id == JsTokenId.BLOCK_COMMENT) {
                     // Cannot skip another block comment - this is probably another function
@@ -179,11 +176,6 @@ public class JsRenameHandler implements InstantRenamer {
             }
         }
 
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return Collections.emptySet();
-        }
-        
         VariableVisitor v = rpr.getVariableVisitor();
 
         AstPath path = new AstPath(root, astOffset);
@@ -222,22 +214,20 @@ public class JsRenameHandler implements InstantRenamer {
         }
         
         if (regions.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
-                Set<OffsetRange> translated = new HashSet<OffsetRange>(2*regions.size());
-                for (OffsetRange astRange : regions) {
-                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                    if (lexRange != OffsetRange.NONE) {
-                        translated.add(lexRange);
-                    }
+            Set<OffsetRange> translated = new HashSet<OffsetRange>(2*regions.size());
+            for (OffsetRange astRange : regions) {
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(rpr, astRange);
+                if (lexRange != OffsetRange.NONE) {
+                    translated.add(lexRange);
                 }
-
-                regions = translated;
             }
+
+            regions = translated;
         }
         
         if (parameterNode != null) {
             // Look for @param too
-            OffsetRange docRange = findParameterDoc(info, parameterNode, name);
+            OffsetRange docRange = findParameterDoc(rpr, parameterNode, name);
             if (docRange != OffsetRange.NONE) {
                 regions.add(docRange);
             }
@@ -251,7 +241,7 @@ public class JsRenameHandler implements InstantRenamer {
      * a parameter document for this item.
      */
     @NonNull
-    private OffsetRange findParameterDoc(CompilationInfo info, Node node, String name) {
+    private OffsetRange findParameterDoc(JsParseResult info, Node node, String name) {
         // Find function
         Node funcNode = node.getParentNode();
         while (funcNode != null && funcNode.getType() != Token.FUNCTION) {
@@ -260,34 +250,31 @@ public class JsRenameHandler implements InstantRenamer {
         if (funcNode == null) {
             return OffsetRange.NONE;
         }
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc != null) {
-            TokenSequence<? extends JsCommentTokenId> cts = AstUtilities.getCommentFor(info, doc, funcNode);
-            if (cts != null) {
-                cts.moveStart();
-                while (cts.moveNext()) {
-                    org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
-                    TokenId cid = token.id();
-                    if (cid == JsCommentTokenId.COMMENT_TAG) {
-                        CharSequence text = token.text();
-                         if (TokenUtilities.textEquals("@param", text)) { // NOI18N
-                            int index = cts.index();
-                            String paramType = JsCommentLexer.nextType(cts);
-                            if (paramType == null) {
-                                cts.moveIndex(index);
-                                cts.moveNext();
+        TokenSequence<? extends JsCommentTokenId> cts = AstUtilities.getCommentFor(info, funcNode);
+        if (cts != null) {
+            cts.moveStart();
+            while (cts.moveNext()) {
+                org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
+                TokenId cid = token.id();
+                if (cid == JsCommentTokenId.COMMENT_TAG) {
+                    CharSequence text = token.text();
+                     if (TokenUtilities.textEquals("@param", text)) { // NOI18N
+                        int index = cts.index();
+                        String paramType = JsCommentLexer.nextType(cts);
+                        if (paramType == null) {
+                            cts.moveIndex(index);
+                            cts.moveNext();
+                        }
+                        String paramName = JsCommentLexer.nextIdent(cts);
+                        if (paramName != null) {
+                            if (name.equals(paramName)) {
+                                // Figure out the offsets
+                                int start = cts.offset();
+                                return new OffsetRange(start, start+name.length());
                             }
-                            String paramName = JsCommentLexer.nextIdent(cts);
-                            if (paramName != null) {
-                                if (name.equals(paramName)) {
-                                    // Figure out the offsets
-                                    int start = cts.offset();
-                                    return new OffsetRange(start, start+name.length());
-                                }
-                            } else {
-                                cts.moveIndex(index);
-                                cts.moveNext();
-                            }
+                        } else {
+                            cts.moveIndex(index);
+                            cts.moveNext();
                         }
                     }
                 }

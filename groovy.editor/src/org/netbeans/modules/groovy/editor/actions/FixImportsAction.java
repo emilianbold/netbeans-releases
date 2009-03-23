@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.groovy.control.ErrorCollector;
@@ -60,9 +61,13 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
 
 /**
@@ -109,8 +114,12 @@ public class FixImportsAction extends BaseAction implements Runnable {
 
         FileObject fo = dob.getPrimaryFile();
         try {
-            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-                public void run(GroovyParserResult result) throws Exception {
+            Source source = Source.create(fo);
+            // FIXME can we move this out of task (?)
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
                     if (result != null) {
                         ErrorCollector errorCollector = result.getErrorCollector();
                         if (errorCollector == null) {
@@ -124,7 +133,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
                             return;
                         }
 
-                        // loop over the list of errors, remove duplicates and 
+                        // loop over the list of errors, remove duplicates and
                         // populate list of missing imports.
 
                         for (Object error : errList) {
@@ -143,10 +152,46 @@ public class FixImportsAction extends BaseAction implements Runnable {
                         }
                     }
                 }
-
-                public void cancel() {}
             });
-        } catch (Exception ex) {
+
+//            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+//                public void run(GroovyParserResult result) throws Exception {
+//                    if (result != null) {
+//                        ErrorCollector errorCollector = result.getErrorCollector();
+//                        if (errorCollector == null) {
+//                            LOG.log(Level.FINEST, "Could not get error collector");
+//                            return;
+//                        }
+//                        List errList = errorCollector.getErrors();
+//
+//                        if (errList == null) {
+//                            LOG.log(Level.FINEST, "Could not get list of errors");
+//                            return;
+//                        }
+//
+//                        // loop over the list of errors, remove duplicates and
+//                        // populate list of missing imports.
+//
+//                        for (Object error : errList) {
+//                            if (error instanceof SyntaxErrorMessage) {
+//                                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
+//                                if (se != null) {
+//                                    String missingClassName = helper.getMissingClassName(se.getMessage());
+//
+//                                    if (missingClassName != null) {
+//                                        if (!missingNames.contains(missingClassName)) {
+//                                            missingNames.add(missingClassName);
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                public void cancel() {}
+//            });
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 

@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -90,8 +91,12 @@ public class IDECommitValidationTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters(".*").enableModules(".*").honorAutoloadEager(true);
-
+        ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+        /* XXX: Enable as soon as there are no warnings during start
+                and exceptions are not that common
+        .failOnException(Level.INFO)
+        .failOnMessage(Level.WARNING)*/;
+        
         Set<String> allowedFiles = new HashSet<String>();
         InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
         BufferedReader r = new BufferedReader(new InputStreamReader(is));

@@ -63,7 +63,7 @@ public interface Resolver {
      * you don't know which is class and which is namespace name
      *
      * @param nameTokens tokenized name to resolve
-     * (for example, for std::vector it is new String[] { "std", "vector" })
+     * (for example, for std::vector it is new CharSequence[] { "std", "vector" })
      *
      * @return object of the following class:
      *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)

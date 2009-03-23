@@ -44,9 +44,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -63,7 +63,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 public class InstantRenamerImpl implements InstantRenamer {
     private List<Occurence> allOccurences = Collections.emptyList();
 
-    public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
+    public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         //TODO: put some comments into status line if false is returned
         allOccurences.clear();
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
@@ -95,7 +95,7 @@ public class InstantRenamerImpl implements InstantRenamer {
         return false;
     }
 
-    public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+    public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Set<OffsetRange> retval = new HashSet<OffsetRange>();
         for (Occurence occurence : allOccurences) {
             retval.add(occurence.getOccurenceRange());

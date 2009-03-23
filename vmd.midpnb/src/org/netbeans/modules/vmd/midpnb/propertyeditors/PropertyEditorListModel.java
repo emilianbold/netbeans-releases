@@ -42,14 +42,18 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
@@ -89,12 +93,59 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
     }
 
     @Override
+    public boolean executeInsideWriteTransaction() {
+        if (component.get().getType() == SVGListCD.TYPEID) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isExecuteInsideWriteTransactionUsed() {
+        PropertyValue.Kind kind = null;
+        if (getValue() instanceof PropertyValue) {
+            kind = ((PropertyValue) getValue()).getKind();
+        }
+        if (component.get().getType() == SVGListCD.TYPEID && kind != PropertyValue.Kind.USERCODE) {
+            return true;
+        } else if (component.get().getType() == SVGListCD.TYPEID && kind == PropertyValue.Kind.USERCODE) {
+            component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                public void run() {
+                    component.get().writeProperty(SVGListCD.PROP_ELEMENTS, PropertyValue.createNull());
+                    Collection<DesignComponent> children = new HashSet<DesignComponent>(component.get().getComponents());
+                    for (DesignComponent child : children) {
+                        component.get().getDocument().deleteComponent(child);
+                    }
+                }
+            });
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    if (myCustomEditor != null) {
+                        myCustomEditor.removeElemnts();
+                    }
+                }
+            });
+        }
+        return false;
+    }
+
+    @Override
     public Boolean canEditAsText() {
         return false;
     }
 
     @Override
     public String getAsText() {
+        PropertyValue.Kind kind = null;
+        if (getValue() instanceof PropertyValue) {
+            kind = ((PropertyValue) getValue()).getKind();
+        }
+        if (kind == PropertyValue.Kind.USERCODE) {
+            return super.getAsText();
+        }
         return myModelText;
     }
 
@@ -120,6 +171,14 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
         if (myCustomEditor == null) {
             initComponents();
             initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        if (component.get().getType() == SVGListCD.TYPEID) {
+            component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    myCustomEditor.setValue(component.get().readProperty(SVGListCD.PROP_ELEMENTS));
+                }
+            });
         }
         return super.getCustomEditor();
     }
@@ -156,9 +215,15 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#updateState(org.netbeans.modules.vmd.api.model.PropertyValue)
      */
-    public void updateState(PropertyValue value) {
+    public void updateState(final PropertyValue value) {
         if (value != null) {
-            myCustomEditor.setValue(value);
+            component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    myCustomEditor.setValue(value);
+                }
+            });
+            
         }
         myRadioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -169,54 +234,88 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
-        if (myRadioButton.isSelected()) {
-            saveValue(myCustomEditor.getValue());
-        }
-        if (component.get().getType() != SVGListCD.TYPEID) {
-            return;
-        }
-        component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
 
-            public void run() {
-                Integer index = -1;
-                for (DesignComponent child : component.get().getComponents()) {
-                    if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
-                        continue;
-                    }
-                    Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
-                    if (currentIndex == null) {
-                        throw new IllegalArgumentException();
-                    }
-                    if (currentIndex > index) {
-                        index = currentIndex;
-                    }
-                }
-                if (index < myCustomEditor.getValue().size() - 1) {
-                    if (index == -1)  
-                        index =0;
-                    else
-                        index ++;
-                    for (int i = index; i <= myCustomEditor.getValue().size() - 1 ; i++) {
-                        DesignComponent element = component.get().getDocument().createComponent(SVGListElementEventSourceCD.TYPEID);
-                        component.get().addComponent(element);
-                        element.writeProperty(SVGListElementEventSourceCD.PROP_INDEX, MidpTypes.createIntegerValue(i));
-                    }
-                } else if (index > myCustomEditor.getValue().size() - 1) {
-                    for (DesignComponent child : component.get().getComponents()) {
-                        if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
-                            continue;
+        if (myRadioButton.isSelected()) {
+            if (SVGListCD.TYPEID != component.get().getType()) {
+                saveValue(myCustomEditor.getValue());
+            } else {
+                component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                    public void run() {
+                        Integer index = -1;
+                        List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+                        if (array != null) {
+                            index = array.size()-1;
                         }
-                        Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
-                        if (currentIndex == null) {
-                            throw new IllegalArgumentException();
+                        if (index == myCustomEditor.getValue().size() - 1) {
+                            return;
                         }
-                        if (currentIndex > myCustomEditor.getValue().size() - 1) {
-                            component.get().getDocument().deleteComponent(child);
+                        if (index < myCustomEditor.getValue().size() - 1) {
+                            if (index == -1) {
+                                index = 0;
+                            } else {
+                                index++;
+                            }
+                            for (int i = index; i <= myCustomEditor.getValue().size() - 1; i++) {
+                                DesignComponent element = component.get().getDocument().createComponent(SVGListElementEventSourceCD.TYPEID);
+                                component.get().addComponent(element);
+                                //element.writeProperty(SVGListElementEventSourceCD.PROP_INDEX, MidpTypes.createIntegerValue(i));
+                                //array = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                                if (array == null) {
+                                    component.get().writeProperty(SVGListCD.PROP_ELEMENTS, PropertyValue.createArray(SVGListElementEventSourceCD.TYPEID, new ArrayList<PropertyValue>()));
+                                }
+                                ArraySupport.append(component.get(), SVGListCD.PROP_ELEMENTS, element);
+                                array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+                            }
+
+                        } else if (index > myCustomEditor.getValue().size() - 1) {
+                            for (PropertyValue value : array) {
+                                DesignComponent child = value.getComponent();
+                                if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
+                                    continue;
+                                }
+                                Integer currentIndex = array.indexOf(value);
+                                if (currentIndex == null) {
+                                    throw new IllegalArgumentException();
+                                }
+                                if (currentIndex > myCustomEditor.getValue().size() - 1) {
+                                    PropertyValue array_ = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                                    if (array != null) {
+                                        ArraySupport.remove(component.get(),SVGListCD.PROP_ELEMENTS, child);
+                                    }
+                                    component.get().getDocument().deleteComponent(child);
+                                }
+                            }
+                        }
+
+                    }
+                });
+                component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                    public void run() {
+                        List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+                        for (PropertyValue value : array) {
+                            DesignComponent child = value.getComponent();
+                            if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
+                                continue;
+                            }
+                            String string = (String) child.readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
+                            Integer childIndex = array.indexOf(value);
+                            if (string == null || !string.equals(myCustomEditor.getValue().get(childIndex))) {
+                                child.writeProperty(SVGListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(myCustomEditor.getValue().get(childIndex)));
+                            }
                         }
                     }
-                }
+                });
+                component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                         PropertyValue value = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                         PropertyEditorListModel.super.setValue(value);
+                    }
+                });
             }
-        });
+        }
     }
 
     private void saveValue(List<String> modelItems) {

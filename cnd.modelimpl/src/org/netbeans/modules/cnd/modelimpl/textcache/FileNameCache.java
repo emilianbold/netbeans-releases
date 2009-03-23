@@ -57,6 +57,9 @@ public class FileNameCache extends APTStringManager {
     }
     
     public CharSequence getString(CharSequence text) {
+        if (text == null){
+            return text;
+        }
         text = CharSequenceKey.create(text);
         return instance.getString(text);
     }

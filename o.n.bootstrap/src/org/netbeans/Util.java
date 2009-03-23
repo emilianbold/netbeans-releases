@@ -82,6 +82,7 @@ public final class Util implements Stamps.Updater {
                     if (fws == null) {
                         break;
                     }
+                    arr.add(fws);
                 }
                 tmp.put(new File(file), arr);
             }

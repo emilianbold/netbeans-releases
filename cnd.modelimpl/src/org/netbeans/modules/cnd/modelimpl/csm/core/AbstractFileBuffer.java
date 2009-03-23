@@ -51,6 +51,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,13 +64,17 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     
     protected AbstractFileBuffer(File file) {
-        this.absPath = FilePathCache.getString(file.getAbsolutePath());
+        this.absPath = FilePathCache.getManager().getString(file.getAbsolutePath());
     }
 
     public void addChangeListener(ChangeListener listener) {
     }
 
     public void removeChangeListener(ChangeListener listener) {
+    }
+
+    public CharSequence getAbsolutePath() {
+        return absPath;
     }
 
     public File getFile() {
@@ -103,11 +108,11 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     
     protected void write(DataOutput output) throws IOException {
         assert this.absPath != null;
-        output.writeUTF(this.absPath.toString());
+        PersistentUtils.writeUTF(absPath, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
-        this.absPath = FilePathCache.getString(input.readUTF());
+        this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         assert this.absPath != null;
     }    
 }

@@ -1,6 +1,6 @@
 Code completion result for source line:
-* @return News|   text|| text
-(QueryType=COMPLETION, NameKind=PREFIX)
+* @return PhpDoc01News|PhpDoc01   text|| text
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    @abstract                                  
 KEYWORD    @access                                    

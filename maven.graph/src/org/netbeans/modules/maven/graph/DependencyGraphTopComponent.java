@@ -125,14 +125,21 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 @SuppressWarnings("unchecked")
-                List<String> scopes = (List<String>) value;
-                String text;
-                if (scopes.size() == 0) {
-                    text = "Ignore";
+                int scopesSize = ((List<String>) value).size();
+                String bundleKey;
+                if (scopesSize == 0) {
+                    bundleKey = "LBL_Scope_All";
+                } else if (scopesSize == 2) {
+                    bundleKey = "LBL_Scope_Compile";
+                } else if (scopesSize == 3) {
+                    bundleKey = "LBL_Scope_Runtime";
                 } else {
-                    text = scopes.get(scopes.size() -1);
+                    bundleKey = "LBL_Scope_Test";
                 }
-                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+
+                return super.getListCellRendererComponent(list,
+                        NbBundle.getMessage(DependencyGraphTopComponent.class, bundleKey),
+                        index, isSelected, cellHasFocus);
             }
         });
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();

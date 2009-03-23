@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFriendResolver.class)
-public class FriendResolverImpl extends CsmFriendResolver {
+public final class FriendResolverImpl extends CsmFriendResolver {
     
     /** Creates a new instance of FriendResolverImpl */
     public FriendResolverImpl() {

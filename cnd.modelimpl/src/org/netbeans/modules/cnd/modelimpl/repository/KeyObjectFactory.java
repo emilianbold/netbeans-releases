@@ -117,7 +117,7 @@ public class KeyObjectFactory extends KeyFactory {
         
         if (object instanceof ProjectKey ) {
             aHandle = KEY_PROJECT_KEY;
-        } else if (object instanceof NamespaceDeclararationContainerKey) {
+        } else if (object instanceof NamespaceDeclarationContainerKey) {
             aHandle = KEY_NS_DECLARATION_CONTAINER_KEY;
         }  else if (object instanceof NamespaceKey) {
             aHandle = KEY_NAMESPACE_KEY;
@@ -187,7 +187,7 @@ public class KeyObjectFactory extends KeyFactory {
                 aKey = new GraphContainerKey(aStream);
                 break;
             case KEY_NS_DECLARATION_CONTAINER_KEY:
-                aKey = new NamespaceDeclararationContainerKey(aStream);
+                aKey = new NamespaceDeclarationContainerKey(aStream);
                 break;
             case KEY_CLASSIFIER_CONTAINER_KEY:
                 aKey = new ClassifierContainerKey(aStream);

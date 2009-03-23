@@ -56,22 +56,26 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
+import org.netbeans.modules.dlight.dtrace.collector.support.DtraceDataCollector.IndicatorDataProvideHandler;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public final class MultipleDtraceDataCollector implements DataCollector<MultipleDTDCConfiguration> {
+public final class MultipleDtraceDataCollector extends IndicatorDataProvider<MultipleDTDCConfiguration>
+    implements DataCollector<MultipleDTDCConfiguration>, IndicatorDataProvideHandler { 
 
     private DtraceDataCollector collector;
     private Map<String, DtraceDataCollector> slaveCollectors;
@@ -96,6 +100,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
         DtraceDataCollector slaveCollector = new DtraceDataCollector(
             MultipleDTDCConfigurationAccessor.getDefault().getDTDCConfiguration(configuration));
         slaveCollector.setSlave(true);
+        slaveCollector.setIndicatorDataProviderHanlder(this);
         slaveCollectors.put(MultipleDTDCConfigurationAccessor.getDefault().getOutputPrefix(configuration), slaveCollector);
     }
 
@@ -165,7 +170,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
         return collector.getArgs();
     }
 
-    public Future<ValidationStatus> validate(DLightTarget target) {
+    public ValidationStatus validate(DLightTarget target) {
         return collector.validate(target);
     }
 
@@ -191,6 +196,10 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
             ddc.targetStateChanged(source, oldState, newState);
         }
 
+    }
+
+    public void notify(List<DataRow> list) {
+        notifyIndicators(list);
     }
 
     private class ProcessLineCallbackImpl implements ProcessLineCallback {

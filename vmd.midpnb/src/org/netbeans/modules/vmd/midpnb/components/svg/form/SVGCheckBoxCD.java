@@ -135,8 +135,8 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
                 createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGCheckBoxEventSourceCD.TYPEID )
+                MidpCodePresenterSupport.createAddImportPresenter()
+                //new SVGCodeFooter( SVGCheckBoxEventSourceCD.TYPEID )
         );
     }
 

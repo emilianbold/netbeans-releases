@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-
 /**
  * @author Radek Matous
  */

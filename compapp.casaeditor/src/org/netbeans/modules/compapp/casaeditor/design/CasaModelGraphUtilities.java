@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -77,7 +78,6 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServi
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -295,7 +295,7 @@ public class CasaModelGraphUtilities {
             buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
             buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
             
-            for (String processName : process2EndpointRefMap.keySet()) {
+            for (String processName : new TreeSet<String>(process2EndpointRefMap.keySet())) {
                 if (!processName.equals(NULL_PROCESS_NAME)) {
                     List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
                     CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
@@ -391,7 +391,9 @@ public class CasaModelGraphUtilities {
         type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
         if (type.endsWith("SERVICEENGINE")) {  // NOI18N
            type = type.substring(0, type.length() - 13);
-       }
+        } else if (type.endsWith("-JBI-SE")) {  // NOI18N
+           type = type.substring(0, type.length() - 7);
+        }
         widget.setNodeProperties(unitName, type);
     }
 
@@ -516,9 +518,9 @@ public class CasaModelGraphUtilities {
         }
     }
     
-    public static void setSceneEnabled(CasaModelGraphScene scene, JbiBuildTask task) {
+    public static void setSceneEnabled(CasaModelGraphScene scene) {
         Chain priorActions = scene.getPriorActions();
-        WaitMessageHandler.addToScene(scene, task);
+        WaitMessageHandler.addToScene(scene);
         if (!priorActions.getActions().contains(DISABLER)) {
             priorActions.addAction(0, DISABLER);
         }
@@ -530,7 +532,7 @@ public class CasaModelGraphUtilities {
             priorActions.removeAction(DISABLER);
             WaitMessageHandler.removeFromScene(scene);
         } else {
-            WaitMessageHandler.addToScene(scene, null);
+            WaitMessageHandler.addToScene(scene);
             if (!priorActions.getActions().contains(DISABLER)) {
                 priorActions.addAction(0, DISABLER);
             }

@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -159,14 +159,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.METHOD) &&
-                        ModelElementImpl.nameKindMatch(element.getName(), NameKind.EXACT_NAME, queryName) &&
+                        ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName) &&
                         (modifiers.length == 0 ||
                         (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
             }
         });
     }
 
-    public Collection<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName,
+    public Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName,
             final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
@@ -174,8 +174,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
 
         //TODO: example how to improve perf. for regexp lookup
-        if (nameKind.equals(NameKind.REGEXP) || nameKind.equals(NameKind.CASE_INSENSITIVE_REGEXP)) {
-            final Pattern p = Pattern.compile(nameKind.equals(NameKind.CASE_INSENSITIVE_REGEXP) ? queryName.toLowerCase() : queryName);
+        if (nameKind.equals(QuerySupport.Kind.REGEXP) || nameKind.equals(QuerySupport.Kind.CASE_INSENSITIVE_REGEXP)) {
+            final Pattern p = Pattern.compile(nameKind.equals(QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) ? queryName.toLowerCase() : queryName);
             return filter(getElements(), new ElementFilter() {
 
                 public boolean isAccepted(ModelElement element) {
@@ -203,10 +203,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     public Collection<? extends ClassConstantElement> findDeclaredConstants(String... queryName) {
-        return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
+        return findDeclaredConstants(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public Collection<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.findClassConstants(this, queryName);
@@ -233,7 +233,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 while (clz != null && allConstants.isEmpty()) {
                     clz = ModelUtils.getFirst(clz.getSuperClasses());
                     if (clz != null) {
-                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), "", NameKind.PREFIX);//NOI18N
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), "", QuerySupport.Kind.PREFIX);//NOI18N
                         for (IndexedConstant indexedConstant : indexedConstants) {
                             allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) type, indexedConstant));
                         }
@@ -244,7 +244,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 if (allConstants.isEmpty()) {
                     for (InterfaceScope ifaceScope : interfaceScopes) {
-                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", QuerySupport.Kind.PREFIX);//NOI18N
                         for (IndexedConstant indexedConstant : indexedConstants) {
                             allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
                             break;
@@ -270,7 +270,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 while (clz != null && allConstants.isEmpty()) {
                     clz = ModelUtils.getFirst(clz.getSuperClasses());
                     if (clz != null) {
-                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), queryName, NameKind.PREFIX);
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), queryName, QuerySupport.Kind.PREFIX);
                         for (IndexedConstant indexedConstant : indexedConstants) {
                             allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) type, indexedConstant));
                         }
@@ -281,7 +281,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 if (allConstants.isEmpty()) {
                     for (InterfaceScope ifaceScope : interfaceScopes) {
-                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", QuerySupport.Kind.PREFIX);//NOI18N
                         for (IndexedConstant indexedConstant : indexedConstants) {
                             allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
                             break;
@@ -307,7 +307,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 while (clz != null && allMethods.isEmpty()) {
                     clz = ModelUtils.getFirst(clz.getSuperClasses());
                     if (clz != null) {
-                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
                         for (IndexedFunction indexedFunction : indexedFunctions) {
                             allMethods.add(new MethodScopeImpl((TypeScopeImpl) clz, indexedFunction, PhpKind.METHOD));
                         }
@@ -318,7 +318,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 if (allMethods.isEmpty()) {
                     for (InterfaceScope ifaceScope : interfaceScopes) {
-                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
                         for (IndexedFunction indexedFunction : indexedFunctions) {
                             allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
                             break;
@@ -345,7 +345,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 while (clz != null && allMethods.isEmpty()) {
                     clz = ModelUtils.getFirst(clz.getSuperClasses());
                     if (clz != null) {
-                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), queryName, NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), queryName, QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
                         for (IndexedFunction indexedFunction : indexedFunctions) {
                             allMethods.add(new MethodScopeImpl((TypeScopeImpl) clz, indexedFunction, PhpKind.METHOD));
                         }
@@ -356,7 +356,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
                 if (allMethods.isEmpty()) {
                     for (InterfaceScope ifaceScope : interfaceScopes) {
-                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
                         for (IndexedFunction indexedFunction : indexedFunctions) {
                             allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
                             break;

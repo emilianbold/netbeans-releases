@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.hints.infrastructure;
 
 import org.jruby.nb.ast.Node;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 
 /**
@@ -47,7 +48,9 @@ import org.netbeans.modules.ruby.AstPath;
  * 
  * @author Tor Norbye
  */
-public class RubyRuleContext extends org.netbeans.modules.gsf.api.RuleContext {
+public class RubyRuleContext extends RuleContext {
+
     public AstPath path;
     public Node node;
+    
 }

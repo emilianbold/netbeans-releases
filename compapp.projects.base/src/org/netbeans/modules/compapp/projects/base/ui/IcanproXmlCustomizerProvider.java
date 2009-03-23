@@ -28,7 +28,9 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.xml.catalogsupport.ui.customizer.CustomizerProviderImpl;
+// todo NB_65_VLV
+//import org.netbeans.modules.xml.catalogsupport.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.catalog.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.CustomizerGeneral;
@@ -44,15 +46,17 @@ public class IcanproXmlCustomizerProvider extends CustomizerProviderImpl {
     private static final String GENERAL = "General";
     private IcanproProjectProperties projectProperties;
     private String projectConfigurationNamespace;
+    private boolean showAllowBetaFeatures;
 
-    /** Creates a new instance of BpelProjectCustomizerProvider */
-//    public XsltProjectCustomizerProvider(Project project) {
-//        this(project, 
-//             project.getLookup().lookup(AntProjectHelper.class),
-//             project.getLookup().lookup(ReferenceHelper.class));
-//    }
-//
-    
+    public IcanproXmlCustomizerProvider(Project project, 
+            AntProjectHelper helper, 
+            ReferenceHelper refHelper, String projectConfigurationNamespace, 
+            boolean showAllowBetaFeatures) 
+    {
+        this(project, helper, refHelper, projectConfigurationNamespace);
+        this.showAllowBetaFeatures = showAllowBetaFeatures;
+    }
+
     public IcanproXmlCustomizerProvider(Project project, 
             AntProjectHelper helper, 
             ReferenceHelper refHelper, String projectConfigurationNamespace) 
@@ -82,8 +86,8 @@ public class IcanproXmlCustomizerProvider extends CustomizerProviderImpl {
         projectProperties = new IcanproProjectProperties(
                 getProject(), 
                 getAntProjectHelper(), 
-                getRefHelper(), projectConfigurationNamespace); //((Project)getProject()).getProjectProperties();
-        CustomizerGeneral generalPanel = new CustomizerGeneral(projectProperties);
+                getRefHelper(), projectConfigurationNamespace);
+        CustomizerGeneral generalPanel = new CustomizerGeneral(projectProperties, showAllowBetaFeatures);
         generalPanel.initValues();
         map.put(general, generalPanel);
         return map;

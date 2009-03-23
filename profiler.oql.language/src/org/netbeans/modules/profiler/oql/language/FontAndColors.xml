@@ -44,14 +44,14 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="keyword" name="instanceof"/>
+    <fontcolor default="error"   name="clazz-typo">
+        <font style="italic"/>
+    </fontcolor>
 
-    <fontcolor default="identifier" name="class">
+    <fontcolor default="identifier" name="clazz">
         <font style="italic"/>
     </fontcolor>
 
     <fontcolor default="separator" name="braces"/>
-    <fontcolor default="identifier" name="operator"/>
-    <fontcolor default="number" name="numeric"/>
-    <fontcolor foreColor="bbaa0000" name="oql_keyword"/>
-    <fontcolor foreColor="11aa8300" name="oql_method"/>
+    <fontcolor foreColor="gray" name="js-block"/>
 </fontscolors>

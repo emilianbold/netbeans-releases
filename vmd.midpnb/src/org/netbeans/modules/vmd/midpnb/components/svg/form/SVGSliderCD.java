@@ -146,8 +146,8 @@ public class SVGSliderCD extends ComponentDescriptor{
                 //code
                 createSetterPresenter(),
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGSliderEventSourceCD.TYPEID )
+                MidpCodePresenterSupport.createAddImportPresenter()
+                //new SVGCodeFooter( SVGSliderEventSourceCD.TYPEID )
         );
     }
 

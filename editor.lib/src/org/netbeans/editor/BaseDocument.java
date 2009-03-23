@@ -1550,7 +1550,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
         if (editorKit == null) {
             // Try 'text/plain'
-            LOG.warning("No registered editor kit for '" + mimeType + "', trying 'text/plain'."); //NOI18N
+            LOG.config("No registered editor kit for '" + mimeType + "', trying 'text/plain'."); //NOI18N
             editorKit = MimeLookup.getLookup("text/plain").lookup(EditorKit.class); //NOI18N
             if (editorKit == null) {
                 LOG.warning("No registered editor kit for 'text/plain', using default."); //NOI18N
@@ -2156,7 +2156,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return toString();
     }
 
-    private void incrementDocVersion() {
+    /* package */ void incrementDocVersion() {
         ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
     }
 

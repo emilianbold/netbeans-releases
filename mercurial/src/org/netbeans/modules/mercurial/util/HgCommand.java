@@ -851,31 +851,46 @@ public class HgCommand {
 
             rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
+            boolean stillInMessage = false; // commit message can have multiple lines !!!
             for (String s : list) {
                 if (s.indexOf(HG_LOG_REVISION_OUT) == 0) {
                     rev = s.substring(HG_LOG_REVISION_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_AUTHOR_OUT) == 0) {
                     author = s.substring(HG_LOG_AUTHOR_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_DESCRIPTION_OUT) == 0) {
                     desc = s.substring(HG_LOG_DESCRIPTION_OUT.length()).trim();
+                    stillInMessage = true;
                 } else if (s.indexOf(HG_LOG_DATE_OUT) == 0) {
                     date = s.substring(HG_LOG_DATE_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_ID_OUT) == 0) {
                     id = s.substring(HG_LOG_ID_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_PARENTS_OUT) == 0) {
                     parents = s.substring(HG_LOG_PARENTS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_FILEMODS_OUT) == 0) {
                     fm = s.substring(HG_LOG_FILEMODS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_FILEADDS_OUT) == 0) {
                     fa = s.substring(HG_LOG_FILEADDS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_FILEDELS_OUT) == 0) {
                     fd = s.substring(HG_LOG_FILEDELS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_FILECOPIESS_OUT) == 0) {
                     fc = s.substring(HG_LOG_FILECOPIESS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_ENDCS_OUT) == 0) {
+                    stillInMessage = false;
                     bEnd = true;
                 } else {
-                    // Ignore all other lines
+                    if (stillInMessage) {
+                        // add next lines of commit message
+                        desc += "\n" + s;
+                    }
                 }
 
                 if (rev != null & bEnd) {

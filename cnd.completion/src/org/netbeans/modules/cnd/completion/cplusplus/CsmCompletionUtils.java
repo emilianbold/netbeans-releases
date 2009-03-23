@@ -46,6 +46,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
@@ -53,6 +54,9 @@ import org.netbeans.modules.editor.NbEditorDocument;
  * @author Vladimir Kvashin
  */
 public class CsmCompletionUtils {
+    public static final String CPP_AUTO_COMPLETION_TRIGGERS = "cppAutoCompletionTriggers"; //NOI18N
+    public static final String PREPRPOC_AUTO_COMPLETION_TRIGGERS = "autoCompletionTriggersPreproc"; //NOI18N
+    public static final String CPP_AUTO_INSERT_INCLUDE_DIRECTIVES = "autoInsertIncludeDirectives"; //NOI18N
 
     private CsmCompletionUtils() {
     }
@@ -111,4 +115,9 @@ public class CsmCompletionUtils {
         return prefs.getBoolean(SimpleValueNames.COMPLETION_NATURAL_SORT, false);
     }
 
+    public static boolean isAutoInsertIncludeDirectives() {
+        String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE; // now all settings are from C++
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        return prefs.getBoolean(CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true);
+    }
 }

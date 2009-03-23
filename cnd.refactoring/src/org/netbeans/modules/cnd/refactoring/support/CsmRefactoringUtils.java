@@ -79,7 +79,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringUtils {
-    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
+    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", true); // NOI18N
     
     private CsmRefactoringUtils() {
     }

@@ -86,7 +86,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         procList = new ProcessList(this);
         filterController = new FilterController(this);
         controller = new GdbAttachController();
-        initProcessModel();
+        initProcessModel(true);
         initComponents();
         postComponentsInit();
     }
@@ -112,7 +112,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         }
     }
     
-    private void initProcessModel() {
+    private synchronized void initProcessModel(boolean clear) {
+        if (processModel != null && !clear) {
+            return;
+        }
         processModel = new AttachTableModel();
         for (AttachTableColumn hdr : procList.getColumnHeaders()) {
             processModel.addColumn(hdr);
@@ -136,7 +139,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     }
     
     private void updateProcessList() {
-        initProcessModel();
+        initProcessModel(true);
         processTable.setModel(processModel);
         setupCommandColumn();
         // Now get the process list
@@ -164,10 +167,17 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                 row.add(tok.nextToken());
             }
             if (re == null || re.matcher(line).find()) {
+                Vector<String> rowData = null;
                 if (procList.isWindowsPsFound()) {
-                    processModel.addRow(reorderWindowsProcLine(row));
+                    rowData = reorderWindowsProcLine(row);
+                } else if (procList.isStd()) {
+                    rowData = combineArgs(row);
                 } else {
-                    processModel.addRow(combineArgs(row));
+                    // too early, the process list is not yet ready
+                }
+                if (rowData != null) {
+                    initProcessModel(false);
+                    processModel.addRow(rowData);
                 }
             }
         }

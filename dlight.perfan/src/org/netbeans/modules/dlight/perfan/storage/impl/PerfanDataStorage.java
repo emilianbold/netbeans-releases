@@ -38,22 +38,16 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public final class PerfanDataStorage extends DataStorage {
 
-    private final Object lock = new String(PerfanDataStorage.class.getName());
-    private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private Erprint erprint;
 
     public PerfanDataStorage() {
@@ -61,11 +55,13 @@ public final class PerfanDataStorage extends DataStorage {
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
-        if (erprint != null) {
-            erprint.stop();
+        synchronized (this) {
+            if (erprint != null) {
+                erprint.stop();
+            }
+
+            erprint = new Erprint(execEnv, sproHome, experimentDirectory);
         }
-        
-        erprint = new Erprint(execEnv, sproHome, experimentDirectory);
     }
 
     // TODO: implement!
@@ -83,32 +79,20 @@ public final class PerfanDataStorage extends DataStorage {
      * TODO: change the behavior later...
      */
     public String[] getTopFunctions(Metrics metrics, int limit) {
-        String[] result = null;
-        synchronized (lock) {
-            erprint.restart();
-            erprint.setMetrics(metrics.mspec);
-            erprint.setSortBy(metrics.msort);
-            result = erprint.getHotFunctions(limit);
-        }
-        return result;
+        return erprint.getHotFunctions(metrics, limit, true);
     }
 
-    public List fetchSummaryData(List<String> colNames) {
-        List<Object> result = new ArrayList<Object>();
-        ExperimentStatistics stat = erprint.getExperimentStatistics();
-
-        for (String col : colNames) {
-            if (col.equals(SunStudioDCConfiguration.c_ulockSummary.getColumnName())) {
-                result.add(stat.getULock_p());
-            }
-        }
-
-        return result;
+    public ExperimentStatistics fetchSummaryData() {
+        return erprint.getExperimentStatistics(true);
     }
 
     @Override
     public Collection<DataStorageType> getStorageTypes() {
         return PerfanDataStorageFactory.supportedTypes;
+    }
+
+    public void shutdown() {
+        erprint.stop();
     }
 
     @Override

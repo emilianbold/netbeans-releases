@@ -52,18 +52,6 @@ public interface CommandProvider {
     /**
      * Run a remote commane via cnd.remote's RemoteCommandSupport.
      *
-     * @param hkey The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env Environment
-     * @return The exit status of the command
-     *
-     * TODO: deprecete and remove
-     */
-    public int run(String hkey, String cmd, Map<String, String> env);
-
-    /**
-     * Run a remote commane via cnd.remote's RemoteCommandSupport.
-     *
      * @param env The user and remote host (user@host)
      * @param cmd The command to run
      * @param env Environment

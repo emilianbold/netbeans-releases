@@ -55,7 +55,7 @@ public interface Validateable<T> {
      * against.
      * @return a Future representing pending completion of the validation
      */
-    public Future<ValidationStatus> validate(T objectToValidate);
+    public ValidationStatus validate(T objectToValidate);
 
     /**
      * Discards previous result of <tt>validate</tt> method.

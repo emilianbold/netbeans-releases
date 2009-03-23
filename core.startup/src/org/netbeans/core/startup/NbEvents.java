@@ -312,7 +312,7 @@ final class NbEvents extends Events {
     private void notify(String text, boolean warn) {
         if (Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
             // #21773: interferes with automated GUI testing.
-            logger.log(Level.INFO, text + "\n");
+            logger.log(Level.WARNING, text + "\n");
         } else {
             // Normal - display dialog.
             new Notifier(text, warn);

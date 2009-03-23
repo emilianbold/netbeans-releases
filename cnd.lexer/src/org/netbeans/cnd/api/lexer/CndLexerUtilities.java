@@ -211,6 +211,19 @@ public final class CndLexerUtilities {
         }
     }
 
+    public static boolean isKeyword(String str) {
+        try {
+            CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
+            return id != null &&
+                    (CppTokenId.KEYWORD_CATEGORY.equals(id.primaryCategory())
+                    || CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(id.primaryCategory())
+                    || CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(id.primaryCategory()))
+                    || CppTokenId.PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY.equals(id.primaryCategory());
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     public static boolean isType(String str) {
         try {
             // replace all spaces

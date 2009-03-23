@@ -32,6 +32,7 @@ Searchable Keys:
   method : encode
   method : initialize(id)|PRIVATE|
   method : new(id)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -54,6 +55,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(address,protocol,bitmap)|PRIVATE|
   method : new(address,protocol,bitmap)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -74,6 +76,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -94,6 +97,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -117,6 +121,7 @@ Searchable Keys:
   method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -144,6 +149,7 @@ Searchable Keys:
   method : new(address)|PRIVATE|STATIC|
   method : to_name;;Name;
   method : to_s
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -164,6 +170,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(cpu,os)|PRIVATE|
   method : new(cpu,os)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -183,6 +190,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -204,6 +212,7 @@ Searchable Keys:
   method : inspect;;String;
   method : new(string)|PRIVATE|STATIC|
   method : to_s
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -224,6 +233,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(rmailbx,emailbx)|PRIVATE|
   method : new(rmailbx,emailbx)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -244,6 +254,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(preference,exchange)|PRIVATE|
   method : new(preference,exchange)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -269,6 +280,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|
   method : new(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -287,6 +299,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(name)|PRIVATE|
   method : new(name)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -310,6 +323,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(priority,weight,port,target)|DOCUMENTED|PRIVATE|
   method : new(priority,weight,port,target)|DOCUMENTED|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1305
@@ -329,6 +343,7 @@ Searchable Keys:
   method : initialize(msg,data,sock,queue)|PRIVATE|
   method : new(msg,data,sock,queue)|PRIVATE|STATIC|
   method : recv(msg)
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -349,6 +364,7 @@ Searchable Keys:
   method : encode_rdata(msg)
   method : initialize(first_string,*rest_strings)|PRIVATE|
   method : new(first_string,*rest_strings)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -363,6 +379,7 @@ Searchable Keys:
   constant : TypeValue;Fixnum
   extends : Query
   fqn : Resolv::DNS::Resource::ANY
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -377,6 +394,7 @@ Searchable Keys:
   constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::CNAME
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -405,6 +423,7 @@ Searchable Keys:
   method : parse_resolv_conf(filename)|STATIC|
   method : resolv(name)
   method : single?;;Hash|NilClass;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -426,6 +445,7 @@ Searchable Keys:
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -460,6 +480,7 @@ Searchable Keys:
   method : lazy_initialize
   method : new(config_info)|PRIVATE|STATIC|
   method : open(*args)|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -473,6 +494,7 @@ Searchable Keys:
   class-ig : decodeerror
   extends : StandardError
   fqn : Resolv::DNS::DecodeError
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -486,6 +508,7 @@ Searchable Keys:
   class-ig : encodeerror
   extends : StandardError
   fqn : Resolv::DNS::EncodeError
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -514,6 +537,7 @@ Searchable Keys:
   method : initialize(filename)|PRIVATE|
   method : lazy_initialize
   method : new(filename)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -527,6 +551,7 @@ Searchable Keys:
   class-ig : in
   constant : ClassValue;Fixnum
   fqn : Resolv::DNS::Resource::IN
+  require : resolv
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|MODULE|;28
@@ -540,6 +565,7 @@ Searchable Keys:
   class-ig : label
   fqn : Resolv::DNS::Label
   method : split(arg)|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |MODULE|
@@ -567,6 +593,7 @@ Searchable Keys:
   method : get_unpack(template)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -592,6 +619,7 @@ Searchable Keys:
   method : put_string(d)
   method : put_string_list(ds)
   method : to_s
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -606,6 +634,7 @@ Searchable Keys:
   constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::NS
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -619,6 +648,7 @@ Searchable Keys:
   class-ig : nxdomain
   extends : ResolvError
   fqn : Resolv::DNS::Config::NXDomain
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -645,6 +675,7 @@ Searchable Keys:
   method : subdomain_of?(other)|DOCUMENTED|;;FalseClass;
   method : to_a;;Array;
   method : to_s|DOCUMENTED|;;String;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -662,6 +693,7 @@ Searchable Keys:
   constant : Status;Fixnum
   constant : Update;Fixnum
   fqn : Resolv::DNS::OpCode
+  require : resolv
 
 Not Searchable Keys:
   attrs : |MODULE|
@@ -675,6 +707,7 @@ Searchable Keys:
   class-ig : otherresolverror
   extends : ResolvError
   fqn : Resolv::DNS::Config::OtherResolvError
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -689,6 +722,7 @@ Searchable Keys:
   constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::PTR
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -703,6 +737,7 @@ Searchable Keys:
   fqn : Resolv::DNS::Query
   method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -733,6 +768,7 @@ Searchable Keys:
   constant : YXDomain;Fixnum
   constant : YXRRSet;Fixnum
   fqn : Resolv::DNS::RCode
+  require : resolv
 
 Not Searchable Keys:
   attrs : |MODULE|
@@ -746,6 +782,7 @@ Searchable Keys:
   class-ig : requesterror
   extends : StandardError
   fqn : Resolv::DNS::Requester::RequestError
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -765,6 +802,7 @@ Searchable Keys:
   method : delete(arg)
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -794,6 +832,7 @@ Searchable Keys:
   method : getnames(address)|STATIC|
   method : initialize(resolvers)|PRIVATE|
   method : new(resolvers)|PRIVATE|STATIC|
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -806,6 +845,7 @@ Searchable Keys:
   class-ig : resolverror
   extends : StandardError
   fqn : Resolv::ResolvError
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -819,6 +859,7 @@ Searchable Keys:
   class-ig : resolvtimeout
   extends : TimeoutError
   fqn : Resolv::ResolvTimeout
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -841,6 +882,7 @@ Searchable Keys:
   method : eql?(other)
   method : get_class(type_value,class_value)|STATIC|
   method : hash;;Integer;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -859,6 +901,7 @@ Searchable Keys:
   method : initialize(msg,data,sock,host,port,queue)|PRIVATE|
   method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
   method : send;;Object;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -873,6 +916,7 @@ Searchable Keys:
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::ConnectedUDP::Sender
   method : send;;Object;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -887,6 +931,7 @@ Searchable Keys:
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::TCP::Sender
   method : send;;IO;
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -909,6 +954,7 @@ Searchable Keys:
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -928,6 +974,7 @@ Searchable Keys:
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
+  require : resolv
 
 Not Searchable Keys:
   attrs : |CLASS|

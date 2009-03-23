@@ -188,6 +188,20 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getSelectionEnd();
     }
 
+    public String getSelectedText() {
+        int start = getSelectionStart();
+        int end = getSelectionEnd();
+        String str = null;
+        if (start > 0 && end > start) {
+            try {
+                str = getDocument().getText(start, end - start);
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return str;
+    }
+
     public void setSelection (int start, int end) {
         int rstart = Math.min (start, end);
         int rend = Math.max (start, end);
@@ -317,7 +331,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
         return lastLength;
     }
-    
+
+    public void scrollTo(int pos) {
+        getCaret().setDot(pos);
+        try {
+            Rectangle rect = textView.modelToView(pos);
+            textView.scrollRectToVisible(rect);
+            locked = false;
+        } catch (BadLocationException ex) {
+        }
+    }
+
     private boolean inSendCaretToLine = false;
     private int lineToScroll = -1;
     public final boolean sendCaretToLine(int idx, boolean select) {

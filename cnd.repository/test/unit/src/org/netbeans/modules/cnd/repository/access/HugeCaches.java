@@ -71,7 +71,7 @@ public class HugeCaches extends RepositoryAccessTestBase {
 	
 	int count = Integer.getInteger("huge.caches.laps", 1000);
 	
-	final TraceModelBase traceModel = new  TraceModelBase();
+	final TraceModelBase traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot1.getAbsolutePath(), projectRoot2.getAbsolutePath());
 	ModelImpl model = traceModel.getModel();

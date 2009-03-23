@@ -44,7 +44,7 @@
  *	matches the schema element 'templateType'.
  *  The root bean class is TemplateGroup
  *
- *	Generated on Thu Sep 14 11:59:06 PDT 2006
+ *	Generated on Wed Oct 22 17:28:35 PDT 2008
  * @Generated
  */
 
@@ -53,22 +53,30 @@ package org.netbeans.modules.xml.wsdl.bindingsupport.template;
 public class TemplateType {
 	public static final String NAME = "Name";	// NOI18N
 	public static final String DEFAULT = "Default";	// NOI18N
+	public static final String SKELETON = "Skeleton";	// NOI18N
+	public static final String MODE = "Mode";	// NOI18N
+	public static final String WSDLTEMPLATE = "WsdlTemplate";	// NOI18N
 	public static final String WSDLELEMENT = "WsdlElement";	// NOI18N
 
 	private java.lang.String _Name;
 	private boolean _Default;
+	private boolean _Skeleton;
+	private java.lang.String _Mode;
+	private WsdlTemplateType _WsdlTemplate;
 	private java.util.List _WsdlElement = new java.util.ArrayList();	// List<WsdlElementType>
 
 	/**
 	 * Normal starting point constructor.
 	 */
 	public TemplateType() {
+		_WsdlTemplate = newWsdlTemplateType();
 	}
 
 	/**
 	 * Required parameters constructor
 	 */
-	public TemplateType(org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType[] wsdlElement) {
+	public TemplateType(org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType wsdlTemplate, org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType[] wsdlElement) {
+		_WsdlTemplate = wsdlTemplate;
 		if (wsdlElement!= null) {
 			((java.util.ArrayList) _WsdlElement).ensureCapacity(wsdlElement.length);
 			for (int i = 0; i < wsdlElement.length; ++i) {
@@ -91,6 +99,9 @@ public class TemplateType {
 	public TemplateType(org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType source, boolean justData) {
 		_Name = source._Name;
 		_Default = source._Default;
+		_Skeleton = source._Skeleton;
+		_Mode = source._Mode;
+		_WsdlTemplate = (source._WsdlTemplate == null) ? null : newWsdlTemplateType(source._WsdlTemplate, justData);
 		for (java.util.Iterator it = source._WsdlElement.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType srcElement = (org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType)it.next();
@@ -114,6 +125,33 @@ public class TemplateType {
 
 	public boolean isDefault() {
 		return _Default;
+	}
+
+	// This attribute is optional
+	public void setSkeleton(boolean value) {
+		_Skeleton = value;
+	}
+
+	public boolean isSkeleton() {
+		return _Skeleton;
+	}
+
+	// This attribute is optional
+	public void setMode(java.lang.String value) {
+		_Mode = value;
+	}
+
+	public java.lang.String getMode() {
+		return _Mode;
+	}
+
+	// This attribute is mandatory
+	public void setWsdlTemplate(org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType value) {
+		_WsdlTemplate = value;
+	}
+
+	public org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType getWsdlTemplate() {
+		return _WsdlTemplate;
 	}
 
 	// This attribute is an array containing at least one element
@@ -164,6 +202,22 @@ public class TemplateType {
 			_WsdlElement.remove(pos);
 		}
 		return pos;
+	}
+
+	/**
+	 * Create a new bean using it's default constructor.
+	 * This does not add it to any bean graph.
+	 */
+	public org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType newWsdlTemplateType() {
+		return new org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType();
+	}
+
+	/**
+	 * Create a new bean, copying from another one.
+	 * This does not add it to any bean graph.
+	 */
+	public org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType newWsdlTemplateType(WsdlTemplateType source, boolean justData) {
+		return new org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType(source, justData);
 	}
 
 	/**
@@ -227,10 +281,23 @@ public class TemplateType {
 		out.write(" default='");
 		out.write(_Default ? "true" : "false");
 		out.write("'");	// NOI18N
+		// skeleton is an attribute with namespace http://xml.netbeans.org/schema/templates
+		out.write(" skeleton='");
+		out.write(_Skeleton ? "true" : "false");
+		out.write("'");	// NOI18N
+		// mode is an attribute with namespace http://xml.netbeans.org/schema/templates
+		if (_Mode != null) {
+			out.write(" mode='");
+			org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup.writeXML(out, _Mode, true);
+			out.write("'");	// NOI18N
+		}
 	}
 
 	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
 		String nextIndent = indent + "	";
+		if (_WsdlTemplate != null) {
+			_WsdlTemplate.writeNode(out, "wsdlTemplate", null, nextIndent, namespaceMap);
+		}
 		for (java.util.Iterator it = _WsdlElement.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType element = (org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType)it.next();
@@ -281,6 +348,16 @@ public class TemplateType {
 			attrValue = attr.getValue();
 			_Default = java.lang.Boolean.valueOf(attrValue).booleanValue();
 		}
+		attr = (org.w3c.dom.Attr) attrs.getNamedItem("skeleton");
+		if (attr != null) {
+			attrValue = attr.getValue();
+			_Skeleton = java.lang.Boolean.valueOf(attrValue).booleanValue();
+		}
+		attr = (org.w3c.dom.Attr) attrs.getNamedItem("mode");
+		if (attr != null) {
+			attrValue = attr.getValue();
+			_Mode = attrValue;
+		}
 	}
 
 	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
@@ -292,7 +369,11 @@ public class TemplateType {
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "wsdlElement") {
+			if (childNodeName == "wsdlTemplate") {
+				_WsdlTemplate = newWsdlTemplateType();
+				_WsdlTemplate.readNode(childNode, namespacePrefixes);
+			}
+			else if (childNodeName == "wsdlElement") {
 				WsdlElementType aWsdlElement = newWsdlElementType();
 				aWsdlElement.readNode(childNode, namespacePrefixes);
 				_WsdlElement.add(aWsdlElement);
@@ -310,6 +391,12 @@ public class TemplateType {
 			setName((java.lang.String)value);
 		else if (name == "default")
 			setDefault(((java.lang.Boolean)value).booleanValue());
+		else if (name == "skeleton")
+			setSkeleton(((java.lang.Boolean)value).booleanValue());
+		else if (name == "mode")
+			setMode((java.lang.String)value);
+		else if (name == "wsdlTemplate")
+			setWsdlTemplate((WsdlTemplateType)value);
 		else if (name == "wsdlElement")
 			addWsdlElement((WsdlElementType)value);
 		else if (name == "wsdlElement[]")
@@ -323,6 +410,12 @@ public class TemplateType {
 			return getName();
 		if (name == "default")
 			return (isDefault() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
+		if (name == "skeleton")
+			return (isSkeleton() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
+		if (name == "mode")
+			return getMode();
+		if (name == "wsdlTemplate")
+			return getWsdlTemplate();
 		if (name == "wsdlElement[]")
 			return getWsdlElement();
 		throw new IllegalArgumentException(name+" is not a valid property name for TemplateType");
@@ -364,6 +457,17 @@ public class TemplateType {
 					return "Name";
 				}
 			}
+			if (child == _Mode) {
+				if (returnConstName) {
+					return MODE;
+				} else if (returnSchemaName) {
+					return "mode";
+				} else if (returnXPathName) {
+					return "@mode";
+				} else {
+					return "Mode";
+				}
+			}
 		}
 		if (childObj instanceof WsdlElementType) {
 			WsdlElementType child = (WsdlElementType) childObj;
@@ -385,6 +489,20 @@ public class TemplateType {
 				++index;
 			}
 		}
+		if (childObj instanceof WsdlTemplateType) {
+			WsdlTemplateType child = (WsdlTemplateType) childObj;
+			if (child == _WsdlTemplate) {
+				if (returnConstName) {
+					return WSDLTEMPLATE;
+				} else if (returnSchemaName) {
+					return "wsdlTemplate";
+				} else if (returnXPathName) {
+					return "wsdlTemplate";
+				} else {
+					return "WsdlTemplate";
+				}
+			}
+		}
 		if (childObj instanceof java.lang.Boolean) {
 			java.lang.Boolean child = (java.lang.Boolean) childObj;
 			if (((java.lang.Boolean)child).booleanValue() == _Default) {
@@ -396,6 +514,17 @@ public class TemplateType {
 					return "@default";
 				} else {
 					return "Default";
+				}
+			}
+			if (((java.lang.Boolean)child).booleanValue() == _Skeleton) {
+				if (returnConstName) {
+					return SKELETON;
+				} else if (returnSchemaName) {
+					return "skeleton";
+				} else if (returnXPathName) {
+					return "@skeleton";
+				} else {
+					return "Skeleton";
 				}
 			}
 		}
@@ -416,6 +545,12 @@ public class TemplateType {
 	 * Put all child beans into the beans list.
 	 */
 	public void childBeans(boolean recursive, java.util.List beans) {
+		if (_WsdlTemplate != null) {
+			if (recursive) {
+				_WsdlTemplate.childBeans(true, beans);
+			}
+			beans.add(_WsdlTemplate);
+		}
 		for (java.util.Iterator it = _WsdlElement.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType element = (org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType)it.next();
@@ -445,6 +580,15 @@ public class TemplateType {
 		if (!(_Default == inst._Default)) {
 			return false;
 		}
+		if (!(_Skeleton == inst._Skeleton)) {
+			return false;
+		}
+		if (!(_Mode == null ? inst._Mode == null : _Mode.equals(inst._Mode))) {
+			return false;
+		}
+		if (!(_WsdlTemplate == null ? inst._WsdlTemplate == null : _WsdlTemplate.equals(inst._WsdlTemplate))) {
+			return false;
+		}
 		if (sizeWsdlElement() != inst.sizeWsdlElement())
 			return false;
 		// Compare every element.
@@ -463,6 +607,9 @@ public class TemplateType {
 		int result = 17;
 		result = 37*result + (_Name == null ? 0 : _Name.hashCode());
 		result = 37*result + (_Default ? 0 : 1);
+		result = 37*result + (_Skeleton ? 0 : 1);
+		result = 37*result + (_Mode == null ? 0 : _Mode.hashCode());
+		result = 37*result + (_WsdlTemplate == null ? 0 : _WsdlTemplate.hashCode());
 		result = 37*result + (_WsdlElement == null ? 0 : _WsdlElement.hashCode());
 		return result;
 	}
@@ -475,6 +622,49 @@ public class TemplateType {
 
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://xml.netbeans.org/schema/templates"
             xmlns:tns="http://xml.netbeans.org/schema/templates"
@@ -486,20 +676,27 @@ public class TemplateType {
             </xsd:sequence>
             <xsd:attribute name="namespace" type="xsd:string"/>
             <xsd:attribute name="prefix" type="xsd:string"/>
+            <xsd:attribute name="skeleton" type="xsd:boolean"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:complexType name="templateType">
         <xsd:sequence>
+            <xsd:element name="wsdlTemplate" type="tns:wsdlTemplateType" maxOccurs="1"/>
             <xsd:element name="wsdlElement" type="tns:wsdlElementType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="default" type="xsd:boolean"/>
+        <xsd:attribute name="skeleton" type="xsd:boolean"/>
+        <xsd:attribute name="mode" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="wsdlElementType">
         <xsd:sequence>
             <xsd:element name="extensionElement" type="tns:extensionElementType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="wsdlTemplateType">
+        <xsd:attribute name="file" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="extensionElementType">
         <xsd:sequence>
@@ -512,6 +709,5 @@ public class TemplateType {
         <xsd:attribute name="defaultValue" type="xsd:string"/>
     </xsd:complexType>
 </xsd:schema>
-
 
 */

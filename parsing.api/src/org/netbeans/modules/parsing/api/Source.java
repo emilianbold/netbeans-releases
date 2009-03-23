@@ -297,7 +297,7 @@ public final class Source {
                             )
                         );
                         try {
-                            StringBuilder output = new StringBuilder((int) fileObject.getSize());
+                            StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
                             boolean lastCharCR = false;
                             char [] buffer = new char [1024];
                             int size = -1;

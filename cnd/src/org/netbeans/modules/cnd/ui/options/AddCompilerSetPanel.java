@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -70,7 +69,7 @@ import org.openide.util.NbBundle;
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
         this.csm = csm;
-        this.local = RemoteUtils.isLocalhost(csm.getHost());
+        this.local = csm.getExecutionEnvironment().isLocal();
 
         if (!local) {
             // we can't have Browse button for remote, so we use it to validate path on remote host

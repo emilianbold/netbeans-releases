@@ -55,6 +55,11 @@ import java.util.*;
  */
 class FilesystemInterceptor extends ProvidedExtensions implements FileChangeListener {
 
+    /**
+     * A verioned files remote repository or origin.
+     */
+    private static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
+
     private VersioningManager master;
 
     // === LIFECYCLE =======================================================================================
@@ -93,6 +98,15 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
         // can be optimized by taking out local history from the search
         return getInterceptor(file, false).isMutable(file);
+    }
+
+    @Override
+    public Object getAttribute(File file, String attrName) {
+        if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName)) {
+            return getInterceptor(file, file.isDirectory()).getAttribute(attrName);
+        } else {
+            return null;
+        }
     }
 
     // ==================================================================================================
@@ -333,6 +347,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             return interceptor.isMutable(file);
         }
 
+        private String getAttribute(String attrName) {
+            return interceptor.getAttribute(file, attrName);
+        }
+
         public boolean beforeDelete() {
             lhInterceptor.beforeDelete(file);
             return interceptor.beforeDelete(file);
@@ -454,7 +472,6 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                 return false;
             }
         }
-
 //        VCSInterceptor getInterceptor() {
 //            return interceptor;
 //        }

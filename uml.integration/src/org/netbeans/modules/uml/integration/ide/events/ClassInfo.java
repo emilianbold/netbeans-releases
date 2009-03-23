@@ -2815,7 +2815,6 @@ public class ClassInfo extends ElementInfo
 		    String name = m.getName();
 		    if (name != null && ! name.trim().equals("")) 
 		    {
-			//System.out.println("adding name = "+name);
 			attrNames.add(name);
 		    }
 		}

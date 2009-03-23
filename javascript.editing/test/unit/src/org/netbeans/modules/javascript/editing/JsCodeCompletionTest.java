@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
@@ -59,15 +62,22 @@ public class JsCodeCompletionTest extends JsTestBase {
         JsIndex.MAX_SEARCH_ITEMS = Integer.MAX_VALUE;
         JsCodeCompletion.MAX_COMPLETION_ITEMS = Integer.MAX_VALUE;
     }
-    
+
     @Override
-    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String expectedParameter, boolean expectSuccess) {
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(JsClassPathProvider.BOOT_CP, JsClassPathProvider.getBootClassPath());
+    }
+
+    @Override
+    protected void checkCall(ParserResult info, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedFunction[] methodHolder = new IndexedFunction[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = JsCodeCompletion.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        assertNotNull("Expecting JsParseResult, but got " + info, jspr);
+        boolean ok = JsCodeCompletion.computeMethodCall(jspr, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
 
         if (expectSuccess) {
             assertTrue(ok);

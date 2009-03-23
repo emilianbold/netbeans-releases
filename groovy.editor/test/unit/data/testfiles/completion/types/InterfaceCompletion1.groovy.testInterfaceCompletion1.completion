@@ -1,7 +1,17 @@
 Code completion result for source line:
 class SpecialGroovyClass implements |Runnable, Serializable {
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+PACKAGE    com                                        null
+PACKAGE    groovy                                     null
+PACKAGE    groovyjarjarantlr                          null
+PACKAGE    groovyjarjarasm                            null
+PACKAGE    groovyjarjarcommonscli                     null
+PACKAGE    java                                       null
+PACKAGE    javax                                      null
+PACKAGE    org                                        null
+PACKAGE    sun                                        null
+PACKAGE    sunw                                       null
 CLASS      AdaptingMetaClass                          null
 CLASS      Appendable                                 null
 CLASS      Buildable                                  null

@@ -114,6 +114,11 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         }
     }
 
+    @Override
+    protected InputOutput getIO() {
+        return this.inputOutput;
+    }
+
     private class Output implements Runnable {
 
         private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N

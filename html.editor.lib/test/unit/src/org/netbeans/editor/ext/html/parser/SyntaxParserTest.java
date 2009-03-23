@@ -42,13 +42,14 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.*;
 import java.io.IOException;
 import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.HTMLKit;
 
@@ -68,6 +69,7 @@ public class SyntaxParserTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         Logger.getLogger(SyntaxParser.class.getName()).setLevel(Level.FINE);
+        MockServices.setServices(MockMimeLookup.class);
     }
 
     public void testOpenTag() throws BadLocationException {
@@ -607,5 +609,46 @@ public class SyntaxParserTest extends TestBase {
         assertEquals("\"file\"", declaration.getDoctypeFile());
         
     }
+
+      public void testTagWithStyleAttributes() throws BadLocationException {
+        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        String text = "<div style=\"color:red\"/>";
+        //             012345678901 2345678 90 1 23456789 012345 6789
+        doc.insertString(0, text, null);
+        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
+
+        assertNotNull(parser);
+
+        parser.forceParse();
+
+        List<SyntaxElement> elements = parser.elements();
+
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+
+        SyntaxElement div = elements.get(0);
+
+        assertNotNull(div);
+        assertEquals(SyntaxElement.TYPE_TAG, div.type());
+        assertTrue(div instanceof SyntaxElement.Tag);
+
+        SyntaxElement.Tag divTag = (SyntaxElement.Tag) div;
+
+        List<SyntaxElement.TagAttribute> attributes = divTag.getAttributes();
+
+        assertNotNull(attributes);
+        assertEquals(1, attributes.size());
+
+        SyntaxElement.TagAttribute attr = attributes.get(0);
+
+        assertEquals("style", attr.getName());
+        assertEquals(5, attr.getNameOffset());
+        assertEquals("\"color:red\"", attr.getValue());
+        assertEquals(11, attr.getValueOffset());
+        assertEquals("\"color:red\"".length(), attr.getValueLength());
+
+
+    }
+
     
 }

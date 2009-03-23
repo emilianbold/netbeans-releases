@@ -228,6 +228,7 @@ public class InstantRenameActionTest extends NbTestCase {
         Document doc = ec.openDocument();
         
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         
         return InstantRenamePerformer.computeChangePoints(SourceUtilsTestUtil.getCompilationInfo(JavaSource.forFileObject(source), Phase.RESOLVED), offset, wasResolved);
     }

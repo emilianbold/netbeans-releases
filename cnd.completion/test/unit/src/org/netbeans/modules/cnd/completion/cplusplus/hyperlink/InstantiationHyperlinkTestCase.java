@@ -50,6 +50,14 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test159679() throws Exception {
+        // IZ159679: regression on Boost: resolver prefers global variable to local typedef
+        performTest("iz159679.cpp", 12, 25, "iz159679.cpp", 11, 5);
+        performTest("iz159679.cpp", 12, 35, "iz159679.cpp", 3, 5);
+        performTest("iz159679.cpp", 12, 40, "iz159679.cpp", 6, 5);
+        performTest("iz159679.cpp", 12, 45, "iz159679.cpp", 12, 5);
+    }
+
     public void test154777() throws Exception {
         // IZ154777: Unresolved inner type of specialization
         performTest("iz154777.cpp", 16, 19, "iz154777.cpp", 10, 9); // DD in CC<int>::DD::dType j;
@@ -91,5 +99,21 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#159054 : Unresolved id in case of reference to template as return type
         performTest("iz159054.cc", 9, 17, "iz159054.cc", 3, 5);
         performTest("iz159054.cc", 15, 17, "iz159054.cc", 4, 5);
+    }
+
+    public void test151194() throws Exception {
+        // IZ#151194 : Unresolved template instantiation with template as parameter
+        performTest("iz151194.cpp", 32, 12, "iz151194.cpp", 3, 5);
+    }
+
+    public void test154792() throws Exception {
+        // IZ#154792 : Completion fails on question mark
+        performTest("iz154792.cpp", 6, 34, "iz154792.cpp", 2, 5);
+    }
+
+    public void test151619() throws Exception {
+        // IZ#151619 : completion parser fails on complex template instantiation
+        performTest("iz151619.cpp", 6, 14, "iz151619.cpp", 3, 5);
+        performTest("iz151619.cpp", 7, 14, "iz151619.cpp", 3, 5);
     }
 }

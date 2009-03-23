@@ -207,7 +207,7 @@ public final class ProjectImpl extends ProjectBase {
             }
             removeNativeFileItem(impl.getUID());
             impl.dispose();
-            removeFile(new File(impl.getAbsolutePath()));
+            removeFile(impl.getAbsolutePath());
             APTDriver.getInstance().invalidateAPT(impl.getBuffer());
             ParserQueue.instance().remove(impl);
         }
@@ -374,7 +374,7 @@ public final class ProjectImpl extends ProjectBase {
         if (task != null) {
             task.cancel();
         }
-        task = RequestProcessor.getDefault().create(new Runnable() {
+         task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 try {
@@ -387,7 +387,11 @@ public final class ProjectImpl extends ProjectBase {
             }
         }, true);
         task.setPriority(Thread.MIN_PRIORITY);
-        task.schedule(TraceFlags.REPARSE_DELAY);
+        int delay = TraceFlags.REPARSE_DELAY;
+        if (file.getLastParseTime() / (delay+1) > 2) {
+            delay = Math.max(delay, file.getLastParseTime()+2000);
+        }
+        task.schedule(delay);
     }
 
     @Override

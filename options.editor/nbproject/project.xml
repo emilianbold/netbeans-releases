@@ -371,6 +371,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.apisupport.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.diff</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>

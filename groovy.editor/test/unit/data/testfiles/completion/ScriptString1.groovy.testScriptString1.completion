@@ -1,6 +1,6 @@
 Code completion result for source line:
 s.val|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     valueOf(Object)                 [STATIC,   String
 METHOD     valueOf(boolean)                [STATIC,   String

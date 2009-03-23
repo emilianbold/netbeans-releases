@@ -132,8 +132,7 @@ class SchemaBasedConfigPropertySupport<T>
             if (validate(newValue)) {                  
                 attr = propertySheetOwner.setSheetProperty(getName(), newValue);
                 
-                if (componentNode != null &&
-                        info instanceof JBIComponentConfigurationMBeanAttributeInfo) {
+                if (componentNode != null) {
                     checkForPromptToRestart();
                 }
             }
@@ -153,57 +152,59 @@ class SchemaBasedConfigPropertySupport<T>
     
     protected void checkForPromptToRestart() {
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+        if (info instanceof JBIComponentConfigurationMBeanAttributeInfo) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
 
-                JBIComponentConfigurationMBeanAttributeInfo myInfo =
-                        (JBIComponentConfigurationMBeanAttributeInfo)info;
+                    JBIComponentConfigurationMBeanAttributeInfo myInfo =
+                            (JBIComponentConfigurationMBeanAttributeInfo)info;
 
-                DoNotShowAgainMessage d;
+                    DoNotShowAgainMessage d;
 
-                if (myInfo.isApplicationRestartRequired() && 
-                        promptForApplicationRestart) {
-                    String compName = componentNode.getName();
+                    if (myInfo.isApplicationRestartRequired() && 
+                            promptForApplicationRestart) {
+                        String compName = componentNode.getName();
 
-                    try {
-                        RuntimeManagementServiceWrapper adminService = 
-                                componentNode.getAppserverJBIMgmtController().
-                                getRuntimeManagementServiceWrapper();
-                        List<String> saNames = 
-                                adminService.getServiceAssemblyNames(
-                                compName, AppserverJBIMgmtController.SERVER_TARGET);
-                        if (saNames.size() > 0) {
-                            d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
-                                    saNames.toString());
-                            if (d.getDoNotShowAgain()) {
-                                promptForApplicationRestart = false;
+                        try {
+                            RuntimeManagementServiceWrapper adminService = 
+                                    componentNode.getAppserverJBIMgmtController().
+                                    getRuntimeManagementServiceWrapper();
+                            List<String> saNames = 
+                                    adminService.getServiceAssemblyNames(
+                                    compName, AppserverJBIMgmtController.SERVER_TARGET);
+                            if (saNames.size() > 0) {
+                                d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
+                                        saNames.toString());
+                                if (d.getDoNotShowAgain()) {
+                                    promptForApplicationRestart = false;
+                                }
                             }
+                        } catch (ManagementRemoteException e) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                    e.getMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(nd);
                         }
-                    } catch (ManagementRemoteException e) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(
-                                e.getMessage(),
-                                NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
                     }
-                }
 
-                if (myInfo.isComponentRestartRequired() &&
-                        promptForComponentRestart) {
-                    d = promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
-                    if (d.getDoNotShowAgain()) {
-                        promptForComponentRestart = false;
+                    if (myInfo.isComponentRestartRequired() &&
+                            promptForComponentRestart) {
+                        d = promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
+                        if (d.getDoNotShowAgain()) {
+                            promptForComponentRestart = false;
+                        }
                     }
-                }
 
-                if (myInfo.isServerRestartRequired() &&
-                        promptForServerRestart) {
-                    d = promptForRestart("MSG_NEEDS_SERVER_RESTART");
-                    if (d.getDoNotShowAgain()) {
-                        promptForServerRestart = false;
-                    }
-                }         
-            }
-        });
+                    if (myInfo.isServerRestartRequired() &&
+                            promptForServerRestart) {
+                        d = promptForRestart("MSG_NEEDS_SERVER_RESTART");
+                        if (d.getDoNotShowAgain()) {
+                            promptForServerRestart = false;
+                        }
+                    }         
+                }
+            });
+        }
     }
     
     private DoNotShowAgainMessage promptForRestart(String msgBundleName) {

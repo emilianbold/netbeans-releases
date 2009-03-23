@@ -149,7 +149,7 @@ public class TraceModel extends TraceModelBase {
     private static final int APT_REPEAT_TEST = Integer.getInteger("apt.repeat.test", 3).intValue(); // NOI18N
 
     public static void main(String[] args) {
-        new TraceModel().test(args);
+        new TraceModel(true).test(args);
         APTDriver.getInstance().close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
@@ -221,7 +221,8 @@ public class TraceModel extends TraceModelBase {
         }
     };
 
-    public TraceModel() {
+    public TraceModel(boolean cleanCache) {
+        super(cleanCache);
         FileImpl.setHook(hook);
     }
 
@@ -791,7 +792,7 @@ public class TraceModel extends TraceModelBase {
                     File pathFile = new File(dirFile, path.toString());
                     path = pathFile.getAbsolutePath();
                 }
-                qInc.add(FilePathCache.getString(path));
+                qInc.add(FilePathCache.getManager().getString(path));
             }
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
@@ -1174,7 +1175,10 @@ public class TraceModel extends TraceModelBase {
         }
         errCount = fileImpl.getErrorCount();
         if (dumpPPState) {
-            sleep(100); // so that we don't run ahead of fileParsingFinished event
+            int antiLoop = 0;
+            while (antiLoop++ < 100 && !states.containsKey(fileImpl)) {
+                sleep(100); // so that we don't run ahead of fileParsingFinished event
+            }
             APTPreprocHandler preprocHandler = states.get(fileImpl);
             assert preprocHandler != null;
             dumpMacroMap(preprocHandler.getMacroMap());
@@ -1220,7 +1224,7 @@ public class TraceModel extends TraceModelBase {
 
         if (doCleanRepository) {
             CsmProject prj = fileImpl.getProject();
-            String absPath = fileImpl.getAbsolutePath();
+            CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             sleep(100);

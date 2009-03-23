@@ -40,13 +40,10 @@
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collection;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.core.syntax.gsf.JspGSFParser;
 
 /**
  *
@@ -56,39 +53,7 @@ public class JSPParserFactory extends ParserFactory {
 
     @Override
     public Parser createParser(Collection<Snapshot> snapshots) {
-        return new FakeParser();
+        return new JspGSFParser();
     }
-    
-    private static final class FakeParser extends Parser {
-        private Snapshot snapshot;
-        @Override
-        public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-            this.snapshot = snapshot;
-        }
-
-        @Override
-        public Result getResult(Task task) throws ParseException {
-            if (snapshot == null) {
-                return null;
-            }
-            return new Result(snapshot) {
-                @Override
-                public void invalidate() {
-                }
-            };
-        }
-
-        @Override
-        public void cancel() {
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener changeListener) {
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener changeListener) {
-        }
-    }
-
+   
 }

@@ -78,6 +78,7 @@ public final class RubyTestingOption extends AdvancedOption {
         public void update() {
             RubyTestingSettings settings = RubyTestingSettings.getDefault();
             component.setAutoTest(settings.useRunner(TestType.AUTOTEST));
+            component.setAutoSpec(settings.useRunner(TestType.AUTOSPEC));
             component.setRspec(settings.useRunner(TestType.RSPEC));
             component.setTestUnit(settings.useRunner(TestType.TEST_UNIT));
         }
@@ -86,6 +87,7 @@ public final class RubyTestingOption extends AdvancedOption {
         public void applyChanges() {
             RubyTestingSettings settings = RubyTestingSettings.getDefault();
             settings.setUseRunner(component.isAutoTestSelected(), TestType.AUTOTEST);
+            settings.setUseRunner(component.isAutoSpecSelected(), TestType.AUTOSPEC);
             settings.setUseRunner(component.isRspecSelected(), TestType.RSPEC);
             settings.setUseRunner(component.isTestUnitSelected(), TestType.TEST_UNIT);
         }

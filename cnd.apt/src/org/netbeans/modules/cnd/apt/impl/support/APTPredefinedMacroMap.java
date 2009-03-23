@@ -73,16 +73,16 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
 
     public boolean isDefined(APTToken token) {
-        return isDefined(token.getText());
+        return isDefined(token.getTextID());
     }
     
     public boolean isDefined(CharSequence token) {
         int i;
-        String tokenText = token.toString();
         
-        if (tokenText.length() < 2 || tokenText.charAt(0) != '_' || tokenText.charAt(1) != '_') {
+        if (token.length() < 2 || token.charAt(0) != '_' || token.charAt(1) != '_') {
             return false;
         }
+        String tokenText = token.toString();
                     
         for (i = 0; i < preMacro.length; i++) {
             if(preMacro[i].equals(tokenText)) {
@@ -93,7 +93,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
 
     public APTMacro getMacro(APTToken token) {
-        if (isDefined(token.getText())) {
+        if (isDefined(token.getTextID())) {
             return new APTPredefinedMacroImpl(token);
         }
         return null;
@@ -126,11 +126,6 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         return false;
     }     
     
-    protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
-        return new APTMacroMapSnapshot(parent);
-    }
-
-    
     private static final class APTPredefinedMacroImpl implements APTMacro {
         private APTToken macro;
         
@@ -161,10 +156,9 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         public TokenStream getBody() {
             APTToken tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);
             
-            if (!macro.getText().equals("__LINE__")) { // NOI18N
+            if (!"__LINE__".contentEquals(macro.getTextID())) { // NOI18N
                 tok.setType(APTTokenTypes.STRING_LITERAL);
-            }
-            else {
+            } else {
                 tok.setType(APTTokenTypes.DECIMALINT);
                 tok.setText("" + macro.getLine()); // NOI18N
             }

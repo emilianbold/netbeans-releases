@@ -47,6 +47,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view;
 
+import java.awt.BorderLayout;
+import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -59,14 +61,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorComponent;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -74,8 +83,8 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
-import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -92,7 +101,9 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     private BindingNameChangeListener bindingNameListener;
     private ServicePortNameChangeListener servicePortNameListener;
     private final PortType mPortType;
+    private String configurationPanelErrorMessage = null;
 
+    private ExtensibilityElementConfigurationEditorComponent editorComponent;
     /** Creates new form BindingConfigurationDialogPanel */
     public BindingConfigurationDialogPanel(WSDLModel model) {
         mModel = model;
@@ -116,6 +127,10 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         addBindingPanel.setAutoCreateServicePort(enabled);
     }
 
+    private void cleanupArtifacts() {
+        
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -124,31 +139,48 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        commonMessagePanel = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
         addBindingPanel = new org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel();
+        bindingConfigurationPanel = new javax.swing.JPanel();
+        bindingConfigurationLabel = new javax.swing.JLabel();
+        commonMessagePanel = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
 
         setName("BindingConfigurationDialogPanel"); // NOI18N
 
-        commonMessagePanel.setName("ShowErrorWarningPanel"); // NOI18N
-
         addBindingPanel.setName("addBindingPanel"); // NOI18N
+
+        bindingConfigurationPanel.setName("bindingConfigurationPanel"); // NOI18N
+        bindingConfigurationPanel.setLayout(new java.awt.BorderLayout());
+
+        bindingConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(BindingConfigurationDialogPanel.class, "BindingConfigurationDialogPanel.bindingConfigurationLabel.text")); // NOI18N
+        bindingConfigurationLabel.setName("bindingConfigurationLabel"); // NOI18N
+
+        commonMessagePanel.setName("ShowErrorWarningPanel"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(addBindingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(10, 10, 10)
-                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE))
+                .addContainerGap()
+                .add(bindingConfigurationLabel)
+                .addContainerGap(316, Short.MAX_VALUE))
+            .add(addBindingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+            .add(bindingConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(addBindingPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(bindingConfigurationLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(bindingConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -157,6 +189,8 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         serviceNameListener = new ServiceNameChangeListener();
         servicePortNameListener = new ServicePortNameChangeListener();
 
+        
+        
         this.addBindingPanel.setServiceNameDocumentListener(serviceNameListener);
 
         addBindingPanel.initPortTypeSelection(mModel, mPortType);
@@ -242,11 +276,21 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
 
         PropertyChangeListener propListener = new BindingConfigurationListener();
         addBindingPanel.addPropertyChangeListener(propListener);
-
+        
+        bindingConfigurationLabel.setVisible(false);
+        bindingConfigurationPanel.setVisible(false);
         
         validateAll();
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        processBindingSubType(addBindingPanel.getBindingSubType());
+    }
+
+    
+    
     public String getBindingName() {
         return addBindingPanel.getBindingName();
     }
@@ -363,7 +407,13 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
                 return;
             }
         }
-
+        
+        if (configurationPanelErrorMessage != null) {
+            mErrorMessage = configurationPanelErrorMessage;
+            updateMessagePanel();
+            return;
+        }
+        
         this.mErrorMessage = null;
         updateMessagePanel();
 
@@ -443,6 +493,10 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
             }
         //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
         }
+        Window windowAncestor = SwingUtilities.getWindowAncestor(this);
+        if (windowAncestor != null) {
+            windowAncestor.pack();
+        }
     }
 
     class BindingNameChangeListener implements DocumentListener {
@@ -505,6 +559,8 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel addBindingPanel;
+    private javax.swing.JLabel bindingConfigurationLabel;
+    private javax.swing.JPanel bindingConfigurationPanel;
     private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel;
     // End of variables declaration//GEN-END:variables
     private WSDLModel mModel;
@@ -535,71 +591,144 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
             String bindingName = getBindingName();
             LocalizedTemplateGroup bindingType = getBindingType();
             
-            
             //service and port
             String serviceName = getServiceName();
             String servicePortName = getServicePortName();
             
             Map configurationMap = new HashMap();
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+            configurationMap.put(WSDLWizardConstants.BINDING_NAME, bindingName);
+            configurationMap.put(WSDLWizardConstants.BINDING_TYPE, bindingType);
            
             //this could be null for a binding which does not have a sub type
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+            configurationMap.put(WSDLWizardConstants.BINDING_SUBTYPE, bindingSubType);
             
             //service and port
-            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
-            configurationMap.put(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT, canAutoCreateServicePort());
-            
-            try {
-                mModel.startTransaction();
-
-                BindingGenerator bGen = new BindingGenerator(mModel, getPortType(), configurationMap);
-                bGen.execute();
-
-                Binding binding = bGen.getBinding();
-                Port port = bGen.getPort();
-
-                if(binding != null) {
-                    String targetNamespace = mModel.getDefinitions().getTargetNamespace();
-                    List<ValidationInfo> vAllInfos =new ArrayList<ValidationInfo>();
-
-                    List<ValidationInfo> vBindingInfos = bindingSubType.getMProvider().validate(binding);
-                    if(vBindingInfos != null) {
-                        vAllInfos.addAll(vBindingInfos);
-                    }
-
-                    if(port != null) {
-                        List<ValidationInfo> vPortInfos = bindingSubType.getMProvider().validate(port);
-                        if(vPortInfos != null) {
-                            vAllInfos.addAll(vPortInfos);
-                        }
-                    }
-                    if(vAllInfos.size() > 0) {
-                        ValidationInfo vInfo = vAllInfos.get(0);
-                        mBindingSubTypeError =  vInfo.getDescription();
-                        IOProvider.getDefault().getStdOut().print(mBindingSubTypeError);
-                        mErrorMessage = mBindingSubTypeError;
-                        updateMessagePanel();
-                    } else {
-                        //no errors
-                        this.mBindingSubTypeError =  null;
-                        mErrorMessage = mBindingSubTypeError;
-                        updateMessagePanel();
-                        bindingSubType.getMProvider().postProcess(targetNamespace, binding);
-                        if(port != null) {
-                            bindingSubType.getMProvider().postProcess(targetNamespace, port);
-                        }
-                    }
-                }
-
-            } finally {
-                if (mModel.isIntransaction()) {
-                    mModel.rollbackTransaction();
-                }
+            configurationMap.put(WSDLWizardConstants.SERVICE_NAME, serviceName);
+            configurationMap.put(WSDLWizardConstants.SERVICEPORT_NAME, servicePortName);
+            configurationMap.put(WSDLWizardConstants.AUTO_CREATE_SERVICEPORT, canAutoCreateServicePort());
+            cleanupArtifacts();
+            if (mModel.isIntransaction()) {
+                mModel.rollbackTransaction();
             }
+            mModel.startTransaction();
+            BindingGenerator bGen = new BindingGenerator(mModel, getPortType(), configurationMap);
+            bGen.execute();
+
+            Binding binding = bGen.getBinding();
+            Port port = bGen.getPort();
+
+            if (binding != null) {
+                String targetNamespace = mModel.getDefinitions().getTargetNamespace();
+                List<ValidationInfo> vAllInfos = new ArrayList<ValidationInfo>();
+
+                List<ValidationInfo> vBindingInfos = bindingSubType.getMProvider().validate(binding);
+                if (vBindingInfos != null) {
+                    vAllInfos.addAll(vBindingInfos);
+                }
+
+                if (port != null) {
+                    List<ValidationInfo> vPortInfos = bindingSubType.getMProvider().validate(port);
+                    if (vPortInfos != null) {
+                        vAllInfos.addAll(vPortInfos);
+                    }
+                }
+                if (vAllInfos.size() > 0) {
+                    ValidationInfo vInfo = vAllInfos.get(0);
+                    mBindingSubTypeError = vInfo.getDescription();
+                    IOProvider.getDefault().getStdOut().print(mBindingSubTypeError);
+                    mErrorMessage = mBindingSubTypeError;
+                    updateMessagePanel();
+                } else {
+                    //no errors
+                    this.mBindingSubTypeError = null;
+                    mErrorMessage = mBindingSubTypeError;
+                    updateMessagePanel();
+                    bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                    if (port != null) {
+                        bindingSubType.getMProvider().postProcess(targetNamespace, port);
+                    }
+                }
+                
+            }
+            mModel.rollbackTransaction();
+//            String namespace = getBindingType().getNamespace();
+//            QName qname = new QName(namespace, "address");
+//            if (port != null) {
+//                Collection<ExtensibilityElement> coll = port.getExtensibilityElements();
+//                if (coll != null && !coll.isEmpty()) {
+//                    ExtensibilityElement elem = coll.iterator().next();
+//                    qname = elem.getQName();
+//                }
+//            }
+//            ExtensibilityElementConfigurationEditorProvider configurationProvider = ConfigurationEditorProviderFactory.getDefault().getConfigurationProvider(namespace);
+//            configurationProvider = null;
+//            if (configurationProvider != null && configurationProvider.isConfigurationSupported(qname)) {
+//                editorComponent = configurationProvider.getComponent(qname, port);
+//                JPanel panel = editorComponent.getEditorPanel();
+//                panel.addPropertyChangeListener(new PropertyChangeListener() {
+//
+//                    public void propertyChange(PropertyChangeEvent evt) {
+//                        if (evt.getNewValue() instanceof String) {
+//                            String message = (String) evt.getNewValue();
+//                            if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_ERROR_EVT)) {
+//                                commonMessagePanel.setErrorMessage(message);
+//                            } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_WARNING_EVT)) {
+//                                commonMessagePanel.setWarningMessage(message);
+//                            } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_CLEAR_MESSAGES_EVT)) {
+//                                commonMessagePanel.setMessage("");
+//                            } else if (evt.getPropertyName().equals(ExtensibilityElementConfigurationEditorComponent.PROPERTY_NORMAL_MESSAGE_EVT)) {
+//                                commonMessagePanel.setMessage(message);
+//                            }
+//                        }
+//                    }
+//                });
+//                bindingConfigurationPanel.removeAll();
+//                bindingConfigurationPanel.add(panel, BorderLayout.CENTER);
+//                bindingConfigurationLabel.setVisible(true);
+//                bindingConfigurationPanel.setVisible(true);
+//
+//            } else {
+//                bindingConfigurationLabel.setVisible(false);
+//                bindingConfigurationPanel.setVisible(false);
+//            }
+//            Window windowAncestor = SwingUtilities.getWindowAncestor(this);
+//            if (windowAncestor != null) {
+//                windowAncestor.pack();
+//            }
         }
+    }
+    
+    public boolean commit() {
+        mModel.startTransaction();
+        Map configurationMap = new HashMap();
+        configurationMap.put(WSDLWizardConstants.BINDING_NAME, getBindingName());
+        configurationMap.put(WSDLWizardConstants.BINDING_TYPE, getBindingType());
+
+        //this could be null for a binding which does not have a sub type
+        configurationMap.put(WSDLWizardConstants.BINDING_SUBTYPE, getBindingSubType());
+
+        //service and port
+        configurationMap.put(WSDLWizardConstants.SERVICE_NAME, getServiceName());
+        configurationMap.put(WSDLWizardConstants.SERVICEPORT_NAME, getServicePortName());
+        configurationMap.put(WSDLWizardConstants.AUTO_CREATE_SERVICEPORT, canAutoCreateServicePort());
+        BindingGenerator bGen = new BindingGenerator(mModel, getPortType(), configurationMap);
+        bGen.execute();
+        
+        boolean commit = true;
+        if (editorComponent != null) {
+             commit = editorComponent.commit();
+        }
+        return commit;
+    }
+    
+    public boolean rollback() {
+        if (mModel.isIntransaction()) {
+            mModel.rollbackTransaction();
+        }
+        if (editorComponent != null) {
+            return editorComponent.rollback();
+        }
+        return true;
     }
 
 //    public void doesBindingExist() {

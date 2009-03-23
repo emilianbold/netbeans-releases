@@ -49,20 +49,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
@@ -74,7 +75,7 @@ public class JsAnalyzer implements StructureScanner {
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private static final String DOT_CALL = ".call"; // NOI18N
     
-    public List<? extends StructureItem> scan(CompilationInfo info) {
+    public List<? extends StructureItem> scan(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
@@ -124,7 +125,7 @@ public class JsAnalyzer implements StructureScanner {
                 }
                 list.add(e);
             } else {
-                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
+                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, result);
                 itemList.add(item);
             }
         }
@@ -134,8 +135,7 @@ public class JsAnalyzer implements StructureScanner {
             assert list != null;
 
             AstElement first = list.get(0);
-            JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS,
-                    first, info);
+            JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS, first, result);
             itemList.add(currentClass);
             
             int firstAstOffset = first.getNode().getSourceStart();
@@ -143,7 +143,7 @@ public class JsAnalyzer implements StructureScanner {
             
             for (AstElement e : list) {
                 if (e.getKind() != ElementKind.CLASS) {
-                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
+                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, result);
                     currentClass.addChild(item);
                 } else {
                     currentClass.element = e;
@@ -157,8 +157,8 @@ public class JsAnalyzer implements StructureScanner {
                 }
             }
             
-            currentClass.begin = LexUtilities.getLexerOffset(info, firstAstOffset);
-            currentClass.end = LexUtilities.getLexerOffset(info, lastAstOffset);
+            currentClass.begin = LexUtilities.getLexerOffset(result, firstAstOffset);
+            currentClass.end = LexUtilities.getLexerOffset(result, lastAstOffset);
         }
 
         if (ar.e4xStrings != null) {
@@ -169,7 +169,7 @@ public class JsAnalyzer implements StructureScanner {
                 // and other info.
                 String xml = node.getString();
 
-                int startOffset = LexUtilities.getLexerOffset(info, node.getSourceStart());
+                int startOffset = LexUtilities.getLexerOffset(result, node.getSourceStart());
                 if (startOffset == -1) {
                     startOffset = node.getSourceStart();
                 }
@@ -184,88 +184,74 @@ public class JsAnalyzer implements StructureScanner {
         return itemList;
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
-        TranslatedSource source = result.getTranslatedSource();
         AnalysisResult ar = result.getStructure();
 
-        List<?extends AstElement> elements = ar.getElements();
+        List<? extends AstElement> elements = ar.getElements();
         //List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
-        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+        Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codeblocks); // NOI18N
 
-        BaseDocument doc = (BaseDocument)info.getDocument();
-        if (doc == null) {
-            return Collections.emptyMap();
-        }
+        CharSequence text = info.getSnapshot().getText();
         try {
-            doc.readLock(); // For Utilities.getRowStart access
             for (AstElement element : elements) {
                 ElementKind kind = element.getKind();
                 switch (kind) {
-                case METHOD:
-                case CONSTRUCTOR:
-                case CLASS:
-                case MODULE:
-                    Node node = element.getNode();
-                    OffsetRange range = AstUtilities.getRange(node);
-                    
-                    if (source != null) {
-                        int lexStart = source.getLexicalOffset(range.getStart());
-                        int lexEnd = source.getLexicalOffset(range.getEnd());
+                    case METHOD:
+                    case CONSTRUCTOR:
+                    case CLASS:
+                    case MODULE:
+                        Node node = element.getNode();
+                        OffsetRange range = AstUtilities.getRange(node);
+
+                        int lexStart = result.getSnapshot().getOriginalOffset(range.getStart());
+                        int lexEnd = result.getSnapshot().getOriginalOffset(range.getEnd());
                         if (lexStart < lexEnd) {
                             //recalculate the range if we parsed the virtual source
-                            range = new OffsetRange(lexStart,lexEnd);
+                            range = new OffsetRange(lexStart, lexEnd);
                         }
-                    }
 
-                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
-                        // Only make nested classes/modules foldable, similar to what the java editor is doing
-                        (range.getStart() > Utilities.getRowStart(doc, Math.min(range.getStart(), doc.getLength())))) {
+                        if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
+                                // Only make nested classes/modules foldable, similar to what the java editor is doing
+                                (range.getStart() > GsfUtilities.getRowStart(text, Math.min(range.getStart(), text.length())))) {
 
-                        int start = range.getStart();
-                        // Start the fold at the END of the line
-                        start = org.netbeans.editor.Utilities.getRowEnd(doc, Math.min(start, doc.getLength()));
-                        int end = range.getEnd();
-                        if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
-                            range = new OffsetRange(start, end);
-                            codeblocks.add(range);
+                            int start = range.getStart();
+                            // Start the fold at the END of the line
+                            start = GsfUtilities.getRowEnd(text, Math.min(start, text.length()));
+                            int end = range.getEnd();
+                            if (start != (-1) && end != (-1) && start < end && end <= text.length()) {
+                                range = new OffsetRange(start, end);
+                                codeblocks.add(range);
+                            }
                         }
-                    }
-                    break;
+                        break;
                 }
 
                 assert element.getChildren().size() == 0;
             }
-        } catch (Exception ex) {
+        } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
-        } finally {
-            doc.readUnlock();
         }
-        
+
         return folds;
     }
     
-    static AnalysisResult analyze(JsParseResult result, CompilationInfo info) {
-        AnalysisResult analysisResult = new AnalysisResult(info);
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc != null) {
-            try {
-                doc.readLock(); // Read-lock due to token hierarchy use
+    static AnalysisResult analyze(JsParseResult result) {
+        AnalysisResult analysisResult = new AnalysisResult(result);
+        ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
+        Node root = result.getRootNode();
 
-                ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
-                Node root = result.getRootNode();
-                if (root != null) {
-                    walker.walk(root);
-                }
-                analysisResult.postProcess(result);
-            } finally {
-                doc.readUnlock();
-            }
+        if(Boolean.getBoolean("debug.js.ast")) {
+            JsParser.dumpTree(root);
         }
         
+        if (root != null) {
+            walker.walk(root);
+        }
+        analysisResult.postProcess(result);
         return analysisResult;
     }
 
@@ -276,7 +262,7 @@ public class JsAnalyzer implements StructureScanner {
     public static class AnalysisResult implements ParseTreeVisitor {
         private List<AstElement> elements = new ArrayList<AstElement>();
         private List<String> imports;
-        private CompilationInfo info;
+        private JsParseResult info;
         private Map<String,String> classExtends;
         private Set<String> fields;
         private Node inConstructor;
@@ -285,7 +271,7 @@ public class JsAnalyzer implements StructureScanner {
         private Map<String,String> classToFqn;
         private List<Node> e4xStrings;
 
-        private AnalysisResult(CompilationInfo info) {
+        private AnalysisResult(JsParseResult info) {
             this.info = info;
         }
 
@@ -324,6 +310,77 @@ public class JsAnalyzer implements StructureScanner {
         
         public boolean visit(Node node) {
             switch (node.getType()) {
+
+                //handle prototype fields: Object.prototype.field = 'xxx';
+                case Token.STRING: {
+                    if (node.getString().equalsIgnoreCase("prototype")) { //NOI18N
+                        Node getPropertyNode = node.getParentNode();
+                        if (getPropertyNode.getType() == Token.GETPROP) {
+                            Node className = getPropertyNode.getFirstChild();
+                            if (className.getType() == Token.NAME) {
+                                //find fields
+                                Node setNode = getPropertyNode.getParentNode();
+                                if (setNode.getType() == Token.SETPROP) {
+                                    Node propertyNode = getPropertyNode.getNext();
+                                    if (propertyNode == null) {
+                                        break;
+                                    }
+
+                                    if (propertyNode == null || !Character.isLowerCase(propertyNode.getString().charAt(0))) {
+                                        break;
+                                    }
+
+                                    Node rhs = propertyNode.getNext();
+                                    if (rhs != null && rhs.getType() == Token.FUNCTION) {
+                                        // Functions are handled separately - when we see a function we walk outwards
+                                        // and compute the name, handling "this" appropriately
+                                        break;
+                                    }
+
+                                    if (propertyNode.getType() == Token.STRING) {
+                                        //found field node
+                                        StringBuilder sb = new StringBuilder();
+                                        if (AstUtilities.addName(sb, className)) {
+                                            String fqn = sb.toString();
+                                            String property = propertyNode.getString();
+
+                                            String propFqn = fqn + "." + property; //NOI18N
+                                            if (fields == null || !fields.contains(propFqn)) {
+                                                int clzIndex = fqn.lastIndexOf('.') + 1;
+                                                if (clzIndex < fqn.length() && Character.isUpperCase(fqn.charAt(clzIndex))) {
+                                                    // Looks like a class
+                                                    String name = property;
+                                                    String in = fqn;
+
+                                                    if (fields == null) {
+                                                        fields = new HashSet<String>();
+                                                    }
+                                                    fields.add(propFqn);
+                                                    AstElement js = AstElement.createElement(info, propertyNode, name, in, this);
+                                                    if (js != null) {
+                                                        checkDocumentation(js);
+                                                        js.setKind(ElementKind.PROPERTY);
+                                                        if (rhs != null) {
+                                                            String type = AstUtilities.getExpressionType(rhs);
+                                                            if (type != null) {
+                                                                js.setType(type);
+                                                            }
+                                                        }
+                                                        elements.add(js);
+                                                    }
+
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+
             case Token.CALL: {
                 if (node.hasChildren()) {
                     // Handle imports
@@ -634,7 +691,7 @@ public class JsAnalyzer implements StructureScanner {
             if (node.getType() == Token.FUNCTION) {
                 if (currentFunction != null && currentFunction.nodeType == null) {
                     // Except for stubs...
-                    if (info != null && !info.getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
+                    if (info != null && !info.getSnapshot().getSource().getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
                         currentFunction.nodeType = "void"; // NOI18N
                     }
                 }
@@ -764,12 +821,12 @@ public class JsAnalyzer implements StructureScanner {
         private String name;
         private AstElement element;
         private ElementKind kind;
-        private CompilationInfo info;
+        private JsParseResult info;
         List<StructureItem> children = new ArrayList<StructureItem>();
         int begin;
         int end;
 
-        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info) {
+        JsFakeStructureItem(String name, ElementKind kind, AstElement node, JsParseResult info) {
             this.name = name;
             this.kind = kind;
             this.element = node;
@@ -872,10 +929,10 @@ public class JsAnalyzer implements StructureScanner {
     private class JsStructureItem implements StructureItem {
         private AstElement element;
         private ElementKind kind;
-        private CompilationInfo info;
+        private JsParseResult info;
         private String name;
 
-        private JsStructureItem(AstElement node, CompilationInfo info) {
+        private JsStructureItem(AstElement node, JsParseResult info) {
             this.element = node;
             this.info = info;
 

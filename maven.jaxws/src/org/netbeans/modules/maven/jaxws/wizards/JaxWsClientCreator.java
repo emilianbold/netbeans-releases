@@ -46,6 +46,8 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -127,7 +129,7 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
-                MavenModelUtils.addJaxws21Library(project);
+                final boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String clientName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -142,6 +144,9 @@ public class JaxWsClientCreator implements ClientCreator {
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
                         }
+                        if (libraryAdded) {
+                            MavenModelUtils.updateLibraryScope(project, model);
+                        }
                     }
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
@@ -151,7 +156,16 @@ public class JaxWsClientCreator implements ClientCreator {
                     // repember original wsdlUrl for Client
                     prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
                 }
-            }
+
+                // execute wsimport goal
+                RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(
+                        project.getProjectDirectory()),
+                        project,
+                        "JAX-WS:wsimport", //NOI18N
+                        Collections.singletonList("compile")); //NOI18N
+                
+                RunUtils.executeMaven(cfg);
+             }
         }
     }
     

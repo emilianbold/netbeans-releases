@@ -76,7 +76,6 @@ public class XSDImportNode extends ImportNode {
 
     Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
-    
 
     public XSDImportNode(Import wsdlConstruct) {
         super(new XSDImportChildFactory(wsdlConstruct),
@@ -160,8 +159,6 @@ public class XSDImportNode extends ImportNode {
         public void refreshChildren(boolean immediate) {
             refresh(immediate);
         }
-        
-        
         
     }
 

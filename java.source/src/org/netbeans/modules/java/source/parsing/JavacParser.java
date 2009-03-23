@@ -48,7 +48,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
-import com.sun.tools.javac.parser.DocCommentScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -114,11 +113,11 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -220,7 +219,11 @@ public class JavacParser extends Parser {
         JavaFileFilterImplementation filter = null;
         if (this.supportsReparse) {
             final Source source = snapshots.iterator().next().getSource();
-            filter = JavaFileFilterQuery.getFilter(source.getFileObject());            
+            FileObject fo = source.getFileObject();
+            if (fo != null) {
+                //fileless Source -- ie. debugger watch CC etc
+                filter = JavaFileFilterQuery.getFilter(source.getFileObject());
+            }
             try {
                 final DataObject dobj = DataObject.find(source.getFileObject());
                 ec = dobj.getCookie(EditorCookie.Observable.class);
@@ -298,7 +301,7 @@ public class JavacParser extends Parser {
                     ciImpl = new CompilationInfoImpl(cpInfo);
                 }
                 else {
-                    throw new IllegalArgumentException("Task has to provide classpath.");
+                    throw new IllegalArgumentException("No classpath provided by task: " + task);
                 }
             }
             else if (this.sourceCount == 1) {
@@ -536,7 +539,7 @@ public class JavacParser extends Parser {
                 currentPhase = Phase.UP_TO_DATE;
             }
         } catch (CouplingAbort a) {
-            RepositoryUpdater.couplingAbort(a, currentInfo.jfo);
+            TreeLoader.dumpCouplingAbort(a, currentInfo.jfo);
             currentInfo.needsRestart = true;
             return currentPhase;            
         } catch (CancelAbort ca) {
@@ -598,7 +601,7 @@ public class JavacParser extends Parser {
                                   
             if (root != null && sourceLevel != null) {
                 try {
-                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
+                    JavaCustomIndexer.verifySourceLevel(root.getURL(), sourceLevel);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }

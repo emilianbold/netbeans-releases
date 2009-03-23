@@ -44,11 +44,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * A class describing a Ruby method that is in "textual form" (signature, filename, etc.)
@@ -80,15 +79,15 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private boolean inherited; 
     private MethodType methodType = MethodType.METHOD;
 
-    private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
+    private IndexedMethod(String signature, RubyIndex index, FileObject file, String fqn,
             String clz, String require, String attributes, int flags, FileObject context) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
+        super(index, file, fqn, clz, require, attributes, flags, context, null);
         this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
-            String fileUrl, String require, String attributes, int flags, FileObject context) {
-        return new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
+            FileObject file, String require, String attributes, int flags, FileObject context) {
+        return new IndexedMethod(signature, index, file, fqn, clz, require, attributes, flags, context);
     }
     
     public MethodType getMethodType() {

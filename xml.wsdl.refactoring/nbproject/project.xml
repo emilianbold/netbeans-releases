@@ -162,9 +162,23 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
+                <friend>org.netbeans.modules.sca.refactoring</friend>
+                <friend>org.netbeans.modules.wsdlextensions.file</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
                 <friend>org.netbeans.modules.xml.wsdlui.api</friend>
+                <friend>org.netbeans.modules.wsdlextensions.jms</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ldap</friend>
+                <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
+                <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.mq</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ims</friend>
+                <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
+                <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.scheduler</friend>
+                <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <package>org.netbeans.modules.xml.wsdl.refactoring</package>
+                <package>org.netbeans.modules.xml.wsdl.refactoring.spi</package>
             </friend-packages>
         </data>
     </configuration>

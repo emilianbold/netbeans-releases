@@ -54,6 +54,6 @@ public final class CustomTool extends Tool {
     }
 
     public static CustomTool create(ExecutionEnvironment env) {
-        return create(env);
+        return new CustomTool(env);
     }
 }

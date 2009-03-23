@@ -9,6 +9,7 @@ Searchable Keys:
   global : $foo
   global : $foobar
   method : hello
+  require : globals
 
 Not Searchable Keys:
   attrs : |CLASS|

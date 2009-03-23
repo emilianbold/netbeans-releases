@@ -41,8 +41,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;

@@ -44,13 +44,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.csl.api.Error;
 import org.openide.util.NbBundle;
 
 /**
@@ -98,7 +97,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
     }
 
     public void handleError(Type type, short[] expectedtokens, Symbol current, Symbol previous) {
-        Error error;
+        org.netbeans.modules.csl.api.Error error;
         if (type == ParserErrorHandler.Type.SYNTAX_ERROR) {
             // logging syntax error
             if (LOGGER.isLoggable(Level.FINEST)) {
@@ -127,12 +126,14 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             if (message == null) {
                 message = "Parser error";
             }
-            error = new GSFPHPError(message, context.getFile().getFileObject(), current.left, current.right, Severity.ERROR, null);
-            context.getListener().error(error);
+            error = new GSFPHPError(message, context.getSnapshot().getSource().getFileObject(),
+                    current.left, current.right, Severity.ERROR, null);
+            //TODO: context.getListener().error(error);
         }
     }
 
-    public void displaySyntaxErrors(Program program) {
+    public List<Error> displaySyntaxErrors(Program program) {
+        List<Error> errors = new ArrayList<Error>();
         for (SyntaxError syntaxError : syntaxErrors) {
             ASTNode astError = null;
             if (program != null) {
@@ -150,8 +151,9 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 }
             }
             Error error = defaultSyntaxErrorHandling(syntaxError, astError);
-            context.getListener().error(error);
+            errors.add(error);
         }
+        return errors;
     }
     
     // This is just defualt handling. We can do a logic, which will find metter 
@@ -232,7 +234,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 start = start + lastNewLine + 1;
             }
         }
-        error = new GSFPHPError(message.toString(), context.getFile().getFileObject(), start, end, Severity.ERROR, new Object[]{syntaxError});
+        error = new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), start, end, Severity.ERROR, new Object[]{syntaxError});
         return error;
     }
 

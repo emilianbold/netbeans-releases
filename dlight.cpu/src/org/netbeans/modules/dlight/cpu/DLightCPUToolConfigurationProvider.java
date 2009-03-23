@@ -59,7 +59,6 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
-import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -72,108 +71,100 @@ public final class DLightCPUToolConfigurationProvider
     implements DLightToolConfigurationProvider {
 
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
-    private static final String PRSTAT_DTRACE = "prstat+dtrace"; // NOI18N
-    private static final String SUNSTUDIO = "sunstudio"; // NOI18N
-    private static final String LLTOOL = "lltool"; // NOI18N
-    private static final String COLLECTOR =
-            System.getProperty("dlight.cpu.collector", PRSTAT_DTRACE); // NOI18N
     private static final List<Column> PRSTAT_COLUMNS = Arrays.asList(
-            new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null), // NOI18N
-            new Column("stime", Float.class, loc("CPUMonitorTool.ColumnName.stime"), null), // NOI18N
-            new Column("wtime", Float.class, loc("CPUMonitorTool.ColumnName.wtime"), null)); // NOI18N
+        new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null), // NOI18N
+        new Column("stime", Float.class, loc("CPUMonitorTool.ColumnName.stime"), null), // NOI18N
+        new Column("wtime", Float.class, loc("CPUMonitorTool.ColumnName.wtime"), null)); // NOI18N
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(TOOL_NAME);
+            new DLightToolConfiguration(TOOL_NAME);
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png");
 
-        if (COLLECTOR.equals(PRSTAT_DTRACE) || COLLECTOR.equals(SUNSTUDIO)) {
+        // SunStudio should collect data about most CPU-expensive functions
+        // i.e. create a configuration that collects
+        // CollectedInfo.FUNCTIONS_LIST
+        SunStudioDCConfiguration ssCollectorConfig =
+            new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
 
-            // both use prstat as indicator data provider
-            final DataTableMetadata indicatorTableMetadata =
-                    new DataTableMetadata("prstat", PRSTAT_COLUMNS); // NOI18N
+        // This tool will use DataCollector with this configuration...
+        toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
 
-            CLIODCConfiguration indicatorProviderConfiguration =
-                    new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                    new PrstatParser(), Arrays.asList(indicatorTableMetadata));
+        // Now configure what happens when user clicks on the monitor....
+        // We should display Detailed view (using CallersCalleesVisualizer)
+        // with (some of) data that SunStudio collects when it configured
+        // with CollectedInfo.FUNCTIONS_LIST
 
-            toolConfiguration.addIndicatorDataProviderConfiguration(
-                    indicatorProviderConfiguration);
+        DataTableMetadata detailedViewTableMetadataSS =
+            SunStudioDCConfiguration.getCPUTableMetadata(
+            SunStudioDCConfiguration.c_name,
+            SunStudioDCConfiguration.c_iUser,
+            SunStudioDCConfiguration.c_eUser);
+        // Register configured detailed view to be opened on indicator click...
+        VisualizerConfiguration detailsVisualizerConfigSS =
+            new CallersCalleesVisualizerConfiguration(
+            detailedViewTableMetadataSS,
+            "name", // NOI18N
+            true);
+        // Use D-Trace as a provider of data for detailed view
+        String scriptFile = Util.copyResource(getClass(),
+            Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
 
-            DataTableMetadata detailedViewTableMetadata;
+        DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
 
-            if (COLLECTOR.equals(PRSTAT_DTRACE)) {
-                // Use D-Trace as a provider of data for detailed view
-                String scriptFile = Util.copyResource(getClass(),
-                        Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
+        DTDCConfiguration dtraceDataCollectorConfiguration =
+            new DTDCConfiguration(scriptFile,
+            Arrays.asList(profilerTableMetadata));
 
-                DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
+        dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
 
-                DTDCConfiguration dtraceDataCollectorConfiguration =
-                        new DTDCConfiguration(scriptFile,
-                        Arrays.asList(profilerTableMetadata));
+        toolConfiguration.addDataCollectorConfiguration(
+            new MultipleDTDCConfiguration(
+            dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
 
-                dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
+        DataTableMetadata detailedViewTableMetadataDtrace =
+            createFunctionsListMetadata(profilerTableMetadata);
+        // Register configured detailed view to be opened on indicator click...
+        VisualizerConfiguration detailsVisualizerConfigDtrace =
+            new CallersCalleesVisualizerConfiguration(
+            detailedViewTableMetadataDtrace,
+            "name", // NOI18N
+            true);
 
-                toolConfiguration.addDataCollectorConfiguration(
-                        new MultipleDTDCConfiguration(
-                        dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
 
-                detailedViewTableMetadata =
-                        createFunctionsListMetadata(profilerTableMetadata);
-            } else {
-                // SunStudio should collect data about most CPU-expensive functions
-                // i.e. create a configuration that collects
-                // CollectedInfo.FUNCTIONS_LIST
-                final CollectedInfo info = CollectedInfo.FUNCTIONS_LIST;
+        // both use prstat as indicator data provider
+        final DataTableMetadata indicatorTableMetadata =
+            new DataTableMetadata("prstat", PRSTAT_COLUMNS); // NOI18N
 
-                SunStudioDCConfiguration ssCollectorConfig =
-                        new SunStudioDCConfiguration(info);
+        CLIODCConfiguration indicatorProviderConfiguration =
+            new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
+            new PrstatParser(), Arrays.asList(indicatorTableMetadata));
+        indicatorProviderConfiguration.setName("prstat");
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+            indicatorProviderConfiguration);
+        List<Column> resultColumns = new ArrayList<Column>();
+        resultColumns.addAll(PRSTAT_COLUMNS);
+        resultColumns.addAll(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
+        IndicatorMetadata indicatorMetadata =
+            new IndicatorMetadata(resultColumns);
+        CpuIndicatorConfiguration indicatorConfiguration =
+            new CpuIndicatorConfiguration(indicatorMetadata);
+        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
+        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
+        toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
+        LLDataCollectorConfiguration llDataCollectorConfiguration =
+            new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.CPU);
 
-                // This tool will use DataCollector with this configuration...
-                toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
-
-                // Now configure what happens when user clicks on the monitor....
-                // We should display Detailed view (using CallersCalleesVisualizer)
-                // with (some of) data that SunStudio collects when it configured
-                // with CollectedInfo.FUNCTIONS_LIST
-
-                detailedViewTableMetadata =
-                        SunStudioDCConfiguration.getCPUTableMetadata(
-                        SunStudioDCConfiguration.c_name,
-                        SunStudioDCConfiguration.c_iUser,
-                        SunStudioDCConfiguration.c_eUser);
-            }
-
-            // Register configured detailed view to be opened on indicator click...
-            VisualizerConfiguration detailsVisualizerConfig =
-                    new CallersCalleesVisualizerConfiguration(
-                    detailedViewTableMetadata,
-                    "name", // NOI18N
-                    true);
-
-            IndicatorMetadata indicatorMetadata =
-                    new IndicatorMetadata(PRSTAT_COLUMNS);
-            CpuIndicatorConfiguration indicatorConfiguration =
-                    new CpuIndicatorConfiguration(indicatorMetadata);
-            indicatorConfiguration.setVisualizerConfiguration(detailsVisualizerConfig);
-            toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
-
-        } else if (COLLECTOR.equals(LLTOOL)) {
-
-            LLDataCollectorConfiguration llDataCollectorConfiguration =
-                    new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.CPU);
-
-            toolConfiguration.addDataCollectorConfiguration(llDataCollectorConfiguration);
-
-            IndicatorMetadata indicatorMetadata =
-                    new IndicatorMetadata(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
-            CpuIndicatorConfiguration indicatorConfiguration =
-                    new CpuIndicatorConfiguration(indicatorMetadata);
-            toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
-
-        } else {
-            DLightLogger.instance.severe("Unknown CPU collector requested: " + COLLECTOR);
-        }
+        toolConfiguration.addIndicatorDataProviderConfiguration(llDataCollectorConfiguration);
+//        IndicatorMetadata indicatorMetadata =
+//            new IndicatorMetadata(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
+//        CpuIndicatorConfiguration indicatorConfiguration =
+//            new CpuIndicatorConfiguration(indicatorMetadata);
+//        if (detailsVisualizerConfig != null) {
+//            indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfig);
+//        }
+//        toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
+//
 
         return toolConfiguration;
     }
@@ -193,7 +184,7 @@ public final class DLightCPUToolConfigurationProvider
 
         List<Column> columns = new ArrayList<Column>();
         columns.add(new Column("name", String.class, loc("CPUMonitorTool.ColumnName.name"), null)); // NOI18N
-        columns.add(new Column("name_qualified", String.class, loc("CPUMonitorTool.ColumnName.name_qualified"), null)); // NOI18N
+        //  columns.add(new Column("name_qualified", String.class, loc("CPUMonitorTool.ColumnName.name_qualified"), null)); // NOI18N
 
         List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
 
@@ -215,10 +206,10 @@ public final class DLightCPUToolConfigurationProvider
     private static class PrstatParser implements CLIOParser {
 
         private final List<String> colnames = Arrays.asList(new String[]{
-                    "utime", // NOI18N
-                    "stime", // NOI18N
-                    "wtime" // NOI18N
-                });
+                "utime", // NOI18N
+                "stime", // NOI18N
+                "wtime" // NOI18N
+            });
         Float utime, stime, wtime;
 
         public DataRow process(String line) {

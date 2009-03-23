@@ -136,9 +136,8 @@ public final class FolderObj extends BaseFileObj {
         final FileObjectFactory lfs = getFactory();        
         for (Iterator iterator = fileNames.iterator(); iterator.hasNext();) {
             final FileNaming fileName = (FileNaming) iterator.next();
-            FileInfo fInfo = new FileInfo (fileName.getFile());
+            FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
             fInfo.setFileNaming(fileName);
-            fInfo.setValueForFlag(FileInfo.FLAG_exists, true);
             
             final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {

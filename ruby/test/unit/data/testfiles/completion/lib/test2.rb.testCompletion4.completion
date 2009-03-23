@@ -1,6 +1,6 @@
 Code completion result for source line:
 x = "Hell|o World"
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    #{ #{expr}: Value of expr                  null
 KEYWORD    \ \nnn Octal <i>nnn</i>                    null

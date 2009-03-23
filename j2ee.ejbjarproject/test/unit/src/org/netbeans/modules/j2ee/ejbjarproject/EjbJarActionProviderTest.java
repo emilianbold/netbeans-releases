@@ -51,6 +51,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 // XXX much more to test
 
@@ -70,6 +71,7 @@ public class EjbJarActionProviderTest extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
+        MockLookup.init();
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         ap = project.getLookup().lookup(ActionProvider.class);

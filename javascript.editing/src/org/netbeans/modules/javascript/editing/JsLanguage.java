@@ -40,25 +40,22 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
 
 /*
@@ -66,13 +63,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
  *
  * @author Tor Norbye
  */
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
-
 public class JsLanguage extends DefaultLanguageConfig {
-
-    private FileObject jsStubsFO;
 
     public JsLanguage() {
     }
@@ -93,43 +84,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.singletonList(getJsStubs());
-    }
-
-    // TODO - add classpath recognizer for these ? No, don't need go to declaration inside these files...
-    private FileObject getJsStubs() {
-        if (jsStubsFO == null) {
-            // Core classes: Stubs generated for the "builtin" Ruby libraries.
-            File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-javascript-editing.jar", null, false);
-
-            if (clusterFile != null) {
-                File jsStubs =
-                        new File(clusterFile.getParentFile().getParentFile().getAbsoluteFile(),
-                        "jsstubs"); // NOI18N
-                assert jsStubs.exists() && jsStubs.isDirectory() : "No stubs found";
-                jsStubsFO = FileUtil.toFileObject(jsStubs);
-            } else {
-                // During test?
-                // HACK - TODO use mock
-                String jsDir = System.getProperty("xtest.js.home");
-                if (jsDir == null) {
-                    throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-                }
-                File jsStubs = new File(jsDir + File.separator + "jsstubs");
-                if (jsStubs.exists()) {
-                    jsStubsFO = FileUtil.toFileObject(jsStubs);
-                }
-            }
-        }
-
-        return jsStubsFO;
-    }
-    
-    @Override
     public String getDisplayName() {
-        return "JavaScript";
+        return "JavaScript"; //NOI18N
     }
     
     @Override
@@ -138,15 +94,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
     
     @Override
-    public Map<String,String> getSourceGroupNames() {
-        Map<String,String> sourceGroups = new HashMap<String,String>();
-        sourceGroups.put("RubyProject", "ruby"); // NOI18N
-        sourceGroups.put("RailsProject", "ruby"); // NOI18N
-
-        // It doesn't look like the WebProject has a dedicated source type for the web/ folder
-        sourceGroups.put("WebProject", "java"); // NOI18N
-        
-        return sourceGroups;
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(JsClassPathProvider.BOOT_CP);
     }
 
     // Service Registrations
@@ -187,8 +136,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Indexer getIndexer() {
-        return new JsIndexer();
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new JsIndexer.Factory();
     }
 
     @Override

@@ -1,6 +1,6 @@
 Code completion result for source line:
 (1..3).any {aa,ab -> println a|}
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      AbstractCollection                         null
 CLASS      AbstractFactory                            null

@@ -186,7 +186,7 @@ made subject to such option by the copyright holder.
             <file name="WSDL.wsdl" url="WSDL.template">
                 <attr name="position" intvalue="230"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png"/>

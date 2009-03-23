@@ -69,9 +69,13 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -93,9 +97,9 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Index;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -142,7 +146,7 @@ public class TreeLoader extends LazyTreeLoader {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         if (persist)
-                            dumpSymFile(jti, clazz);
+                            dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
@@ -211,16 +215,8 @@ public class TreeLoader extends LazyTreeLoader {
         this.partialReparse = false;
     }
 
-    private void logCouplingError(ClassSymbol clazz, String info) {
-        JavaFileObject classFile = clazz != null ? clazz.classfile : null;
-        String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
-        JavaFileObject sourceFile = clazz != null ? clazz.sourcefile : null;
-        String sfURI = classFile != null ? sourceFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
-        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, info});
-    }
-
-    private void dumpSymFile(JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
-        Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
+    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
+        Env<AttrContext> env = Enter.instance(jti.getContext()).getEnv(clazz);
         if (env == null)
             return;
         new TreeScanner() {
@@ -255,16 +251,15 @@ public class TreeLoader extends LazyTreeLoader {
                 }
             }
         }.scan(env.toplevel);
-        JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         try {
             String binaryName = null;
             if (clazz.classfile != null) {
-                binaryName = fm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
+                binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
                 if (binaryName == null)
-                    binaryName = fm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);                
+                    binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
             }
             else if (clazz.sourcefile != null) {
-                binaryName = fm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
+                binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
             }
             if (binaryName == null) {
                 return;
@@ -272,12 +267,75 @@ public class TreeLoader extends LazyTreeLoader {
             String surl = clazz.classfile.toUri().toURL().toExternalForm();
             int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
             assert index > 0;
-            File classes = Index.getClassFolder(new URL(surl.substring(0, index)));
-            fm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
+            File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+            jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
             jti.generate(Collections.singletonList(clazz));
         } finally {
-            fm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
+            jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
         }
+    }
+
+    public static void dumpCouplingAbort(CouplingAbort a, JavaFileObject source) {
+        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
+        JavaFileObject classSource = a.getClassFile();
+        String uri = classSource != null ? classSource.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        String origName = classSource != null ? classSource.getName() : "unknown"; //NOI18N
+        File f = new File(dumpDir + origName + ".dump"); // NOI18N
+        boolean dumpSucceeded = false;
+        int i = 1;
+        while (i < 255) {
+            if (!f.exists())
+                break;
+            f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N
+            i++;
+        }
+        if (!f.exists()) {
+            try {
+                OutputStream os = new FileOutputStream(f);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                try {
+                    writer.println(String.format("Coupling error: class file %s, source file %s", uri, source.toUri().toASCIIString())); //NOI18N
+                    writer.println("----- Sig file content: -------------------------------------------"); // NOI18N
+                    if (classSource == null) {
+                        writer.println("no content"); //NOI18N
+                    } else {
+                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) {
+                            writer.println(classSource.getCharContent(true));
+                        } else {
+                            writer.println("not a sig file"); // NOI18N
+                        }
+                    }
+                    writer.println("----- Source file content: ----------------------------------------"); // NOI18N
+                    writer.println(source.getCharContent(true));
+                    writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
+                    writer.println(a.getTree().toString());
+                    writer.println("----- Coupling Error: ---------------------------------------------"); // NOI18N
+                    a.printStackTrace(writer);
+                } finally {
+                    writer.close();
+                    dumpSucceeded = true;
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Error when writing coupling dump file!", ioe); // NOI18N
+            }
+        }
+        if (dumpSucceeded) {
+            LOGGER.log(Level.SEVERE, "Coupling error: class file {0}, source file {1}", new Object[] {uri, source.toUri().toASCIIString()}); //NOI18N
+        } else {
+            LOGGER.log(Level.WARNING,
+                    "Dump could not be written. Either dump file could not " + // NOI18N
+                    "be created or all dump files were already used. Please " + // NOI18N
+                    "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
+                    "clean all *.dump files in that directory."); // NOI18N
+        }
+    }
+
+    private void logCouplingError(ClassSymbol clazz, String info) {
+        JavaFileObject classFile = clazz != null ? clazz.classfile : null;
+        String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        JavaFileObject sourceFile = clazz != null ? clazz.sourcefile : null;
+        String sfURI = classFile != null ? sourceFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, info});
     }
 
     private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {

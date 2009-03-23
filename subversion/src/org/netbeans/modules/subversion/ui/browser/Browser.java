@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Handles the UI for repository browsing.
@@ -93,6 +94,9 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     private final int mode;
     
     private final String helpID;
+
+    private final String username;
+    private final String password;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];
@@ -119,9 +123,34 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
      * @param nodeActions an array of actions from which the context menu on the tree items will be created
      * 
      */    
-    public Browser(String title, int mode, RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions, String helpID) {
+    public Browser(String title,
+                   int mode,
+                   RepositoryFile repositoryRoot,
+                   RepositoryFile[] select,
+                   BrowserAction[] nodeActions,
+                   String helpID) {
+        this(title, mode, repositoryRoot, select, null, null, nodeActions, helpID);
+    }
+
+    public Browser(String title,
+                   int mode,
+                   RepositoryFile repositoryRoot,
+                   RepositoryFile[] select,
+                   String username,
+                   String password,
+                   BrowserAction[] nodeActions,
+                   String helpID) {
         this.mode = mode;       
         this.helpID = helpID;
+
+        /*
+         * This should ensure that either both username and password are null,
+         * or both are non-null:
+         */
+        this.username = username;
+        this.password = (username == null) ? null
+                                           : (password != null) ? password
+                                                                : "";   //NOI18N
         
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(Browser.class, "ACSN_RepositoryTree"),                                            // NOI18N
@@ -286,7 +315,11 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                 return ret; // nothing to do...
             }
 
-            SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl(), support);
+            Subversion subversion = Subversion.getInstance();
+            SVNUrl svnUrl = this.repositoryRoot.getRepositoryUrl();
+            SvnClient client = (username != null)
+                               ? subversion.getClient(svnUrl, username, password, support)
+                               : subversion.getClient(svnUrl, support);
             if(support.isCanceled()) {
                 return null;
             }

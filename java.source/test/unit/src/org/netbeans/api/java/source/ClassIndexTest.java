@@ -65,7 +65,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -152,8 +152,8 @@ public class ClassIndexTest extends NbTestCase {
     public void testEvents () throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});        
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcRoot, srcRoot).await();
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.getURL(), null);
         final ClasspathInfo cpi = ClasspathInfo.create(srcRoot);
         final ClassIndex index = cpi.getClassIndex();
         index.getPackageNames("org", true, EnumSet.of(ClassIndex.SearchScope.SOURCE));
@@ -163,7 +163,7 @@ public class ClassIndexTest extends NbTestCase {
         Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED);
         testListener.setExpectedEvents (et);
         createFile ("foo/A.java", "package foo;\n public class A {}");
-        assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
+        assertTrue("TestListener returned false instead of true.", testListener.awaitEvent(10, TimeUnit.SECONDS));
         assertExpectedEvents (et, testListener.getEventLog());        
         
         
@@ -321,7 +321,7 @@ public class ClassIndexTest extends NbTestCase {
         assert srcRoot != null && srcRoot.isValid();
         srcRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction () {
             public void run () throws IOException {
-                final FileObject data = FileUtil.createData(srcRoot, path);
+                final FileObject data = FileUtil.createData(srcRoot, path);                
                 assert data != null;
                 final FileLock lock = data.lock();
                 try {

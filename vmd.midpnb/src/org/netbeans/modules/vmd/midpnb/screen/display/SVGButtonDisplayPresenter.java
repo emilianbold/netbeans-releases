@@ -38,10 +38,27 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import javax.microedition.m2g.SVGImage;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+
 /**
  *
  * @author akorostelev
  */
-public class SVGButtonDisplayPresenter extends SVGComponentDisplayPresenter {
+public class SVGButtonDisplayPresenter extends UpdatableSVGComponentDisplayPresenter {
+
+    private static final String TEXT           = "text";            // NOI18N
+    private static final String STEXT           = "stext";            // NOI18N
+
+    private static final String TEXT_SUFFIX    = DASH + TEXT;
+    private static final String STEXT_SUFFIX    = DASH + STEXT;
+
+    @Override
+    protected void reloadSVGComponent(SVGImage svgImage,
+            DesignComponent svgComponent, String componentId) {
+
+        updateText(svgImage, svgComponent, componentId, TEXT_SUFFIX);
+        updateText(svgImage, svgComponent, componentId, STEXT_SUFFIX);
+    }
 
 }

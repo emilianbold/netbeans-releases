@@ -376,7 +376,7 @@ public class GenerateJnlpFileTask extends Task {
                         PathTokenizer ptok = new PathTokenizer(cpProp);
                         while (ptok.hasMoreTokens()) {
                             String fileName = stripFilename(ptok.nextToken());
-                            if (fileName.endsWith("jar")) {
+                            if (fileName.endsWith("jar") && !fileName.equals("javaws.jar")) {
                                 // lib/ should be probably taken from some properties file ? 
                                 resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, false));
                             }

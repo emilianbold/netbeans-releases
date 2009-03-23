@@ -1,4 +1,4 @@
 Code completion result for source line:
 parent::|__construct();
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     __construct()                   [PUBLIC]   Basic142234

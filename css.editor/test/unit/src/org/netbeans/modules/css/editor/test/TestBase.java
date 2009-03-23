@@ -38,31 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.css.editor.test;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.MockServices;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.css.gsf.CSSFormatter;
 import org.netbeans.modules.css.gsf.CSSLanguage;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Common ancestor for all test classes.
  */
-public class TestBase extends GsfTestBase {
-
-//    static {
-//        MockServices.setServices(new Class[] {RepositoryImpl.class});
-//    }
+public class TestBase extends CslTestBase {
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
@@ -70,13 +57,6 @@ public class TestBase extends GsfTestBase {
         super(name);
     }
 
-    protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
-        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
-        doc.putProperty(Language.class, CSSTokenId.language());
-        return doc;
-    }
-    
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new CSSLanguage();
@@ -89,16 +69,6 @@ public class TestBase extends GsfTestBase {
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
-
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
-//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
-        // TODO: XXXX
-
-        CSSFormatter formatter = new CSSFormatter();
-
-        return formatter;
+        return null;
     }
 }

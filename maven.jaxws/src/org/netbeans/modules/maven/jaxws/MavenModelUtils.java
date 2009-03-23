@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,7 +53,11 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
@@ -64,6 +69,7 @@ import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Resource;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
 
 /**
  *
@@ -77,6 +83,7 @@ public final class MavenModelUtils {
     private static final String JAXWS_GROUP_ID = "org.codehaus.mojo"; //NOI18N
     private static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
     private static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
+    private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
 
     private MavenModelUtils() { }
 
@@ -166,11 +173,11 @@ public final class MavenModelUtils {
         if (jaxWsVersion != null) {
             config.setSimpleParameter("target", jaxWsVersion); //NOI18N
         }
-        Dependency jsr181Dep = model.getFactory().createDependency();
-        jsr181Dep.setGroupId("javax.jws"); //NOI18N
-        jsr181Dep.setArtifactId("jsr181-api"); //NOI18N
-        jsr181Dep.setVersion("1.0-MR1"); //NOI18N
-        plugin.addDependency(jsr181Dep);
+        Dependency webservicesDep = model.getFactory().createDependency();
+        webservicesDep.setGroupId("javax.xml"); //NOI18N
+        webservicesDep.setArtifactId("webservices-api"); //NOI18N
+        webservicesDep.setVersion("1.4"); //NOI18N
+        plugin.addDependency(webservicesDep);
         
         return plugin; 
     }
@@ -208,12 +215,9 @@ public final class MavenModelUtils {
                     POMQName.createQName("webResources", model.getPOMQNames().isNSAware()));
             config.addExtensibilityElement(webResources);
         }
-        //TODO how to recognize if the correct resource element is present???
-
-        POMExtensibilityElement res = findChild(webResources.getExtensibilityElements(), "resource");
-        //we check for presense only, we should iterate all and check the internals.
-        if (res == null) {
-            res = model.getFactory().createPOMExtensibilityElement(
+       //check for resource containing jax-ws-catalog.xml
+        if (!hasResource(webResources, JAXWS_CATALOG)) {
+            POMExtensibilityElement  res = model.getFactory().createPOMExtensibilityElement(
                     POMQName.createQName("resource", model.getPOMQNames().isNSAware()));
             webResources.addExtensibilityElement(res);
             POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(
@@ -232,7 +236,7 @@ public final class MavenModelUtils {
 
             POMExtensibilityElement include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
                     model.getPOMQNames().isNSAware()));
-            include.setElementText("jax-ws-catalog.xml");
+            include.setElementText(JAXWS_CATALOG);
             in.addExtensibilityElement(include);
             include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
                     model.getPOMQNames().isNSAware()));
@@ -428,27 +432,29 @@ public final class MavenModelUtils {
      * @param project Project
      * @throws java.io.IOException throws when Library cannot be found
      */
-    public static void addJaxws21Library(Project project) throws IOException {
+    public static boolean addJaxws21Library(Project project) throws IOException {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
             ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
             FileObject wsimportFO = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
             if (wsimportFO == null) {
-                //add the JAXWS 2.1 library
-                Library jaxws21Lib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-                if (jaxws21Lib == null) {
-                    throw new IOException("Unable to find JAXWS 21 Library."); //NOI18N
+                //add the Metro library
+                Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
+                if (metroLib == null) {
+                    throw new IOException("Unable to find Metro Library."); //NOI18N
                 }
                 try {
-                    ProjectClassPathModifier.addLibraries(new Library[] {jaxws21Lib},
+                    ProjectClassPathModifier.addLibraries(new Library[] {metroLib},
                             srcGroups[0].getRootFolder(),
                             ClassPath.COMPILE);
+                    return true;
                 } catch (IOException e) {
-                    throw new IOException("Unable to add JAXWS 21 Library. " + e.getMessage()); //NOI18N
+                    throw new IOException("Unable to add Metro Library. " + e.getMessage()); //NOI18N
                 }
             }
         }
+        return false;
     }
 
     /** get list of wsdl files in Maven project
@@ -500,6 +506,67 @@ public final class MavenModelUtils {
             }
         }
         return null;
+    }
+
+    public static void updateLibraryScope(Project prj, POMModel model) {
+        assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
+        Properties props = model.getProject().getProperties();
+        if (props != null) {
+            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
+            if (wsStack != null) {
+                boolean isMetro = wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
+                Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
+                if (wsDep != null) {
+                    String scope = wsDep.getScope();
+                    if (isMetro) {
+                        if (scope == null || "compile".equals(scope)) { //NOI18N
+                            wsDep.setScope("provided"); //NOI18N
+                        }
+                    } else {
+                        if ("provided".equals(scope)) {
+                            wsDep.setScope("compile"); //NOI18N
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Update dependency scope for webservices-rt.
+     *
+     * @param prj Project
+     */
+    public static void reactOnServerChanges(final Project prj) {
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                // update webservices-rt library dependency scope (provided or compile)
+                // depending whether J2EE Server contains metro jars or not
+                MavenModelUtils.updateLibraryScope(prj, model);
+            }
+        };
+        Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N
+                Collections.singletonList(operation));
+        // add|remove sun-jaxws.xml and WS entries to web.xml file
+        // depending on selected target server
+        if (WSUtils.isWeb(prj)) {
+            WSUtils.checkNonJSR109Entries(prj);
+        }
+    }
+
+    private static boolean hasResource(POMExtensibilityElement webResources, String resourceName) {
+        List<POMExtensibilityElement> resources = webResources.getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement res : resources) {
+           POMExtensibilityElement includesEl = findChild(res.getExtensibilityElements(), "includes"); //NOI18N
+           if (includesEl != null) {
+               List<POMExtensibilityElement> includes = includesEl.getChildren(POMExtensibilityElement.class);
+               for (POMExtensibilityElement include : includes) {
+                   if (resourceName.equals(include.getElementText())) {
+                       return true;
+                   }
+               }
+           }
+        }
+        return false;
     }
 
 }

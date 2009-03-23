@@ -46,7 +46,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -58,6 +58,9 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
@@ -107,9 +110,15 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             }
         }
+        targetConf.setIO(io);
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
-        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); // NOI18N
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
+        if (options instanceof GizmoConfigurationOptions){
+            ((GizmoConfigurationOptions)options).configure(pae.getProject());
+        }
+        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, configuration); // NOI18N
 
         DLightExecutorService.submit(new Runnable() {
             public void run() {

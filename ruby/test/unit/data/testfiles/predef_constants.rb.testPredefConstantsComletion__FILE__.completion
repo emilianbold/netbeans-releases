@@ -1,6 +1,6 @@
 Code completion result for source line:
 __FILE__.cho|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     chomp!(separator)                          String
 METHOD     chomp(separator)                           String
 METHOD     chop!                                      String

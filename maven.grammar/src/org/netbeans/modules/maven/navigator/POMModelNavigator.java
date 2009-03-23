@@ -46,6 +46,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,11 +67,11 @@ public class POMModelNavigator implements NavigatorPanel {
     
 
     public String getDisplayName() {
-        return org.openide.util.NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_NAME");
+        return NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_NAME");
     }
 
     public String getDisplayHint() {
-        return org.openide.util.NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_HINT");
+        return NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_HINT");
     }
 
     public JComponent getComponent() {

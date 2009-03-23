@@ -59,10 +59,10 @@ import javax.swing.border.Border;
  */
 public class FakeDropShadowBorder implements Border {
 
-    private static final int TOP = 6;
-    private static final int BOTTOM = 12;
-    private static final int LEFT = 7;
-    private static final int RIGHT = 11;
+    private static final int TOP = 8;
+    private static final int BOTTOM = 8;
+    private static final int LEFT = 8;
+    private static final int RIGHT = 8;
 
     private final Insets insets;
 
@@ -97,10 +97,11 @@ public class FakeDropShadowBorder implements Border {
     public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
         Graphics2D gg = (Graphics2D) g;
         //Tile the shadow pngs around the shape
-        BufferedImage b = getImage(upLeft);
-//        int yoff = b.getHeight();
-//        int topL = b.getWidth();
-        gg.drawImage(b, x, y, null);
+        BufferedImage b = null;
+        if( insets.top > 0 && insets.left > 0 ) {
+            b = getImage(upLeft);
+            gg.drawImage(b, x, y, null);
+        }
 
         if( insets.right > 0 && insets.bottom > 0 ) {
             b = getImage(downRight);
@@ -108,21 +109,15 @@ public class FakeDropShadowBorder implements Border {
             if( insets.right == 0 )
                 xPos += RIGHT;
             gg.drawImage(b, xPos, y + h - b.getHeight(), null);
-            int woff = b.getWidth();
         }
 
         if( insets.top > 0 && insets.right > 0 ) {
             b = getImage(upRight);
-//            gg.drawImage( b, x + w - b.getWidth(), y, null);
-            int topR = b.getWidth();
+            gg.drawImage( b, x + w - b.getWidth(), y, null);
         }
 
-        int xoff = 0;
         if( insets.left > 0 && insets.bottom > 0 ) {
             b = getImage(downLeft);
-            int hoff = b.getHeight();
-            xoff = b.getWidth()-insets.left;
-            int xPos = x;
             if( insets.left == 0 )
                 x -= LEFT;
             gg.drawImage( b, x, y + h - b.getHeight(), null);
@@ -140,14 +135,13 @@ public class FakeDropShadowBorder implements Border {
 
         if( insets.bottom > 0 ) {
             b = getImage (bottom);
-            gg.drawImage(b, x+insets.left+xoff, y + h - b.getHeight(), x+w-insets.left-insets.right-xoff, b.getHeight(), null);
+            gg.drawImage(b, x+insets.left, y + h - b.getHeight(), x+w-insets.left-insets.right, b.getHeight(), null);
         }
 
         if( insets.top > 0 ) {
             b = getImage (top);
             gg.drawImage(b, x+insets.left, y, x+w-insets.left-insets.right, b.getHeight(), null);
         }
-        
     }   
     
     public boolean isBorderOpaque() {

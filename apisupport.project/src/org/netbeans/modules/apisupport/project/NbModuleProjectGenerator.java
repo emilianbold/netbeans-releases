@@ -46,8 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -55,8 +57,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -413,6 +419,16 @@ public class NbModuleProjectGenerator {
                 projectDir, NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
         EditableProperties props = new EditableProperties(true);
         props.put("nbplatform.active", platformID); // NOI18N
+        NbPlatform plaf = NbPlatform.getPlatformByID(platformID);
+        if (plaf != null && plaf.getHarnessVersion() > NbPlatform.HARNESS_VERSION_65) {
+            List<String> clusterPath = new ArrayList<String>();
+            File[] files = plaf.getDestDir().listFiles();
+            for (File file : files) {
+                if (ClusterUtils.isValidCluster(file))
+                    clusterPath.add(SuiteProperties.toPlatformClusterEntry(file.getName()));
+            }
+            props.setProperty(SuiteProperties.CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(clusterPath));
+        }
         Util.storeProperties(plafPropsFO, props);
     }
     

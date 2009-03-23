@@ -88,4 +88,17 @@ public class Union2Test extends NbTestCase {
         assertEquals("hello", s);
     }
 
+    public void testNulls() throws Exception {
+        Union2<Void,Boolean> union1 = Union2.createFirst(null);
+        assertEquals("null", union1.toString());
+        assertEquals(0, union1.hashCode());
+        assertTrue(union1.equals(null));
+        assertFalse(union1.equals(Union2.createSecond(true)));
+        Union2<Boolean,Void> union2 = Union2.createSecond(null);
+        assertEquals("null", union2.toString());
+        assertEquals(0, union2.hashCode());
+        assertTrue(union2.equals(null));
+        assertFalse(union2.equals(Union2.createFirst(true)));
+    }
+
 }

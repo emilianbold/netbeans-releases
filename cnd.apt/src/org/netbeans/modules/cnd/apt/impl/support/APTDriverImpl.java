@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import antlr.TokenStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.Reference;
@@ -67,10 +66,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static final ConcurrentHashMap<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
+    private static final ConcurrentHashMap<CharSequence, APTSyncCreator> file2creator = new ConcurrentHashMap<CharSequence, APTSyncCreator>();
     /** static shared sync map */
-    private static Map<String, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<String, Reference<APTFile>>();
-    private static Map<String, APTFile> file2apt = new ConcurrentHashMap<String, APTFile>();
+    private static Map<CharSequence, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<CharSequence, Reference<APTFile>>();
+    private static Map<CharSequence, APTFile> file2apt = new ConcurrentHashMap<CharSequence, APTFile>();
     
     /** instance fields */
     
@@ -79,8 +78,7 @@ public class APTDriverImpl {
     }
     
     public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
-        File file = buffer.getFile();
-        String path = file.getAbsolutePath();
+        CharSequence path = buffer.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
             APTSyncCreator creator = file2creator.get(path);
@@ -102,8 +100,7 @@ public class APTDriverImpl {
     }
 
     public static void invalidateAPT(APTFileBuffer buffer) {
-        File file = buffer.getFile();
-        String path = file.getAbsolutePath();
+        CharSequence path = buffer.getAbsolutePath();
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             file2ref2apt.remove(path);
         } else {
@@ -127,8 +124,7 @@ public class APTDriverImpl {
         
         /** synchronized on instance */
         public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
-            File file = buffer.getFile();
-            String path = file.getAbsolutePath();
+            CharSequence path = buffer.getAbsolutePath();
             // quick exit: check if already was added by another creator
             // during wait
             if (withTokens && fullAPT != null) {
@@ -155,7 +151,7 @@ public class APTDriverImpl {
                                 if (test != null) {
                                     apt = test;
                                 } else {
-                                    System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
+                                    System.err.println("error on serialization apt for file " + path); // NOI18N
                                 }
                             }
                             lightAPT = apt;
@@ -172,7 +168,7 @@ public class APTDriverImpl {
                                 if (test != null) {
                                     apt = test;
                                 } else {
-                                    System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
+                                    System.err.println("error on serialization apt for file " + path); // NOI18N
                                 }
                             }
                             _putAPTFile(path, fullAPT, true);
@@ -194,7 +190,7 @@ public class APTDriverImpl {
         }       
     } 
     
-    private static APTFile _getAPTFile(String path, boolean withTokens) {
+    private static APTFile _getAPTFile(CharSequence path, boolean withTokens) {
         if (withTokens) {
             // we do not cache full apt
             return null;
@@ -209,7 +205,7 @@ public class APTDriverImpl {
         return apt;
     }
     
-    private static void _putAPTFile(String path, APTFile apt, boolean withTokens) {
+    private static void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens) {
         if (withTokens) {
             // we do not cache full apt
             return;

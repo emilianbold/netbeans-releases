@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.lib.jsp.lexer;
 
 import java.io.File;
@@ -51,63 +50,106 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
-
 /**Jsp Lexer Test
  *
  * @author Marek.Fukala@Sun.COM
  */
 public class JspLexerTest extends NbTestCase {
-    
+
     public JspLexerTest() {
         super("JspLexerTest");
     }
-    
+
     private CharSequence readFile(String fileName) throws IOException {
         File inputFile = new File(getDataDir(), fileName);
         return Utils.readFileContentToString(inputFile);
     }
-    
+
     private static String getTokenInfo(Token token, TokenHierarchy tokenHierarchy) {
         return "TOKEN[text=\"" + token.text() + "\"; tokenId=" + token.id().name() + "; offset=" + token.offset(tokenHierarchy) + "]";
     }
-    
+
     private void dumpTokens(CharSequence charSequence) {
         TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.moveStart();
         while (tokenSequence.moveNext()) {
             getRef().println(getTokenInfo(tokenSequence.token(), tokenHierarchy));
-        } 
+        }
     }
-    
+
     //test methods -----------
-    
     public void testComplexJSP() throws BadLocationException, IOException {
         dumpTokens(readFile("input/JspLexerTest/testComplexJSP.jsp"));
         compareReferenceFiles();
     }
-    
-     public void test146930() {
+
+    public void test146930() {
         TokenHierarchy th = TokenHierarchy.create("<${}", JspTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
-        
+
         assertTrue(ts.moveNext());
-        
+
         assertEquals("<", ts.token().text().toString());
         assertEquals(JspTokenId.TEXT, ts.token().id());
-        
+
         assertTrue(ts.moveNext());
-        
+
         assertEquals("${}", ts.token().text().toString());
         assertEquals(JspTokenId.EL, ts.token().id());
-        
+
         assertFalse(ts.moveNext());
     }
 
-      public void testRegressions() throws Exception {
+    public void testIssue158106() {
+        String code = "<jsp:useBean\n scope=\"application\"\n id=\"x\">";
+
+        TokenHierarchy th = TokenHierarchy.create(code, JspTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertTrue(ts.moveNext());
+        assertEquals("<", ts.token().text().toString());
+        assertEquals(JspTokenId.SYMBOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("jsp:useBean", ts.token().text().toString());
+        assertEquals(JspTokenId.TAG, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("\n", ts.token().text().toString());
+        assertEquals(JspTokenId.EOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals(" ", ts.token().text().toString());
+        assertEquals(JspTokenId.WHITESPACE, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("scope", ts.token().text().toString());
+        assertEquals(JspTokenId.ATTRIBUTE, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("=", ts.token().text().toString());
+        assertEquals(JspTokenId.SYMBOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("\"application\"", ts.token().text().toString());
+        assertEquals(JspTokenId.ATTR_VALUE, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("\n", ts.token().text().toString());
+        assertEquals(JspTokenId.EOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals(" ", ts.token().text().toString());
+        assertEquals(JspTokenId.WHITESPACE, ts.token().id());
+
+        
+    }
+
+    public void testRegressions() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testRegressions.jsp.txt",
                 JspTokenId.language());
     }
-    
 }

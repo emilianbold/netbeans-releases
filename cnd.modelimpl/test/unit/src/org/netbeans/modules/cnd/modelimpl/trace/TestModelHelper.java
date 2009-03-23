@@ -55,8 +55,8 @@ public final class TestModelHelper {
     /**
      * Creates a new instance of TestModelHelper
      */
-    public TestModelHelper() {
-        traceModel = new TraceModel();
+    public TestModelHelper(boolean clearCache) {
+        traceModel = new TraceModel(clearCache);
     }
     
     /*package-local*/ TraceModel getTraceModel() {
@@ -86,7 +86,7 @@ public final class TestModelHelper {
         return traceModel.getModel();
     }
     
-    public void shutdown() {
-        traceModel.shutdown();
+    public void shutdown(boolean clearCache) {
+        traceModel.shutdown(clearCache);
     }
 }

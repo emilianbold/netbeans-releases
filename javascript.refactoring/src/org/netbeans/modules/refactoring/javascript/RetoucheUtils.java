@@ -43,23 +43,17 @@ package org.netbeans.modules.refactoring.javascript;
 
 import java.awt.Color;
 import java.io.CharConversionException;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -70,20 +64,16 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.SourceUtils;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsClassPathProvider;
+import org.netbeans.modules.javascript.editing.JsParseResult;
+import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -103,49 +93,23 @@ public class RetoucheUtils {
     }
 
     public static boolean isJsFile(FileObject fo) {
-        return LanguageRegistry.getInstance().isRelevantFor(fo, JsTokenId.JAVASCRIPT_MIME_TYPE);
-    }
-    
-    // XXX Should this be unused now?
-    public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
-        if (isJsFile(fo)) {
-            return Source.create(cpInfo, fo);
-        }
-        
-        return null;
-    }
-    
-    public static Source getSource(FileObject fo) {
-        Source source =  Source.forFileObject(fo);
-        
-        return source;
-    }
-    
-    public static Source getSource(Document doc) {
-        Source source = Source.forDocument(doc);
+        // XXX: parsingapi; this should somehow be available in Parsing API
+        //return LanguageRegistry.getInstance().isRelevantFor(fo, JsTokenId.JAVASCRIPT_MIME_TYPE);
 
-        return source;
+        // these are the mimetypes for which JsEmbeddingProvider is registered
+        return JsUtils.isJsFile(fo)
+                || fo.getMIMEType().equals("application/x-httpd-eruby") //NOI18N
+                || fo.getMIMEType().equals("text/html")  //NOI18N
+                || fo.getMIMEType().equals("text/x-jsp")  //NOI18N
+                || fo.getMIMEType().equals("text/x-tag")  //NOI18N
+                || fo.getMIMEType().equals("text/x-php5");  //NOI18N
     }
-    
-    public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
+
+    public static BaseDocument getDocument(Parser.Result info) {
         BaseDocument doc = null;
 
         if (info != null) {
-            doc = (BaseDocument)info.getDocument();
-        }
-
-        if (doc == null) {
-            try {
-                // Gotta open it first
-                DataObject od = DataObject.find(fo);
-                EditorCookie ec = od.getCookie(EditorCookie.class);
-
-                if (ec != null) {
-                    doc = (BaseDocument)ec.openDocument();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
         }
 
         return doc;
@@ -179,17 +143,17 @@ public class RetoucheUtils {
         
         return new String[] { name, simpleName };
     }
-    
-    public static CloneableEditorSupport findCloneableEditorSupport(CompilationInfo info) {
+
+    public static CloneableEditorSupport findCloneableEditorSupport(JsParseResult info) {
         DataObject dob = null;
         try {
-            dob = DataObject.find(info.getFileObject());
+            dob = DataObject.find(info.getSnapshot().getSource().getFileObject());
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
         return RetoucheUtils.findCloneableEditorSupport(dob);
     }
-    
+
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
@@ -316,117 +280,124 @@ public class RetoucheUtils {
         return false;
     }
 
-    public static boolean isClasspathRoot(FileObject fo) {
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (cp != null) {
-            FileObject f = cp.findOwnerRoot(fo);
-            if (f != null) {
-                return fo.equals(f);
-            }
-        }
-        
-        return false;
-    }
-    
     public static boolean isRefactorable(FileObject file) {
         return isJsFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
-    
+
+// XXX: parsingapi
+//    public static boolean isClasspathRoot(FileObject fo) {
+//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//        if (cp != null) {
+//            FileObject f = cp.findOwnerRoot(fo);
+//            if (f != null) {
+//                return fo.equals(f);
+//            }
+//        }
+//
+//        return false;
+//    }
+
     public static String getPackageName(FileObject folder) {
-        assert folder.isFolder() : "argument must be folder";
-        return ClassPath.getClassPath(
-                folder, ClassPath.SOURCE)
-                .getResourceName(folder, '.', false);
-    }
-
-    public static FileObject getClassPathRoot(URL url) throws IOException {
-        FileObject result = URLMapper.findFileObject(url);
-        File f = FileUtil.normalizeFile(new File(url.getPath()));
-        while (result==null) {
-            result = FileUtil.toFileObject(f);
-            f = f.getParentFile();
-        }
-        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
-    }
-    
-    public static ElementKind getElementKind(JsElementCtx tph) {
-        return tph.getKind();
-    }
-    
-    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        assert files.length >0;
-        Set<URL> dependentRoots = new HashSet<URL>();
-        for (FileObject fo: files) {
-            Project p = null;
-            if (fo!=null) {
-                p = FileOwnerQuery.getOwner(fo);
-            }
-            if (p!=null) {
-                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (classPath == null) {
-                    return null;
-                }
-                FileObject ownerRoot = classPath.findOwnerRoot(fo);
-                if (ownerRoot != null) {
-                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
-                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                    //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
-                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                    }
-                } else {
-                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
-                }
-            } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
-                    }
+        assert folder.isFolder() : "argument must be folder"; //NOI18N
+        Project p = FileOwnerQuery.getOwner(folder);
+        if (p != null) {
+            Sources s = ProjectUtils.getSources(p);
+            for(SourceGroup g : s.getSourceGroups(Sources.TYPE_GENERIC)) {
+                String relativePath = FileUtil.getRelativePath(g.getRootFolder(), folder);
+                if (relativePath != null) {
+                    return relativePath.replace('/', '.'); //NOI18N
                 }
             }
         }
-        
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
-
-        if (boot == null || compile == null) { // 146499
-            return null;
-        }
-
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
+        return ""; //NOI18N
     }
-    
-    public static ClasspathInfo getClasspathInfoFor(JsElementCtx ctx) {
-        return getClasspathInfoFor(ctx.getFileObject());
-    }
-    
-    public static List<FileObject> getJsFilesInProject(FileObject fileInProject) {
-        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-        List<FileObject> list = new ArrayList<FileObject>(100);
-        for (ClassPath.Entry entry : cp.entries()) {
-            FileObject root = entry.getRoot();
+
+// XXX: parsingapi
+//    public static FileObject getClassPathRoot(URL url) throws IOException {
+//        FileObject result = URLMapper.findFileObject(url);
+//        File f = FileUtil.normalizeFile(new File(url.getPath()));
+//        while (result==null) {
+//            result = FileUtil.toFileObject(f);
+//            f = f.getParentFile();
+//        }
+//        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
+//    }
+//
+//    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+//        assert files.length >0;
+//        Set<URL> dependentRoots = new HashSet<URL>();
+//        for (FileObject fo: files) {
+//            Project p = null;
+//            if (fo!=null) {
+//                p = FileOwnerQuery.getOwner(fo);
+//            }
+//            if (p!=null) {
+//                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//                if (classPath == null) {
+//                    return null;
+//                }
+//                FileObject ownerRoot = classPath.findOwnerRoot(fo);
+//                if (ownerRoot != null) {
+//                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+//                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+//                    //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
+//                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+//                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+//                    }
+//                } else {
+//                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
+//                }
+//            } else {
+//                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+//                    for (FileObject root:cp.getRoots()) {
+//                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+//                    }
+//                }
+//            }
+//        }
+//
+//        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
+//        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+//
+//        if (boot == null || compile == null) { // 146499
+//            return null;
+//        }
+//
+//        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
+//        return cpInfo;
+//    }
+//
+//    public static ClasspathInfo getClasspathInfoFor(JsElementCtx ctx) {
+//        return getClasspathInfoFor(ctx.getFileObject());
+//    }
+//
+    public static Set<FileObject> getJsFilesInProject(FileObject fileInProject) {
+        Set<FileObject> files = new HashSet<FileObject>(100);
+        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject,
+                null,
+                Collections.singleton(JsClassPathProvider.BOOT_CP),
+                Collections.<String>emptySet());
+        for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming
             if (name.equals("vendor") || name.equals("script")) { // NOI18N
                 continue;
             }
-            addJsFiles(list, root);
+            addJsFiles(files, root);
         }
-        
-        return list;
+
+        return files;
     }
-    
-    private static void addJsFiles(List<FileObject> list, FileObject f) {
+
+    private static void addJsFiles(Set<FileObject> files, FileObject f) {
         if (f.isFolder()) {
             for (FileObject child : f.getChildren()) {
-                addJsFiles(list, child);
+                addJsFiles(files, child);
             }
         } else if (isJsFile(f)) {
-            list.add(f);
+            files.add(f);
         }
     }
 }

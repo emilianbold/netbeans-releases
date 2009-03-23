@@ -73,7 +73,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         super(ast, file);
         _setScope(scope);
         rawName = createRawName(ast);
-        alias = QualifiedNameCache.getManager().getString(ast.getText());
+        alias = NameCache.getManager().getString(ast.getText());
         AST token = ast.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -144,7 +144,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return getName();
     }
     
-    private static String[] createRawName(AST node) {
+    private static CharSequence[] createRawName(AST node) {
         AST token = node.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -155,7 +155,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
                 return AstUtil.getRawName(token.getFirstChild());
             }
         }
-        return new String[0];
+        return new CharSequence[0];
     }
 
     public CharSequence[] getRawName() {
@@ -187,9 +187,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.alias != null;
-        output.writeUTF(this.alias.toString());
+        PersistentUtils.writeUTF(alias, output);
         assert this.namespace != null;
-        output.writeUTF(this.namespace.toString());
+        PersistentUtils.writeUTF(namespace, output);
         PersistentUtils.writeStrings(this.rawName, output);
         
         // save cached namespace
@@ -199,9 +199,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
-        this.alias = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.alias = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.alias != null;
-        this.namespace = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.namespace = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.namespace != null;
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         

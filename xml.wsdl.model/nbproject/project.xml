@@ -107,6 +107,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.xml.wsdl.model</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.http</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.soap</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.soap12</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.xsd</package>
                 <package>org.netbeans.modules.xml.wsdl.model.spi</package>
                 <package>org.netbeans.modules.xml.wsdl.model.visitor</package>

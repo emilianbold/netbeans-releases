@@ -254,7 +254,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-    
+
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;

@@ -1,0 +1,87 @@
+.t.e.s.t. templatingless source code
+IDENT           "h1", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n    ", la=1, st=0
+IDENT           "color", la=1, st=0
+COLON           ":", st=0
+S               " ", la=1, st=0
+IDENT           "red", la=1, st=0
+SEMICOLON       ";", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+.t.e.s.t. templated source code
+IDENT           "h1", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n    ", la=1, st=0
+IDENT           "color", la=1, st=0
+COLON           ":", st=0
+S               " ", la=1, st=0
+GENERATED       "@@@", la=1, st=0
+SEMICOLON       ";", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+.t.e.s.t. templated source code
+IDENT           "h1", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n    ", la=1, st=0
+GENERATED       "@@@", la=1, st=0
+COLON           ":", st=0
+S               " ", la=1, st=0
+IDENT           "red", la=1, st=0
+SEMICOLON       ";", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+.t.e.s.t. templated source code
+IDENT           "h1", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n    ", la=1, st=0
+IDENT           "col@@@r", la=1, st=0
+COLON           ":", st=0
+S               " ", la=1, st=0
+IDENT           "red", la=1, st=0
+SEMICOLON       ";", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+.t.e.s.t. templated source code
+IDENT           "h1", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n    ", la=1, st=0
+IDENT           "co@@@@@@r", la=1, st=0
+COLON           ":", st=0
+S               " ", la=1, st=0
+IDENT           "red", la=1, st=0
+SEMICOLON       ";", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+.t.e.s.t. templated source code
+GENERATED       "@@@", la=1, st=0
+S               " ", la=1, st=0
+IDENT           "h2", la=1, st=0
+S               " ", la=1, st=0
+GENERATED       "@@@", la=1, st=0
+S               " ", la=1, st=0
+IDENT           "h4", la=1, st=0
+S               " ", la=1, st=0
+LBRACE          "{", st=0
+S               "\n", la=1, st=0
+RBRACE          "}", st=0
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

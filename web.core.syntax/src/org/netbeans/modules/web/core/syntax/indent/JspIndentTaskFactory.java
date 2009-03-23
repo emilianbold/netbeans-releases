@@ -40,5 +40,5 @@ public class JspIndentTaskFactory implements IndentTask.Factory {
     public IndentTask createTask(Context context) {
         return new JspIndentTask(context);
     }
-    
+
 }

@@ -57,9 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -199,12 +198,13 @@ public class Utils {
         return null;
     }
 
-    public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
+    // FIXME remove this
+    public static BaseDocument getDocument(ParserResult info, FileObject fo) {
         BaseDocument doc = null;
 
         try {
             if (info != null) {
-                doc = (BaseDocument)info.getDocument();
+                doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
             }
 
             if (doc == null) {

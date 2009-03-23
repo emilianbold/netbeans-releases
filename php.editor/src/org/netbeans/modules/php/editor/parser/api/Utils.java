@@ -39,12 +39,9 @@
 package org.netbeans.modules.php.editor.parser.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -85,9 +82,7 @@ public class Utils {
         return possible;
     }
 
-    public static Program getRoot(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
-
+    public static Program getRoot(ParserResult result) {
         if (result == null) {
             return null;
         }
@@ -99,7 +94,7 @@ public class Utils {
         }
     }
 
-    public static ASTNode getNodeAtOffset(CompilationInfo info, int astOffset) {
+    public static ASTNode getNodeAtOffset(ParserResult info, int astOffset) {
         Program program = getRoot(info);
         return getNodeAtOffset(program, astOffset);
     }

@@ -177,8 +177,7 @@ public class HgProperties implements ListSelectionListener {
                             }
                         }
                     }
-                    HgRepositoryContextCache.resetPullDefault();
-                    HgRepositoryContextCache.resetPushDefault();
+                    HgRepositoryContextCache.getInstance().reset();
                 }
             };
             support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress")); // NOI18N

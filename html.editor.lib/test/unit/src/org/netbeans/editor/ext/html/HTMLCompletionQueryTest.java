@@ -47,8 +47,10 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -65,12 +67,12 @@ public class HTMLCompletionQueryTest extends TestBase {
         NbReaderProvider.setupReaders(); //initialize DTD providers
     }
 
-    public void setUp() {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockServices.setServices(MockMimeLookup.class);
     }
         
-    public void tearDown() {
-    }
-    
     //test methods -----------
     public void testIndexHtml() throws IOException, BadLocationException {
         testCompletionResults(new File(getDataDir(), "input/HTMLCompletionQueryTest/index.html"));
@@ -86,7 +88,7 @@ public class HTMLCompletionQueryTest extends TestBase {
         String content = Utils.readFileContentToString(inputFile);
         BaseDocument doc = createDocument();
         doc.insertString(0,content,null);
-        HTMLSyntaxSupport sup = new HTMLSyntaxSupport(doc);
+        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
         HTMLCompletionQuery query = new HTMLCompletionQuery();
         
         JEditorPane component = new JEditorPane();

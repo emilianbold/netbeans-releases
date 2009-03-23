@@ -77,7 +77,7 @@ public class WritablePreferences131128Test extends TestCase {
         Preferences prefs = NbPreferences.forModule(WritablePreferences131128Test.class);
         prefs.putBoolean("anything", true);
         Thread.sleep(1000);
-        assertEquals("Musn't cycle when preferences are not writable.", 3, MyPreferencesFactory.flushSpiCount);
+        assertEquals("Musn't cycle when preferences are not writable.", 4, MyPreferencesFactory.flushSpiCount);
         assertTrue("DialogDisplayer.notify not called to inform user about not writable preferences.", Displayer.notifyCalled);
     }
 

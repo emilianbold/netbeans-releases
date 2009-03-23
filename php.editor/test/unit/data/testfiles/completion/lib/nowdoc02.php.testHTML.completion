@@ -1,6 +1,6 @@
 Code completion result for source line:
 <title>|</title>
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    <?=                                        null
 KEYWORD    <?php                                      null

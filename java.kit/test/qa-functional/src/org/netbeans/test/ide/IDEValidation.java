@@ -117,7 +117,6 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.Log;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -129,37 +128,12 @@ import org.openide.windows.WindowManager;
  * @author Jiri.Skrivanek@sun.com
  */
 public class IDEValidation extends JellyTestCase {
-    
+
     /** Need to be defined because of JUnit */
     public IDEValidation(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new IDEValidation("testInitGCProjects"));
-        suite.addTest(new IDEValidation("testMainMenu"));
-        suite.addTest(new IDEValidation("testHelp"));
-        suite.addTest(new IDEValidation("testOptions"));
-        suite.addTest(new IDEValidation("testOptionsClassicView"));
-        suite.addTest(new IDEValidation("testNewProject"));
-        // sample project must exist before testShortcuts
-        suite.addTest(new IDEValidation("testShortcuts"));
-        suite.addTest(new IDEValidation("testNewFile"));
-        suite.addTest(new IDEValidation("testCVSLite"));
-        suite.addTest(new IDEValidation("testProjectsView"));
-        suite.addTest(new IDEValidation("testFilesView"));
-        suite.addTest(new IDEValidation("testEditor"));
-        suite.addTest(new IDEValidation("testBuildAndRun"));
-        suite.addTest(new IDEValidation("testDebugging"));
-        suite.addTest(new IDEValidation("testJUnit"));
-        suite.addTest(new IDEValidation("testXML"));
-        suite.addTest(new IDEValidation("testDb"));
-        suite.addTest(new IDEValidation("testWindowSystem"));
-        suite.addTest(new IDEValidation("testPlugins"));
-        return suite;
-    }
-    
     /** Setup called before every test case. */
     @Override
     public void setUp() {
@@ -1056,7 +1030,7 @@ public class IDEValidation extends JellyTestCase {
             new JButtonOperator(new NbDialogOperator(confirmTitle), confirmButton).push();
         }
     }
-
+	
      /** Test Options  
       * - open Options window from main menu Tools|Options
       * - select General category
@@ -1127,7 +1101,7 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testCVSLite() {
         // "Versioning"
-        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
         // "CVS"
         String cvsItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
@@ -1419,7 +1393,7 @@ public class IDEValidation extends JellyTestCase {
         WatchProjects.initialize();
         Log.enableInstances(Logger.getLogger("TIMER"), "TextDocument", Level.FINEST);
     }
-    
+
     public void testGCDocuments() throws Exception {
         WatchProjects.assertTextDocuments();
     }

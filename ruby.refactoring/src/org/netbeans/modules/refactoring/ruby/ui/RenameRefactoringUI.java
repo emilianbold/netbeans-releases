@@ -44,9 +44,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
@@ -63,13 +62,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
  * @todo There are a lot of constructors here; figure out which ones are unused, and
  *   nuke them!
  * 
  * @author Martin Matula, Jan Becicka
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+    
     private final AbstractRefactoring refactoring;
     private String oldName = null;
     private String dispOldName;
@@ -82,17 +81,18 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private boolean pkgRename = true;
     private String stripPrefix;
     
-    public RenameRefactoringUI(RubyElementCtx handle, CompilationInfo info) {
+    public RenameRefactoringUI(RubyElementCtx handle, ParserResult info) {
         this.jmiObject = handle;
         stripPrefix = handle.getStripPrefix();
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         //oldName = handle.resolveElement(info).getSimpleName().toString();
         oldName = handle.getSimpleName();
 
-        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(handle);
-        if (classpath != null) {
-            refactoring.getContext().add(classpath);
-        }
+        // XXX - Parsing API
+//        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(handle);
+//        if (classpath != null) {
+//            refactoring.getContext().add(classpath);
+//        }
         
         dispOldName = oldName;
 
@@ -102,7 +102,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         this.refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);        
     }
     
-    public RenameRefactoringUI(FileObject file, RubyElementCtx handle, CompilationInfo info) {
+    public RenameRefactoringUI(FileObject file, RubyElementCtx handle, ParserResult info) {
         if (handle!=null) {
             jmiObject = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
@@ -113,10 +113,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             oldName = file.getName();
         }
         dispOldName = oldName;
-        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
-        if (cpInfo != null) {
-            refactoring.getContext().add(cpInfo);
-        }
+        // XXX - Parsing API
+//        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
+//        if (cpInfo != null) {
+//            refactoring.getContext().add(cpInfo);
+//        }
         //this(jmiObject, (FileObject) null, true);
         
         // Force refresh!
@@ -126,10 +127,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     public RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = RetoucheUtils.getPackageName(file.getFolder());
-        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(file.getFolder());
-        if (classpath != null) {
-            refactoring.getContext().add(classpath);
-        }
+        // XXX - Parsing API
+//        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(file.getFolder());
+//        if (classpath != null) {
+//            refactoring.getContext().add(classpath);
+//        }
         dispOldName = oldName;
         pkgRename = true;
         //this(jmiObject, (FileObject) null, true);
@@ -139,7 +141,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     
-    RenameRefactoringUI(FileObject jmiObject, String newName, RubyElementCtx handle, CompilationInfo info) {
+    RenameRefactoringUI(FileObject jmiObject, String newName, RubyElementCtx handle, ParserResult info) {
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
         } else {
@@ -149,10 +151,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
         this.dispOldName = newName;
-        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
-        if (cpInfo != null) {
-            refactoring.getContext().add(cpInfo);
-        }
+        // XXX - Parsing API
+//        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
+//        if (cpInfo != null) {
+//            refactoring.getContext().add(cpInfo);
+//        }
         fromListener = true;
 
         // Force refresh!
@@ -161,10 +164,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
-        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder());
-        if (classpath != null) {
-            refactoring.getContext().add(classpath);
-        }
+        // XXX - Parsing API
+//        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder());
+//        if (classpath != null) {
+//            refactoring.getContext().add(classpath);
+//        }
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
@@ -191,7 +195,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             
             String suffix = "";
             if (jmiObject != null) {
-                ElementKind kind = RetoucheUtils.getElementKind(jmiObject);
+                ElementKind kind = jmiObject.getKind();
                 //if (kind.isClass() || kind.isInterface()) {
                 if (kind == ElementKind.CLASS/* || kind == ElementKind.MODULE*/) {
                     suffix  = /*kind.isInterface() ? getString("LBL_Interface") : */getString("LBL_Class");

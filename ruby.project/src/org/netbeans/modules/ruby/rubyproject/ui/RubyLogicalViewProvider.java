@@ -72,6 +72,8 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
+import org.netbeans.modules.ruby.rubyproject.TestActionConfiguration;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 
 /**
@@ -168,14 +170,19 @@ public final class RubyLogicalViewProvider extends RubyBaseLogicalViewProvider {
             }
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
-            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOTEST)) {
+            if (TestActionConfiguration.enable(RubyBaseActionProvider.COMMAND_TEST, getProject())) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
+            }
+            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOTEST)
+                    && TestActionConfiguration.enable(RubyBaseActionProvider.COMMAND_AUTOTEST, getProject())) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
             }
-            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOSPEC)) {
+            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOSPEC)
+                    && TestActionConfiguration.enable(RubyBaseActionProvider.COMMAND_AUTOSPEC, getProject())) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_AUTOSPEC, bundle.getString("LBL_AutoSpec"), null)); // NOI18N
             }
-            if (rspecSupport.isRSpecInstalled()) {
+            if (rspecSupport.isRSpecInstalled() 
+                    && TestActionConfiguration.enable(RubyBaseActionProvider.COMMAND_RSPEC, getProject())) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N
             }
             actions.add(RubyCoverageProvider.createCoverageAction(getProject()));

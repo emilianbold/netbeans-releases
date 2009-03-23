@@ -43,8 +43,8 @@ import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
 
 final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<IndexedConstant> {
@@ -52,12 +52,12 @@ final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<Inde
     private final Node constantNode;
 
     RubyConstantDeclarationFinder(
-            final CompilationInfo info,
+            final ParserResult parserResult,
             final Node root,
             final AstPath path,
             final RubyIndex index,
             final Node constantNode) {
-        super(info, root, path, index);
+        super(parserResult, root, path, index);
         this.constantNode = constantNode;
     }
 

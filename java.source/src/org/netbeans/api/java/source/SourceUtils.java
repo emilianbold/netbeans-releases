@@ -74,6 +74,7 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -86,19 +87,22 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Index;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -527,7 +531,7 @@ public class SourceUtils {
                 }
                 if (fo != null) {
                     URL url = fo.getURL();
-                    sourceRoot = Index.getSourceRootForClassFolder(url);
+                    sourceRoot = null;//XXX: Index.getSourceRootForClassFolder(url);
                     if (sourceRoot == null) {
                         binaries.add(url);
                     } else {
@@ -661,7 +665,7 @@ out:                    for (URL e : roots) {
      * Tests whether the initial scan is in progress.
      */
     public static boolean isScanInProgress () {
-        return RepositoryUpdater.getDefault().isScanInProgress();
+        return IndexingManager.getDefault().isIndexing();
     }
 
     /**
@@ -671,7 +675,25 @@ out:                    for (URL e : roots) {
      * @deprecated use {@link JavaSource#runWhenScanFinished}
      */
     public static void waitScanFinished () throws InterruptedException {
-        RepositoryUpdater.getDefault().waitScanFinished();
+        try {
+            class T extends UserTask implements ClasspathInfoProvider {
+                private final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+                private final ClasspathInfo cpinfo = ClasspathInfo.create(EMPTY_PATH, EMPTY_PATH, EMPTY_PATH);
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    // no-op
+                }
+
+                public ClasspathInfo getClasspathInfo() {
+                    return cpinfo;
+                }
+            }
+            Future<Void> f = ParserManager.parseWhenScanFinished(JavacParser.MIME_TYPE, new T());
+            if (!f.isDone()) {
+                f.get();
+            }
+        } catch (Exception ex) {
+        }
     }
     
     
@@ -753,7 +775,7 @@ out:                    for (URL e : roots) {
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
                         new TreePathScanner<Void,Void> () {
-                           public Void visitMethod(MethodTree node, Void p) {
+                           public @Override Void visitMethod(MethodTree node, Void p) {
                                ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
                                if (method != null && SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
                                    result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
@@ -884,7 +906,7 @@ out:                    for (URL e : roots) {
                         for (URL mainClass : mainClasses) {
                             File mainFo = new File (URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
-                                classes.addAll(RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
+                                classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
                             }
                         }
                         for (ElementHandle<TypeElement> cls : classes) {

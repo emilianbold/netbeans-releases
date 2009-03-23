@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
+
 
 /**
  * A temp workaround for performance problems with hints accessing the VarStack.

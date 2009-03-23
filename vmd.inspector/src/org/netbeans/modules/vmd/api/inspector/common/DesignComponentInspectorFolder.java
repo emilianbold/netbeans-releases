@@ -63,133 +63,143 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
  *
  * @author Karol Harezlak
  */
-
- /**
+/**
  * This class suits as a descriptor for the Mobility Visual Designer Navigator node.
  * InspectorFolder in this class is created based on DesignComponent passed in the class constructor.
  * This class creates visual representation of DesignComponent in the Mobility Visual Designer Navigator.
  */
- public class DesignComponentInspectorFolder extends InspectorFolder {
-        
-        private String displayName;
-        private Image icon;
-        private boolean canRename;
-        private String name;
-        private List<InspectorOrderingController> ocs;
-        private DesignComponent component;
-        
-        /**
-         * Creates  DesignComponentInspectorFolder
-         * @param canRename - indicates if name of the InspectorFolder can be changed
-         * @param component - InspectorFolder is created based on this parameter 
-         */ 
-        public DesignComponentInspectorFolder(boolean canRename, DesignComponent component) {
-            assert (component != null);
-            this.component = component;
-            this.canRename = canRename;
-        }
-        
-        public TypeID getTypeID() {
-            return getComponent().getType();
-        }
-        
-        public Long getComponentID() {
-            return getComponent().getComponentID();
-        }
-        
-        public Image getIcon() {
-            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    InfoPresenter presenter =  getComponent().getPresenter(InfoPresenter.class);
-                    if (presenter == null)
-                        throw new IllegalStateException("No InfoPresenter for this component"); //NOI18N
-                    icon = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
+public class DesignComponentInspectorFolder extends InspectorFolder {
+
+    private String displayName;
+    private Image icon;
+    private boolean canRename;
+    private String name;
+    private List<InspectorOrderingController> ocs;
+    private DesignComponent component;
+
+    /**
+     * Creates  DesignComponentInspectorFolder
+     * @param canRename - indicates if name of the InspectorFolder can be changed
+     * @param component - InspectorFolder is created based on this parameter
+     */
+    public DesignComponentInspectorFolder(boolean canRename, DesignComponent component) {
+        assert (component != null);
+        this.component = component;
+        this.canRename = canRename;
+    }
+
+    public TypeID getTypeID() {
+        return getComponent().getType();
+    }
+
+    public Long getComponentID() {
+        return getComponent().getComponentID();
+    }
+
+    public Image getIcon() {
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                InfoPresenter presenter = getComponent().getPresenter(InfoPresenter.class);
+                if (presenter == null) {
+                    throw new IllegalStateException("No InfoPresenter for this component"); //NOI18N
                 }
-            });
-            return icon;
-        }
-        
-        public String getDisplayName() {
-            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    if (getComponent().getParentComponent() != null)
-                        displayName = InfoPresenter.getDisplayName(getComponent());
-                    else if (getComponent() == getComponent().getDocument().getRootComponent())
-                        displayName = InfoPresenter.getDisplayName(getComponent());
-                }
-            });
-            return displayName;
-        }
-        
-        public String getHtmlDisplayName() {
-            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    if (getComponent().getParentComponent() != null)
-                        displayName = InfoPresenter.getHtmlDisplayName(getComponent());
-                    else if (getComponent() == getComponent().getDocument().getRootComponent())
-                        displayName = InfoPresenter.getHtmlDisplayName(getComponent());
-                }
-            });
-            return displayName;
-        }
-        
-        public boolean isInside(final InspectorFolderPath path, final InspectorFolder folder, final  DesignComponent component) {
-            for (InspectorPositionPresenter presenter : getComponent().getPresenters(InspectorPositionPresenter.class)){
-                for (InspectorPositionController pc : presenter.getFolderPositionControllers()) {
-                    if (pc != null && pc.isInside(path, folder, getComponent()))
-                        return true;
+                icon = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
+            }
+        });
+        return icon;
+    }
+
+    public String getDisplayName() {
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                if (getComponent().getParentComponent() != null) {
+                    displayName = InfoPresenter.getDisplayName(getComponent());
+                } else if (getComponent() == getComponent().getDocument().getRootComponent()) {
+                    displayName = InfoPresenter.getDisplayName(getComponent());
                 }
             }
-            return false;
-        }
-        
-        public Action[] getActions() {
-            return ActionsSupport.createActionsArray(getComponent());
-        }
-        
-        public boolean canRename() {
-            return canRename;
-        }
-        
-        public String getName() {
-            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    InfoPresenter presenter = getComponent().getPresenter(InfoPresenter.class);
-                    if (presenter != null) {
-                        if (presenter.isEditable())
-                            name = presenter.getEditableName();
-                    } else
-                        Debug.warning("No info presenter for component :"  + getComponent()); //NOI18N
-                }
-            });
-            return name;
-        }
-        
-        public InspectorOrderingController[] getOrderingControllers() {
-            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    Collection<? extends InspectorOrderingPresenter> presenters = getComponent().getPresenters(InspectorOrderingPresenter.class);
-                    if (presenters == null || presenters.isEmpty() ) {
-                        ocs = null;
-                        return;
-                    }
-                    ocs = new ArrayList<InspectorOrderingController>();
-                    for (InspectorOrderingPresenter presenter : presenters){
-                        ocs.addAll(Arrays.asList(presenter.getFolderOrderingControllers()));
-                    }
-                }
-            });
-            if (ocs == null)
-                return null;
-            return ocs.toArray(new InspectorOrderingController[ocs.size()]);
-        }
+        });
+        return displayName;
+    }
 
-        protected DesignEventFilter getEventFilter() {
+    public String getHtmlDisplayName() {
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                if (getComponent().getParentComponent() != null) {
+                    displayName = InfoPresenter.getHtmlDisplayName(getComponent());
+                } else if (getComponent() == getComponent().getDocument().getRootComponent()) {
+                    displayName = InfoPresenter.getHtmlDisplayName(getComponent());
+                }
+            }
+        });
+        return displayName;
+    }
+
+    public boolean isInside(final InspectorFolderPath path, final InspectorFolder folder, final DesignComponent component) {
+        for (InspectorPositionPresenter presenter : getComponent().getPresenters(InspectorPositionPresenter.class)) {
+            for (InspectorPositionController pc : presenter.getFolderPositionControllers()) {
+                if (pc != null && pc.isInside(path, folder, getComponent())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public Action[] getActions() {
+        return ActionsSupport.createActionsArray(getComponent());
+    }
+
+    public boolean canRename() {
+        return canRename;
+    }
+
+    public String getName() {
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                InfoPresenter presenter = getComponent().getPresenter(InfoPresenter.class);
+                if (presenter != null) {
+                    if (presenter.isEditable()) {
+                        name = presenter.getEditableName();
+                    }
+                } else {
+                    Debug.warning("No info presenter for component :" + getComponent()); //NOI18N
+                }
+            }
+        });
+        return name;
+    }
+
+    public InspectorOrderingController[] getOrderingControllers() {
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                Collection<? extends InspectorOrderingPresenter> presenters = getComponent().getPresenters(InspectorOrderingPresenter.class);
+                if (presenters == null || presenters.isEmpty()) {
+                    ocs = null;
+                    return;
+                }
+                ocs = new ArrayList<InspectorOrderingController>();
+                for (InspectorOrderingPresenter presenter : presenters) {
+                    ocs.addAll(Arrays.asList(presenter.getFolderOrderingControllers()));
+                }
+            }
+        });
+        if (ocs == null) {
             return null;
         }
-        
-        protected DesignComponent getComponent() {
-            return component;
-        }
-        
+        return ocs.toArray(new InspectorOrderingController[ocs.size()]);
     }
+
+    protected DesignEventFilter getEventFilter() {
+        return null;
+    }
+
+    protected DesignComponent getComponent() {
+        return component;
+    }
+}

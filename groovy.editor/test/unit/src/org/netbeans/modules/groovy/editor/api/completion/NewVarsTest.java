@@ -39,10 +39,14 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
+import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -64,6 +68,13 @@ public class NewVarsTest extends GroovyTestBase {
         return Level.INFO;
         // we are only interested in a single logger, so we set its level in setUp(),
         // as returning Level.FINEST here would log from all loggers
+    }
+
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/newvars")) }));
+        return map;
     }
 
     // test new-var suggestions based on identifiers

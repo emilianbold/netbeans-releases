@@ -59,7 +59,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -234,7 +234,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
                 //only add those with executions and goals..
 
             }
-            String mvnVersion = MavenExecutionSettings.getCommandLineMavenVersion();
+            String mvnVersion = MavenSettings.getCommandLineMavenVersion();
             String packaging = project.getOriginalMavenProject().getPackaging();
 
             if (packaging != null) {

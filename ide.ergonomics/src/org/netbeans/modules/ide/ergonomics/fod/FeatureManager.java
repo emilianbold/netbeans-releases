@@ -44,9 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -106,11 +104,16 @@ implements PropertyChangeListener, LookupListener {
     public static Collection<? extends FeatureInfo> features() {
         return featureTypesLookup().lookupAll(FeatureInfo.class);
     }
-    
-    public static void dumpModules() {
+
+    /** Returns the amount of (partially) enabled clusters, or -1 if not
+     * computed.
+     * @return
+     */
+    public static int dumpModules() {
         if (!FoDFileSystem.LOG.isLoggable(Level.FINE)) {
-            return;
+            return -1;
         }
+        int cnt = 0;
         for (FeatureInfo info : features()) {
             Set<String> enabled = new TreeSet<String>();
             Set<String> disabled = new TreeSet<String>();
@@ -129,11 +132,12 @@ implements PropertyChangeListener, LookupListener {
             }
             if (disabled.isEmpty()) {
                 FoDFileSystem.LOG.fine(info.clusterName + " enabled"); // NOTICES
+                cnt++;
                 continue;
             }
             FoDFileSystem.LOG.fine(
                 info.clusterName + " enabled " + enabled.size() + " disabled " + disabled.size()); // NOTICES
-
+            cnt++;
             for (String cnb : disabled) {
                 FoDFileSystem.LOG.finest("- " + cnb); // NOI18N
             }
@@ -141,7 +145,7 @@ implements PropertyChangeListener, LookupListener {
                 FoDFileSystem.LOG.finest("+ " + cnb); // NOI18N
             }
         }
-        
+        return cnt;
     }
     
     /** Used from tests */

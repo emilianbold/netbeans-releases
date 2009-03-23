@@ -87,7 +87,7 @@ public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
         writeFile(dummyFile1, sb.toString());
         writeFile(dummyFile2, sb.toString());
 
-        TraceModelBase traceModel = new  TraceModelBase();
+        TraceModelBase traceModel = new  TraceModelBase(true);
 
 	traceModel.processArguments(dummyFile1.getAbsolutePath(), sourceFile.getAbsolutePath(), dummyFile2.getAbsolutePath(), headerFile.getAbsolutePath());
         

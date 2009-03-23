@@ -4,5 +4,4 @@ OpenIDE-Module: org.netbeans.modules.dlight.core.stack
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/core/stack/resource/Bundle.properties
 OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory
-OpenIDE-Module-Requires: org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory
 

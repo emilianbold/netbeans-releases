@@ -42,8 +42,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.jruby.nb.ast.BignumNode;
-import org.jruby.nb.ast.DRegexpNode;
-import org.jruby.nb.ast.DStrNode;
 import org.jruby.nb.ast.FixnumNode;
 import org.jruby.nb.ast.FloatNode;
 import org.jruby.nb.ast.Node;
@@ -51,9 +49,9 @@ import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.XStrNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
 
 /**
@@ -63,7 +61,7 @@ import org.netbeans.modules.ruby.AstUtilities;
  */
 public class DuplicateDetector {
 
-    private CompilationInfo info;
+    private ParserResult info;
     private BaseDocument doc;
     private List<Node> nodes;
     private Node startNode;
@@ -73,7 +71,7 @@ public class DuplicateDetector {
     private int currentEnd;
     private List<OffsetRange> duplicates = new ArrayList<OffsetRange>();
 
-    public DuplicateDetector(CompilationInfo info, BaseDocument doc,
+    public DuplicateDetector(ParserResult info, BaseDocument doc,
             Node root, List<Node> nodes, Node startNode, Node endNode) {
         this.info = info;
         this.doc = doc;
@@ -83,7 +81,7 @@ public class DuplicateDetector {
         this.endNode = endNode;
     }
 
-    public static List<OffsetRange> findDuplicates(CompilationInfo info, BaseDocument doc,
+    public static List<OffsetRange> findDuplicates(ParserResult info, BaseDocument doc,
             Node root, List<Node> nodes,
             Node startNode, Node endNode) {
         // I only support trivial duplicates now (single node constants like strings, numbers etc.

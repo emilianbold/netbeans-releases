@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
@@ -54,88 +53,89 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
 class NamespaceKey extends ProjectNameBasedKey {
-    
+
     private final CharSequence fqn;
     private final int hashCode; // cashed hash code
-    
+
     public NamespaceKey(CsmNamespace ns) {
-	super(getProjectName(ns));
-	this.fqn = ns.getQualifiedName();
+        super(getProjectName(ns));
+        this.fqn = ns.getQualifiedName();
         hashCode = _hashCode();
     }
-    
+
     private static String getProjectName(CsmNamespace ns) {
-	ProjectBase prj = (ProjectBase) ns.getProject();
-	assert (prj != null) : "no project in namespace";
-	return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
+        ProjectBase prj = (ProjectBase) ns.getProject();
+        assert (prj != null) : "no project in namespace";
+        return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
     }
-    
+
     @Override
     public String toString() {
-	return "NSKey " + fqn + " of project " + getProjectName(); // NOI18N
+        return "NSKey " + fqn + " of project " + getProjectName(); // NOI18N
     }
-    
+
     public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
+        return CsmObjectFactory.instance();
     }
-    
+
     @Override
     public int hashCode() {
         return hashCode;
     }
 
     private int _hashCode() {
-	int key = super.hashCode();
-	key = 17*key + fqn.hashCode();
-	return key;
+        int key = super.hashCode();
+        key = 37*KeyObjectFactory.KEY_NAMESPACE_KEY +key;
+        key = 17 * key + fqn.hashCode();
+        return key;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-	if (!super.equals(obj)) {
-	    return false;
-	}
-	NamespaceKey other = (NamespaceKey)obj;
-	return this.fqn.equals(other.fqn);
+        if (!super.equals(obj)) {
+            return false;
+        }
+        NamespaceKey other = (NamespaceKey) obj;
+        return this.fqn.equals(other.fqn);
     }
-    
+
     @Override
     public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
-	assert fqn != null;
-	aStream.writeUTF(fqn.toString());
+        super.write(aStream);
+        assert fqn != null;
+        PersistentUtils.writeUTF(fqn, aStream);
     }
-    
+
     /*package*/ NamespaceKey(DataInput aStream) throws IOException {
-	super(aStream);
-	fqn = QualifiedNameCache.getManager().getString(aStream.readUTF());
-	assert fqn != null;
+        super(aStream);
+        fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
+        assert fqn != null;
         hashCode = _hashCode();
     }
-    
+
     @Override
     public int getDepth() {
-	assert super.getDepth() == 0;
-	return 1;
+        assert super.getDepth() == 0;
+        return 1;
     }
-    
+
     @Override
     public CharSequence getAt(int level) {
-	assert super.getDepth() == 0 && level < getDepth();
-	return this.fqn;
+        assert super.getDepth() == 0 && level < getDepth();
+        return this.fqn;
     }
-    
+
     public int getSecondaryDepth() {
-	return 1;
+        return 1;
     }
-    
+
     public int getSecondaryAt(int level) {
-	assert level == 0;
-	return KeyObjectFactory.KEY_NAMESPACE_KEY;
+        assert level == 0;
+        return KeyObjectFactory.KEY_NAMESPACE_KEY;
     }
-    
+
     @Override
     public Key.Behavior getBehavior() {
-	return Behavior.LargeAndMutable;
+        return Behavior.LargeAndMutable;
     }
 }

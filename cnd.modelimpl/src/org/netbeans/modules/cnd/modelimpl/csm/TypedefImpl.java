@@ -280,7 +280,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         output.writeBoolean(typeUnnamed);
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
@@ -298,7 +298,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         typeUnnamed = input.readBoolean();
         this.type = PersistentUtils.readType(input);

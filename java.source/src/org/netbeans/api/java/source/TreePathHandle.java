@@ -618,7 +618,7 @@ public final class TreePathHandle {
                     if (fo != null) {
                         try {
                             URL url = fo.getURL();
-                            URL sourceRoot = Index.getSourceRootForClassFolder(url);
+                            URL sourceRoot = null;//XXX: Index.getSourceRootForClassFolder(url);
                             if (sourceRoot != null) {
                                 FileObject root = URLMapper.findFileObject(sourceRoot);
                                 String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(source));

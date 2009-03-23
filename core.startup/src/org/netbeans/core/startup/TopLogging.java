@@ -51,7 +51,10 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -267,7 +270,26 @@ public final class TopLogging {
         }
         ps.println(CLIOptions.getHomeDir());
         ps.println("  Boot & Ext. Classpath   = " + createBootClassPath()); // NOI18N
-        ps.println("  Application Classpath   = " + System.getProperty("java.class.path", "unknown")); // NOI18N
+        String cp;
+        ClassLoader l = Lookup.class.getClassLoader();
+        if (l == ClassLoader.getSystemClassLoader()) {
+            cp = System.getProperty("java.class.path", "unknown"); // NOI18N
+        } else {
+            StringBuilder sb = new StringBuilder("loaded by "); // NOI18N
+            if (l instanceof URLClassLoader) {
+                sb.append("URLClassLoader "); // NOI18N
+                String pref = "";
+                for (URL u : ((URLClassLoader)l).getURLs()) {
+                    sb.append(pref);
+                    sb.append(u.toExternalForm());
+                    pref = File.pathSeparator;
+                }
+            } else {
+                sb.append(l);
+            }
+            cp = sb.toString();
+        }
+        ps.println("  Application Classpath   = " + cp); // NOI18N
         ps.println("  Startup Classpath       = " + System.getProperty("netbeans.dynamic.classpath", "unknown")); // NOI18N
         ps.println("-------------------------------------------------------------------------------"); // NOI18N
     }

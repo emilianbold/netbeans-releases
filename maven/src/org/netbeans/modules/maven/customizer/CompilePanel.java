@@ -70,7 +70,7 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.NbBundle;
@@ -369,7 +369,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         String val = props.get(Constants.HINT_USE_EXTERNAL, true);
         boolean useEmbedded = "false".equalsIgnoreCase(val);
 
-        return !useEmbedded && MavenExecutionSettings.canFindExternalMaven();
+        return !useEmbedded && MavenSettings.canFindExternalMaven();
     }
 
     private void checkExternalMaven () {
@@ -443,8 +443,8 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
                     .add(cbDebug)
                     .add(cbDeprecate)
                     .add(layout.createSequentialGroup()
@@ -453,12 +453,12 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                             .add(lblJavaPlatform))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(comJavaPlatform, 0, 266, Short.MAX_VALUE)
-                            .add(comCompileOnSave, 0, 266, Short.MAX_VALUE))
+                            .add(comJavaPlatform, 0, 252, Short.MAX_VALUE)
+                            .add(comCompileOnSave, 0, 252, Short.MAX_VALUE))
                         .add(16, 16, 16)
                         .add(btnMngPlatform))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnSetupHome)))
                 .addContainerGap())
@@ -482,7 +482,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 72, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 64, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnSetupHome)
                     .add(lblWarnPlatform))
@@ -599,6 +599,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             data = jpm.getInstalledPlatforms();
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+            sel = jpm.getDefaultPlatform();
         }
 
         public int getSize() {

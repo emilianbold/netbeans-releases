@@ -98,7 +98,7 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
     }
 
     public void testBadURL() throws Exception {
-        CharSequence log = Log.enable("", Level.WARNING);
+        CharSequence log = Log.enable("", Level.INFO);
         Object value = bad.getAttribute("instanceCreate");
         assertNull("no provider created: " + value, value);
         
@@ -111,7 +111,7 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         URL u = new File(getWorkDir(), "does-not-exists.txt").toURI().toURL();
         wd = u;
         
-        CharSequence log = Log.enable("", Level.WARNING);
+        CharSequence log = Log.enable("", Level.INFO);
         Object value = fo.getAttribute("instanceCreate");
         assertNull("no provider created: " + value, value);
         

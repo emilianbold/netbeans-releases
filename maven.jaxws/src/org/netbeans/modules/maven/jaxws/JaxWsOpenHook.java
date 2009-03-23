@@ -135,7 +135,6 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
         private JAXWSLightSupport jaxWsSupport;
 
         private MetadataModel<WebservicesMetadata> wsModel;
-        private Project prj;
         private RequestProcessor.Task updateJaxWsTask = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
@@ -150,11 +149,10 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
 
         public void propertyChange(PropertyChangeEvent evt) {
             //requestModelUpdate();
-            updateJaxWsTask.schedule(100);
+            updateJaxWsTask.schedule(1000);
         }
 
-        private void updateJaxWs() {
-
+        private synchronized void updateJaxWs() {
             try {
                 Map<String, ServiceInfo> newServices = wsModel.runReadAction(
                         new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
@@ -219,10 +217,8 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
                 for (String key : newServices.keySet()) {
                     ServiceInfo serviceInfo = newServices.get(key);
                     String wsdlLocation = serviceInfo.getWsdlLocation();
-                    if (wsdlLocation == null || wsdlLocation.length() == 0) {
-                        jaxWsSupport.addService(new JaxWsService(serviceInfo.getServiceName(), key));
-                    } else {
-                        JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);                        
+                    JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
+                    if (wsdlLocation != null && wsdlLocation.length() > 0) {
                         service.setWsdlLocation(wsdlLocation);
                         if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
                             service.setLocalWsdl(wsdlLocation.substring(13));
@@ -231,11 +227,10 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
                         } else {
                             service.setLocalWsdl(wsdlLocation);
                         }
-                        if (serviceInfo.getPortName() != null) {
-                            service.setPortName(serviceInfo.getPortName());
-                        }
-                        jaxWsSupport.addService(service);
+                        service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, jaxWsSupport, service.getLocalWsdl(), true));
                     }
+                    service.setPortName(serviceInfo.getPortName());
+                    jaxWsSupport.addService(service);
                 }
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();

@@ -420,6 +420,18 @@ public class EditorContextImpl extends EditorContext {
         return EditorContextDispatcher.getDefault().getCurrentFile();
     }
 
+    public DataObject getMostRecentDataObject() {
+        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (fo == null) {
+            return null;
+        }
+        try {
+            return DataObject.find(fo);
+        } catch (DataObjectNotFoundException donfex) {
+            return null;
+        }
+    }
+
     /**
      * Get the MIME type of the most recently selected file.
      *

@@ -42,12 +42,14 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.IOException;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
@@ -64,6 +66,10 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     public ReferenceResolverImpl() {
     }    
 
+    public boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
+        return kinds.equals(CsmReferenceKind.ALL) || kinds.contains(ref.getKind());
+    }
+    
     public CsmReference findReference(CsmFile file, int offset) {
         assert file != null;
         BaseDocument doc = ReferencesSupport.getDocument(file);

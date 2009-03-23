@@ -41,8 +41,8 @@ package org.netbeans.modules.ruby;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.RubyCompletionItem.ClassItem;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.lexer.Call;
@@ -79,7 +79,7 @@ final class RubyClassCompleter extends RubyBaseCompleter {
      * we'd show the inherited methods) */
     private boolean complete() {
         String prefix = request.prefix;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
 
         int classAnchor = anchor;
         int fqnIndex = prefix.lastIndexOf("::");
@@ -106,11 +106,11 @@ final class RubyClassCompleter extends RubyBaseCompleter {
         String ctx = AstUtilities.getFqnName(path);
 
         Set<String> uniqueClasses = new HashSet<String>();
-        Set<IndexedClass> classes = getIndex().getClasses(fullPrefix, kind, false, false, false, RubyIndex.ALL_SCOPE, uniqueClasses);
+        Set<IndexedClass> classes = getIndex().getClasses(fullPrefix, kind, false, false, false, uniqueClasses);
 
         // Also try looking or classes scoped by the current class
         if ((ctx != null) && (ctx.length() > 0)) {
-            Set<IndexedClass> extraClasses = getIndex().getClasses(ctx + "::" + fullPrefix, kind, false, false, false, RubyIndex.ALL_SCOPE, uniqueClasses);
+            Set<IndexedClass> extraClasses = getIndex().getClasses(ctx + "::" + fullPrefix, kind, false, false, false, uniqueClasses);
             classes.addAll(extraClasses);
         }
 

@@ -70,9 +70,6 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
-        if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
-            return false;
-        }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1) {
             return false;

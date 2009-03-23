@@ -73,6 +73,11 @@ public class JbiExtensionInfo implements Serializable {
     private String type;
 
     /**
+     * Subtype of the extension, e.x., "consume" or "provide" under "endpoint".
+     */
+    private String subType;
+
+    /**
      * Name of the target component in regular expression, 
      * e.x., "sun-http-binding", ".*".
      */
@@ -107,8 +112,9 @@ public class JbiExtensionInfo implements Serializable {
      * DOCUMENT ME!
      *
      * @param name      extension name, e.x., "ConfigExtension"
-     * @param dsiplayName  extension diplay name, e.x., "Config Extension"
-     * @param type      extension type, e.x., "endpoint", "connection"
+     * @param displayName  extension diplay name, e.x., "Config Extension"
+     * @param type      extension type, e.x., "endpoint", "connection", "port"
+     * @param subType   extension subtype, e.x., "consume", "provide"
      * @param target    extension target component name in regular expression, 
      *                  e.x., "sun-http-binding", ".*".
      * @param file      schema file
@@ -117,12 +123,14 @@ public class JbiExtensionInfo implements Serializable {
      * @param icon      extension icon resource
      * @param elements  a list of extension elements
      */
-    public JbiExtensionInfo(String name, String displayName, String type, String target,
-                            String file, String ns, String description, URL icon,
-                            String provider, List<JbiExtensionElement> elements) {
+    public JbiExtensionInfo(String name, String displayName, 
+            String type, String subType, String target,
+            String file, String ns, String description, URL icon,
+            String provider, List<JbiExtensionElement> elements) {
         this.name = name;
         this.displayName = displayName;
         this.type = type;
+        this.subType = subType;
         this.target = target;
         this.file = file;
         this.ns = ns;
@@ -166,6 +174,15 @@ public class JbiExtensionInfo implements Serializable {
      */
     public String getType() {
         return this.type;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return the description
+     */
+    public String getSubType() {
+        return this.subType;
     }
 
     /**
@@ -230,6 +247,7 @@ public class JbiExtensionInfo implements Serializable {
                 .append(" name=").append(getName())
                 .append(" displayName=").append(getDisplayName())
                 .append(" type=").append(getType())
+                .append(" subType=").append(getSubType())
                 .append(" file=").append(getFile())
                 .append(" ns=").append(getNameSpace())
                 .append(" target=").append(getTarget())

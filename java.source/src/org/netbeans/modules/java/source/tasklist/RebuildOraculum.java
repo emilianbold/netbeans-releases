@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.tasklist;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +68,9 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -114,6 +117,42 @@ public class RebuildOraculum {
     
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     
+    public static Map<URL, Collection<URL>> findFilesToRebuild(URL root, URL file, ClasspathInfo cpInfo, Elements elements, Iterable<? extends TypeElement> topLevelElements) throws MalformedURLException {
+        Map<URL, Collection<URL>> ret = new HashMap<URL, Collection<URL>>();
+        FileObject fo = URLMapper.findFileObject(root);
+        File rootFile = fo != null ? FileUtil.toFile(fo) : null;
+        if (fo != null) {
+            List<File> files = get().findFilesToRebuild(rootFile, file, cpInfo, sortOut(elements, topLevelElements));
+            int size = files.size();
+            if (size > 0) {
+                ArrayList<URL> urls = new ArrayList<URL>(size);
+                for(File f : files) {
+                    urls.add(f.toURI().toURL());
+                }
+                ret.put(root, urls);
+            }
+        }
+        return ret;
+    }
+
+    public static Map<URL, Collection<URL>> findAllDependent(URL root, URL file, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) throws MalformedURLException {
+        Map<URL, Collection<URL>> ret = new HashMap<URL, Collection<URL>>();
+        FileObject fo = URLMapper.findFileObject(root);
+        File rootFile = fo != null ? FileUtil.toFile(fo) : null;
+        if (fo != null) {
+            List<File> files = findAllDependent(rootFile, file, ci, classes);
+            int size = files.size();
+            if (size > 0) {
+                ArrayList<URL> urls = new ArrayList<URL>(size);
+                for(File f : files) {
+                    urls.add(f.toURI().toURL());
+                }
+                ret.put(root, urls);
+            }
+        }
+        return ret;
+    }
+
     public List<File> findFilesToRebuild(File root, URL file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers) {
         long startTime = System.currentTimeMillis();
         long endTime   = -1;

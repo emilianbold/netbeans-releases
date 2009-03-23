@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.util.List;
+import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.api.PhpOptions;
 
 /**
@@ -49,18 +51,23 @@ public class DebuggerOptions {
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
     String phpInterpreter;
-    
+    List<Pair<String, String>> pathMapping;
+
     public static DebuggerOptions getGlobalInstance() {
         return GLOBAL_INSTANCE;
     }
-    
-    public int getPort() {                
+
+    public List<Pair<String, String>> getPathMapping() {
+        return pathMapping;
+    }
+
+    public int getPort() {
         return (port != -1) ? port :  getGlobalInstance().getPort();
     }
-    
-    
+
+
     public boolean isDebugForFirstPageOnly() {
-        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly : 
+        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly :
             getGlobalInstance().isDebugForFirstPageOnly();
     }
 

@@ -84,17 +84,33 @@ public final class Comment {
     /**
      * Define a new block comment from a string.  This comment does not
      * have source file positions.
+     * @param s textual content of help including comment separators
+     * @return new comment
      */
     public static Comment create(String s) {
         return new Comment(Style.BLOCK, NOPOS, NOPOS, NOPOS, s);
     }
-    
+
+    /**
+     * Define a comment, using source file positions. 
+     * @param style the style of comment
+     * @param pos start position within source file
+     * @param endPos end position within source file
+     * @param indent indentation of comment
+     * @param text textual content of help including comment separators
+     * @return new comment
+     */
     public static Comment create(Style style, int pos, int endPos, int indent, String text) {
         return new Comment(style, pos, endPos, indent, text);
     }
     
     /**
      * Define a comment, using source file positions.
+     * @param style the style of comment
+     * @param pos start position within source file
+     * @param endPos end position within source file
+     * @param indent indentation of comment
+     * @param text textual content of help including comment separators
      */
     private Comment(Style style, int pos, int endPos, int indent, String text) {
         this.style = style;

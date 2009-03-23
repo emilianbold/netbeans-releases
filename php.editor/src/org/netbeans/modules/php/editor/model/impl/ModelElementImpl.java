@@ -38,16 +38,17 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -157,15 +158,15 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return p.matcher(text).matches();
     }
 
-    static boolean nameKindMatchForVariable(String text, NameKind nameKind, String... queries) {
+    static boolean nameKindMatchForVariable(String text, QuerySupport.Kind nameKind, String... queries) {
         return nameKindMatch(false, text, nameKind, queries);
     }
 
-    static boolean nameKindMatch(String text, NameKind nameKind, String... queries) {
+    static boolean nameKindMatch(String text, QuerySupport.Kind nameKind, String... queries) {
         return nameKindMatch(true, text, nameKind, queries);
     }
 
-    private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, NameKind nameKind, String... queries) {
+    private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, QuerySupport.Kind nameKind, String... queries) {
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
@@ -188,7 +189,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                         return true;
                     }
                     break;
-                case EXACT_NAME:
+                case EXACT:
                     boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
                     if (retval) {
                         return true;
@@ -245,14 +246,18 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public FileObject getFileObject() {
         FileObject fileObject = null;
         synchronized (ModelElementImpl.class) {
-            fileObject = file.hasSecond() ? file.second() : null;
+            if (file != null) {
+                fileObject = file.hasSecond() ? file.second() : null;
+            }
         }
         if (fileObject == null) {
             assert file.hasFirst();
             String fileUrl = file.first();
             fileObject = PHPIndex.getFileObject(fileUrl);
             synchronized (ModelElementImpl.class) {
-                file = Union2.createSecond(fileObject);
+                if (fileObject != null) {
+                    file = Union2.createSecond(fileObject);
+                }
             }
         }
         return fileObject;
@@ -302,7 +307,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public OffsetRange getNameRange() {
         return offsetRange;
     }
-     
+ 
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -337,5 +342,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return hash;
     }
 
-
+    public OffsetRange getOffsetRange(ParserResult result) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

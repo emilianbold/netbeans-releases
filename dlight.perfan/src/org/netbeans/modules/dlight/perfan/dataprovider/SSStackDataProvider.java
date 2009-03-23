@@ -284,11 +284,6 @@ class SSStackDataProvider implements StackDataProvider {
                     try {
                         Number nvalue = df.parse(info[midx]);
 
-                        if (col == primarySortColumn && nvalue.intValue() == 0) {
-                            skipFunction = true;
-                            break;
-                        }
-                        
                         if (Integer.class == colClass) {
                             value = new Integer(nvalue.intValue());
                         } else if (Double.class == colClass) {

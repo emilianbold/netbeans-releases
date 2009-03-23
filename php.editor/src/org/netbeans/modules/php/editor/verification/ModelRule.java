@@ -42,10 +42,10 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.model.FileScope;
 
 /**

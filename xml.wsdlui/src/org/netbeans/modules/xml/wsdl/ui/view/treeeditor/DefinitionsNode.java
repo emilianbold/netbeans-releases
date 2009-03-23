@@ -266,15 +266,11 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
                 if (fNode != null) {
                     fNode.updateChildren();
                 }
-                
                 refreshPrefixesSheetSet(getSheet());
                 super.propertyChange(event);
             }
-            
-            
         }
     }
-    
     private FolderNode getFolderNode(Class clazz) {
         Children children = getChildren();
         for (Node node : children.getNodes()) {
@@ -286,7 +282,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         }
         return null;
     }
-    
     
     @SuppressWarnings("unchecked")
     private void refreshPrefixesSheetSet(Sheet sheet) {
@@ -463,118 +458,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         }
         
     }
-    
-    
-//    public static final class DefinitionsChildren extends RefreshableChildren {
-//        
-//        List<Class<? extends WSDLComponent>> filters;
-//        Definitions def;
-//        public DefinitionsChildren(Definitions definitions) {
-//            super();
-//            def = definitions;
-//        }
-//        
-//        @Override
-//        public void refreshChildren() {
-//            super.refreshChildren();
-//            Node[] nds = getNodes();
-//            for (Node node : nds) {
-//                Children children = node.getChildren();
-//                if (children instanceof RefreshableChildren) {
-//                    RefreshableChildren.class.cast(children).refreshChildren();
-//                }
-//            }
-//        }
-//        
-//        //Hack for creating children with only specific categories
-//        /**
-//         * Only top level filters are supported.
-//         * Message, Import, Types, Documentation, PortType, Binding , Service and ExtensibilityElement are supported.
-//         * If filters are specified, then only those folders which support that top level component are created.
-//         * 
-//         */
-//        public DefinitionsChildren(Definitions definitions, List<Class<? extends WSDLComponent>> filters) {
-//            this(definitions);
-//            this.filters = filters;
-//        }
-//        
-//        @Override
-//        protected Node[] createNodes(Object key) {
-//            Node node = null;
-//            
-//            if (key instanceof WSDLComponent) {
-//               node = NodesFactory.getInstance().create(WSDLComponent.class.cast(key));
-//            } else if (IMPORTS_FOLDER.equals(key)) {
-//                node = new ImportFolderNode(def);
-//            } else if (MESSAGES_FOLDER.equals(key)) {
-//                node = new MessageFolderNode(def);
-//            } else if (PORTTYPES_FOLDER.equals(key)) {
-//                node = new PortTypeFolderNode(def);
-//            } else if (BINDING_FOLDER.equals(key)) {
-//                node = new BindingFolderNode(def);
-//            } else if (SERVICES_FOLDER.equals(key)) {
-//                node = new ServiceFolderNode(def);
-//            } else if (EXTENSIBILITY_ELEMENTS_FOLDER.equals(key)) {
-//                node = new ExtensibilityElementsFolderNode(def);
-//            }
-//            
-//            
-//            if(node != null) {
-//                return new Node[] {node};
-//            }
-//            
-//            return null;
-//        }
-//        
-//        @SuppressWarnings("unchecked")
-//        @Override
-//        public Collection getKeys() {
-//            Collection<Object> keys = new ArrayList<Object>();
-//            
-//            
-//            if (filters == null || filters.contains(Documentation.class)) {
-//                Documentation doc = def.getDocumentation();
-//                if (doc != null) {
-//                    keys.add(doc);
-//                }
-//            }
-//            
-//            if (filters == null || filters.contains(Types.class)) {
-//                Types types = def.getTypes();
-//                if (types != null) {
-//                    keys.add(types);
-//                }
-//            }
-//            
-//            if (filters == null || filters.contains(Import.class)) {
-//                keys.add(IMPORTS_FOLDER);
-//            }
-//            
-//            if (filters == null || filters.contains(Message.class)) {
-//                keys.add(MESSAGES_FOLDER);
-//            }
-//            
-//            if (filters == null || filters.contains(PortType.class)) {
-//                keys.add(PORTTYPES_FOLDER);
-//            }
-//            if (filters == null || filters.contains(Binding.class)) {
-//                
-//                keys.add(BINDING_FOLDER);
-//            }
-//            if (filters == null || filters.contains(Service.class)) {
-//                keys.add(SERVICES_FOLDER);
-//            }
-//            
-//            if (filters == null || filters.contains(ExtensibilityElement.class)) {
-//                keys.add(EXTENSIBILITY_ELEMENTS_FOLDER);
-//            }
-//
-//            return keys;
-//        }
-//        
-//        
-//        
-//    }
     
     public static final String IMPORTS_FOLDER = "IMPORTS_FOLDER"; //NOI18N
     public static final String MESSAGES_FOLDER = "MESSAGES_FOLDER";//NOI18N

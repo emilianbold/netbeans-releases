@@ -490,6 +490,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public URL[] getDefaultJavadocRoots() {
         if (! isDefault())
             return null;
+        // javadoc can be built in the meantime, don't cache
         File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
         if (apidocsZip != null) {
             return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
@@ -524,21 +525,27 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         jrs.setJavadocRoots(roots);
     }
 
+    private URL[] defaultSourceRoots;
+
     /**
      * Get any sources which should by default be associated with the default platform.
      */
     public URL[] getDefaultSourceRoots() {
         if (! isDefault())
             return null;
+        // location of platform won't change, safe to cache
+        if (defaultSourceRoots != null)
+            return defaultSourceRoots;
         File loc = getDestDir();
         if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
             try {
-                return new URL[] {loc.getParentFile().getParentFile().toURI().toURL()};
+                defaultSourceRoots = new URL[] {loc.getParentFile().getParentFile().toURI().toURL()};
             } catch (MalformedURLException e) {
                 assert false : e;
             }
         }
-        return new URL[0];
+        defaultSourceRoots = new URL[0];
+        return defaultSourceRoots;
     }
 
     /**

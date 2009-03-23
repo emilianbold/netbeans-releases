@@ -74,7 +74,7 @@ public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
         //
         writeFile(sourceFile, "START\nvoid foo();\nEND\n");
         
-	final TraceModelBase traceModel = new  TraceModelBase();
+	final TraceModelBase traceModel = new  TraceModelBase(true);
 	
         String className = "MyClass";
 	traceModel.processArguments(sourceFile.getAbsolutePath(), "-DSTART=class " + className + "{", "-DEND=};");

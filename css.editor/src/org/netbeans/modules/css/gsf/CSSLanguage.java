@@ -41,15 +41,18 @@
 package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.CommentHandler;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.css.gsf.CSSSemanticAnalyzer;
+import org.netbeans.modules.css.gsf.CSSStructureScanner;
+import org.netbeans.modules.css.gsf.CssCommentHandler;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.CommentHandler;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * Configuration for CSS
@@ -103,16 +106,6 @@ public class CSSLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         return new CSSStructureScanner();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new CSSFormatter();
     }
 
     @Override

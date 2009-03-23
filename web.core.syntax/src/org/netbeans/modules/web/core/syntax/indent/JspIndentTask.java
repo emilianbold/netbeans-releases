@@ -28,10 +28,12 @@
 package org.netbeans.modules.web.core.syntax.indent;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.web.core.syntax.formatting.JspIndenter;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of IndentTask for text/x-jsp mimetype.
@@ -40,19 +42,28 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  */
                                         
 
-public class JspIndentTask implements IndentTask {
+public class JspIndentTask implements IndentTask, Lookup.Provider {
 
     private Context context;
+    private JspIndenter indenter;
+    private Lookup lookup;
     
     JspIndentTask(Context context) {
         this.context = context;
+        indenter = new JspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
-        new JSPLexerFormatter().process(context);
+        //new JSPLexerFormatter().process(context);
+        indenter.reindent();
     }
     
     public ExtraLock indentLock() {
         return null;
-    }  
+    }
+
+    public Lookup getLookup() {
+        return lookup;
+    }
 }

@@ -156,7 +156,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     public boolean addAll(Collection<? extends Tfact> c) {
         boolean modified = false;
-        if (c instanceof LazyCsmCollection<?,?>) {
+        if (c instanceof LazyCsmCollection<?, ?>) {
             // input collection c is Tfact based
             // Tfact is extension of Tuid => col.uids provides array of needed type
             @SuppressWarnings("unchecked") // checked
@@ -236,8 +236,8 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         public Tfact next() {
             // we know that Tfact is the real type so cast is okay
             @SuppressWarnings("unchecked") // checked
-            CsmUID<Tfact> uid = (CsmUID<Tfact>)it.next();
-            Tfact decl =  convertToObject(uid);
+            CsmUID<Tfact> uid = (CsmUID<Tfact>) it.next();
+            Tfact decl = convertToObject(uid);
             assert decl != null : "no object for UID " + uid;
             return decl;
         }
@@ -272,7 +272,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             while (out == null && it.hasNext()) {
                 // we know that Tfact is the real type so cast is okay
                 @SuppressWarnings("unchecked") // checked
-                CsmUID<Tfact> uid = (CsmUID<Tfact>)it.next();
+                CsmUID<Tfact> uid = (CsmUID<Tfact>) it.next();
                 if (uid == null ||
                         (filter != null && !((UIDFilter) filter).accept(uid))) {
                     continue;

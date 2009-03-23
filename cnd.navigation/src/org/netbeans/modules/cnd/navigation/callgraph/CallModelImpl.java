@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -121,26 +123,19 @@ public class CallModelImpl implements CallModel {
     public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();
+        EnumSet<CsmReferenceKind> kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.AFTER_DEREFERENCE_USAGE, CsmReferenceKind.UNKNOWN);
         if (CsmKindUtilities.isFunction(owner) && owner.getContainingFile().isValid()) {
             HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             for(CsmReference r : repository.getReferences(owner, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, null)){
                 if (r == null) {
                     continue;
                 }
-                switch (r.getKind()) {
-                    case IN_PREPROCESSOR_DIRECTIVE:
-                    case IN_DEAD_BLOCK:
-                    case DEFINITION:
-                    case DECLARATION:
-                        continue;
-                    case DIRECT_USAGE:
-                    case AFTER_DEREFERENCE_USAGE:
-                    case UNKNOWN:
-                }
-                CsmFunction o = getFunctionDeclaration(getOwner(r));
-                if (o != null) {
-                    if (!set.containsKey(o)) {
-                        set.put(o, r);
+                if (CsmReferenceResolver.getDefault().isKindOf(r,kinds)) {
+                    CsmFunction o = getFunctionDeclaration(getOwner(r));
+                    if (o != null) {
+                        if (!set.containsKey(o)) {
+                            set.put(o, r);
+                        }
                     }
                 }
             }
@@ -199,16 +194,6 @@ public class CallModelImpl implements CallModel {
                     if (r == null) {
                         return;
                     }
-                    switch (r.getKind()) {
-                        case IN_PREPROCESSOR_DIRECTIVE:
-                        case IN_DEAD_BLOCK:
-                            return;
-                        case DEFINITION:
-                        case DECLARATION:
-                        case DIRECT_USAGE:
-                        case AFTER_DEREFERENCE_USAGE:
-                        case UNKNOWN:
-                    }
                     for(CsmOffsetable offset:list){
                         if (offset.getStartOffset()<=r.getStartOffset() &&
                             offset.getEndOffset()  >=r.getEndOffset()){
@@ -230,7 +215,7 @@ public class CallModelImpl implements CallModel {
                         e.printStackTrace();
                     }
                 }
-            });
+            }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
             List<Call> res = new ArrayList<Call>();
             for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
                 res.add(new CallImpl( getFunctionDeclaration((owner)), r.getValue(),r.getKey(), false));

@@ -39,18 +39,23 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.flow.FlowSupport;
+import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
+import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.DesignEvent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.DynamicPresenter;
 import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
@@ -62,10 +67,12 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
+import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorListModel;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGListDisplayPresenter;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +83,7 @@ public class SVGListCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGList"); // NOI18N
     
-    public static final String PROP_MODEL = "listModel"; // NOI18N
+    public static final String PROP_ELEMENTS = "listElements"; // NOI18N
     private static final String ICON_PATH = "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N
 
     static {
@@ -96,23 +103,14 @@ public class SVGListCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
-                new PropertyDescriptor(PROP_MODEL, 
-                        MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), 
-                        PropertyValue.createNull(), true, true, 
-                        MidpVersionable.MIDP_2)
-                );
+                new PropertyDescriptor(PROP_ELEMENTS, SVGListElementEventSourceCD.TYPEID.getArrayType(), PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+        );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
-                         "DISP_ListModel"), 
-                  PropertyEditorListModel.createInstance( 
-                          NbBundle.getMessage( SVGListCD.class, 
-                                  "LBL_ListModel"),
-                                  NbBundle.getMessage( SVGListCD.class, 
-                                          "TXT_ListModel")), PROP_MODEL); // NOI18N
+                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, "DISP_ListModel"), PropertyEditorListModel.createInstance( NbBundle.getMessage( SVGListCD.class, "LBL_ListModel"), NbBundle.getMessage( SVGListCD.class, "TXT_ListModel")), PROP_ELEMENTS); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
@@ -122,29 +120,63 @@ public class SVGListCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                //new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
                 new SVGListModelFooter(),
+                new SVGListElementCodeFooter(SVGListElementEventSourceCD.TYPEID),
                 //inspector
                 new SVGComponentInspectorFolderPresenter(),
-                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID) //NOI18N
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID), //NOI18N
+                new SVGListDisplayPresenter(),
+                new FlowListElementsUpdaterPresenter()
         );
     }
 
     private List<InspectorOrderingController> getInspectorOrderingControllers() {
-        return Collections.<InspectorOrderingController>singletonList(new InspectorOrderingController() {
 
-            public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
-                return SVGListElementEventSourceCD.TYPEID == typeID;
-            }
+        return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ELEMENTS, 0, SVGListElementEventSourceCD.TYPEID));
+    }
 
-            public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
-                return new ArrayList<InspectorFolder>(folders);
-            }
+    private class FlowListElementsUpdaterPresenter extends DynamicPresenter {
 
-            public Integer getOrder() {
-                return 0;
+        @Override
+        protected void notifyAttached(DesignComponent component) {
+            
+        }
+
+        @Override
+        protected void notifyDetached(DesignComponent component) {
+            
+        }
+
+        @Override
+        protected DesignEventFilter getEventFilter() {
+            return new DesignEventFilter().addDescentFilter(getComponent(), PROP_ELEMENTS);
+        }
+
+        @Override
+        protected void designChanged(DesignEvent event) {
+            if (getComponent() == null || getComponent().getParentComponent() == null) {
+                return;
             }
-        });
+            final FlowNodeDescriptor nodeToUpdate = getComponent().getParentComponent().getPresenter(FlowInfoNodePresenter.class).getNodeDescriptor();
+            final FlowScene fc = FlowSupport.getFlowSceneForDocument(getComponent().getDocument());
+            fc.scheduleNodeDescriptorForOrdering (nodeToUpdate);
+            if (SwingUtilities.isEventDispatchThread()) {
+                fc.resolveOrderInNodeDescriptors();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        fc.resolveOrderInNodeDescriptors();
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected void presenterChanged(PresenterEvent event) {
+            
+        }
+
     }
 
 }

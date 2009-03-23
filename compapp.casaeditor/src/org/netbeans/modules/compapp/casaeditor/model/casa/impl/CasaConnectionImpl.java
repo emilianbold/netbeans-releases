@@ -44,8 +44,6 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Connection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;

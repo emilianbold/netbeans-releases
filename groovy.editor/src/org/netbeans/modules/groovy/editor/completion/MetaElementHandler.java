@@ -50,10 +50,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.reflection.CachedClass;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.java.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  *
@@ -64,13 +64,13 @@ public final class MetaElementHandler {
 
     private static final Logger LOG = Logger.getLogger(MetaElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private MetaElementHandler(CompilationInfo info) {
+    private MetaElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static MetaElementHandler forCompilationInfo(CompilationInfo info) {
+    public static MetaElementHandler forCompilationInfo(ParserResult info) {
         return new MetaElementHandler(info);
     }
 

@@ -389,61 +389,68 @@ public class HTTPComponentValidator
         return isToken;
     }
 
+    
     /**
      * A token string can be of the following format: 
      * 1. http(s)://${host}:${port}/${context}
-     * 2. http(s)://${host}/${context}
      * 2. ${URL}
      */
     private boolean isValidAddressToken(String tokenString) {
+        boolean containsProtocolInfo = false;
         boolean isValidToken = true;
-        
         if(tokenString.startsWith("http://")) {
             //strip off the protocol stuff
             tokenString = tokenString.substring(7, tokenString.length());
-        } else if(tokenString.startsWith("https://")) {
+            containsProtocolInfo = true;
+        }
+        if(tokenString.startsWith("https://")) {
             //strip off the protocol stuff
             tokenString = tokenString.substring(8, tokenString.length());
-        } else {
-            //No protocol info, it better be of the format ${URL}
-            isValidToken = "${".equals(tokenString.substring(0, 2))
-                    && tokenString.charAt(tokenString.length() - 1) == '}';
+            containsProtocolInfo = true;
         }
-        
-        if (isValidToken) {
-            if(containsToken(tokenString)) {
-                final int indexOfPortSeparator = tokenString.indexOf(":");
-                final int indexOfContextSeparator = tokenString.lastIndexOf("/");
-                
-                // Port token
-                if (indexOfPortSeparator != -1) {
-                    isValidToken = indexOfPortSeparator < indexOfContextSeparator;
-                    if (isValidToken) {
-                        String port = tokenString.substring(indexOfPortSeparator + 1, indexOfContextSeparator);
-                        isValidToken = isToken(port);
+        //No protocol info, it better be of the format ${URL}
+        if(!containsProtocolInfo) {
+            int indexOfTokenStart = tokenString.indexOf("${");
+            int indexOfTokenEnd = tokenString.indexOf("}");
+            if((indexOfTokenEnd == tokenString.length() - 1) && (indexOfTokenStart == 0)) {
+                isValidToken = true;
+            } else {
+                return false;
+            }
+        }
+        if(tokenString.contains("${") ) {
+            int indexOfPortSeparator = tokenString.indexOf(":");
+            int indexOfContextSeparator = tokenString.lastIndexOf("/");
+            
+            //Context separator / exists.
+            if(indexOfContextSeparator != -1) {
+                //The token is in the context.
+                String context = tokenString.substring(indexOfContextSeparator+1, tokenString.length());
+                int indexOfContextTokenStart = context.indexOf("${");
+                if(indexOfContextTokenStart == 0) {
+                    int indexOfTokenEnd = context.indexOf("}");
+                    if(indexOfTokenEnd < indexOfContextTokenStart) {
+                        return false;
                     }
-                } else {
-                    // Port token is optional
-                    ;
+                } else if(context.indexOf("}") > 0) {
+                    return false;
                 }
-
-                // Context token
-                if(indexOfContextSeparator != -1) {
-                    String context = tokenString.substring(indexOfContextSeparator+1, tokenString.length());
-                    isValidToken = isToken(context);
-                } else {
-                    // Context token is mandatory
-                    isValidToken = false;
+                
+                int indexOfTokenStart = tokenString.indexOf("${");
+                if(indexOfTokenStart == 0) { //The token is in the host
+                    String host = tokenString.substring(1, indexOfPortSeparator);
+                    int indexOfTokenEnd = host.indexOf("}");
+                    if(indexOfTokenEnd < 1) {
+                        return false;
+                    }
+                } else if(tokenString.substring(1, indexOfPortSeparator).indexOf("}") > 0) {
+                    return false;
                 }
-
-                // Host token
-                if (indexOfPortSeparator != -1) {
-                    isValidToken = isToken(tokenString.substring(0, indexOfPortSeparator));
-                } else if (indexOfContextSeparator != -1) {
-                    isValidToken = isToken(tokenString.substring(0, indexOfContextSeparator));
+                String port = tokenString.substring(indexOfPortSeparator + 1, indexOfContextSeparator);
+                if((port.indexOf("${") != -1) && (port.indexOf("}") > 0)) {
+                    isValidToken = true;
                 } else {
-                    // Host token is mandatory
-                    isValidToken = false;
+                    return false;
                 }
             }
         }
