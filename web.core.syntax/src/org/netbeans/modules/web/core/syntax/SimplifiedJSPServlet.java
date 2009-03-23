@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +61,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
@@ -68,13 +71,17 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
 import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -97,14 +104,14 @@ public class SimplifiedJSPServlet {
     private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
             "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
-            + "\t\tHttpServletRequest request,\n" 
-            + "\t\tHttpServletResponse response,\n" 
-            + "\t\tHttpSession session,\n" 
-            + "\t\tServletContext application,\n" 
-            + "\t\tJspWriter out,\n" 
+            + "\t\tHttpServletRequest request,\n"
+            + "\t\tHttpServletResponse response,\n"
+            + "\t\tHttpSession session,\n"
+            + "\t\tServletContext application,\n"
+            + "\t\tJspWriter out,\n"
             + "\t\tServletConfig config,\n"
-            + "\t\tJspContext jspContext,\n" 
-            + "\t\tObject page,\n" 
+            + "\t\tJspContext jspContext,\n"
+            + "\t\tObject page,\n"
             + "\t\tPageContext pageContext,\n"
             + "\t\tThrowable exception\n"
             + "\t) throws Throwable {\n"; //NOI18N
@@ -129,16 +136,16 @@ public class SimplifiedJSPServlet {
     public SimplifiedJSPServlet(Snapshot snapshot, Document doc){
         this(snapshot, doc, null);
     }
-    
+
     public SimplifiedJSPServlet(Snapshot snapshot, Document doc, CharSequence charSequence) {
         this.doc = doc;
-        
+
         if (charSequence == null) {
             this.charSequence = snapshot.getText();
         } else {
             this.charSequence = charSequence;
         }
-        
+
         if (doc != null){
             DataObject dobj = NbEditorUtilities.getDataObject(doc);
             fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
@@ -146,24 +153,24 @@ public class SimplifiedJSPServlet {
             logger.log(Level.SEVERE, "Unable to find FileObject for document");
             fobj = null;
         }
-        
+
         this.snapshot = snapshot;
     }
-    
+
     public void process() throws BadLocationException{
         process(false);
     }
-    
+
     public void process(final boolean processAsIncluded) throws BadLocationException {
         processCalled = true;
-        
+
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     displayServletAPIMissingWarning();
                 }
             });
-            
+
             processingSuccessful = false;
             return;
         }
@@ -176,9 +183,9 @@ public class SimplifiedJSPServlet {
                 return;
             }
         }
-        
+
         final BadLocationException[] ex = new BadLocationException[1];
-        
+
         processIncludes();
 
         TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
@@ -217,7 +224,7 @@ public class SimplifiedJSPServlet {
                 }
             }
         } while (tokenSequence.moveNext());
-            
+
 
         if (ex[0] != null) {
             throw ex[0];
@@ -227,22 +234,22 @@ public class SimplifiedJSPServlet {
         importStatements = snapshot.create(createImportStatements(), "text/x-java");
         beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
-    
+
     private void processIncludes()  {
         PageInfo pageInfo = getPageInfo();
-        
+
         if (pageInfo == null) {
-            //if we do not get pageinfo it is unlikely we will get something reasonable from 
+            //if we do not get pageinfo it is unlikely we will get something reasonable from
             //jspSyntax.getParseResult()...
             return ;
         }
-        
+
         final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
-        
+
         for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
             processIncludedFile(preludePath, processedFiles);
         }
-        
+
         Visitor visitor = new Visitor() {
 
             public void visit(IncludeDirective includeDirective) throws JspException {
@@ -254,7 +261,7 @@ public class SimplifiedJSPServlet {
         JspSyntaxSupport jspSyntax = JspSyntaxSupport.get(doc);
         try {
             JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
-            
+
             if (parseResult != null){
                 parseResult.getNodes().visit(visitor);
             }
@@ -262,20 +269,20 @@ public class SimplifiedJSPServlet {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
 //        FileObject includedFile = JspUtils.getFileObject(doc, filePath);
-//        
-//        if (includedFile != null && includedFile.canRead() 
+//
+//        if (includedFile != null && includedFile.canRead()
 //                // prevent endless loop in case of a circular reference
 //                && !processedFiles.contains(includedFile.getPath())) {
-//            
+//
 //            processedFiles.add(includedFile.getPath());
 //
 //            try {
 //                DataObject includedFileDO = DataObject.find(includedFile);
 //                String mimeType = includedFile.getMIMEType();
-//                
+//
 //                if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
 //                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
 //
@@ -299,7 +306,7 @@ public class SimplifiedJSPServlet {
         if (cp != null && cp.findResource("javax/servlet/http/HttpServlet.class") != null) { //NOI18N
             return true;
         }
-        
+
         return false;
     }
 
@@ -312,7 +319,7 @@ public class SimplifiedJSPServlet {
 
                 JTextComponent component = editor.getOpenedPanes()[0];
                 if (component != null) {
-                    org.netbeans.editor.Utilities.setStatusBoldText(component, 
+                    org.netbeans.editor.Utilities.setStatusBoldText(component,
                             NbBundle.getMessage(SimplifiedJSPServlet.class, "MSG_MissingServletAPI"));
                 }
             }
@@ -325,7 +332,7 @@ public class SimplifiedJSPServlet {
         StringBuilder beanDeclarationsBuff = new StringBuilder();
 
         PageInfo pageInfo = getPageInfo();
-        
+
         if (pageInfo != null) {
             PageInfo.BeanData[] beanData = getBeanData();
 
@@ -334,7 +341,7 @@ public class SimplifiedJSPServlet {
                     beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
                 }
             }
-            
+
             if (pageInfo.isTagFile()){
                 for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
                     if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
@@ -377,7 +384,7 @@ public class SimplifiedJSPServlet {
 
         return beanDeclarationsBuff.toString();
     }
-    
+
     private String[] getImports() {
         PageInfo pi = getPageInfo();
         if (pi == null) {
@@ -387,7 +394,7 @@ public class SimplifiedJSPServlet {
         List<String> imports = pi.getImports();
         return imports.toArray(new String[imports.size()]);
     }
-    
+
     private PageInfo.BeanData[] getBeanData() {
 
         PageInfo pageInfo = getPageInfo();
@@ -402,14 +409,14 @@ public class SimplifiedJSPServlet {
         //return support.getTagLibEditorData().getBeanData();
         return null;
     }
-    
+
     private PageInfo getPageInfo() {
         //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
         //Needs to be removed after properly fixing the issue
         if(DocumentUtilities.isWriteLocked(doc)) {
             return null;
         }
-        
+
         JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
 
         if (parseResult != null) {
@@ -425,7 +432,7 @@ public class SimplifiedJSPServlet {
     private String createImportStatements() {
         StringBuilder importsBuff = new StringBuilder();
         String[] imports = getImports();
-        
+
         if (imports == null || imports.length == 0){
             processingSuccessful = false;
         } else {
@@ -438,16 +445,16 @@ public class SimplifiedJSPServlet {
 
         return importsBuff.toString();
     }
-    
+
     private String getClassHeader() {
         String extendsClass = null; //NOI18N
         PageInfo pageInfo = getPageInfo();
-        
+
         if (pageInfo != null) {
             extendsClass = pageInfo.getExtends();
         }
-        
-        if (extendsClass == null || 
+
+        if (extendsClass == null ||
                 // workaround for issue #116314
                 "org.apache.jasper.runtime.HttpJspBase".equals(extendsClass)){ //NOI18N
             extendsClass = "HttpServlet"; //NOI18N
@@ -464,7 +471,7 @@ public class SimplifiedJSPServlet {
 
     public Embedding getVirtualClassBody() {
         assureProcessCalled();
-        
+
         if (!processingSuccessful){
             return null;
         }
@@ -472,9 +479,9 @@ public class SimplifiedJSPServlet {
         if (declarations.isEmpty() && scriptlets.isEmpty()) {
             return null;
         }
-        
+
         List<Embedding> content = new LinkedList<Embedding>();
-        
+
         content.add(importStatements);
         content.add(header);
         content.addAll(declarations);
@@ -482,33 +489,33 @@ public class SimplifiedJSPServlet {
         content.add(snapshot.create(METHOD_HEADER, "text/x-java"));
         content.addAll(scriptlets);
         content.add(snapshot.create(CLASS_FOOTER, "text/x-java"));
-        
+
         return Embedding.create(content);
     }
 
     public static abstract class VirtualJavaClass {
 
         public final void create(Document doc, String virtualClassBody) {
-//            FileObject fileDummyJava = null;
-//            List<? extends CompletionItem> javaCompletionItems = null;
-//
-//            try {
-//                FileSystem memFS = FileUtil.createMemoryFileSystem();
-//                fileDummyJava = memFS.getRoot().createData("SimplifiedJSPServlet", "java"); //NOI18N
-//                PrintWriter writer = new PrintWriter(fileDummyJava.getOutputStream());
-//                writer.print(virtualClassBody);
-//                writer.close();
-//
-//                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
-//                ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-//                JavaEmbedding Embedding = JavaEmbedding.create(cpInfo, fileDummyJava);
-//                process(fileDummyJava, Embedding);
-//            } catch (IOException ex) {
-//                logger.log(Level.SEVERE, ex.getMessage(), ex);
-//            } 
+            FileObject fileDummyJava = null;
+            List<? extends CompletionItem> javaCompletionItems = null;
+
+            try {
+                FileSystem memFS = FileUtil.createMemoryFileSystem();
+                fileDummyJava = memFS.getRoot().createData("SimplifiedJSPServlet", "java"); //NOI18N
+                PrintWriter writer = new PrintWriter(fileDummyJava.getOutputStream());
+                writer.print(virtualClassBody);
+                writer.close();
+
+                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
+                //ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
+                Source source = Source.create(fileDummyJava);
+                process(fileDummyJava, source);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+            }
         }
 
-        protected abstract void process(FileObject fileObject, JavaSource javaEmbedding);
+        protected abstract void process(FileObject fileObject, Source javaEmbedding);
     }
 
 }
