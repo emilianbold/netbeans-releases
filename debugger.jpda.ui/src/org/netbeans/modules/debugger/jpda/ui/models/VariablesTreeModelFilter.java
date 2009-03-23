@@ -48,12 +48,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -69,6 +73,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
@@ -89,11 +94,15 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     private RequestProcessor.Task evaluationTask;
     
     private LinkedList evaluationQueue = new LinkedList();
-    
+
+    private PreferenceChangeListener prefListener;
+    private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        prefListener = new VariablesPreferenceChangeListener();
+        preferences.addPreferenceChangeListener(prefListener);
     }
 
     /** 
@@ -576,6 +585,23 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         } else {
             return ((ExtendedNodeModelFilter) vf).getIconBaseWithExtension(original, node);
         }
+    }
+
+    private class VariablesPreferenceChangeListener implements PreferenceChangeListener {
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt.getKey();
+            if (VariablesViewButtons.SHOW_VALUE_AS_STRING.equals(key)) {
+                try {
+                    fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    Exceptions.printStackTrace(t);
+                }
+            }
+        }
+
     }
 
 }

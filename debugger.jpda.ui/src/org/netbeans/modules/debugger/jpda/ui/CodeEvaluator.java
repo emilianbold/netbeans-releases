@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
@@ -81,7 +82,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -112,6 +112,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private Set<String> editItemsSet = new HashSet<String>();
     private ArrayList<String> editItemsList = new ArrayList<String>();
     private JPopupMenu editItemsMenu;
+    private JButton dropDownButton;
 
     private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
 
@@ -131,13 +132,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
-        JButton dropDown = createDropDownButton();
+        dropDownButton = createDropDownButton();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        rightPanel.add(dropDown, gridBagConstraints);
+        rightPanel.add(dropDownButton, gridBagConstraints);
 
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {
@@ -163,16 +164,21 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private JButton createDropDownButton() {
         editItemsMenu = new JPopupMenu();
-        JButton button = DropDownButtonFactory.createDropDownButton(
-            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png", false), editItemsMenu); // [TODO] change icon
-        button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
-        button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
+        Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/drop_down_arrow.png", false);
+        final JButton button = new JButton(icon);
+        button.setToolTipText(NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip"));
+        button.setEnabled(false);
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(0, 0, 0, 0));
         button.setFocusable(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (editItemsList.size() > 0) {
-                    codePane.setText(editItemsList.get(0));
-                } // if
+                if (editItemsMenu.isShowing()) {
+                    editItemsMenu.setVisible(false);
+                } else {
+                    editItemsMenu.show(button, 0, button.getHeight());
+                }
             } // actionPerformed
         });
         return button;
@@ -192,6 +198,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     item.addActionListener(new MenuItemListener(str));
                     editItemsMenu.add(item);
                 }
+                dropDownButton.setEnabled(!editItemsList.isEmpty());
             }
         });
     }
@@ -325,13 +332,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         add(separatorPanel, gridBagConstraints);
 
-        rightPanel.setPreferredSize(new java.awt.Dimension(64, 209));
+        rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
         rightPanel.setLayout(new java.awt.GridBagLayout());
 
         evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.gif"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
+        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 20));
         evaluateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 evaluateButtonActionPerformed(evt);
