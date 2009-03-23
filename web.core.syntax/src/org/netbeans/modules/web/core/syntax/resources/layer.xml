@@ -197,6 +197,9 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-el">
+                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance"/>
+            </folder>
             <folder name="x-tag">
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />

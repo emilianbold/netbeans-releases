@@ -54,6 +54,7 @@ public final class IndenterContextData<T1 extends TokenId> {
     private int lineNonWhiteStartOffset;
     private JoinedTokenSequence<T1> joinedTS;
     private boolean languageBlockStart;
+    private boolean languageBlockEnd;
     private int nextLineStartOffset;
 
     public IndenterContextData(JoinedTokenSequence<T1> joinedTS,
@@ -96,6 +97,14 @@ public final class IndenterContextData<T1 extends TokenId> {
 
     void setLanguageBlockStart(boolean languageBlockStart) {
         this.languageBlockStart = languageBlockStart;
+    }
+
+    public boolean isLanguageBlockEnd() {
+        return languageBlockEnd;
+    }
+
+    void setLanguageBlockEnd(boolean languageBlockEnd) {
+        this.languageBlockEnd = languageBlockEnd;
     }
 
     @Override

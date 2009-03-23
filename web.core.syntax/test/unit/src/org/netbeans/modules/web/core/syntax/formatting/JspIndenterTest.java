@@ -62,6 +62,7 @@ import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
+import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
@@ -108,6 +109,8 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
+        ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
     }
 
     @Override
@@ -166,6 +169,10 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingCase007() throws Exception {
         reformatFileContents("FormattingProject/web/case007.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase008() throws Exception {
+        reformatFileContents("FormattingProject/web/case008.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {
@@ -230,6 +237,16 @@ public class JspIndenterTest extends TestBase2 {
             "<html> <!--\n             ^comment",
             "<html> <!--\n             \n       ^comment", null);
 
+        // expression indentation:
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"}^",
+            "<html>\n    ${\"expression+\n           exp2\"}\n    ^", null);
+        insertNewline(
+            "<html>\n    some text ${\"expression+\n                         exp2\"^}",
+            "<html>\n    some text ${\"expression+\n                         exp2\"\n    ^}", null);
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"\n                }^",
+            "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
     }
 
 }
