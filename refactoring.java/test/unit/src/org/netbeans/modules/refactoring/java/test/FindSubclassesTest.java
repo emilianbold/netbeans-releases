@@ -47,6 +47,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import junit.framework.Test;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -85,6 +86,10 @@ public class FindSubclassesTest extends RefPerfTestCase {
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
         projectDir = openProject("SimpleJ2SEApp", getDataDir());
+        
+        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        source = createSourcePath(projectDir);
+        compile = createEmptyPath();
     }
 
     public void testFindSub()
@@ -97,44 +102,38 @@ public class FindSubclassesTest extends RefPerfTestCase {
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
         timer.addHandler(getHandler());
+        ClasspathInfo cp = ClasspathInfo.create(boot, compile, source);
 
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
         FileObject testFile = getProjectDir().getFileObject("/src/simplej2seapp/Main.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        final CharSequence[] symbolName = new CharSequence[1];
         src.runWhenScanFinished(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
-                System.err.println(controller.getClasspathInfo());
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("simplej2seapp.Main");
                 TypeMirror mirror = klass.getSuperclass();
                 Element object = controller.getTypes().asElement(mirror);
+                symbolName[0] = object.getSimpleName();
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
-                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(object, controller));
                 wuq[0].getContext().add(cpi);
             }
         }, false);
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
-        Problem p = wuq[0].preCheck();
-        if (p != null) {
-            System.err.println(p.getMessage());
-        }
-        p = wuq[0].checkParameters();
-        if (p != null) {
-            System.err.println(p.getMessage());
-        }
         wuq[0].prepare(rs);
-        rs.doRefactoring(false);
+        rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
         StringBuilder sb = new StringBuilder();
-                sb.append("Symbol: '").append("java.lang.Object").append("'");
+        sb.append("Symbol: '").append(symbolName[0]).append("'");
         sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
         long prepare = getHandler().get("refactoring.prepare");
         try {
             NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-            d.name = "refactoring.prepare"+" (" + "java.lang.Object" + ", usages:" + elems.size() + ")";
+            d.name = "refactoring.prepare"+" (" + symbolName[0] + ", usages:" + elems.size() + ")";
             d.value = prepare;
             d.unit = "ms";
             d.runOrder = 0;
@@ -153,6 +152,6 @@ public class FindSubclassesTest extends RefPerfTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindSubclassesTest.class, "testFindSub").gui(false));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindSubclassesTest.class, "testFindSub").gui(true));
     }
 }
