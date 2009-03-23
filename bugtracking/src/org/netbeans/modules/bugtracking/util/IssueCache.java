@@ -236,6 +236,16 @@ public abstract class IssueCache {
         }
     }
 
+    public void removeQuery(String name) {
+        synchronized(CACHE_LOCK) {
+            try {
+                IssueStorage.getInstance().removeQuery(nameSpace, name);
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     private Map<String, IssueEntry> getCache() {
         if(cache == null) {
             cache = new HashMap<String, IssueEntry>();

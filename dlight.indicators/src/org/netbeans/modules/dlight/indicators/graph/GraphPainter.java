@@ -96,7 +96,7 @@ class GraphPainter {
         this.width = width;
         this.height = height;
         seriesCount = descriptors.length;
-        data = new CyclicArray<int[]>(width);
+        data = new CyclicArray<int[]>(1000);
 //        initCacheImage();
     }
 
@@ -124,14 +124,13 @@ class GraphPainter {
 
     public void setSize(int width, int height) {
         synchronized (dataLock) {
-            data.setCapacity(width / PIXELS_PER_SAMPLE);
             paintAll = true;
             this.height = height;
             this.width = width;
             invalidate();
 //            initCacheImage();
         }
-        if (TRACE) System.err.printf("PercentareGraph.setSize %d %d\n", width, height);
+        if (TRACE) { System.err.printf("PercentareGraph.setSize %d %d\n", width, height); }
     }
 
     public void setUpperLimit(int newScale) {
@@ -174,14 +173,15 @@ class GraphPainter {
                         String.format("New data size %d differs from series count %d", //NOI18N
                         newData.length, seriesCount));
             }
-            data.setCapacity(getWidth() / PIXELS_PER_SAMPLE);
 
             if (data.add(newData.clone())) {
                 dataWindowScroll++;
             }
             arrivedDataCount++;
-            if (TRACE) System.err.printf("addData; size=%d capacity=%d width=%d dataWindowScroll=%d arrivedDataCount=%d paintedDataCount=%d\n",
-                    data.size(), data.capacity(), getWidth(), dataWindowScroll,  arrivedDataCount, paintedDataCount);
+            if (TRACE) {
+                System.err.printf("addData; size=%d capacity=%d width=%d dataWindowScroll=%d arrivedDataCount=%d paintedDataCount=%d\n",
+                        data.size(), data.capacity(), getWidth(), dataWindowScroll, arrivedDataCount, paintedDataCount);
+            }
         }
      }
 
@@ -224,13 +224,13 @@ class GraphPainter {
 
     /** gets grid size in pixels */
     private int getGridSize() {
-        return 8;
+        return 10;
     }
 
     /** Should be called under synchronized (dataLock) */
     private int scrolled() {
         if (paintedDataCount > data.size()) {
-            return  paintedDataCount - data.size();
+            return paintedDataCount - data.size();
         } else {
             return 0;
         }
@@ -251,13 +251,20 @@ class GraphPainter {
     private void paintGrid(Graphics g, int x, int y, int w, int h) {
         int gridSize = getGridSize();
         g.setColor(gridColor);
-        int scrolled = scrolled();
+        int scrolled = PIXELS_PER_SAMPLE * scrolled();
         int dx = (scrolled > 0) ? gridSize - scrolled%gridSize : 0;
         for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
             g.drawLine(gridX, y, gridX, y+h-1);
         }
         for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
             g.drawLine(x, gridY, x+w-1, gridY);
+        }
+        g.setColor(GraphColors.BORDER_COLOR);
+        for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
+            g.drawLine(gridX, y+h-1, gridX, y+h-5);
+        }
+        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
+            g.drawLine(x, gridY, x+4, gridY);
         }
     }
 
@@ -271,22 +278,23 @@ class GraphPainter {
 
         Stroke oldStroke = g2.getStroke();
 
-        if (TRACE) System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data);
+        if (TRACE) { System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data); }
         if (height < 1) {
             return;
         }
-        int sampleLimit = Math.min(width / PIXELS_PER_SAMPLE, data.size()) - 1;
-        if (0 < sampleLimit) {
+        int sampleCount = Math.min(width / PIXELS_PER_SAMPLE, data.size()) - 1;
+        if (0 < sampleCount) {
+            int firstSample = Math.max(0, data.size() - sampleCount);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 g2.setStroke(LINE_STROKE);
                 g2.setColor(descriptors[ser].getColor());
                 int lastx = 0;
                 int lasty = 0;
-                for (int sample = 1; sample < sampleLimit; ++sample) {
-                    int prevValue = data.get(sample - 1)[ser] * height / scale;
-                    int currValue = data.get(sample)[ser] * height / scale;
-                    g.drawLine(left + PIXELS_PER_SAMPLE * (sample - 1) , top + height - 1 - prevValue,
-                               lastx = left + PIXELS_PER_SAMPLE * sample, lasty = top + height - 1 - currValue);
+                for (int i = 1; i < sampleCount; ++i) {
+                    int prevValue = data.get(firstSample + i - 1)[ser] * height / scale;
+                    int currValue = data.get(firstSample + i)[ser] * height / scale;
+                    g.drawLine(left + PIXELS_PER_SAMPLE * (i - 1) , top + height - 1 - prevValue,
+                               lastx = left + PIXELS_PER_SAMPLE * i, lasty = top + height - 1 - currValue);
                 }
                 g2.setStroke(BALL_STROKE);
                 g2.setColor(Color.WHITE);
