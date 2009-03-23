@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$__DL_PATH" != "" ]; then
-  PATH=$__DL_PATH
-  export PATH
-fi
-
 PROG=`basename $0`
 USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
 PROMPT=NO
@@ -16,27 +11,35 @@ fail() {
 
 doExit() {
   test -f ${PIDFILE} && rm ${PIDFILE}
+  test -f ${ENVFILE} && rm ${ENVFILE}
   exit ${STATUS}
 }
 
 [ $# -lt 1 ] && fail $USAGE
 
-while getopts p:x: opt; do
+while getopts w:e:p:x: opt; do
   case $opt in
     p) PIDFILE=$OPTARG
        ;;
     x) PROMPT=$OPTARG
+       ;;
+    e) ENVFILE=$OPTARG
+       ;;
+    w) WDIR=$OPTARG
        ;;
   esac
 done
 
 shift `expr $OPTIND - 1`
 
-
 trap "doExit" 1 2 15 EXIT
 
+if [ "${WDIR}" = "" ]; then
+  WDIR=.
+fi
+
 STATUS=-1
-/bin/sh -c "echo \$\$>${PIDFILE} && exec $@"
+/bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd ${WDIR} && exec $@"
 STATUS=$?
 echo ${STATUS} > ${PIDFILE}.res
 
