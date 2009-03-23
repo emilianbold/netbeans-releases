@@ -364,7 +364,7 @@ public class KenaiSearchPanel extends JPanel {
         // cancel running tasks
         KenaiProjectsListModel model = getListModel();
         if (model != null) {
-            model.cancel();
+            model.stopLoading();
         }
     }
 
@@ -375,12 +375,12 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
 
-        private RequestProcessor.Task task;
+        private boolean stopLoading;
 
         public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
             this.projects = projects;
             this.pattern = pattern;
-            task = RequestProcessor.getDefault().post(this);
+            RequestProcessor.getDefault().post(this);
         }
 
         public void run() {
@@ -388,24 +388,27 @@ public class KenaiSearchPanel extends JPanel {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
                     if (PanelType.OPEN.equals(panelType)) {
+                        System.out.println("Adding element; " + project);
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
                         KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
                         for (KenaiFeature repo : repos) {
                             if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
+                                System.out.println("Adding element; " + project);
                                 addElement(new KenaiProjectSearchInfo(project, repo, pattern));
                             }
                         }
                     }
-                    if (Thread.interrupted()) {
+                    if (stopLoading) {
+                        System.out.println("Thread stopped!");
                         return;
                     }
                 }
             }
         }
 
-        public void cancel() {
-            task.cancel();
+        public synchronized void stopLoading() {
+            stopLoading = true;
         }
 
     }
