@@ -204,11 +204,11 @@ public final class ConnectionBuilder {
             }
             if (responseHeaders != null) {
                 responseHeaders.putAll(conn.getHeaderFields());
-                LOG.log(Level.FINER, "{0} => {1}", new Object[] {conn.getURL(), responseHeaders});
+                LOG.log(Level.FINER, "  => {0}", responseHeaders);
                 responseHeaders = null;
             }
             int responseCode = ((HttpURLConnection) conn).getResponseCode();
-            LOG.log(Level.FINER, "{0} => {1}", new Object[] {conn.getURL(), responseCode});
+            LOG.log(Level.FINER, "  => {0}", responseCode);
             switch (responseCode) {
             // Workaround for JDK bug #6810084; HttpURLConnection.setInstanceFollowRedirects does not work.
             case HttpURLConnection.HTTP_MOVED_PERM:
