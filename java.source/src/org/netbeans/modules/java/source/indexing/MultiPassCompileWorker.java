@@ -291,22 +291,23 @@ final class MultiPassCompileWorker extends CompileWorker {
                         //causing this exceptin as compiled
                         //otherwise tasklist will reschedule the parse again
                         //and the RepositoryUpdater ends in infinite loop of reparse.
-                        finished.add(active.indexable);
+                        if (active != null)
+                            finished.add(active.indexable);
                         diagnosticListener.cleanDiagnostics();
-                        if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
-                            final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                            final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                            final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                            t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                    FileUtil.getFileDisplayName(context.getRoot()),
-                                    active.jfo.toUri().toString(),
-                                    bootPath == null   ? null : bootPath.toString(),
-                                    classPath == null  ? null : classPath.toString(),
-                                    sourcePath == null ? null : sourcePath.toString()
-                                    ));
 // XXX: commenting out because of #160618
+//                        if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
+//                            final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+//                            final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+//                            final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+//                            t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
+//                                    FileUtil.getFileDisplayName(context.getRoot()),
+//                                    active.jfo.toUri().toString(),
+//                                    bootPath == null   ? null : bootPath.toString(),
+//                                    classPath == null  ? null : classPath.toString(),
+//                                    sourcePath == null ? null : sourcePath.toString()
+//                                    ));
 //                            Exceptions.printStackTrace(t);
-                        }
+//                        }
                         jt = null;
                         active = null;
                     }
