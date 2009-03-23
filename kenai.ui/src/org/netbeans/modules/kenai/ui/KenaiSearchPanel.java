@@ -72,6 +72,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -88,9 +89,11 @@ public class KenaiSearchPanel extends JPanel {
 
     private final JLabel noSearchResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoSearchResults.label.text"));
     private final JLabel noMatchingResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoResultsMatching.label.text"));
+    private final JLabel badRequest = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "BadRequest.label.text"));
 
     private JPanel noSearchLabelPanel;
     private JPanel noMatchingLabelPanel;
+    private JPanel badRequestPanel;
 
     public enum PanelType { OPEN, BROWSE }
 
@@ -109,6 +112,7 @@ public class KenaiSearchPanel extends JPanel {
 
         noSearchLabelPanel = createLabelPanel(noSearchResultsLabel);
         noMatchingLabelPanel = createLabelPanel(noMatchingResultsLabel);
+        badRequestPanel = createLabelPanel(badRequest);
 
         // initially show <No Search Results>
         remove(scrollPane);
@@ -274,7 +278,11 @@ public class KenaiSearchPanel extends JPanel {
         } else if (noMatchingLabelPanel != null && noMatchingLabelPanel.isShowing()) {
             remove(noMatchingLabelPanel);
             showProgressAndRepaint = true;
+        } else if (badRequestPanel != null && badRequestPanel.isShowing()) {
+            remove(badRequestPanel);
+            showProgressAndRepaint = true;
         }
+
 
         if (showProgressAndRepaint) {
             add(BorderLayout.CENTER, progressPanel);
@@ -289,7 +297,24 @@ public class KenaiSearchPanel extends JPanel {
                 String searchPattern = searchTextField.getText();
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiException ex) {
+                } catch (KenaiErrorMessage em) {
+                    if ("400 Bad Request".equals(em.getStatus())) {//NOI18N
+                        EventQueue.invokeLater(new Runnable() {
+
+                            public void run() {
+                                progressHandle.finish();
+                                remove(progressPanel);
+                                add(BorderLayout.CENTER, badRequestPanel);
+                                revalidate();
+                                repaint();
+                            }
+                        });
+                        return;
+                    } else {
+                        Exceptions.printStackTrace(em);
+                    }
+
+                }catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                     // XXX show some error to user
                 }
