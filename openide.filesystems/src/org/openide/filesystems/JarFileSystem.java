@@ -167,6 +167,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * @param fo is FileObject. It`s reference yourequire to get.
      * @return Reference to FileObject
      */
+    @Override
     protected <T extends FileObject> Reference<T> createReference(T fo) {
         aliveCount++;
 
@@ -303,38 +304,42 @@ public class JarFileSystem extends AbstractFileSystem {
 
         if ((foRoot != null) && (fcl == null)) {
             fcl = new FileChangeAdapter() {
-                        public void fileChanged(FileEvent fe) {
-                            if (watcherTask == null) {
-                                parse(true);
-                            }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    if (watcherTask == null) {
+                        parse(true);
+                    }
+                }
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    File f = FileUtil.toFile(fe.getFile());
+
+                    if ((f != null) && !f.equals(aRoot)) {
+                        try {
+                            setJarFile(f, false);
+                        } catch (IOException iex) {
+                            ExternalUtil.exception(iex);
+                        } catch (PropertyVetoException pvex) {
+                            ExternalUtil.exception(pvex);
                         }
+                    }
+                }
 
-                        public void fileRenamed(FileRenameEvent fe) {
-                            File f = FileUtil.toFile(fe.getFile());
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
 
-                            if ((f != null) && !f.equals(aRoot)) {
-                                try {
-                                    setJarFile(f, false);
-                                } catch (IOException iex) {
-                                    ExternalUtil.exception(iex);
-                                } catch (PropertyVetoException pvex) {
-                                    ExternalUtil.exception(pvex);
-                                }
-                            }
-                        }
+                    while (en.hasMoreElements()) {
+                        AbstractFolder fo = (AbstractFolder) en.nextElement();
+                        fo.validFlag = false;
+                        fo.fileDeleted0(new FileEvent(fo));
+                    }
 
-                        public void fileDeleted(FileEvent fe) {
-                            Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
-
-                            while (en.hasMoreElements()) {
-                                AbstractFolder fo = (AbstractFolder) en.nextElement();
-                                fo.validFlag = false;
-                                fo.fileDeleted0(new FileEvent(fo));
-                            }
-
-                            refreshRoot();
-                        }
-                    };
+                    refreshRoot();
+                }
+            };
 
             if (refreshRoot) {
                 foRoot.addFileChangeListener(FileUtil.weakFileChangeListener(fcl, foRoot));
@@ -365,6 +370,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     /* Closes associated JAR file on cleanup, if possible. */
+    @Override
     public void removeNotify() {
         closeCurrentRoot(true);
     }
@@ -381,6 +387,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * @deprecated Useless.
     */
     @Deprecated
+    @Override
     public void prepareEnvironment(Environment env) {
         if (root != null) {
             env.addClassPath(root.getAbsolutePath());
@@ -596,10 +603,10 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Object readAttribute(String name, String attrName) {
-        Attributes attr = getManifest().getAttributes(name);
+        Attributes attr1 = getManifest().getAttributes(name);
 
         try {
-            return (attr == null) ? null : attr.getValue(attrName);
+            return (attr1 == null) ? null : attr1.getValue(attrName);
         } catch (IllegalArgumentException iax) {
             return null;
         }
@@ -611,16 +618,16 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Enumeration<String>  attributes(String name) {
-        Attributes attr = getManifest().getAttributes(name);
+        Attributes attr1 = getManifest().getAttributes(name);
 
-        if (attr != null) {
+        if (attr1 != null) {
             class ToString implements org.openide.util.Enumerations.Processor<Object, String> {
                 public String process(Object obj, Collection<Object> ignore) {
                     return obj.toString();
                 }
             }
 
-            return org.openide.util.Enumerations.convert(Collections.enumeration(attr.keySet()), new ToString());
+            return org.openide.util.Enumerations.convert(Collections.enumeration(attr1.keySet()), new ToString());
         } else {
             return org.openide.util.Enumerations.empty();
         }
@@ -633,6 +640,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     /** Close the jar file when we go away...*/
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         closeCurrentRoot(false);
