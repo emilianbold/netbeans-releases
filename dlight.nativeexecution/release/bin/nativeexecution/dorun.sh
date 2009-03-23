@@ -39,7 +39,10 @@ if [ "${WDIR}" = "" ]; then
 fi
 
 STATUS=-1
-/bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd ${WDIR} && exec $@"
+
+test -r ${ENVFILE} && ENVSETUP=" && . ${ENVFILE}"
+
+/bin/sh -c "echo \$\$>${PIDFILE} ${ENVSETUP} && cd ${WDIR} && exec $@"
 STATUS=$?
 echo ${STATUS} > ${PIDFILE}.res
 
