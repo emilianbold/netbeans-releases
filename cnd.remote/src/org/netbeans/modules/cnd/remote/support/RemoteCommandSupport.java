@@ -45,6 +45,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
@@ -76,6 +77,14 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     public int run() {
         if (!isFailedOrCancelled()) {
             log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
+            if (SwingUtilities.isEventDispatchThread()) {
+                String text = "Running remote command in EDT: " + cmd; //NOI18N
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, text, new Exception(text));
+                } else {
+                    log.warning(text);
+                }
+            }
             try {
 //                final String substitutedCommand = substituteCommand();
                 NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);

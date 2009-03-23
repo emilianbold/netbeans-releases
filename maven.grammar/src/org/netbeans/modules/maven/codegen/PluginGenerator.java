@@ -44,14 +44,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginContainer;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -89,6 +96,17 @@ public class PluginGenerator implements CodeGenerator {
     }
 
     public void invoke() {
+        if (!model.getState().equals(State.VALID)) {
+            //TODO report somehow, status line?
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(PluginGenerator.class, "MSG_Cannot_Parse"));
+            return;
+        }
+
+        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+        assert fo != null;
+        org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
+        assert prj != null;
+
         NewPluginPanel pluginPanel = new NewPluginPanel();
         DialogDescriptor dd = new DialogDescriptor(pluginPanel,
                 NbBundle.getMessage(PluginGenerator.class, "TIT_Add_plugin"));
@@ -97,6 +115,9 @@ public class PluginGenerator implements CodeGenerator {
             if (vi != null) {
                 //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
                 model.startTransaction();
+                int pos = component.getCaretPosition();
+                PluginContainer container = findContainer(pos, model);
+
                 Plugin plug = model.getFactory().createPlugin();
                 plug.setGroupId(vi.getGroupId());
                 plug.setArtifactId(vi.getArtifactId());
@@ -104,21 +125,21 @@ public class PluginGenerator implements CodeGenerator {
 
                 if (pluginPanel.isConfiguration()) {
                     Configuration config = model.getFactory().createConfiguration();
+                    config.setSimpleParameter("foo", "bar");
                     plug.setConfiguration(config);
                 }
 
-                // TODO - execution goals
-
-                Build buildSection = model.getProject().getBuild();
-                if (buildSection == null) {
-                    buildSection = model.getFactory().createBuild();
-                    model.getProject().setBuild(buildSection);
+                if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
+                    for (String goal : pluginPanel.getGoals()) {
+                        plug.addGoal(goal);
+                    }
                 }
-                buildSection.addPlugin(plug);
+
+                container.addPlugin(plug);
                 model.endTransaction();
                 try {
                     model.sync();
-                    int pos = model.getAccess().findPosition(plug.getPeer());
+                    pos = model.getAccess().findPosition(plug.getPeer());
                     component.setCaretPosition(pos);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -126,4 +147,20 @@ public class PluginGenerator implements CodeGenerator {
             }
         }
     }
+    private PluginContainer findContainer(int pos, POMModel model) {
+        Component dc = model.findComponent(pos);
+        while (dc != null) {
+            if (dc instanceof PluginContainer) {
+                return (PluginContainer) dc;
+            }
+            dc = dc.getParent();
+        }
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            bld = model.getFactory().createBuild();
+            model.getProject().setBuild(bld);
+        }
+        return bld;
+    }
+
 }
