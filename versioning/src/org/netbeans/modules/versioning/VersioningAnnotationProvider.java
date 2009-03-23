@@ -293,22 +293,11 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             return;
         }
         
-        for (File file : files) {             
+        for (File file : files) {
+            file = FileUtil.normalizeFile(file);
             // collect files parents and store them for the refresh
             for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
-                FileObject fo;
-                // TODO: #73233 diagnostics: remove afterwards 
-                try {
-                    fo = FileUtil.toFileObject(parent);                        
-                } catch (IllegalArgumentException e) {
-                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Issue #73233 log begins:");
-                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Original File: " + file.getAbsolutePath());
-                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Illegal file: " + parent.getAbsolutePath());
-                    RuntimeException ex = new RuntimeException("Please report this and append your messages.log file to issue http://www.netbeans.org/issues/show_bug.cgi?id=73233");
-                    ex.initCause(e);
-                    throw ex;
-                }
-                addToMap(parentsToRefresh, fo);                
+                addToMap(parentsToRefresh, FileUtil.toFileObject(parent));
             }   
             
             // store file for the refresh

@@ -49,7 +49,6 @@ import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.GraphDetail;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import org.openide.util.NbBundle;
@@ -102,7 +101,7 @@ public class CpuIndicatorPanel {
     }
 
     private static Legend createLegend() {
-        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<GraphDetail>emptyList());
+        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<String, String>emptyMap());
     }
 
     /*package*/ void addData(int sys, int usr) {

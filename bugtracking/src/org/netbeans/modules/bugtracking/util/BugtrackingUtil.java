@@ -239,4 +239,18 @@ public class BugtrackingUtil {
         }
     }
 
+    /**
+     * Recursively deletes all files and directories under a given file/directory.
+     *
+     * @param file file/directory to delete
+     */
+    public static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
+    }
 }
