@@ -100,12 +100,12 @@ public class VariablesViewButtons {
 
     public static boolean isWatchesViewNested() {
         Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
-        return preferences.getBoolean(SHOW_WATCHES, false);
+        return preferences.getBoolean(SHOW_WATCHES, true);
     }
 
     public static boolean isResultsViewNested() {
         Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
-        return preferences.getBoolean(SHOW_EVALUTOR_RESULT, false);
+        return preferences.getBoolean(SHOW_EVALUTOR_RESULT, true);
     }
 
     private static JToggleButton createToggleButton (final String id, String iconName, String tooltip) {
@@ -138,11 +138,10 @@ public class VariablesViewButtons {
     }
 
     private static boolean isButtonSelected(String name) {
-        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(PREFERENCES_NAME); // NOI18N
         if (name.equals(SHOW_WATCHES)) {
-            return preferences.getBoolean(SHOW_WATCHES, false);
+            return isWatchesViewNested();
         } else if (name.equals(SHOW_EVALUTOR_RESULT)) {
-            return preferences.getBoolean(SHOW_EVALUTOR_RESULT, false);
+            return isResultsViewNested();
         }
         return false;
     }

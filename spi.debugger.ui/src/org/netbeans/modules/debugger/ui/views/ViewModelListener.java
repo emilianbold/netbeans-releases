@@ -255,7 +255,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             Set tableModelFiltersSet = new HashSet(tableModelFilters);
             Set nodeActionsProviderFiltersSet = new HashSet(nodeActionsProviderFilters);
 
-            if (preferences.getBoolean(VariablesViewButtons.SHOW_EVALUTOR_RESULT, false)) {
+            if (VariablesViewButtons.isResultsViewNested()) {
                 TreeModelFilter showResultFilter = createNestedViewCompoundModel(cp, treeModelFiltersSet,
                         nodeModelFiltersSet, tableModelFiltersSet, nodeActionsProviderFiltersSet,
                         View.RESULTS_VIEW_NAME, true);
@@ -264,7 +264,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 tableModelFilters.add(showResultFilter);
                 nodeActionsProviderFilters.add(showResultFilter);
             }
-            if (preferences.getBoolean(VariablesViewButtons.SHOW_WATCHES, false)) {
+            if (VariablesViewButtons.isWatchesViewNested()) {
                 TreeModelFilter showResultFilter = createNestedViewCompoundModel(cp, treeModelFiltersSet,
                         nodeModelFiltersSet, tableModelFiltersSet, nodeActionsProviderFiltersSet,
                         View.WATCHES_VIEW_NAME, false);
