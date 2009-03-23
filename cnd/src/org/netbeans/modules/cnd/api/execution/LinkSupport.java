@@ -74,14 +74,14 @@ public class LinkSupport {
             return null;
         }
         if (new File(linkPath).exists()) {
-            if (linkPath.endsWith(".lnk")) {
+            if (linkPath.endsWith(".lnk")) { // NOI18N
                 return getOriginalFile(linkPath, level);
             }
             return linkPath;
-        } else if (new File(linkPath+".lnk").exists()){
-            return getOriginalFile(linkPath+".lnk", level);
+        } else if (new File(linkPath+".lnk").exists()){ // NOI18N
+            return getOriginalFile(linkPath+".lnk", level); // NOI18N
         }
-        return null;
+        return linkPath;
     }
 
     private static class LinkReader {

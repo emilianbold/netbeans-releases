@@ -226,7 +226,7 @@ public final class CreateTestsAction extends NodeAction {
             assert file.isFile() : "File must be given to open: " + file;
             toRefresh.add(file.getParentFile());
             try {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 assert fo != null : "File object not found for " + file;
                 assert fo.isValid() : "File object not valid for " + file;
                 DataObject dobj = DataObject.find(fo);
@@ -323,7 +323,7 @@ public final class CreateTestsAction extends NodeAction {
         String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
         assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
 
-        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replaceAll("/", File.separator)); // NOI18N
+        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
         return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
     }

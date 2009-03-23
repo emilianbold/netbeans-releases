@@ -128,6 +128,16 @@ public class CsmOffsetResolver {
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
                 if (templateParam != null && !CsmOffsetUtilities.sameOffsets(fun,templateParam)) {
                     context.setLastObject(templateParam);
+                    while(CsmKindUtilities.isTemplate(templateParam)) {
+                        templateParams = ((CsmTemplate)templateParam).getTemplateParameters();
+                        CsmTemplateParameter innerTemplateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
+                        if(innerTemplateParam != null && !CsmOffsetUtilities.sameOffsets(templateParam,innerTemplateParam)) {
+                            context.setLastObject(innerTemplateParam);
+                            templateParam = innerTemplateParam;
+                        } else {
+                            break;
+                        }
+                    }
                     return templateParam;
                 }
             }
@@ -187,6 +197,16 @@ public class CsmOffsetResolver {
                 last = type;
             }
         } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj)) {
+            // check template parameters
+            if (CsmKindUtilities.isTemplate(lastObj)) {
+                Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)lastObj).getTemplateParameters();
+                CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
+                if (templateParam != null && !CsmOffsetUtilities.sameOffsets(lastObj, templateParam)) {
+                    context.setLastObject(templateParam);
+                    return templateParam;
+                }
+            }
+        } else if (CsmKindUtilities.isFriend(lastObj)) {
             // check template parameters
             if (CsmKindUtilities.isTemplate(lastObj)) {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)lastObj).getTemplateParameters();

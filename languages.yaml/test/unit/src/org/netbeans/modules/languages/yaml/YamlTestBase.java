@@ -39,15 +39,17 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+
 
 /**
  *
  * @author tor
  */
-public class YamlTestBase extends GsfTestBase {
+public class YamlTestBase extends CslTestBase {
 
     public YamlTestBase(String testName) {
         super(testName);

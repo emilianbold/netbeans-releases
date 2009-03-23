@@ -43,7 +43,6 @@ package org.netbeans.swing.outline;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -215,7 +214,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             setNestingDepth (nd );
             RenderDataProvider rendata = tbl.getRenderDataProvider();
             Icon icon = null;
-            if (rendata != null) {
+            if (rendata != null && value != null) {
                 String displayName = rendata.getDisplayName(value);
                 if (displayName != null) {
                     setText (displayName);

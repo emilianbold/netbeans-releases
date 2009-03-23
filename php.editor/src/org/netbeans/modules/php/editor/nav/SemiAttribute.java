@@ -54,11 +54,10 @@ import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
@@ -100,7 +99,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 /**
@@ -116,14 +115,14 @@ public class SemiAttribute extends DefaultVisitor {
     private Stack<DefinitionScope> scopes = new Stack<DefinitionScope>();
     private Map<ASTNode, AttributedElement> node2Element = new HashMap<ASTNode, AttributedElement>();
     private int offset;
-    private CompilationInfo info;
+    private ParserResult info;
     private Stack<ASTNode> nodes = new Stack<ASTNode>();
 
-    public SemiAttribute(CompilationInfo info) {
+    public SemiAttribute(ParserResult info) {
         this(info, -1);
     }
 
-    public SemiAttribute(CompilationInfo info, int o) {
+    public SemiAttribute(ParserResult info, int o) {
         this.offset = o;
         this.info = info;
         scopes.push(global = new DefinitionScope());
@@ -662,7 +661,7 @@ public class SemiAttribute extends DefaultVisitor {
         return contextClassName;
     }
 
-    private CompilationInfo getInfo() {
+    private ParserResult getInfo() {
         return info;
     }
 
@@ -729,9 +728,8 @@ public class SemiAttribute extends DefaultVisitor {
                 if (el != null) {
                     retval.add(el);
                 } else {
-                    Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-                    PHPIndex index = PHPIndex.get(i);
-                    for (IndexedClass m : index.getClasses(null, fName, NameKind.PREFIX)) {
+                    PHPIndex index = PHPIndex.get(info);
+                    for (IndexedClass m : index.getClasses(null, fName, QuerySupport.Kind.PREFIX)) {
                         String idxName = m.getName();
                         el = global.enterWrite(idxName, Kind.CLASS, m);
                         retval.add(el);
@@ -749,10 +747,9 @@ public class SemiAttribute extends DefaultVisitor {
 
     public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
-            Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
+            PHPIndex index = PHPIndex.get(info);
             name2ElementCache = new LinkedList<IndexedElement>();
-            name2ElementCache.addAll(index.getClasses(null, "", NameKind.PREFIX));
+            name2ElementCache.addAll(index.getClasses(null, "", QuerySupport.Kind.PREFIX));
         }
 
         for (IndexedElement f : name2ElementCache) {
@@ -815,9 +812,9 @@ public class SemiAttribute extends DefaultVisitor {
 
         }
     }
-    private static Map<CompilationInfo, SemiAttribute> info2Attr = new WeakHashMap<CompilationInfo, SemiAttribute>();
+    private static Map<ParserResult, SemiAttribute> info2Attr = new WeakHashMap<ParserResult, SemiAttribute>();
 
-    public static SemiAttribute semiAttribute(CompilationInfo info) {
+    public static SemiAttribute semiAttribute(ParserResult info) {
         SemiAttribute a = info2Attr.get(info);
 
         if (a == null) {
@@ -832,14 +829,16 @@ public class SemiAttribute extends DefaultVisitor {
 
             long endTime = System.currentTimeMillis();
 
-            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global instance", new Object[]{info.getFileObject(), a});
-            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global time", new Object[]{info.getFileObject(), (endTime - startTime)});
+            FileObject fo = info.getSnapshot().getSource().getFileObject();
+
+            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global instance", new Object[]{fo, a});
+            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global time", new Object[]{fo, (endTime - startTime)});
         }
 
         return a;
     }
 
-    public static SemiAttribute semiAttribute(CompilationInfo info, int stopOffset) {
+    public static SemiAttribute semiAttribute(ParserResult info, int stopOffset) {
         SemiAttribute a = new SemiAttribute(info, stopOffset);
 
         try {
@@ -1155,23 +1154,22 @@ public class SemiAttribute extends DefaultVisitor {
             if (el != null) {
                 return el;
             }
-            Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
+            PHPIndex index = PHPIndex.get(info);
             int attrs = PHPIndex.ANY_ATTR;
 
             switch(k) {
                 case CONST:
-                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, NameKind.PREFIX)) {
+                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.CONST, m);
                 } break;
                 case FUNC:
-                for (IndexedFunction m : index.getAllMethods(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedFunction m : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllFields(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedConstant m : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
@@ -1398,11 +1396,10 @@ public class SemiAttribute extends DefaultVisitor {
                 el = name2El.get(name);
             }
             if (el == null) {
-                Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-                PHPIndex index = PHPIndex.get(i);
+                PHPIndex index = PHPIndex.get(info);
                 switch(k) {
                     case CONST:
-                    for (IndexedConstant m : index.getConstants(null, name, NameKind.PREFIX)) {
+                    for (IndexedConstant m : index.getConstants(null, name, QuerySupport.Kind.PREFIX)) {
                         String idxName = m.getName();
                         el = enterWrite(idxName, Kind.CONST, m);
                     }

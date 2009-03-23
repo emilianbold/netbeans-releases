@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.swingx</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.db</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -86,10 +95,6 @@
                 <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/db/dataview/swingx-0.9.4.jar</runtime-relative-path>
-                <binary-origin>external/swingx-0.9.4.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

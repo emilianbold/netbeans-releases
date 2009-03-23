@@ -158,6 +158,7 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-projectui@" value="${javadoc.docs.org-netbeans-modules-projectui}"/>
 <replacefilter token="@org-netbeans-modules-refactoring-java@" value="${javadoc.docs.org-netbeans-modules-refactoring-java}"/>
 <replacefilter token="@org-netbeans-bootstrap@" value="${javadoc.docs.org-netbeans-bootstrap}"/>
+<replacefilter token="@org-netbeans-modules-kenai@" value="${javadoc.docs.org-netbeans-modules-kenai}"/>
 <replacefilter token="@org-netbeans-modules-xml-retriever@" value="${javadoc.docs.org-netbeans-modules-xml-retriever}"/>
 <replacefilter token="@org-netbeans-modules-server@" value="${javadoc.docs.org-netbeans-modules-server}"/>
 <replacefilter token="@org-netbeans-modules-java-api-common@" value="${javadoc.docs.org-netbeans-modules-java-api-common}"/>
@@ -179,3 +180,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-gsf-api@" value="${javadoc.docs.org-netbeans-modules-gsf-api}"/>
 <replacefilter token="@org-netbeans-modules-mobility-project@" value="${javadoc.docs.org-netbeans-modules-mobility-project}"/>
 <replacefilter token="@org-netbeans-api-annotations-common@" value="${javadoc.docs.org-netbeans-api-annotations-common}"/>
+<replacefilter token="@org-netbeans-modules-kenai-ui@" value="${javadoc.docs.org-netbeans-modules-kenai-ui}"/>

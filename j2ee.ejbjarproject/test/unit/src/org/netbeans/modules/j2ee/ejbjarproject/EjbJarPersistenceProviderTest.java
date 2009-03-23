@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -93,6 +94,7 @@ public class EjbJarPersistenceProviderTest extends NbTestCase {
 
     @Override
     public void setUp() throws Exception {
+        MockLookup.setLayersAndInstances();
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project

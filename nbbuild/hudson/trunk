@@ -51,7 +51,7 @@ ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$BASENAME-cpp.z
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity gsf php groovy dlight; do
+for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity php groovy dlight; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
@@ -60,50 +60,8 @@ find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/zip/moduleclusters/$BASENAME-n
 cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
 cd ../..
-generated=nbbuild/build/generated
-rm -rf $generated
-ant generate-golden-files generate-files-layout index-layer-paths || exit
-cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
-prev_generated=../lastSuccessful/archive/$generated
-if [ -d $prev_generated ]; then
-    diff -r -U 25 $prev_generated $generated > $generated.diff
-    if [ -s $generated.diff ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
-    fi
-fi
 
-sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtest/snapshot
-
-echo SigTest: Checking All Changes
-ant -Dsigtest.basedir=$sigtest_prev check-sigtests
-for report in `pwd`/nbbuild/build/sigtest/check-snapshot/*; do
-  if ! expr "$report" : ".*/TESTS-.*" && grep 'failures="1"' $report >/dev/null; then
-    sigtest_email=`cat $report | grep "^email:" | grep -v nbm.domain | cut -c 8-`
-    if [ -z "$sigtest_email" ]; then
-      sigtest_email="api-changes@netbeans.org"
-    fi
-    content=`cat $report`
-    (
-        echo "Code changes:";
-        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
-        echo "API changes:";
-        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/nbbuild/build/sigtest/check-snapshot/html/index.html"; 
-        echo "Failure output is available as StdErr output of sigtest test for appropriate module.";
-#                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-        echo; 
-        expr "$content" : ".*CDATA\[\(.*\)\]\].*"
-    ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
-  fi
-done
-echo SigTest: Checking All Changes Done
-
-echo SigTest: Generating Golden Files
-ant gen-sigtests || exit 1
-echo SigTest: Generating Golden Files Done
-
-echo SigTest: Incompatible Changes
-ant check-sigtests-release -Dfail.on.error=false
-echo SigTest: Incompatible Changes Done
+sh nbbuild/hudson/sigtests || exit 1
 
 # Try to build all tests in the system to make sure they at least compile.
 ant -Dtest.fail.on.error=false build-test-dist
@@ -117,7 +75,7 @@ ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
 # Mobility UI validation tests
-ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
+ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dcontinue.after.failing.tests=true test
 # J2EE validation tests
 #-Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR
 ant -f j2ee.kit/build.xml -Dtest.config=uicommit -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test

@@ -128,7 +128,7 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
     @Override
     public void initialize() {
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestEntityEB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestEntityEB");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestEntityBean.java");
 //        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);

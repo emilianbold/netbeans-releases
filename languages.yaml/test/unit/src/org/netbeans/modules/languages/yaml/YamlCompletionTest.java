@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+
 
 /**
  *

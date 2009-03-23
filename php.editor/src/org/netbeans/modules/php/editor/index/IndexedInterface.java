@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+
 
 /**
  *

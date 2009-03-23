@@ -41,17 +41,23 @@
 
 package org.netbeans.modules.php.editor;
 
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tor Norbye
  */
-public abstract class PHPTestBase extends GsfTestBase {
+public abstract class PHPTestBase extends CslTestBase {
 
     public PHPTestBase(String testName) {
         super(testName);
@@ -61,7 +67,8 @@ public abstract class PHPTestBase extends GsfTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
-        getXTestJsCluster();
+        //getXTestJsCluster();
+        NbReaderProvider.setupReaders();
     }
     
     @Override
@@ -73,6 +80,16 @@ public abstract class PHPTestBase extends GsfTestBase {
     protected String getPreferredMimeType() {
         return PHPLanguage.PHP_MIME_TYPE;
     }
+
+     protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
+                //FileUtil.toFileObject(getDataFile("/testfiles/completion/lib"))
+            })
+        );
+    }
     
     // Called via reflection from GsfUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
@@ -80,11 +97,11 @@ public abstract class PHPTestBase extends GsfTestBase {
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
     // If anyone can figure this out, please let me know and simplify the
     // test infrastructure.
-    public static BaseDocument getDocumentFor(FileObject fo) {
-        BaseDocument doc = GsfTestBase.createDocument(read(fo));
-        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
-
-        return doc;
-    }
+//    public static BaseDocument getDocumentFor(FileObject fo) {
+//        BaseDocument doc = CslTestBase.getDocument(read(fo));
+//        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
+//        doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
+//
+//        return doc;
+//    }
 }

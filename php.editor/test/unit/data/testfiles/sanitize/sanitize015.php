@@ -14,7 +14,7 @@ class test {
     public function neco () {
 
     }
-    public function name(^
+    /*marker*/public function name(
 class hello {
     function __construct() {
 

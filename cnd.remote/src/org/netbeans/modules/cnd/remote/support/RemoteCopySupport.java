@@ -38,19 +38,17 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.StringWriter;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,23 +61,6 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     
     public RemoteCopySupport(ExecutionEnvironment execEnv) {
         super(execEnv);
-        revitalize();
-
-    // copy(remote, local);
-    }
-
-    private void setChannelCommand(String cmd) {
-        ((ChannelExec) getChannel()).setCommand(cmd);
-    }
-    
-    // TODO: not sure why we can't recreate channels through session?
-    private void revitalize() {
-        try {
-            channel = null;
-            channel = this.createChannel();
-        } catch (JSchException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
     
     public static boolean copyFrom(ExecutionEnvironment execEnv, String remoteName, String localName) {
@@ -88,9 +69,6 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     }
 
     public boolean copyFrom(String remoteName, String localName) {
-        if (channel == null) {
-            return false;
-        }
         FileOutputStream fos = null;
         try {
             String prefix = null;
@@ -100,16 +78,16 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
             // exec 'scp -f rfile' remotely
             String command = "scp -f " + remoteName; //NOI18N
-            setChannelCommand(command); //TODO: absolutize
+
+            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, command);
+            Process process = pb.call();
 
 //            Channel channel = session.openChannel("exec");
 //            ((ChannelExec) channel).setCommand(command);
 
             // get I/O streams for remote scp
-            OutputStream out = channel.getOutputStream();
-            InputStream in = channel.getInputStream();
-
-            channel.connect();
+            OutputStream out = process.getOutputStream();
+            InputStream in = process.getInputStream();
 
             byte[] buf = new byte[1024];
 
@@ -189,15 +167,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
                 LOG.finest("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
             }
+            setExitStatus(process.waitFor());
 
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         } finally {
-            if (channel.isConnected()) {
-                setExitStatus(channel.getExitStatus());
-                channel.disconnect();
-            }
             try {
                 if (fos != null) {
                     fos.close();
@@ -205,8 +180,6 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             } catch (Exception ee) {
             }
         }
-
-        revitalize();
         return getExitStatus() == 0;
     }
     
@@ -216,76 +189,18 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
     }
 
     public boolean copyTo(String localFile, String remotePath) {
-        if (channel == null) {
-            return false;
-        }
-        FileInputStream fis=null;
+        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0775, null);
         try {
-            // exec 'scp -t rfile' remotely
-            String command = "scp -p -t " + remotePath; //NOI18N
-            setChannelCommand(command);
-
-            // get I/O streams for remote scp
-            OutputStream out = channel.getOutputStream();
-            InputStream in = channel.getInputStream();
-
-            channel.connect();
-
-            if (checkAck(in) != 0) {
-                return false;
+            Integer i = result.get();
+            if (i != null) {
+                return i.intValue() == 0;
             }
-
-            // send "C0644 filesize filename", where filename should not include '/'
-            long filesize = (new File(localFile)).length();
-            command = "C0644 " + filesize + " "; //NOI18N
-            if (localFile.lastIndexOf(File.separator) > 0) {
-                command += localFile.substring(localFile.lastIndexOf(File.separator) + 1);
-            } else {
-                command += localFile;
-            }
-            command += "\n"; //NOI18N
-            out.write(command.getBytes());
-            out.flush();
-            if (checkAck(in) != 0) {
-                return false;
-            }
-
-            // send a content of lfile
-            fis = new FileInputStream(localFile);
-            byte[] buf = new byte[1024];
-            while (true) {
-                int len = fis.read(buf, 0, buf.length);
-                if (len <= 0) {
-                    break;
-                }
-                out.write(buf, 0, len); //out.flush();
-            }
-            fis.close();
-            fis = null;
-            // send '\0'
-            buf[0] = 0;
-            out.write(buf, 0, 1);
-            out.flush();
-            if (checkAck(in) != 0) {
-                return false;
-            }
-            out.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (channel.isConnected()) {
-                channel.disconnect();
-            }
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (Exception ee) {
-            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return getExitStatus() == 0;
+        return false;
     }
 
     private static int checkAck(InputStream in) throws IOException {
@@ -319,57 +234,5 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
         }
         return b;
-    }
-// shouldn't be there but RemoteCommandSupport is not finished yet
-    public boolean run(String command) {
-        if (channel == null) {
-            return false;
-        }
-        try {
-            long startTime = System.currentTimeMillis();
-            setChannelCommand(command);
-            InputStream is = channel.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
-            StringWriter out = new StringWriter();
-
-            channel.connect();
-
-
-
-            String line;
-
-            while ((line = in.readLine()) != null || !channel.isClosed()) {
-                if (line != null) {
-                    out.write(line);
-                    out.flush();
-                }
-
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                }
-            }
-            in.close();
-            is.close();
-
-            LOG.finest("run `" + command + "` took " + (System.currentTimeMillis() - startTime) + " ms.");
-            String output = out.toString();
-            if (output.length() > 0) {
-                LOG.finest(output);
-            }
-        } catch (JSchException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        } finally {
-            if (channel.isConnected()) {
-                channel.disconnect();
-            }
-
-        }
-        revitalize();
-        return true;
     }
 }

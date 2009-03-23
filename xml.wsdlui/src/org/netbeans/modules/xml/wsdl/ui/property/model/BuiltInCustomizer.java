@@ -40,339 +40,339 @@
  */
 
 /**
- *	This generated bean class BuiltInCustomizer
- *	matches the schema element 'BuiltInCustomizer'.
+ *  This generated bean class BuiltInCustomizer
+ *  matches the schema element 'BuiltInCustomizer'.
  *  The root bean class is ElementProperties
  *
- *	Generated on Mon Feb 05 17:54:51 PST 2007
+ *  Generated on Mon Feb 05 17:54:51 PST 2007
  * @Generated
  */
 
 package org.netbeans.modules.xml.wsdl.ui.property.model;
 
 public class BuiltInCustomizer {
-	public static final String DEPENDSONCUSTOMIZER = "DependsOnCustomizer";	// NOI18N
-	public static final String SIMPLECUSTOMIZER = "SimpleCustomizer";	// NOI18N
+    public static final String DEPENDSONCUSTOMIZER = "DependsOnCustomizer"; // NOI18N
+    public static final String SIMPLECUSTOMIZER = "SimpleCustomizer";   // NOI18N
 
-	private DependsOnCustomizer _DependsOnCustomizer;
-	private SimpleCustomizer _SimpleCustomizer;
+    private DependsOnCustomizer _DependsOnCustomizer;
+    private SimpleCustomizer _SimpleCustomizer;
 
-	/**
-	 * Normal starting point constructor.
-	 */
-	public BuiltInCustomizer() {
-	}
+    /**
+     * Normal starting point constructor.
+     */
+    public BuiltInCustomizer() {
+    }
 
-	/**
-	 * Deep copy
-	 */
-	public BuiltInCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer source) {
-		this(source, false);
-	}
+    /**
+     * Deep copy
+     */
+    public BuiltInCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer source) {
+        this(source, false);
+    }
 
-	/**
-	 * Deep copy
-	 * @param justData just copy the XML relevant data
-	 */
-	public BuiltInCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer source, boolean justData) {
-		_DependsOnCustomizer = (source._DependsOnCustomizer == null) ? null : newDependsOnCustomizer(source._DependsOnCustomizer, justData);
-		_SimpleCustomizer = (source._SimpleCustomizer == null) ? null : newSimpleCustomizer(source._SimpleCustomizer, justData);
-	}
+    /**
+     * Deep copy
+     * @param justData just copy the XML relevant data
+     */
+    public BuiltInCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer source, boolean justData) {
+        _DependsOnCustomizer = (source._DependsOnCustomizer == null) ? null : newDependsOnCustomizer(source._DependsOnCustomizer, justData);
+        _SimpleCustomizer = (source._SimpleCustomizer == null) ? null : newSimpleCustomizer(source._SimpleCustomizer, justData);
+    }
 
-	// This attribute is mandatory
-	public void setDependsOnCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer value) {
-		_DependsOnCustomizer = value;
-		if (value != null) {
-			// It's a mutually exclusive property.
-			setSimpleCustomizer(null);
-		}
-	}
+    // This attribute is mandatory
+    public void setDependsOnCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer value) {
+        _DependsOnCustomizer = value;
+        if (value != null) {
+            // It's a mutually exclusive property.
+            setSimpleCustomizer(null);
+        }
+    }
 
-	public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer getDependsOnCustomizer() {
-		return _DependsOnCustomizer;
-	}
+    public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer getDependsOnCustomizer() {
+        return _DependsOnCustomizer;
+    }
 
-	// This attribute is mandatory
-	public void setSimpleCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer value) {
-		_SimpleCustomizer = value;
-		if (value != null) {
-			// It's a mutually exclusive property.
-			setDependsOnCustomizer(null);
-		}
-	}
+    // This attribute is mandatory
+    public void setSimpleCustomizer(org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer value) {
+        _SimpleCustomizer = value;
+        if (value != null) {
+            // It's a mutually exclusive property.
+            setDependsOnCustomizer(null);
+        }
+    }
 
-	public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer getSimpleCustomizer() {
-		return _SimpleCustomizer;
-	}
+    public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer getSimpleCustomizer() {
+        return _SimpleCustomizer;
+    }
 
-	/**
-	 * Create a new bean using it's default constructor.
-	 * This does not add it to any bean graph.
-	 */
-	public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer newDependsOnCustomizer() {
-		return new org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer();
-	}
+    /**
+     * Create a new bean using it's default constructor.
+     * This does not add it to any bean graph.
+     */
+    public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer newDependsOnCustomizer() {
+        return new org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer();
+    }
 
-	/**
-	 * Create a new bean, copying from another one.
-	 * This does not add it to any bean graph.
-	 */
-	public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer newDependsOnCustomizer(DependsOnCustomizer source, boolean justData) {
-		return new org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer(source, justData);
-	}
+    /**
+     * Create a new bean, copying from another one.
+     * This does not add it to any bean graph.
+     */
+    public org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer newDependsOnCustomizer(DependsOnCustomizer source, boolean justData) {
+        return new org.netbeans.modules.xml.wsdl.ui.property.model.DependsOnCustomizer(source, justData);
+    }
 
-	/**
-	 * Create a new bean using it's default constructor.
-	 * This does not add it to any bean graph.
-	 */
-	public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer newSimpleCustomizer() {
-		return new org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer();
-	}
+    /**
+     * Create a new bean using it's default constructor.
+     * This does not add it to any bean graph.
+     */
+    public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer newSimpleCustomizer() {
+        return new org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer();
+    }
 
-	/**
-	 * Create a new bean, copying from another one.
-	 * This does not add it to any bean graph.
-	 */
-	public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer newSimpleCustomizer(SimpleCustomizer source, boolean justData) {
-		return new org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer(source, justData);
-	}
+    /**
+     * Create a new bean, copying from another one.
+     * This does not add it to any bean graph.
+     */
+    public org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer newSimpleCustomizer(SimpleCustomizer source, boolean justData) {
+        return new org.netbeans.modules.xml.wsdl.ui.property.model.SimpleCustomizer(source, justData);
+    }
 
-	public void writeNode(java.io.Writer out) throws java.io.IOException {
-		String myName;
-		myName = "BuiltInCustomizer";
-		writeNode(out, myName, "");	// NOI18N
-	}
+    public void writeNode(java.io.Writer out) throws java.io.IOException {
+        String myName;
+        myName = "BuiltInCustomizer";
+        writeNode(out, myName, ""); // NOI18N
+    }
 
-	public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
-		writeNode(out, nodeName, null, indent, new java.util.HashMap());
-	}
+    public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
+        writeNode(out, nodeName, null, indent, new java.util.HashMap());
+    }
 
-	/**
-	 * It's not recommended to call this method directly.
-	 */
-	public void writeNode(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-		out.write(indent);
-		out.write("<");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
-		out.write(">\n");
-		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
-		out.write(indent);
-		out.write("</");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		out.write(">\n");
-	}
+    /**
+     * It's not recommended to call this method directly.
+     */
+    public void writeNode(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+        out.write(indent);
+        out.write("<");
+        if (namespace != null) {
+            out.write((String)namespaceMap.get(namespace));
+            out.write(":");
+        }
+        out.write(nodeName);
+        writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
+        out.write(">\n");
+        writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+        out.write(indent);
+        out.write("</");
+        if (namespace != null) {
+            out.write((String)namespaceMap.get(namespace));
+            out.write(":");
+        }
+        out.write(nodeName);
+        out.write(">\n");
+    }
 
-	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-	}
+    protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+    }
 
-	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-		String nextIndent = indent + "	";
-		if (_DependsOnCustomizer != null) {
-			_DependsOnCustomizer.writeNode(out, "DependsOnCustomizer", null, nextIndent, namespaceMap);
-		}
-		if (_SimpleCustomizer != null) {
-			_SimpleCustomizer.writeNode(out, "SimpleCustomizer", null, nextIndent, namespaceMap);
-		}
-	}
+    protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+        String nextIndent = indent + "  ";
+        if (_DependsOnCustomizer != null) {
+            _DependsOnCustomizer.writeNode(out, "DependsOnCustomizer", null, nextIndent, namespaceMap);
+        }
+        if (_SimpleCustomizer != null) {
+            _SimpleCustomizer.writeNode(out, "SimpleCustomizer", null, nextIndent, namespaceMap);
+        }
+    }
 
-	public void readNode(org.w3c.dom.Node node) {
-		readNode(node, new java.util.HashMap());
-	}
+    public void readNode(org.w3c.dom.Node node) {
+        readNode(node, new java.util.HashMap());
+    }
 
-	public void readNode(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
-		if (node.hasAttributes()) {
-			org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
-			org.w3c.dom.Attr attr;
-			java.lang.String attrValue;
-			boolean firstNamespaceDef = true;
-			for (int attrNum = 0; attrNum < attrs.getLength(); ++attrNum) {
-				attr = (org.w3c.dom.Attr) attrs.item(attrNum);
-				String attrName = attr.getName();
-				if (attrName.startsWith("xmlns:")) {
-					if (firstNamespaceDef) {
-						firstNamespaceDef = false;
-						// Dup prefix map, so as to not write over previous values, and to make it easy to clear out our entries.
-						namespacePrefixes = new java.util.HashMap(namespacePrefixes);
-					}
-					String attrNSPrefix = attrName.substring(6, attrName.length());
-					namespacePrefixes.put(attrNSPrefix, attr.getValue());
-				}
-			}
-			readNodeAttributes(node, namespacePrefixes, attrs);
-		}
-		readNodeChildren(node, namespacePrefixes);
-	}
+    public void readNode(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
+        if (node.hasAttributes()) {
+            org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
+            org.w3c.dom.Attr attr;
+            java.lang.String attrValue;
+            boolean firstNamespaceDef = true;
+            for (int attrNum = 0; attrNum < attrs.getLength(); ++attrNum) {
+                attr = (org.w3c.dom.Attr) attrs.item(attrNum);
+                String attrName = attr.getName();
+                if (attrName.startsWith("xmlns:")) {
+                    if (firstNamespaceDef) {
+                        firstNamespaceDef = false;
+                        // Dup prefix map, so as to not write over previous values, and to make it easy to clear out our entries.
+                        namespacePrefixes = new java.util.HashMap(namespacePrefixes);
+                    }
+                    String attrNSPrefix = attrName.substring(6, attrName.length());
+                    namespacePrefixes.put(attrNSPrefix, attr.getValue());
+                }
+            }
+            readNodeAttributes(node, namespacePrefixes, attrs);
+        }
+        readNodeChildren(node, namespacePrefixes);
+    }
 
-	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
-		org.w3c.dom.Attr attr;
-		java.lang.String attrValue;
-	}
+    protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+        org.w3c.dom.Attr attr;
+        java.lang.String attrValue;
+    }
 
-	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
-		org.w3c.dom.NodeList children = node.getChildNodes();
-		for (int i = 0, size = children.getLength(); i < size; ++i) {
-			org.w3c.dom.Node childNode = children.item(i);
-			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
-			String childNodeValue = "";
-			if (childNode.getFirstChild() != null) {
-				childNodeValue = childNode.getFirstChild().getNodeValue();
-			}
-			if (childNodeName == "DependsOnCustomizer") {
-				_DependsOnCustomizer = newDependsOnCustomizer();
-				_DependsOnCustomizer.readNode(childNode, namespacePrefixes);
-			}
-			else if (childNodeName == "SimpleCustomizer") {
-				_SimpleCustomizer = newSimpleCustomizer();
-				_SimpleCustomizer.readNode(childNode, namespacePrefixes);
-			}
-			else {
-				// Found extra unrecognized childNode
-			}
-		}
-	}
+    protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
+        org.w3c.dom.NodeList children = node.getChildNodes();
+        for (int i = 0, size = children.getLength(); i < size; ++i) {
+            org.w3c.dom.Node childNode = children.item(i);
+            String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
+            String childNodeValue = "";
+            if (childNode.getFirstChild() != null) {
+                childNodeValue = childNode.getFirstChild().getNodeValue();
+            }
+            if (childNodeName == "DependsOnCustomizer") {
+                _DependsOnCustomizer = newDependsOnCustomizer();
+                _DependsOnCustomizer.readNode(childNode, namespacePrefixes);
+            }
+            else if (childNodeName == "SimpleCustomizer") {
+                _SimpleCustomizer = newSimpleCustomizer();
+                _SimpleCustomizer.readNode(childNode, namespacePrefixes);
+            }
+            else {
+                // Found extra unrecognized childNode
+            }
+        }
+    }
 
-	public void changePropertyByName(String name, Object value) {
-		if (name == null) return;
-		name = name.intern();
-		if (name == "dependsOnCustomizer")
-			setDependsOnCustomizer((DependsOnCustomizer)value);
-		else if (name == "simpleCustomizer")
-			setSimpleCustomizer((SimpleCustomizer)value);
-		else
-			throw new IllegalArgumentException(name+" is not a valid property name for BuiltInCustomizer");
-	}
+    public void changePropertyByName(String name, Object value) {
+        if (name == null) return;
+        name = name.intern();
+        if (name == "dependsOnCustomizer")
+            setDependsOnCustomizer((DependsOnCustomizer)value);
+        else if (name == "simpleCustomizer")
+            setSimpleCustomizer((SimpleCustomizer)value);
+        else
+            throw new IllegalArgumentException(name+" is not a valid property name for BuiltInCustomizer");
+    }
 
-	public Object fetchPropertyByName(String name) {
-		if (name == "dependsOnCustomizer")
-			return getDependsOnCustomizer();
-		if (name == "simpleCustomizer")
-			return getSimpleCustomizer();
-		throw new IllegalArgumentException(name+" is not a valid property name for BuiltInCustomizer");
-	}
+    public Object fetchPropertyByName(String name) {
+        if (name == "dependsOnCustomizer")
+            return getDependsOnCustomizer();
+        if (name == "simpleCustomizer")
+            return getSimpleCustomizer();
+        throw new IllegalArgumentException(name+" is not a valid property name for BuiltInCustomizer");
+    }
 
-	public String nameSelf() {
-		return "BuiltInCustomizer";
-	}
+    public String nameSelf() {
+        return "BuiltInCustomizer";
+    }
 
-	public String nameChild(Object childObj) {
-		return nameChild(childObj, false, false);
-	}
+    public String nameChild(Object childObj) {
+        return nameChild(childObj, false, false);
+    }
 
-	/**
-	 * @param childObj  The child object to search for
-	 * @param returnSchemaName  Whether or not the schema name should be returned or the property name
-	 * @return null if not found
-	 */
-	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName) {
-		return nameChild(childObj, returnConstName, returnSchemaName, false);
-	}
+    /**
+     * @param childObj  The child object to search for
+     * @param returnSchemaName  Whether or not the schema name should be returned or the property name
+     * @return null if not found
+     */
+    public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName) {
+        return nameChild(childObj, returnConstName, returnSchemaName, false);
+    }
 
-	/**
-	 * @param childObj  The child object to search for
-	 * @param returnSchemaName  Whether or not the schema name should be returned or the property name
-	 * @return null if not found
-	 */
-	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof SimpleCustomizer) {
-			SimpleCustomizer child = (SimpleCustomizer) childObj;
-			if (child == _SimpleCustomizer) {
-				if (returnConstName) {
-					return SIMPLECUSTOMIZER;
-				} else if (returnSchemaName) {
-					return "SimpleCustomizer";
-				} else if (returnXPathName) {
-					return "SimpleCustomizer";
-				} else {
-					return "SimpleCustomizer";
-				}
-			}
-		}
-		if (childObj instanceof DependsOnCustomizer) {
-			DependsOnCustomizer child = (DependsOnCustomizer) childObj;
-			if (child == _DependsOnCustomizer) {
-				if (returnConstName) {
-					return DEPENDSONCUSTOMIZER;
-				} else if (returnSchemaName) {
-					return "DependsOnCustomizer";
-				} else if (returnXPathName) {
-					return "DependsOnCustomizer";
-				} else {
-					return "DependsOnCustomizer";
-				}
-			}
-		}
-		return null;
-	}
+    /**
+     * @param childObj  The child object to search for
+     * @param returnSchemaName  Whether or not the schema name should be returned or the property name
+     * @return null if not found
+     */
+    public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
+        if (childObj instanceof SimpleCustomizer) {
+            SimpleCustomizer child = (SimpleCustomizer) childObj;
+            if (child == _SimpleCustomizer) {
+                if (returnConstName) {
+                    return SIMPLECUSTOMIZER;
+                } else if (returnSchemaName) {
+                    return "SimpleCustomizer";
+                } else if (returnXPathName) {
+                    return "SimpleCustomizer";
+                } else {
+                    return "SimpleCustomizer";
+                }
+            }
+        }
+        if (childObj instanceof DependsOnCustomizer) {
+            DependsOnCustomizer child = (DependsOnCustomizer) childObj;
+            if (child == _DependsOnCustomizer) {
+                if (returnConstName) {
+                    return DEPENDSONCUSTOMIZER;
+                } else if (returnSchemaName) {
+                    return "DependsOnCustomizer";
+                } else if (returnXPathName) {
+                    return "DependsOnCustomizer";
+                } else {
+                    return "DependsOnCustomizer";
+                }
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * Return an array of all of the properties that are beans and are set.
-	 */
-	public java.lang.Object[] childBeans(boolean recursive) {
-		java.util.List children = new java.util.LinkedList();
-		childBeans(recursive, children);
-		java.lang.Object[] result = new java.lang.Object[children.size()];
-		return (java.lang.Object[]) children.toArray(result);
-	}
+    /**
+     * Return an array of all of the properties that are beans and are set.
+     */
+    public java.lang.Object[] childBeans(boolean recursive) {
+        java.util.List children = new java.util.LinkedList();
+        childBeans(recursive, children);
+        java.lang.Object[] result = new java.lang.Object[children.size()];
+        return (java.lang.Object[]) children.toArray(result);
+    }
 
-	/**
-	 * Put all child beans into the beans list.
-	 */
-	public void childBeans(boolean recursive, java.util.List beans) {
-		if (_DependsOnCustomizer != null) {
-			if (recursive) {
-				_DependsOnCustomizer.childBeans(true, beans);
-			}
-			beans.add(_DependsOnCustomizer);
-		}
-		if (_SimpleCustomizer != null) {
-			if (recursive) {
-				_SimpleCustomizer.childBeans(true, beans);
-			}
-			beans.add(_SimpleCustomizer);
-		}
-	}
+    /**
+     * Put all child beans into the beans list.
+     */
+    public void childBeans(boolean recursive, java.util.List beans) {
+        if (_DependsOnCustomizer != null) {
+            if (recursive) {
+                _DependsOnCustomizer.childBeans(true, beans);
+            }
+            beans.add(_DependsOnCustomizer);
+        }
+        if (_SimpleCustomizer != null) {
+            if (recursive) {
+                _SimpleCustomizer.childBeans(true, beans);
+            }
+            beans.add(_SimpleCustomizer);
+        }
+    }
 
-	public boolean equals(Object o) {
-		return o instanceof org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer && equals((org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer) o);
-	}
+    public boolean equals(Object o) {
+        return o instanceof org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer && equals((org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer) o);
+    }
 
-	public boolean equals(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer inst) {
-		if (inst == this) {
-			return true;
-		}
-		if (inst == null) {
-			return false;
-		}
-		if (!(_DependsOnCustomizer == null ? inst._DependsOnCustomizer == null : _DependsOnCustomizer.equals(inst._DependsOnCustomizer))) {
-			return false;
-		}
-		if (!(_SimpleCustomizer == null ? inst._SimpleCustomizer == null : _SimpleCustomizer.equals(inst._SimpleCustomizer))) {
-			return false;
-		}
-		return true;
-	}
+    public boolean equals(org.netbeans.modules.xml.wsdl.ui.property.model.BuiltInCustomizer inst) {
+        if (inst == this) {
+            return true;
+        }
+        if (inst == null) {
+            return false;
+        }
+        if (!(_DependsOnCustomizer == null ? inst._DependsOnCustomizer == null : _DependsOnCustomizer.equals(inst._DependsOnCustomizer))) {
+            return false;
+        }
+        if (!(_SimpleCustomizer == null ? inst._SimpleCustomizer == null : _SimpleCustomizer.equals(inst._SimpleCustomizer))) {
+            return false;
+        }
+        return true;
+    }
 
-	public int hashCode() {
-		int result = 17;
-		result = 37*result + (_DependsOnCustomizer == null ? 0 : _DependsOnCustomizer.hashCode());
-		result = 37*result + (_SimpleCustomizer == null ? 0 : _SimpleCustomizer.hashCode());
-		return result;
-	}
+    public int hashCode() {
+        int result = 17;
+        result = 37*result + (_DependsOnCustomizer == null ? 0 : _DependsOnCustomizer.hashCode());
+        result = 37*result + (_SimpleCustomizer == null ? 0 : _SimpleCustomizer.hashCode());
+        return result;
+    }
 
 }
 
 
 /*
-		The following schema file has been used for generation:
+        The following schema file has been used for generation:
 
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -438,7 +438,7 @@ public class BuiltInCustomizer {
                             <xsd:element name="DependsOnCustomizer">
                                 <xsd:annotation>
                                     <xsd:documentation xml:lang="en-US">Use a built-in customizer whose value(s) depend on some other attribute 
-                                        of the the same element or some other source.                                        
+                                        of the same element or some other source.                                        
                                     </xsd:documentation>
                                 </xsd:annotation>
                                 <xsd:complexType>

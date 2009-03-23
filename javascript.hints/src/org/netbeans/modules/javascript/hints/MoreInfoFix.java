@@ -39,7 +39,7 @@
 package org.netbeans.modules.javascript.hints;
 
 import java.net.URL;
-import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.csl.api.HintFix;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 

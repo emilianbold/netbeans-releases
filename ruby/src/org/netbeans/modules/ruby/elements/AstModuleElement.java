@@ -5,15 +5,15 @@ import java.util.Set;
 import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 public class AstModuleElement extends AstElement implements ModuleElement {
+
     private String fqn;
     private String extendWith;
 
-    public AstModuleElement(CompilationInfo info, Node node) {
+    public AstModuleElement(ParserResult info, Node node) {
         super(info, node);
     }
 
@@ -44,6 +44,7 @@ public class AstModuleElement extends AstElement implements ModuleElement {
         return ElementKind.MODULE;
     }
 
+    @Override
     public String getFqn() {
         if (fqn == null) {
             return getName();

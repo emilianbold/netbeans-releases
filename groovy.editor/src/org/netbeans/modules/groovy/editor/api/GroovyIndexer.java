@@ -41,10 +41,9 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import groovyjarjarasm.asm.Opcodes;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
@@ -55,26 +54,30 @@ import org.netbeans.modules.groovy.editor.api.elements.AstClassElement;
 import org.netbeans.modules.groovy.editor.api.elements.AstElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.FieldNode;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.AstFieldElement;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 
 /**
  *
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class GroovyIndexer implements Indexer {
+public class GroovyIndexer extends EmbeddingIndexer {
 
     // class
     static final String FQN_NAME = "fqn"; //NOI18N
@@ -104,43 +107,42 @@ public class GroovyIndexer implements Indexer {
 
     private static final Logger LOG = Logger.getLogger(GroovyIndexer.class.getName());
 
-    public boolean isIndexable(ParserFile file) {
-        String extension = file.getExtension();
-
-        if (extension.equals("groovy")) { // NOI18N
-            return true;
-        }
-        return false;
-    }
-
-    public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
-
+    @Override
+    protected void index(Indexable indexable, Result parserResult, Context context) {
         long indexerThisStartTime = System.currentTimeMillis();
 
         if (indexerFirstRun == 0) {
             indexerFirstRun = indexerThisStartTime;
         }
 
-        GroovyParserResult r = (GroovyParserResult) result;
+        GroovyParserResult r = (GroovyParserResult) AstUtilities.getParseResult(parserResult);
         ASTNode root = AstUtilities.getRoot(r);
 
         if (root == null) {
-            return null;
+            return;
         }
 
-        TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
+        IndexingSupport support;
+        try {
+            support = IndexingSupport.getInstance(context);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return;
+        }
+
+        TreeAnalyzer analyzer = new TreeAnalyzer(r, support, indexable);
         analyzer.analyze();
 
-        List<IndexDocument> retVal = analyzer.getDocuments();
-
-        LOG.setLevel(Level.OFF);
+        for(IndexDocument doc : analyzer.getDocuments()) {
+            support.addDocument(doc);
+        }
 
         filesIndexed++;
         long indexerThisStopTime = System.currentTimeMillis();
         long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
         indexerRunTime += indexerThisRunTime;
 
-        LOG.log(Level.FINEST, "Indexed File                : {0}", r.getFile().getNameExt());
+        LOG.log(Level.FINEST, "Indexed File                : {0}", r.getSnapshot().getSource().getFileObject());
         LOG.log(Level.FINEST, "Indexing time (ms)          : {0}", indexerThisRunTime);
 
         LOG.log(Level.FINEST, "Number of files indexed     : {0}", filesIndexed);
@@ -148,30 +150,20 @@ public class GroovyIndexer implements Indexer {
         LOG.log(Level.FINEST, "Avg indexing time/file (ms) : {0}", indexerRunTime/filesIndexed);
         LOG.log(Level.FINEST, "Time betw. 1st and Last idx : {0}", indexerThisStopTime - indexerFirstRun);
         LOG.log(Level.FINEST, "---------------------------------------------------------------------------------");
-
-        return retVal;
-
     }
-
-    public String getPersistentUrl(File file) {
-        String url;
-        try {
-            url = file.toURI().toURL().toExternalForm();
-            // Make relative URLs for urls in the libraries
-            return GroovyIndex.getPreindexUrl(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return file.getPath();
-        }
-    }
-
-    public String getIndexVersion() {
-        return "0.9"; // NOI18N
-    }
-
-    public String getIndexerName() {
-        return "groovy"; // NOI18N
-    }
+    
+// FIXME parsing API
+//    public String getPersistentUrl(File file) {
+//        String url;
+//        try {
+//            url = file.toURI().toURL().toExternalForm();
+//            // Make relative URLs for urls in the libraries
+//            return GroovyIndex.getPreindexUrl(url);
+//        } catch (MalformedURLException ex) {
+//            Exceptions.printStackTrace(ex);
+//            return file.getPath();
+//        }
+//    }
 
     public FileObject getPreindexedDb() {
         // no preindexed libraries for now
@@ -186,50 +178,97 @@ public class GroovyIndexer implements Indexer {
         return preindexedDb;
     }
 
-    public boolean acceptQueryPath(String url) {
-        // LOG.log(Level.FINEST, "acceptQueryPath : {0}", url);
-        return url.indexOf("/target/") == -1 && url.indexOf("/art/") == -1; // NOI18N
+// FIXME parsing API
+//    public boolean acceptQueryPath(String url) {
+//        // LOG.log(Level.FINEST, "acceptQueryPath : {0}", url);
+//        return url.indexOf("/target/") == -1 && url.indexOf("/art/") == -1; // NOI18N
+//    }
+
+    public static final class Factory extends EmbeddingIndexerFactory {
+
+        public static final String NAME = "groovy"; // NOI18N
+        public static final int VERSION = 8;
+
+        @Override
+        public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
+            if (isIndexable(indexable, snapshot)) {
+                return new GroovyIndexer();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return VERSION;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return NAME;
+        }
+
+        private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            String extension = snapshot.getSource().getFileObject().getExt();
+
+            if (extension.equals("groovy")) { // NOI18N
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            try {
+                IndexingSupport support = IndexingSupport.getInstance(context);
+                for (Indexable indexable : deleted) {
+                    support.removeDocuments(indexable);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
     }
-
+    
     private static class TreeAnalyzer {
-        private final ParserFile file;
-        private String url;
-        private final GroovyParserResult result;
-        private BaseDocument doc;
-        private IndexDocumentFactory factory;
-        private List<IndexDocument> documents = new ArrayList<IndexDocument>();
 
-        private TreeAnalyzer(GroovyParserResult result, IndexDocumentFactory factory) {
+        private final FileObject file;
+        private final IndexingSupport support;
+        private final Indexable indexable;
+        private final GroovyParserResult result;
+        private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
+
+        private String url;
+        private BaseDocument doc;
+        
+        private TreeAnalyzer(GroovyParserResult result, IndexingSupport support, Indexable indexable) {
             this.result = result;
-            this.file = result.getFile();
-            this.factory = factory;
+            this.file = result.getSnapshot().getSource().getFileObject();
+            this.support = support;
+            this.indexable = indexable;
         }
 
         List<IndexDocument> getDocuments() {
             return documents;
         }
 
-        public void analyze() throws IOException {
-            FileObject fo = file.getFileObject();
-            if (result.getInfo() != null) {
-                this.doc = AstUtilities.getBaseDocument(fo, true);
-            } else {
-                // openide.loaders/src/org/openide/text/DataEditorSupport.java
-                // has an Env#inputStream method which posts a warning to the user
-                // if the file is greater than 1Mb...
-                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
-                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
-                // I don't want to try indexing these files... (you get an interactive
-                // warning during indexing
-                if (fo.getSize () > 1024 * 1024) {
-                    return;
-                }
-
-                this.doc = AstUtilities.getBaseDocument(fo, true);
-            }
+        public void analyze() {
+            this.doc = LexUtilities.getDocument(result, true);
 
             try {
-                url = fo.getURL().toExternalForm();
+                url = file.getURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = GroovyIndex.getPreindexUrl(url);
@@ -255,7 +294,7 @@ public class GroovyIndexer implements Indexer {
         }
 
         private void analyzeClass(AstClassElement element) {
-            IndexDocument document = factory.createDocument(40); // TODO - measure!
+            IndexDocument document = support.createDocument(indexable);
             documents.add(document);
             indexClass(element, document);
 
@@ -273,9 +312,9 @@ public class GroovyIndexer implements Indexer {
 
         private void indexClass(AstClassElement element, IndexDocument document) {
             final String name = element.getName();
-            document.addPair(FQN_NAME, element.getFqn(), true);
-            document.addPair(CLASS_NAME, name, true);
-            document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
+            document.addPair(FQN_NAME, element.getFqn(), true, true);
+            document.addPair(CLASS_NAME, name, true, true);
+            document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true, true);
         }
 
         private void indexField(AstFieldElement child, IndexDocument document) {
@@ -299,7 +338,7 @@ public class GroovyIndexer implements Indexer {
             }
 
             // TODO - gather documentation on fields? naeh
-            document.addPair(FIELD_NAME, sb.toString(), true);
+            document.addPair(FIELD_NAME, sb.toString(), true, true);
         }
 
         private void indexMethod(AstMethodElement child, IndexDocument document) {
@@ -320,7 +359,7 @@ public class GroovyIndexer implements Indexer {
                 sb.append(IndexedElement.flagToSecondChar(flags));
             }
 
-            document.addPair(METHOD_NAME, sb.toString(), true);
+            document.addPair(METHOD_NAME, sb.toString(), true, true);
         }
 
     }

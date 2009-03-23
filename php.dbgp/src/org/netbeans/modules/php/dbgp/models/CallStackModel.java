@@ -29,8 +29,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.ContextNamesCommand;
 import org.netbeans.modules.php.dbgp.packets.Stack;
@@ -212,8 +212,8 @@ public class CallStackModel extends ViewModelSupport
             
             if (line != null) {
                 Mutex.EVENT.readAccess(new Runnable () {
-                    public void run () {
-                        line.show(Line.SHOW_GOTO);
+                    public void run() {
+                        line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                     }
                 });
             }
@@ -303,7 +303,7 @@ public class CallStackModel extends ViewModelSupport
     }
     
     private DebugSession getSession() {
-        return StartActionProviderImpl.getInstance().getCurrentSession( 
+        return SessionManager.getInstance().getCurrentSession(
                 getSessionId() );
     }
     

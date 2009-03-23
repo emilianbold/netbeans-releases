@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.groovy.editor.hints.infrastructure;
 
-import org.netbeans.modules.gsf.api.RuleContext;
-
 import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**

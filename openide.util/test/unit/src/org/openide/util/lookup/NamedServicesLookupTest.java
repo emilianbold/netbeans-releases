@@ -41,26 +41,33 @@
 
 package org.openide.util.lookup;
 
+import junit.framework.Test;
+import org.netbeans.junit.MockServices;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 
 /** Test finding services from manifest.
  * @author Jaroslav Tulach
  */
 public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
+    static {
+        MockLookup.init();
+    }
     public NamedServicesLookupTest(String name) {
         super(name);
     }
-    
+
+    @Override
     protected String prefix() {
         return "META-INF/namedservices/sub/path/";
     }
     
+    @Override
     protected Lookup createLookup(ClassLoader c) {
-        ClassLoader prev = Thread.currentThread().getContextClassLoader();
+        MockLookup.setInstances(c);
         Thread.currentThread().setContextClassLoader(c);
         Lookup l = Lookups.forPath("sub/path");
-        Thread.currentThread().setContextClassLoader(prev);
         return l;
     }
     

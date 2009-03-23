@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
+import org.netbeans.modules.web.project.test.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -78,6 +79,7 @@ public class WebPersistenceProviderTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected Level logLevel() {
         // enabling logging
         return Level.INFO;
@@ -89,7 +91,9 @@ public class WebPersistenceProviderTest extends NbTestCase {
         return System.err;
     }
 
+    @Override
     public void setUp() throws Exception {
+        TestUtil.setLookup();
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project

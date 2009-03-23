@@ -56,12 +56,12 @@ import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.NewlineNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
 
 
 /** For debugging only (used by the AST Viewer */
-class AstNodeAdapter implements ParserResult.AstTreeNode {
+class AstNodeAdapter implements TreeNode {
+
     private static final boolean HIDE_NEWLINE_NODES = false;
     private final Node node;
     private final AstNodeAdapter parent;

@@ -1,6 +1,6 @@
 Code completion result for source line:
 print $|global_var;
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 VARIABLE   ? $global_var                              var_scope.php
 ------------------------------------
 VARIABLE   $GLOBALS                                   PHP Platform
@@ -17,4 +17,3 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
-VARIABLE   ChildClass $tst                            class_member_visibility.php

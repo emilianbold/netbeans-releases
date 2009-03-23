@@ -275,7 +275,7 @@ public class PluginManager {
             final String successMessage, final String failureMessage, final List<String> lines,
             final Runnable successCompletionTask, final String command, final String... commandArgs) {
         final Cursor originalCursor = parent.getCursor();
-        Cursor busy = Utilities.createProgressCursor(parent);
+        Cursor busy = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
         parent.setCursor(busy);
         
         final JButton closeButton = new JButton(NbBundle.getMessage(PluginManager.class, "CTL_Close"));

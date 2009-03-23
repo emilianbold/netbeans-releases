@@ -40,8 +40,8 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,7 +50,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public abstract class ParserTestBase extends GsfTestBase {
+public abstract class ParserTestBase extends CslTestBase {
 
     public ParserTestBase(String testName) {
         super(testName);
@@ -68,10 +68,15 @@ public abstract class ParserTestBase extends GsfTestBase {
     }
 
     protected abstract String getTestResult(String filename) throws Exception;
-
+    protected String getTestResult(String filename, String caretLine) throws Exception {
+        return getTestResult(filename);
+    }
     protected void performTest(String filename) throws Exception {
+        performTest(filename, null);
+    }
+    protected void performTest(String filename, String caretLine) throws Exception {
         // parse the file
-        String result = getTestResult(filename);
+        String result = getTestResult(filename, caretLine);
         
         String fullClassName = this.getClass().getName();
         String goldenFileDir = fullClassName.replace('.', '/');

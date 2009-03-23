@@ -94,6 +94,11 @@ public interface Repository {
     void debugClear();  
     
     /**
+     * Show distributions of object in repository
+     */
+    void debugDistribution();
+
+    /**
      * Prepare repositoty and tells the version of the persistent mechanism
      * @param verison 
      */

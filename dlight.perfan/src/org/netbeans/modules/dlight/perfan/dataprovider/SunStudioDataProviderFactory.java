@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
@@ -48,32 +49,42 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.openide.util.lookup.ServiceProvider;
 
-
-
 /**
  *
  * @author mt154047
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
 public final class SunStudioDataProviderFactory implements DataProviderFactory {
-    private static final Collection<DataModelScheme> providedSchemas =
-            Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table"),
-            DataModelSchemeProvider.getInstance().getScheme("model:stack"));
-  public DataProvider create() {
-    return new SunStudioDataProvider();
-  }
 
-  @Override
-  public Collection<DataModelScheme> getProvidedDataModelScheme() {
-    return providedSchemas;
-  }
+    private static final Collection<DataModelScheme> providedSchemas;
+    private static final Collection<DataStorageType> supportedTypes;
 
-  public Collection<DataStorageType> getSupportedDataStorageTypes() {
-    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType("PerfanDataStorage"));
-  }
+    static {
+        DataModelSchemeProvider dmsp = DataModelSchemeProvider.getInstance();
+        providedSchemas = Collections.unmodifiableList(Arrays.asList(
+                dmsp.getScheme("model:table"), // NOI18N
+                dmsp.getScheme("model:stack"))); // NOI18N
+        
+        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
+        supportedTypes = Collections.unmodifiableList(Arrays.asList(
+                dstf.getDataStorageType("PerfanDataStorage"))); // NOI18N
+    }
 
-  @Override
-  public boolean provides(DataModelScheme dataModel) {
-    return getProvidedDataModelScheme().contains(dataModel);
-  }
+    public DataProvider create() {
+        return new SunStudioDataProvider();
+    }
+
+    @Override
+    public Collection<DataModelScheme> getProvidedDataModelScheme() {
+        return providedSchemas;
+    }
+
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+        return supportedTypes;
+    }
+
+    @Override
+    public boolean provides(DataModelScheme dataModel) {
+        return getProvidedDataModelScheme().contains(dataModel);
+    }
 }

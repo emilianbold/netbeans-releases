@@ -104,6 +104,8 @@ import org.openide.util.Utilities;
 public class HgUtils {    
     private static final Pattern httpPasswordPattern = Pattern.compile("(https*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N
     private static final String httpPasswordReplacementStr = "$1$2:\\*\\*\\*\\*@"; //NOI18N
+    private static final Pattern httpCredentialsPattern = Pattern.compile("(.*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N
+    private static final String httpCredentialsReplacementStr = "$1"; //NOI18N
     
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
     
@@ -153,6 +155,16 @@ public class HgUtils {
      */
     public static boolean isSolaris(){
         return System.getProperty("os.name").equals("SunOS"); // NOI18N
+    }
+
+    /**
+     * replaceHttpPassword - replace any http or https passwords in the string
+     *
+     * @return String modified string with **** instead of passwords
+     */
+    public static String removeHttpCredentials(String s){
+        Matcher m = httpCredentialsPattern.matcher(s);
+        return m.replaceAll(httpCredentialsReplacementStr);
     }
 
     /**

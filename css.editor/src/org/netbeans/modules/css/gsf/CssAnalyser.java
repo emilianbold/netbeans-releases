@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.CssPropertyValue;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
@@ -51,7 +51,7 @@ import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,15 +65,8 @@ public class CssAnalyser {
     private static final String UNKNOWN_PROPERTY = "unknown_property";
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
     private static final String INVALID_CONTENT = "invalid_content";
-
     
-    private CSSParserResult result;
-
-    public CssAnalyser(CSSParserResult result) {
-        this.result = result;
-    }
-
-    public List<Error> checkForErrors(final SimpleNode node) {
+    public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
         final ArrayList<Error> errors = new ArrayList();
         final PropertyModel model = PropertyModel.instance();
         NodeVisitor visitor = new NodeVisitor() {
@@ -87,12 +80,12 @@ public class CssAnalyser {
                         String propertyName = propertyNode.image().trim();
                         //check for vendor specific properies - ignore them
                         Property property = model.getProperty(propertyName);
-                        if (!CssEmbeddingModelUtils.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
+                        if (!CSSGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             Error error =
                                     new DefaultError(UNKNOWN_PROPERTY,
                                     NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
-                                    null, result.getFile().getFileObject(),
+                                    null, snapshot.getSource().getFileObject(),
                                     propertyNode.startOffset(), propertyNode.endOffset(), Severity.WARNING);
                             errors.add(error);
                         }
@@ -103,7 +96,7 @@ public class CssAnalyser {
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!CssEmbeddingModelUtils.containsGeneratedCode(valueImage)) {
+                            if (!CSSGSFParser.containsGeneratedCode(valueImage)) {
                                 CssPropertyValue pv = new CssPropertyValue(property, valueImage);
                                 if (!pv.success()) {
                                     String errorMsg = null;
@@ -121,7 +114,7 @@ public class CssAnalyser {
                                     Error error =
                                             new DefaultError(INVALID_PROPERTY_VALUE,
                                             errorMsg,
-                                            null, result.getFile().getFileObject(),
+                                            null, snapshot.getSource().getFileObject(),
                                             valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
                                     errors.add(error);
                                 }
@@ -134,13 +127,16 @@ public class CssAnalyser {
                     Error error =
                             new DefaultError(INVALID_CONTENT,
                             NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT),
-                            null, result.getFile().getFileObject(),
+                            null, snapshot.getSource().getFileObject(),
                             node.startOffset(), node.endOffset(), Severity.ERROR);
                     errors.add(error);
                 }
             }
         };
-        SimpleNodeUtil.visitChildren(node, visitor);
+        
+        if(node != null) {
+            SimpleNodeUtil.visitChildren(node, visitor);
+        }
         return errors;
     }
 

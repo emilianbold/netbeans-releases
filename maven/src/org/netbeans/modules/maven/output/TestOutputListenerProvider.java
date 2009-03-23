@@ -189,7 +189,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
             FileObject report = outDir.getFileObject(testname + ".txt"); //NOI18N
             Project prj = FileOwnerQuery.getOwner(outDir);
             if (prj != null) {
-                NbMavenProjectImpl nbprj = prj.getLookup().lookup(org.netbeans.modules.maven.NbMavenProjectImpl.class);
+                NbMavenProjectImpl nbprj = prj.getLookup().lookup(NbMavenProjectImpl.class);
                 File testDir = new File(nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory());
 
                 if (report != null) {

@@ -81,7 +81,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
 
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
-        super(new GraphContainerKey(project.getUniqueName().toString()));
+        super(new GraphContainerKey(project.getUniqueName().toString()), false);
         put();
     }
 
@@ -93,7 +93,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
 
     // only for EMPTY static field
     private GraphContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, true);
     }
 
     /*package*/ static GraphContainer empty() {

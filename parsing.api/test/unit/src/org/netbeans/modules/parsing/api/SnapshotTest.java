@@ -104,6 +104,7 @@ public class SnapshotTest extends NbTestCase {
 //        }
         assertEquals("stovaci fi", originalSnapshot.create (10, 10, "text/jedna").getSnapshot ().getText ());
         assertEquals("1234567890", originalSnapshot.create ("1234567890", "text/jedna").getSnapshot ().getText ());
+
         Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
             originalSnapshot.create (10, 10, "text/jedna"),
             originalSnapshot.create ("1234567890", "text/jedna"),
@@ -120,11 +121,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (30, languageJednaSnapshot.getOriginalOffset (20));
         assertEquals (33, languageJednaSnapshot.getOriginalOffset (23));
         assertEquals (40, languageJednaSnapshot.getOriginalOffset (30));
-        try {
+//        try {
             assertEquals (-1, languageJednaSnapshot.getOriginalOffset (31));
 //            assert (false);
-        } catch (IndexOutOfBoundsException ex) {
-        }
+//        } catch (IndexOutOfBoundsException ex) {
+//        }
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (5));
         assertEquals (0, languageJednaSnapshot.getEmbeddedOffset (10));
@@ -141,6 +142,7 @@ public class SnapshotTest extends NbTestCase {
 //            assert (false);
 //        } catch (ArrayIndexOutOfBoundsException ex) {
 //        }
+
         Embedding petaEmbedding = languageJednaSnapshot.create (5, 20, "text/peta");
         Snapshot petaSnapshot = petaEmbedding.getSnapshot ();
         assertEquals ("ci fi1234567890rem s", petaSnapshot.getText ().toString ());
@@ -222,13 +224,97 @@ public class SnapshotTest extends NbTestCase {
 //        }
     }
 
+    public void testSnapshotEmbedding159626 () throws IOException { // see issue #154444
+        clearWorkDir ();
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!! asdfghjklqwertyuio");
+        writer.close ();
+        Source source = Source.create (testFile);
+        Snapshot originalSnapshot = source.createSnapshot ();
+        //System.out.println (originalSnapshot.getText ().length ());
+        Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
+            originalSnapshot.create (0, 4, "text/jedna"),
+            originalSnapshot.create ("123", "text/jedna"),
+            originalSnapshot.create (24, 23, "text/jedna"),
+            originalSnapshot.create ("456", "text/jedna"),
+            originalSnapshot.create (67, 17, "text/jedna"),
+        }));
+        assertEquals ("text/jedna", languageJednaEmbedding.getMimeType ());
+        Snapshot languageJednaSnapshot = languageJednaEmbedding.getSnapshot ();
+        assertEquals ("text/jedna", languageJednaSnapshot.getMimeType ());
+        assertEquals ("Toto123na kterem se budou dela456sdfghjklqwertyuio", languageJednaSnapshot.getText ().toString ());
+
+        Embedding languageDvaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
+            languageJednaSnapshot.create (21, 17, "text/dva")
+        }));
+        assertEquals ("text/dva", languageDvaEmbedding.getMimeType ());
+        Snapshot languageDvaSnapshot = languageDvaEmbedding.getSnapshot ();
+        assertEquals ("text/dva", languageDvaSnapshot.getMimeType ());
+        assertEquals ("udou dela456sdfgh", languageDvaSnapshot.getText ().toString ());
+        assertEquals (38, languageDvaSnapshot.getOriginalOffset (0));
+        assertEquals (47, languageDvaSnapshot.getOriginalOffset (9));
+        assertEquals (-1, languageDvaSnapshot.getOriginalOffset (10));
+        assertEquals (67, languageDvaSnapshot.getOriginalOffset (12));
+        assertEquals (72, languageDvaSnapshot.getOriginalOffset (17));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (0));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (37));
+        assertEquals (0, languageDvaSnapshot.getEmbeddedOffset (38));
+        assertEquals (9, languageDvaSnapshot.getEmbeddedOffset (47));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (48));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (66));
+        assertEquals (12, languageDvaSnapshot.getEmbeddedOffset (67));
+        assertEquals (17, languageDvaSnapshot.getEmbeddedOffset (72));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (73));
+    }
+
+    public void testSnapshotEmbedding159927 () throws IOException { // see issue #154444
+        clearWorkDir ();
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!! asdfghjklqwertyuio");
+        writer.close ();
+        Source source = Source.create (testFile);
+        Snapshot originalSnapshot = source.createSnapshot ();
+        //System.out.println (originalSnapshot.getText ().length ());
+        Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
+            originalSnapshot.create ("123", "text/jedna"),
+        }));
+        assertEquals ("text/jedna", languageJednaEmbedding.getMimeType ());
+        Snapshot languageJednaSnapshot = languageJednaEmbedding.getSnapshot ();
+        assertEquals ("text/jedna", languageJednaSnapshot.getMimeType ());
+        assertEquals ("123", languageJednaSnapshot.getText ().toString ());
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (0));
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (2));
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (5));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (10));
+
+        Embedding languageDvaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
+            languageJednaSnapshot.create (1, 2, "text/dva")
+        }));
+        assertEquals ("text/dva", languageDvaEmbedding.getMimeType ());
+        Snapshot languageDvaSnapshot = languageDvaEmbedding.getSnapshot ();
+        assertEquals ("text/dva", languageDvaSnapshot.getMimeType ());
+        assertEquals ("23", languageDvaSnapshot.getText ().toString ());
+        assertEquals (-1, languageDvaSnapshot.getOriginalOffset (0));
+        assertEquals (-1, languageDvaSnapshot.getOriginalOffset (2));
+        assertEquals (-1, languageDvaSnapshot.getOriginalOffset (5));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (0));
+        assertEquals (-1, languageDvaSnapshot.getEmbeddedOffset (10));
+    }
+
     public void testSnapshotCreationDeadlock () throws Exception {  //Originally JavaSourceTest.testRTB_005
         MockMimeLookup.setInstances(MimePath.get("text/foo"), new ParserFactory(){
             public Parser createParser (Collection<Snapshot> snapshots) {
                 return new Parser () {
-                    
+
                     private Snapshot last;
-                    
+
                     public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                         last = snapshot;
                     }

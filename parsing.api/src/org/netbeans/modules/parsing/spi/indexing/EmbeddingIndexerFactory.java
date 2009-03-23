@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.util.Collection;
+import org.netbeans.modules.parsing.api.Snapshot;
+
 /**
  *
  * @author Tomas Zezula
@@ -47,15 +50,29 @@ public abstract class EmbeddingIndexerFactory {
 
     /**
      * Creates  new {@link Indexer}.
+     * @param indexing for which the indexer should be created
+     * @param snapshot for which the indexer should be created
      * @return an indexer
      */
-    public abstract CustomIndexer createIndexer ();
+    public abstract EmbeddingIndexer createIndexer (final Indexable indexable, final Snapshot snapshot);
+
 
     /**
-     * Returns a mime type of handled embedding.
-     * @return
+     * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
+     * @param deleted the collection of deleted {@link Indexable}s
+     * @param contents an indexing context
      */
-    public abstract String getMimeType ();
+    public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
+    
+    /**
+     * Called by indexing infrastructure to notify indexer that a file was modified and so its
+     * index may contain stale data.
+     *
+     * @param dirty the collection of dirty {@link Indexable}s
+     * @param context an indexing context
+     * @since 1.4
+     */
+    public abstract void filesDirty (Collection<? extends Indexable> dirty, Context context);
 
     /**
      * Return the name of this indexer. This name should be unique because the infrastructure 

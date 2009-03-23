@@ -257,7 +257,6 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.java.kit</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.j2se</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
                 <package>org.netbeans.modules.projectimport.eclipse.core.spi</package>

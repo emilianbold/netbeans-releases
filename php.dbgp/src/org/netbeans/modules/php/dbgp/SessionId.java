@@ -43,11 +43,13 @@ package org.netbeans.modules.php.dbgp;
 import java.io.File;
 
 import java.net.URI;
+import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,13 +82,13 @@ public class SessionId {
     public Project getProject(){
         return FileOwnerQuery.getOwner( sessionFileObject );
     }
-    public synchronized void initialize( String uri ) {
+
+    synchronized void initialize(String uri, List<Pair<String, String>> pathMapping) {
         if (uriMapper == null) {
+            Project project = getProject();
+            FileObject sourceRoot = project != null ? getSourceRoot() : sessionFileObject.getParent();
             uriMapper = URIMapper.createMultiMapper(URI.create(uri),
-                    sessionFileObject, getSourceRoot());
-            //TODO: here is possible to add other custom mappers - UI needs to be implemented
-            //URIMapper customMapper = URIMapper.createBasedInstance(baseRemoteURI, baseLocalFolder);
-            //uriMapper.addAsFirstMapper(customMapper);
+                    sessionFileObject, sourceRoot, pathMapping);
         }
         notifyAll();
         SessionProgress s = SessionProgress.forSessionId(this);

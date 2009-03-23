@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -118,7 +119,9 @@ public abstract class CsmReferenceResolver {
      * @return scope kind if detected or UNKNOWN
      */
     public abstract Scope fastCheckScope(CsmReference ref);
-    
+
+    public abstract boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds);
+
     public static enum Scope {
         LOCAL,
         FILE_LOCAL,
@@ -175,6 +178,16 @@ public abstract class CsmReferenceResolver {
                 }
             }
             return Scope.UNKNOWN;
-        }       
+        }
+
+        @Override
+        public boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                if (resolver.isKindOf(ref, kinds)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }    
 }

@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.ejbjarproject.test.ProjectUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.test.TestUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
@@ -72,6 +73,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        TestUtil.setLookup(new Object[0]);
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 

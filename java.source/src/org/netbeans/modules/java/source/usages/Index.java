@@ -69,19 +69,19 @@ public abstract class Index {
         OR
     };
     
-    private static final int VERSION = 0;
-    private static final int SUBVERSION = 11;
-    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
-    private static final String SEGMENTS_FILE = "segments";      //NOI18N
-    private static final String CLASSES = "classes";             //NOI18N
-    private static final String SLICE_PREFIX = "s";              //NOI18N    
-    private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"index"+File.separatorChar+VERSION+'.'+SUBVERSION;    //NOI18N
+//    private static final int VERSION = 0;
+//    private static final int SUBVERSION = 11;
+//    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
+//    private static final String SEGMENTS_FILE = "segments";      //NOI18N
+//    private static final String CLASSES = "classes";             //NOI18N
+//    private static final String SLICE_PREFIX = "s";              //NOI18N
+//    private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"index"+File.separatorChar+VERSION+'.'+SUBVERSION;    //NOI18N
     
-    private static Properties segments;
-    private static Map<String, String> invertedSegments;
-    private static File cacheFolder;
-    private static File segmentsFile;
-    private static int index = 0;
+//    private static Properties segments;
+//    private static Map<String, String> invertedSegments;
+//    private static File cacheFolder;
+//    private static File segmentsFile;
+//    private static int index = 0;
     
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
         protected synchronized AtomicBoolean initialValue() {
@@ -102,175 +102,175 @@ public abstract class Index {
     public abstract void close () throws IOException;
     
     
-    private static void loadSegments () throws IOException {
-        if (segments == null) {
-            File cacheFolder = getCacheFolder();
-            assert cacheFolder != null;           
-            segments = new Properties ();
-            invertedSegments = new HashMap<String,String> ();
-            segmentsFile = FileUtil.normalizeFile(new File (cacheFolder, SEGMENTS_FILE));
-            if (segmentsFile.exists()) {
-                InputStream in = new FileInputStream (segmentsFile);
-                try {
-                    segments.load (in);
-                } finally {
-                    in.close();
-                }
-            }
-            for (Map.Entry entry : segments.entrySet()) {
-                String segment = (String) entry.getKey();
-                String root = (String) entry.getValue();
-                invertedSegments.put(root,segment);
-                try {
-                    index = Math.max (index,Integer.parseInt(segment.substring(SLICE_PREFIX.length())));
-                } catch (NumberFormatException nfe) {
-                    ErrorManager.getDefault().notify(nfe);
-                }
-            }
-            assert segmentsFile != null;
-        }        
-    }
-    
-    
-    private static void storeSegments () throws IOException {
-        assert segmentsFile != null;       
-        OutputStream out = new FileOutputStream (segmentsFile);
-        try {
-            segments.store(out,null);
-        } finally {
-            out.close();
-        }            
-    }
-    
-    
-    public static URL getSourceRootForClassFolder (final URL classFolder) {
-        if ("file".equals(classFolder.getProtocol())) {           //NOI18N
-            try {
-                final File file = FileUtil.normalizeFile(new File (classFolder.toURI()));            
-                final File segFolder = file.getParentFile();
-                if (segFolder == null) {
-                    return null;
-                }
-                final Object cFolder = segFolder.getParentFile();
-                if (cFolder == null || !cFolder.equals(cacheFolder)) {
-                    return null;
-                }   
-                String source = segments.getProperty(segFolder.getName());
-                if (source != null) {
-                    try {            
-                        return new URL (source);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);            
-                    }
-                }
-            } catch (URISyntaxException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-        return null;
-    }
-        
-    
-    public static synchronized File getDataFolder (final URL root) throws IOException {
-        return getDataFolder(root, false);
-    }
-    
-    public static synchronized File getDataFolder (final URL root, boolean onlyIfAlreadyExists) throws IOException {
-        loadSegments ();
-        final String rootName = root.toExternalForm();
-        String slice = invertedSegments.get (rootName);
-        if ( slice == null) {
-            if (onlyIfAlreadyExists)
-                return null;
-            slice = SLICE_PREFIX + (++index);
-            while (segments.getProperty(slice) != null) {                
-                slice = SLICE_PREFIX + (++index);
-            }
-            segments.put (slice,rootName);
-            invertedSegments.put(rootName, slice);
-            storeSegments ();
-        }        
-        File result = FileUtil.normalizeFile (new File (cacheFolder, slice));
-        if (!result.exists()) {
-            if (onlyIfAlreadyExists)
-                return null;
-            result.mkdir();
-        }
-        return result;
-    }
-    
-    /**returns null if onlyIfAlreadyExists == true and the cache folder for the given url does not exist.
-     */
-    public static File getClassFolder (final URL url, boolean onlyIfAlreadyExists) throws IOException {
-        return getClassFolderImpl(url, onlyIfAlreadyExists);
-    }
-    
-    public static File getClassFolder (final URL url) throws IOException {                
-        return getClassFolder(url, false);
-    }
-    
-    public static File getClassFolder (final File root) throws IOException {
-        URL url = root.toURI().toURL();
-        if (!root.exists()) {
-            final String surl = url.toExternalForm();
-            if (!surl.endsWith("/")) {
-                url = new URL (surl+'/');
-            }
-        }
-        return getClassFolderImpl(url, false);
-    }        
-    
-    private static File getClassFolderImpl (final URL url, boolean onlyIfAlreadyExists) throws IOException {
-        final File dataFolder = getDataFolder (url, onlyIfAlreadyExists);
-        if (onlyIfAlreadyExists && dataFolder == null)
-            return null;
-        final File result = FileUtil.normalizeFile(new File (dataFolder, CLASSES));
-        if (!result.exists()) {
-            if (onlyIfAlreadyExists)
-                return null;
-            result.mkdir();
-        }
-        return result;
-    }
-    
-    
-    
-    /**
-     *  Returns non cached netbeans user dir.
-     *  For performance reasons the returned {@link File} is not normalized.
-     *  Client is responsible to call {@link FileUtil.normalizeFile}
-     *  before using the returned value.
-     *  @return netbeans user dir.
-     */
-    static String getNbUserDir () {
-        final String nbUserProp = System.getProperty(NB_USER_DIR);
-        return nbUserProp;
-    }
-    
-    public static synchronized File getCacheFolder () {
-        if (cacheFolder == null) {
-            final String nbUserDirProp = getNbUserDir();
-            assert nbUserDirProp != null;
-            final File nbUserDir = new File (nbUserDirProp);
-            cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
-            if (!cacheFolder.exists()) {
-                boolean created = cacheFolder.mkdirs();                
-                assert created : "Cannot create cache folder";  //NOI18N
-            }
-            else {
-                assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
-            }
-        }
-        return cacheFolder;
-    }
-            
-    /**
-     * Only for unit tests!
-     *
-     */
-    static synchronized void setCacheFolder (final File folder) {
-        assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
-        cacheFolder = folder;
-    }
+//    private static void loadSegments () throws IOException {
+//        if (segments == null) {
+//            File cacheFolder = getCacheFolder();
+//            assert cacheFolder != null;
+//            segments = new Properties ();
+//            invertedSegments = new HashMap<String,String> ();
+//            segmentsFile = FileUtil.normalizeFile(new File (cacheFolder, SEGMENTS_FILE));
+//            if (segmentsFile.exists()) {
+//                InputStream in = new FileInputStream (segmentsFile);
+//                try {
+//                    segments.load (in);
+//                } finally {
+//                    in.close();
+//                }
+//            }
+//            for (Map.Entry entry : segments.entrySet()) {
+//                String segment = (String) entry.getKey();
+//                String root = (String) entry.getValue();
+//                invertedSegments.put(root,segment);
+//                try {
+//                    index = Math.max (index,Integer.parseInt(segment.substring(SLICE_PREFIX.length())));
+//                } catch (NumberFormatException nfe) {
+//                    ErrorManager.getDefault().notify(nfe);
+//                }
+//            }
+//            assert segmentsFile != null;
+//        }
+//    }
+//
+//
+//    private static void storeSegments () throws IOException {
+//        assert segmentsFile != null;
+//        OutputStream out = new FileOutputStream (segmentsFile);
+//        try {
+//            segments.store(out,null);
+//        } finally {
+//            out.close();
+//        }
+//    }
+//
+//
+//    public static URL getSourceRootForClassFolder (final URL classFolder) {
+//        if ("file".equals(classFolder.getProtocol())) {           //NOI18N
+//            try {
+//                final File file = FileUtil.normalizeFile(new File (classFolder.toURI()));
+//                final File segFolder = file.getParentFile();
+//                if (segFolder == null) {
+//                    return null;
+//                }
+//                final Object cFolder = segFolder.getParentFile();
+//                if (cFolder == null || !cFolder.equals(cacheFolder)) {
+//                    return null;
+//                }
+//                String source = segments.getProperty(segFolder.getName());
+//                if (source != null) {
+//                    try {
+//                        return new URL (source);
+//                    } catch (IOException ioe) {
+//                        ErrorManager.getDefault().notify(ioe);
+//                    }
+//                }
+//            } catch (URISyntaxException e) {
+//                ErrorManager.getDefault().notify(e);
+//            }
+//        }
+//        return null;
+//    }
+//
+//
+//    public static synchronized File getDataFolder (final URL root) throws IOException {
+//        return getDataFolder(root, false);
+//    }
+//
+//    public static synchronized File getDataFolder (final URL root, boolean onlyIfAlreadyExists) throws IOException {
+//        loadSegments ();
+//        final String rootName = root.toExternalForm();
+//        String slice = invertedSegments.get (rootName);
+//        if ( slice == null) {
+//            if (onlyIfAlreadyExists)
+//                return null;
+//            slice = SLICE_PREFIX + (++index);
+//            while (segments.getProperty(slice) != null) {
+//                slice = SLICE_PREFIX + (++index);
+//            }
+//            segments.put (slice,rootName);
+//            invertedSegments.put(rootName, slice);
+//            storeSegments ();
+//        }
+//        File result = FileUtil.normalizeFile (new File (cacheFolder, slice));
+//        if (!result.exists()) {
+//            if (onlyIfAlreadyExists)
+//                return null;
+//            result.mkdir();
+//        }
+//        return result;
+//    }
+//
+//    /**returns null if onlyIfAlreadyExists == true and the cache folder for the given url does not exist.
+//     */
+//    public static File getClassFolder (final URL url, boolean onlyIfAlreadyExists) throws IOException {
+//        return getClassFolderImpl(url, onlyIfAlreadyExists);
+//    }
+//
+//    public static File getClassFolder (final URL url) throws IOException {
+//        return getClassFolder(url, false);
+//    }
+//
+//    public static File getClassFolder (final File root) throws IOException {
+//        URL url = root.toURI().toURL();
+//        if (!root.exists()) {
+//            final String surl = url.toExternalForm();
+//            if (!surl.endsWith("/")) {
+//                url = new URL (surl+'/');
+//            }
+//        }
+//        return getClassFolderImpl(url, false);
+//    }
+//
+//    private static File getClassFolderImpl (final URL url, boolean onlyIfAlreadyExists) throws IOException {
+//        final File dataFolder = getDataFolder (url, onlyIfAlreadyExists);
+//        if (onlyIfAlreadyExists && dataFolder == null)
+//            return null;
+//        final File result = FileUtil.normalizeFile(new File (dataFolder, CLASSES));
+//        if (!result.exists()) {
+//            if (onlyIfAlreadyExists)
+//                return null;
+//            result.mkdir();
+//        }
+//        return result;
+//    }
+//
+//
+//
+//    /**
+//     *  Returns non cached netbeans user dir.
+//     *  For performance reasons the returned {@link File} is not normalized.
+//     *  Client is responsible to call {@link FileUtil.normalizeFile}
+//     *  before using the returned value.
+//     *  @return netbeans user dir.
+//     */
+//    static String getNbUserDir () {
+//        final String nbUserProp = System.getProperty(NB_USER_DIR);
+//        return nbUserProp;
+//    }
+//
+//    public static synchronized File getCacheFolder () {
+//        if (cacheFolder == null) {
+//            final String nbUserDirProp = getNbUserDir();
+//            assert nbUserDirProp != null;
+//            final File nbUserDir = new File (nbUserDirProp);
+//            cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
+//            if (!cacheFolder.exists()) {
+//                boolean created = cacheFolder.mkdirs();
+//                assert created : "Cannot create cache folder";  //NOI18N
+//            }
+//            else {
+//                assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
+//            }
+//        }
+//        return cacheFolder;
+//    }
+//
+//    /**
+//     * Only for unit tests!
+//     *
+//     */
+//    static synchronized void setCacheFolder (final File folder) {
+//        assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
+//        cacheFolder = folder;
+//    }
     
 }

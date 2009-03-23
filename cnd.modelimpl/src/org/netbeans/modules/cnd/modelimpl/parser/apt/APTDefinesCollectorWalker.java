@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 //import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -60,15 +61,14 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class APTDefinesCollectorWalker extends APTSelfWalker {
 
-    /*package*/
-    final Map<String, MacroInfo> macroRefMap;
+    private final Map<CharSequence, MacroInfo> macroRefMap;
     private final CharSequence includePath;
 
     protected APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
-        this(apt, csmFile, preprocHandler, new HashMap<String, MacroInfo>(), null);
+        this(apt, csmFile, preprocHandler, new HashMap<CharSequence, MacroInfo>(), null);
     }
 
-    private APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, Map<String, MacroInfo> macroRefMap, CharSequence includePath) {
+    private APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, Map<CharSequence, MacroInfo> macroRefMap, CharSequence includePath) {
         super(apt, csmFile, preprocHandler);
         this.macroRefMap = macroRefMap;
         this.includePath = includePath;
@@ -83,14 +83,18 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         APTDefine aptMacro = (APTDefine) apt;
-        macroRefMap.put(aptMacro.getName().getText(), new MacroInfo(csmFile, apt.getOffset(), apt.getEndOffset(), includePath));
+        macroRefMap.put(aptMacro.getName().getTextID(), new MacroInfo(csmFile, apt.getOffset(), apt.getEndOffset(), includePath));
     }
 
     @Override
     protected void onUndef(APT apt) {
         super.onUndef(apt);
         APTUndefine aptUndef = (APTUndefine) apt;
-        macroRefMap.remove(aptUndef.getName().getText());
+        macroRefMap.remove(aptUndef.getName().getTextID());
+    }
+
+    /*package*/ final MacroInfo getMacroInfo(APTToken token) {
+        return macroRefMap.get(token.getTextID());
     }
 }
 

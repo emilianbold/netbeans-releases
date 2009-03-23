@@ -114,7 +114,7 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
             ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/notification_operation.png");
         } else if (operation instanceof SolicitResponseOperation) {
-            ICON =    ImageUtilities.loadImage
+            ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/solicitresponse_operation.png");
         } else {
             ICON = ImageUtilities.loadImage

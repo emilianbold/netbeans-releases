@@ -55,17 +55,24 @@ import org.openide.util.HelpCtx;
 public class WizardNewWSDLStep implements WizardDescriptor.FinishablePanel {
     private WizardDescriptor.Panel mPanel;
 
+    private WsdlPanel bottomPanel;
     
-    public WizardNewWSDLStep(WizardDescriptor.Panel panel) {
+    public WizardNewWSDLStep(WizardDescriptor.Panel panel, WsdlPanel bottomPanel) {
         this.mPanel = panel;
+        this.bottomPanel = bottomPanel;
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return bottomPanel.isFinishPanel();
     }
 
     public Component getComponent() {
-        return mPanel.getComponent();
+        Component comp = mPanel.getComponent();
+        return comp;
+    }
+    
+    public String getName() {
+        return getComponent().getName();
     }
 
     public HelpCtx getHelp() {

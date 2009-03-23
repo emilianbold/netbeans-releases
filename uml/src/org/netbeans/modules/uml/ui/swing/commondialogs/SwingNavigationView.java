@@ -237,7 +237,6 @@ public class SwingNavigationView extends javax.swing.JPanel
                 
                 if (selected != null)
                 {
-                    //System.out.println("PerFormOKAction - selected path="+ selected.toString());
                     treeTableView.handleNavigation(selected);
                 }
             }
@@ -321,7 +320,6 @@ public class SwingNavigationView extends javax.swing.JPanel
             int selRow = treeTableView.getSelectedRow();
             if ( selRow >= 0)  //some row is selected
             {
-                //System.out.println("keyCode="+KeyStroke.getKeyStroke(keyCode, 0) + " selRow="+selRow);
                 switch (keyCode)
                 {
                     case KeyEvent.VK_LEFT:

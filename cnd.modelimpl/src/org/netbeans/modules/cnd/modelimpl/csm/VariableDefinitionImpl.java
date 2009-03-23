@@ -238,22 +238,22 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	return null;
     }    
     
-    private static String[] getClassOrNspNames(AST ast) {
+    private static CharSequence[] getClassOrNspNames(AST ast) {
         AST qid = getQialifiedId(ast);
         if( qid == null ) {
             return null;
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List<String> l = new ArrayList<String>();
+            List<CharSequence> l = new ArrayList<CharSequence>();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(token.getText());
+                        l.add(NameCache.getManager().getString(token.getText()));
                     }
                 }
             }
-            return  l.toArray(new String[l.size()]);
+            return  l.toArray(new CharSequence[l.size()]);
         }
         return null;
     }
@@ -299,10 +299,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = PersistentUtils.readUTF(input);
-        if(this.qualifiedName != null) {    
-            this.qualifiedName = QualifiedNameCache.getManager().getString(this.qualifiedName);
-        }
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);

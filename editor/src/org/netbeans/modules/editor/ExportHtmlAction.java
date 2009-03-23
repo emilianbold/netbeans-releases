@@ -181,7 +181,7 @@ public class ExportHtmlAction extends CookieAction {
                             public void run () {
                                 try {
                                     if (jtc!=null)
-                                        this.setCursor (org.openide.util.Utilities.createProgressCursor (jtc));
+                                        this.setCursor (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                     export (bdoc, file, lineNumbers, selectionStart, selectionEnd);
                                     if (open) {
                                         HtmlBrowser.URLDisplayer.getDefault().showURL(new File(file).toURI().toURL());

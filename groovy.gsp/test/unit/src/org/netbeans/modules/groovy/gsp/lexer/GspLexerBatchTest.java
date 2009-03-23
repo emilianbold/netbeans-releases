@@ -45,7 +45,6 @@ import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
  * Test GSP lexer
@@ -56,14 +55,6 @@ public class GspLexerBatchTest extends TestCase {
 
     public GspLexerBatchTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    @Override
-    protected void tearDown() throws java.lang.Exception {
     }
 
 // FIXME we should fix this !!!

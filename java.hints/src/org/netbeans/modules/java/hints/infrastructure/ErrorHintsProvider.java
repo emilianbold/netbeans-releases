@@ -200,7 +200,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     ts.moveNext();
                     t = ts.token();
                 } else {
-                    if (t.id() == JavaTokenId.NEW) {
+                    if (t.id() == JavaTokenId.NEW || t.id() == JavaTokenId.WHITESPACE) {
                         boolean cont = ts.moveNext();
                         
                         while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {

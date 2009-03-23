@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -88,6 +89,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "last-v3ee6-install-root",
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" },
                         new String[0], true);
+                RegisteredDDCatalog catalog = getDDCatalog();
+                if (null != catalog) {
+                    catalog.registerEE6RunTimeDDCatalog(singletonEe6);
+                    refreshCatalogFromFirstInstance(singletonEe6, catalog);
+                }
             }
         }
         return singletonEe6;
@@ -117,6 +123,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
                         "last-install-root", new String[0],
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, false);
+            RegisteredDDCatalog catalog = getDDCatalog();
+            if (null != catalog) {
+                catalog.registerPreludeRunTimeDDCatalog(singleton);
+                refreshCatalogFromFirstInstance(singleton, catalog);
+            }
         }
         return singleton;
     }
@@ -172,10 +183,34 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return Logger.getLogger("glassfish");
     }
 
+    private static RegisteredDDCatalog getDDCatalog() {
+        return Lookup.getDefault().lookup(RegisteredDDCatalog.class);
+    }
+
+    private static void refreshCatalogFromFirstInstance(GlassfishInstanceProvider gip, RegisteredDDCatalog catalog) {
+        GlassfishInstance firstInstance = gip.getFirstServerInstance();
+        if (null != firstInstance) {
+            catalog.refreshRunTimeDDCatalog(gip, firstInstance.getGlassfishRoot());
+        }
+    }
+
+    private GlassfishInstance getFirstServerInstance() {
+        if (!instanceMap.isEmpty()) {
+            return instanceMap.values().iterator().next();
+        }
+        return null;
+    }
+
     public void addServerInstance(GlassfishInstance si) {
         synchronized(instanceMap) {
             try {
                 instanceMap.put(si.getDeployerUri(), si);
+                if (instanceMap.size() == 1) { // only need to do if this first of this type
+                    RegisteredDDCatalog catalog = getDDCatalog();
+                    if (null != catalog) {
+                        catalog.refreshRunTimeDDCatalog(this, si.getGlassfishRoot());
+                    }
+                }
                 writeInstanceToFile(si);
             } catch(IOException ex) {
                 getLogger().log(Level.INFO, null, ex);
@@ -231,6 +266,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             if(instanceMap.remove(si.getDeployerUri()) != null) {
                 result = true;
                 removeInstanceFromFile(si.getDeployerUri());
+                // If this was the last of its type, need to remove the
+                // resolver catalog contents
+                if (instanceMap.size() == 0) {
+                    RegisteredDDCatalog catalog = getDDCatalog();
+                    if (null != catalog) {
+                        catalog.refreshRunTimeDDCatalog(this, null);
+                    }
+                }
             }
         }
 

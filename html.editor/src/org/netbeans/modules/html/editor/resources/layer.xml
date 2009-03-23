@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="html">
                 <attr name="useCustomEditorKit" boolvalue="true"/>
@@ -96,15 +96,24 @@ made subject to such option by the copyright holder.
     
     
     <folder name="Editors">
+
+        <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider$Factory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+
         <folder name="text">
             <folder name="html">
-               
+
+                <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
                 
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
                 
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-html-editor-HTMLBracesMatching.instance">
@@ -113,10 +122,10 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
@@ -149,12 +158,12 @@ made subject to such option by the copyright holder.
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 
                 <folder name="HyperlinkProviders">
                     <file name="GsfHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
@@ -166,7 +175,7 @@ made subject to such option by the copyright holder.
                 </file>
                 
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-hints-GsfUpToDateStateProviderFactory.instance"/>
                 </folder>
                 
                 <folder name="Popup">

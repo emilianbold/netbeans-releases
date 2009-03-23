@@ -191,6 +191,10 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         return TokenImpl.badToken;
     }
 
+    protected void setTokenText(Token _token, char buf[], int start, int count) {
+        _token.setText(new String(buf, start, count));
+    }
+
     public int mark() {
         return input.mark();
     }

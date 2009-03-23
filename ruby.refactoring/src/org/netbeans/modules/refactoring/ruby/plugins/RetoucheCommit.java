@@ -43,22 +43,22 @@ package org.netbeans.modules.refactoring.ruby.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.napi.gsfret.source.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
 
 /**
- *
  * @author Jan Becicka
  */
-
 public class RetoucheCommit implements Transaction {
-    ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
+
+    ArrayList<BackupFacility.Handle> ids;
     private boolean commited = false;
     Collection<ModificationResult> results;
     
     public RetoucheCommit(Collection<ModificationResult> results) {
         this.results = results;
+        this.ids = new ArrayList<BackupFacility.Handle>();
     }
     
     public void commit() {

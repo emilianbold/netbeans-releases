@@ -5,6 +5,7 @@ Searchable Keys:
   class : Base
   class-ig : base
   fqn : ActionView::Base
+  require : action_view
 
 Not Searchable Keys:
   attrs : |CLASS|

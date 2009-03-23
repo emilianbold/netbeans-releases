@@ -8,13 +8,13 @@ import org.jruby.nb.ast.ClassVarDeclNode;
 import org.jruby.nb.ast.ClassVarNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 public class AstFieldElement extends AstElement {
-    public AstFieldElement(CompilationInfo info, Node node) {
+
+    public AstFieldElement(ParserResult info, Node node) {
         super(info, node);
     }
 

@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import java.awt.EventQueue;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -60,7 +63,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -70,6 +76,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -82,12 +89,20 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
-public class BasicPanelVisual extends JPanel implements DocumentListener {
+public class BasicPanelVisual extends JPanel implements DocumentListener, WindowFocusListener, Runnable {
     
     public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
     
     private static final String ERROR_MSG = "WizardPanel_errorMessage"; //NOI18N
-    
+
+    private static final ArtifactVersion BORDER_VERSION = new DefaultArtifactVersion("2.0.7"); //NOI18N
+
+    private boolean askedForVersion;
+
+    private ArtifactVersion mavenVersion;
+
+    private static final Object MAVEN_VERSION_LOCK = new Object();
+
     private BasicWizardPanel panel;
 
     private String lastProjectName = ""; //NOI18N
@@ -116,9 +131,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (panel.getArchetypes() == null) {
             lblEEVersion.setVisible(false);
             comboEEVersion.setVisible(false);
-        } else {
-
         }
+
+        btnSetupNewer.setVisible(false);
 
         txtArtifactId.getAccessibleContext().setAccessibleDescription(
                 lblArtifactId.getAccessibleContext().getAccessibleName());
@@ -136,8 +151,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                 createdFolderLabel.getAccessibleContext().getAccessibleName());
         browseButton.getAccessibleContext().setAccessibleDescription(
                 browseButton.getAccessibleContext().getAccessibleName());
+        btnSetupNewer.getAccessibleContext().setAccessibleDescription(
+                btnSetupNewer.getAccessibleContext().getAccessibleName());
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
+
+        txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
     }
     
     
@@ -173,6 +192,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         lblAdditionalProps = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblAdditionalProps = new javax.swing.JTable();
+        btnSetupNewer = new javax.swing.JButton();
         lblEEVersion = new javax.swing.JLabel();
         comboEEVersion = new javax.swing.JComboBox();
 
@@ -203,8 +223,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_GroupId")); // NOI18N
 
-        txtGroupId.setText("com.mycompany");
-
         lblVersion.setLabelFor(txtVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_Version")); // NOI18N
 
@@ -222,21 +240,33 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         jScrollPane1.setViewportView(tblAdditionalProps);
         tblAdditionalProps.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnSetupNewer, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BTN_SetupNewer.text")); // NOI18N
+        btnSetupNewer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSetupNewerActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout pnlAdditionalsLayout = new org.jdesktop.layout.GroupLayout(pnlAdditionals);
         pnlAdditionals.setLayout(pnlAdditionalsLayout);
         pnlAdditionalsLayout.setHorizontalGroup(
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(434, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                .addContainerGap(475, Short.MAX_VALUE))
+            .add(pnlAdditionalsLayout.createSequentialGroup()
+                .add(btnSetupNewer)
+                .addContainerGap())
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(btnSetupNewer))
         );
 
         lblEEVersion.setLabelFor(comboEEVersion);
@@ -349,10 +379,15 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
     private void comboEEVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEEVersionActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_comboEEVersionActionPerformed
+
+    private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+    }//GEN-LAST:event_btnSetupNewerActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JButton btnSetupNewer;
     private javax.swing.JComboBox comboEEVersion;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
@@ -384,6 +419,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         tblAdditionalProps.setVisible(false);
         lblAdditionalProps.setVisible(false);
         jScrollPane1.setVisible(false);
+        // for maven version checking
+        SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
@@ -475,6 +512,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             return false;
         }
 
+        btnSetupNewer.setVisible(isMavenTooOld());
+        if (isMavenTooOld()) {
+            wizardDescriptor.putProperty(ERROR_MSG,
+                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_old_maven",
+                    getCommandLineMavenVersion()));
+            return false;
+        }
+
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
     }
@@ -490,6 +535,22 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         }
         return false;
     }
+
+    private boolean isMavenTooOld () {
+        ArtifactVersion version = getCommandLineMavenVersion();
+        return version != null ? BORDER_VERSION.compareTo(version) > 0 : false;
+    }
+
+    private ArtifactVersion getCommandLineMavenVersion () {
+        if (!askedForVersion) {
+            askedForVersion = true;
+            // obtain version asynchronously, as it takes some time
+            RequestProcessor.getDefault().post(this);
+        }
+        synchronized (MAVEN_VERSION_LOCK) {
+            return mavenVersion;
+        }
+    }
     
     void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
@@ -499,6 +560,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         d.putProperty("name", name); //NOI18N
         d.putProperty("artifactId", txtArtifactId.getText().trim()); //NOI18N
         d.putProperty("groupId", txtGroupId.getText().trim()); //NOI18N
+        MavenSettings.getDefault().setLastArchetypeGroupId(txtGroupId.getText().trim());
         d.putProperty("version", txtVersion.getText().trim()); //NOI18N
         d.putProperty("package", txtPackage.getText().trim()); //NOI18N
         if (tblAdditionalProps.isVisible()) {
@@ -550,7 +612,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             });
         }
     }
-    
+
     private void prepareAdditionalProperties(Archetype arch) {
         final DefaultTableModel dtm = new DefaultTableModel();
         dtm.addColumn(NbBundle.getMessage(BasicPanelVisual.class, "COL_Key"));
@@ -763,4 +825,33 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         String toRet =  builder.length() == 0 ? "pkg" : builder.toString(); //NOI18N
         return toRet;
     }
+
+    /*** Implementation of WindowFocusListener ***/
+
+    public void windowGainedFocus(WindowEvent e) {
+        // trigger re-check of maven version
+        askedForVersion = false;
+        getCommandLineMavenVersion();
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+    }
+
+    /*** Implementation of Runnable, checks Maven version ***/
+
+    public void run() {
+        if (!EventQueue.isDispatchThread()) {
+            // phase one, outside EQ thread
+            String version = MavenSettings.getCommandLineMavenVersion();
+            synchronized (MAVEN_VERSION_LOCK) {
+                mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
+            }
+            // trigger revalidation -> phase two
+            SwingUtilities.invokeLater(this);
+        } else {
+            // phase two, inside EQ thread
+            panel.fireChangeEvent();
+        }
+    }
+
 }

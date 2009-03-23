@@ -73,8 +73,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
-import org.netbeans.modules.cnd.completion.csm.SymTabCache.CacheEntry;
+import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -222,13 +223,15 @@ public class CompletionResolverImpl implements CompletionResolver {
                 //if (CsmKindUtilities.isMethodDeclaration(fun)) {
                 //    uid = ((CsmMethod)fun).getContainingClass().getUID();
                 //}
-                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = SymTabCache.get(key);
-                if (res != null) {
-                    result = res;
-                    return;
-                } else {
-                    SymTabCache.setScope(uid);
+                if (fileReferncesContext != null) {
+                    key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+                    Result res = fileReferncesContext.getSymTabCache().get(key);
+                    if (res != null) {
+                        result = res;
+                        return;
+                    } else {
+                        fileReferncesContext.getSymTabCache().setScope(uid);
+                    }
                 }
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
                 CsmVariable var = (CsmVariable) context.getLastObject();
@@ -236,13 +239,15 @@ public class CompletionResolverImpl implements CompletionResolver {
                 //if (CsmKindUtilities.isField(var)) {
                 //    uid = ((CsmField)var).getContainingClass().getUID();
                 //}
-                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = SymTabCache.get(key);
-                if (res != null) {
-                    result = res;
-                    return;
-                } else {
-                    SymTabCache.setScope(uid);
+                if (fileReferncesContext != null) {
+                    key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+                    Result res = fileReferncesContext.getSymTabCache().get(key);
+                    if (res != null) {
+                        result = res;
+                        return;
+                    } else {
+                        fileReferncesContext.getSymTabCache().setScope(uid);
+                    }
                 }
                 //} else {
                 //    CsmScope scope = context.getLastScope();
@@ -273,7 +278,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         resolveContext(prj, resImpl, context, offset, strPrefix, match);
         result = buildResult(context, resImpl);
         if (key != null) {
-            SymTabCache.put(key, result);
+            fileReferncesContext.getSymTabCache().put(key, result);
         }
         //long timeEnd = System.nanoTime();
         //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
@@ -851,14 +856,21 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (!analyzeTemplates.isEmpty()) {
             templateParameters = new ArrayList<CsmTemplateParameter>();
             for (CsmTemplate csmTemplate : analyzeTemplates) {
-                for (CsmTemplateParameter elem : csmTemplate.getTemplateParameters()) {
-                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                        templateParameters.add(elem);
-                    }
-                }
+                getTemplateParameters(csmTemplate, strPrefix, match, templateParameters);
             }
         }
         return templateParameters;
+    }
+
+    private void getTemplateParameters(CsmTemplate template, String strPrefix, boolean match, Collection<CsmTemplateParameter> out) {
+        for (CsmTemplateParameter elem : template.getTemplateParameters()) {
+            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                out.add(elem);
+            }
+            if (CsmKindUtilities.isTemplate(elem)) {
+                getTemplateParameters((CsmTemplate) elem, strPrefix, match, out);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1599,6 +1611,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         merge(dest, result.libNSs);
         // add libraries namespace aliases
         merge(dest, result.libNsAliases);
+        // add template parameters
+        merge(dest, result.templateParameters);
 
         return dest;
     }

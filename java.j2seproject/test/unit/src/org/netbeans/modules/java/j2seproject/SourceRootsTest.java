@@ -80,7 +80,7 @@ public class SourceRootsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );

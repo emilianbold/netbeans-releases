@@ -39,7 +39,6 @@
 package org.netbeans.modules.nativeexecution.support;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -63,7 +62,7 @@ public final class TerminalProfile {
     }
 
     public void setCommand(String command) {
-        this.command = command;
+        this.command = command.trim();
     }
 
     public void setID(String id) {
@@ -78,29 +77,15 @@ public final class TerminalProfile {
         return command;
     }
 
-    public List<String> wrapCommand(String title, String... args) {
-        String cmd = searchPaths.get(0) + "/" + command;
-        ArrayList<String> result = new ArrayList<String>();
-
-        result.add(cmd);
-
-        for (String arg : arguments) {
-            if ("$@".equals(arg)) {
-                result.addAll(Arrays.asList(args));
-                continue;
-            }
-
-            if (arg.contains("$title")){
-                arg = arg.replace("$title", title);
-            }
-
-            result.add(arg);
-        }
-
-        return result;
-    }
-
     public void addSearchPath(String path) {
         searchPaths.add(path);
+    }
+
+    public List<String> getSearchPaths() {
+        return searchPaths;
+    }
+
+    public List<String> getArguments() {
+        return arguments;
     }
 }

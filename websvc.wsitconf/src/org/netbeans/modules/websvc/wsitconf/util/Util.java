@@ -46,7 +46,6 @@ import java.awt.Component;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import java.awt.Container;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -66,22 +65,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import javax.xml.namespace.QName;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
-import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -92,7 +81,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class Util {
@@ -474,6 +462,9 @@ public class Util {
     }
 
     public static void checkMetroLibrary(Project p) {
+        if (p == null) {
+            return;
+        }
         WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
         if (wsitProvider == null) return;
         if (!wsitProvider.isWsitSupported()) {
@@ -484,54 +475,6 @@ public class Util {
                 wsitProvider.addMetroLibrary();
             }
         }
-    }
-
-    public static WSStackVersion getHighestWSStackVersion(Project project) {
-
-        J2eePlatform platform = ServerUtils.getJ2eePlatform(project);
-
-        WSStackVersion version = null;
-        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackProvider.getJaxWsStack(platform);
-
-        if (wsStack != null) {
-            version = wsStack.getVersion();
-        }
-        InputStream is = null;
-        BufferedReader r = null;
-        try {
-            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
-            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/version.properties"); //NOI18N
-            if (wsimportFO != null && wsimportFO.isValid()) {
-                is = wsimportFO.getInputStream();
-                r = new BufferedReader(new InputStreamReader(is));
-                String ln = null;
-                String ver = null;
-                while ((ln = r.readLine()) != null) {
-                    String line = ln.trim();
-                    if (line.startsWith("major-version=")) {        //NOI18N
-                        ver = line.substring(14);break;
-                    }
-                }
-                WSStackVersion projectVersion = WSStackFactory.createWSStackVersion(ver);
-                if (projectVersion.compareTo(version) > 0) {
-                    version = projectVersion;
-                }
-            }
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            try {
-                if (r != null) r.close();
-                if (is != null) is.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return version;
     }
 
 }

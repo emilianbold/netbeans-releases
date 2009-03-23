@@ -42,6 +42,9 @@ package org.netbeans.modules.parsing.api;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.openide.filesystems.FileObject;
 
 
@@ -66,6 +69,7 @@ public final class Snapshot {
     int[][]                 currentToOriginal;
     int[][]                 originalToCurrent;
     private Source          source;
+    private TokenHierarchy<?> tokenHierarchy;
     
    
     Snapshot (
@@ -114,10 +118,10 @@ public final class Snapshot {
             });
         else {
             newCurrentToOriginal.add (new int[] {
-                0, currentToOriginal [i - 1] [1] + offset
+                0, currentToOriginal [i - 1] [1] + offset - currentToOriginal [i - 1] [0]
             });
             newOriginalToCurrent.add (new int[] {
-                currentToOriginal [i - 1] [1] + offset, 0
+                currentToOriginal [i - 1] [1] + offset - currentToOriginal [i - 1] [0], 0
             });
         }
         for (; i < currentToOriginal.length && currentToOriginal [i] [0] < offset + length; i++) {
@@ -126,14 +130,16 @@ public final class Snapshot {
             });
             if (currentToOriginal [i] [1] >= 0)
                 newOriginalToCurrent.add (new int[] {
-                    currentToOriginal [i] [1], currentToOriginal [i] [0] - offset
+                    originalToCurrent [i] [0], originalToCurrent [i] [1] - offset
                 });
             else
                 newOriginalToCurrent.add (new int[] {
-                    newOriginalToCurrent.get (i - 1) [0] + newCurrentToOriginal.get (i) [0] - newCurrentToOriginal.get (i - 1) [0], -1
+                    originalToCurrent [i] [0], -1
                 });
         }
-        if (newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1] >= 0)
+        if (newOriginalToCurrent.size () > 0 &&
+            newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1] >= 0
+        )
             newOriginalToCurrent.add (new int[] {
                 newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [0] + 
                     length - 
@@ -206,7 +212,25 @@ public final class Snapshot {
     ) {
         return mimePath;
     }
-    
+
+    /**
+     * Get the <code>TokenHierarchy</code> lexed from this snapshot.
+     * 
+     * @return <code>TokenHierarchy</code> created by a <code>Lexer</code> registered
+     *   for this <code>Snapshot</code>'s mime type or <code>null</code> if there is
+     *   no such <code>Lexer</code>.
+     * @since 1.1
+     */
+    public TokenHierarchy<?> getTokenHierarchy() {
+        if (tokenHierarchy == null) {
+            Language<? extends TokenId> lang = Language.find(getMimeType());
+            if (lang != null) {
+                tokenHierarchy = TokenHierarchy.create(text, lang);
+            }
+        }
+        return tokenHierarchy;
+    }
+
     /**
      * Gets an offset in the original source corresponding to an offset in this snapshot.
      * The method will return <code>-1</code> if <code>snapshotOffset</code> can't

@@ -42,7 +42,7 @@ package org.netbeans.modules.maven.api.archetype;
 import java.util.List;
 
 /**
- * Deprecated: user layer based registration instead:
+ * For simple cases, use layer based registration instead:
  * 
      <p>
        "Projects/org-netbeans-modules-maven/Archetypes" folder contains fileobjects
@@ -68,9 +68,8 @@ import java.util.List;
  * </strike>
  * </p>
  * @author mkleint
- * @deprecated Use layer based registration instead.
  */
-public @Deprecated interface ArchetypeProvider {
+public interface ArchetypeProvider {
 
     /**
      * return Archetype instances known to this provider. Is called once per

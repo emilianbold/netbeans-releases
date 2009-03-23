@@ -45,7 +45,6 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
@@ -87,9 +86,9 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     /** icon of the action, null means no icon */
     private final Icon forcedIcon;
     /** true when icon of original action should be ignored */
-    private boolean forceIcon;
+    private final boolean forceIcon;
 
-    private Lookup.Result<KeyBindingSettings> kbs;
+    private Lookup.Result<KeyBindingSettings> kbs = null;
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
@@ -98,12 +97,6 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
     
     public MainMenuAction (boolean forceIcon, Icon forcedIcon) {
-        // needs to listen on Registry - resultChanged event is fired before 
-        // TopComponent is really focused - this causes problems in getComponent method 
-        Registry.addChangeListener(this);
-        kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
-        kbs.addLookupListener(this);
-        kbs.allInstances();
         this.forceIcon = forceIcon;
         this.forcedIcon = forcedIcon;
     }
@@ -182,8 +175,19 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
     
     
-    /** Sets the state of JMenuItem*/
+    /** Sets the state of JMenuItem. Should be called from subclasses constructors
+     * after their initialization is done.
+     */
     protected void setMenu(){
+        if (kbs == null) {
+            // needs to listen on Registry - resultChanged event is fired before
+            // TopComponent is really focused - this causes problems in getComponent method
+            Registry.addChangeListener(this);
+            kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
+            kbs.addLookupListener(this);
+            kbs.allInstances();
+        }
+
         ActionMap am = getContextActionMap();
         Action action = null;
         if (am != null) {

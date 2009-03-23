@@ -70,6 +70,7 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
         testUnit = new javax.swing.JCheckBox();
         rspec = new javax.swing.JCheckBox();
         autotest = new javax.swing.JCheckBox();
+        autospec = new javax.swing.JCheckBox();
 
         testingOptionsTitle.setText(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "RubyTestingOptionsPanel.testingOptionsTitle.text")); // NOI18N
 
@@ -84,6 +85,8 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
 
         autotest.setText(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "RubyTestingOptionsPanel.autotest.text")); // NOI18N
 
+        autospec.setText(org.openide.util.NbBundle.getMessage(RubyTestingOptionsPanel.class, "RubyTestingOptionsPanel.autospec.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -97,7 +100,8 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
                     .add(rspec)
                     .add(testUnit)
-                    .add(autotest))
+                    .add(autotest)
+                    .add(autospec))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -115,7 +119,9 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rspec)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(autotest))
+                .add(autotest)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(autospec))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -135,6 +141,10 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
         return autotest.isSelected();
     }
 
+    boolean isAutoSpecSelected() {
+        return autospec.isSelected();
+    }
+
     void setTestUnit(boolean selected) {
         testUnit.setSelected(selected);
     }
@@ -147,7 +157,12 @@ final class RubyTestingOptionsPanel extends javax.swing.JPanel {
         autotest.setSelected(selected);
     }
 
+    void setAutoSpec(boolean selected) {
+        autospec.setSelected(selected);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox autospec;
     private javax.swing.JCheckBox autotest;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox rspec;

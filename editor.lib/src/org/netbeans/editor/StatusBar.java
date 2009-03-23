@@ -289,9 +289,16 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
         cell.addMouseListener(new MouseAdapter() {
             public @Override void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    Action a = Utilities.getKit(editorUI.getComponent()).getActionByName(org.netbeans.editor.ext.ExtKit.gotoAction);
-                    if (a != null)
-                        a.actionPerformed(new ActionEvent(editorUI.getComponent(), 0, null));
+                    JTextComponent jtc = editorUI.getComponent();
+                    if (jtc != null) {
+                        BaseKit kit = Utilities.getKit(jtc);
+                        if (kit != null) {
+                            Action a = kit.getActionByName(org.netbeans.editor.ext.ExtKit.gotoAction);
+                            if (a != null) {
+                                a.actionPerformed(new ActionEvent(jtc, 0, null));
+                            }
+                        }
+                    }
                 }
             }            
         });

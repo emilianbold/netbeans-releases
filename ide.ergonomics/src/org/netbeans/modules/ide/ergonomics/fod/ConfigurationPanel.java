@@ -76,14 +76,16 @@ public class ConfigurationPanel extends JPanel {
     final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private FeatureInfo featureInfo;
     private Callable<JComponent> callable;
+    private final Boolean autoActivate;
 
-    public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info) {
+    public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info, Boolean auto) {
         FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
         initComponents();
         this.callable = callable;
         String lblMsg = null;
         String btnMsg = null;
         featureInfo = info;
+        autoActivate = auto;
         if (featureInfo != null && featureInfo.isPresent()) {
             lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_EnableInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Enable");
@@ -91,8 +93,14 @@ public class ConfigurationPanel extends JPanel {
             lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_DownloadInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Download");
         }
+        boolean activateNow;
+        if (autoActivate != null) {
+            activateNow = Boolean.TRUE.equals(autoActivate);
+        } else {
+            activateNow = Boolean.getBoolean("noActivateButton"); // NOI18N
+        }
 
-        if (Boolean.getBoolean("noActivateButton") == true) {
+        if (activateNow) {
             infoLabel.setVisible(false);
             downloadButton.setVisible(false);
             downloadButtonActionPerformed(null);

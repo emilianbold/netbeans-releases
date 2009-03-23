@@ -111,7 +111,7 @@ public class MeasureSessionBeanActionTest extends PerformanceTestCase {
     @Override
     public void initialize() {
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
 //        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);

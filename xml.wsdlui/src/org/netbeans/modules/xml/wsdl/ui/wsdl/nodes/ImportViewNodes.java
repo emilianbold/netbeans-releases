@@ -72,7 +72,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -120,17 +120,20 @@ public class ImportViewNodes {
 
         // XXX May need to change icons as well
 
+        @Override
         public String getName() {
                 return group.getName();
             
         }
 
+        @Override
         public String getDisplayName() {
                 return MessageFormat.format( GROUP_NAME_PATTERN,
                     new Object[] { group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName() } );
             
         }
 
+        @Override
         public String getShortDescription() {
             FileObject gdir = group.getRootFolder();
             String dir = FileUtil.getFileDisplayName(gdir);
@@ -139,23 +142,28 @@ public class ImportViewNodes {
                                        dir);
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
 
+        @Override
         public boolean canCut() {
             return false;
         }
 
+        @Override
         public boolean canCopy() {
             // At least for now.
             return false;
         }
 
+        @Override
         public boolean canDestroy() {
             return false;
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
 
             if ( context ) {
@@ -219,11 +227,13 @@ public class ImportViewNodes {
                 this.mFileToExclude = fileToExclude;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys( getKeys() );
         }
 
+        @Override
         protected void removeNotify() {
             setKeys( Collections.EMPTY_SET );
             super.removeNotify();
@@ -282,17 +292,20 @@ public class ImportViewNodes {
             this.mFileToExclude = fileToExclude;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys( getKeys() );
         }
 
+        @Override
         protected void removeNotify() {
             setKeys( Collections.EMPTY_SET );
             super.removeNotify();
         }
         
         
+        @Override
         protected Node[] createNodes(Object key) {
 
             FileObject folder = null;
@@ -325,6 +338,7 @@ public class ImportViewNodes {
                             Project prj = FileOwnerQuery.getOwner(folder);
                             if(ownerProject.equals(prj)) {
                                 FilterNode fn = new FilterNode(delegate) {
+                                     @Override
                                      public Action getPreferredAction() {
                                          return null;
                                      }
@@ -427,6 +441,7 @@ public class ImportViewNodes {
             this.dupCookie =  new DuplicateFileCookie(fileObject);
         }
         
+        @Override
         public Image getIcon(int type) {
             Image img = super.getIcon(type);
             fileExists = isFileExistsInPreviousProject();
@@ -440,6 +455,7 @@ public class ImportViewNodes {
         }
         
         
+        @Override
         public Cookie getCookie(Class type) {
             Cookie c = this.set.getCookie(type);
             if(c != null) {
@@ -449,6 +465,7 @@ public class ImportViewNodes {
             return super.getCookie(type);
         }
         
+        @Override
         public String getShortDescription() {
             if(isFileExistsInPreviousProject()) {
                 return "File already exists in a previous project.";

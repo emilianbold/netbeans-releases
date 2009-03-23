@@ -106,6 +106,8 @@ import org.openide.util.Exceptions;
  */
 public class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
 
+    private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
+    
     final static Map<Severity, AttributeSet> COLORINGS;
 
     static {
@@ -141,7 +143,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 EditorCookie.Observable editorCookie = od.getCookie(EditorCookie.Observable.class);
 
                 if (editorCookie == null) {
-                    Logger.getLogger("global").log(Level.WARNING,
+                    LOG.log(Level.WARNING,
                             "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
                 } else {
                     Document doc = editorCookie.getDocument();
@@ -154,7 +156,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             return result;
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
             return null;
         }
     }
@@ -177,6 +179,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         propertyChange(null);
 
+//        LOG.log(Level.FINE, null, new Throwable("Creating AnnotationHolder for " + file.getPath()));
         Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder",
                     new Object[] {file, this});
     }
@@ -468,7 +471,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 long endTime = System.currentTimeMillis();
 
-                Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "updateVisibleRanges: time={0}", endTime - startTime);
+                LOG.log(Level.FINE, "updateVisibleRanges: time={0}", endTime - startTime);
             }
         });
     }
@@ -522,7 +525,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             }
         });
 
-        Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate);
+        LOG.log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate);
 
         for (ErrorDescription e : errorsToUpdate) {
             //TODO: #115340: e can be for an unknown reason null:
@@ -539,7 +542,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         long endTime = System.currentTimeMillis();
 
-        Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "updateAnnotations: time={0}", endTime - startTime);
+        LOG.log(Level.FINE, "updateAnnotations: time={0}", endTime - startTime);
     }
 
     private List<ErrorDescription> getErrorsForLayer(String layer) {
@@ -709,7 +712,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     endOffset = beginOffset;
                     beginOffset = swap;
 
-                    Logger.getLogger(AnnotationHolder.class.getName()).warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString());
+                    LOG.warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString());
                 }
 
                 int[] h = new int[] {beginOffset, endOffset};
@@ -767,7 +770,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         sb.append("]");
                     }
 
-                    Logger.getLogger(AnnotationHolder.class.getName()).warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString());
+                    LOG.warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString());
                 }
             }
         }
@@ -797,7 +800,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 try {
                     setErrorDescriptionsImpl(file, layer, errors);
                 } catch (IOException e) {
-                    Logger.getLogger("global").log(Level.WARNING, e.getMessage(), e);
+                    LOG.log(Level.WARNING, e.getMessage(), e);
                 }
             }
         });
@@ -841,7 +844,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             for (ErrorDescription ed : errors) {
                 if (ed == null) {
-                    Logger.getLogger(AnnotationHolder.class.getName()).log(Level.WARNING, "'null' ErrorDescription in layer {0}.", layer); //NOI18N
+                    LOG.log(Level.WARNING, "'null' ErrorDescription in layer {0}.", layer); //NOI18N
                     continue;
                 }
 
@@ -918,7 +921,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     return - (index + 1);
                 }
             } catch (Abort a) {
-                Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "a null Position detected - clearing");
+                LOG.log(Level.FINE, "a null Position detected - clearing");
                 int removedCount = 0;
                 for (Iterator<Reference<Position>> it = knownPositions.iterator(); it.hasNext(); ) {
                     if (it.next().get() == null) {
@@ -926,7 +929,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         it.remove();
                     }
                 }
-                Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
+                LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
             }
         }
     }
@@ -959,7 +962,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                     return p;
                 } catch (Abort a) {
-                    Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "a null Position detected - clearing");
+                    LOG.log(Level.FINE, "a null Position detected - clearing");
                     int removedCount = 0;
                     for (Iterator<Reference<Position>> it = knownPositions.iterator(); it.hasNext(); ) {
                         if (it.next().get() == null) {
@@ -967,11 +970,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                             it.remove();
                         }
                     }
-                    Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
+                    LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
                 }
             }
         } finally {
-            Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "knownPositions.size={0}", knownPositions.size());
+            LOG.log(Level.FINE, "knownPositions.size={0}", knownPositions.size());
         }
     }
 
@@ -1149,7 +1152,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         AnnotationHolder h = AnnotationHolder.getInstance(((DataObject) source).getPrimaryFile());
 
                         if (h == null) {
-                            Logger.getLogger(AnnotationHolder.class.getName()).log(Level.INFO,
+                            LOG.log(Level.INFO,
                                     "File: " + ((DataObject) source).getPrimaryFile().getPath() + // NOI18N
                                     "\nStartOffset: " + startOffset); // NOI18N
                             return;

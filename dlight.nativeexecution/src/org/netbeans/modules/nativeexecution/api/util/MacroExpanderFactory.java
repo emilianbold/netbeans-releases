@@ -253,6 +253,7 @@ public final class MacroExpanderFactory {
             if ("i386".equals(platform) || // NOI18N
                     "i686".equals(platform) || // NOI18N
                     "x86_64".equals(platform) || // NOI18N
+                    "amd64".equals(platform) || // NOI18N
                     "athlon".equals(platform)) { // NOI18N
                 platform = "x86"; // NOI18N
             }

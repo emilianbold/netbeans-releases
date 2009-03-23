@@ -59,7 +59,7 @@ public class TestProject implements Project {
 
     public TestProject(String name, FileObject directory) {
         this.directory = directory;
-        lookup = Lookups.fixed(new TestProjectInformation(this, name));
+        lookup = Lookups.fixed(this, new TestProjectInformation(this, name), new GrailsProjectConfig(this));
     }
 
     public Lookup getLookup() {

@@ -67,7 +67,8 @@ public class SchemaBasedConfigPropertySupportFactory {
     public static PropertySupport getPropertySupport(
             final PropertySheetOwner propertySheetOwner,
             final Attribute attr,
-            final JBIComponentConfigurationMBeanAttributeInfo info) {
+            final JBIComponentConfigurationMBeanAttributeInfo info,
+            String componentName) {
 
         JBIComponentConfigurationDescriptor descriptor = info.getConfigurationDescriptor();
         QName typeQName = descriptor.getTypeQName();
@@ -77,7 +78,7 @@ public class SchemaBasedConfigPropertySupportFactory {
 
         if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration) {
             return new ApplicationConfigurationsPropertySupport(
-                    propertySheetOwner, attr, info);
+                    propertySheetOwner, attr, info, componentName);
         } else if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             return new ApplicationVariablesPropertySupport(
                     propertySheetOwner, attr, info);

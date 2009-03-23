@@ -73,7 +73,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 55;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 62;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -169,19 +169,11 @@ public final class RepositoryUtils {
                 int index = nextIndex();
                 System.err.println(index + ": " + System.identityHashCode(key) + "@putting key " + key);
                 repository.put(key, obj);
-                // A workaround for #131701
-                if (key instanceof FileKey) {
-                    repository.hang(key, obj);
-                }
                 time = System.currentTimeMillis() - time;
                 System.err.println(index + ": " + System.identityHashCode(key) + "@put in " + time + "ms the key " + key);
                 return;
             }
             repository.put(key, obj);
-            // A workaround for #131701
-            if (key instanceof FileKey) {
-                repository.hang(key, obj);
-            }
         }
     }
 

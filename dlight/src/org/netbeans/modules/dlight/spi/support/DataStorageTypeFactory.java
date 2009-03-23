@@ -36,38 +36,40 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.support;
 
 import org.netbeans.modules.dlight.spi.storage.*;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.dlight.spi.impl.DataStorageTypeAccessor;
 
 /**
  *This is factory to get instance of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType} object
  */
 public final class DataStorageTypeFactory {
-  private static DataStorageTypeFactory instance = null;
-  private final HashMap<String, DataStorageType> storageTypesCache = new HashMap<String, DataStorageType>();
 
-  private DataStorageTypeFactory(){
-    
-  }
-  
-  public static DataStorageTypeFactory getInstance(){
-    if (instance == null){
-      instance = new DataStorageTypeFactory();
+    private static DataStorageTypeFactory instance = new DataStorageTypeFactory();
+    private final ConcurrentMap<String, DataStorageType> storageTypesCache =
+            new ConcurrentHashMap<String, DataStorageType>();
+
+    private DataStorageTypeFactory() {
     }
-    return instance;
-  }
 
-  public synchronized  DataStorageType getDataStorageType(String id){
-    if (storageTypesCache.containsKey(id)){
-      return  storageTypesCache.get(id);
+    public static DataStorageTypeFactory getInstance() {
+        return instance;
     }
-    DataStorageType type = DataStorageTypeAccessor.getDefault().createNew(id);
-    storageTypesCache.put(id, type);
-    return type;
-  }
 
+    public DataStorageType getDataStorageType(String id) {
+        DataStorageType type = storageTypesCache.get(id);
+
+        if (type == null) {
+            type = DataStorageTypeAccessor.getDefault().createNew(id);
+            DataStorageType oldType = storageTypesCache.putIfAbsent(id, type);
+            if (oldType != null) {
+                type = oldType;
+            }
+        }
+
+        return type;
+    }
 }

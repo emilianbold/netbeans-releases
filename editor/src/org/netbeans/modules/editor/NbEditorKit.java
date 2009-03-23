@@ -99,6 +99,7 @@ import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -868,6 +869,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         NbEditorToolBar.initKeyBindingList(getContentType());
         ToolbarActionsProvider.getToolbarItems(getContentType());
         ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
+        //#159661: Pre-initialize annotationTypesFolder here
+        AnnotationTypesFolder.getAnnotationTypesFolder();
 
         return null;
     }

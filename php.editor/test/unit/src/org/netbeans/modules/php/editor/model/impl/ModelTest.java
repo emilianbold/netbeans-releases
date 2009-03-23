@@ -40,7 +40,7 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.FileScope;
 
 /**
@@ -219,12 +219,12 @@ public class ModelTest extends ModelTestBase {
         assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),"myclass", "mysuperclass").size());
         assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),"MyClass").size());
         assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),"MySuperClass").size());
-        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(), NameKind.PREFIX, "My").size());
-        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(),NameKind.CASE_INSENSITIVE_PREFIX, "my").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),NameKind.CAMEL_CASE, "MC").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),NameKind.CAMEL_CASE, "MSC").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),NameKind.REGEXP, "M[^z].*C.*ss").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),NameKind.CASE_INSENSITIVE_REGEXP, "m[y].*c.*ss").size());
+        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(), QuerySupport.Kind.PREFIX, "My").size());
+        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
+        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CAMEL_CASE, "MC").size());
+        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CAMEL_CASE, "MSC").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.REGEXP, "M[^z].*C.*ss").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m[y].*c.*ss").size());
 
         ClassScope myClass = ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),"MyClass"));
         assertNotNull(myClass);
@@ -236,7 +236,7 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth")));
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.STATIC)));
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.PUBLIC)));
-        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods(NameKind.CASE_INSENSITIVE_PREFIX, "StAtMeT",
+        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods(QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "StAtMeT",
                 PhpModifiers.PUBLIC, PhpModifiers.STATIC)));
         assertNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.PRIVATE)));
 
@@ -248,7 +248,7 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(type);
         assertEquals("MySuperClass", type.getName());
         assertEquals(method.getName(), "meth");
-        assertSame(myClass, ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),NameKind.REGEXP, "MyC.*")));
+        assertSame(myClass, ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.REGEXP, "MyC.*")));
 
         assertSame(method.getInScope(), myClass);
         //fields
@@ -260,11 +260,11 @@ public class ModelTest extends ModelTestBase {
 
         assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),"MyIFace").size());
         assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),"MySuperIFace").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),NameKind.PREFIX, "My").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),NameKind.CASE_INSENSITIVE_PREFIX, "my").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),NameKind.CAMEL_CASE, "MIF").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),NameKind.REGEXP, "M.*I.*").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),NameKind.CASE_INSENSITIVE_REGEXP, "m.*f.*").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.PREFIX, "My").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
+        assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CAMEL_CASE, "MIF").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.REGEXP, "M.*I.*").size());
+        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m.*f.*").size());
 
         //functions
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredFunctions(),"myfnc")));

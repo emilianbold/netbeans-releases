@@ -74,11 +74,10 @@ public class FileEncodingQueryTest extends NbTestCase {
     private AntProjectHelper helper;
     private J2SEProject prj;
 
+    @Override
     protected void setUp() throws Exception {
         ClassLoader l = this.getClass().getClassLoader();
-        MockLookup.setLookup(
-                Lookups.fixed(l, new DummyXMLEncodingImpl()),
-                Lookups.metaInfServices(l));
+        MockLookup.setLayersAndInstances(l, new DummyXMLEncodingImpl());
         super.setUp();
         this.clearWorkDir();
         File wd = getWorkDir();

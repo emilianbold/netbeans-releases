@@ -49,31 +49,25 @@ import org.netbeans.api.lexer.TokenId;
  * @author Jan Jancura
  */
 public enum OQLTokenId implements TokenId {
+    WHITESPACE("whitespace"),
+    BRACE("brace"),
+    COMMA("comma"),
+    DOT("dot"),
+    KEYWORD("keyword"),
+    IDENTIFIER("identifier"),
+    JSBLOCK("js-block"),
+    UNKNOWN("unknown"),
+    CLAZZ("clazz"),
+    CLAZZ_E("clazz-typo"),
+    ERROR("error");
 
-    NUMERIC ("numeric"),
-    HEX_NUMBER ("hex_number"),
-    STRING ("string"),
-    OPERATOR ("operator"),
-    BRACES ("braces"),
-    KEYWORD ("keyword"),
-    WHITESPACE ("whitespace"),
-    FORM_ADEPT ("form_adept"),
-    SELECTOR ("selector"),
-    INSTANCE_OF ("instance_of"),
-    CLASS ("class"),
-    IDENTIFIER ("identifier"),
-    ERROR ("error"),
-    CONDITION ("condition");
+    final private String primaryCategory;
 
-    private String  name;
-    
-    OQLTokenId (
-        String  name
-    ) {
-        this.name = name;
+    OQLTokenId(String primaryCategory) {
+        this.primaryCategory = primaryCategory;
     }
 
-    public String primaryCategory () {
-        return name;
+    public String primaryCategory() {
+        return primaryCategory;
     }
 }

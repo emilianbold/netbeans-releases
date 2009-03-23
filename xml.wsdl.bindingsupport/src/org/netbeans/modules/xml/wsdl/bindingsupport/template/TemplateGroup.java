@@ -43,7 +43,7 @@
  *	This generated bean class TemplateGroup
  *	matches the schema element 'templateGroup'.
  *
- *	Generated on Thu Sep 14 11:59:06 PDT 2006
+ *	Generated on Wed Oct 22 17:28:35 PDT 2008
  *
  *	This class matches the root element of the XML Schema,
  *	and is the root of the bean graph.
@@ -51,9 +51,14 @@
  * 	templateGroup <templateGroup> : TemplateGroup
  * 		[attr: namespace CDATA #IMPLIED  : java.lang.String]
  * 		[attr: prefix CDATA #IMPLIED  : java.lang.String]
+ * 		[attr: skeleton CDATA #IMPLIED  : boolean]
  * 		template <template> : TemplateType[1,n]
  * 			[attr: name CDATA #IMPLIED  : java.lang.String]
  * 			[attr: default CDATA #IMPLIED  : boolean]
+ * 			[attr: skeleton CDATA #IMPLIED  : boolean]
+ * 			[attr: mode CDATA #IMPLIED  : java.lang.String]
+ * 			wsdlTemplate <wsdlTemplate> : WsdlTemplateType
+ * 				[attr: file CDATA #IMPLIED  : java.lang.String]
  * 			wsdlElement <wsdlElement> : WsdlElementType[1,n]
  * 				[attr: name CDATA #IMPLIED  : java.lang.String]
  * 				extensionElement <extensionElement> : ExtensionElementType[1,n]
@@ -70,10 +75,12 @@ package org.netbeans.modules.xml.wsdl.bindingsupport.template;
 public class TemplateGroup {
 	public static final String NAMESPACE = "Namespace";	// NOI18N
 	public static final String PREFIX = "Prefix";	// NOI18N
+	public static final String SKELETON = "Skeleton";	// NOI18N
 	public static final String TEMPLATE = "Template";	// NOI18N
 
 	private java.lang.String _Namespace;
 	private java.lang.String _Prefix;
+	private boolean _Skeleton;
 	private java.util.List _Template = new java.util.ArrayList();	// List<TemplateType>
 	private java.lang.String schemaLocation;
 
@@ -109,6 +116,7 @@ public class TemplateGroup {
 	public TemplateGroup(org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup source, boolean justData) {
 		_Namespace = source._Namespace;
 		_Prefix = source._Prefix;
+		_Skeleton = source._Skeleton;
 		for (java.util.Iterator it = source._Template.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType srcElement = (org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType)it.next();
@@ -133,6 +141,15 @@ public class TemplateGroup {
 
 	public java.lang.String getPrefix() {
 		return _Prefix;
+	}
+
+	// This attribute is optional
+	public void setSkeleton(boolean value) {
+		_Skeleton = value;
+	}
+
+	public boolean isSkeleton() {
+		return _Skeleton;
 	}
 
 	// This attribute is an array containing at least one element
@@ -319,6 +336,10 @@ public class TemplateGroup {
 			org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup.writeXML(out, _Prefix, true);
 			out.write("'");	// NOI18N
 		}
+		// skeleton is an attribute with namespace http://xml.netbeans.org/schema/templates
+		out.write(" skeleton='");
+		out.write(_Skeleton ? "true" : "false");
+		out.write("'");	// NOI18N
 	}
 
 	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
@@ -447,6 +468,11 @@ public class TemplateGroup {
 			attrValue = attr.getValue();
 			_Prefix = attrValue;
 		}
+		attr = (org.w3c.dom.Attr) attrs.getNamedItem("skeleton");
+		if (attr != null) {
+			attrValue = attr.getValue();
+			_Skeleton = java.lang.Boolean.valueOf(attrValue).booleanValue();
+		}
 	}
 
 	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
@@ -517,6 +543,8 @@ public class TemplateGroup {
 			setNamespace((java.lang.String)value);
 		else if (name == "prefix")
 			setPrefix((java.lang.String)value);
+		else if (name == "skeleton")
+			setSkeleton(((java.lang.Boolean)value).booleanValue());
 		else if (name == "template")
 			addTemplate((TemplateType)value);
 		else if (name == "template[]")
@@ -530,6 +558,8 @@ public class TemplateGroup {
 			return getNamespace();
 		if (name == "prefix")
 			return getPrefix();
+		if (name == "skeleton")
+			return (isSkeleton() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		if (name == "template[]")
 			return getTemplate();
 		throw new IllegalArgumentException(name+" is not a valid property name for TemplateGroup");
@@ -603,6 +633,20 @@ public class TemplateGroup {
 				++index;
 			}
 		}
+		if (childObj instanceof java.lang.Boolean) {
+			java.lang.Boolean child = (java.lang.Boolean) childObj;
+			if (((java.lang.Boolean)child).booleanValue() == _Skeleton) {
+				if (returnConstName) {
+					return SKELETON;
+				} else if (returnSchemaName) {
+					return "skeleton";
+				} else if (returnXPathName) {
+					return "@skeleton";
+				} else {
+					return "Skeleton";
+				}
+			}
+		}
 		return null;
 	}
 
@@ -648,6 +692,9 @@ public class TemplateGroup {
 		if (!(_Prefix == null ? inst._Prefix == null : _Prefix.equals(inst._Prefix))) {
 			return false;
 		}
+		if (!(_Skeleton == inst._Skeleton)) {
+			return false;
+		}
 		if (sizeTemplate() != inst.sizeTemplate())
 			return false;
 		// Compare every element.
@@ -666,6 +713,7 @@ public class TemplateGroup {
 		int result = 17;
 		result = 37*result + (_Namespace == null ? 0 : _Namespace.hashCode());
 		result = 37*result + (_Prefix == null ? 0 : _Prefix.hashCode());
+		result = 37*result + (_Skeleton ? 0 : 1);
 		result = 37*result + (_Template == null ? 0 : _Template.hashCode());
 		return result;
 	}
@@ -678,6 +726,49 @@ public class TemplateGroup {
 
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://xml.netbeans.org/schema/templates"
             xmlns:tns="http://xml.netbeans.org/schema/templates"
@@ -689,20 +780,27 @@ public class TemplateGroup {
             </xsd:sequence>
             <xsd:attribute name="namespace" type="xsd:string"/>
             <xsd:attribute name="prefix" type="xsd:string"/>
+            <xsd:attribute name="skeleton" type="xsd:boolean"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:complexType name="templateType">
         <xsd:sequence>
+            <xsd:element name="wsdlTemplate" type="tns:wsdlTemplateType" maxOccurs="1"/>
             <xsd:element name="wsdlElement" type="tns:wsdlElementType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="default" type="xsd:boolean"/>
+        <xsd:attribute name="skeleton" type="xsd:boolean"/>
+        <xsd:attribute name="mode" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="wsdlElementType">
         <xsd:sequence>
             <xsd:element name="extensionElement" type="tns:extensionElementType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="wsdlTemplateType">
+        <xsd:attribute name="file" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="extensionElementType">
         <xsd:sequence>
@@ -715,6 +813,5 @@ public class TemplateGroup {
         <xsd:attribute name="defaultValue" type="xsd:string"/>
     </xsd:complexType>
 </xsd:schema>
-
 
 */

@@ -96,6 +96,17 @@ public interface CsmFinder {
     */
     public List<CsmObject> findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);
 
+    /**
+     * Find elements (functions, variables, enumerators) by name and in some namespace.
+     *
+     * @param nmsp namespace where the elements should be searched for. Can't be null.
+     * @param begining of the name of the element. The namespace name must be omitted.
+     * @param exactMatch whether the given name is the exact requested name
+     *   of the element or not.
+     * @return list of the matching elements
+     */
+    public List<CsmObject> findStaticNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch);
+
     /** Find fields by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the fields.

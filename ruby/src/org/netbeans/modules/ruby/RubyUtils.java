@@ -38,6 +38,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -911,5 +913,21 @@ public class RubyUtils {
         }
 
         return buf.toString();
+    }
+
+    public static BaseDocument getDocument(Result result) {
+        return getDocument(result, false);
+    }
+
+    public static BaseDocument getDocument(Result result, boolean forceOpen) {
+        return (BaseDocument) result.getSnapshot().getSource().getDocument(forceOpen);
+    }
+
+    public static FileObject getFileObject(Result result) {
+        return result.getSnapshot().getSource().getFileObject();
+    }
+
+    static boolean isRubyStubsURL(String url) {
+        return url != null && url.indexOf("rubystubs") != -1; // NOI18N
     }
 }

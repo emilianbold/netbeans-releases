@@ -456,6 +456,7 @@ public final class CommandUtils {
         }
         URI retval;
         try {
+            //TODO: check the conversion becaus eof #159928
             retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
                     originalURL.getHost(), originalURL.getPort(), originalURL.getPath(),
                     queryWithoutQMark, originalURL.getRef());

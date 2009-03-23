@@ -44,9 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -127,35 +124,23 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         }
     }
     
-    protected String getDefaultPath() {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getNames().length > 0){
-            return compiler.getNames()[0];
-        }
-        return ""; // NOI18N
-    }
-
     protected abstract String getCompilerStderrCommand();
     protected abstract String getCompilerStderrCommand2();
     
     private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList<String>();
         systemPreprocessorSymbolsList = new PersistentList<String>();
-        String path = getPath();
-        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
-            path = getDefaultPath();
-        }
         try {
-            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
+            getSystemIncludesAndDefines(getCompilerStderrCommand(), false);
             if (getCompilerStderrCommand2() != null) {
-                getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand2(), false);
+                getSystemIncludesAndDefines(getCompilerStderrCommand2(), false);
             }
             systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
 
             saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
     }

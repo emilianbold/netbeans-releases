@@ -69,9 +69,12 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xml.xdm.nodes.Convertors;
 import org.openide.DialogDisplayer;
@@ -143,6 +146,30 @@ public class WSDLEditorSupport extends DataEditorSupport
         }
         return (Pane) tc;
     }
+
+    @Override
+    public void open() {
+        if (getOpenedPanes() != null &&
+                getOpenedPanes().length > 0) {
+            //if already open, open current view.
+            super.open();
+            return;
+        }
+        // Do not use  ViewComponentCookie here, because of recursion.
+        WSDLModel model = getModel();
+        Definitions def = null;
+        if (model.getState() == Model.State.VALID) {
+            def = model.getDefinitions();
+        }
+        String preferredID = WSDLTreeViewMultiViewDesc.PREFERRED_ID;
+        if (def == null) {
+            preferredID = WSDLSourceMultiviewDesc.PREFERRED_ID;
+        }
+        super.open();
+        WSDLMultiViewFactory.requestMultiviewActive(preferredID);
+    }
+    
+    
 
     /**
      *

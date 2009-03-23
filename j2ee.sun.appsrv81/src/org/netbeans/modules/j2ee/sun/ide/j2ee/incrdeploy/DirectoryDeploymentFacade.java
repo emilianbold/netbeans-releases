@@ -83,15 +83,17 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     private DeploymentManager dm;
     private Boolean issue2999Fixed = null;
     
-    private static Map cache = new WeakHashMap();
+    private static final Map cache = new WeakHashMap();
 
     public static IncrementalDeployment get(DeploymentManager dm) {
-        IncrementalDeployment id = (IncrementalDeployment) cache.get(dm);
-        if (null == id) {
-            id = new DirectoryDeploymentFacade(dm);
-            cache.put(dm,id);
+        synchronized (cache) {
+            IncrementalDeployment id = (IncrementalDeployment) cache.get(dm);
+            if (null == id) {
+                id = new DirectoryDeploymentFacade(dm);
+                cache.put(dm,id);
+            }
+            return id;
         }
-        return id;
     }
     
     /** Creates a new instance of DirectoryDeploymentFacade */
@@ -139,6 +141,12 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) <=
                 ServerLocationManager.GF_V2) {
             Target[] targs = manager.getTargets();
+            if (null == targs || targs.length == 0) {
+                // the server is not running.. so we cannot know what the
+                // status is for this issue... right now.
+                issue2999Fixed = null;
+                return;
+            }
             TargetModuleID tmids[] = null;
             try {
                 tmids = manager.getRunningModules(ModuleType.EAR, targs);
@@ -163,6 +171,8 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             } catch (Exception ex) {
                 // better safe than sorry here
                 issue2999Fixed = false;
+                Logger.getLogger(DirectoryDeploymentFacade.class.getName()).
+                            log(Level.INFO, "", ex);
             }
         }        
     }
@@ -261,7 +271,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             if ((module.getModuleType() == ModuleType.CAR)){
                 retVal = false;
             }
-            if (retVal && !issue2999Fixed) {
+            if (retVal && null != issue2999Fixed && !issue2999Fixed) {
                 retVal = module.getModuleType() != ModuleType.EAR;
             }
             

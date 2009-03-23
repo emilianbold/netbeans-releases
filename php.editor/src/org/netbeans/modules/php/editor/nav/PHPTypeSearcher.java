@@ -39,28 +39,27 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.Icon;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -70,43 +69,52 @@ import org.openide.filesystems.FileUtil;
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
-    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
-        PHPIndex index = PHPIndex.get(gsfIndex);
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
+        // XXX: use PHP specific path ids
+        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+                project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
+                Collections.<String>emptySet()));
+
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string
         textForQuery = textForQuery.toLowerCase();
-        kind = NameKind.CASE_INSENSITIVE_PREFIX;
+        kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
-            addClasses(index, textForQuery, kind, scope, helper, result);
-            addInterfaces(index, textForQuery, kind, scope, helper, result);
+            addClasses(index, textForQuery, kind, helper, result);
+            addInterfaces(index, textForQuery, kind, helper, result);
             //TODO: missing iface members
-            addClassMembers(index, stripDollar(textForQuery), kind, scope, helper, result);
-            addFunctions(index, textForQuery, kind, scope, helper, result);
-            addConstants(index, textForQuery, kind, scope, helper, result);
-            addTpLevelVariables(index, appendDollar(textForQuery), kind, scope, helper, result);
+            addClassMembers(index, stripDollar(textForQuery), kind, helper, result);
+            addFunctions(index, textForQuery, kind, helper, result);
+            addConstants(index, textForQuery, kind, helper, result);
+            addTpLevelVariables(index, appendDollar(textForQuery), kind, helper, result);
         }
 
         return result;
     }
-    public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
-        PHPIndex index = PHPIndex.get(gsfIndex);
+
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
+        // XXX: use PHP specific path ids
+        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+                project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
+                Collections.<String>emptySet()));
+
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string        
         textForQuery = textForQuery.toLowerCase();
-        kind = NameKind.CASE_INSENSITIVE_PREFIX;
+        kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
-            addClasses(index, textForQuery, kind, scope, helper, result);
-            addInterfaces(index, textForQuery, kind, scope, helper, result);
+            addClasses(index, textForQuery, kind, helper, result);
+            addInterfaces(index, textForQuery, kind, helper, result);
         }
 
         return result;
     }
 
-    private static void addClassMembers(PHPIndex index, String query, NameKind kind,
-        EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-        Set<String> typeNames = index.typeNamesForIdentifier(query, null,NameKind.CASE_INSENSITIVE_PREFIX, scope);
+    private static void addClassMembers(PHPIndex index, String query, QuerySupport.Kind kind,
+         Helper helper, Set<PHPTypeDescriptor> result) {
+        Set<String> typeNames = index.typeNamesForIdentifier(query, null,QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
         for (String className : typeNames) {
-            for (IndexedClass clz : index.getClasses(null, className, kind, scope)) {
+            for (IndexedClass clz : index.getClasses(null, className, kind)) {
                 for (IndexedFunction func : index.getMethods(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clz, helper));
                 }
@@ -119,33 +127,33 @@ public class PHPTypeSearcher implements IndexSearcher {
             }
         }
     }
-    private static void addTpLevelVariables(PHPIndex index, String query, NameKind kind,
-            EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getTopLevelVariables(null, query, kind, scope)) {
+    private static void addTpLevelVariables(PHPIndex index, String query, QuerySupport.Kind kind,
+             Helper helper, Set<PHPTypeDescriptor> result) {
+            for (IndexedElement el : index.getTopLevelVariables(null, query, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
     }
-    private static void addFunctions(PHPIndex index, String query, NameKind kind,
-            EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getFunctions(null, query, kind, scope)) {
+    private static void addFunctions(PHPIndex index, String query, QuerySupport.Kind kind,
+             Helper helper, Set<PHPTypeDescriptor> result) {
+            for (IndexedElement el : index.getFunctions(null, query, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
     }
-    private static void addConstants(PHPIndex index, String query, NameKind kind,
-            EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getConstants(null, query, kind, scope)) {
+    private static void addConstants(PHPIndex index, String query, QuerySupport.Kind kind,
+             Helper helper, Set<PHPTypeDescriptor> result) {
+            for (IndexedElement el : index.getConstants(null, query, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
     }
-    private static void addClasses(PHPIndex index, String query, NameKind kind,
-            EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getClasses(null, query, kind, scope)) {
+    private static void addClasses(PHPIndex index, String query, QuerySupport.Kind kind,
+             Helper helper, Set<PHPTypeDescriptor> result) {
+            for (IndexedElement el : index.getClasses(null, query, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
     }
-    private static void addInterfaces(PHPIndex index, String query, NameKind kind,
-            EnumSet<SearchScope> scope, Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getInterfaces(null, query, kind, scope)) {
+    private static void addInterfaces(PHPIndex index, String query, QuerySupport.Kind kind,
+             Helper helper, Set<PHPTypeDescriptor> result) {
+            for (IndexedElement el : index.getInterfaces(null, query, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper) {
                     @Override
                     public Icon getIcon() {
@@ -213,9 +221,8 @@ public class PHPTypeSearcher implements IndexSearcher {
                     projectName = pi.getDisplayName();
                     projectIcon = pi.getIcon();
                 }
-            } else {
-                Logger.getLogger(PHPTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFilenameUrl());
             }
+            
             if (projectName == null) {
                 projectName = "";
             }

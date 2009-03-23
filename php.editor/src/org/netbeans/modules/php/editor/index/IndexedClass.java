@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.ElementKind;
+
 
 /**
  *

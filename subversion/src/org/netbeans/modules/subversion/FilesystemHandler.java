@@ -329,6 +329,31 @@ class FilesystemHandler extends VCSInterceptor {
         });
     }
 
+    @Override
+    public String getAttribute(File file, String attrName) {
+        if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
+            return getRemoteRepository(file);
+        } else {
+            return super.getAttribute(file, attrName);
+        }
+    }
+
+    private String getRemoteRepository(File file) {
+        if(file == null) return null;
+        SVNUrl url = null;
+        try {
+            url = SvnUtils.getRepositoryRootUrl(file);
+        } catch (SVNClientException ex) {
+            Subversion.LOG.log(Level.WARNING, "No repository root url found for managed file : [" + file + "]", ex);
+            try {
+                url = SvnUtils.getRepositoryUrl(file); // try to falback
+            } catch (SVNClientException ex1) {
+                Subversion.LOG.log(Level.WARNING, "No repository url found for managed file : [" + file + "]", ex1);
+            }
+        }
+        return url != null ? url.toString() : null;
+    }
+
     /**
      * Removes invalid metadata from all known folders.
      */

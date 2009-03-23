@@ -124,8 +124,8 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.TestUtil;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.util.Mutex.ExceptionAction;
 /**
@@ -1106,7 +1106,7 @@ public class JavaSourceTest extends NbTestCase {
 
         }));
 
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(src1, src1).await();
+        IndexingManager.getDefault().refreshIndexAndWait(src1.getURL(), null);
 
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}));
@@ -1140,9 +1140,8 @@ public class JavaSourceTest extends NbTestCase {
 
     public void testRunWhenScanFinished () throws Exception {
         final FileObject testFile1 = createTestFile("Test1");
-        CountDownLatch startL = RepositoryUpdater.getDefault().scheduleCompilationAndWait(testFile1.getParent(), testFile1.getParent());
-        startL.await();
-        Thread.sleep (1000); //RU task already finished, but we want to wait until JS working thread is waiting on task to dispatch
+        IndexingManager.getDefault().refreshIndexAndWait(testFile1.getParent().getURL(), null);
+        Thread.sleep (1000); //Indexing task already finished, but we want to wait until JS working thread is waiting on task to dispatch
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
         final ClassPath srcPath = createSourcePath();
@@ -1315,8 +1314,7 @@ public class JavaSourceTest extends NbTestCase {
 
 
                 JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
-                CountDownLatch rl = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourcePath.getRoots()[0], sourcePath.getRoots()[0]);
-                rl.await();
+                IndexingManager.getDefault().refreshIndexAndWait(sourcePath.getRoots()[0].getURL(), null);
                 DataObject dobj = DataObject.find(test);
                 EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
                 final StyledDocument doc = ec.openDocument();

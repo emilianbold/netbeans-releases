@@ -67,23 +67,39 @@ import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
+import org.netbeans.modules.php.dbgp.packets.Status;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author ads
  *
  */
-public class DebugSession implements Runnable {
+public class DebugSession extends SingleThread {
     private static final int SLEEP_TIME = 100;
     private DebuggerOptions options;
+    private BackendLauncher backendLauncher;
+    private AtomicReference<Status> status;
+    private Session session;
+    private Socket sessionSocket;
+    private AtomicBoolean isStopped;
+    private Thread mySessionThread;
+    private final List<DbgpCommand> myCommands;
+    private AtomicReference<SessionId> mySessionId;
+    private AtomicReference<DebuggerEngine> myEngine;
+    private static final AtomicInteger myTransactionId = new AtomicInteger(0);
+    private IDESessionBridge myBridge;
+    private AtomicReference<String> myFileName;
 
-    DebugSession(DebuggerOptions options) {
+
+    DebugSession(DebuggerOptions options, BackendLauncher backendLauncher) {
+        myCommands = new LinkedList<DbgpCommand>();
         init(null);
         this.options = options;
+        this.backendLauncher = backendLauncher;
+        this.status = new AtomicReference<Status>();
     }
 
     /* (non-Javadoc)
@@ -98,10 +114,8 @@ public class DebugSession implements Runnable {
         while (continueDebugging()) {
             try {
                 sendCommands();
-                if (continueDebugging()) {
-                    receiveData();
-                    sleepTillNewCommand();
-                }
+                receiveData();
+                sleepTillNewCommand();
             } catch (IOException e) {
                 log(e);
             }
@@ -137,12 +151,12 @@ public class DebugSession implements Runnable {
                     watchesModel.clearModel();
                 }
             }
-            StartActionProviderImpl.getInstance().removeSession(this);
+            SessionManager.getInstance().remove(this);
         }
     }
 
     private boolean continueDebugging() {
-        return !isStopped.get() && mySocket != null && !mySocket.isClosed();
+        return !Thread.interrupted() && !isStopped.get() && sessionSocket != null && !sessionSocket.isClosed();
     }
 
     public void sendCommandLater(DbgpCommand command) {
@@ -212,11 +226,28 @@ public class DebugSession implements Runnable {
     }
 
     public void start(Socket socket) {
-        init(socket);        
-        RequestProcessor.getDefault().post(this);
+        synchronized(getSync()) {
+            Status stat = getStatus();
+            if (stat != null && (stat.isRunning() || stat.isBreak())) {
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                if (stat != null) {
+                    waitFinished();
+                }
+                init(socket);
+                invokeLater();
+            }
+        }
     }
 
-    public void stop() {
+    public void cancel() {
+        if (backendLauncher != null) {
+            backendLauncher.stop();
+        }
         isStopped.set(true);
     }
 
@@ -229,17 +260,18 @@ public class DebugSession implements Runnable {
             SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
             if (id != null && id.getId().equals(sessionId)) {
                 mySessionId.set(id);
-                id.initialize(message.getFileUri());
+                id.initialize(message.getFileUri(), options.getPathMapping());
                 myEngine.set(engine);
             }
         }
         assert myEngine.get() != null;
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
-            if (id != null && id.getId().equals(sessionId)) {
-                StartActionProviderImpl.getInstance().attachDebugSession(session,
-                        this);
+        IDESessionBridge bridge = getBridge();
+        if (bridge != null) {
+            bridge.hideAnnotations();
+            bridge.setSuspended(false);
+            ThreadsModel threadsModel = bridge.getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.update();
             }
         }
     }
@@ -257,9 +289,9 @@ public class DebugSession implements Runnable {
     }
 
     private void init(Socket socket) {
-        this.mySocket = socket;
+        this.sessionSocket = socket;
         isStopped = new AtomicBoolean(false);
-        myCommands = new LinkedList<DbgpCommand>();
+        myCommands.clear();
         mySessionId = new AtomicReference<SessionId>();
         myBridge = new IDESessionBridge();
         myFileName = new AtomicReference<String>();
@@ -292,27 +324,27 @@ public class DebugSession implements Runnable {
             myCommands.clear();
         }
         for (DbgpCommand command : list) {
-            if (continueDebugging()) {
+            //if (continueDebugging()) {
                 // #146724
                 try {
                     command.send(getSocket().getOutputStream());
-                    if (continueDebugging() && command.wantAcknowledgment()) {
+                    if (/*continueDebugging() && */command.wantAcknowledgment()) {
                         receiveData(command);
                     }
                 } catch (SocketException exc) {
                     Logger.getLogger(DebugSession.class.getName()).log(Level.INFO, null, exc);
                     Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
                     SessionId sessionId = getSessionId();
-                    for (Session session : sessions) {
-                        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+                    for (Session sessionInLoop : sessions) {
+                        SessionId id = (SessionId) sessionInLoop.lookupFirst(null, SessionId.class);
                         if (id != null && id.getId().equals(sessionId.getId())) {
-                            StartActionProviderImpl.getInstance().stop(session);
+                            SessionManager.getInstance().stop(sessionInLoop);
                         }
                     }
 
                     warnUserInCaseOfSocketException();
                 }
-            }
+            //}
         }
     }
 
@@ -379,7 +411,7 @@ public class DebugSession implements Runnable {
     }
 
     private Socket getSocket() {
-        return mySocket;
+        return sessionSocket;
     }
 
     private void log(IOException e) {
@@ -389,6 +421,46 @@ public class DebugSession implements Runnable {
 
     public DebuggerOptions getOptions() {
         return options;
+    }
+
+    void startBackend() {
+        if (backendLauncher != null) {
+            backendLauncher.launch();
+        }
+    }
+
+    /**
+     * @return the status
+     */
+    public Status getStatus() {
+        return status.get();
+    }
+
+    /**
+     * @param status the status to set
+     */
+    public void setStatus(Status status) {
+        assert status != null;
+        if ( status == Status.BREAK) {
+            assert getSession() != null;
+            DebuggerManager.getDebuggerManager().setCurrentSession(getSession());
+        }
+
+        this.status.set(status);
+    }
+
+    /**
+     * @return the session
+     */
+    public Session getSession() {
+        return session;
+    }
+
+    /**
+     * @param session the session to set
+     */
+    public void setSession(Session session) {
+        this.session = session;
     }
 
     /*
@@ -412,13 +484,4 @@ public class DebugSession implements Runnable {
             return DebugSession.this;
         }
     }
-    private Socket mySocket;
-    private AtomicBoolean isStopped;
-    private Thread mySessionThread;
-    private List<DbgpCommand> myCommands;
-    private AtomicReference<SessionId> mySessionId;
-    private AtomicReference<DebuggerEngine> myEngine;
-    private static final AtomicInteger myTransactionId = new AtomicInteger(0);
-    private IDESessionBridge myBridge;
-    private AtomicReference<String> myFileName;
 }

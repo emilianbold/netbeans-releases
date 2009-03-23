@@ -85,8 +85,10 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
     }
 
     private static void goToSource(LineBreakpoint breakpoint ) {
-        Line line = breakpoint .getLine();
-        line.show(Line.SHOW_GOTO);
+        Line line = breakpoint.getLine();
+        if (line != null) {
+            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
+        }
     }
 
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction(

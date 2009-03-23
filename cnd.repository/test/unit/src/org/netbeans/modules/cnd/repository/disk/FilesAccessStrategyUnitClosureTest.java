@@ -70,7 +70,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         Collection<String> setZero = strategy.testGetCacheFileNames();
         assertTrue("Cache should be empty at that time", setZero.isEmpty());
         
-	final TraceModelBase traceModel = new  TraceModelBase();
+	final TraceModelBase traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
         long sleepAfterParse = 6000;

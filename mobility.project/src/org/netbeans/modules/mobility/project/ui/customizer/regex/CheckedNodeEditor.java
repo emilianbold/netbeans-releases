@@ -127,7 +127,11 @@ public class CheckedNodeEditor extends AbstractCellEditor implements TreeCellEdi
         if (lastRow != -1 && jtree != null) {
             final Rectangle bounds = jtree.getRowBounds(lastRow);
             //int offset = (int)customRenderer.getRenderer().jCheckBox1.getSize().getWidth();
+            String osName = (String) System.getProperties().get("os.name"); //NOI18N
             if (bounds != null && (x - bounds.x ) < 10 && (x - bounds.x) >= 0) {
+                return true;
+            //fix fo Mac OS X Issue 158557
+            } else if (osName.contains("Mac") && bounds != null) { //NOI18N
                 return true;
             }
         }

@@ -39,7 +39,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Map;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 

@@ -5,6 +5,7 @@ Searchable Keys:
   class : TestCase
   class-ig : TestCase
   fqn : Test::Unit::TestCase
+  require : assertions
 
 Not Searchable Keys:
   attrs : |CLASS|

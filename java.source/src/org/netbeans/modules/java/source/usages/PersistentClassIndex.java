@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class PersistentClassIndex extends ClassIndexImpl {    
+public class PersistentClassIndex extends ClassIndexImpl {
     
     private final Index index;
     private final URL root;
@@ -170,7 +170,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
         });        
     }
     
-    public synchronized void setDirty (final JavaSource js) {        
+    public synchronized void setDirty (final URL url) {
+        final FileObject fo = url != null ? URLMapper.findFileObject(url) : null;
+        final JavaSource js = fo != null ? JavaSource.forFileObject(fo) : null;
         if (js == null) {
             this.dirty = null;
         }

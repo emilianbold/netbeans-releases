@@ -211,7 +211,7 @@ public final class HostInfoUtils {
             hostInfo.put(execEnv, getLocalHostInfo());
         } else {
             Session session =
-                    ConnectionManager.getInstance().getConnectionSession(execEnv);
+                    ConnectionManager.getInstance().getSession(execEnv);
             hostInfo.put(execEnv, getRemoteHostInfo(session));
         }
     }
@@ -234,7 +234,6 @@ public final class HostInfoUtils {
         HostInfo info = new HostInfo();
         info.os = System.getProperty("os.name"); // NOI18N
         info.platform = System.getProperty("os.arch"); // NOI18N
-        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32"; // NOI18N
 
         if (Utilities.isWindows()) {
             String cygwinRoot = queryWindowsRegistry(
@@ -248,9 +247,33 @@ public final class HostInfoUtils {
                 // TODO: mingGW, no *nix emulator...
                 info.shell = null;
             }
-            
+
         } else {
             info.shell = "/bin/sh"; // NOI18N
+        }
+
+        // IZ#160260 - cannot always relay on sun.cpu.isalist
+        String isalist = System.getProperty("sun.cpu.isalist"); // NOI18N
+
+        if ("".equals(isalist)) { // NOI18N
+            String testcmd;
+            if ("SunOS".equals(info.os)) { // NOI18N
+                testcmd = "/usr/bin/isalist | /bin/egrep \"sparcv9|amd64\""; // NOI18N
+            } else {
+                testcmd = "/bin/uname -a | /bin/egrep x86_64"; // NOI18N
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(info.shell, "-c", testcmd); // NOI18N
+            try {
+                Process testProcess = pb.start();
+                int status = testProcess.waitFor();
+
+                info.instructionSet = status == 0 ? "64" : "32"; // NOI18N
+            } catch (IOException ex) {
+            } catch (InterruptedException ex) {
+            }
+        } else {
+            info.instructionSet = isalist.contains("amd64") ? "64" : "32"; // NOI18N
         }
 
         return info;

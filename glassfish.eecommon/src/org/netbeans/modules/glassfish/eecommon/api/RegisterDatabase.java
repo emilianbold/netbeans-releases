@@ -54,7 +54,7 @@ import org.openide.util.RequestProcessor;
  */
 public class RegisterDatabase {
 
-    private static RegisterDatabase reg = null;
+    private static volatile RegisterDatabase reg = null;
     
     public static RegisterDatabase getDefault(){
         if (reg == null) {
@@ -94,9 +94,9 @@ public class RegisterDatabase {
                     try {
                         DerbyDatabases.createSampleDatabase();
                     } catch (DatabaseException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     }
                 }
             });

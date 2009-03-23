@@ -186,7 +186,7 @@ final class ResultPanelOutput extends JScrollPane
         synchronized (displayHandler.getOutputQueueLock()) {
             pendingOutput = displayHandler.consumeOutput();
             if (pendingOutput.length == 0) {
-                displayHandler.setOutputListener(this);
+//                displayHandler.setOutputListener(this);
             }
         }
         
@@ -209,7 +209,6 @@ final class ResultPanelOutput extends JScrollPane
         final Object[] pendingOutput = displayHandler.consumeOutput();
         assert pendingOutput.length != 0;
         new OutputDisplayer(pendingOutput).run();
-        displayHandler.setOutputListener(null);
         if (!timerRunning) {
             startTimer();
         }
@@ -247,7 +246,6 @@ final class ResultPanelOutput extends JScrollPane
         } else {
             synchronized (displayHandler.getOutputQueueLock()) {
                 stopTimer();
-                displayHandler.setOutputListener(this);
             }
         }
     }

@@ -50,9 +50,6 @@ import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
-import static org.netbeans.installer.utils.applications.JavaUtils.JDK_KEY;
-import static org.netbeans.installer.utils.applications.JavaUtils.JRE_KEY;
-import static org.netbeans.installer.utils.applications.JavaUtils.JAVAHOME_VALUE;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -968,9 +965,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     @Override
     public String validateInstallation() {
-        if(super.validateInstallation()!=null) {
+        String message = super.validateInstallation();
+        if(message==null) {
+            File jdkLocation = getProduct().getInstallationLocation();
+            if(JavaUtils.getInfo(jdkLocation)==null) {
+                message = "There is no JDK at " + jdkLocation + " or the installation is corrupted";
+            }
+        }
+        if(message!=null) {
             LogManager.log("JDK validation:");
-            LogManager.log(super.validateInstallation());
+            LogManager.log(message);
             getProduct().setStatus(Status.NOT_INSTALLED);
             getProduct().getParent().removeChild(getProduct());
         }

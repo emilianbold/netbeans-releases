@@ -109,9 +109,11 @@ class ExtPlainView extends PlainView {
             if (!getText(p0, p1 - p0, s)) {
                 return x;
             }
-            g.setColor(getColorForLocation(p0, doc, true));
+            Lines lines = ((OutputDocument) doc).getLines();
+            int line = lines.getLineAt(p0);
+            g.setColor(lines.getColorForLine(line));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == WrappedTextView.selectedLinkFg || g.getColor() == WrappedTextView.selectedImportantLinkFg) {
+            if (lines.isHyperlink(line)) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
                 underline(g, s, x, p0, y);
@@ -132,9 +134,11 @@ class ExtPlainView extends PlainView {
             if (!getText(p0, p1 - p0, s)) {
                 return x;
             }
-            g.setColor(getColorForLocation(p0, doc, false));
+            Lines lines = ((OutputDocument) doc).getLines();
+            int line = lines.getLineAt(p0);
+            g.setColor(lines.getColorForLine(line));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == WrappedTextView.selectedLinkFg || g.getColor() == WrappedTextView.selectedImportantLinkFg) {
+            if (lines.isHyperlink(line)) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
                 underline(g, s, x, p0, y);
@@ -200,30 +204,6 @@ class ExtPlainView extends PlainView {
         if (end > x) {
             g.drawLine (x, y+1, end, y+1);
         }
-    }
-
-    private static Color getColorForLocation (int start, Document d, boolean selected) {
-        OutputDocument od = (OutputDocument) d;
-        int line = od.getElementIndex (start);
-        boolean hyperlink = od.getLines().isHyperlink(line);
-        boolean important = hyperlink ? od.getLines().isImportantHyperlink(line) : false;
-        boolean isErr = od.getLines().isErr(line);
-        
-        return hyperlink ? 
-            (important ? 
-                (selected ? 
-                    WrappedTextView.selectedImportantLinkFg : 
-                    WrappedTextView.unselectedImportantLinkFg) :
-                (selected ?
-                    WrappedTextView.selectedLinkFg : 
-                    WrappedTextView.unselectedLinkFg)) :
-            (selected ? 
-                (isErr ? 
-                    WrappedTextView.selectedErr : 
-                    WrappedTextView.selectedFg) : 
-                (isErr ? 
-                    WrappedTextView.unselectedErr : 
-                    WrappedTextView.unselectedFg));
     }
 
     @Override

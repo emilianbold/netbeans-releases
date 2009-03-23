@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -113,7 +113,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     private static String getLocalHostName() {
         String hostName = null;
-        RunFacade runner = RunFacade.getInstance(CompilerSetManager.LOCALHOST);
+        RunFacade runner = RunFacade.getInstance(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
         if (runner.run("uname -a")) { //NOI18N
             String result = runner.getOutput();
             if (result != null) {
@@ -122,7 +122,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
                     hostName = values[1];
                     //TODO: validation?
                     //TODO: add smth for Windows and move to HostInfoProv or RemoteUtils?
-                    //TODO: hkey should be responsible about this instead of being speechless String with @ inside :/
+                    //TODO: should ExecutionEnvironment be responsible for this?
                 }
             }
         }

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * token to be used in APT infrastructure
@@ -62,28 +62,26 @@ public class APTBaseToken implements APTToken {
     public APTBaseToken() {
     }
 
-    public APTBaseToken(Token token) {
+    public APTBaseToken(APTToken token) {
         this(token, token.getType());
     }
 
-    public APTBaseToken(Token token, int ttype) {
+    public APTBaseToken(APTToken token, int ttype) {
         this.setColumn(token.getColumn());
         this.setFilename(token.getFilename());
         this.setLine(token.getLine());
 
         // This constructor is used with the existing tokens so do not use setText here,
         // because we do not need to go through APTStringManager once again
-        text = token.getText();
+        text = token.getTextID();
+        assert text instanceof TinyCharSequence;
 
         this.setType(ttype);
-        if (token instanceof APTToken) {
-            APTToken aptToken = (APTToken)token;
-            this.setOffset(aptToken.getOffset());
-            this.setEndOffset(aptToken.getEndOffset());
-            this.setEndColumn(aptToken.getEndColumn());
-            this.setEndLine(aptToken.getEndLine());
-            this.setTextID(aptToken.getTextID());
-        }
+        this.setOffset(token.getOffset());
+        this.setEndOffset(token.getEndOffset());
+        this.setEndColumn(token.getEndColumn());
+        this.setEndLine(token.getEndLine());
+        this.setTextID(token.getTextID());
     }
 
     public APTBaseToken(String text) {
@@ -114,19 +112,19 @@ public class APTBaseToken implements APTToken {
     }
 
     public int getEndOffset() {
-        return getOffset() + getText().length();
+        return getOffset() + getTextID().length();
     }
 
     public void setEndOffset(int end) {
         // do nothing
     }
 
-    public int getTextID() {
+    public CharSequence getTextID() {
 //        return textID;
-        return -1;
+        return this.text;
     }
 
-    public void setTextID(int textID) {
+    public void setTextID(CharSequence textID) {
 //        this.textID = textID;
     }
 
@@ -136,7 +134,7 @@ public class APTBaseToken implements APTToken {
     }
 
     public void setText(String t) {
-        text = TextCache.getString(t);
+        text = TextCache.getManager().getString(t);
     }
 
     public int getLine() {
@@ -158,11 +156,11 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
+        return "[\"" + getTextID() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
     public int getEndColumn() {
-        return getColumn() + getText().length();
+        return getColumn() + getTextID().length();
     }
 
     public void setEndColumn(int c) {

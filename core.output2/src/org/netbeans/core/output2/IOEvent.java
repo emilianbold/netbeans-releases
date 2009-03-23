@@ -129,8 +129,14 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
 
     /** set tool tip for tab */
     static final int CMD_SET_TOOLTIP = 12;
+
+    /** scroll to position */
+    static final int CMD_SCROLL = 13;
+
+    /** set default colors */
+    static final int CMD_DEF_COLORS = 14;
     
-    private static final int CMD_LAST = 13;
+    private static final int CMD_LAST = 15;
 
     /**
      * Strings representing the event.
@@ -149,6 +155,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
         "SET_TOOLBAR_ACTIONS", //NOI18N
         "CMD_SET_ICON", //NOI18N
         "CMD_SET_TOOLTIP", //NOI18N
+        "CMD_SCROLL", //NOI18N
     };
 
     /**

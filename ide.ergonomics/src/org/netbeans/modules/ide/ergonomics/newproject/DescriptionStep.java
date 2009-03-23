@@ -174,7 +174,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                                 waitForDelegateWizard ();
                                 return new JLabel(" ");
                             }
-                        }, info);
+                        }, info, true);
                     }
                 });
             } catch (InterruptedException ex) {
@@ -225,17 +225,20 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         final String templateResource = ((FileObject) o).getPath ();
         fo = null;
         WizardDescriptor.InstantiatingIterator<?> iterator = null;
-        while (fo == null && (iterator == null || iterator instanceof FeatureOnDemanWizardIterator)) {
+        int i = 0;
+        while (fo == null || iterator == null) {
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
                    fo = FileUtil.getConfigFile(templateResource);
                }
             }, 100).waitFinished ();
             iterator = readWizard(fo);
-
-            // warn, seems like 100 millis isn't enough!
-            if (iterator instanceof FeatureOnDemanWizardIterator)
+            // reset and warn, seems like 100 millis isn't enough!
+            if (iterator instanceof FeatureOnDemanWizardIterator) {
                 Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
+                iterator = null;
+                if (++i == 10) break; // seems we will go to NPE :-(
+            }
         }
         iterator.initialize (wd);
         wd.putProperty (FeatureOnDemanWizardIterator.DELEGATE_ITERATOR, iterator);

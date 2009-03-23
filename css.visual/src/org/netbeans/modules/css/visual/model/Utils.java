@@ -47,12 +47,19 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.openide.util.NbBundle;
+
 /**
  * Utility class for the style data
  * @author  Winston Prakash
  * @version 1.0
  */
 public class Utils {
+
+    //TODO move this to the UI package
+    public final static String NOT_SET = NbBundle.getMessage(Utils.class, "NOT_SET"); //NOI18N
+    public final static String VALUE = NbBundle.getMessage(Utils.class, "VALUE"); //NOI18N
+   
 
     public static boolean isInteger(String value){
         try{

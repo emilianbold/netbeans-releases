@@ -41,6 +41,7 @@ package org.netbeans.modules.search;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,7 +62,6 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -71,6 +71,7 @@ import javax.swing.JToolBar;
 import javax.swing.JToolBar.Separator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.search.TextDetail.DetailNode;
@@ -85,6 +86,9 @@ import org.openidex.search.SearchType;
  * @author kaktus
  */
 class ResultViewPanel extends JPanel{
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
+    
     /** display the matching string location in context by default? */
     private static final boolean SHOW_CONTEXT_BY_DEFAULT = true;
 
@@ -283,6 +287,14 @@ class ResultViewPanel extends JPanel{
 
         initAccessibility();
         resultModelChanged();
+
+        if( isMacLaf ) {
+            tree.setBackground(macBackground);
+            treeView.setBackground(macBackground);
+            toolBar.setBackground(macBackground);
+            resultsPanel.setBackground(macBackground);
+            buttonsPanel.setBackground(macBackground);
+        }
     }
 
     ResultModel getResultModel(){
@@ -345,7 +357,6 @@ class ResultViewPanel extends JPanel{
                                         basicSearchCriteria,
                                         searchTypes));
     }
-
 
     /**
      * Updates the number of found nodes in the name of the root node.
@@ -726,6 +737,10 @@ class ResultViewPanel extends JPanel{
                                            contextView);     //right pane
                 splitPane.setBorder(BorderFactory.createEmptyBorder());
                 splitPane.setResizeWeight(0.4d);
+                if( isMacLaf ) {
+                    contextView.setBackground(macBackground);
+                    splitPane.setBackground(macBackground);
+                }
                 resultsPanel.add(splitPane, cardName);
             } else {
                 /*

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -52,11 +53,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings.DividerSettings;
 import org.openide.ErrorManager;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
+
 /**
  *
  * @author Marian Petras. Erno Mononen
@@ -70,10 +77,13 @@ final class ResultDisplayHandler {
             ResultDisplayHandler.class);
     /** */
     private ResultPanelTree treePanel;
-    /** */
-    private ResultPanelOutput outputListener;
+
     /** */
     private JSplitPane displayComp;
+
+    private JComponent outputComponent;
+
+    private InputOutput inOut;
 
     private final TestSession session;
     
@@ -81,6 +91,18 @@ final class ResultDisplayHandler {
     public ResultDisplayHandler(TestSession session) {
         this.session = session;
     }
+
+    JComponent getOutputComponent() {
+        if (outputComponent == null) {
+            outputComponent = new JPanel(new BorderLayout());
+        }
+        return outputComponent;
+    }
+
+    void createIO(IOContainer ioContainer) {
+        inOut = IOProvider.getDefault().getIO("product_test", null, ioContainer);
+    }
+
 
     public TestSession getSession() {
         return session;
@@ -99,7 +121,10 @@ final class ResultDisplayHandler {
      */
     private JSplitPane createDisplayComp() {
         DividerSettings dividerSettings = TestRunnerSettings.getDefault().getDividerSettings(null);
-        return createDisplayComp(new StatisticsPanel(this), new ResultPanelOutput(this), dividerSettings.getOrientation(), dividerSettings.getLocation());
+        return createDisplayComp(new StatisticsPanel(this),
+                getOutputComponent(),
+                dividerSettings.getOrientation(),
+                dividerSettings.getLocation());
     }
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
@@ -145,7 +170,6 @@ final class ResultDisplayHandler {
     private final Object queueLock = new Object();
     private volatile Object[] outputQueue;
     private volatile int outputQueueSize = 0;
-    private int outputQueueAvailSpace;
 
     /**
      */
@@ -155,43 +179,13 @@ final class ResultDisplayHandler {
 
     /**
      */
-    void setOutputListener(ResultPanelOutput outputPanel) {
-        synchronized (queueLock) {
-            this.outputListener = outputPanel;
-        }
-    }
-
-    /**
-     */
     public void displayOutput(final String text, final boolean error) {
 
         /* Called from the AntLogger's thread */
 
-        synchronized (queueLock) {
-            if (outputQueue == null) {
-                outputQueue = new Object[40];
-                outputQueueAvailSpace = outputQueue.length - 1;
-                outputQueueSize = 0;
-            }
-            final int itemSpace = error ? 2 : 1;
-            if ((outputQueueAvailSpace -= itemSpace) < 0) {
-                int newCapacity = (outputQueue.length < 640)
-                        ? outputQueue.length * 2
-                        : (outputQueue.length * 3) / 2;
-                Object[] oldQueue = outputQueue;
-                outputQueue = new Object[newCapacity];
-                System.arraycopy(oldQueue, 0, outputQueue, 0, outputQueueSize);
-
-                outputQueueAvailSpace += outputQueue.length - oldQueue.length;
-            }
-            if (error) {
-                outputQueue[outputQueueSize++] = Boolean.TRUE;
-            }
-            outputQueue[outputQueueSize++] = text;
-
-            if (outputListener != null) {
-                outputListener.outputAvailable();
-            }
+        if (inOut != null) {
+            OutputWriter out = error ? inOut.getErr() : inOut.getOut();
+            session.getOutputLineHandler().handleLine(out, text);
         }
     }
 
@@ -248,7 +242,8 @@ final class ResultDisplayHandler {
 
         synchronized (this) {
             if (treePanel == null) {
-                reports.add(report);
+                if (!reports.contains(report))
+                    reports.add(report);
                 runningSuite = null;
                 return;
             }

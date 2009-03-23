@@ -3,12 +3,10 @@ class FooController < ApplicationController
   end
 end
 
-class MyTest
+class TwoClassesTest
   def mymethod
   end
   
   def myother
   end
 end
-
-

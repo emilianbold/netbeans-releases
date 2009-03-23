@@ -1762,13 +1762,13 @@ public class UnitTab extends javax.swing.JPanel {
             if (value instanceof Boolean) {
                 Unit u = model.getUnitAtRow (row);
                 if (u != null && u.getRelevantElement ().getUpdateUnit ().isPending ()) {
-                    renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/restart.png"))); // NOI18N
+                    renderComponent.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false)); // NOI18N
                 } else {
                     Boolean state = (Boolean)value;
                     if (state.booleanValue()) {
-                        renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/active.png"))); // NOI18N
+                        renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/active.png", false)); // NOI18N
                     } else {
-                        renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/inactive.png"))); // NOI18N
+                        renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/inactive.png", false)); // NOI18N
                     }
                 }
                 renderComponent.setText ("");

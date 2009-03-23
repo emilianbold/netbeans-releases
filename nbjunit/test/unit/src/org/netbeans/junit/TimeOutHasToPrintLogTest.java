@@ -18,6 +18,7 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
         return getName().equals("printAhojAndTimeOut") || getName().equals("justTimeOutInOneOfMyMethods");
     }
     
+    @Override
     protected Level logLevel() {
         if (isSpecial()) {
             return null;
@@ -26,6 +27,7 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
         }
     }
     
+    @Override
     protected int timeOut() {
         if (isSpecial()) {
             return 700;

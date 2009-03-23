@@ -42,14 +42,13 @@
 package org.netbeans.modules.favorites;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -72,7 +71,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     private DataFolder targetDO;
     private DataFolder favoritesDO;
     
-    private ErrorManager err;
+    private Logger err;
 
     private DataFolder rootDO;
     
@@ -80,101 +79,88 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     public VisibilityQueryWorksTest(String name) {
         super (name);
     }
-    
-    
-    /** If execution fails we wrap the exception with 
-     * new log message.
-     */
+
     @Override
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError ex) {
-            AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + ErrManager.messages);
-            ne.setStackTrace (ex.getStackTrace ());
-            throw ne;
-        }
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
+    static {
+        VQI vqi = new VQI();
+        vqi.init();
+        Repository our = new Repository(FileUtil.createMemoryFileSystem());
+        MockLookup.setInstances(vqi, our);
+        assertEquals("We are using our repository", our, Repository.getDefault());
+    }
     
     @Override
     protected void setUp () throws Exception {
         clearWorkDir();
 
-        VQI vqi = new VQI();
-        vqi.init();
-        MockLookup.setInstances(vqi, new ErrManager(), new Repository(FileUtil.createMemoryFileSystem()));
 
-        ErrManager.log = getLog();
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName() + "");
+        err = Logger.getLogger("TEST." + getName() + "");
         
-        err.log("Starting test");
+        err.info("Starting test");
         
         super.setUp ();
 
-        try {
-            File folder = new File(getWorkDir(), "folder");
-            folder.mkdirs();
-            this.folderFO = FileUtil.toFileObject(folder);
-            assertNotNull("Directory object found", folderFO);
-            
-            err.log("folder create");
+        File folder = new File(getWorkDir(), "folder");
+        folder.mkdirs();
+        this.folderFO = FileUtil.toFileObject(folder);
+        assertNotNull("Directory object found", folderFO);
 
-            File hidden = new File(folder, "a-hidden.txt");
-            hidden.createNewFile();
-            this.hiddenFO = FileUtil.toFileObject(hidden);
-            assertNotNull("File object found", hiddenFO);
-            
-            err.log("a-hidden.txt created");
+        err.info("folder create");
 
-            File target = new File(getWorkDir(), "target");
-            target.mkdirs();
-            this.targetFO = FileUtil.toFileObject(target);
-            assertNotNull("Directory object found", targetFO);
-            
-            err.log("target created");
+        File hidden = new File(folder, "a-hidden.txt");
+        hidden.createNewFile();
+        this.hiddenFO = FileUtil.toFileObject(hidden);
+        assertNotNull("File object found", hiddenFO);
 
-            this.favoritesFO = FileUtil.createFolder (FileUtil.getConfigRoot(), "Favorites");
-            assertNotNull("Created favorites folder", this.favoritesFO);
-            assertEquals("One child", 1, FileUtil.getConfigRoot().getChildren().length);
-            
-            err.log("Favorites created");
+        err.info("a-hidden.txt created");
 
-            FileObject[] arr = this.favoritesFO.getChildren();
-            for (int i = 0; i < arr.length; i++) {
-                err.log("Delete: " + arr[i]);
-                arr[i].delete();
-                err.log("Done");
-            }
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+        this.targetFO = FileUtil.toFileObject(target);
+        assertNotNull("Directory object found", targetFO);
 
-            this.hiddenDO = DataObject.find(hiddenFO);
-            this.folderDO = DataFolder.findFolder(folderFO);
-            this.favoritesDO = DataFolder.findFolder(favoritesFO);
-            this.targetDO = DataFolder.findFolder(targetFO);
-            this.rootDO = DataFolder.findFolder(FileUtil.toFileObject(getWorkDir()));
-            
-            err.log("DataObjects created");
+        err.info("target created");
 
-            DataObject res;
-            res = hiddenDO.createShadow(favoritesDO);
-            err.log("shadow created: " + res);
-            res = folderDO.createShadow(favoritesDO);
-            err.log("shadow created: " + res);
-            res = targetDO.createShadow(favoritesDO);
-            err.log("shadow created: " + res);
-            res = rootDO.createShadow(favoritesDO);
-            err.log("shadow created: " + res);
+        this.favoritesFO = FileUtil.createFolder (FileUtil.getConfigRoot(), "Favorites");
+        assertNotNull("Created favorites folder", this.favoritesFO);
+        List<FileObject> children = Arrays.asList(FileUtil.getConfigRoot().getChildren());
+        assertEquals("One child: " + children, 1, children.size());
 
-            assertEquals("Four items in favorites", 4, favoritesDO.getChildren().length);
-            err.log("Children are ok");
-            assertEquals("Four items in node favorites", 4, favoritesDO.getNodeDelegate().getChildren().getNodes(true).length);
-            err.log("Nodes are ok");
-        } catch (AssertionFailedError ex) {
-            AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + ErrManager.messages);
-            ne.setStackTrace (ex.getStackTrace ());
-            throw ne;
+        err.info("Favorites created");
+
+        FileObject[] arr = this.favoritesFO.getChildren();
+        for (int i = 0; i < arr.length; i++) {
+            err.info("Delete: " + arr[i]);
+            arr[i].delete();
+            err.info("Done");
         }
-            
+
+        this.hiddenDO = DataObject.find(hiddenFO);
+        this.folderDO = DataFolder.findFolder(folderFO);
+        this.favoritesDO = DataFolder.findFolder(favoritesFO);
+        this.targetDO = DataFolder.findFolder(targetFO);
+        this.rootDO = DataFolder.findFolder(FileUtil.toFileObject(getWorkDir()));
+
+        err.info("DataObjects created");
+
+        DataObject res;
+        res = hiddenDO.createShadow(favoritesDO);
+        err.info("shadow created: " + res);
+        res = folderDO.createShadow(favoritesDO);
+        err.info("shadow created: " + res);
+        res = targetDO.createShadow(favoritesDO);
+        err.info("shadow created: " + res);
+        res = rootDO.createShadow(favoritesDO);
+        err.info("shadow created: " + res);
+
+        assertEquals("Four items in favorites", 4, favoritesDO.getChildren().length);
+        err.info("Children are ok");
+        assertEquals("Four items in node favorites", 4, favoritesDO.getNodeDelegate().getChildren().getNodes(true).length);
+        err.info("Nodes are ok");
     }
     
     public void testLinksAreVisibleAllTheTime() throws Exception {
@@ -289,75 +275,4 @@ public class VisibilityQueryWorksTest extends NbTestCase {
             cs.fireChange();
         }
     }
-    //
-    // Logging support
-    //
-    private static final class ErrManager extends ErrorManager {
-        public static final StringBuffer messages = new StringBuffer ();
-        
-        private String prefix;
-
-        private static PrintStream log;
-        
-        public ErrManager () {
-            this (null);
-        }
-        public ErrManager (String prefix) {
-            this.prefix = prefix;
-        }
-        
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public ErrorManager getInstance (String name) {
-            if (
-                true
-//                name.startsWith ("org.openide.loaders.FolderList")
-//              || name.startsWith ("org.openide.loaders.FolderInstance")
-            ) {
-                return new ErrManager ('[' + name + ']');
-            } else {
-                // either new non-logging or myself if I am non-logging
-                return new ErrManager ();
-            }
-        }
-        
-        public void log (int severity, String s) {
-            if (prefix != null) {
-                messages.append (prefix);
-                messages.append (s);
-                messages.append ('\n');
-                
-                if (messages.length() > 30000) {
-                    messages.delete(0, 15000);
-                }
-                
-                log.print(prefix);
-                log.println(s);
-            }
-        }
-        
-        public void notify (int severity, Throwable t) {
-            log (severity, t.getMessage ());
-        }
-        
-        public boolean isNotifiable (int severity) {
-            return prefix != null;
-        }
-        
-        public boolean isLoggable (int severity) {
-            return prefix != null;
-        }
-        
-    } // end of ErrManager
-    
 }

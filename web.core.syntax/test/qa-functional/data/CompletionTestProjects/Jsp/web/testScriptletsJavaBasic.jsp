@@ -39,35 +39,37 @@ void setName (String name )
 <%--CC
 <% "Hello World !".| %>
 int indexOf (String str )
-<% "Hello World !".indexOf(str) %>
+<% "Hello World !".indexOf(str); %>
 --%>
 
 <%-- issue 90741: [cc] imported classes should be visible in Ctrl+Space cc --%>
-<%--
+<%--CC
 <% Li|
 LinkedList <E>
 <% LinkedList
 --%>
 
 <%-- issue 90741: [cc] imported classes should be visible in Ctrl+Space cc --%>
-<%--
+<%--CC
 <% C|
 Card
 <% Card
 --%>
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
-<%--
-<% LinkedList l = new LinkedList();l.|
+<%--CC
+<% LinkedList l = new LinkedList();l.| %>
 void clear ()
-<% LinkedList l = new LinkedList();l.clear()
+<% LinkedList l = new LinkedList();l.clear(); %>
 --%>
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
-<%--
-<% org.test.TestBean t = new org.test.TestBean(); t.|
+<%--CC
+<% org.test.TestBean t = new org.test.TestBean(); t.| %>
 void setName (String name )
-<% org.test.TestBean t = new org.test.TestBean(); t.setName(name)
+<% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>
 --%>
+
+
     </body>
 </html>

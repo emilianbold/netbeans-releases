@@ -52,6 +52,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -72,7 +73,7 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -300,8 +301,9 @@ public class ProjectsBasicsTest extends JellyTestCase {
 
     private void waitScanFinished() {
         try {
-            RepositoryUpdater.getDefault().waitScanFinished();
-        } catch (InterruptedException ex) {}
-
-}
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
+    }
 }

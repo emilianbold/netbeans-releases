@@ -142,12 +142,12 @@ public abstract class Union2<First,Second> implements Cloneable, Serializable {
 
         @Override
         public boolean equals(Object obj) {
-            return (obj instanceof Union2First) && first.equals(((Union2First) obj).first);
+            return first != null ? (obj instanceof Union2First) && first.equals(((Union2First) obj).first) : obj == null;
         }
 
         @Override
         public int hashCode() {
-            return first.hashCode();
+            return first != null ? first.hashCode() : 0;
         }
 
         @Override
@@ -194,12 +194,12 @@ public abstract class Union2<First,Second> implements Cloneable, Serializable {
 
         @Override
         public boolean equals(Object obj) {
-            return (obj instanceof Union2Second) && second.equals(((Union2Second) obj).second);
+            return second != null ? (obj instanceof Union2Second) && second.equals(((Union2Second) obj).second) : obj == null;
         }
 
         @Override
         public int hashCode() {
-            return second.hashCode();
+            return second != null ? second.hashCode() : 0;
         }
 
         @Override

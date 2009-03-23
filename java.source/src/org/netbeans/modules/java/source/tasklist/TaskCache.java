@@ -67,11 +67,14 @@ import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
 
 /**
  *
@@ -99,7 +102,7 @@ public class TaskCache {
         }
         return theInstance;
     }
-    
+
     private String getTaskType( Kind k ) {
         switch( k ) {
             case ERROR:
@@ -174,8 +177,27 @@ public class TaskCache {
             }
         }
     }
-    
-    public Set<URL> dumpErrors(URL root, URL file, File fileFile, List<? extends Diagnostic> errors) throws IOException {
+
+    private static File urlToFile(URL url) {
+        if ("file".equals(url.getProtocol())) {
+            return new File(url.getPath());
+        }
+
+        throw new IllegalStateException();
+    }
+
+    public void dumpErrors(final URL root, final URL file, final List<? extends Diagnostic> errors) throws IOException {
+        refreshTransaction(new ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                dumpErrors(q.get(), root, file, errors);
+                return null;
+            }
+        });
+    }
+
+    private void dumpErrors(TransactionContext c, URL root, URL file, List<? extends Diagnostic> errors) throws IOException {
+        File fileFile = urlToFile(file);
+        
         if (!fileFile.canRead()) {
             //if the file is not readable anymore, ignore the errors:
             errors = Collections.emptyList();
@@ -192,13 +214,11 @@ public class TaskCache {
         
         dumpErrors(output[2], notErrors, false);
         
-        Set<URL> toRefresh = new HashSet<URL>();
-        
-        toRefresh.add(file);
+        c.toRefresh.add(file);
         
         File currentFile = fileFile.getParentFile();
         
-        toRefresh.add(currentFile.toURI().toURL());
+        c.toRefresh.add(currentFile.toURI().toURL());
 
         if (modified) {
             File current = output[1].getParentFile();
@@ -206,7 +226,7 @@ public class TaskCache {
             while (!output[0].equals(current)) {
                 current = current.getParentFile();
                 currentFile = currentFile.getParentFile();
-                toRefresh.add(currentFile.toURI().toURL());
+                c.toRefresh.add(currentFile.toURI().toURL());
             }
 
             FileObject rootFO = URLMapper.findFileObject(root);
@@ -221,17 +241,17 @@ public class TaskCache {
 
                     if (FileUtil.isParentOf(projectDirectory, rootFO)) {
                         while (currentFO != null && currentFO != projectDirectory) {
-                            toRefresh.add(currentFO.getURL());
+                            c.toRefresh.add(currentFO.getURL());
                             currentFO = currentFO.getParent();
                         }
                     }
 
-                    toRefresh.add(projectDirectory.getURL());
+                    c.toRefresh.add(projectDirectory.getURL());
                 }
             }
         }
-        
-        return toRefresh;
+
+        c.rootsToRefresh.add(root);
     }
 
     private List<Task> loadErrors(File input, FileObject file, boolean onlyErrors) throws IOException {
@@ -341,7 +361,7 @@ public class TaskCache {
                 }
                 
                 String resourceName = cp.getResourceName(file, File.separatorChar, false);
-                File cacheRoot = Index.getClassFolder(root.getURL(), true);
+                File cacheRoot = JavaIndex.getClassFolder(root.getURL(), true);
                 
                 if (cacheRoot == null) {
                     //index does not exist:
@@ -398,7 +418,7 @@ public class TaskCache {
             if (lastDot != (-1)) {
                 resourceName = resourceName.substring(0, lastDot);
             }
-            File cacheRoot = Index.getClassFolder(root);
+            File cacheRoot = JavaIndex.getClassFolder(root);
             File errorsRoot = new File(cacheRoot.getParentFile(), "errors");
             File errorCacheFile = new File(errorsRoot, resourceName + "." + ERR_EXT);
             File warningCacheFile = new File(errorsRoot, resourceName + "." + WARN_EXT);
@@ -423,10 +443,60 @@ public class TaskCache {
         }
         
         String resourceName = cp.getResourceName(file, File.separatorChar, false);
-        File cacheRoot = Index.getClassFolder(root.getURL());
+        File cacheRoot = JavaIndex.getClassFolder(root.getURL());
         File cacheFile = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName + ".err");
         
         return cacheFile;
     }
+
+    private ThreadLocal<TransactionContext> q = new ThreadLocal<TransactionContext>();
     
+    public <T> T refreshTransaction(ExceptionAction<T> a) throws IOException {
+        TransactionContext c = q.get();
+
+        if (c == null) {
+            q.set(c = new TransactionContext());
+        }
+
+        c.depth++;
+        
+        try {
+            return a.run();
+        } catch (IOException ioe) { //???
+            throw ioe;
+        } catch (Exception ex) {
+            throw (IOException) new IOException(ex.getMessage()).initCause(ex);
+        } finally {
+            if (--c.depth == 0) {
+                doRefresh(c);
+                q.set(null);
+            }
+        }
+    }
+
+    private static void doRefresh(TransactionContext c) {
+        if (TasklistSettings.isTasklistEnabled()) {
+            if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
+                ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                if (an != null) {
+                    an.updateInError(c.toRefresh);
+                }
+            }
+
+            for (URL root : c.rootsToRefresh) {
+                FileObject rootFO = URLMapper.findFileObject(root);
+
+                if (rootFO != null) {
+                    JavaTaskProvider.refresh(rootFO);
+                }
+            }
+        }
+    }
+    
+    private static final class TransactionContext {
+        private int depth;
+        private Set<URL> toRefresh = new HashSet<URL>();
+        private Set<URL> rootsToRefresh = new HashSet<URL>();
+    }
 }

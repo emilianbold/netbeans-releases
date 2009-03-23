@@ -74,7 +74,7 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
     
     public void testGetItems () {        
         assertNotNull ("UpdateItems found " + URL_TO_TEST_CATALOG, updateItems);
-        assertEquals ("3 items found.", 3, updateItems.keySet ().size ());
+        assertEquals ("4 items found.", 4, updateItems.keySet ().size ());
     }
     
     public void testLicenses () {
@@ -85,6 +85,15 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
             assertNotNull (mi + " has license.", mi.getAgreement ());
             assertFalse (mi + " has non-empty license.", mi.getAgreement ().length () == 0);
         }
+    }
+
+    public void testLicenseUrlCDDL() {
+        UpdateItem item = updateItems.get("org.netbeans.test.license.cddl.url_1.0");
+        UpdateItemImpl impl = Trampoline.SPI.impl(item);
+        assertTrue("UpdateItemImpl " + impl + " instanceof ModuleItem.", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertNotNull(mi + " has license.", mi.getAgreement());        
+        assertTrue(mi + " has non-cddl license.", mi.getAgreement().startsWith("COMMON DEVELOPMENT AND DISTRIBUTION LICENSE"));
     }
     
     public void testVisiblePlugin () {

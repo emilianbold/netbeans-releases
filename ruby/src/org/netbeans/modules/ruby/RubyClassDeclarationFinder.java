@@ -48,9 +48,9 @@ import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.ConstDeclNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 
 final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<IndexedClass> {
@@ -62,7 +62,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
     }
     
     RubyClassDeclarationFinder(
-            final CompilationInfo info,
+            final ParserResult info,
             final Node root,
             final AstPath path,
             final RubyIndex index,
@@ -114,8 +114,8 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
         Set<String> uniqueClasses = new HashSet<String>();
         while ((classes.size() == 0) && (fqn.length() > 0)) {
             classes =
-                    index.getClasses(fqn + "::" + className, NameKind.EXACT_NAME, true, false, // NOI18N
-                    false, RubyIndex.ALL_SCOPE, uniqueClasses);
+                    index.getClasses(fqn + "::" + className, QuerySupport.Kind.EXACT, // NOI18N
+                    true, false, false, uniqueClasses);
 
             int f = fqn.lastIndexOf("::"); // NOI18N
 
@@ -127,8 +127,8 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
         }
 
         if (classes.size() == 0) {
-            classes = index.getClasses(className, NameKind.EXACT_NAME, true, false, false,
-                    RubyIndex.ALL_SCOPE, uniqueClasses);
+            classes = index.getClasses(className, QuerySupport.Kind.EXACT, true,
+                    false, false, uniqueClasses);
         }
 
         // If no success with looking only at the source scope, look in libraries as well
@@ -138,7 +138,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
             // Try looking at the libraries too
             while ((classes.size() == 0) && (fqn.length() > 0)) {
                 classes =
-                        index.getClasses(fqn + "::" + className, NameKind.EXACT_NAME, true, false, // NOI18N
+                        index.getClasses(fqn + "::" + className, QuerySupport.Kind.EXACT, true, false, // NOI18N
                         false);
 
                 int f = fqn.lastIndexOf("::");
@@ -151,7 +151,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
             }
 
             if (classes.size() == 0) {
-                classes = index.getClasses(className, NameKind.EXACT_NAME, true, false, false);
+                classes = index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false);
             }
         }
 
@@ -272,7 +272,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
         for (IndexedClass clz : classes) {
             String url = clz.getFileUrl();
 
-            if (url != null && url.indexOf("rubystubs") != -1) { // NOI18N
+            if (RubyUtils.isRubyStubsURL(url)) {
                 candidates.add(clz);
             }
         }

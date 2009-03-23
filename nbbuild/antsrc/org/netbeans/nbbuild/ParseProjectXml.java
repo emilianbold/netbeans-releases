@@ -54,7 +54,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -77,8 +76,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.util.CollectionUtils;
-import org.apache.tools.ant.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -627,7 +624,7 @@ public final class ParseProjectXml extends Task {
         }
         
         private String implementationVersionOf(ModuleListParser modules, String cnb) throws BuildException {
-            File jar = computeClasspathModuleLocation(modules, cnb, null, null);
+            File jar = computeClasspathModuleLocation(modules, cnb, null, null, false);
             if (!jar.isFile()) {
                 throw new BuildException("No such classpath entry: " + jar, getLocation());
             }
@@ -800,7 +797,7 @@ public final class ParseProjectXml extends Task {
                 continue;
             }
             String cnb = dep.codenamebase;
-            File depJar = computeClasspathModuleLocation(modules, cnb, clusterPath, excludedModules);
+            File depJar = computeClasspathModuleLocation(modules, cnb, clusterPath, excludedModules, runtime);
             
             Attributes attr;
             if (!depJar.isFile()) {
@@ -876,7 +873,7 @@ public final class ParseProjectXml extends Task {
         log("Processing for recursive deps: " + cnb, Project.MSG_VERBOSE); // NO18N
         for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
             log("  Added dep: " + nextModule, Project.MSG_VERBOSE); // NO18N
-            File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules);
+            File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
             
             if (!depJar.isFile()) {
                 log("No such classpath entry: " + depJar, Project.MSG_WARN);
@@ -900,7 +897,7 @@ public final class ParseProjectXml extends Task {
     }
     
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
-            Set<File> clusterPath, Set<String> excludedModules) throws BuildException {
+            Set<File> clusterPath, Set<String> excludedModules, boolean runtime) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
@@ -910,12 +907,19 @@ public final class ParseProjectXml extends Task {
 
         if (module.getClusterName() != null && clusterPath != null) {
             File clusterF = jar.getParentFile().getParentFile();
-            if (! clusterPath.contains(clusterF))
-                throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster "
-                        + clusterF
-                        + " which is not part of cluster.path in your suite configuration.\n\n"
-                        + "Cluster.path is: " + clusterPath, getLocation());
+            if (!clusterPath.contains(clusterF)) {
+                String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
+                        " against because it is part of the cluster " +
+                        clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
+                        "Cluster.path is: " + clusterPath;
+                throw new BuildException(msg, getLocation());
+            }
         }
+        /* XXX consider readding:
+        if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
+            throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
+        }
+         */
         return jar;
     }
  

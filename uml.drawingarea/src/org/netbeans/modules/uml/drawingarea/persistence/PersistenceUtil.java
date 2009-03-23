@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -57,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -68,6 +70,7 @@ public class PersistenceUtil {
     //Hashmap to maintain a list of anchors(aka GraphConnectors) and its XMI-IDs
     private static HashMap<Anchor, String> anchors = new HashMap();
     private static boolean diagramLoading = false;
+
 
     public PersistenceUtil() {
     }
@@ -163,6 +166,7 @@ public class PersistenceUtil {
         return nodeWriter;
     }
 
+
     public static void clearNodeWriterValues(NodeWriter nodeWriter) {
         nodeWriter.setRootNode(false);
         nodeWriter.setLocation(null);
@@ -200,6 +204,22 @@ public class PersistenceUtil {
             UMLLogger.logMessage("Absent resource table.", Level.WARNING);
         }
     }
+    public static void populateProperties(EdgeWriter edgeWriter, UMLEdgeWidget widget) {
+        if (edgeWriter == null || widget == null)
+        {
+            return;
+        }
+        HashMap<String, String> props = edgeWriter.getEdgeProperties();
+        if (props == null)
+        {
+            props = new HashMap<String, String>();
+        }
+        Color linecolor=widget.getLineColor();
+        if(linecolor!=null)
+        {
+            props.put("foreground","0X"+Integer.toHexString(linecolor.getRGB()).substring(2));
+        }
+    }
     
     public static void clearProperties(Writer writer) {
         if (writer != null) {
@@ -222,7 +242,6 @@ public class PersistenceUtil {
                     //don't do anything yet.. we'll deal with this in anchorage section..
                 }
                 else { //assuming only movablelabelwidgets here...
-//                    System.out.println(" obj is " + obj);
                     if (obj instanceof DiagramNodeWriter) {
                         ((DiagramNodeWriter)obj).save(nodeWriter);
                     }

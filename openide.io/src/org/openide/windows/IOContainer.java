@@ -55,6 +55,15 @@ import org.openide.util.Parameters;
 
 /**
  * IOContainer is accessor class to parent container of IO tabs for IOProvider implementations.
+ * Default IOContainer (corresponding to Output window) can be obtained via {@link #getDefault() }.
+ * <p>
+ * If you want to add IO components (tabs) to your own component you need to:
+ * <ul>
+ *   <li> implement {@link Provider}
+ *   <li> create <code>IOContainer</code> via factory method {@link #create(org.openide.windows.IOContainer.Provider) }
+ *   <li> pass <code>IOContainer</code> to {@link IOProvider#getIO(java.lang.String, javax.swing.Action[], org.openide.windows.IOContainer) }
+ * </ul>
+ * New IO tab will be added to provided IOContainer.
  * @since 1.15
  * @author Tomas Holy
  */
@@ -307,7 +316,14 @@ public final class IOContainer {
         boolean isCloseable(JComponent comp);
     }
 
-    /** Callbacks from IOContainer to child component corresponding to IO */
+    /**
+     * Callbacks from IOContainer to child component corresponding to IO
+     * <p>
+     * {@link IOProvider} implementations can optionally pass <code>Callbacks</code>
+     * when adding new component (IO tab) to parent container via
+     * {@link IOContainer#add(javax.swing.JComponent, org.openide.windows.IOContainer.CallBacks) }
+     * {@link IOProvider} implementation then will be notified about some useful events.
+     */
     public interface CallBacks {
 
         /** tab closed */

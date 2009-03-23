@@ -54,6 +54,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
+import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
@@ -75,6 +77,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode.Children;
@@ -130,7 +133,13 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
 
 
             ArrayList<Node> nodes = new ArrayList<Node>();
-            nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), wsdlProject, filters)));
+            Node projectNode = new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), wsdlProject, filters));
+            nodes.add(projectNode);
+            Node catalogNode = getCatalogNode(wsdlProject, filters);
+            if (catalogNode != null) {
+                projectNode.getChildren().add(new Node[] {catalogNode});
+            }
+            
             
             if (catalogSupport != null) {
                 Set refProjects = catalogSupport.getProjectReferences();
@@ -213,6 +222,68 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         }
         return selected;
     }
+
+    private Node getCatalogNode(Project wsdlProject, List<Class<? extends SchemaComponent>> filters) {
+        CatalogHelper helper = new CatalogHelper(wsdlProject);
+        
+        List<CatalogEntry> references = helper.getReferencedResources(SCHEMA_FILE_EXTENSION);
+        if (references == null || references.isEmpty()) return null;
+        
+        Node node = new CatalogNode(new CatalogChildren(project, helper, references, filters));
+        node.setName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_RemoteReferences"));
+        return node;
+    }
+    
+    class CatalogChildren extends Children.Keys<CatalogEntry> {
+        private Project wsdlProject;
+        List<Class<? extends SchemaComponent>> schemaComponentFilters;
+        private List<CatalogEntry> entries;
+        private Set<CatalogEntry> emptySet = Collections.emptySet();
+        private CatalogHelper helper;
+        
+         public CatalogChildren (Project project, CatalogHelper helper, List<CatalogEntry> entries, List<Class<? extends SchemaComponent>> filters) {
+            this.wsdlProject = project;
+            this.schemaComponentFilters = filters;
+            this.entries = entries;
+            this.helper = helper;
+        }
+
+        @Override
+        public Node[] createNodes(CatalogEntry entry) {
+            FileObject fo = helper.getFileObject(entry);
+            ModelSource modelSource = Utilities.getModelSource(fo, true);
+            if (modelSource != null) {
+                SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
+                if (schemaModel.getState() == SchemaModel.State.VALID) {
+                    CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(schemaModel, schemaComponentFilters, Lookup.EMPTY);
+                    return new Node[]{new FileNode(
+                                factory.createNode(schemaModel.getSchema()),
+                                CatalogHelper.getFileName(entry.getSource()))
+                            };
+                }
+            }
+            Node brokenReference = new AbstractNode(LEAF);
+            brokenReference.setName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_InvalidReference"));;
+            return new Node[]{brokenReference};
+        }
+
+        @Override
+        protected void addNotify() {
+            resetKeys();
+        }
+
+        @Override
+        protected void removeNotify() {
+            this.setKeys(emptySet);
+
+        }
+
+        private void resetKeys() {
+            ArrayList<CatalogEntry> keys = new ArrayList<CatalogEntry>();
+            keys.addAll(entries);
+            this.setKeys(keys);
+        }
+    }
     
     private Node selectNode(Node parentNode, SchemaComponent element) {
         org.openide.nodes.Children children = parentNode.getChildren();
@@ -236,6 +307,14 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             }
         }
         return null;
+    }
+    
+    class CatalogNode extends FolderNode {
+
+        public CatalogNode(Children.Keys children) {
+            super(children);
+        }
+        
     }
     
     class SchemaProjectFolderNode extends FilterNode {

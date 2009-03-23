@@ -39,15 +39,15 @@ import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -74,6 +74,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author Tor Norbye
  */
 public class CamelCaseNames extends RubyAstRule {
+    
     public CamelCaseNames() {
     }
 
@@ -91,7 +92,7 @@ public class CamelCaseNames extends RubyAstRule {
     
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         String name = ((INameNode)node).getName();
 
@@ -109,7 +110,7 @@ public class CamelCaseNames extends RubyAstRule {
                         fixList.add(new RenameFix(context, childPath, RubyUtils.camelToUnderlinedName(name)));
                     }
                     fixList.add(new RenameFix(context, childPath, null));
-                    Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
+                    Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixList, 1500);
                     result.add(desc);
                 }
                 return;
@@ -225,7 +226,7 @@ public class CamelCaseNames extends RubyAstRule {
             // Full rename - can only be done from the event dispatch thread
             // (because the RefactoringActionsProvider calls getOpenedPanes on CloneableEditorSupport)
             try {
-                DataObject od = DataObject.find(context.compilationInfo.getFileObject());
+                DataObject od = DataObject.find(RubyUtils.getFileObject(context.parserResult));
                 EditorCookie ec = od.getCookie(EditorCookie.class);
                 org.openide.nodes.Node n = od.getNodeDelegate();
                 InstanceContent ic = new InstanceContent();
@@ -244,13 +245,13 @@ public class CamelCaseNames extends RubyAstRule {
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
             } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }

@@ -90,10 +90,6 @@ public class TemplateFamiliesDataAccess
             docBuilder = docBuilderFactory.newDocumentBuilder();
             data = docBuilder.parse(new File(retrieveTemplateFamiliesFile()));
             getData().getDocumentElement().normalize();
-            
-            System.out.println("Root element of the doc is " +
-                getData().getDocumentElement().getNodeName());
-            
         }
         
         catch (IOException ex)
@@ -106,7 +102,6 @@ public class TemplateFamiliesDataAccess
             System.out.println("** Parsing error" + ", line "
                 + err.getLineNumber() + ", uri " + err.getSystemId());
             System.out.println(" " + err.getMessage());
-            
         }
         
         catch (SAXException e)

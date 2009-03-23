@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.php.project.spi;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
@@ -56,8 +58,9 @@ public interface XDebugStarter {
      *            on defined port (typically 9000) started.
      * @param startFile file to debug.
      * @param closeSession
+     * @param pathMapping path mapping (remote, local); strings, never null
      */
-    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession);    
+    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping);
 
     /**
      * @return true if session is already running

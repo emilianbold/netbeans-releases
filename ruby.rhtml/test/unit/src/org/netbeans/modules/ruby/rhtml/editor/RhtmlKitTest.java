@@ -37,9 +37,11 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+//import org.netbeans.modules.gsf.api.CompilationInfo;
+//import org.netbeans.modules.gsf.api.Formatter;
+//import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.RubyTestBase;
@@ -78,11 +80,11 @@ public class RhtmlKitTest extends RubyTestBase {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
     }
 
-    @Override
-    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
-            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
-        super.configureIndenters(null, new RubyFormatter(), null, true, RubyInstallation.RUBY_MIME_TYPE);
-    }
+//    @Override
+//    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+//            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+//        super.configureIndenters(null, new RubyFormatter(), null, true, RubyInstallation.RUBY_MIME_TYPE);
+//    }
 
     @Override
     public BaseDocument getDocument(String s, final String mimeType, final Language language) {

@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.filesystems.FileUtil;
@@ -171,7 +172,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 funLike = m.isFunctionLike();
                 switch(m.getKind()){
                     case DEFINED:
-                        MacroInfo mi = macroRefMap.get(token.getText());
+                        MacroInfo mi = getMacroInfo(token);
                         if (mi == null) {
                             CsmFile macroContainter = getMacroFile(m);
                             if (macroContainter != null) {
@@ -260,7 +261,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     kind = CsmMacro.Kind.USER_SPECIFIED;
                     break;
             }
-            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
+            ref = MacroImpl.createSystemMacro(token.getTextID(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
         }
 
         public CsmObject getReferencedObject() {
@@ -277,19 +278,19 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         @Override
         public CharSequence getText() {
-            return TextCache.getString(super.getText());
+            return TextCache.getManager().getString(super.getText());
         }        
     }
 
     private static class MacroReference extends OffsetableBase implements CsmReference {
 
         private CsmObject ref;
-        private final String macroName;
+        private final CharSequence macroName;
         private final MacroInfo mi;
 
         public MacroReference(CsmFile file, APTToken macro, MacroInfo mi) {
             super(file, macro.getOffset(), macro.getEndOffset());
-            this.macroName = macro.getText();
+            this.macroName = macro.getTextID();
             assert macroName != null;
 //        this.isSystem = isSystem != null ? isSystem.booleanValue() : mi != null;
 //        assert !(isSystem != null && isSystem.booleanValue() && mi != null);
@@ -359,7 +360,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         @Override
         public CharSequence getText() {
-            return TextCache.getString(super.getText());
+            return DefaultCache.getManager().getString(super.getText());
         }
     }
 

@@ -208,8 +208,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         JspContextInfo jspCO = JspContextInfo.getContextInfo(fobj);
         if(jspCO == null) {
             return false;
-        }
-        JspOpenInfo jspOpenInfo = jspCO.getCachedOpenInfo(getDocument(), fobj, false);
+        } 
+        JspOpenInfo jspOpenInfo = jspCO.getCachedOpenInfo(fobj, false);
         if(jspOpenInfo == null) {
             return false;
         }
@@ -217,9 +217,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     }
     
     protected JspParserAPI.ParseResult getParseResult() {
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, true, false);
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(fobj, true, false);
         if (result == null) {
-            result = JspUtils.getCachedParseResult(getDocument(), fobj, false, false);
+            result = JspUtils.getCachedParseResult(fobj, false, false);
         }
         return result;
     }
@@ -253,7 +253,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
         getTagLibraryMappings();
         //if requiresFresh force the parser to update the parse information for the file
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, requiresFresh, requiresFresh);
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(fobj, false, requiresFresh, requiresFresh);
         if (result != null) {
             PageInfo pi = result.getPageInfo();
             if(pi == null) {
@@ -802,7 +802,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         if (fobj == null) {
             return null;
         }
-        return JspUtils.getTaglibMap(getDocument(), fobj);
+        return JspUtils.getTaglibMap(fobj);
     }
     
     private static void initHelp(){

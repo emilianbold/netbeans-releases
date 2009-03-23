@@ -217,7 +217,7 @@ public class RestUtils {
         RestSupport support = getRestSupport(project);
         
         if (support != null) {
-            return ((WebProjectRestSupport) support).getDatasource(jndiName);
+            return support.getDatasource(jndiName);
         }
         
         return null;

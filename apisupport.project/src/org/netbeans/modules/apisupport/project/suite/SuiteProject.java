@@ -315,7 +315,8 @@ public final class SuiteProject implements Project {
 
     public void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
         String buildImplPath =
-                getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65 && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                 ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
@@ -347,18 +348,7 @@ public final class SuiteProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml
-            String buildImplPath =
-                    getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
-                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
-                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
-            genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/" + buildImplPath),
-                    false);
-            genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    SuiteProject.class.getResource("resources/build.xsl"),
-                    false);
+            refreshBuildScripts(false);
         }
         
     }

@@ -41,8 +41,9 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.api.AstPath;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -51,10 +52,13 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -99,22 +103,33 @@ public class AstPathTest extends GroovyTestBase {
         assertFalse(it.hasNext());
     }
 
-    private AstPath getPath(String relFilePath, String caretLine) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
+    private AstPath getPath(String relFilePath, final String caretLine) throws Exception {
+        FileObject f = getTestFile(relFilePath);
+        Source source = Source.create(f);
 
-        String text = info.getText();
+        final AstPath[] ret = new AstPath[1];
+        final CountDownLatch latch = new CountDownLatch(1);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                String text = result.getSnapshot().getText().toString();
 
-        int caretDelta = caretLine.indexOf('^');
-        assertTrue(caretDelta != -1);
-        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-        int lineOffset = text.indexOf(caretLine);
-        assertTrue(lineOffset != -1);
+                int caretDelta = caretLine.indexOf('^');
+                assertTrue(caretDelta != -1);
+                String realCaretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+                int lineOffset = text.indexOf(realCaretLine);
+                assertTrue(lineOffset != -1);
 
-        int caretOffset = lineOffset + caretDelta;
+                int caretOffset = lineOffset + caretDelta;
 
-        GroovyParserResult result = (GroovyParserResult) info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-        ModuleNode moduleNode = result.getRootElement().getModuleNode();
-        return new AstPath(moduleNode, caretOffset, (BaseDocument) info.getDocument());
+                ModuleNode moduleNode = result.getRootElement().getModuleNode();
+                ret[0] = new AstPath(moduleNode, caretOffset, (BaseDocument) result.getSnapshot().getSource().getDocument(true));
+                latch.countDown();
+            }
+        });
+        
+        latch.await();
+        return ret[0];
     }
     
 }

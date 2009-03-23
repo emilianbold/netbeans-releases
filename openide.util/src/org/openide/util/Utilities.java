@@ -2916,7 +2916,8 @@ widthcheck:  {
      *
      *  <p>This implementation provides one cursor for all Mac systems, one for all
      *  Unix systems (regardless of window manager), and one for all other systems
-     *  including Windows.
+     *  including Windows. Note: The cursor does not have to look native in some
+     *  cases on some platforms!
      *
      *  @param   component the non-null component that will use the progress cursor
      *  @return  a progress cursor (Unix, Windows or Mac)

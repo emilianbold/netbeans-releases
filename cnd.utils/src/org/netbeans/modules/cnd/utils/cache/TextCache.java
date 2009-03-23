@@ -45,8 +45,8 @@ package org.netbeans.modules.cnd.utils.cache;
  * cache entry
  * @author Vladimir Voskresensky
  */
-public class TextCache {
-
+public class TextCache extends APTStringManager {
+    private static final APTStringManager manager = new TextCache();
     private static final APTStringManager instance = 
             APTStringManager.instance(APTStringManager.TEXT_MANAGER,APTStringManager.CacheKind.Sliced);
     
@@ -54,7 +54,7 @@ public class TextCache {
     private TextCache() {
     }
     
-    public static CharSequence getString(CharSequence text) {
+    public CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }
@@ -62,11 +62,11 @@ public class TextCache {
         return instance.getString(text);
     }
     
-    public static void dispose() {
+    public void dispose() {
         instance.dispose();
     }    
 
     public static APTStringManager getManager() {
-        return instance;
+        return manager;
     }    
 }

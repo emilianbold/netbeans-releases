@@ -40,7 +40,7 @@ package org.netbeans.modules.php.editor.index;
 
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;

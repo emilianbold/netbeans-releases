@@ -47,6 +47,7 @@ import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.editor.model.CssModel;
 import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.NbBundle;
 
@@ -94,12 +95,12 @@ public class CssPreviewGenerator {
 
             sb.append(ruleName.replaceAll(":", "X"));//#118277 a:visited:hover
             sb.append(" {\n");
-            sb.append(rule.ruleContent().getFormattedString().replace('"', '\''));
+            sb.append(CssRuleContent.create(rule).getFormattedString().replace('"', '\''));
             sb.append("\n }\n");
         }
         preview.append((CharSequence)sb);
         preview.append(HTML_MIDDLE);
-        CssRule selected = content.selectedRule();
+        CssRule selected = content.selectedRuleContent().rule();
         String ruleName = selected.name();
         ruleName = ruleName.replace('\n', ' '); //hotfix #117690 (selectors on multiple lines break the css previrew)
         

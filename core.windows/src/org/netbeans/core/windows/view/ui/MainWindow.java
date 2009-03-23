@@ -64,6 +64,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.JPanel;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import org.netbeans.core.windows.*;
@@ -201,7 +202,7 @@ public final class MainWindow extends JFrame {
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
-                decoratePanel (statusLinePanel);
+                decoratePanel (statusLinePanel, false);
                 statusLinePanel.setName("statusLine"); //NOI18N
                 getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
             } else { // custom status line provided
@@ -232,8 +233,8 @@ public final class MainWindow extends JFrame {
         setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
     }
     
-    private static void decoratePanel (JPanel panel) {
-        assert SwingUtilities.isEventDispatchThread () : "Must run in AWT queue.";
+    private static void decoratePanel (JPanel panel, boolean safeAccess) {
+        assert safeAccess || SwingUtilities.isEventDispatchThread () : "Must run in AWT queue.";
         if (innerIconsPanel != null) {
             panel.remove (innerIconsPanel);
         }
@@ -280,7 +281,7 @@ public final class MainWindow extends JFrame {
         public void resultChanged (LookupEvent ev) {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    decoratePanel (decoratingPanel);
+                    decoratePanel (decoratingPanel, false);
                 }
             });
         }
@@ -384,7 +385,7 @@ public final class MainWindow extends JFrame {
                 statusLinePanel.add(sep, BorderLayout.WEST);
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
-                decoratePanel (statusLinePanel);
+                decoratePanel (statusLinePanel, true);
                 statusLinePanel.setName("statusLine"); //NOI18N
                 menu.add(statusLinePanel);
             } else {

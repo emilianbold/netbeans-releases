@@ -45,7 +45,7 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.spi.debugger.ContextProvider;
 
 
@@ -68,7 +68,7 @@ public class KillActionProvider extends AbstractActionProvider {
     {
         Session session = ( Session )getContextProvider().lookupFirst( null , 
                 Session.class );
-        StartActionProviderImpl.getInstance().stop( session );
+        SessionManager.getInstance().stop(session);
         setEnabled( false );
     }
 

@@ -42,9 +42,8 @@
 package org.netbeans.modules.php.editor.index;
 
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.Modifier;
 
 /**
  *
@@ -53,6 +52,5 @@ import org.netbeans.modules.gsf.api.Modifier;
 public interface Element extends ElementHandle {
     String getName();
     String getIn();
-    ElementKind getKind();
     Set<Modifier> getModifiers();
 }

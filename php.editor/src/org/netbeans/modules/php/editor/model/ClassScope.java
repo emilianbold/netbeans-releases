@@ -39,7 +39,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  * @author Radek Matous
@@ -56,7 +56,7 @@ public interface ClassScope extends TypeScope {
     
     Collection<? extends FieldElement> findDeclaredFields(final int... modifiers);
     Collection<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers);
-    Collection<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers);
+    Collection<? extends FieldElement> findDeclaredFields(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
     Collection<? extends FieldElement> findInheritedFields(String fieldName);
 
     //TODO: add getAllInheritedSuperClasses()

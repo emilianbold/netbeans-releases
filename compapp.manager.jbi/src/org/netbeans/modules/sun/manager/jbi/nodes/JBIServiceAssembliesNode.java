@@ -52,6 +52,7 @@ import java.util.ResourceBundle;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.openmbean.CompositeDataSupport;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -62,7 +63,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
-import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.DeployAction;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
@@ -73,6 +73,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+
+import static org.netbeans.modules.sun.manager.jbi.NotificationConstants.*;
 
 /**
  * Container node for all JBI Service Assemblies.
@@ -92,6 +94,23 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         
         setDisplayName(NbBundle.getMessage(JBIServiceAssembliesNode.class, 
                 "SERVICE_ASSEMBLIES"));  // NOI18N
+        
+        registerNotificationListener();
+    }
+    
+    protected boolean shouldProcessNotification(String sourceName, 
+            String sourceType, String eventType) {
+        return NOTIFICATION_SOURCE_TYPE_SERVICE_ASSEMBLY.equals(sourceType) && 
+                (NOTIFICATION_EVENT_TYPE_DEPLOYED.equals(eventType) 
+                || NOTIFICATION_EVENT_TYPE_UNDEPLOYED.equals(eventType));
+    }
+    
+    protected void processNotificationData(CompositeDataSupport data) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refresh();
+            }
+        });
     }
     
     /**
@@ -111,9 +130,6 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         };
     }
     
-    /**
-     *
-     */
     @Override
     public Image getIcon(int type) {
         String iconName = IconConstants.FOLDER_ICON;
@@ -122,9 +138,6 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         return Utils.getBadgedIcon(getClass(), iconName, badgeIconName, externalBadgeIconName);
     }
     
-    /**
-     *
-     */
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
@@ -150,9 +163,9 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         fireIconChange();
     }    
     
-    public void deploy(boolean start) {
+    public void deploy(final boolean start) {
         
-        DeploymentService deploymentService = getDeploymentService();
+        final DeploymentService deploymentService = getDeploymentService();
         assert deploymentService != null;
             
         JFileChooser chooser = getJFileChooser();
@@ -170,69 +183,68 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
             lastInstallDir = selectedFiles[0].getParent();
         }
 
-        List<File> files = filterSelectedFiles(selectedFiles);                
+        final List<File> files = filterSelectedFiles(selectedFiles);                
         if (files.size() == 0) {
             return;
         }
 
-        String message = NbBundle.getMessage(JBIServiceAssembliesNode.class, 
-                "LBL_Deploying_Service_Assembly");    // NOI18N
-        final ProgressUI progressUI = new ProgressUI(message, false);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+//        String message = NbBundle.getMessage(JBIServiceAssembliesNode.class, 
+//                "LBL_Deploying_Service_Assembly");    // NOI18N
+//        final ProgressUI progressUI = new ProgressUI(message, false);
+//
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
                 setBusy(true);
-                progressUI.start();
-            }
-        });
+//                progressUI.start();
+//            }
+//        });
 
-        for (File file : files) {
-            final String zipFilePath = file.getAbsolutePath();
-
-            try {
-                String result = deploymentService.deployServiceAssembly(
-                        zipFilePath, SERVER_TARGET);
-                assert result != null;
-             
-                String lowerCaseResult = result.toLowerCase();
-                if (!lowerCaseResult.contains("error") && // NOI18N
-                        !lowerCaseResult.contains("warning") && // NOI18N
-                        !lowerCaseResult.contains("exception") && // NOI18N
-                        !lowerCaseResult.contains("info")) {     // NOI18N
-                    if (start) {
-                        // Start component automatically only upon 
-                        // successful installation.
-                        // The successful installation result is the 
-                        // service assembly name.
-                        String assembly = result;
-                        RuntimeManagementServiceWrapper mgmtService =
-                                getRuntimeManagementServiceWrapper();
-                        result = mgmtService.startServiceAssembly(
-                                assembly, SERVER_TARGET);
-                        
-                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                                GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
-                                assembly, result);
-                    }
-                } else {
-                    // Failed to deploy
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
-                            zipFilePath, result);                    
-                }
-            } catch (ManagementRemoteException e) {
-                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
-                            zipFilePath, e.getMessage());   
-            }
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
+         postToRequestProcessorThread(new Runnable() {
             public void run() {
-                progressUI.finish();
-                setBusy(false);
+                for (File file : files) {
+                    final String zipFilePath = file.getAbsolutePath();
+
+                    try {
+                        String result = deploymentService.deployServiceAssembly(
+                                zipFilePath, SERVER_TARGET);
+                        assert result != null;
+
+                        String lowerCaseResult = result.toLowerCase();
+                        if (!lowerCaseResult.contains("error") && // NOI18N
+                                !lowerCaseResult.contains("warning") && // NOI18N
+                                !lowerCaseResult.contains("exception") && // NOI18N
+                                !lowerCaseResult.contains("info")) {     // NOI18N
+                            if (start) {
+                                // Start component automatically only upon 
+                                // successful installation.
+                                // The successful installation result is the 
+                                // service assembly name.
+                                String assembly = result;
+                                RuntimeManagementServiceWrapper mgmtService =
+                                        getRuntimeManagementServiceWrapper();
+                                result = mgmtService.startServiceAssembly(
+                                        assembly, SERVER_TARGET);
+
+                                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                        GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
+                                        assembly, result);
+                            }
+                        } else {
+                            // Failed to deploy
+                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                    GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                                    zipFilePath, result);                    
+                        }
+                    } catch (ManagementRemoteException e) {
+                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                    GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                                    zipFilePath, e.getMessage());   
+                    } finally {
+                        setBusy(false);
+                    }
+                }
             }
-        });
+         });
     }
     
     protected Map<Attribute, MBeanAttributeInfo> getGeneralSheetSetProperties() {
@@ -303,11 +315,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         
         return ret;
     }   
-    
-    protected boolean needRefresh(String notificationSourceType) {
-        return notificationSourceType.equals("ServiceAssembly"); // NOI18N
-    }
-        
+            
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JBIServiceAssembliesNode.class);

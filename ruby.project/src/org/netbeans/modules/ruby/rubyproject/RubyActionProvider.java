@@ -54,7 +54,6 @@ import java.util.Collection;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
@@ -64,6 +63,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
@@ -519,7 +519,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             return;
         }
 
-        if (COMMAND_AUTOTEST.equals(command)) {
+        if (COMMAND_AUTOSPEC.equals(command)) {
             if (AutoTestSupport.isInstalled(project, TestType.AUTOSPEC)) {
                 AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));

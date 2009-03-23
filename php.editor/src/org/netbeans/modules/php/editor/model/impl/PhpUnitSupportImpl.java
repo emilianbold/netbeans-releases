@@ -38,25 +38,25 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.spi.PhpUnitSupport;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -69,22 +69,26 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
 
     public Collection<? extends String> getClassNames(final FileObject fo) {
         final List<String> retval = new ArrayList<String>();
-        Source source = Source.forFileObject(fo);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
-                    Model model = ModelFactory.getModel(parameter);
-                    FileScope fileScope = model.getFileScope();
-                    Collection<? extends ClassScope> allClasses = fileScope.getDeclaredClasses();
-                    for (ClassScope classScope : allClasses) {
-                        retval.add(classScope.getName());
+        Source source = Source.create(fo);
+        if (source != null) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result pr = resultIterator.getParserResult();
+                        if (pr instanceof PHPParseResult) {
+                            Model model = ModelFactory.getModel((PHPParseResult) pr);
+                            FileScope fileScope = model.getFileScope();
+                            Collection<? extends ClassScope> allClasses = fileScope.getDeclaredClasses();
+                            for (ClassScope classScope : allClasses) {
+                                retval.add(classScope.getName());
+                            }
+                        }
                     }
-                }
-                public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }
@@ -92,21 +96,29 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
     public Collection<? extends FileObject> filesForClassName(final FileObject fo,
             final String clsName) {
         final List<FileObject> retval = new ArrayList<FileObject>();
-        Source source = Source.forFileObject(fo);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
-                    PHPIndex index = PHPIndex.get(parameter.getIndex(PHPLanguage.PHP_MIME_TYPE));
-                    Collection<IndexedClass> classes = index.getClasses(null, clsName, NameKind.EXACT_NAME, EnumSet.of(SearchScope.SOURCE,SearchScope.DEPENDENCIES));
-                    for (IndexedClass indexedClass : classes) {
-                        retval.add(indexedClass.getFileObject());
+        Source source = Source.create(fo);
+        if (source != null) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result pr = resultIterator.getParserResult();
+                        if (pr instanceof PHPParseResult) {
+                            PHPParseResult phpresult = (PHPParseResult) pr;
+                            PHPIndex index = PHPIndex.get(phpresult);
+                            Collection<IndexedClass> classes = index.getClasses(phpresult, clsName, QuerySupport.Kind.EXACT);
+                            for (IndexedClass indexedClass : classes) {
+                            FileObject fo = indexedClass.getFileObject();
+                            if (fo != null) {
+                                retval.add(fo);
+                            }
+                            }
+                        }
                     }
-                }
-                public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }

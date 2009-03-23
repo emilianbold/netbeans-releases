@@ -153,31 +153,11 @@ public final class Util extends Object {
     public static String getLocaleSuffix(MultiDataObject.Entry fe) {
         FileObject fo = fe.getFile();
         String fName = fo.getName();
-        int index = fName.indexOf(PRB_SEPARATOR_CHAR);
-        FileObject po = fo;
-        while (index != -1) {
-            FileObject candidate = fo.getParent().getFileObject(
-                    fName.substring(0, index), fo.getExt());
-            if (candidate != null && isValidLocaleSuffix(fName.substring(index))) {
-                po = candidate;
-            }
-            index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
-        }
-        if (fo == po) {
+        String baseName = getBaseName(fName);
+        if (fName.equals(baseName))
             return "";
-        }
-        String myName   = fo.getName();
-        String baseName = po.getName();
-        assert myName.startsWith(baseName);
-        return myName.substring(baseName.length());
-//        MultiDataObject.Entry pe = fe.getDataObject().getPrimaryEntry();
-//        if (fe == pe) {
-//            return "";                                                  //NOI18N
-//        }
-//        String myName   = fe.getFile().getName();
-//        String baseName = pe.getFile().getName();
-//        assert myName.startsWith(baseName);
-//        return myName.substring(baseName.length());
+        else
+            return fName.substring(baseName.length());
     }
 
     private static boolean isValidLocaleSuffix(String s) {

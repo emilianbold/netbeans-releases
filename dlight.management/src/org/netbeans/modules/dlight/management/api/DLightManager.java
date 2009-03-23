@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,7 +75,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * D-Light manager 
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.api.impl.DLightToolkitManager.class)
+@ServiceProvider(service = org.netbeans.modules.dlight.api.impl.DLightToolkitManager.class)
 public final class DLightManager implements DLightToolkitManager, IndicatorActionListener {
 
     private static final Logger log = DLightLogger.getLogger(DLightManager.class);
@@ -93,8 +95,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public DLightSession createNewSession(DLightTarget target, String configurationName) {
+        return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName));
+    }
+
+    public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration) {
         // TODO: For now just create new session every time we set a target...
-        DLightSession session = newSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName));
+        DLightSession session = newSession(target, configuration);
         setActiveSession(session);
         return session;
     }
@@ -103,16 +109,16 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName));
     }
 
-    public DLightSession createNewSession(DLightTarget target) {
-        return createNewSession(target, DLightConfigurationManager.getInstance().getSelectedDLightConfiguration().getConfigurationName());
+    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration));
     }
 
     public void closeSession(DLightSession session) {
         if (session.isRunning()) {
             Object result = DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(
-                    loc("DLightManager.disposeRunningContext.Message", session.getDescription()), // NOI18N
-                    loc("DLightManager.disposeRunningContext.Title"), NotifyDescriptor.YES_NO_OPTION)); // NOI18N
+                new NotifyDescriptor.Confirmation(
+                loc("DLightManager.disposeRunningContext.Message", session.getDescription()), // NOI18N
+                loc("DLightManager.disposeRunningContext.Title"), NotifyDescriptor.YES_NO_OPTION)); // NOI18N
 
             if (result == NotifyDescriptor.NO_OPTION) {
                 return;
@@ -194,7 +200,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void addDLightSessionListener(DLightSessionListener listener) {
-        if (listener == null){
+        if (listener == null) {
             return;
         }
         if (!sessionListeners.contains(listener)) {
@@ -214,7 +220,13 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
         DLightSession session = new DLightSession();
-        session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
+        //DLightSessionContext sessionContext = session.getSessionContext();
+//        try {
+//            DLightSessionContextAccessor.getDefault().put(sessionContext, "os", HostInfoUtils.getOS(target.getExecEnv()));
+//        } catch (ConnectException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+        session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
         List<Indicator> indicators = session.getIndicators();
         for (Indicator ind : indicators) {
@@ -290,7 +302,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (visualizer == null) {
             VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModel);
 
-            if (dataProvider == null) {
+            if (dataProvider == null || dataProvider instanceof DataProvider) {
+                //if it is DataProvider instance it had to be returned at the previous loop
+                //and if we are here it means no storage exists for this DataProvider
                 // no providers for this storage can be found nor created
                 log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID());
                 return null;
@@ -359,7 +373,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
         if (!(reference instanceof DLightSession)) {
             throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " +
-                    "to start D-Light session is invalid");//NOI18N
+                "to start D-Light session is invalid");//NOI18N
         }
 
         startSession((DLightSession) reference);
@@ -370,7 +384,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         if (!(reference instanceof DLightSession)) {
             throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " +
-                    "to stop D-Light session is invalid");//NOI18N
+                "to stop D-Light session is invalid");//NOI18N
         }
 
         stopSession((DLightSession) reference);
@@ -383,9 +397,15 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void mouseClickedOnIndicator(Indicator source) {
-        VisualizerConfiguration vc = IndicatorAccessor.getDefault().getVisualizerConfiguration(source);
-        if (vc != null) {
-            openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc);
+        List<VisualizerConfiguration> list = IndicatorAccessor.getDefault().getVisualizerConfigurations(source);
+        if (list != null) {
+            for (VisualizerConfiguration vc : list) {
+                if (openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc) != null) {
+                    break;
+                }
+
+            }
+
         }
     }
 }

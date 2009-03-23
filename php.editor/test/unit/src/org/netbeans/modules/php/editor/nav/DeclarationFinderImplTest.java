@@ -39,13 +39,17 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,6 +59,11 @@ public class DeclarationFinderImplTest extends TestBase {
 
     public DeclarationFinderImplTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();        
     }
 
     public void testParamVarPropInPhpDocTest() throws Exception {
@@ -2162,23 +2171,40 @@ public class DeclarationFinderImplTest extends TestBase {
     }
 
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
-        performTest(code, new CancellableTask<CompilationInfo>() {
+        final DeclarationLocation[] found = new DeclarationLocation[1];
+        performTest(code, new UserTask() {
+
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
-                DeclarationLocation found = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
 
-                assertNotNull(found.getFileObject());
-                Set<Golden> result = new HashSet<Golden>();
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
 
-                result.add(new Golden(found.getFileObject().getNameExt(), found.getOffset()));
+                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                found[0] = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
 
-                for (AlternativeLocation l : found.getAlternativeLocations()) {
-                    result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
-                }
-
-                assertEquals(golden, result);
             }
         });
+        assertNotNull(found[0]);
+        assertNotNull(found[0].getFileObject());
+        Set<Golden> result = new HashSet<Golden>();
+
+        result.add(new Golden(found[0].getFileObject().getNameExt(), found[0].getOffset()));
+
+        for (AlternativeLocation l : found[0].getAlternativeLocations()) {
+            result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
+        }
+
+        assertEquals(golden, result);
+    }
+
+    @Override
+    protected FileObject[] createSourceClassPathsForTest() {
+        try {
+            return new FileObject[]{toFileObject(workDirToFileObject(), "src", true)};//NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     private static final class Golden {
@@ -2226,5 +2252,4 @@ public class DeclarationFinderImplTest extends TestBase {
         }
 
     }
-
 }

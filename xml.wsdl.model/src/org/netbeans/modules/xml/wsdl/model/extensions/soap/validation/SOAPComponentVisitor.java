@@ -571,11 +571,11 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                             
         int numSoapBodies = bindingInput.getExtensibilityElements(SOAPBody.class).size();
         if(numSoapBodies == 0) {
-            results.add(
+            /*results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingInput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));
+                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));*/
 
         } else if (numSoapBodies > 0 && numSoapBodies != 1) {
             results.add(
@@ -608,11 +608,11 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
 
         int numSoapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class).size();
         if(numSoapBodies == 0) {
-            results.add(
+           /* results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingOutput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));
+                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));*/
 
         } else if (numSoapBodies > 0 && numSoapBodies != 1) {
 

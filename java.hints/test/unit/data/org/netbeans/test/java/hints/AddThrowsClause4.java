@@ -9,6 +9,7 @@ public class AddThrowsClause4 {
     
     public void test() {
         throw exc();
+        System.out.println("");
     }
     
     public IOException exc() {

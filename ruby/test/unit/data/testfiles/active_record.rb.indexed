@@ -5,6 +5,7 @@ Searchable Keys:
   class : Base
   class-ig : base
   fqn : ActiveRecord::Base
+  require : active_record
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -18,6 +19,7 @@ Searchable Keys:
   class : Migration
   class-ig : migration
   fqn : ActiveRecord::Migration
+  require : active_record
 
 Not Searchable Keys:
   attrs : |CLASS|

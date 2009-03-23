@@ -60,7 +60,8 @@ public class ExceptionsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        
+
+        UIHandler.flushImmediatelly();
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
     }

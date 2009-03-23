@@ -40,14 +40,13 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -149,6 +148,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         edgeWriter.setSrcAnchorID(PersistenceUtil.findAnchor(this.getSourceAnchor()));
         edgeWriter.setTargetAnchorID(PersistenceUtil.findAnchor(this.getTargetAnchor()));
         
+        setEdgeWriterValues(edgeWriter, this);
         edgeWriter.beginGraphEdge();
         LabelManager manager = getLabelManager();
         if (manager != null)
@@ -172,7 +172,6 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 }
                 else
                 {
-//                    System.out.println(" not a label... ");
                 }
             }
             edgeWriter.endContained();
@@ -181,6 +180,10 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         edgeWriter.writeEdgeAnchors();
 
         edgeWriter.endGraphEdge();
+    }
+
+    protected void setEdgeWriterValues(EdgeWriter edgeWriter, UMLEdgeWidget widget) {
+        PersistenceUtil.populateProperties(edgeWriter, widget);
     }
 
     public void load(EdgeInfo edgeReader)
@@ -194,9 +197,13 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 if (!(nodesList.contains(edgeReader.getSourcePE())) 
                         || !(nodesList.contains(edgeReader.getTargetPE())))
                 {
-//                    System.out.println(" invalid edge...");
                     return;
                 }
+            }
+            String color=(String) edgeReader.getProperty("foreground");
+            if(color!=null)
+            {
+                setLineColor(Color.decode(color));
             }
             scene.setEdgeSource(PersistenceUtil.getPresentationElement(this), edgeReader.getSourcePE());
             scene.setEdgeTarget(PersistenceUtil.getPresentationElement(this), edgeReader.getTargetPE());

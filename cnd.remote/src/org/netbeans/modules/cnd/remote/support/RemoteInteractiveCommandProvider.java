@@ -44,7 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -56,25 +56,24 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
 
-    public RemoteInteractiveCommandProvider(String hkey) {
-        executionEnvironment = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+    public RemoteInteractiveCommandProvider(ExecutionEnvironment execEnv) {
+        executionEnvironment = execEnv;
+        log.finest(getClass().getSimpleName() + " .ctor " + execEnv);
     }
     
     private RemoteInteractiveCommandSupport support;
     private ExecutionEnvironment executionEnvironment;
-
-    /** TODO: deprecate and remove */
-    public boolean run(String hkey, String cmd, Map<String, String> env) {
-        return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
-    }
+    private Logger log = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
     public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        log.finest(getClass().getSimpleName() + " running (1) " + cmd + " on " + execEnv);
         support = new RemoteInteractiveCommandSupport(execEnv, cmd, env);
         return !support.isFailedOrCancelled();
     }
 
     public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
         assert executionEnvironment != null;
+        log.finest(getClass().getSimpleName() + " running (2) " + commandAndArgs + " on " + executionEnvironment);
         StringBuilder plainCommand = new StringBuilder();
         
         for (String arg : commandAndArgs) {
@@ -82,11 +81,6 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
             plainCommand.append(' ');
         }
         support = new RemoteInteractiveCommandSupport(executionEnvironment, plainCommand.toString(), env);
-        return !support.isFailedOrCancelled();
-    }
-
-    public boolean connect(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(executionEnvironment, cmd, env);
         return !support.isFailedOrCancelled();
     }
 
@@ -99,9 +93,9 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
     }
     
     public void disconnect() {
-        if (support != null) {
-            support.disconnect();
-        }
+//        if (support != null) {
+//            support.disconnect();
+//        }
     }
 
     public int waitFor() {

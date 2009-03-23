@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -58,31 +58,17 @@ import org.openide.util.Lookup;
  */
 public class RemoteFile extends File {
 
-    private final String hkey;
+    private final ExecutionEnvironment execEnv;
 
-    public String getHKey() {
-        return hkey;
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return execEnv;
     }
-//    public RemoteFile(URI uri) {
-//        super(uri);
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public RemoteFile(File parent, String child) {
-//        super(parent, child);
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public RemoteFile(String parent, String child) {
-//        super(parent, child);
-//        throw new UnsupportedOperationException();
-//    }
 
-    public static File create(String hkey, String pathname) {
-        if (RemoteUtils.isLocalhost(hkey)) {
+    public static File create(ExecutionEnvironment execEnv, String pathname) {
+        if (execEnv.isLocal()) {
             return new File(pathname);
         } else {
-            return new RemoteFile(hkey, pathname);
+            return new RemoteFile(execEnv, pathname);
         }
     }
 
@@ -91,11 +77,11 @@ public class RemoteFile extends File {
             RemoteFile rfile = (RemoteFile) file;
 
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-            if (rfile.exists() && cmd.run(rfile.getHKey(), "cat " + rfile.getPath(), null) == 0) { //NOI18N
+            if (rfile.exists() && cmd.run(rfile.getExecutionEnvironment(), "cat " + rfile.getPath(), null) == 0) { //NOI18N
                 //TODO: works only for absolute paths and only for short files
                 return new StringReader(cmd.getOutput());
             } else {
-                throw new FileNotFoundException(rfile.getPath() + " wasn't found on " + rfile.getHKey()); //NOI18N
+                throw new FileNotFoundException(rfile.getPath() + " wasn't found on " + rfile.getExecutionEnvironment()); //NOI18N
             }
 
         } else {
@@ -103,24 +89,23 @@ public class RemoteFile extends File {
         }
     }
 
-    protected RemoteFile(String hkey, String pathname) {
-        //TODO: one more reason for hkey to become a class: File(String parent, String child)
+    private RemoteFile(ExecutionEnvironment execEnv, String pathname) {
         super(pathname);
-        assert (!RemoteUtils.isLocalhost(hkey)); //TODO: invent smth clever to split up remote ones from local
-        this.hkey = hkey;
+        assert execEnv.isRemote(); //TODO: invent smth clever to split up remote ones from local
+        this.execEnv = execEnv;
     }
 
     @Override
     public boolean exists() {
         //TODO: nonono
-        return HostInfoProvider.getDefault().fileExists(hkey, getPath());
+        return HostInfoProvider.getDefault().fileExists(execEnv, getPath());
     }
 
     @Override
     public File[] listFiles() {
         //TODO: till API review
         CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-        if (provider.run(hkey, "ls -A1 \"" + getPath() + "\"", null) == 0) { //NOI18N
+        if (provider.run(execEnv, "ls -A1 \"" + getPath() + "\"", null) == 0) { //NOI18N
             String files = provider.getOutput();
             if (files != null) {
                 BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
@@ -128,7 +113,7 @@ public class RemoteFile extends File {
                 ArrayList<File> lines = new ArrayList<File>();
                 try {
                     while ((line = bufferedReader.readLine()) != null) {
-                        lines.add(new RemoteFile(hkey, getPath() + "/" + line)); //TODO: windows? //NOI18N
+                        lines.add(new RemoteFile(execEnv, getPath() + "/" + line)); //TODO: windows? //NOI18N
                     }
                     bufferedReader.close();
                 } catch (IOException ex) {
@@ -146,21 +131,21 @@ public class RemoteFile extends File {
     public boolean isDirectory() {
         //TODO: till API review
         CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -d \"" + getPath() + "\"", null) == 0; //NOI18N
+        return provider.run(execEnv, "test -d \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean isFile() {
         //TODO: till API review
         CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -f \"" + getPath() + "\"", null) == 0; //NOI18N
+        return provider.run(execEnv, "test -f \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean canRead() {
         //TODO: till API review
         CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0; //NOI18N
+        return provider.run(execEnv, "test -r \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
@@ -172,7 +157,7 @@ public class RemoteFile extends File {
             return false;
         }
         final RemoteFile other = (RemoteFile) obj;
-        if ((this.hkey == null) ? (other.hkey != null) : !this.hkey.equals(other.hkey)) {
+        if ((this.execEnv == null) ? (other.execEnv != null) : !this.execEnv.equals(other.execEnv)) {
             return false;
         }
         return true;
@@ -180,6 +165,6 @@ public class RemoteFile extends File {
 
     @Override
     public int hashCode() {
-        return super.hashCode() + hkey.hashCode() + 7;
+        return super.hashCode() + execEnv.hashCode() + 7;
     }
 }

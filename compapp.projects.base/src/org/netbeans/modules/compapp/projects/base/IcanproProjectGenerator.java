@@ -120,7 +120,8 @@ public class IcanproProjectGenerator {
 //        ep.setProperty(IcanproProjectProperties.JAR_CONTENT_ADDITIONAL, "");
         
         Deployment deployment = Deployment.getDefault ();
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, "");
+        String serverInstanceID = deployment.getDefaultServerInstanceID ();
+        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
 
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
@@ -155,7 +156,7 @@ public class IcanproProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, "");
+        ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N

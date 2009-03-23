@@ -43,8 +43,9 @@ package org.netbeans.modules.groovy.editor.api.elements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  * A class describing a Groovy method that is in "textual form" (signature, filename, etc.)
@@ -73,17 +74,17 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private final String returnType;
     
     private IndexedMethod(String signature, String returnType, GroovyIndex index,
-            String fileUrl, String clz, String attributes, int flags) {
+            IndexResult result, String clz, String attributes, int flags) {
 
-        super(index, fileUrl, clz, attributes, flags);
+        super(index, result, clz, attributes, flags);
         this.signature = signature;
         this.returnType = returnType;
     }
 
     public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
-            String clz, String fileUrl, String attributes, int flags) {
+            String clz, IndexResult result, String attributes, int flags) {
         IndexedMethod m =
-            new IndexedMethod(signature, returnType, index, fileUrl, clz, attributes, flags);
+            new IndexedMethod(signature, returnType, index, result, clz, attributes, flags);
 
         return m;
     }

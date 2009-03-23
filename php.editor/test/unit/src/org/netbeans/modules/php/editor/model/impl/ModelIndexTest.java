@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.netbeans.modules.php.editor.index.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -48,17 +47,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
@@ -68,37 +63,30 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.impl.ModelTestBase;
-import org.netbeans.modules.php.editor.nav.TestUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author Radek Matous
  */
 public class ModelIndexTest extends ModelTestBase {
-
     public ModelIndexTest(String testName) {
         super(testName);
+
     }
     private static final String FOLDER = "GsfPlugins";
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
 
         if (f != null) {
             f.delete();
         }
 
-        FileUtil.setMIMEType("php", PHPLanguage.PHP_MIME_TYPE);
         Logger.global.setFilter(new Filter() {
 
             public boolean isLoggable(LogRecord record) {
@@ -133,13 +121,15 @@ public class ModelIndexTest extends ModelTestBase {
         performModelTest(task, "testfiles/model/modelfile1.php");
     }
 
+    void performModelTest(AbstractTestModelTask task, String testFilePath) throws Exception {
+        FileObject testFile = getTestFile(testFilePath);
+        Source testSource = getTestSource(testFile);
+        ParserManager.parse(Collections.singleton(testSource), task);
+    }
+
     static <T extends ModelElement> T getFirst(Collection<T> allElements,
             final String... elementName) {
         return ModelUtils.getFirst(allElements, elementName);
-    }
-
-    void performModelTest(AbstractTestModelTask task, String testFilePath) throws Exception {
-        performTest(task, prepareTestFile(testFilePath));
     }
 
     private static <T extends ModelElement> void assertAnyElement(Collection<? extends ModelElement> allElements, String... elemNames) {
@@ -202,66 +192,13 @@ public class ModelIndexTest extends ModelTestBase {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
 
-    protected void performTest(final CancellableTask<CompilationInfo> task, String... code) throws Exception {
-        clearWorkDir();
-        FileUtil.refreshAll();
-
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        FileObject cache = workDir.createFolder("cache");
-        FileObject folder = workDir.createFolder("src");
-        FileObject cluster = workDir.createFolder("cluster");
-        int index = -1;
-
-        for (String c : code) {
-            FileObject f = FileUtil.createData(folder, computeFileName(index));
-            TestUtilities.copyStringToFile(f, c);
-            index++;
-        }
-
-        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
-        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
-        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
-
-        l.await();
-
-        final FileObject test = folder.getFileObject("test.php");
-
-        Document doc = openDocument(test);
-
-        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath source = ClassPathSupport.createClassPath(folder);
-        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
-        Source s = Source.create(info, test);
-
-        s.runUserActionTask(new CancellableTask<CompilationController>() {
-
-            public void cancel() {
-            }
-
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(Phase.UP_TO_DATE);
-
-                task.run(parameter);
-            }
-        }, true);
-    }
-
-    private static Document openDocument(FileObject fileObject) throws Exception {
-        DataObject dobj = DataObject.find(fileObject);
-
-        EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-        assertNotNull(ec);
-
-        return ec.openDocument();
-    }
-
-    abstract class AbstractTestModelTask implements CancellableTask<CompilationInfo> {
+    abstract class AbstractTestModelTask extends UserTask {
 
         public void cancel() {
         }
 
-        public void run(CompilationInfo parameter) throws Exception {
+        public void run (ResultIterator resultIterator) throws Exception {
+            PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
             Model model = ModelFactory.getModel(parameter);
             assertNotNull(model);
             FileScope fileScope = model.getFileScope();

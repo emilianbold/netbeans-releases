@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 
 public class CommentElement extends JsElement {
 

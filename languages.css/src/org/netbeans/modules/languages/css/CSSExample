@@ -1,9 +1,0 @@
-/* 
-   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
-*/
-@import "mystyle.css";
-root #class { 
-    color: red;
-    font-family: 'Times New Roman',Times,serif;
-    margin-top: 1px;
-}

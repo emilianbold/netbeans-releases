@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     private TestModelHelper helper;
+    protected boolean cleanCache = true;
 
     public TraceModelTestBase(String testName) {
         super(testName);
@@ -70,6 +71,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected TraceModel getTraceModel() {
         assert helper != null;
         return helper.getTraceModel();
+    }
+
+    protected TestModelHelper getTestModelHelper(){
+        return helper;
     }
 
     protected void performTest(String source) throws Exception {
@@ -139,7 +144,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         preSetUp();
         super.setUp();
         super.clearWorkDir();
-        helper = new TestModelHelper();
+        helper = new TestModelHelper(cleanCache);
         assertNotNull("Model must be valid", getTraceModel().getModel()); // NOI18N
         postSetUp();
     }
@@ -147,7 +152,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        helper.shutdown();
+        helper.shutdown(true);
     }
 
     protected final void performModelTest(File testFile, PrintStream streamOut, PrintStream streamErr) throws Exception {

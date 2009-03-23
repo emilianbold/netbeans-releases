@@ -61,7 +61,6 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
  */
  
 public interface DLightToolConfigurationProvider {
-        static final String SUNSTUDIO_COLLECTORS = "SunStudioDataCollectors"; // NOI18N
   /**
    * Please be aware that instance returned by this method should be
    * new every time this method is invoked

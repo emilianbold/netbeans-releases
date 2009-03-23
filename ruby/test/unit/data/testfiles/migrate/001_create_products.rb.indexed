@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : CreateProducts
   method : down|STATIC|
   method : up|STATIC|
+  require : 001_create_products
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1429
@@ -16,6 +17,7 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : products
+  require : 001_create_products
 
 Not Searchable Keys:
   dbcolumn : description;text

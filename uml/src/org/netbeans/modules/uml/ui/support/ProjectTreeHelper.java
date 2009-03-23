@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.uml.ui.support;
 
+import java.awt.Cursor;
 import java.beans.PropertyVetoException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -204,7 +205,7 @@ public class ProjectTreeHelper
       
       final ExplorerManager manager =
               ((ExplorerManager.Provider)projectTabComp).getExplorerManager();
-      projectTabComp.setCursor( Utilities.createProgressCursor( projectTabComp ) );
+      projectTabComp.setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
       projectTabComp.open();
       projectTabComp.requestActive();
       

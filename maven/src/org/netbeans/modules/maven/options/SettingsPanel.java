@@ -167,7 +167,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     {
         String path = txtCommandLine.getText().trim();
         if (path.length() == 0) {
-            String ver = MavenExecutionSettings.getDefaultMavenInstanceVersion();
+            String ver = MavenSettings.getDefaultMavenInstanceVersion();
             if (ver != null) {
                 lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion3", ver));//NOI18N
             } else {
@@ -727,19 +727,19 @@ public class SettingsPanel extends javax.swing.JPanel {
             DialogDisplayer.getDefault().notify(msg);
         }
 
-        cbPluginRegistry.setSelected(MavenExecutionSettings.getDefault().isUsePluginRegistry());
-        cbErrors.setSelected(MavenExecutionSettings.getDefault().isShowErrors());
+        cbPluginRegistry.setSelected(MavenSettings.getDefault().isUsePluginRegistry());
+        cbErrors.setSelected(MavenSettings.getDefault().isShowErrors());
         cbErrors.putClientProperty(CP_SELECTED, Boolean.valueOf(cbErrors.isSelected()));
-        cbDebug.setSelected(MavenExecutionSettings.getDefault().isShowDebug());
+        cbDebug.setSelected(MavenSettings.getDefault().isShowDebug());
         
         txtCommandLine.getDocument().removeDocumentListener(docList);
-        File command = MavenExecutionSettings.getDefault().getCommandLinePath();
+        File command = MavenSettings.getDefault().getCommandLinePath();
         txtCommandLine.setText(command != null ? command.getAbsolutePath() : ""); //NOI18N
         initExternalVersion();
         txtCommandLine.getDocument().addDocumentListener(docList);
         
         cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
-        String failureBehaviour = MavenExecutionSettings.getDefault().getFailureBehaviour();
+        String failureBehaviour = MavenSettings.getDefault().getFailureBehaviour();
         if (MavenExecutionRequest.REACTOR_FAIL_FAST.equals(failureBehaviour)) {
             rbFailFast.setSelected(true);
         } else if (MavenExecutionRequest.REACTOR_FAIL_AT_END.equals(failureBehaviour)) {
@@ -747,7 +747,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(failureBehaviour)) {
             rbFailNever.setSelected(true);
         }
-        String checksums = MavenExecutionSettings.getDefault().getChecksumPolicy();
+        String checksums = MavenSettings.getDefault().getChecksumPolicy();
         if (MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals(checksums)) {
             rbChecksumLax.setSelected(true);
         } else if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(checksums)) {
@@ -755,7 +755,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             rbChecksumNone.setSelected(true);
         }
-        Boolean updates = MavenExecutionSettings.getDefault().getPluginUpdatePolicy();
+        Boolean updates = MavenSettings.getDefault().getPluginUpdatePolicy();
         if (Boolean.TRUE.equals(updates)) {
             rbPluginUpdate.setSelected(true);
         } else if (Boolean.FALSE.equals(updates)) {
@@ -776,9 +776,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             sett.setLocalRepository(locrepo);
         }
         
-        MavenExecutionSettings.getDefault().setUsePluginRegistry(cbPluginRegistry.isSelected());
-        MavenExecutionSettings.getDefault().setShowDebug(cbDebug.isSelected());
-        MavenExecutionSettings.getDefault().setShowErrors(cbErrors.isSelected());
+        MavenSettings.getDefault().setUsePluginRegistry(cbPluginRegistry.isSelected());
+        MavenSettings.getDefault().setShowDebug(cbDebug.isSelected());
+        MavenSettings.getDefault().setShowErrors(cbErrors.isSelected());
         String cl = txtCommandLine.getText().trim();
         if (cl.length() == 0) {
             cl = null;
@@ -786,25 +786,25 @@ public class SettingsPanel extends javax.swing.JPanel {
         //MEVENIDE-553
         File command = cl != null ? new File(cl) : null;
         if (command != null && command.exists()) {
-            MavenExecutionSettings.getDefault().setCommandLinePath(command);
+            MavenSettings.getDefault().setCommandLinePath(command);
         } else {
-            MavenExecutionSettings.getDefault().setCommandLinePath(null);
+            MavenSettings.getDefault().setCommandLinePath(null);
         }
         
         String checksums = null;
         checksums = rbChecksumStrict.isSelected() ? MavenExecutionRequest.CHECKSUM_POLICY_FAIL : checksums;
         checksums = rbChecksumLax.isSelected() ? MavenExecutionRequest.CHECKSUM_POLICY_WARN : checksums;
-        MavenExecutionSettings.getDefault().setChecksumPolicy(checksums);
+        MavenSettings.getDefault().setChecksumPolicy(checksums);
         
         Boolean updates = null;
         updates = rbPluginUpdate.isSelected() ? Boolean.TRUE : updates;
         updates = rbNoPluginUpdate.isSelected() ? Boolean.FALSE : updates;
-        MavenExecutionSettings.getDefault().setPluginUpdatePolicy(updates);
+        MavenSettings.getDefault().setPluginUpdatePolicy(updates);
         
         String failureBehaviour = MavenExecutionRequest.REACTOR_FAIL_FAST;
         failureBehaviour = rbFailEnd.isSelected() ? MavenExecutionRequest.REACTOR_FAIL_AT_END : failureBehaviour;
         failureBehaviour = rbFailNever.isSelected() ? MavenExecutionRequest.REACTOR_FAIL_NEVER : failureBehaviour;
-        MavenExecutionSettings.getDefault().setFailureBehaviour(failureBehaviour);
+        MavenSettings.getDefault().setFailureBehaviour(failureBehaviour);
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
         RepositoryPreferences.getInstance().setIncludeSnapshots(cbSnapshots.isSelected());
         changed = false;

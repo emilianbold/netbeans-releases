@@ -85,14 +85,15 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
         catch ( UnknownTypeException exception ) {
             actions = new Action[0];
         }
-        if(node instanceof VariableNode) {
+        //makes little sense goto source action to me - disabled (#159550)
+        /*if(node instanceof VariableNode) {
             // TODO : add new action : create fixed watch
             Action[] newActions = new Action [actions.length + 2];
             newActions [0] = GO_TO_SOURCE_ACTION;
             newActions [1] = null;
             System.arraycopy (actions, 0, newActions, 2, actions.length);
             actions = newActions;
-        }
+        }*/
         Action[] newActions = new Action[ actions.length + 1];
         newActions [0] = EDIT_FILTERS_ACTION;
         System.arraycopy (actions, 0, newActions, 1, actions.length);
@@ -103,18 +104,18 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
     public void performDefaultAction( NodeActionsProvider original , Object node) 
         throws UnknownTypeException 
     {
-        if(node instanceof VariableNode) {
+        //makes little sense goto source action to me - disabled (#159550)
+        /*if (node instanceof VariableNode) {
             goToSource((VariableNode) node);
-        }
-        else {
-            original.performDefaultAction( node );
-        }
+        } else {
+            original.performDefaultAction(node);
+        }*/
     }
 
     private static void goToSource(VariableNode node ) {
         Line line = node.findDeclarationLine();
-        if ( line != null ) {
-            line.show(Line.SHOW_GOTO);
+        if (line != null) {
+            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
         }
     }
     

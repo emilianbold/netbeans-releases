@@ -45,6 +45,11 @@ made subject to such option by the copyright holder.
     <searchpaths>
         <path>/usr/bin</path>
         <path>/bin</path>
+        <path>/opt/gnome/bin</path>
+        <path>/usr/openwin/bin</path>
+        <path>/usr/X/bin</path>
+        <path>/usr/X11/bin</path>
+        <path>/usr/X11R6/bin</path>
     </searchpaths>
     <command stringvalue="gnome-terminal"/>
     <arguments>

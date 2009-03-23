@@ -29,9 +29,10 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.RubyUtils;
 
 /**
  * Declaration finder for Ruby. All it does is determine if we're inside Ruby,
@@ -40,11 +41,12 @@ import org.netbeans.modules.ruby.RubyDeclarationFinder;
  * @author Tor Norbye
  */
 public class RhtmlFinder extends RubyDeclarationFinder {
+
     @Override
-    public DeclarationLocation findDeclaration(CompilationInfo info, int caretOffset) {
-        Document doc = info.getDocument();
+    public DeclarationLocation findDeclaration(ParserResult parserResult, int caretOffset) {
+        Document doc = RubyUtils.getDocument(parserResult);
         if (doc != null && RhtmlCompleter.isWithinRuby(doc, caretOffset)) {
-            return super.findDeclaration(info, caretOffset);
+            return super.findDeclaration(parserResult, caretOffset);
         }
         
         return DeclarationLocation.NONE;

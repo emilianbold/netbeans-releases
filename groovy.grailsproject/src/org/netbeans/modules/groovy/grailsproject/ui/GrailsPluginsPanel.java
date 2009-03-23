@@ -20,7 +20,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 public class GrailsPluginsPanel extends javax.swing.JPanel {
 
     private GrailsProject project;
-    private GrailsPluginsManager pluginsManager;
+    private GrailsPluginSupport pluginsManager;
     
     private boolean installedInitialized;
     private boolean installedModified;
@@ -44,7 +44,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
     public GrailsPluginsPanel(Project project) {
         initComponents();
         this.project = (GrailsProject) project;
-        this.pluginsManager = GrailsPluginsManager.getInstance(this.project);
+        this.pluginsManager = new GrailsPluginSupport(this.project);
     }
 
     public void dispose() {

@@ -55,6 +55,10 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import hidden.org.codehaus.plexus.util.StringInputStream;
+import java.util.Properties;
+import org.apache.maven.model.Plugin;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
@@ -75,6 +79,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
@@ -244,6 +250,10 @@ class EarImpl implements EarImplementation,
      * Returns module specification version
      */
     public String getModuleVersion() {
+        String j2ee = getJ2eePlatformVersion();
+        if (EjbProjectConstants.J2EE_14_LEVEL.equals(j2ee)) {
+            return J2eeModule.JAVA_EE_5;
+        }
 //        System.out.println("earimpl: get module version");
         //TODO??
         return J2eeModule.J2EE_14;
@@ -354,12 +364,22 @@ class EarImpl implements EarImplementation,
     public J2eeModule[] getModules() {
         @SuppressWarnings("unchecked")
         Iterator<Artifact> it = mavenproject.getMavenProject().getArtifacts().iterator();
+
+        String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear"); //NOI18N
+        if (fileNameMapping == null) {
+            fileNameMapping = "standard"; //NOI18N
+        }
+
+        //for jar modules only..
+        String defaultLibBundleDir = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "defaultLibBundleDir", "ear"); //NOI18N
+
+        EarImpl.MavenModule[] mm = readPomModules();
+
         List<J2eeModule> toRet = new ArrayList<J2eeModule>();
         while (it.hasNext()) {
             Artifact elem = it.next();
+            //TODO do we really care about war and ejb only??
             if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
-//                System.out.println("adding " + elem.getId());
-                //TODO probaby figure out the context root etc..
                 File fil = elem.getFile();
                 FileObject fo = FileUtil.toFileObject(fil);
                 boolean found = false;
@@ -368,17 +388,20 @@ class EarImpl implements EarImplementation,
                     if (owner != null) {
                         J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
                         if (prov != null) {
-                            toRet.add(prov.getJ2eeModule());
+                            J2eeModule mod = prov.getJ2eeModule();
+                            EarImpl.MavenModule m = findMavenModule(elem, mm);
+                            toRet.add(J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping)));
                             found = true;
                         }
                     }
                 }
                 if (!found) {
-                    toRet.add(J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(elem, getJ2eePlatformVersion(), provider)));
+                    J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(elem, getJ2eePlatformVersion(), provider));
+                    EarImpl.MavenModule m = findMavenModule(elem, mm);
+                    toRet.add(J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping)));
                 }
             }
         }
-        //TODO need to also consult the pom file for potencial additional modules.
         return toRet.toArray(new J2eeModule[toRet.size()]);
     }
     
@@ -576,5 +599,217 @@ class EarImpl implements EarImplementation,
         return null;
     }
 
- 
+    private EarImpl.MavenModule findMavenModule(Artifact art, EarImpl.MavenModule[] mm) {
+        EarImpl.MavenModule toRet = null;
+        for (EarImpl.MavenModule m : mm) {
+            if (art.getGroupId().equals(m.groupId) && art.getArtifactId().equals(m.artifactId)) {
+                m.artifact = art;
+                toRet = m;
+                break;
+            }
+        }
+        if (toRet == null) {
+            toRet = new EarImpl.MavenModule();
+            toRet.artifact = art;
+            toRet.groupId = art.getGroupId();
+            toRet.artifactId = art.getArtifactId();
+            toRet.classifier = art.getClassifier();
+            //add type as well?
+        }
+        return toRet;
+    }
+
+    private EarImpl.MavenModule[] readPomModules() {
+        MavenProject prj = mavenproject.getMavenProject();
+        MavenModule[] toRet = new MavenModule[0];
+        if (prj.getBuildPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getBuildPlugins()) {
+            Plugin plug = (Plugin)obj;
+            if (Constants.PLUGIN_EAR.equals(plug.getArtifactId()) &&
+                   Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
+                   toRet =  checkConfiguration(prj, plug.getConfiguration());
+            }
+        }
+        if (toRet == null) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (Constants.PLUGIN_EAR.equals(plug.getArtifactId()) &&
+                        Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
+                        toRet = checkConfiguration(prj, plug.getConfiguration());
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+
+    private MavenModule[] checkConfiguration(MavenProject prj, Object conf) {
+        List<MavenModule> toRet = new ArrayList<MavenModule>();
+        if (conf != null && conf instanceof Xpp3Dom) {
+            NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
+            Xpp3Dom dom = (Xpp3Dom)conf;
+            Xpp3Dom modules = dom.getChild("modules"); //NOI18N
+            if (modules != null) {
+                for (Xpp3Dom module : modules.getChildren()) {
+                    MavenModule mm = new MavenModule();
+                    mm.type = module.getName();
+                    if (module.getChildren() != null) {
+                        for (Xpp3Dom param : module.getChildren()) {
+                            String value = param.getValue();
+                            if (value == null) {
+                                continue;
+                            }
+                            try {
+                                Object evaluated = eval.evaluate(value.trim());
+                                value = evaluated != null ? ("" + evaluated) : value.trim();  //NOI18N
+                            } catch (ExpressionEvaluationException e) {
+                                //log silently
+                            }
+                            if ("groupId".equals(param.getName())) { //NOI18N
+                                mm.groupId = value;
+                            } else if ("artifactId".equals(param.getName())) { //NOI18N
+                                mm.artifactId = value;
+                            } else if ("artifactId".equals(param.getName())) { //NOI18N
+                                mm.artifactId = value;
+                            } else if ("classifier".equals(param.getName())) { //NOI18N
+                                mm.classifier = value;
+                            } else if ("uri".equals(param.getName())) { //NOI18N
+                                mm.uri = value;
+                            } else if ("bundleDir".equals(param.getName())) { //NOI18N
+                                mm.bundleDir = value;
+                            } else if ("bundleFileName".equals(param.getName())) { //NOI18N
+                                mm.bundleFileName = value;
+                            } else if ("excluded".equals(param.getName())) { //NOI18N
+                                mm.excluded = Boolean.valueOf(value);
+                            }
+                        }
+                    }
+                    toRet.add(mm);
+                }
+            }
+        }
+        return toRet.toArray(new MavenModule[0]);
+    }
+
+    private static class MavenModule {
+        String uri;
+        Artifact artifact;
+        String groupId;
+        String artifactId;
+        String type;
+        String classifier;
+        String bundleDir;
+        String bundleFileName;
+        boolean excluded = false;
+
+
+        String resolveUri(String fileNameMapping) {
+            if (uri != null) {
+                return uri;
+            }
+            String bDir = resolveBundleDir();
+            return bDir + resolveBundleName(fileNameMapping);
+        }
+
+        String resolveBundleDir() {
+            String toRet = bundleDir;
+            if (toRet != null) {
+                // Using slashes
+                toRet = toRet.replace('\\', '/'); //NOI18N
+
+                // Remove '/' prefix if any so that directory is a relative path
+                if (toRet.startsWith("/")) { //NOI18N
+                    toRet = toRet.substring(1, toRet.length());
+                }
+
+                if (toRet.length() > 0 && !toRet.endsWith("/")) { //NOI18N
+                    // Adding '/' suffix to specify a directory structure if it is not empty
+                    toRet = toRet + "/"; //NOI18N
+                }
+                return toRet;
+
+            }
+            return "";
+        }
+
+        String resolveBundleName(String fileNameMapping) {
+            if (bundleFileName != null) {
+                return bundleFileName;
+            }
+            if ("standard".equals(fileNameMapping)) { //NOI18N
+                return artifact.getFile().getName();
+            }
+            if ("full".equals(fileNameMapping)) { //NOI18N
+                final String dashedGroupId = groupId.replace( '.', '-'); //NOI18N
+                return dashedGroupId + "-" + artifact.getFile().getName(); //NOI18N
+            }
+            //TODO it seems the fileNameMapping can also be a class (from ear-maven-plugin's classpath
+            // of type FileNameMapping that resolves the name.. we ignore it for now.. not common usecase anyway..
+            return artifact.getFile().getName();
+        }
+
+    }
+
+
+    private static class ProxyJ2eeModule implements J2eeModuleImplementation {
+        private J2eeModule module;
+        private EarImpl.MavenModule mavenModule;
+        private String fileNameMapping;
+
+        ProxyJ2eeModule(J2eeModule module, EarImpl.MavenModule mavModule, String fileNameMapping) {
+            this.mavenModule = mavModule;
+            this.module = module;
+            this.fileNameMapping = fileNameMapping;
+        }
+
+        public String getModuleVersion() {
+            return module.getModuleVersion();
+        }
+
+        public Object getModuleType() {
+            return module.getModuleType();
+        }
+
+        public String getUrl() {
+            return mavenModule.resolveUri(fileNameMapping);
+        }
+
+        public FileObject getArchive() throws IOException {
+            return module.getArchive();
+        }
+
+        public Iterator getArchiveContents() throws IOException {
+            return module.getArchiveContents();
+        }
+
+        public FileObject getContentDirectory() throws IOException {
+            return module.getContentDirectory();
+        }
+
+        public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
+            return module.getMetadataModel(type);
+        }
+
+        public File getResourceDirectory() {
+            return module.getResourceDirectory();
+        }
+
+        public File getDeploymentConfigurationFile(String name) {
+            return module.getDeploymentConfigurationFile(name);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            module.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            module.removePropertyChangeListener(listener);
+        }
+
+    }
+
 }

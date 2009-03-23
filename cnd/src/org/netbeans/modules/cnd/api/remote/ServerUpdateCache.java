@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Since the ServerList is updated from the Tools->Options panel, changes must be cached
@@ -47,28 +50,29 @@ import java.util.logging.Logger;
  * 
  * @author gordonp
  */
-public class ServerUpdateCache {
+public final class ServerUpdateCache {
 
-    private String[] hklist;
+    private List<ExecutionEnvironment> hosts;
     private int defaultIndex;
     private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public ServerUpdateCache() {
-        hklist = null;
+        hosts = null;
         defaultIndex = -1;
     }
     
-    public String[] getHostKeyList() {
-        if (hklist == null) {
-            throw new IllegalStateException();
+    public List<ExecutionEnvironment> getHosts() {
+        List<ExecutionEnvironment> h = hosts;
+        if (h == null) {
+            throw new IllegalStateException("hosts should not be null"); //NOI18N
         }
-        return hklist;
+        return new ArrayList<ExecutionEnvironment>(hosts);
     }
-    
-    public void setHostKeyList(String[] hklist) {
-        this.hklist = hklist;
+
+    public void setHosts(List<ExecutionEnvironment> newHosts) {
+        hosts = new ArrayList<ExecutionEnvironment>(newHosts);
     }
-    
+
     public int getDefaultIndex() {
         if (defaultIndex < 0) {
             log.warning("ServerUpdateCache.getDefaultInded: Forcing negative index to 0");
@@ -80,44 +84,4 @@ public class ServerUpdateCache {
     public void setDefaultIndex(int defaultIndex) {
         this.defaultIndex = defaultIndex;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof ServerUpdateCache)) {
-            return false;
-        }
-        ServerUpdateCache cache2 = (ServerUpdateCache)obj;
-        if (this == cache2) {
-            return true;
-        }
-        if (cache2 == null) {
-            return false;
-        }
-        if (this.getDefaultIndex() != cache2.getDefaultIndex()) {
-            return false;
-        }
-        String[] lst1 = this.getHostKeyList();
-        String[] lst2 = cache2.getHostKeyList();
-        if (lst1.length != lst2.length) {
-            return false;
-        }
-        for (int i = 0; i < lst1.length; i++) {
-            String str1 = lst1[i];
-            String str2 = lst1[i];
-            if (!str1.equals(str2)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 37 * hash + (this.hklist != null ? this.hklist.hashCode() : 0);
-        hash = 37 * hash + this.defaultIndex;
-        return hash;
-    }
-
-
 }

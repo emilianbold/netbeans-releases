@@ -466,26 +466,34 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         @Override
         protected Node createNodeForKey(ServerInstance key) {
-            return new ServerNode(key);
-        }
+            boolean assertsEnabled = false;
+            assert assertsEnabled = true;
 
+            if (null != key.getBasicNode()) {
+                return new ServerNode(key);
+            } else {
+                if (assertsEnabled) {
+                    LOGGER.log(Level.WARNING, "Server instance {0} return null basic node."
+                            + "While this may be ok it is usually a bug.", key);
+                }
+                return null;
+            }
+        }
 
         @Override
         protected boolean createKeys(List<ServerInstance> toPopulate) {
             List<ServerInstance> fresh = new ArrayList<ServerInstance>();
             for (ServerInstanceProvider provider : ServerRegistry.getInstance().getProviders()) {
-                // need to make sure instances with null display names do not
-                // end up in fresh...  152834
+                // Need to make sure instances with null display names do not
+                // end up in fresh.  See issue #152834.
                 for (ServerInstance instance : provider.getInstances()) {
                     if (null != instance.getDisplayName()) {
                         fresh.add(instance);
                     } else {
-                        LOGGER.finer("found instance with a null display name: "+
-                                instance.getServerDisplayName() + "  " +
-                                instance.toString());
+                        LOGGER.log(Level.FINE, "Found server instance with a null display name {0} {1}",
+                                new Object[]{instance.getServerDisplayName(), instance.toString()});
                     }
                 }
-                //fresh.addAll(provider.getInstances());
             }
 
             Collections.sort(fresh, COMPARATOR);

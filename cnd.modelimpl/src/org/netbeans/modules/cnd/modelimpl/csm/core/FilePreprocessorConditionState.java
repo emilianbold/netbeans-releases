@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
  * A class that tracks states of the preprocessor conditionals within file
  * @author Vladimir Kvashin
  */
-public class FilePreprocessorConditionState
+public final class FilePreprocessorConditionState
         implements APTParseFileWalker.EvalCallback {
 
     /** a SORTED array of offsets for which conditionals were evaluated to true */
@@ -71,7 +71,7 @@ public class FilePreprocessorConditionState
 
     public FilePreprocessorConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
         offsets = new int[MIN_SIZE];
-        fileName = file.getAbsolutePath();
+        fileName = file.getBuffer().getAbsolutePath();
         //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
     }
 
@@ -288,7 +288,7 @@ public class FilePreprocessorConditionState
         return toStringBrief(this);
     }
 
-    private static String toStringBrief(FilePreprocessorConditionState state) {
+    /*package*/ static String toStringBrief(FilePreprocessorConditionState state) {
         if (state == null) {
             return "null"; // NOI18N
         }

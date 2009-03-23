@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.ruby.hints.introduce;
 
-import org.netbeans.modules.ruby.ParseTreeWalker;
-import java.util.MissingResourceException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
@@ -54,16 +53,16 @@ import javax.swing.text.Position;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
@@ -84,7 +83,7 @@ class IntroduceFix implements PreviewableFix {
     private static final boolean COMMENT_NEW_ELEMENTS = !Boolean.getBoolean("ruby.create.nocomments"); // NOI18N
 
     private final RubyRuleContext context;
-    private final CompilationInfo info;
+    private final ParserResult info;
     private final OffsetRange lexRange;
     private final OffsetRange astRange;
     private final IntroduceKind kind;
@@ -99,7 +98,7 @@ class IntroduceFix implements PreviewableFix {
         this.astRange = astRange;
         this.kind = kind;
         
-        this.info = context.compilationInfo;
+        this.info = context.parserResult;
         this.doc = context.doc;
     }
 
@@ -135,7 +134,7 @@ class IntroduceFix implements PreviewableFix {
 
         // Warp to the inserted method and show the comment
         if (commentPosition != null && commentPosition.getOffset() != -1) {
-            JTextComponent target = GsfUtilities.getPaneFor(info.getFileObject());
+            JTextComponent target = GsfUtilities.getPaneFor(RubyUtils.getFileObject(info));
             if (target != null) {
                 int offset = commentPosition.getOffset();
                 String commentText = getCommentText();
@@ -165,7 +164,7 @@ class IntroduceFix implements PreviewableFix {
     
     private EditList createEdits(String name) throws Exception {
         String guessedName = AstUtilities.guessName(info, lexRange, astRange);
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
+        RubyIndex index = RubyIndex.get(info);
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         List<OffsetRange> duplicates = null;
 

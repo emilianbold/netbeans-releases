@@ -41,8 +41,9 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -57,17 +58,31 @@ public class HgRepositoryContextCache {
     private static String pushDefault;
     private static String pullDefault;
     private static File root;
-    
+
     private static VCSContext rootCtx;
     private static Set<File> historyCtxRootFiles;
     private static Set<File> pushCtxRootFiles;
     private static Set<File> pullCtxRootFiles;
 
-    public static boolean hasHistory(VCSContext ctx) {
+    private static Map<File, DefaultPaths> rootToDefaultPaths;
+
+    private static HgRepositoryContextCache instance;
+
+    private HgRepositoryContextCache() {
+    }
+
+    public static HgRepositoryContextCache getInstance() {
+        if(instance == null) {
+            instance = new HgRepositoryContextCache();
+        }
+        return instance;
+    }
+
+    public boolean hasHistory(VCSContext ctx) {
         Set<File> files;
         if(ctx == null) return false;
         files = ctx.getRootFiles();
-        
+
         if(files.equals(historyCtxRootFiles)){
             return hasHistory;
         }else{
@@ -76,23 +91,19 @@ public class HgRepositoryContextCache {
             historyCtxRootFiles = ctx.getRootFiles();
             return hasHistory;
         }
-        
+
     }
-        
-    public static void setHasHistory(VCSContext ctx) {
+
+    public void setHasHistory(VCSContext ctx) {
         historyCtxRootFiles = ctx.getRootFiles();
         hasHistory = true;
     }
 
-    public static void resetPullDefault() {
-        pullCtxRootFiles = null;
-    }
-
-    public static String getPullDefault(VCSContext ctx) {
+    public synchronized String getPullDefault(VCSContext ctx) {
         Set<File> files;
         if(ctx == null) return null;
         files = ctx.getRootFiles();
-        
+
         if(files.equals(pullCtxRootFiles)){
             return pullDefault;
         }else{
@@ -102,16 +113,18 @@ public class HgRepositoryContextCache {
             return pullDefault;
         }
     }
-    
-    public static void resetPushDefault() {
+
+    public synchronized void reset() {
         pushCtxRootFiles = null;
+        pullCtxRootFiles = null;
+        getRootToDefaultPaths().clear();
     }
 
-    public static String getPushDefault(VCSContext ctx) {
+    public synchronized String getPushDefault(VCSContext ctx) {
         Set<File> files;
         if(ctx == null) return null;
         files = ctx.getRootFiles();
-        
+
         if(files.equals(pushCtxRootFiles)){
             return pushDefault;
         }else{
@@ -121,16 +134,58 @@ public class HgRepositoryContextCache {
             return pushDefault;
         }
     }
-    
-    private static File getRoot(VCSContext ctx){
-        if(ctx == rootCtx && root != null){
+
+    private File getRoot(VCSContext ctx){
+        if(ctx == rootCtx && root != null) {
             return root;
-        }else{
+        } else {
             root = HgUtils.getRootFile(ctx);
             rootCtx = ctx;
             return root;
         }
+    }
 
+    public synchronized String getPullDefault(File file) {
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+        if(repoRoot == null) return null;
+        DefaultPaths paths = getDefaultPaths(repoRoot);
+        return paths.pull;
+    }
+
+    public synchronized String getPushDefault(File file) {
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+        if(repoRoot == null) return null;
+        DefaultPaths paths = getDefaultPaths(repoRoot);
+        return paths.push;
+    }
+
+    private DefaultPaths getDefaultPaths(File repoRoot) {
+        Map<File, DefaultPaths> map = getRootToDefaultPaths();
+        DefaultPaths paths = map.get(repoRoot);
+        if (paths == null) {
+            HgConfigFiles config = new HgConfigFiles(repoRoot);
+            String pull = config.getDefaultPull(true);
+            String push = config.getDefaultPush(true);
+            paths = new DefaultPaths(pull, push);
+            map.put(root, paths);
+        }
+        return paths;
+    }
+
+    private Map<File, DefaultPaths> getRootToDefaultPaths() {
+        if(rootToDefaultPaths == null) {
+            rootToDefaultPaths = new HashMap<File, DefaultPaths>();
+        }
+        return rootToDefaultPaths;
+    }
+
+    private static class DefaultPaths {
+        public DefaultPaths(String pull, String push) {
+            this.pull = pull;
+            this.push = push;
+        }
+        String pull;
+        String push;
     }
 }
 

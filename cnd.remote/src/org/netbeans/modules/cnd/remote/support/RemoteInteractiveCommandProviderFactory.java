@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -49,7 +50,7 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory.class)
 public class RemoteInteractiveCommandProviderFactory extends InteractiveCommandProviderFactory {
     @Override
-    public InteractiveCommandProvider createInstance(String hkey) {
-        return new RemoteInteractiveCommandProvider(hkey);
+    public InteractiveCommandProvider createInstance(ExecutionEnvironment execEnv) {
+        return new RemoteInteractiveCommandProvider(execEnv);
     }
 }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 
 /**
  * Element describing a Ruby keyword
@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author Tor Norbye
  */
 public class KeywordElement extends RubyElement {
+    
     private final String name;
 
     /** Creates a new instance of DefaultComKeyword */

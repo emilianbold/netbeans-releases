@@ -110,9 +110,6 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME gsf "gsf*"
-    rm -rf gsf*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
 }
 

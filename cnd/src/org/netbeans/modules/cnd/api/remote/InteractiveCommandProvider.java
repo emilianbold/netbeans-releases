@@ -55,18 +55,6 @@ public interface InteractiveCommandProvider {
     /**
      * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
      *
-     * @param hkey The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env The (possibly null) environment to send to the remote command
-     * @return true if the command started, otherwise false
-     *
-     * TODO: depreceta and remove
-     */
-    public boolean run(String hkey, String cmd, Map<String, String> env);
-
-    /**
-     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
-     *
      * @param execEnv The user and remote host (user@host)
      * @param cmd The command to run
      * @param env The (possibly null) environment to send to the remote command

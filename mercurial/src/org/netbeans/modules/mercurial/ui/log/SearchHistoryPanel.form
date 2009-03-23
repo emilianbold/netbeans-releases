@@ -132,6 +132,9 @@
               <ResourceString bundle="org/netbeans/modules/mercurial/ui/log/Bundle.properties" key="ACSD_NextDifference" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JButton" name="bPrev">
           <AccessibilityProperties>
@@ -142,6 +145,9 @@
               <ResourceString bundle="org/netbeans/modules/mercurial/ui/log/Bundle.properties" key="ACSD_PrevDifference" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="jSeparator3">
         </Component>

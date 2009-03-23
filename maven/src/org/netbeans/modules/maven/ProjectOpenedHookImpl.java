@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven;
 
+import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
 import java.net.URI;
@@ -49,16 +50,22 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * openhook implementation, register global classpath and also
@@ -67,6 +74,9 @@ import org.openide.util.NbBundle;
  * @author  Milos Kleint
  */
 class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    private static final String PROP_BINARIES_CHECKED = "binariesChecked";
+    private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
+    private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
     private NbMavenProjectImpl project;
     private List<URI> uriReferences = new ArrayList<URI>();
@@ -77,12 +87,17 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
     static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
     static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
+
+
     
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
     
     protected void projectOpened() {
+        checkBinaryDownloads();
+        checkSourceDownloads();
+        checkJavadocDownloads();
         attachUpdater();
         MavenFileOwnerQueryImpl q = MavenFileOwnerQueryImpl.getInstance();
         if (q != null) {
@@ -154,6 +169,98 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
    private void detachUpdater() {
         project.getProjectFolderUpdater().detachAll();
         project.getUserFolderUpdater().detachAll();
-    }        
+    }
+
+
+   private void checkBinaryDownloads() {
+       MavenSettings.DownloadStrategy ds = MavenSettings.getDefault().getBinaryDownloadStrategy();
+       if (ds.equals(MavenSettings.DownloadStrategy.NEVER)) {
+           return;
+       }
+
+       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+            watcher.synchronousDependencyDownload();
+            prefs.putBoolean(PROP_BINARIES_CHECKED, true);
+            try {
+                prefs.sync();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       } else if (ds.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+           boolean alreadyChecked = prefs.getBoolean(PROP_BINARIES_CHECKED, false);
+           if (!alreadyChecked) {
+                watcher.synchronousDependencyDownload();
+                prefs.putBoolean(PROP_BINARIES_CHECKED, true);
+                try {
+                    prefs.sync();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+       }
+   }
+
+   private void checkJavadocDownloads() {
+       MavenSettings.DownloadStrategy ds = MavenSettings.getDefault().getJavadocDownloadStrategy();
+       if (ds.equals(MavenSettings.DownloadStrategy.NEVER)) {
+           return;
+       }
+
+       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+            watcher.triggerSourceJavadocDownload(true);
+            prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
+            try {
+                prefs.sync();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       } else if (ds.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+           boolean alreadyChecked = prefs.getBoolean(PROP_JAVADOC_CHECKED, false);
+           if (!alreadyChecked) {
+                watcher.triggerSourceJavadocDownload(true);
+                prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
+                try {
+                    prefs.sync();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+       }
+   }
+
+   private void checkSourceDownloads() {
+       MavenSettings.DownloadStrategy ds = MavenSettings.getDefault().getSourceDownloadStrategy();
+       if (ds.equals(MavenSettings.DownloadStrategy.NEVER)) {
+           return;
+       }
+
+       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+            watcher.triggerSourceJavadocDownload(false);
+            prefs.putBoolean(PROP_SOURCE_CHECKED, true);
+            try {
+                prefs.sync();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       } else if (ds.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+           boolean alreadyChecked = prefs.getBoolean(PROP_SOURCE_CHECKED, false);
+           if (!alreadyChecked) {
+                watcher.triggerSourceJavadocDownload(false);
+                prefs.putBoolean(PROP_SOURCE_CHECKED, true);
+                try {
+                    prefs.sync();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+       }
+   }
+
 
 }

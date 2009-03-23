@@ -46,6 +46,19 @@ public enum Reason {
     ABORTED,
     EXCPETION;
 
+    public boolean isOK() {
+        return OK.equals(this);
+    }
+    public boolean isError() {
+        return ERROR.equals(this);
+    }
+    public boolean isAborted() {
+        return ABORTED.equals(this);
+    }
+    public boolean isException() {
+        return EXCPETION.equals(this);
+    }
+
     @Override
     public String toString(){
         return super.toString().toLowerCase();

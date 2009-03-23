@@ -96,11 +96,6 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected abstract boolean accept(DataObject object);
 
-    /** TODO: deprecate and remove */
-    protected static String getDevelopmentHost(FileObject fileObject, Project project) {
-        return ExecutionEnvironmentFactory.getHostKey(getExecutionEnvironment(fileObject, project));
-    }
-
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
             project = findInOpenedProject(fileObject);
@@ -180,18 +175,27 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
         if (makeCommand == null || makeCommand.length()==0) {
             MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
-            makeCommand = mes.getMakeCommand();
+            if (mes != null) {
+                makeCommand = mes.getMakeCommand();
+            } else {
+                makeCommand = "make"; // NOI18N
+            }
         }
         return makeCommand;
     }
 
     protected File getBuildDirectory(Node node){
-	MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        String bdir = mes.getBuildDirectory();
+        String bdir;
+        MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+        if (mes != null) {
+            bdir = mes.getBuildDirectory();
+        } else {
+            bdir = makefile.getParent();
+        }
         File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
     }

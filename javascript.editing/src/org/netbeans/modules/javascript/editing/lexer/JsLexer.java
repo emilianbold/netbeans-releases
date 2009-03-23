@@ -41,7 +41,6 @@
 package org.netbeans.modules.javascript.editing.lexer;
 
 import java.io.IOException;
-import java.io.Reader;
 
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -50,6 +49,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 import org.openide.ErrorManager;
 import org.mozilla.nb.javascript.CompilerEnvirons;
 import org.mozilla.nb.javascript.Context;
+import org.mozilla.nb.javascript.ContextFactory;
 import org.mozilla.nb.javascript.ErrorReporter;
 import org.mozilla.nb.javascript.EvaluatorException;
 import org.mozilla.nb.javascript.Parser;
@@ -127,7 +127,7 @@ public final class JsLexer implements Lexer<JsTokenId> {
             }
         };
 
-        Context ctx = new Context();
+        RhinoContext ctx = new RhinoContext();
         compilerEnv.initFromContext(ctx);
 
         compilerEnv.setErrorReporter(errorReporter);
@@ -387,4 +387,10 @@ public final class JsLexer implements Lexer<JsTokenId> {
             return JsTokenId.IDENTIFIER;
         }
     }
+
+    private static final class RhinoContext extends org.mozilla.nb.javascript.Context {
+        public RhinoContext() {
+            super(ContextFactory.getGlobal());
+        }
+    } // End of RhinoContext
 }

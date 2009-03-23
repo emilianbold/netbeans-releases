@@ -60,7 +60,7 @@ public class SVGTextField extends AbstractTextRenderingComponent {
     protected static final String BORDER            ="border";            // NOI18N
     
     private static final String CARET_SUFFIX        = DASH+CARETELEM;     // NOI18N
-    private static final String TEXT_SUFFIX         = DASH + TEXT;        // NOI18N
+    protected static final String TEXT_SUFFIX         = DASH + TEXT;        // NOI18N
     protected static final String BORDER_SUFFIX     = DASH+BORDER;        // NOI18N
     
     private static final String EDITABLE            = "editable";         // NOI18N
@@ -228,7 +228,7 @@ public class SVGTextField extends AbstractTextRenderingComponent {
     }
 
     private void initTextField(SVGRect textBox, float width , float x ) {
-        if (textBox != null) {
+        if (textBox != null && width >= 0 ) {
             elemWidth = (int) (width + 0.5f -(textBox.getX() - x) * 2);
         } else {
             elemWidth = 0;

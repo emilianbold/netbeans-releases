@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -69,16 +70,13 @@ public final class TemplateDescriptor {
     private final int inheritedTemplateParametersNumber;
 
     public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, boolean global) {
-        register(templateParams, global);
-        this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
-        this.templateSuffix = templateSuffix;
-        inheritedTemplateParametersNumber = 0;
+        this(templateParams, templateSuffix, 0, global);
     }
 
     public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber,boolean global) {
         register(templateParams, global);
         this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
-        this.templateSuffix = templateSuffix;
+        this.templateSuffix = NameCache.getManager().getString(templateSuffix);
         this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
     }
 
@@ -111,15 +109,15 @@ public final class TemplateDescriptor {
         return inheritedTemplateParametersNumber;
     }
 
-    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope) {
+    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope, boolean global) {
         if (ast == null) {
             return null;
         }
         AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
-                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', true);
+                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', global);
             }
         }
         return null;
@@ -132,13 +130,13 @@ public final class TemplateDescriptor {
 
     public TemplateDescriptor(DataInput input) throws IOException {
         this.templateParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmTemplateParameter>>(), input);
-        this.templateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.templateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.inheritedTemplateParametersNumber = input.readInt();
     }
 
     public void write(DataOutput output) throws IOException {
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(templateParams, output, false);
-        output.writeUTF(this.templateSuffix.toString());
+        PersistentUtils.writeUTF(templateSuffix, output);
         output.writeInt(this.inheritedTemplateParametersNumber);
     }
 }

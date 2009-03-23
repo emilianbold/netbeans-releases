@@ -39,21 +39,21 @@ import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
-
 
 /**
  * A hint which looks at Rails files and scans for usages of deprecated
@@ -119,9 +119,9 @@ public class RailsDeprecations extends RubyAstRule {
     }
 
     public boolean appliesTo(RuleContext context) {
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         // Only perform these checks in Rails projects
-        Project project = FileOwnerQuery.getOwner(info.getFileObject());
+        Project project = FileOwnerQuery.getOwner(RubyUtils.getFileObject(info));
         // Ugly!!
         if (project == null || project.getClass().getName().indexOf("RailsProject") == -1) { // NOI18N
             return false;
@@ -136,7 +136,7 @@ public class RailsDeprecations extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node root = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         AstPath path = context.path;
 
         if (root == null) {
@@ -165,7 +165,7 @@ public class RailsDeprecations extends RubyAstRule {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecationDesc");
     }
 
-    private void scan(CompilationInfo info, Node node, List<Hint> result) {
+    private void scan(ParserResult info, Node node, List<Hint> result) {
         // Look for use of deprecated fields
         if (node.nodeId == NodeType.INSTVARNODE || node.nodeId == NodeType.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
@@ -173,7 +173,7 @@ public class RailsDeprecations extends RubyAstRule {
             // Skip matches in _test files, since the standard code generator still
             // spits out code which violates the deprecations
             // (such as    @request    = ActionController::TestRequest.new )
-            if (deprecatedFields.contains(name) && !info.getFileObject().getName().endsWith("_test")) { // NOI18N
+            if (deprecatedFields.contains(name) && !RubyUtils.getFileObject(info).getName().endsWith("_test")) { // NOI18N
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
                 String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsField", name, name.substring(1));
@@ -187,7 +187,7 @@ public class RailsDeprecations extends RubyAstRule {
                 // it's also an RSpec method
                 if ("render_template".equals(name)) { // NOI18N
                     // Filter from RSpec modules
-                    if (info.getFileObject().getName().endsWith("_spec")) { // NOI18N
+                    if (RubyUtils.getFileObject(info).getName().endsWith("_spec")) { // NOI18N
                         return;
                     }
                 }
@@ -225,12 +225,12 @@ public class RailsDeprecations extends RubyAstRule {
         }
     }
 
-    private void addFix(CompilationInfo info, Node node, List<Hint> result, String displayName) {
+    private void addFix(ParserResult info, Node node, List<Hint> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
         range = LexUtilities.getLexerOffsets(info, range);
         if (range != OffsetRange.NONE) {
-            Hint desc = new Hint(this, displayName, info.getFileObject(), range, Collections.<HintFix>emptyList(), 100);
+            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, Collections.<HintFix>emptyList(), 100);
             result.add(desc);
         }
     }

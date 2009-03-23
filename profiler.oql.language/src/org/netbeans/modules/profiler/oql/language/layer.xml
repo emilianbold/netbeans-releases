@@ -1,73 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-oql">
-                <folder name="Actions">
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-OpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="sep-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                </folder>
-                <folder name="Factories">
-                    <file name="OQLDataLoader.instance">
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.profiler.oql.language.OQLDataObject"/>
-                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/x-oql"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/profiler/oql/language/oql_file_16.png"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-oql">
+                <folder name="CompletionProviders">
+                    <file name="org.netbeans.modules.profiler.oql.language.OQLCompletionProvider.instance"/>
+                </folder>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -80,6 +19,11 @@
                         <file name="org-netbeans-modules-editor-preferences.xml" url="preferences.xml"/>
                     </folder>
                 </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
             </folder>
         </folder>
     </folder>

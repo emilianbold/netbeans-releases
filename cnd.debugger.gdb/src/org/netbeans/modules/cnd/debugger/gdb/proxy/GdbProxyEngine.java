@@ -52,15 +52,16 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.debugger.gdb.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -139,22 +140,14 @@ public class GdbProxyEngine {
     private void localDebugger(List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
         Map<String, String> env = pb.environment();
+
+        // see IZ 158224, we set environment inside gdb
+        //appendEnv(env, debuggerEnvironment);
         
         String pathname = Path.getPathName();
-        for (String var : debuggerEnvironment) {
-            String key, value;
-            int idx = var.indexOf('=');
-            if (idx != -1) {
-                key = var.substring(0, idx);
-                value = var.substring(idx + 1);
-                if (key.equals(pathname)) {
-                    env.put(key, value + File.pathSeparator + cspath);
-                } else {
-                    env.put(key, value);
-                }
-            }
-        }
-        env.put(pathname, Path.getPathAsString() + File.pathSeparator + cspath);
+        //appendPath(env, pathname, Path.getPathAsString());
+        EnvUtils.appendPath(env, pathname, cspath);
+        
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         
@@ -202,8 +195,12 @@ public class GdbProxyEngine {
             sb.append(arg);
             sb.append(' ');
         }
+
+        // see IZ 158224, we set environment inside gdb
+        //Map<String, String> env = new HashMap<String, String>(debuggerEnvironment.length);
+        //appendEnv(env, debuggerEnvironment);
         
-        provider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(debugger.getHostExecutionEnvironment()));
+        provider = InteractiveCommandProviderFactory.create(debugger.getHostExecutionEnvironment());
         if (provider != null && provider.run(debugger.getHostExecutionEnvironment(), sb.toString(), null)) {
             try {
                 toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());
@@ -230,7 +227,7 @@ public class GdbProxyEngine {
                 } catch (IOException ioe) {
                 } finally {
                     if (provider != null) {
-                        provider.disconnect();
+//                        provider.disconnect();
                         provider = null;
                     }
                 }
@@ -379,7 +376,14 @@ public class GdbProxyEngine {
         if (ch1 == '&') {
             CommandInfo ci = getCommandInfo(msg);
             if (ci != null) {
-                tokenList.remove(ci);
+                synchronized (tokenList) {
+                    for (Iterator<CommandInfo> iter = tokenList.iterator(); iter.hasNext();) {
+                        CommandInfo info = iter.next();
+                        if (ci.getCommand().equals(info.getCommand())) {
+                            iter.remove();
+                        }
+                    }
+                }
                 currentToken = ci.getToken();
             }
         }
@@ -486,13 +490,9 @@ public class GdbProxyEngine {
         @Override
         public boolean equals(Object o) {
             if (o instanceof CommandInfo) {
-                CommandInfo ci = (CommandInfo) o;
-                return cmd.equals(ci.getCommand());
-            } else if (o instanceof String) {
-                return cmd.equals(o.toString());
-            } else {
-                return false;
+                return token == ((CommandInfo) o).token;
             }
+            return false;
         }
 
         @Override

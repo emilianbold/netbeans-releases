@@ -84,12 +84,14 @@ public class ModelSource implements SourceFileProperties {
     private List<String> userIncludePaths;
     private Set<String> includedFiles = new HashSet<String>();
     private Map<String,String> userMacros;
+    private boolean preferLocal;
     
-    public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, PkgConfig pkgConfig){
+    public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, PkgConfig pkgConfig, boolean preferLocal){
         this.item = item;
         this.file = file;
         this.searchBase = searchBase;
         this.pkgConfig = pkgConfig;
+        this.preferLocal = preferLocal;
     }
 
     public Set<String> getIncludedFiles() {
@@ -213,8 +215,33 @@ public class ModelSource implements SourceFileProperties {
                     }
                 }
             } else {
-                includedFiles.add(resolved.getAbsolutePath().toString());
-                if (level < 5) {
+                boolean reResolve = false;
+                if (preferLocal) {
+                    boolean isSystem = false;
+                    String resolvedPath = resolved.getAbsolutePath().toString();
+                    for (String path : getSystemInludePaths()){
+                        if (resolvedPath.startsWith(path)) {
+                            isSystem = true;
+                            break;
+                        }
+                    }
+                    if (isSystem) {
+                        String path = guessPath(include);
+                        if (path != null && !resolvedPath.startsWith(path)){
+                            if (TRACE_AMBIGUOUS) {
+                                logger.fine("Directive resolved in project on path: "+path+" instead "+resolvedPath); // NOI18N
+                            }
+                            resolved = file.getProject().findFile(path+File.separatorChar+include.getIncludeName());
+                            path = getRelativepath(path);
+                            res.add(path);
+                            reResolve = true;
+                        }
+                    }
+                }
+                if (!reResolve) {
+                    includedFiles.add(resolved.getAbsolutePath().toString());
+                }
+                if (level < 5 && resolved != null) {
                     analyzeUnresolved(res, resolved, level+1);
                 }
             }
@@ -279,13 +306,7 @@ public class ModelSource implements SourceFileProperties {
     }
     
     public List<String> getSystemInludePaths() {
-        List includePaths = item.getSystemIncludePaths();
-        List<String> res = new ArrayList<String>();
-        for(Object o : includePaths){
-            String path = (String)o;
-            res.add(path);
-        }
-        return res;
+        return item.getSystemIncludePaths();
     }
     
     public Map<String, String> getUserMacros() {

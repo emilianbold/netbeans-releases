@@ -55,8 +55,10 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.text.Document;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputEvent;
 import org.openide.xml.XMLUtil;
@@ -427,6 +429,26 @@ public class Controller {
                     tab.getIO().getIOContainer().setToolTipText(tab, (String) data);
                 }
                 break;
+
+            case IOEvent.CMD_SCROLL:
+                if (tab != null) {
+                    tab.getOutputPane().scrollTo((Integer) data);
+                }
+                break;
+
+            case IOEvent.CMD_DEF_COLORS:
+                if (tab != null) {
+                    Document doc = tab.getOutputPane().getDocument();
+                    if (doc != null && doc instanceof OutputDocument) {
+                        Lines lines = ((OutputDocument) doc).getLines();
+                        if (lines != null) {
+                            IOColors.OutputType type = (IOColors.OutputType) data;
+                            lines.setDefColor(type, io.getColor(type));
+                            tab.getOutputPane().repaint();
+                        }
+                    }
+                }
+                break;
         }
     }
 
@@ -436,9 +458,16 @@ public class Controller {
      */
     static class ControllerOutputEvent extends OutputEvent {
         private int line;
-        ControllerOutputEvent (NbIO io, int line) {
+        private OutWriter out;
+        ControllerOutputEvent(NbIO io, int line) {
             super (io);
+            out = io.out();
             this.line = line;
+        }
+
+        ControllerOutputEvent(NbIO io, OutWriter out, int line) {
+            this(io, line);
+            this.out = out;
         }
 
         void setLine (int line) {

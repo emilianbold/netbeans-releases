@@ -1,4 +1,4 @@
-<Program start='0' end='237'>
+<Program start='0' end='236'>
     <Comments>
         Comment start='163' end='172' commentType='singleLine'/>
         Comment start='191' end='197' commentType='singleLine'/>
@@ -83,6 +83,6 @@
                 </Expressions>
             </Quote>
         </EchoStatement>
-        <EmptyStatement start='234' end='237'/>
+        <EmptyStatement start='234' end='236'/>
     </Statements>
 </Program>

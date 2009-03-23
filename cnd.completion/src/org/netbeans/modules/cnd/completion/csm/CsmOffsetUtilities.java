@@ -94,6 +94,17 @@ public class CsmOffsetUtilities {
         }
     }
 
+    public static boolean isInObject(CsmObject outerObj, CsmObject innerObj) {
+        if (!CsmKindUtilities.isOffsetable(outerObj) || !CsmKindUtilities.isOffsetable(innerObj)) {
+            return false;
+        }
+        CsmOffsetable outer = (CsmOffsetable)outerObj;
+        CsmOffsetable inner = (CsmOffsetable)innerObj;
+        return outer.getContainingFile().equals(inner.getContainingFile()) &&
+                outer.getStartOffset() <= inner.getStartOffset() &&
+                inner.getEndOffset() <= outer.getEndOffset();
+    }
+
     private static boolean endsWithBrace(CsmOffsetable obj) {
         if (!CsmKindUtilities.isScope(obj)) {
             // only scopes can end with '}'
@@ -180,7 +191,7 @@ public class CsmOffsetUtilities {
             }
             // check if offset is before parameters
             CsmFunctionParameterList paramList = fun.getParameterList();
-//            if (paramList != null) {
+            if (paramList != null) {
                 if (CsmOffsetUtilities.isInObject(paramList, offset)) {
                     return true;
                 }
@@ -192,7 +203,7 @@ public class CsmOffsetUtilities {
                     }
                     return true;
                 }
-//            }
+            }
             // check initializer list for constructors
             if (CsmKindUtilities.isConstructor(fun)) {
                 Collection<CsmExpression> izers = ((CsmInitializerListContainer) fun).getInitializerList();

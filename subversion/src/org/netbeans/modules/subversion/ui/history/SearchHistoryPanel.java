@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.ui.history;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
@@ -87,6 +88,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private List<RepositoryRevision> results;
     private SummaryView             summaryView;    
     private DiffResultsView         diffView;
+    private SearchHistoryTopComponent.DiffResultsViewFactory diffViewFactory;
     
     private AbstractAction nextAction;
     private AbstractAction prevAction;
@@ -96,6 +98,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.roots = roots;
         this.repositoryUrl = null;
         this.criteria = criteria;
+        this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
@@ -112,6 +115,21 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         initComponents();
         setupComponents();
         refreshComponents(true);
+    }
+
+    /**
+     * Sets the factory creating the appropriate DiffResultsView to display.
+     * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.
+     */
+    public void setDiffResultsViewFactory(DiffResultsViewFactory fac) {
+        if (fac != null) {
+            this.diffViewFactory = fac;
+        }
+    }
+
+    public void disableFileChangesOption(boolean b) {
+        fileInfoCheckBox.setEnabled(false);
+        fileInfoCheckBox.setSelected(false);
     }
 
     void setSearchCriteria(boolean b) {
@@ -194,7 +212,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (e.getID() == Divider.DIVIDER_CLICKED) {
             criteriaVisible = !criteriaVisible;
             refreshComponents(false);
-        } else if (e.getSource() == fileInfoCheckBox) {
+        } else if (e.getSource() == fileInfoCheckBox && fileInfoCheckBox.isEnabled()) {
             SvnModuleConfig.getDefault().setShowFileAllInfo(fileInfoCheckBox.isSelected());
             diffView = null;
             summaryView = null;
@@ -263,7 +281,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                                 rev.setFilter(roots[0]);
                             }
                         }
-                        diffView = new DiffResultsView(this, results);
+                        diffView = diffViewFactory.createDiffResultsView(this, results);
                     }
                     resultsPanel.add(diffView.getComponent());
                 }
@@ -422,8 +440,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JSeparator();
-        bNext = new javax.swing.JButton();
-        bPrev = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         resultsPanel = new javax.swing.JPanel();
 
@@ -487,12 +503,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))); // NOI18N
         jToolBar1.add(bNext);
-        bNext.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_NextDifference")); // NOI18N
+        bNext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSN_NextDifference")); // NOI18N
         bNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_NextDifference")); // NOI18N
 
         bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))); // NOI18N
         jToolBar1.add(bPrev);
-        bPrev.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_PrevDifference")); // NOI18N
+        bPrev.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSN_PrevDifference")); // NOI18N
         bPrev.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_PrevDifference")); // NOI18N
 
         jToolBar1.add(jSeparator3);
@@ -548,11 +564,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             return;
         }        
         bSearch.setEnabled(true);
-    }    
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton bNext;
-    private javax.swing.JButton bPrev;
+    final javax.swing.JButton bNext = new javax.swing.JButton();
+    final javax.swing.JButton bPrev = new javax.swing.JButton();
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
     final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();

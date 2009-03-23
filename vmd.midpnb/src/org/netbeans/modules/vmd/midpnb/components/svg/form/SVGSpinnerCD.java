@@ -105,8 +105,8 @@ public class SVGSpinnerCD extends ComponentDescriptor{
                 createPropertiesPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGSpinnerEventSourceCD.TYPEID )
+                MidpCodePresenterSupport.createAddImportPresenter()
+                //new SVGCodeFooter( SVGSpinnerEventSourceCD.TYPEID )
         );
     }
 

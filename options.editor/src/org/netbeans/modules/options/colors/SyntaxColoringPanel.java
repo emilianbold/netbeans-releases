@@ -363,6 +363,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if (evt.getSource () == bFont) {
             PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
             AttributeSet category = getCurrentCategory ();
+            if (category == null) {
+                return;
+            }
             Font f = getFont (category);
             pe.setValue (f);
             DialogDescriptor dd = new DialogDescriptor (
@@ -601,7 +604,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if (cbEffects.getSelectedIndex () == 3)
             strikethrough = ColorComboBox.getColor(cbEffectColor);
         
-        SimpleAttributeSet c = new SimpleAttributeSet (category);
+        SimpleAttributeSet c = category != null ? new SimpleAttributeSet(category) : new SimpleAttributeSet();
         
         Color color = ColorComboBox.getColor(cbBackground);
         if (color != null) {
@@ -827,8 +830,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     
     private AttributeSet getCurrentCategory () {
         int i = lCategories.getSelectedIndex ();
-        if (i < 0) return null;
-        return (AttributeSet) getCategories (currentProfile, currentLanguage).get (i);
+        Vector<AttributeSet> c = getCategories(currentProfile, currentLanguage);
+        return i >= 0 && i < c.size() ? (AttributeSet) c.get(i) : null;
     }
     
     private void replaceCurrrentCategory (AttributeSet newValues) {

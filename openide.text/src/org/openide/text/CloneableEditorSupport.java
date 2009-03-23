@@ -118,10 +118,7 @@ import org.openide.util.UserCancelException;
 * @author Jaroslav Tulach
 */
 public abstract class CloneableEditorSupport extends CloneableOpenSupport {
-    static final RequestProcessor RP = new RequestProcessor("Document Processing");
-
-    /** Thread for postprocessing work in CloneableEditor.DoInitialize.initRest */
-    static final RequestProcessor RPPostprocessing = new RequestProcessor("Document Postprocessing");
+    private static final RequestProcessor RP = new RequestProcessor("org.openide.text Document Processing");
     
     /** Common name for editor mode. */
     public static final String EDITOR_MODE = "editor"; // NOI18N
@@ -844,6 +841,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             if (prepareDocumentRuntimeException != null) {
                 if (prepareDocumentRuntimeException instanceof DelegateIOExc) {
+                    Exception ex = new Exception();
+                    ERR.log(Level.INFO, "Outer callstack", ex);
                     throw (IOException) prepareDocumentRuntimeException.getCause();
                 }
 
@@ -1549,6 +1548,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         kit.read(stream, doc, 0);
     }
 
+    private boolean reloadDocumentFireDocumentChangeClose = false;
+    private boolean reloadDocumentFireDocumentChangeOpen = false;
     /** Reload the document in response to external modification.
     * @return task that reloads the document. It can be also obtained
     *  by calling <tt>prepareDocument()</tt>.
@@ -1593,7 +1594,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  // to detach annotations).
                                                  getPositionManager().documentClosed();
                                                  updateLineSet(true);
-                                                 fireDocumentChange(getDoc(), true);
+                                                 reloadDocumentFireDocumentChangeClose = true;
+                                                 //fireDocumentChange(getDoc(), true);
                                                  ERR.fine("clearDocument");
                                                  clearDocument();
                                                  // uses the listener's run method to initialize whole document
@@ -1603,7 +1605,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  prepareTask.run();
                                                  ERR.fine("prepareTask finished");
                                                  documentStatus = DOCUMENT_READY;
-                                                 fireDocumentChange(getDoc(), false);
+                                                 reloadDocumentFireDocumentChangeOpen = true;
+                                                 //fireDocumentChange(getDoc(), false);
                                                  // Confirm that whole loading succeeded
                                                  targetStatus = DOCUMENT_READY;
                                                  return null;
@@ -1636,8 +1639,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                              }
                                          }
                                          ERR.fine("post-reload task posting to AWT");
-                                         Runnable run = new Runnable() {
 
+                                         //#160252: Set caret position synchronously.
+                                         Runnable run1 = new Runnable() {
                                              public void run() {
                                                  if (getDoc() == null) {
                                                      return;
@@ -1655,6 +1659,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                          }
                                                          panes[i].setCaretPosition(carets[i]);
                                                      }
+                                                 }
+                                             }
+                                         };
+
+                                         Runnable run2 = new Runnable() {
+                                             public void run() {
+                                                 if (getDoc() == null) {
+                                                     return;
                                                  }
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
@@ -1678,8 +1690,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                                          if (getDoc() != null) {
                                              ERR.fine("Posting the AWT runnable: " +
-                                                      run);
-                                             SwingUtilities.invokeLater(run);
+                                                      run2);
+                                             run1.run();
+                                             SwingUtilities.invokeLater(run2);
                                              ERR.fine("Posted in " +
                                                       Thread.currentThread());
                                          }
@@ -2196,8 +2209,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                  */
             }
         }
+        if (reloadDocumentFireDocumentChangeClose) {
+            reloadDocumentFireDocumentChangeClose = false;
+            fireDocumentChange(getDoc(), true);
+        }
+        if (reloadDocumentFireDocumentChangeOpen) {
+            reloadDocumentFireDocumentChangeOpen = false;
+            fireDocumentChange(getDoc(), false);
+        }
     }
-
+    
     /** Creates netbeans document for a given document.
     * @param d document to use as underlaying one
     * @return styled document that could support Guarded.ATTRIBUTE

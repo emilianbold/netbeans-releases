@@ -67,7 +67,7 @@ public abstract class CsmLabelResolver {
      * Static method to obtain the CsmLabelResolver implementation.
      * @return the selector
      */
-    public static synchronized CsmLabelResolver getDefault() {
+    public static CsmLabelResolver getDefault() {
         return DEFAULT;
     }
     

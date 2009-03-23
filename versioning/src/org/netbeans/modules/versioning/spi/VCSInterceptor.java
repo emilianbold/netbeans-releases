@@ -55,7 +55,7 @@ public abstract class VCSInterceptor {
      */
     protected VCSInterceptor() {
     }
-    
+
     // ==================================================================================================
     // QUERIES
     // ==================================================================================================
@@ -73,7 +73,20 @@ public abstract class VCSInterceptor {
     public boolean isMutable(File file) {
         return file.canWrite();
     }
-    
+
+    /**
+     * Queries the versioning system for a files VCS specific attribute. At the momement the
+     * only supported attribute name is <code>ProvidedExtensions.RemoteLocation</code>
+     * 
+     * @param file a file to get the attribute for
+     * @param attrName te attributes name
+     * @return the attributes value or null if not available
+     * @since 1.10
+     */
+    public String getAttribute(File file, String attrName) {
+        return null;
+    }
+
     // ==================================================================================================
     // DELETE
     // ==================================================================================================

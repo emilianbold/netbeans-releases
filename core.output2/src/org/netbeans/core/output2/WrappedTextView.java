@@ -109,15 +109,6 @@ public class WrappedTextView extends View {
     private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
                                              "Aqua".equals (UIManager.getLookAndFeel().getID()); // NOI18N
 
-    //Self explanatory...
-    static Color selectedFg;
-    static Color unselectedFg;
-    static Color selectedLinkFg;
-    static Color unselectedLinkFg;
-    static Color selectedImportantLinkFg;
-    static Color unselectedImportantLinkFg;
-    static Color selectedErr;
-    static Color unselectedErr;
     static final Color arrowColor = new Color (80, 162, 80);
 
     private static Map hintsMap = null;
@@ -137,49 +128,6 @@ public class WrappedTextView extends View {
         }
         return hintsMap;
     }
-   
-    static {
-        selectedFg = UIManager.getColor ("nb.output.foreground.selected"); //NOI18N
-        if (selectedFg == null) {
-            selectedFg = UIManager.getColor("textText") == null ? Color.BLACK : //NOI18N
-               UIManager.getColor("textText"); //NOI18N
-        }
-        
-        unselectedFg = UIManager.getColor ("nb.output.foreground"); //NOI18N
-        if (unselectedFg == null) {
-            unselectedFg = selectedFg;
-        }
-
-        selectedLinkFg = UIManager.getColor("nb.output.link.foreground.selected"); //NOI18N
-        if (selectedLinkFg == null) {
-            selectedLinkFg = java.awt.Color.BLUE.darker();
-        }
-        
-        unselectedLinkFg = UIManager.getColor("nb.output.link.foreground"); //NOI18N
-        if (unselectedLinkFg == null) {
-            unselectedLinkFg = selectedLinkFg;
-        }
-        
-        selectedImportantLinkFg = UIManager.getColor("nb.output.link.foreground.important.selected"); //NOI18N
-        if (selectedImportantLinkFg == null) {
-            selectedImportantLinkFg = selectedLinkFg.brighter();
-        }
-        
-        unselectedImportantLinkFg = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
-        if (unselectedImportantLinkFg == null) {
-            unselectedImportantLinkFg = selectedImportantLinkFg;
-        }
-
-        selectedErr = UIManager.getColor ("nb.output.err.foreground.selected"); //NOI18N
-        if (selectedErr == null) {
-            selectedErr = new Color (164, 0, 0);
-        }
-        unselectedErr = UIManager.getColor ("nb.output.err.foreground"); //NOI18N
-        if (unselectedErr == null) {
-            unselectedErr = selectedErr;
-        }
-    }
-
 
     public WrappedTextView(Element elem, JTextComponent comp) {
         super(elem);
@@ -296,7 +244,8 @@ public class WrappedTextView extends View {
             }
 
             ln[0] = clip.y / charHeight;
-            doc.getLines().toPhysicalLineIndex(ln, charsPerLine);
+            Lines lines = doc.getLines();
+            lines.toPhysicalLineIndex(ln, charsPerLine);
 
             int firstline = ln[0];
             g.setColor (comp.getForeground());
@@ -313,7 +262,7 @@ public class WrappedTextView extends View {
                     int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
 
-                    g.setColor(getColorForLocation(lineStart, doc, true)); //XXX should not always be 'true'
+                    g.setColor(lines.getColorForLine(i));
 
                     // get number of logical lines
                     int logicalLines = length <= charsPerLine ? 1 : 
@@ -337,7 +286,8 @@ public class WrappedTextView extends View {
                         int lenToDraw = Math.min(charsPerLine, length - charpos);
                         if (lenToDraw > 0) {
                             drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
-                            if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
+                            //if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
+                            if (lines.isHyperlink(i)) {
                                 underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
                             }
                         }
@@ -527,27 +477,5 @@ public class WrappedTextView extends View {
         } else {
             return 0;
         }
-    }
-
-    /**
-     * Get a color for a given position in the document - this will either be plain,
-     * hyperlink or standard error colors.
-     *
-     * @param start A position in the document
-     * @param d The document, presumably an instance of OutputDocument (though briefly it is not
-     *  during an editor kit change)
-     * @param selected Whether or not it is selected
-     * @return The foreground color to paint with
-     */
-    private static Color getColorForLocation (int start, Document d, boolean selected) {
-        OutputDocument od = (OutputDocument) d;
-        int line = od.getElementIndex (start);
-        boolean hyperlink = od.getLines().isHyperlink(line);
-        boolean important = hyperlink ? od.getLines().isImportantHyperlink(line) : false;
-        boolean isErr = od.getLines().isErr(line);
-        return hyperlink ? (important ? (selected ? selectedImportantLinkFg : unselectedImportantLinkFg) : 
-                                        (selected ? selectedLinkFg : unselectedLinkFg)) :
-                           (selected ? (isErr ? selectedErr : selectedFg) : 
-                                       (isErr ? unselectedErr : unselectedFg));
     }
 }

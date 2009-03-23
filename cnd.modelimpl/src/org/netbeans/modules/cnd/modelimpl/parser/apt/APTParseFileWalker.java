@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * implementation of walker used when parse files/collect macromap
@@ -165,18 +166,18 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);
         setEndPosition(pos, token);
-        return ErrorDirectiveImpl.create(this.getFile(), token.getText(), pos);
+        return ErrorDirectiveImpl.create(this.getFile(), token.getTextID(), pos);
     }
 
     private MacroImpl createMacro(APTDefine define) {
 
-        List<String> params = null;
+        List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
-            params = new ArrayList<String>();
+            params = new ArrayList<CharSequence>();
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
-                    params.add(elem.getText());
+                    params.add(NameCache.getManager().getString(elem.getTextID()));
                 }
             }
         }
@@ -198,7 +199,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         setEndPosition(pos, last);
 
-        return new MacroImpl(define.getName().getText(), params, body/*sb.toString()*/, getFile(), pos);
+        return new MacroImpl(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos);
     }
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {

@@ -39,16 +39,13 @@ public class GrailsServerState {
 
     private final Project project;
 
-    private final String name;
-
     /** <i>GuardedBy("this")</i> */
     private Process process;
 
     /** <i>GuardedBy("this")</i> */
     private URL url;
 
-    public GrailsServerState(Project prj, String name) {
-        this.name = name;
+    public GrailsServerState(Project prj) {
         this.project = prj;
     }
 

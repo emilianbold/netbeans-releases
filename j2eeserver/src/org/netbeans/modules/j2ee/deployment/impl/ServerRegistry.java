@@ -415,7 +415,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
         Map<String, String> properties = cleanInitialProperties(initialProperties);
 
-        for (Iterator i = serversMap().values().iterator(); i.hasNext();) {
+        Collection serversMap = serversMap().values();
+        for (Iterator i = serversMap.iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
@@ -454,7 +455,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        throw new InstanceCreationException("no handlers");
+        throw new InstanceCreationException(serversMap.size()+" handlers registered, no handlers for "+url);
     }
 
     private Map<String, String> cleanInitialProperties(Map<String, String> initialProperties) {

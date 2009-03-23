@@ -121,6 +121,7 @@ function main() {
 		ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip
 	else
 		echo ""; echo "========== Rebuilding cluster ${cluster} =========="; echo ""; 
+		for D in `ls -1d ${nbbuild}/../cnd* ${nbbuild}/../dlight*`; do rm -rf  $D/build/* 2> /dev/null; done
 		ant -f ${nbbuild}/build.xml ${rebuild_cluster} rebuild-cluster
 	fi
 }

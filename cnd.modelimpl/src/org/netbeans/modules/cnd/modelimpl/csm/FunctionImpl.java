@@ -91,7 +91,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private TemplateDescriptor templateDescriptor = null;
     
-    protected CharSequence classTemplateSuffix;
+    protected final CharSequence classTemplateSuffix;
     
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
     private static final byte FLAGS_STATIC = 1 << 1;
@@ -101,8 +101,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private byte flags;
     
     private static final boolean CHECK_SCOPE = false;
-    
+
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        this(ast, file, null, scope, register, global);
+    }
+    
+    public FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -148,10 +152,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        classTemplateSuffix = new StringBuilder();
-        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
-        returnType = initReturnType(ast);
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        templateDescriptor = createTemplateDescriptor(ast, this, clsTemplateSuffix, global);
+        classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        if(type != null) {
+            returnType = type;
+        } else {
+            returnType = initReturnType(ast);
+        }
 
+                
         // set parameters, do it in constructor to have final fields
         this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
@@ -240,7 +250,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected CharSequence getScopeSuffix() {
-        return classTemplateSuffix != null ? classTemplateSuffix : "";
+        return classTemplateSuffix != null ? classTemplateSuffix : CharSequenceKey.empty();
     }
 
     protected String initName(AST node) {
@@ -606,23 +616,29 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return l;
     }
     
-    private String createSignature() {
+    private CharSequence createSignature() {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
-        sb.append(createTemplateSignature());
-        sb.append(createParametersSignature(getParameters()));
+        appendTemplateSignature(sb);
+        appendParametersSignature(getParameters(), sb);
         if( isConst() ) {
             sb.append(" const"); // NOI18N
         }
-        return sb.toString();
+        return sb;
     }
 
-    /*package*/static String createParametersSignature(Collection<CsmParameter> params) {
-        StringBuilder sb = new StringBuilder();
+    private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
+
+    /*package*/static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {
         sb.append('(');
+        int limit = 0;
         for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
+            if (limit >= PARAMETERS_LIMIT) {
+                break;
+            }
+            limit++;
             CsmParameter param = iter.next();
             CsmType type = param.getType();
             if (type != null) {
@@ -635,10 +651,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         sb.append(')');
-       return sb.toString();
     }
     
-    private String createTemplateSignature() {
+    private void appendTemplateSignature(StringBuilder sb) {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
         List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
         if(allTemplateParams != null) {
@@ -653,14 +668,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
-        return createTemplateParamsSignature(params);
+        appendTemplateParamsSignature(params, sb);
     }
     
-    private String createTemplateParamsSignature(List<CsmTemplateParameter> params) {
-        StringBuilder sb = new StringBuilder("");
+    private void appendTemplateParamsSignature(List<CsmTemplateParameter> params, StringBuilder sb) {
         if(params != null && params.size() > 0) {
             sb.append('<');
+            int limit = 0;
             for (Iterator iter = params.iterator(); iter.hasNext();) {
+                if (limit >= PARAMETERS_LIMIT) {
+                    break;
+                }
+                limit++;
                 CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
                 if (CsmKindUtilities.isVariableDeclaration(param)) {
                     CsmVariable var = (CsmVariable) param;
@@ -676,7 +695,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     CsmClassifier classifier = (CsmClassifier) param;
                     sb.append("class"); // NOI18N // Name of parameter does not matter
                     if (CsmKindUtilities.isTemplate(param)) {
-                        sb.append(createTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters()));
+                        appendTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters(), sb);
                     }                    
                     if (iter.hasNext()) {
                         sb.append(',');
@@ -685,7 +704,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
             sb.append('>');
         }
-        return sb.toString();
     }
     
     @Override
@@ -771,7 +789,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
@@ -783,13 +801,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
-        output.writeUTF(this.getScopeSuffix().toString());
+        PersistentUtils.writeUTF(getScopeSuffix(), output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -801,12 +819,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
         
-        this.signature = PersistentUtils.readUTF(input);
-        if (this.signature != null) {
-            this.signature = QualifiedNameCache.getManager().getString(this.signature);
-        }
+        this.signature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.flags = input.readByte();
-        this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.classTemplateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

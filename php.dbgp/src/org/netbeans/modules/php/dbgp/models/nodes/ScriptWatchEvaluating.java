@@ -19,9 +19,9 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.ModelNode;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
@@ -189,7 +189,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
     }
     
     private DebugSession getSession() {
-        return StartActionProviderImpl.getInstance().getCurrentSession( 
+        return SessionManager.getInstance().getCurrentSession(
                 getSessionId() );
     }
     

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 import org.netbeans.modules.refactoring.api.Problem;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -211,7 +212,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return out;
     }
 
-    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
+    protected final void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
@@ -261,7 +262,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         assert newName != null;
         PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
         PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
-        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, newName, descr);
+        Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
         return diff;
     }
 }

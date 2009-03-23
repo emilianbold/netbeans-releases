@@ -31,9 +31,9 @@ public interface Definition {
     
     public void addMessage( Message message );
     
-    public Message getMessage( String name );
+    public Message getMessage( QName name );
     
-    public Map<String, Message> getMessages();
+    public Map<QName, Message> getMessages();
     
     public void addService( Service service );
     
@@ -43,9 +43,9 @@ public interface Definition {
     
     public void addPortType( PortType portType );
     
-    public PortType getPortType( String name );
+    public PortType getPortType( QName name );
     
-    public Map<String, PortType> getPortTypes();
+    public Map<QName, PortType> getPortTypes();
     
     public void setDocumentation( String documentation );
     

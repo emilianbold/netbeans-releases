@@ -104,7 +104,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 switch (token.getType()) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
-                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
+                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
                         String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
                         setTemplateDescriptor(params, name);
                         break;
@@ -229,19 +229,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         }
                         break;
                     case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
-                         {
-                            ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
-                            if (fd != null) {
-                                addMember(fd,!isRenderingLocalContext());
-                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
-                                break;
+                        {
+                            child = token.getFirstChild();
+                            if (hasFriendPrefix(child)) {
+                                addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext()), !isRenderingLocalContext());
+                            } else {
+                                ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
+                                if (fd != null) {
+                                    addMember(fd, !isRenderingLocalContext());
+                                    fd.init(token, ClassImpl.this, !isRenderingLocalContext());
+                                    break;
+                                }
                             }
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
-                    case CPPTokenTypes.CSM_USER_TYPE_CAST:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
                         child = token.getFirstChild();
                         if (child != null) {
                             if (hasFriendPrefix(child)) {
@@ -281,6 +287,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
                             try {
@@ -477,7 +484,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private final CsmUID<CsmClass> containerUID;
 
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
-            super(ast, containingClass.getContainingFile());
+            super(ast, containingClass.getContainingFile(), register);
             visibility = curentVisibility;
             containerUID = UIDs.get(containingClass);
             if (register) {
@@ -625,6 +632,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ClassImpl impl = new ClassImpl(null, ast, file);
         impl.init(scope, ast, register);
         return impl;
+    }
+
+    protected void setTemplateDescriptor(TemplateDescriptor td) {
+        templateDescriptor = td;
     }
 
     public CsmDeclaration.Kind getKind() {

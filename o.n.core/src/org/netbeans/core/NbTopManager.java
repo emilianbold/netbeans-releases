@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
@@ -454,21 +453,47 @@ public abstract class NbTopManager {
         return false;
     }
 
+    private static class ExitActions implements Runnable {
+        private final int type;
+        ExitActions(int type) {
+            this.type = type;
+        }
 
+        public void run() {
+            switch (type) {
+                case 0: 
+                    doExit();
+                    break;
+                case 1:
+                    org.netbeans.CLIHandler.stopServer();
+                    final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
+                    boolean gui = org.netbeans.core.startup.CLIOptions.isGui();
+                    if (windowSystem != null && gui) {
+                        windowSystem.hide();
+                        windowSystem.save();
+                    }
+                    if (Boolean.getBoolean("netbeans.close.when.invisible")) {
+                        // hook to permit perf testing of time to *apparently* shut down
+                        TopSecurityManager.exit(0);
+                    }
+                    break;
+                case 2:
+                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                        TopSecurityManager.exit(0);
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException("Type: " + type); // NOI18N
+            }
+        }
+    } // end of ExitActions
     
     private static boolean doingExit=false;
+    private static final Runnable DO_EXIT = new ExitActions(0);
     public static void exit ( ) {
         // #37160 So there is avoided potential clash between hiding GUI in AWT
         // and accessing AWTTreeLock from saving routines (winsys).
-        if(SwingUtilities.isEventDispatchThread()) {
-            doExit();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    doExit();
-                }
-            });
-        }
+        Mutex.EVENT.readAccess(DO_EXIT);
     }
     
     /**
@@ -486,27 +511,7 @@ public abstract class NbTopManager {
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-     
-                final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
-                
-                // #29831: hide frames between closing() and close()
-                Runnable hideFrames = new Runnable() {
-                    public void run() {
-                        org.netbeans.CLIHandler.stopServer ();
-                
-                        boolean gui = org.netbeans.core.startup.CLIOptions.isGui();
-                        if(windowSystem != null && gui) {
-                            windowSystem.hide();
-                            windowSystem.save();
-                        }
-                        if (Boolean.getBoolean("netbeans.close.when.invisible")) {
-                            // hook to permit perf testing of time to *apparently* shut down
-                            TopSecurityManager.exit(0);
-                        }
-                    }
-                };
-                
-                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(hideFrames)) {
+                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1))) {
                     try {
                         try {
                             LoaderPoolNode.store();
@@ -531,13 +536,7 @@ public abstract class NbTopManager {
                     // exit is dispatched through that proprietary queue and it
                     // can be refused by security check. So, we need to replan
                     // to RequestProcessor to avoid security problems.
-                    Task exitTask = new Task(new Runnable() {
-                        public void run() {
-                            if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                                TopSecurityManager.exit(0);
-                            }
-                        }
-                    });
+                    Task exitTask = new Task(new ExitActions(2));
                     RequestProcessor.getDefault().post(exitTask);
                     exitTask.waitFinished();
                 }
@@ -567,7 +566,11 @@ public abstract class NbTopManager {
     public abstract ModuleSystem getModuleSystem();
     
     public static Lookup getModuleLookup() {
-        return org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
+        Lookup l = Lookup.getDefault();
+        if (l instanceof MainLookup) {
+            l = org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
+        }
+        return l;
     }
 
     public static List<File> getModuleJars() {

@@ -55,7 +55,7 @@ public final class APTBuilder {
     private APTBuilder() {
     }
 
-    public static APTFile buildAPT(String path, TokenStream ts) {
+    public static APTFile buildAPT(CharSequence path, TokenStream ts) {
         return new APTBuilderImpl().buildAPT(path, ts);
     }
     

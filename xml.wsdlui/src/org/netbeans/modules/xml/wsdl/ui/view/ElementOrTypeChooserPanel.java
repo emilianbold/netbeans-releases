@@ -77,6 +77,7 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     private Project mProject;
     private WSDLModel mModel;
     private SchemaComponent mPreviousSelectedComponent;
+    private Node mRootNode = null;
     
     /** Creates new form ElementOrTypeChooserPanel */
     public ElementOrTypeChooserPanel(Project project, Map<String, String> namespaceToPrefixMap, WSDLModel model) {
@@ -165,7 +166,15 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
                     } catch(PropertyVetoException ex) {
                         //ignore this
                     }
-
+                    // somehow expanding of nodes causes the scroll to go to the 
+                    // last expanded node.  if the previous selection is null, 
+                    // then reexpand the 1st node to force the scroll to be on top
+                    if ((mPreviousSelectedComponent == null) && 
+                            (manager.getRootContext() != null) && 
+                            (manager.getRootContext().getChildren().getNodesCount() > 0)) {
+                        beanTreeView1.collapseNode(manager.getRootContext().getChildren().getNodes()[0]);
+                        beanTreeView1.expandNode(manager.getRootContext().getChildren().getNodes()[0]);                        
+                    }
                 }
             }
         };

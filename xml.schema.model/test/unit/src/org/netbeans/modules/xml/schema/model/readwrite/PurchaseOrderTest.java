@@ -347,19 +347,19 @@ public class PurchaseOrderTest extends NbTestCase {
         GlobalElement ge1 = factory.createGlobalElement();
         ge1.setName("my-auto-loan-application");
         LocalComplexType lct = factory.createLocalComplexType();
-        assertNotNull(lct.getPeer().getAttribute("xmlns:xsd"));
+        assertNotNull(lct.getPeer().getAttributeNode("xmlns:xsd"));
         ge1.setInlineType(lct);
-        assertNull(lct.getPeer().getAttribute("xmlns:xsd"));
+        assertNull(lct.getPeer().getAttributeNode("xmlns:xsd"));
         ComplexContent cc = factory.createComplexContent();
-        assertNotNull(cc.getPeer().getAttribute("xmlns:xsd"));
+        assertNotNull(cc.getPeer().getAttributeNode("xmlns:xsd"));
         lct.setDefinition(cc);
-        assertNull(cc.getPeer().getAttribute("xmlns:xsd"));
+        assertNull(cc.getPeer().getAttributeNode("xmlns:xsd"));
         
         model.startTransaction();
         model.getSchema().addElement(ge1);
         model.endTransaction();
         
-        assertNull(lct.getPeer().getAttribute("xmlns:xsd"));
-        assertNull(cc.getPeer().getAttribute("xmlns:xsd"));
+        assertNull(lct.getPeer().getAttributeNode("xmlns:xsd"));
+        assertNull(cc.getPeer().getAttributeNode("xmlns:xsd"));
     }
 }

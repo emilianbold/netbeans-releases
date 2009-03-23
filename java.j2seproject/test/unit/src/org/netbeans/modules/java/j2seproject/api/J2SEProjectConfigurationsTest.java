@@ -64,6 +64,7 @@ import org.openide.modules.SpecificationVersion;
 
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test of class org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations
@@ -85,6 +86,7 @@ public class J2SEProjectConfigurationsTest extends NbTestCase {
         
         File proj = getWorkDir();
         clearWorkDir();
+        MockLookup.setLayersAndInstances();
         
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "TestProject", null, "manifest.mf", null);

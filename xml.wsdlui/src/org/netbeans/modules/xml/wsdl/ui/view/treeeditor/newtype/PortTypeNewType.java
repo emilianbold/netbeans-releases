@@ -56,8 +56,8 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
-import org.netbeans.modules.xml.wsdl.ui.wizard.PortTypeGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WizardPortTypeConfigurationStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.PortTypeGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -116,39 +116,39 @@ public class PortTypeNewType extends NewType {
                     OperationType ot = ptPanel.getOperationType();
                     boolean autoGenPLT = ptPanel.isAutoGeneratePartnerLinkType();
                     
-                    configurationMap.put(WizardPortTypeConfigurationStep.PORTTYPE_NAME, portTypeName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
-                    configurationMap.put(WizardPortTypeConfigurationStep.AUTOGEN_PARTNERLINKTYPE, autoGenPLT);
+                    configurationMap.put(WSDLWizardConstants.PORTTYPE_NAME, portTypeName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_NAME, operationName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_TYPE, ot);
+                    configurationMap.put(WSDLWizardConstants.AUTOGEN_PARTNERLINKTYPE, autoGenPLT);
                     
                     String inputMessageName = ptPanel.getInputMessageName();
                     String outputMessageName = ptPanel.getOutputMessageName();
                     String faultMessageName = ptPanel.getFaultMessageName();
                           
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT_MESSAGE, inputMessageName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT_MESSAGE, outputMessageName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT_MESSAGE, faultMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_INPUT_MESSAGE, inputMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_OUTPUT_MESSAGE, outputMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_FAULT_MESSAGE, faultMessageName);
                     
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputParts = ptPanel.getInputMessageParts();
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputParts = ptPanel.getOutputMessageParts();
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultParts = ptPanel.getFaultMessageParts();
                     Map<String, String> namespaceToPrefixMap = ptPanel.getNamespaceToPrefixMap();
                     
-                    configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+                    configurationMap.put(WSDLWizardConstants.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
                     
                     //if inputMessage Name is new not an existing message name then populate part names as well
                     if(ptPanel.isNewInputMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_INPUT, inputParts);
                     }
                     
                     //if outputMessage Name is new not an existing message name then populate part names as well
                     if(ptPanel.isNewOutputMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_OUTPUT, outputParts);
                     }
                     
                     //if faultMessage Name is new not an existing message name then populate part names as well
                     if(ptPanel.isNewFaultMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_FAULT, faultParts);
                     }
                     
                     model.startTransaction();

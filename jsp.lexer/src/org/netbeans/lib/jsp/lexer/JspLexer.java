@@ -474,6 +474,10 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 input.backup(1);
                                 lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                                 break;
+                            case '\n':
+                                lexerState = ISP_TAG;
+                                input.backup(1); //backup the eof
+                                return token(JspTokenId.TAG);
                             default:
                                 lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                         }

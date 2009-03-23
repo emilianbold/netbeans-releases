@@ -40,6 +40,8 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -138,6 +140,13 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         JTextArea res = new DynamicWidthTA();
         res.setRows(1);
         res.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        // disable default Swing's Ctrl+Shift+O binding to enable our global action
+        InputMap curIm = res.getInputMap(JComponent.WHEN_FOCUSED);
+        while (curIm != null) {
+            curIm.remove(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK));
+            curIm = curIm.getParent();
+        }
         return res;
     }
 

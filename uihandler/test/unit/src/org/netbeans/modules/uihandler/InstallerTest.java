@@ -43,12 +43,14 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,7 +59,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 
 /**
@@ -77,6 +81,7 @@ public class InstallerTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        UIHandler.flushImmediatelly();
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
         
@@ -488,6 +493,40 @@ public class InstallerTest extends NbTestCase {
         IllegalStateException ise = new IllegalStateException("ae", rootExc);
         String message = Installer.createMessage(ise);
         assertEquals("use nested exception", "NullPointerException: root", message);
+    }
+
+    public void testCreateMessageIssue160019() throws IOException {//ignore annotations
+        final List<LogRecord> logs = new ArrayList<LogRecord>();
+        ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        Exception rootExc = new NullPointerException("root");
+        Exceptions.attachMessage(rootExc, "annotation message");
+        LogRecord rec = new LogRecord(Level.SEVERE, "test");
+        rec.setThrown(rootExc);
+        LogRecords.write(bos, rec);
+        bos.close();
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        LogRecords.scan(bis, new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                logs.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        bis.close();
+
+        assertEquals(1, logs.size());
+        Throwable thrown = logs.get(0).getThrown();
+        assertEquals("thrown is annotated", "annotation message", thrown.getCause().getMessage());
+        String message = Installer.createMessage(thrown);
+        assertEquals("annontation should be ignored", "NullPointerException: root", message);
     }
 
     public void testDontSubmitTwiceIssue128306(){

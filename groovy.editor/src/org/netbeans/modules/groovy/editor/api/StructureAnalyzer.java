@@ -58,12 +58,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.groovy.editor.api.elements.AstClassElement;
 import org.netbeans.modules.groovy.editor.api.elements.AstElement;
 import org.netbeans.modules.groovy.editor.api.elements.AstFieldElement;
@@ -74,12 +68,19 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ElementHandle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 
 /**
@@ -98,7 +99,7 @@ public class StructureAnalyzer implements StructureScanner {
         return scan(result);
     }
 
-    public List<? extends StructureItem> scan(CompilationInfo info) {
+    public List<? extends StructureItem> scan(ParserResult info) {
         GroovyParserResult result = AstUtilities.getParseResult(info);
 
         AnalysisResult ar = result.getStructure();
@@ -239,7 +240,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
         ASTNode root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -253,7 +254,7 @@ public class StructureAnalyzer implements StructureScanner {
         List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codefolds); // NOI18N
 
-        final BaseDocument doc = (BaseDocument) info.getDocument();
+        final BaseDocument doc = LexUtilities.getDocument(rpr, false);
         if (doc == null) {
             return Collections.emptyMap();
         }
@@ -387,14 +388,14 @@ public class StructureAnalyzer implements StructureScanner {
     private static class GroovyStructureItem implements StructureItem {
         private final AstElement node;
         private final ElementKind kind;
-        private final CompilationInfo info;
+        private final ParserResult info;
         private final BaseDocument doc;
 
-        private GroovyStructureItem(AstElement node, CompilationInfo info) {
+        private GroovyStructureItem(AstElement node, ParserResult info) {
             this.node = node;
             this.kind = node.getKind();
             this.info = info;
-            this.doc = (BaseDocument) info.getDocument();
+            this.doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         }
 
         public String getName() {

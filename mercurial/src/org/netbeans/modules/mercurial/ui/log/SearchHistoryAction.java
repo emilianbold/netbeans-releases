@@ -105,7 +105,7 @@ public class SearchHistoryAction extends ContextAction {
                     File[] files = s.toArray(new File[s.size()]);
                     if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
                         tc.search();
-                    }                                
+                    }
                 }
             }
         });
@@ -217,6 +217,24 @@ public class SearchHistoryAction extends ContextAction {
         tc.search();
     }
 
+    /**
+     * Opens search panel with a diff view fixed on a line
+     * @param file file to search history for
+     * @param lineNumber number of a line to fix on
+     */
+    public static void openSearch(final File file, final int lineNumber) {
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(file, new SearchHistoryTopComponent.DiffResultsViewFactory() {
+            @Override
+            DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+                return new DiffResultsViewForLine(panel, results, lineNumber);
+            }
+        });
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", file.getName()); // NOI18N
+        tc.setDisplayName(tcTitle);
+        tc.open();
+        tc.requestActive();
+    }
+
     private static VCSContext getDefaultContext() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         
@@ -239,4 +257,4 @@ public class SearchHistoryAction extends ContextAction {
         tc.search();
     }
 
-    }
+}

@@ -7,6 +7,7 @@ Searchable Keys:
   fqn : ActiveRecord
   method : columns(table_name,name)
   method : indexes(table_name,name)
+  require : postgresql_adapter
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|MODULE|;117

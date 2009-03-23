@@ -38,18 +38,19 @@ import org.jruby.nb.ast.IterNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditRegions;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.EditRegions;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -99,7 +100,7 @@ public class BlockVarReuse extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         if (node.nodeId == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
@@ -118,7 +119,7 @@ public class BlockVarReuse extends RubyAstRule {
 
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range != OffsetRange.NONE) {
-                        Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
+                        Hint desc = new Hint(this, getDisplayName(), RubyUtils.getFileObject(info), range, fixList, 100);
                         result.add(desc);
                     }
                 }
@@ -161,19 +162,19 @@ public class BlockVarReuse extends RubyAstRule {
             }
 
             // Initiate synchronous editing:
-            EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
+            EditRegions.getInstance().edit(RubyUtils.getFileObject(context.parserResult), ranges, caretOffset);
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
             } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }

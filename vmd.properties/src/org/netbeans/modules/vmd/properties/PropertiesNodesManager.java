@@ -51,7 +51,9 @@ import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
@@ -152,7 +154,7 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
                         }
                     });
                 }
-                
+
             }
             cleanUpAll(c);
         }
@@ -167,6 +169,14 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
+                    if (document == null) {
+                        return;
+                    }
+
+                    DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+                    if (context == null) {
+                        return;
+                    }
                     PropertiesNodesManager.this.updatePropertyEditorsValues(selectedComponents);
                     PropertiesNodesManager.this.updateSheet(selectedComponents);
                 }

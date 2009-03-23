@@ -40,12 +40,11 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
-import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -55,27 +54,31 @@ import org.openide.filesystems.FileUtil;
  */
 public class LuceneIndexFactory implements IndexFactoryImpl {
 
-    public IndexDocumentImpl createDocument() {
-        return new LuceneDocument();
+    public IndexDocumentImpl createDocument(final Indexable indexable) {
+        assert indexable !=null;
+        return new LuceneDocument(indexable);
     }
 
     public IndexImpl createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
+        final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
     }
 
-    public IndexImpl getIndex(final Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder);
+    public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
+        final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
+        if (luceneIndexFolder.isValid() && luceneIndexFolder.isFolder() && luceneIndexFolder.getChildren(false).hasMoreElements()) {
+            // the index exists on the disk so force the manager to create LuceneIndex instance for it
+            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
+        } else {
+            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), false);
+        }
     }
 
-    private URL getIndexFolder (final Context ctx) throws IOException {
-        final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = null;
-        final String indexerVersion = null;
+    private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {
+        assert indexFolder != null;
         final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
-        return luceneIndexFolder.getURL();
+        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
+        return luceneIndexFolder;
     }
 
 }

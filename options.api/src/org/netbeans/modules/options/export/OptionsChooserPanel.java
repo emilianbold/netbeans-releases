@@ -39,7 +39,6 @@
 package org.netbeans.modules.options.export;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -47,30 +46,23 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.UIResource;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import org.netbeans.swing.outline.CheckRenderDataProvider;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
-import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
@@ -84,9 +76,11 @@ import org.openide.util.NbBundle;
 public final class OptionsChooserPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(OptionsChooserPanel.class.getName());
+    private static final Icon NODE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/options/export/defaultNode.gif", true);  //NOI18N
     private DialogDescriptor dialogDescriptor;
     private PanelType panelType;
     private OptionsExportModel optionsExportModel;
+    private TreeModel treeModel;
 
     /** To distinguish between import and export panels. */
     private enum PanelType {
@@ -96,6 +90,9 @@ public final class OptionsChooserPanel extends JPanel {
 
     private OptionsChooserPanel() {
         initComponents();
+        Mnemonics.setLocalizedText(btnBrowse, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse"));
+        Mnemonics.setLocalizedText(lblFile, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblFile.text"));
+        Mnemonics.setLocalizedText(lblHint, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblHint.text"));
     }
 
     private void setOptionsExportModel(OptionsExportModel optionsExportModel) {
@@ -157,8 +154,8 @@ public final class OptionsChooserPanel extends JPanel {
         LOGGER.fine("showImportDialog");  //NOI18N
         OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
         optionsChooserPanel.txtFile.setEditable(false);
-        optionsChooserPanel.lblFile.setText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblFile.text"));
-        optionsChooserPanel.lblHint.setText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblHint.text"));
+        Mnemonics.setLocalizedText(optionsChooserPanel.lblFile, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblFile.text"));
+        Mnemonics.setLocalizedText(optionsChooserPanel.lblHint, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblHint.text"));
         optionsChooserPanel.panelType = PanelType.IMPORT;
 
         DialogDescriptor dd = new DialogDescriptor(
@@ -210,39 +207,46 @@ public final class OptionsChooserPanel extends JPanel {
     private Outline getOutline() {
         Outline outline = new Outline();
         outline.setModel(DefaultOutlineModel.createOutlineModel(
-                getOptionsTreeModel(getOptionsExportModel()),
+                getOptionsTreeModel(),
                 new OptionsRowModel(),
                 true,
                 NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.header.tree")));
         outline.setRenderDataProvider(new OptionsTreeDataProvider());
-        outline.setRootVisible(false);
+        //outline.setRootVisible(false);
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setColumnHidingAllowed(false);
-        outline.setDefaultRenderer(Boolean.class, new BooleanRenderer());
+        // a11y
+        outline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AN"));
+        outline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AD"));
+        lblHint.setLabelFor(outline);
         return outline;
     }
 
     /** Returns tree model based on current state of this model. */
-    private TreeModel getOptionsTreeModel(OptionsExportModel optionsExportModel) {
-        LOGGER.fine("getOptionsTreeModel - " + optionsExportModel);  //NOI18N
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-        for (OptionsExportModel.Category category : optionsExportModel.getCategories()) {
-            LOGGER.fine("category=" + category);  //NOI18N
-            DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
-            List<OptionsExportModel.Item> items = category.getItems();
-            for (OptionsExportModel.Item item : items) {
-                LOGGER.fine("    item=" + item);  //NOI18N
-                if (item.isApplicable()) {
-                    categoryNode.add(new DefaultMutableTreeNode(item));
+    private TreeModel getOptionsTreeModel() {
+        if (treeModel == null) {
+            LOGGER.fine("getOptionsTreeModel - " + getOptionsExportModel());  //NOI18N
+            String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
+            for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
+                LOGGER.fine("category=" + category);  //NOI18N
+                DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
+                List<OptionsExportModel.Item> items = category.getItems();
+                for (OptionsExportModel.Item item : items) {
+                    LOGGER.fine("    item=" + item);  //NOI18N
+                    if (item.isApplicable()) {
+                        categoryNode.add(new DefaultMutableTreeNode(item));
+                    }
+                }
+                if (categoryNode.getChildCount() != 0) {
+                    // do not show category node if it has no children
+                    rootNode.add(categoryNode);
+                    updateCategoryNode(categoryNode);
                 }
             }
-            if (categoryNode.getChildCount() != 0) {
-                // do not show category node if it has no children
-                rootNode.add(categoryNode);
-                updateCategoryNode(categoryNode);
-            }
+            treeModel = new DefaultTreeModel(rootNode);
         }
-        return new DefaultTreeModel(rootNode);
+        return treeModel;
     }
 
     private String getSelectedFilePath() {
@@ -258,7 +262,7 @@ public final class OptionsChooserPanel extends JPanel {
         if (panelType == PanelType.IMPORT) {
             if (txtFile.getText().length() == 0) {
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.file.warning"));
-            } else if (!getOptionsExportModel().isEnabled()) {
+            } else if (getOptionsExportModel().getState() == OptionsExportModel.State.DISABLED) {
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.nooption.warning"));
             } else {
                 dialogDescriptor.getNotificationLineSupport().clearMessages();
@@ -267,7 +271,7 @@ public final class OptionsChooserPanel extends JPanel {
         } else {
             if (txtFile.getText().length() == 0 || !txtFile.getText().endsWith(".zip")) {  //NOI18N
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.warning"));
-            } else if (!getOptionsExportModel().isEnabled()) {
+            } else if (getOptionsExportModel().getState() == OptionsExportModel.State.DISABLED) {
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.nooption.warning"));
             } else {
                 dialogDescriptor.getNotificationLineSupport().clearMessages();
@@ -294,6 +298,7 @@ public final class OptionsChooserPanel extends JPanel {
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblHint.text")); // NOI18N
 
+        lblFile.setLabelFor(txtFile);
         lblFile.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblFile.text")); // NOI18N
 
         btnBrowse.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse")); // NOI18N
@@ -310,14 +315,14 @@ public final class OptionsChooserPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(scrollPaneOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                    .add(scrollPaneOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lblFile)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                        .add(txtFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnBrowse))
-                    .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE))
+                    .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -334,125 +339,69 @@ public final class OptionsChooserPanel extends JPanel {
                 .add(scrollPaneOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        txtFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.txtFile.AD")); // NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse.AN")); // NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse.AD")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
         FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(OptionsChooserPanel.class);
         fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
         fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
-        fileChooserBuilder.setApproveText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve"));
+        fileChooserBuilder.setFileHiding(true);
+        String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
+        fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.file.chooser.title"));
+            File selectedFile = fileChooserBuilder.showOpenDialog();
+            if (selectedFile != null) {
+                txtFile.setText(selectedFile.getAbsolutePath());
+                setOptionsExportModel(new OptionsExportModel(selectedFile));
+                scrollPaneOptions.setViewportView(getOutline());
+                dialogDescriptor.setValid(isPanelValid());
+            }
         } else {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.title"));
-        }
-
-        JFileChooser fileChooser = fileChooserBuilder.createFileChooser();
-        if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
-            txtFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
-            if (panelType == PanelType.IMPORT) {
-                setOptionsExportModel(new OptionsExportModel(fileChooser.getSelectedFile()));
-                scrollPaneOptions.setViewportView(getOutline());
+            JFileChooser fileChooser = fileChooserBuilder.createFileChooser();
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showDialog(this, approveText)) {
+                String selectedFileName = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!selectedFileName.endsWith(".zip")) {  //NOI18N
+                    selectedFileName += ".zip";  //NOI18N
+                }
+                txtFile.setText(selectedFileName);
+                dialogDescriptor.setValid(isPanelValid());
             }
-            dialogDescriptor.setValid(isPanelValid());
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 
-
-    /** Custom BooleanRenderer to visualize PARTIAL state. Inspired by org.openide.explorer.propertysheet.Boolean3WayEditor. */
-    private static class BooleanRenderer extends JCheckBox implements TableCellRenderer, UIResource {
-
-        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-
-        public BooleanRenderer() {
-            super();
-            setHorizontalAlignment(JLabel.CENTER);
-            setBorderPainted(true);
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
-            } else {
-                setForeground(table.getForeground());
-                setBackground(table.getBackground());
-            }
-            setSelected((value != null && ((Boolean) value).booleanValue()));
-            if (value == null) {
-                // visualize PARTIAL state
-                getModel().setArmed(true);
-                getModel().setPressed(true);
-                setSelected(true);
-            } else {
-                getModel().setArmed(false);
-                getModel().setPressed(false);
-            }
-
-            if (hasFocus) {
-                setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));  //NOI18N
-            } else {
-                setBorder(noFocusBorder);
-            }
-
-            return this;
-        }
-    }
 
     /** Defines presentation of table. */
     private class OptionsRowModel implements RowModel {
 
         public Class getColumnClass(int column) {
-            return Boolean.class;
+            return null;
         }
 
         public int getColumnCount() {
-            return 1;
+            return 0;
         }
 
         public String getColumnName(int column) {
-            return NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.header.included");
+            return null;
         }
 
         public Object getValueFor(Object node, int column) {
-            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
-            if (userObject instanceof OptionsExportModel.Category) {
-                // 3 states - see BooleanRenderer
-                if (((OptionsExportModel.Category) userObject).getState() == OptionsExportModel.State.ENABLED) {
-                    return true;
-                } else if (((OptionsExportModel.Category) userObject).getState() == OptionsExportModel.State.DISABLED) {
-                    return false;
-                } else {
-                    return null;
-                }
-            } else if (userObject instanceof OptionsExportModel.Item) {
-                return ((OptionsExportModel.Item) userObject).isEnabled();
-            }
-            // root node
             return null;
         }
 
         public boolean isCellEditable(Object node, int column) {
-            return column == 0;
+            return false;
         }
 
         public void setValueFor(Object node, int column, Object value) {
-            assert column == 0;
-            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
-            if (userObject instanceof OptionsExportModel.Category) {
-                if (Boolean.valueOf(value.toString())) {
-                    ((OptionsExportModel.Category) userObject).setState(OptionsExportModel.State.ENABLED);
-                } else {
-                    ((OptionsExportModel.Category) userObject).setState(OptionsExportModel.State.DISABLED);
-                }
-            } else if (userObject instanceof OptionsExportModel.Item) {
-                ((OptionsExportModel.Item) userObject).setEnabled(Boolean.valueOf(value.toString()));
-                // update parent category
-                Object parent = ((TreeNode) node).getParent();
-                updateCategoryNode((DefaultMutableTreeNode) parent);
-
-            }
-            dialogDescriptor.setValid(isPanelValid());
         }
     }
 
@@ -477,15 +426,16 @@ public final class OptionsChooserPanel extends JPanel {
     }
 
     /** Defines visual appearance of tree. */
-    private static class OptionsTreeDataProvider implements RenderDataProvider {
-
-        private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/options/export/defaultNode.gif", true);  //NOI18N
+    private class OptionsTreeDataProvider implements CheckRenderDataProvider {
 
         public Color getBackground(Object node) {
             return null;
         }
 
         public String getDisplayName(Object node) {
+            if (node == null) {
+                return null;
+            }
             Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
             if (userObject instanceof OptionsExportModel.Category) {
                 return ((OptionsExportModel.Category) userObject).getDisplayName();
@@ -502,7 +452,7 @@ public final class OptionsChooserPanel extends JPanel {
         }
 
         public Icon getIcon(Object o) {
-            return ICON;
+            return NODE_ICON;
         }
 
         public String getTooltipText(Object o) {
@@ -511,6 +461,49 @@ public final class OptionsChooserPanel extends JPanel {
 
         public boolean isHtmlDisplayName(Object o) {
             return false;
+        }
+
+        public boolean isCheckable(Object node) {
+            return true;
+        }
+
+        public boolean isCheckEnabled(Object node) {
+            return true;
+        }
+
+        public Boolean isSelected(Object node) {
+            if (node == null) {
+                return false;
+            }
+            if (((DefaultMutableTreeNode) node).isRoot()) {
+                return getOptionsExportModel().getState().toBoolean();
+            }
+            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+            if (userObject instanceof OptionsExportModel.Category) {
+                return ((OptionsExportModel.Category) userObject).getState().toBoolean();
+            } else if (userObject instanceof OptionsExportModel.Item) {
+                return ((OptionsExportModel.Item) userObject).isEnabled();
+            }
+            // should not happen
+            assert false : "Node not recognized " + node;  //NOI18N
+            return false;
+        }
+
+        public void setSelected(Object node, Boolean selected) {
+            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+            if (((DefaultMutableTreeNode) node).isRoot()) {
+                getOptionsExportModel().setState(OptionsExportModel.State.valueOf(selected));
+            } else if (userObject instanceof OptionsExportModel.Category) {
+                ((OptionsExportModel.Category) userObject).setState(OptionsExportModel.State.valueOf(selected));
+            } else if (userObject instanceof OptionsExportModel.Item) {
+                ((OptionsExportModel.Item) userObject).setEnabled(selected);
+                // update parent category
+                Object parent = ((TreeNode) node).getParent();
+                updateCategoryNode((DefaultMutableTreeNode) parent);
+            }
+            // fire an event to refresh parent or child nodes
+            ((DefaultTreeModel) getOptionsTreeModel()).nodeChanged((TreeNode) node);
+            dialogDescriptor.setValid(isPanelValid());
         }
     }
 

@@ -57,9 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemManager.VersionPredicate;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -879,21 +878,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     private void updateIndexRoots() {
-        if (!indexInitialized) {
-            indexInitialized = true;
-            // HACK, fix soon
-            // Let RepositoryUpdater and friends know where they can root preindexing
-            // This should be done in a cleaner way.
-            //org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
-
-            org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
-
-            if (hasRubyGemsInstalled()) {
-                FileObject gemFo = getGemManager().getGemHomeFO();
-                org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
-            }
-
-        }
+        // XXX - Parsing API
+//        if (!indexInitialized) {
+//            indexInitialized = true;
+//            // HACK, fix soon
+//            // Let RepositoryUpdater and friends know where they can root preindexing
+//            // This should be done in a cleaner way.
+//            //org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
+//
+//            org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
+//
+//            if (hasRubyGemsInstalled()) {
+//                FileObject gemFo = getGemManager().getGemHomeFO();
+//                org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
+//            }
+//
+//        }
     }
 
     /**
@@ -904,7 +904,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         updateIndexRoots();
 
         // Ensure that source cache is wiped and classpaths recomputed for existing files
-        Source.clearSourceCache();
+        // XXX - Parsing API
+//        Source.clearSourceCache();
 
         if (pcs != null) {
             pcs.firePropertyChange("roots", null, null); // NOI18N
@@ -1059,22 +1060,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1.4"; // NOI18N
-            info.patchlevel = "114"; // NOI18N
+            info.jversion = "1.2.0"; // NOI18N
+            info.patchlevel = "287"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2008-08-28"; // NOI18N
+            info.releaseDate = "2009-03-16"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1.4", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.2.0", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.2.0"; // NOI18N
+            info.gemVersion = "1.3.1"; // NOI18N
             return info;
         }
 

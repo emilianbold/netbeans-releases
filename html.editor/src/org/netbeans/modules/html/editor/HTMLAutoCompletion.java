@@ -38,21 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.html.editor;
-
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-
 import org.netbeans.api.html.lexer.HTMLTokenId;
-
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 
 /**
@@ -63,10 +56,7 @@ import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
  * KeyTyped, DeletePreviousChar.
  */
 public class HTMLAutoCompletion {
-    
-    //an index of lastly completed equals sign
-    private static int  equalsSignInsertedOffset = -1;
-    
+
     /**
      * A hook method called after a character was inserted into the
      * document. The function checks for special characters for
@@ -83,100 +73,73 @@ public class HTMLAutoCompletion {
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-            if (ch == '=') {
-                completeQuotes(doc, dotPos, caret);
-            } else if(ch == '"') {
-                //user has pressed quotation mark
-                handleQuotationMark(doc, dotPos, caret);
-            } else {
-                //user has pressed a key so I need to cancel the "quotation consuming mode"
-                equalsSignInsertedOffset = -1;
-            }
-    }
-    
-    //called when user deleted something in the document
-    static void charDeleted(BaseDocument doc, int dotPos, Caret caret, char ch) {
-        equalsSignInsertedOffset = -1;
-    }
-    
-    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
-        if(equalsSignInsertedOffset != -1) {
-            //test whether the cursor is between completed quotations: attrname="|"
-            //this situation can happen when user autocompletes ="|",
-            //moves cursor somewhere else and type "
-            if(dotPos == (equalsSignInsertedOffset + ("=\"".length()))) {
-                //remove the quotation mark
-                doc.remove(dotPos,1);
-                caret.setDot(dotPos);
-            }
-            
-        } else {
-            //test whether the user typed an ending quotation in the attribute value
-            doc.readLock();
-            try {
-//                TokenHierarchy hi = TokenHierarchy.get(doc);
-//                TokenSequence ts = hi.tokenSequence();
-                
-                TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
-                if (ts == null) {
-                    return; //no html ts at the caret position
-                }
-                ts.move(dotPos);
-                if(!ts.moveNext()) {
-                    return ; //no token
-                }
-                
-                Token token = ts.token();
-                if(token.id() == HTMLTokenId.VALUE) {
-                    //test if the user inserted the qutation in an attribute value and before
-                    //an already existing end quotation
-                    //the text looks following in such a situation:
-                    //
-                    //  atrname="abcd|"", where offset of the | == dotPos
-                    if("\"\"".equals(doc.getText(dotPos , 2))) {
-                        doc.remove(dotPos,1);
-                        caret.setDot(dotPos+1);
-                    }
-                }
-            }finally {
-                doc.readUnlock();
-            }
+        if (ch == '=') {
+            completeQuotes(doc, dotPos, caret);
+        } else if (ch == '"') {
+            //user has pressed quotation mark
+            handleQuotationMark(doc, dotPos, caret);
         }
-        //reset the semaphore
-        equalsSignInsertedOffset = -1;
     }
-    
-    private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException{
+
+    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
+        //test whether the user typed an ending quotation in the attribute value
         doc.readLock();
         try {
-//            TokenHierarchy hi = TokenHierarchy.get(doc);
-//            TokenSequence ts = hi.tokenSequence();
-            
             TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
-            if(ts == null) {
-                return ; //no html ts at the caret position
+            if (ts == null) {
+                return; //no html ts at the caret position
             }
-            ts.move(dotPos);
-            if(!ts.moveNext()) {
-                return ; //no token
+            int diff = ts.move(dotPos);
+            if (!ts.moveNext()) {
+                return; //no token
             }
-            
+
             Token token = ts.token();
-            
-            int dotPosAfterTypedChar = dotPos + 1;
-            if(token != null &&
-                    token.id() == HTMLTokenId.OPERATOR) {
-                doc.insertString( dotPosAfterTypedChar, "\"\"" , null);
-                caret.setDot(dotPosAfterTypedChar + 1);
-                //mark the last autocomplete position
-                equalsSignInsertedOffset = dotPos;
+            if (token.id() == HTMLTokenId.VALUE) {
+                //test if the user inserted the qutation in an attribute value and before
+                //an already existing end quotation
+                //the text looks following in such a situation:
+                //
+                //  atrname="abcd|"", where offset of the | == dotPos
+                if ("\"\"".equals(doc.getText(dotPos, 2))) {
+                    doc.remove(dotPos, 1);
+                    caret.setDot(dotPos + 1);
+                } else if(diff == 0 && token.text().charAt(0) == '"') {
+                    //user typed quation just after equal sign after tag attribute name => complete the second quote
+                    doc.insertString(dotPos, "\"", null);
+                    caret.setDot(dotPos + 1);
+                }
             }
-            
-        }finally {
+        } finally {
             doc.readUnlock();
         }
-        
+
     }
-    
-    
+
+    private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
+        doc.readLock();
+        try {
+            TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
+            if (ts == null) {
+                return; //no html ts at the caret position
+            }
+            ts.move(dotPos);
+            if (!ts.moveNext()) {
+                return; //no token
+            }
+
+            Token token = ts.token();
+
+            int dotPosAfterTypedChar = dotPos + 1;
+            if (token != null &&
+                    token.id() == HTMLTokenId.OPERATOR) {
+                doc.insertString(dotPosAfterTypedChar, "\"\"", null);
+                caret.setDot(dotPosAfterTypedChar + 1);
+            }
+
+        } finally {
+            doc.readUnlock();
+        }
+
+    }
 }

@@ -96,7 +96,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 if (e.getClickCount() > 1 && e.getButton() == MouseEvent.BUTTON1) {
-                    NBVersionInfo info = (NBVersionInfo) lstVersions.getSelectedValue();
+                    Object obj = lstVersions.getSelectedValue();
+                    if (obj instanceof String) {
+                       //Loading.. text #160353
+                        return;
+                    }
+                    NBVersionInfo info = (NBVersionInfo) obj;
                     if (info != null) {
                         int pos = callback.getTopComponent().getTabPosition();
                         ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);

@@ -58,6 +58,9 @@ class AccController {
     /** array of ProtectionDomains */
     static Field context;
 
+    static void init() {
+    }
+
     static Field getContextField() throws Exception {
         if (context == null) {
             Field ctx;

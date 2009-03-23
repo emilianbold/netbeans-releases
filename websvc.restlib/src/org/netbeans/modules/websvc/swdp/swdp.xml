@@ -68,4 +68,10 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/jersey-api-doc.zip!/</resource>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://download.java.net/maven/1/com.sun.xml.bind/poms/jaxb-impl-2.1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.0/jersey-server-1.0.pom</resource>
+    </volume>
 </library>

@@ -39,18 +39,15 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 
 
@@ -165,6 +162,10 @@ public abstract class IndexedElement extends PHPElement {
         return fileUrl;
     }
 
+    public boolean isPlatform(){
+        return false; //TODO implement me
+    }
+
     public Document getDocument() throws IOException {
         if (document == null) {
             FileObject fo = getFileObject();
@@ -177,17 +178,6 @@ public abstract class IndexedElement extends PHPElement {
         }
 
         return document;
-    }
-
-    public ParserFile getFile() {
-        FileObject fobj = getFileObject();
-        boolean platform = false;
-        
-        if (fobj != null) {
-            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
-            platform = fileType == PhpSourcePath.FileType.INTERNAL;
-        }
-        return new DefaultParserFile(fobj, null, platform);
     }
 
     @Override
@@ -317,5 +307,4 @@ public abstract class IndexedElement extends PHPElement {
     public int getFlags() {
         return flags;
     }
-    
 }

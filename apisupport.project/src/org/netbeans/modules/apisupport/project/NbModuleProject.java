@@ -784,7 +784,7 @@ public final class NbModuleProject implements Project {
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
         String buildImplPath =
                     customPlatform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
-                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                     ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,

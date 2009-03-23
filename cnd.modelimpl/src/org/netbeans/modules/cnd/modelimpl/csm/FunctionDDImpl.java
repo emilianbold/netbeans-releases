@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
@@ -100,10 +101,14 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmProject prj = getContainingFile().getProject();
         CsmDeclaration decl = findDeclaration(prj, uname);
-        if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
-            return (CsmFunction) decl;
+        if (decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION) {
+            if (!isStatic() || CsmKindUtilities.isClassMember(this)
+                    || !CsmKindUtilities.isOffsetableDeclaration(decl)
+                    || getContainingFile().equals(((CsmOffsetableDeclaration)decl).getContainingFile())) {
+                return (CsmFunction) decl;
+            }
         }
-        for (CsmProject lib : prj.getLibraries()){
+        for (CsmProject lib : prj.getLibraries()) {
             CsmFunction def = findDeclaration(lib, uname);
             if (def != null) {
                 return def;

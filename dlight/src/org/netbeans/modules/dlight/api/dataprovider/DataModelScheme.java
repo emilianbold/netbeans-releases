@@ -94,6 +94,11 @@ public final class DataModelScheme {
         return other.getID().equals(this.id);
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
+
     private static final class DataModelSchemeAccessorImpl extends DataModelSchemeAccessor {
 
         @Override

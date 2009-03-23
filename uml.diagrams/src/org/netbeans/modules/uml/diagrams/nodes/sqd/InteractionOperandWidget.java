@@ -327,7 +327,6 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
                 label.refresh(false);
             }
         }
-//        System.out.println(" NodeLabels = " + nodeLabels.toString());
     }
             
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {

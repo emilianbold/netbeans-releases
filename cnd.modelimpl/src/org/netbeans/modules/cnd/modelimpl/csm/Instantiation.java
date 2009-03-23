@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedPro
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -157,8 +159,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Class((CsmClass)template, type);
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, type);
+        } else {
+            if (CndUtils.isDebugMode()) {
+                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+            }
         }
-        assert false : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
     
@@ -167,11 +172,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Class((CsmClass)template, mapping);
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
+        } else {
+            if (CndUtils.isDebugMode()) {
+                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+            }
         }
-        assert false : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
-    
+
     public CsmFile getContainingFile() {
         return getTemplateDeclaration().getContainingFile();
     }
@@ -583,7 +591,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public CsmClass getCsmClass() {
             if (csmClass == null) {
-                csmClass = (CsmClass)Instantiation.create((CsmTemplate)declaration.getCsmClass(), getMapping());
+                CsmClass declClassifier = declaration.getCsmClass();
+                if (CsmKindUtilities.isTemplate(declClassifier)) {
+                    csmClass = (CsmClass)Instantiation.create((CsmTemplate)declClassifier, getMapping());
+                } else {
+                    csmClass = declClassifier;
+                }
             }
             return csmClass;
         }
@@ -741,7 +754,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-    
+
     private static Type createType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
@@ -789,6 +802,23 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
                 newType = instantiation.getMapping().get(paramType.getParameter());
                 if (newType != null) {
+                    CsmTemplateParameter p = paramType.getParameter();
+                    if (CsmKindUtilities.isTemplate(p)) {
+                        CsmType paramTemplateType = paramType.getTemplateType();
+                        if (paramTemplateType != null) {
+                            List<CsmType> paramInstParams = paramTemplateType.getInstantiationParams();
+                            if (paramInstParams != null && !paramInstParams.isEmpty()) {
+                                List<CsmType> newInstParams = newType.getInstantiationParams();
+                                if(newInstParams != null) {
+                                    for (CsmType csmType : paramInstParams) {
+                                        if(!newInstParams.contains(csmType)) {
+                                            newInstParams.add(csmType);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     origType = paramType.getTemplateType();
                 } else {
                     newType = type;
@@ -946,7 +976,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     } else {
                         classifier = originalType.getClassifier();
                     }
-                    if (CsmKindUtilities.isTemplate(classifier)) {
+                    if (CsmKindUtilities.isTemplate(classifier) &&
+                            !CsmKindUtilities.isTemplateParameter(classifier)) {
                         resolved = (CsmClassifier)Class.create(
                                 (CsmTemplate)classifier, instantiation.getMapping());
                         return resolved;

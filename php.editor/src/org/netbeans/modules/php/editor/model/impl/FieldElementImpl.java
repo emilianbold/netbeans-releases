@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;

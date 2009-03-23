@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver.class)
-public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
+public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
     public TypeHierarchyResolverImpl() {
     }

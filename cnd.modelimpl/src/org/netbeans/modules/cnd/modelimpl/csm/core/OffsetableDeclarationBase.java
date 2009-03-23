@@ -117,6 +117,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:  
             case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
+            case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
+            case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                 _template = true;
                 break;
             case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
@@ -179,7 +181,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             int inheritedTemplateParametersNumber = 0;
             if(templateClass){
                 templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
-                    getContainingFile(), scope);
+                    getContainingFile(), scope, global);
                 inheritedTemplateParametersNumber = templateParams.size();
             }
             CharSequence templateSuffix = "";
@@ -202,10 +204,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }                
                 if(templateParams != null) {
                     templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope));
+                        getContainingFile(), scope, global));
                 } else {
                     templateParams = TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope);                    
+                        getContainingFile(), scope, global);
                 }
             }            
             return new TemplateDescriptor(

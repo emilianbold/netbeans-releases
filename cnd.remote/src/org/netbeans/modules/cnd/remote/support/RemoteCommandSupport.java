@@ -38,16 +38,16 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.Exceptions;
 
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
@@ -75,33 +75,54 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public int run() {
         if (!isFailedOrCancelled()) {
-            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
+            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
             try {
-                channel = createChannel();
-                InputStream is = channel.getInputStream();
+//                final String substitutedCommand = substituteCommand();
+                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+                pb = pb.addEnvironmentVariables(env);
+                Process process = pb.call();
+                InputStream is = process.getInputStream();
+                if (is == null) { // otherwise we can get an NPE in reader
+                    throw new IOException("process (" + process.getClass().getName() + ") returned null input stream"); //NOI18N
+                }
                 in = new BufferedReader(new InputStreamReader(is));
                 out = new StringWriter();
-
                 String line;
-                while ((line = in.readLine()) != null || !channel.isClosed()) {
+                while ((line = in.readLine()) != null) {
                     if (line != null) {
                         out.write(line + '\n');
                         out.flush();
                     }
                 }
-                try {
-                    Thread.sleep(100); // according to jsch samples
-                } catch (InterruptedException e) {
+// TODO (execution) should we revive this?
+//                try {
+//                    Thread.sleep(100); // according to jsch samples
+//                } catch (InterruptedException e) {
+//                }
+                int rc = process.waitFor();
+                log.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
+                if (rc != 0 && log.isLoggable(Level.FINEST)) {
+                    String errMsg;
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((errMsg = reader.readLine()) != null) {
+                        log.finest("RemoteCommandSupport ERROR: " + errMsg);
+                    }
                 }
-                in.close();
-                is.close();
-                setExitStatus(channel.getExitStatus());
-            } catch (JSchException jse) {
-                log.warning("Jsch failure during running " + cmd);
+                setExitStatus(rc);
+            } catch (InterruptedException ie) {
+                log.log(Level.WARNING, ie.getMessage(), ie);
             } catch (IOException ex) {
                 log.warning("IO failure during running " + cmd);
+//            } finally {
+//                disconnect();
             } finally {
-                disconnect();
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
         return getExitStatus();
@@ -124,47 +145,40 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         }
     }
 
-    public void setPreserveCommand(boolean value) {
-        preserveCommand = value;
-    }
+//    public void setPreserveCommand(boolean value) {
+//        preserveCommand = value;
+//    }
+//
+//    private boolean preserveCommand = true; // false;
 
-    private boolean preserveCommand = false;
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        StringBuilder cmdline = new StringBuilder();
-
-        if (!preserveCommand) {
-            if (env != null) {
-                // we can't use ssh env routine cause it allows only vars described by AllowEnv in /etc/ssh/sshd_config
-                // echannel.setEnv(ev, env.get(ev));
-
-                // so we do next
-                cmdline.append(ShellUtils.prepareExportString(env));
-            }
-
-            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();//NOI18N
-            if (env == null || env.get(pathName) == null) {
-                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin:$PATH"}));//NOI18N
-            }
-        } else {
-            assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong
-        }
-
-
-        cmdline.append(cmd);
-
-        String theCommand = cmdline.toString();
-
-        if (!preserveCommand) {
-            theCommand = ShellUtils.wrapCommand(key, theCommand);
-        }
-
-        echannel.setCommand(theCommand);
-        echannel.setInputStream(null);
-        //echannel.setErrStream(System.err);
-        echannel.connect();
-        return echannel;
-    }
+    //TODO (execution): ???
+//    private String substituteCommand() {
+//        StringBuilder cmdline = new StringBuilder();
+//        if (!preserveCommand) {
+//            if (env != null) {
+//                // we can't use ssh env routine cause it allows only vars described by AllowEnv in /etc/ssh/sshd_config
+//                // echannel.setEnv(ev, env.get(ev));
+//                // so we do next
+//                cmdline.append(ShellUtils.prepareExportString(env));
+//            }
+//
+//            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();//NOI18N
+//            if (env == null || env.get(pathName) == null) {
+//                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin:$PATH"}));//NOI18N
+//            }
+//        } else {
+//            assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong
+//        }
+//
+//
+//        cmdline.append(cmd);
+//
+//        String theCommand = cmdline.toString();
+//
+//        if (!preserveCommand) {
+//            theCommand = ShellUtils.wrapCommand(executionEnvironment, theCommand);
+//        }
+//
+//        return theCommand;
+//    }
 }

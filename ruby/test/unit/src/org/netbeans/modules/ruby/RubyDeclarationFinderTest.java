@@ -28,9 +28,9 @@
 
 package org.netbeans.modules.ruby;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,6 +41,11 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     
     public RubyDeclarationFinderTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
     public void testDeclaration1() throws Exception {
@@ -74,10 +79,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestDeclaration1() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-
         //TestFoo/test_bar => test/test_foo.rb:99
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar", false);
         assertTrue(loc != DeclarationLocation.NONE);
@@ -88,10 +89,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestDeclaration2() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-
         //MosModule::TestBaz/test_qux => test/test_baz.rb:88
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux", false);
         assertTrue(loc != DeclarationLocation.NONE);
@@ -102,9 +99,9 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestDeclarationIssue152703() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/rd_threads_and_frames_test.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+//        GsfTestCompilationInfo info = getInfo(fo);
+//        assertNotNull(AstUtilities.getRoot(info));
+//        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "RDThreadsAndFrames/test_frames", false, false);
         assertTrue(loc != DeclarationLocation.NONE);
@@ -115,10 +112,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestClassDeclaration() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-
         //TestFoo/test_bar => test/test_foo.rb:0 (offset for the class declaration)
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar", true);
         assertTrue(loc != DeclarationLocation.NONE);
@@ -129,10 +122,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestClassDeclaration2() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux", true);
         assertTrue(loc != DeclarationLocation.NONE);
         assertEquals("testfile.rb", loc.getFileObject().getNameExt());
@@ -142,10 +131,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestClassDeclarationWithNonExistingMethod() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-
         // tests that the class declaration is found even if the given method doesn't exist
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/a_non_existing_method", true);
         assertTrue(loc != DeclarationLocation.NONE);

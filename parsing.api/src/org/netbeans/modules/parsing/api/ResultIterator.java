@@ -68,6 +68,7 @@ public final class ResultIterator {
     private SourceCache     sourceCache;
     private UserTask        task;
     private Parser.Result   result;
+    private Parser          parser;
     
     static {
         ResultIteratorAccessor.setINSTANCE(new MyAccessor());
@@ -84,6 +85,16 @@ public final class ResultIterator {
         UserTask            task
     ) {
         this.sourceCache = sourceCache;
+        this.task = task;
+    }
+
+    ResultIterator (
+        SourceCache         sourceCache,
+        Parser              parser,
+        UserTask            task
+    ) {
+        this.sourceCache = sourceCache;
+        this.parser = parser;
         this.task = task;
     }
     
@@ -111,6 +122,8 @@ public final class ResultIterator {
      * @return              parse {@link Result} for current source.
      */
     public Result getParserResult () throws ParseException {
+        if (parser != null)
+            return parser.getResult (task);
         if (result == null)
             result = sourceCache.getResult (task);
         return result;
@@ -160,6 +173,7 @@ public final class ResultIterator {
                 sourceCache.getCache (embedding), 
                 task
             );
+            embeddingToResultIterator.put(embedding, resultIterator);
             children.add (resultIterator);
         }
         return resultIterator;

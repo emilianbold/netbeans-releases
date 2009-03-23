@@ -309,7 +309,8 @@ abstract public class DiagramEngine {
                     KeyStroke.getKeyStroke("ctrl alt shift S"),
                     KeyStroke.getKeyStroke("meta ctrl shift S")));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
-        
+        DesignerTools.mapToolToButton.put(DesignerTools.SELECT, selectToolButton);
+
         JToggleButton handToolButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.PAN, ImageUtil.instance().getIcon("pan.png"),

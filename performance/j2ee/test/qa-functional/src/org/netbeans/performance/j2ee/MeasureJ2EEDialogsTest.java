@@ -62,10 +62,10 @@ public class MeasureJ2EEDialogsTest {
         System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeEJBActionTest.class)
-        .addTest(InvokeWSActionTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeSBActionTest.class)
+        .addTest(InvokeEJBActionTest.class)
         .addTest(SelectJ2EEModuleDialogTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
 
         return suite;
     }

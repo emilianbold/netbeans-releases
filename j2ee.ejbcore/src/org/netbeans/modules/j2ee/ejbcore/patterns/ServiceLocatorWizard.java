@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public final class ServiceLocatorWizard implements WizardDescriptor.InstantiatingIterator {
+public final class ServiceLocatorWizard implements WizardDescriptor.AsynchronousInstantiatingIterator {
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private WizardDescriptor wiz;
