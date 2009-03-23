@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -26,10 +27,7 @@ import org.openide.util.NbBundle;
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final ChannelExec channel;
-    private InputStream out;
-    private InputStream err;
-    private OutputStream in;
+    private final ChannelStreams cstreams;
     private Integer exitValue = null;
 
     public RemoteNativeProcess(NativeProcessInfo info) throws IOException {
@@ -37,11 +35,11 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
         final String commandLine = info.getCommandLine();
         final ConnectionManager mgr = ConnectionManager.getInstance();
+        ChannelStreams cs = null;
 
-        ChannelExec echannel = null;
         synchronized (mgr) {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
-            
+
             try {
                 ConnectionManager.getInstance().connectTo(execEnv);
             } catch (Throwable ex) {
@@ -54,81 +52,66 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             if (session == null) {
                 throw new IOException("Unable to create remote session!"); // NOI18N
             }
+            
+            try {
+                cs = execCommand(session, HostInfoUtils.getShell(execEnv) + " -s"); // NOI18N
+            } catch (JSchException ex) {
+                throw new IOException("Unable to create remote session! " + ex.toString()); // NOI18N
+            }
+
+
+            cs.in.write("echo $$\n".getBytes()); // NOI18N
+            cs.in.flush();
+            readPID(cs.out);
+
 
             final String workingDirectory = info.getWorkingDirectory(true);
 
-            final Map<String, String> userEnv = getUserEnv(session);
+            if (workingDirectory != null) {
+                cs.in.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
+                cs.in.flush();
+            }
 
+            final Map<String, String> userEnv = getUserEnv(session);
             final Map<String, String> envVars = info.getEnvVariables(userEnv);
 
-            String envSetup = "";
-
             if (!envVars.isEmpty()) {
-                final StringBuilder envVarsAssign = new StringBuilder();
-                final StringBuilder envVarsExport = new StringBuilder();
-
                 for (String var : envVars.keySet()) {
-                    envVarsAssign.append(var + "='" + envVars.get(var) + "' ");
-                    envVarsExport.append(' ' + var);
+                    cs.in.write((var + "='" + envVars.get(var) + // NOI18N
+                            "' && export " + var + "\n").getBytes()); // NOI18N
+                    cs.in.flush();
                 }
-
-                envSetup = " && " + envVarsAssign.toString() + // NOI18N
-                        "&& export " + envVarsExport; // NOI18N
             }
 
-            final StringBuilder cmd = new StringBuilder();
-
-            if (workingDirectory != null) {
-                cmd.append("cd " + workingDirectory + " && "); // NOI18N
-            }
-
-            cmd.append("/bin/echo $$ " + envSetup + " && exec " + commandLine); // NOI18N
-
-            try {
-                echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                echannel.setCommand(cmd.toString());
-                echannel.connect();
-            } catch (JSchException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            cs.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+            cs.in.flush();
         }
 
-        channel = echannel;
-
-        try {
-            out = channel.getInputStream();
-            err = channel.getErrStream();
-            in = channel.getOutputStream();
-        } catch (Exception e) {
-            log.severe("Failed to get streams from ChannelExec"); // NOI18N
-            e.printStackTrace();
-        }
-
-        readPID(out);
+        cstreams = cs;
     }
 
     @Override
     public OutputStream getOutputStream() {
-        return in;
+        return cstreams.in;
     }
 
     @Override
     public InputStream getInputStream() {
-        return out;
+        return cstreams.out;
     }
 
     @Override
     public InputStream getErrorStream() {
-        return err;
+        return cstreams.err;
     }
 
     @Override
     public int waitResult() throws InterruptedException {
-        if (channel == null) {
+        if (cstreams.channel == null) {
             return -1;
         }
 
-        while (channel.isConnected()) {
+        while (cstreams.channel.isConnected()) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {
@@ -136,7 +119,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        exitValue = Integer.valueOf(channel.getExitStatus());
+        exitValue = Integer.valueOf(cstreams.channel.getExitStatus());
 
         return exitValue.intValue();
     }
@@ -145,8 +128,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
     @Override
     public void cancel() {
         synchronized (cancelLock) {
-            if (channel != null && channel.isConnected()) {
-                channel.disconnect();
+            if (cstreams.channel != null && cstreams.channel.isConnected()) {
+                cstreams.channel.disconnect();
 //                NativeTaskSupport.kill(execEnv, 9, getPID());
             }
         }
@@ -160,11 +143,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         Map<String, String> result = new HashMap<String, String>();
 
         try {
-            ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-            echannel.setCommand("/bin/env"); // NOI18N
-            echannel.connect();
-            InputStream is = echannel.getInputStream();
-
+            InputStream is = execCommand(session, "/bin/env").out; // NOI18N
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String s;
 
@@ -175,15 +154,62 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 }
 
                 int eidx = s.indexOf('=');
-                result.put(s.substring(0, eidx), s.substring(eidx + 1));
+                if (eidx > 0) {
+                    result.put(s.substring(0, eidx), s.substring(eidx + 1));
+                }
             }
 
         } catch (IOException ex) {
-            log.warning("Unable to fetch user's env"); // NOI18N
+            log.warning("Unable to fetch user's env " + ex.getMessage()); // NOI18N
         } catch (JSchException ex) {
-            log.warning("Unable to fetch user's env"); // NOI18N
+            log.warning("Unable to fetch user's env " + ex.getMessage()); // NOI18N
         }
 
         return result;
+    }
+
+    private ChannelStreams execCommand(
+            final Session session,
+            final String command) throws IOException, JSchException {
+        int retry = 2;
+
+        while (retry-- > 0) {
+            try {
+                ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+                echannel.setCommand(command);
+                echannel.connect();
+                return new ChannelStreams(echannel,
+                        echannel.getInputStream(),
+                        echannel.getErrStream(),
+                        echannel.getOutputStream());
+            } catch (JSchException ex) {
+                Throwable cause = ex.getCause();
+                if (cause != null && cause instanceof NullPointerException) {
+                    // Jsch bug... retry? ;)
+                } else {
+                    throw ex;
+                }
+            } catch (NullPointerException npe) {
+                // Jsch bug... retry? ;)
+            }
+        }
+
+        throw new IOException("Failed to execute " + command); // NOI18N
+    }
+
+    private static class ChannelStreams {
+
+        final InputStream out;
+        final InputStream err;
+        final OutputStream in;
+        final ChannelExec channel;
+
+        public ChannelStreams(ChannelExec channel, InputStream out,
+                InputStream err, OutputStream in) {
+            this.channel = channel;
+            this.out = out;
+            this.err = err;
+            this.in = in;
+        }
     }
 }

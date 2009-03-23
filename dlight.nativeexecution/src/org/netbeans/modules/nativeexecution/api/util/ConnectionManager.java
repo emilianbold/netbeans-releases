@@ -155,6 +155,10 @@ public final class ConnectionManager {
             char[] password,
             boolean storePassword) throws IOException, CancellationException {
 
+        if (env.isLocal()) {
+            return true;
+        }
+        
         synchronized (lock) {
             if (getSession(env) != null) {
                 // just return if already connected ...
@@ -273,7 +277,8 @@ public final class ConnectionManager {
 
             if (session != null) {
                 sessions.put(env.toString(), session);
-//            HostInfoUtils.updateHostInfo(env);
+                HostInfoUtils.updateHostInfo(env);
+                
                 log.info("New connection established: " + env.toString()); // NOI18N
                 return true;
             }
