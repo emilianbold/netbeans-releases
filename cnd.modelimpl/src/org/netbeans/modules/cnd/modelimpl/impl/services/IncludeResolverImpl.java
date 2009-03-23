@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -68,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  *
@@ -279,10 +279,13 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
              if (!file.equals(currentFile)) {
                 if (file.isHeaderFile()) {
-                    HashSet<CsmFile> scannedfiles = new HashSet<CsmFile>();
-                    if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
+                    if (((ProjectBase)currentFile.getProject()).getGraphStorage().isFileIncluded(currentFile, file)){
                         return true;
                     }
+                    //HashSet<CsmFile> scannedfiles = new HashSet<CsmFile>();
+                    //if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
+                    //    return true;
+                    //}
                 } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
                     HashSet<CsmProject> scannedprojects = new HashSet<CsmProject>();
                     if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
@@ -321,34 +324,38 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     // Says is at least one of variable declarations visible in current file
     private boolean isVariableDeclarationsVisible(CsmFile currentFile, Collection<CsmOffsetableDeclaration> decls) {
         for (CsmOffsetableDeclaration decl : decls) {
-            HashSet<CsmFile> scannedFiles = new HashSet<CsmFile>();
             if(decl.getContainingFile().equals(currentFile)) {
                 return true;
-            } else if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
+            }
+            if (((ProjectBase)currentFile.getProject()).getGraphStorage().isFileIncluded(currentFile, decl.getContainingFile())){
                 return true;
             }
+            //HashSet<CsmFile> scannedFiles = new HashSet<CsmFile>();
+            //if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
+            //    return true;
+            //}
         }
         return false;
     }
 
     // Says is file visible in includes
-    private boolean isFileVisibleInIncludeFiles(Collection<CsmInclude> includes, CsmFile file, HashSet<CsmFile> scannedFiles) {
-        for (CsmInclude inc : includes) {
-            CsmFile incFile = inc.getIncludeFile();
-            if (incFile != null) {
-                if (!scannedFiles.contains(incFile)) {
-                    scannedFiles.add(incFile);
-                    if (file.equals(incFile)) {
-                        return true;
-                    }
-                    if (isFileVisibleInIncludeFiles(incFile.getIncludes(), file, scannedFiles)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
+//    private boolean isFileVisibleInIncludeFiles(Collection<CsmInclude> includes, CsmFile file, HashSet<CsmFile> scannedFiles) {
+//        for (CsmInclude inc : includes) {
+//            CsmFile incFile = inc.getIncludeFile();
+//            if (incFile != null) {
+//                if (!scannedFiles.contains(incFile)) {
+//                    scannedFiles.add(incFile);
+//                    if (file.equals(incFile)) {
+//                        return true;
+//                    }
+//                    if (isFileVisibleInIncludeFiles(incFile.getIncludes(), file, scannedFiles)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     private boolean isSystemHeader(CsmFile currentFile, CsmFile header) {
         return !(currentFile.getProject().equals(header.getProject()));

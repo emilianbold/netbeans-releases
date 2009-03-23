@@ -1,4 +1,10 @@
 #!/bin/sh
+
+if [ "$__DL_PATH" != "" ]; then
+  PATH=$__DL_PATH
+  export PATH
+fi
+
 PROG=`basename $0`
 USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
 PROMPT=NO
