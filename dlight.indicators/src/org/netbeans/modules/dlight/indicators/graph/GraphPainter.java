@@ -130,7 +130,7 @@ class GraphPainter {
             invalidate();
 //            initCacheImage();
         }
-        if (TRACE) System.err.printf("PercentareGraph.setSize %d %d\n", width, height);
+        if (TRACE) { System.err.printf("PercentareGraph.setSize %d %d\n", width, height); }
     }
 
     public void setUpperLimit(int newScale) {
@@ -178,8 +178,10 @@ class GraphPainter {
                 dataWindowScroll++;
             }
             arrivedDataCount++;
-            if (TRACE) System.err.printf("addData; size=%d capacity=%d width=%d dataWindowScroll=%d arrivedDataCount=%d paintedDataCount=%d\n",
-                    data.size(), data.capacity(), getWidth(), dataWindowScroll,  arrivedDataCount, paintedDataCount);
+            if (TRACE) {
+                System.err.printf("addData; size=%d capacity=%d width=%d dataWindowScroll=%d arrivedDataCount=%d paintedDataCount=%d\n",
+                        data.size(), data.capacity(), getWidth(), dataWindowScroll, arrivedDataCount, paintedDataCount);
+            }
         }
      }
 
@@ -276,7 +278,7 @@ class GraphPainter {
 
         Stroke oldStroke = g2.getStroke();
 
-        if (TRACE) System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data);
+        if (TRACE) { System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data); }
         if (height < 1) {
             return;
         }
