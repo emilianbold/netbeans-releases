@@ -141,10 +141,17 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
-            setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY))); // NOI18N
         }
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
+        }
+        @Override
+        public Object getValue(String attributeName) {
+            if("sortkey".equals(attributeName)) {
+                return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY));
+            } else {
+                return super.getValue(attributeName);
+            }
         }
     }
 
@@ -154,10 +161,17 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
-            setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY))); // NOI18N
         }
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
+        }
+        @Override
+        public Object getValue(String attributeName) {
+            if("sortkey".equals(attributeName)) {
+                return getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY));
+            } else {
+                return super.getValue(attributeName);
+            }
         }
     }
 
@@ -186,10 +200,17 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
-            setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION))); // NOI18N
         }
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
+        }
+        @Override
+        public Object getValue(String attributeName) {
+            if("sortkey".equals(attributeName)) {
+                return getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION));
+            } else {
+                return super.getValue(attributeName);
+            }
         }
     }
 

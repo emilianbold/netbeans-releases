@@ -109,10 +109,9 @@ final class Memory {
 
         // find values map
 
-        Map attributes;
-        if (liveEntitiesMap.containsKey(key)) {
-            attributes = (Map) liveEntitiesMap.get(key);
-        } else {
+        Map attributes = null;
+        attributes = (Map) liveEntitiesMap.get(key);
+        if (attributes == null) {
             attributes = (Map) minimalMap.get(key);
             if (attributes == null) {
                 attributes = new HashMap(5);

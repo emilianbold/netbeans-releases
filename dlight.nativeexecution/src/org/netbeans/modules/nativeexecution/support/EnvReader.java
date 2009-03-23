@@ -36,23 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.nativeexecution.support;
 
-/**
- *
- * @author Alexey Vladykin
- */
-public abstract class GraphDetail {
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
-    private final String name;
+public final class EnvReader implements Callable<Map<String, String>> {
 
-    public GraphDetail(String name) {
-        this.name = name;
+    private final InputStream is;
+
+    public EnvReader(final InputStream is) {
+        this.is = is;
     }
 
-    public String getName() {
-        return name;
-    }
+    public Map<String, String> call() throws Exception {
+        Map<String, String> result = new HashMap<String, String>();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String s = null;
+        StringBuilder buffer = new StringBuilder();
 
-    public abstract String getValue();
+        while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            s = br.readLine();
+
+            if (s == null) {
+                break;
+            }
+
+            buffer.append(s.trim());
+
+            if (s.charAt(s.length() - 1) != '\\') {
+                String str = buffer.toString();
+                buffer.setLength(0);
+
+                int epos = str.indexOf('=');
+
+                if (epos < 0) {
+                    continue;
+                }
+
+                String var = str.substring(0, epos);
+                var = var.substring(var.lastIndexOf(' ') + 1);
+                String val = str.substring(epos + 2, str.length() - 1);
+
+                result.put(var, val);
+            }
+        }
+
+        return result;
+    }
 }

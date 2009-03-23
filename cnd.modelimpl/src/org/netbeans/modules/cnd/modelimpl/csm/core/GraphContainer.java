@@ -52,12 +52,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -107,7 +110,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     public void putFile(CsmFile master){
         CsmUID<CsmFile> key = UIDCsmConverter.fileToUID(master);
         if (key != null) {
-            synchronized (graph){
+            graphLock.writeLock().lock();
+            try {
                 NodeLink node = graph.get(key);
                 if (node != null){
                     Set<CsmUID<CsmFile>> outLink = node.getOutLinks();
@@ -135,9 +139,11 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                         pair.addInLink(key);
                     }
                 }
+            } finally {
+                graphLock.writeLock().unlock();
             }
         }
-	put();
+        put();
     }
     
     /**
@@ -147,7 +153,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     public void removeFile(CsmFile master){
         CsmUID<CsmFile> key = UIDCsmConverter.fileToUID(master);
         if (key != null) {
-            synchronized (graph){
+            graphLock.writeLock().lock();
+            try {
                 NodeLink node = graph.get(key);
                 if (node != null){
                     Set<CsmUID<CsmFile>> inLink = node.getInLinks();
@@ -168,9 +175,11 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                     outLink.clear();
                     graph.remove(key);
                 }
+            } finally {
+                graphLock.writeLock().unlock();
             }
         }
-	put();
+    	put();
     }
     
     /**
@@ -180,13 +189,64 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(referencedFile);
         if (keyFrom != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 getIncludedFiles(res, keyFrom);
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
     }
-    
+
+    public boolean isFileIncluded(CsmFile sourceFile, CsmFile headerFile) {
+        CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(sourceFile);
+        CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(headerFile);
+        if (keyFrom != null && keyTo != null) {
+            Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+            Map<Integer, GraphContainer> map = new HashMap<Integer, GraphContainer>();
+            try {
+                return isFileIncluded(map, res, keyFrom, keyTo);
+            } finally {
+                for(GraphContainer current : map.values()){
+                    current.graphLock.readLock().unlock();
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isFileIncluded(Map<Integer, GraphContainer> map, Set<CsmUID<CsmFile>> res, CsmUID<CsmFile> keyFrom, CsmUID<CsmFile> keyTo) {
+        GraphContainer current = map.get(UIDUtilities.getProjectID(keyFrom));
+        if (current == null) {
+            CsmFile file = UIDCsmConverter.UIDtoFile(keyFrom);
+            if (file == null) {
+                return false;
+            }
+            current = ((ProjectBase)file.getProject()).getGraphStorage();
+            if (current == null) {
+                return false;
+            }
+            map.put(UIDUtilities.getProjectID(keyFrom), current);
+            current.graphLock.readLock().lock();
+        }
+        NodeLink node = current.graph.get(keyFrom);
+        if (node != null) {
+            for(CsmUID<CsmFile> uid : node.getOutLinks()){
+                if (uid.equals(keyTo)) {
+                    return true;
+                }
+                if (!res.contains(uid)){
+                    res.add(uid);
+                    if (isFileIncluded(map, res, uid, keyTo)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * gets all files that direct or indirect include the referenced file.
      */
@@ -194,8 +254,11 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 getParentFiles(res, keyTo);
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
@@ -210,7 +273,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 getParentFiles(res, keyTo);
                 if (res.size()==0) {
                     res.add(keyTo);
@@ -223,6 +287,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                         res.add(uid);
                     }
                 }
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
@@ -236,7 +302,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 getParentFiles(res, keyTo);
                 if (res.size()==0) {
                     res.add(keyTo);
@@ -244,6 +311,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 for(CsmUID<CsmFile> uid : new ArrayList<CsmUID<CsmFile>>(res)){
                     getIncludedFiles(res, uid);
                 }
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
@@ -256,7 +325,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getInLinks()){
@@ -265,6 +335,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                         }
                     }
                 }
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
@@ -277,7 +349,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
-            synchronized (graph){
+            graphLock.readLock().lock();
+            try {
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getOutLinks()){
@@ -286,6 +359,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                         }
                     }
                 }
+            } finally {
+                graphLock.readLock().unlock();
             }
         }
         return convertToFiles(res);
@@ -333,18 +408,25 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     public void clear() {
-        synchronized (graph){
+        graphLock.writeLock().lock();
+        try {
             graph.clear();
+        } finally {
+            graphLock.writeLock().unlock();
         }
         put();
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
-	super.write(output);
-	synchronized (graph){
-	    writeUIDToNodeLinkMap(output, graph);
-	}
+        super.write(output);
+        // need a write lock
+        graphLock.writeLock().lock();
+        try {
+            writeUIDToNodeLinkMap(output, graph);
+        } finally {
+            graphLock.writeLock().unlock();
+        }
     }
     
     private static void writeUIDToNodeLinkMap (
@@ -395,6 +477,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
+    private ReadWriteLock graphLock = new ReentrantReadWriteLock();
     
     private static class NodeLink implements SelfPersistent, Persistent {
         
