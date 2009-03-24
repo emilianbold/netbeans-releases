@@ -43,9 +43,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.ToolTipManager;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 
 /**
  * Displays a percentage graph
@@ -59,15 +56,16 @@ public class Graph extends JComponent {
     private Axis vAxis;
 
     public Graph(int scale, GraphDescriptor ... descriptors) {
+        setOpaque(true);
         graph = new GraphPainter(scale, descriptors);
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                graph.setSize(getWidth(), getHeight());
-            }
-            public void ancestorRemoved(AncestorEvent event) {}
-            public void ancestorMoved(AncestorEvent event) {}
-        });
+//        ToolTipManager.sharedInstance().registerComponent(this);
+//        addAncestorListener(new AncestorListener() {
+//            public void ancestorAdded(AncestorEvent event) {
+//                graph.setSize(getWidth(), getHeight());
+//            }
+//            public void ancestorRemoved(AncestorEvent event) {}
+//            public void ancestorMoved(AncestorEvent event) {}
+//        });
     }
 
     public synchronized JComponent getVerticalAxis() {
@@ -136,11 +134,6 @@ public class Graph extends JComponent {
         if ((this.getWidth() != width) || (this.getHeight() != height)) {
             graph.setSize(width, height);
         }
-    }
-
-    @Override
-    public boolean isOpaque() {
-        return true;
     }
 
     private static int paintCount = 0;

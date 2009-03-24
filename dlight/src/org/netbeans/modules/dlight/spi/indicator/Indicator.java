@@ -38,13 +38,17 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
+import java.awt.Color;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
@@ -69,6 +73,7 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  */
 public abstract class Indicator<T extends IndicatorConfiguration> {
 
+    private static final int PADDING = 2;
     private final IndicatorMetadata metadata;
     private String toolName;
     private final List<IndicatorActionListener> listeners;
@@ -93,7 +98,19 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
     }
 
     private void initMouseListener() {
-        getComponent().addMouseListener(new MouseAdapter() {
+        final JComponent component = getComponent();
+        component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+        component.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                component.setBorder(BorderFactory.createEtchedBorder());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+            }
 
             @Override
             public void mouseClicked(MouseEvent e) {

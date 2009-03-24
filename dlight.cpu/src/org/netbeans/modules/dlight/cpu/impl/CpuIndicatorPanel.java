@@ -66,9 +66,9 @@ public class CpuIndicatorPanel {
     private final PercentageGraph graph;
     private final GraphPanel<PercentageGraph, Legend> panel;
 
-    /*package*/ CpuIndicatorPanel(CpuIndicator indicator) {
-        graph = createGraph(indicator);
-        panel = new GraphPanel(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+    /*package*/ CpuIndicatorPanel() {
+        graph = createGraph();
+        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
     }
 
     public GraphPanel getPanel() {
@@ -79,24 +79,13 @@ public class CpuIndicatorPanel {
         return NbBundle.getMessage(CpuIndicatorPanel.class, "indicator.title"); // NOI18N
     }
 
-    private static PercentageGraph createGraph(final CpuIndicator indicator) {
+    private static PercentageGraph createGraph() {
         PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
         graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
         graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
-
-        MouseListener ml = new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    indicator.fireActionPerformed();
-                }
-            }
-        };
-        graph.addMouseListener(ml);
         return graph;
     }
 
