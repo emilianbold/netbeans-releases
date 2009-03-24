@@ -43,10 +43,14 @@ package org.netbeans.performance.languages.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import javax.swing.JComponent;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -86,6 +90,25 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
         return suite;
     }
 
+        class PhaseHandler extends Handler {
+
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+                if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
+                     ActionTracker.getInstance().stopRecording();
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
+
     @Override
     public void initialize(){
        closeAllModal();
@@ -93,7 +116,10 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
 
     @Override
     public void prepare(){
-        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
+
+ /*       repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
 
             public boolean accept(JComponent c) {
                 String cn = c.getClass().getName();
@@ -112,9 +138,10 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
                 return "Ignores JRootPane under MainWindow, and nbGlassPane";
             }
         });
-
+*/
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
 
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
@@ -138,6 +165,7 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
     public void close() {
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
     }    
     
     public void testCreateRubyProject() {

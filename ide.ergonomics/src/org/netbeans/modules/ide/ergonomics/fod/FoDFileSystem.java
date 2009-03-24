@@ -64,7 +64,7 @@ implements Runnable, ChangeListener {
     private static FoDFileSystem INSTANCE;
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
-    private RequestProcessor.Task refresh = RP.create(this);
+    private RequestProcessor.Task refresh = RP.create(this, true);
 
     public FoDFileSystem() {
         assert INSTANCE == null;
@@ -91,12 +91,24 @@ implements Runnable, ChangeListener {
     public void waitFinished() {
         refresh.waitFinished();
     }
+
+    private FileSystem def;
+    private FileSystem getDefaultLayer() {
+        if (def == null) {
+            try {
+                def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return def;
+    }
     
     public void run() {
         boolean empty = true;
 
         LOG.fine("collecting layers"); // NOI18N
-        List<XMLFileSystem> delegate = new ArrayList<XMLFileSystem>();
+        List<FileSystem> delegate = new ArrayList<FileSystem>();
         for (FeatureInfo info : FeatureManager.features()) {
             if (!info.isEnabled() && info.isPresent()) {
                 LOG.finest("adding feature " + info.clusterName); // NOI18N
@@ -107,11 +119,7 @@ implements Runnable, ChangeListener {
         }
         if (empty) {
             LOG.fine("adding default layer"); // NOI18N
-            try {
-                delegate.add(0, new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"))); // NOI18N
-            } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            delegate.add(0, getDefaultLayer());
         }
         
         LOG.fine("delegating to " + delegate.size() + " layers"); // NOI18N
@@ -123,7 +131,7 @@ implements Runnable, ChangeListener {
     public FeatureInfo whichProvides(FileObject template) {
         String path = template.getPath();
         for (FeatureInfo info : FeatureManager.features()) {
-            XMLFileSystem fs = info.getXMLFileSystem();
+            FileSystem fs = info.getXMLFileSystem();
             if (fs.findResource(path) != null) {
                 return info;
             }
@@ -134,9 +142,9 @@ implements Runnable, ChangeListener {
     public URL getDelegateFileSystem(FileObject template) {
         String path = template.getPath();
         for (FeatureInfo info : FeatureManager.features()) {
-            XMLFileSystem fs = info.getXMLFileSystem();
+            FileSystem fs = info.getXMLFileSystem();
             if (fs.findResource(path) != null) {
-                return fs.getXmlUrl();
+                return info.getLayerURL();
             }
         }
         return null;

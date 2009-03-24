@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -56,10 +55,13 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpression;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.xml.sax.SAXException;
 
 /** Description of <em>Feature On Demand</em> capabilities and a 
  * factory to create new instances.
@@ -68,7 +70,7 @@ import org.openide.util.Lookup;
  */
 public final class FeatureInfo {
     private final URL delegateLayer;
-    private XMLFileSystem fs;
+    private FileSystem fs;
     private final Set<String> cnbs;
     private final Map<String,String> nbproject = new HashMap<String,String>();
     private final Map<Object[],String> files = new HashMap<Object[],String>();
@@ -156,19 +158,23 @@ public final class FeatureInfo {
         return false;
     }
 
-    public synchronized XMLFileSystem getXMLFileSystem() {
+    public final URL getLayerURL() {
+        return delegateLayer;
+    }
+
+    public synchronized FileSystem getXMLFileSystem() {
         if (fs == null) {
             URL url = delegateLayer;
-            fs = new XMLFileSystem();
             if (url != null) {
                 try {
-                    fs.setXmlUrl(url);
-                } catch (IOException ex) {
-                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);Exceptions.printStackTrace(ex);
-                } catch (PropertyVetoException ex) {
-                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);Exceptions.printStackTrace(ex);
+                    fs = new XMLFileSystem(url);
+                    return fs;
+                } catch (SAXException ex) {
+                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
+            fs = FileUtil.createMemoryFileSystem();
         }
         return fs;
     }

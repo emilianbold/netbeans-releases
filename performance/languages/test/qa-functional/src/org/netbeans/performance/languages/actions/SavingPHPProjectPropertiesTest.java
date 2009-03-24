@@ -91,12 +91,12 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
     @Override
     public void initialize(){
         closeAllModal();
-        createProject();
+      //  createProject();
         title = Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode("PhpPerfTest");
     }
 
-    private void createProject() {
+ /*   private void createProject() {
         NewPHPProjectNameLocationStepOperator wizard_location;
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         
@@ -113,12 +113,12 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
         wizard_location.finish();
         wizard_location.waitClosed();
         TopComponentOperator.findTopComponent(editorName, 0);
-    }
+    }*/
 
     @Override
     public void prepare(){
         new PropertiesAction().performPopup(testNode);
-        NbDialogOperator propertiesDialog = new NbDialogOperator(title);
+        NbDialogOperator propertiesDialog = new NbDialogOperator("Project Properties");
         new JCheckBoxOperator(propertiesDialog, Bundle.getStringTrimmed(
                 "org.netbeans.modules.php.project.ui.customizer.Bundle",
                 "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName"))

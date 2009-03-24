@@ -798,22 +798,26 @@ public class JarFileSystem extends AbstractFileSystem {
 
                 try {
                     Enumeration<JarEntry> en = j.entries();
-                    // #144166 - If duplicate entries found in jar, it is
-                    // immediately reported to the user. It can happen because
+                    // #144166 - If duplicate entries found in jar, it is logged
+                    // and only unique entries are show. It can happen because
                     // Ant's jar task can produce such jars.
                     Set<String> duplicateCheck = new HashSet<String>();
+                    Set<JarEntry> uniqueEntries = new HashSet<JarEntry>();
+                    boolean duplicateReported = false;
                     while (en.hasMoreElements()) {
-                        String name = en.nextElement().getName();
-                        if (!duplicateCheck.add(name)) {
-                            String message = getString("EXC_DuplicateEntries", getJarFile(), name);  //NOI18N
-                            IllegalArgumentException iae = new IllegalArgumentException(message);
-                            Exceptions.attachLocalizedMessage(iae, message);
-                            Exceptions.printStackTrace(iae);
-                            return Cache.INVALID;
+                        JarEntry entry = en.nextElement();
+                        String name = entry.getName();
+                        if (duplicateCheck.add(name)) {
+                            uniqueEntries.add(entry);
+                        } else {
+                            if (!duplicateReported) {
+                                LOGGER.warning(getString("EXC_DuplicateEntries", getJarFile(), name));  //NOI18N
+                                // report just once
+                                duplicateReported = true;
+                            }
                         }
                     }
-                    en = j.entries();
-                    Cache newCache = new Cache(en);
+                    Cache newCache = new Cache(uniqueEntries);
                     lastModification = root.lastModified();
                     strongCache = newCache;
                     softCache = new SoftReference<Cache>(newCache);
@@ -1128,14 +1132,15 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     private static class Cache {
-        static Cache INVALID = new Cache(Enumerations.<JarEntry>empty());
+        private static final Set<JarEntry> EMPTY_SET = Collections.emptySet();
+        static final Cache INVALID = new Cache(EMPTY_SET);
         byte[] names = new byte[1000];
         private int nameOffset = 0;
         int[] EMPTY = new int[0];
         private Map<String, Folder> folders = new HashMap<String, Folder>();
 
-        public Cache(Enumeration<JarEntry> en) {
-            parse(en);
+        public Cache(Set<JarEntry> entries) {
+            parse(entries);
             trunc();
         }
 
@@ -1153,12 +1158,11 @@ public class JarFileSystem extends AbstractFileSystem {
             return new String[] {  };
         }
 
-        private void parse(Enumeration<JarEntry> en) {
+        private void parse(Set<JarEntry> entries) {
             folders.put("", new Folder()); // root folder
 
-            while (en.hasMoreElements()) {
-                JarEntry je = en.nextElement();
-                String name = je.getName();
+            for (JarEntry entry : entries) {
+                String name = entry.getName();
                 boolean isFolder = false;
 
                 // work only with slashes
