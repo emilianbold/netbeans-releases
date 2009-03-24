@@ -218,21 +218,18 @@ public class BugzillaRepository extends Repository {
             }
         };
 
-        StringBuffer url = new StringBuffer();
         if(keywords.length == 1 && isNumber(keywords[0])) {
-            // only one search criteria -> might be we are looking for the bug with id=values[0]
-            url.append(IBugzillaConstants.URL_GET_SHOW_BUG);
-            url.append("="); // XXX ???                                         // NOI18N
-            url.append(keywords[0]);
-
-            PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
-            getExecutor().execute(queryCmd);
-            if(queryCmd.hasFailed()) {
-                return new Issue[0];
+            // only one search criteria -> might be we are looking for the bug with id=keywords[0]
+            TaskData taskData = BugzillaUtil.getTaskData(this, keywords[0]);
+            if(taskData != null) {
+                BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
             }
         }
 
-        url = new StringBuffer();
+        StringBuffer url = new StringBuffer();
         url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST + "&short_desc_type=allwordssubstr&short_desc="); // NOI18N
         for (int i = 0; i < keywords.length; i++) {
             String val = keywords[i].trim();
