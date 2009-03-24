@@ -42,12 +42,12 @@ package org.netbeans.modules.dlight.indicators.graph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import org.netbeans.modules.dlight.indicators.graph.Graph.AxisOrientation;
 
 /**
  * A delegate that is responsible for painting,
@@ -63,7 +63,7 @@ import org.netbeans.modules.dlight.indicators.graph.Graph.AxisOrientation;
 class GraphPainter {
     private static final int PIXELS_PER_SAMPLE = 5;
     private static final Stroke BALL_STROKE = new BasicStroke(1.0f);
-    private static final Stroke LINE_STROKE = new BasicStroke(3.0f);
+    private static final Stroke LINE_STROKE = new BasicStroke(2.0f);
 
     private Color gridColor = GraphColors.GRID_COLOR;
     private Color backgroundTopColor = GraphColors.GRADIENT_TOP_COLOR;
@@ -307,13 +307,45 @@ class GraphPainter {
         g2.setStroke(oldStroke);
     }
 
-    public void drawAxis(Graphics g, AxisOrientation orientation, Dimension size) {
-        Graphics2D g2 = (Graphics2D)g;
+    public void drawVerticalAxis(Graphics g, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setFont(g2.getFont().deriveFont(10f));
         g2.setColor(GraphColors.TEXT_COLOR);
-        g2.drawString(Integer.toString(getUpperLimit()), 0, 10);
-        g2.drawString(Integer.toString(0), 0, (int)size.getHeight());
+
+        FontMetrics fm = g2.getFontMetrics();
+        int fontHeight = fm.getHeight();
+
+        // Step 1.
+        // Will calculate tmod - the "precision" of the axis.
+        // tmod = pow(10, (int)log10(x))
+        // but use simple 'while' here because it's faster
+        double delta = scale;
+        int tmod = 1;
+
+        while (delta > 10) {
+            delta /= 10.0;
+            tmod *= 10;
+        }
+
+        // Step 2. Draw labels
+        int labelValue = 0;
+        int labelPosition = -1;
+        int nextLabelPosition = -1;
+
+        while (labelValue <= scale + tmod / 2) {
+            labelPosition = h - (labelValue * height / scale) + fontHeight;
+            // if 'previous' label overlaps the current one, we will just skip it (current)
+            if (nextLabelPosition == -1 || labelPosition < nextLabelPosition) {
+                if (labelPosition <= h && labelValue <= scale) {
+                    String label = Integer.toString(labelValue);
+                    int labelLen = fm.stringWidth(label);
+                    g2.drawString(label, w - 10 - labelLen, labelPosition);
+                    nextLabelPosition = labelPosition - fontHeight - 4;
+                }
+            }
+            labelValue += tmod / 2;
+        }
     }
 
     /** for tracing/debugging purposes */

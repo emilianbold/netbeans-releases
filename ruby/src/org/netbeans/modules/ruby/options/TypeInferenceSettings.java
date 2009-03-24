@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai;
 
-import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+package org.netbeans.modules.ruby.options;
+
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
+
 
 /**
  *
- * @author Jan Becicka
+ * @author Erno Mononen
  */
-@IgnoreNonExisting
-public class ProjectsListData extends ListData {
+public final class TypeInferenceSettings {
+    
+    private static final TypeInferenceSettings INSTANCE = new TypeInferenceSettings();
+    private static final String METHODS = "ruby.type.inference.methods"; //NOI18N
 
-    public ProjectData projects[];
-
-    @Override
-    public int size() {
-        return projects.length;
+    private TypeInferenceSettings() {
     }
+
+    public static TypeInferenceSettings getDefault() {
+        return INSTANCE;
+    }
+
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(TypeInferenceSettings.class);
+    }
+
+    void setMethodTypeInference(boolean enabled) {
+        getPreferences().putBoolean(METHODS, enabled);
+    }
+
+    public boolean getMethodTypeInference() {
+        return getPreferences().getBoolean(METHODS, true);
+    }
+
 }
