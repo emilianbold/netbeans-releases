@@ -51,6 +51,9 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
     rm -rf visualweb*
 
+    pack_component $DIST_DIR/zip/moduleclusters $NAME xml "xml*"
+    rm -rf xml*
+
     cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
@@ -88,9 +91,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME ide "ide*"
     rm -rf ide*
-
-    pack_component $DIST_DIR/zip/moduleclusters $NAME xml "xml*"
-    rm -rf xml*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME harness "harness*"
     rm -rf harness*

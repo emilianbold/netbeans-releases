@@ -51,7 +51,7 @@ ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$BASENAME-cpp.z
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity php groovy dlight; do
+for c in platform ide java apisupport harness enterprise profiler ruby mobility cnd identity php groovy dlight; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
