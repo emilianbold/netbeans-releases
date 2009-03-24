@@ -65,6 +65,7 @@ import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
+import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.ImageUtilities;
@@ -272,7 +273,9 @@ public class BugzillaRepository extends Repository {
 
     public void removeQuery(BugzillaQuery query) {
         BugzillaConfig.getInstance().removeQuery(this, query);
+        getIssueCache().removeQuery(name);
         getQueriesIntern().remove(query);
+        stopRefreshing(query);
     }
 
     public void saveQuery(BugzillaQuery query) {
@@ -390,7 +393,12 @@ public class BugzillaRepository extends Repository {
                         Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name});
                         return;
                     }
-                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, queries});
+                    for (BugzillaQuery q : queries) {
+                        Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name});
+                        QueryController qc = q.getController();
+                        qc.onRefresh();
+                    }
+
                     scheduleQueryRefresh();
                 }
             });
@@ -399,15 +407,15 @@ public class BugzillaRepository extends Repository {
     }
 
     private void scheduleIssueRefresh() {
-        int delay = BugzillaConfig.getInstance().getIssueRefresh(); 
+        int delay = BugzillaConfig.getInstance().getIssueRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay});
-        // XXX no activated yet refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
+        refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     private void scheduleQueryRefresh() {
-        int delay = BugzillaConfig.getInstance().getQueryRefresh();
+        int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay});
-        // XXX no activated yet refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
+        refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     public void scheduleForRefresh(String id) {
@@ -426,15 +434,15 @@ public class BugzillaRepository extends Repository {
     }
 
     public void scheduleForRefresh(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {name, query.getDisplayName()});
+        Bugzilla.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), name});
         synchronized(queriesToRefresh) {
             queriesToRefresh.add(query);
         }
-        setupIssueRefreshTask();
+        setupQueryRefreshTask();
     }
 
     public void stopRefreshing(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {name, query.getDisplayName()});
+        Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), name});
         synchronized(queriesToRefresh) {
             queriesToRefresh.remove(query);
         }

@@ -64,18 +64,18 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     }
     
     public void update() {
-        panel.issuesTextField.setText(BugzillaConfig.getInstance().getIssueRefresh() + "");  // NOI18N
-        panel.queriesTextField.setText(BugzillaConfig.getInstance().getQueryRefresh() + ""); // NOI18N
+        panel.issuesTextField.setText(BugzillaConfig.getInstance().getIssueRefreshInterval() + "");  // NOI18N
+        panel.queriesTextField.setText(BugzillaConfig.getInstance().getQueryRefreshInterval() + ""); // NOI18N
     }
     
     public void applyChanges() {
         String queryRefresh = panel.queriesTextField.getText().trim();
         int r = queryRefresh.equals("") ? 0 : Integer.parseInt(queryRefresh);   // NOI18N
-        BugzillaConfig.getInstance().setQueryRefresh(r);
+        BugzillaConfig.getInstance().setQueryRefreshInterval(r);
 
         String issueRefresh = panel.issuesTextField.getText().trim();
         r = issueRefresh.equals("") ? 0 : Integer.parseInt(issueRefresh);       // NOI18N
-        BugzillaConfig.getInstance().setIssueRefresh(r);
+        BugzillaConfig.getInstance().setIssueRefreshInterval(r);
     }
     
     public void cancel() {
@@ -100,8 +100,8 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     }
 
     public boolean isChanged() {
-        return !panel.issuesTextField.getText().trim().equals(BugzillaConfig.getInstance().getIssueRefresh() + "") ||  // NOI18N
-               !panel.queriesTextField.getText().trim().equals(BugzillaConfig.getInstance().getQueryRefresh() + "");   // NOI18N
+        return !panel.issuesTextField.getText().trim().equals(BugzillaConfig.getInstance().getIssueRefreshInterval() + "") ||  // NOI18N
+               !panel.queriesTextField.getText().trim().equals(BugzillaConfig.getInstance().getQueryRefreshInterval() + "");   // NOI18N
     }
         
     public org.openide.util.HelpCtx getHelpCtx() {
