@@ -266,6 +266,10 @@ public class KenaiSearchPanel extends JPanel {
     
     private void invokeSearch() {
 
+        if (getListModel() != null) {
+            getListModel().stopLoading();
+        }
+
         boolean showProgressAndRepaint = false;
         final JPanel progressPanel = createProgressPanel();
 
@@ -283,7 +287,6 @@ public class KenaiSearchPanel extends JPanel {
             showProgressAndRepaint = true;
         }
 
-
         if (showProgressAndRepaint) {
             add(BorderLayout.CENTER, progressPanel);
             progressHandle.start();
@@ -300,7 +303,6 @@ public class KenaiSearchPanel extends JPanel {
                 } catch (KenaiErrorMessage em) {
                     if ("400 Bad Request".equals(em.getStatus())) {//NOI18N
                         EventQueue.invokeLater(new Runnable() {
-
                             public void run() {
                                 progressHandle.finish();
                                 remove(progressPanel);
@@ -313,8 +315,7 @@ public class KenaiSearchPanel extends JPanel {
                     } else {
                         Exceptions.printStackTrace(em);
                     }
-
-                }catch (KenaiException ex) {
+                } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                     // XXX show some error to user
                 }
@@ -401,6 +402,7 @@ public class KenaiSearchPanel extends JPanel {
                             }
                         }
                     }
+                    Thread.yield();
                     if (stopLoading) {
                         return;
                     }
@@ -425,11 +427,9 @@ public class KenaiSearchPanel extends JPanel {
     // ----------
 
     private class KenaiProjectsListRenderer implements ListCellRenderer {
-
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             return new ListRendererPanel(list, ((KenaiProjectSearchInfo) value), index, isSelected, cellHasFocus, panelType);
         }
-
     }
 
     // ----------
