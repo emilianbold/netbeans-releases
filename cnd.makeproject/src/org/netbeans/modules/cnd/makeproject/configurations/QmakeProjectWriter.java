@@ -163,7 +163,9 @@ public class QmakeProjectWriter {
         write(bw, Variable.DESTDIR, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getDestdirValue()));
         write(bw, Variable.TARGET, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getTargetValue()));
         write(bw, Variable.VERSION, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getVersion().getValue()));
-        write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
+        // debug_and_release is enabled by default on Windows -- we don't need it
+        // app_bundle and lib_bundle get enabled on MacOS -- explicitly disable as well
+        write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release app_bundle lib_bundle"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
