@@ -147,26 +147,26 @@ public final class ParserManager {
 
         public Void run () throws Exception {
             //tzezula: Wrong - doesn't work for multiple files!
-            LMListener lMListener = new LMListener ();
-            Parser parser = null;
+//!            LMListener lMListener = new LMListener ();
+//!            Parser parser = null;
             for (Source source : sources) {
                 SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
-                if (parser == null) {
-                    Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
-                    ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-                    if (parserFactory != null) {
-                        final Collection<Snapshot> _tmp = Collections.singleton (sourceCache.getSnapshot ());
-                        parser = parserFactory.createParser (_tmp);
-                    }
-                }
-                final ResultIterator resultIterator = new ResultIterator (sourceCache, parser, userTask);
+//!                if (parser == null) {
+//!                    Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
+//!                    ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+//!                    if (parserFactory != null) {
+//!                        final Collection<Snapshot> _tmp = Collections.singleton (sourceCache.getSnapshot ());
+//!                        parser = parserFactory.createParser (_tmp);
+//!                    }
+//!                }
+                final ResultIterator resultIterator = new ResultIterator (sourceCache, /*!parser,*/ userTask);
                 try {
                     userTask.run (resultIterator);
                 } finally {
                     ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
                 }
-                if (lMListener.isLowMemory ())
-                    parser = null;
+//!                if (lMListener.isLowMemory ())
+//!                    parser = null;
             }
             return null;
         }
