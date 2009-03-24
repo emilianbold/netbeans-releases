@@ -1055,7 +1055,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     public JEditorPane[] getOpenedPanes() {
         // expected in AWT only
-        assert SwingUtilities.isEventDispatchThread(); // NOI18N
+        assert SwingUtilities.isEventDispatchThread()
+                : "CloneableEditorSupport.getOpenedPanes() must be called from AWT thread only"; // NOI18N
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.getOpenedPanes();
