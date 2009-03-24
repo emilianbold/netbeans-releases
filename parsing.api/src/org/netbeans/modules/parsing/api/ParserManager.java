@@ -40,12 +40,15 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
@@ -147,26 +150,35 @@ public final class ParserManager {
 
         public Void run () throws Exception {
             //tzezula: Wrong - doesn't work for multiple files!
-//!            LMListener lMListener = new LMListener ();
-//!            Parser parser = null;
+            LMListener lMListener = new LMListener ();
+            Parser parser = null;
+            Collection<Snapshot> dvaKluci = null;
             for (Source source : sources) {
                 SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
-//!                if (parser == null) {
-//!                    Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
-//!                    ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-//!                    if (parserFactory != null) {
-//!                        final Collection<Snapshot> _tmp = Collections.singleton (sourceCache.getSnapshot ());
-//!                        parser = parserFactory.createParser (_tmp);
-//!                    }
-//!                }
-                final ResultIterator resultIterator = new ResultIterator (sourceCache, /*!parser,*/ userTask);
+                if (parser == null) {
+                    Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
+                    ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+                    if (parserFactory != null) {
+                        if (dvaKluci == null) {
+                            dvaKluci = new ArrayList<Snapshot> ();
+                            dvaKluci.add (sourceCache.getSnapshot ());
+                            Iterator<Source> it = sources.iterator ();
+                            it.next ();
+                            Source source2 = it.next ();
+                            SourceCache sourceCache2 = SourceAccessor.getINSTANCE ().getCache (source2);
+                            dvaKluci.add (sourceCache2.getSnapshot ());
+                        }
+                        parser = parserFactory.createParser (dvaKluci); //tzezula: Ugly hack!
+                    }
+                }
+                final ResultIterator resultIterator = new ResultIterator (sourceCache, parser, userTask);
                 try {
                     userTask.run (resultIterator);
                 } finally {
                     ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
                 }
-//!                if (lMListener.isLowMemory ())
-//!                    parser = null;
+                if (lMListener.isLowMemory ())
+                    parser = null;
             }
             return null;
         }
