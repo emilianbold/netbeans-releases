@@ -37,23 +37,38 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai;
+package org.netbeans.modules.ruby.options;
+
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
+
 
 /**
- * Response to the "/api/projects" and "/api/projects?page=N" calls.
  *
- * @author Maros Sandor
+ * @author Erno Mononen
  */
-public class JsonListProjects {
+public final class TypeInferenceSettings {
+    
+    private static final TypeInferenceSettings INSTANCE = new TypeInferenceSettings();
+    private static final String METHODS = "ruby.type.inference.methods"; //NOI18N
 
-    public String prev;
-    public String next;
-    public JsonProjectBriefInfo [] projects;
-
-    public static class JsonProjectBriefInfo {
-        public String href;
-	public String name;
-	public String display_name;
-	public String image;
+    private TypeInferenceSettings() {
     }
+
+    public static TypeInferenceSettings getDefault() {
+        return INSTANCE;
+    }
+
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(TypeInferenceSettings.class);
+    }
+
+    void setMethodTypeInference(boolean enabled) {
+        getPreferences().putBoolean(METHODS, enabled);
+    }
+
+    public boolean getMethodTypeInference() {
+        return getPreferences().getBoolean(METHODS, true);
+    }
+
 }

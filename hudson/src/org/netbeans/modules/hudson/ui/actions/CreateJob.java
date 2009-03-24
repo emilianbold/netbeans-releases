@@ -42,6 +42,8 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -87,9 +89,9 @@ public class CreateJob extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
+        final DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
-        JButton createButton = new JButton("Create"); // XXX I18N
+        final JButton createButton = new JButton("Create"); // XXX I18N
         createButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -98,6 +100,13 @@ public class CreateJob extends AbstractAction {
                         dialog.get().dispose();
                     }
                 });
+            }
+        });
+        dd.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
+                    createButton.setEnabled(dd.isValid());
+                }
             }
         });
         panel.init(dd, instance);
