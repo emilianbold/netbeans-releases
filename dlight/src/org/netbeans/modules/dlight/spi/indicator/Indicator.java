@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
@@ -67,11 +70,13 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  *
  * @param <T> configuration indicator can be built on the base of
  */
-public abstract class Indicator<T extends IndicatorConfiguration> {
+public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener {
 
+    private final Object lock = new Object();
     private final IndicatorMetadata metadata;
     private String toolName;
     private final List<IndicatorActionListener> listeners;
+    private final TickerListener tickerListener;
 
 
     static {
@@ -89,7 +94,50 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
         this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
+        tickerListener = new TickerListener() {
+            public void tick() {
+                Indicator.this.tick();
+            }
+        };
 
+
+    }
+
+    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case RUNNING:
+                targetStarted(source);
+                return;
+            case FAILED:
+                targetFinished(source);
+                return;
+            case TERMINATED:
+                targetFinished(source);
+                return;
+            case DONE:
+                targetFinished(source);
+                return;
+            case STOPPED:
+                targetFinished(source);
+                return;
+        }
+    }
+
+    private void targetStarted(DLightTarget target) {
+        synchronized (lock) {
+            IndicatorTickerService.getInstance().subsribe(tickerListener);
+        }
+    }
+
+    protected  void tick(){
+        
+        
+    }
+
+    private void targetFinished(DLightTarget target) {
+        synchronized (lock) {
+            IndicatorTickerService.getInstance().unsubscribe(tickerListener);
+        }
     }
 
     private void initMouseListener() {

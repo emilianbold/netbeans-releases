@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
+
+package org.netbeans.modules.dlight.visualizers.api.impl;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public interface StackDataStorage {//extends StackSupport {
+public abstract class FunctionsListViewVisualizerConfigurationAccessor {
+    private static volatile FunctionsListViewVisualizerConfigurationAccessor DEFAULT;
 
-    public static final String STACK_DATA_STORAGE_TYPE_ID = "stack";
-    public static final String STACK_METADATA_VIEW_NAME = "DtraceStack";
+    public static FunctionsListViewVisualizerConfigurationAccessor getDefault() {
+        FunctionsListViewVisualizerConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
 
-    /**
-     * Submits new stack (sample) to the storage.
-     *
-     * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
-     * @param sampleDuration  number of nanoseconds the program spent in this stack
-     * @return
-     */
-    int putStack(List<CharSequence> stack, long sampleDuration);
+        try {
+            Class.forName(FunctionsListViewVisualizerConfiguration.class.getName(), true,
+                FunctionsListViewVisualizerConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
+    }
 
-    List<Long> getPeriodicStacks(long startTime, long endTime, long interval);
+    public static void setDefault(FunctionsListViewVisualizerConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
 
-    List<FunctionMetric> getMetricsList();
+    public FunctionsListViewVisualizerConfigurationAccessor() {
+    }
 
-    List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate);
+    public abstract FunctionDatatableDescription getFunctionDatatableDescription(FunctionsListViewVisualizerConfiguration configuration);
+    
+    public abstract List<Column> getMetricsList(FunctionsListViewVisualizerConfiguration configuration);
 
-    List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate);
-
-    List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit);
-
-    List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+    public abstract String getID();
 }

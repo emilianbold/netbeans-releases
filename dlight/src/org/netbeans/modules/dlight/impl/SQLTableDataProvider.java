@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Exceptions;
 
 
@@ -137,4 +138,8 @@ public class SQLTableDataProvider implements TableDataProvider {
     }
     return result;
   }
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        
+    }
 }

@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.api.support;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
@@ -61,6 +62,7 @@ public final class NativeExecutableTargetConfiguration {
     private boolean isSubstitutable;
     private ExternalTerminal externalTerminal = null;
     private InputOutput io;
+    private final Map<String, String>  info = new ConcurrentHashMap<String, String>();
 
     /**
      * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
@@ -92,6 +94,10 @@ public final class NativeExecutableTargetConfiguration {
      */
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String putInfo(String name, String value){
+        return info.put(name, value);
     }
 
     /**
@@ -164,5 +170,9 @@ public final class NativeExecutableTargetConfiguration {
 
     boolean getSubstitutable() {
         return isSubstitutable;
+    }
+
+    Map<String, String> getInfo(){
+        return info;
     }
 }
