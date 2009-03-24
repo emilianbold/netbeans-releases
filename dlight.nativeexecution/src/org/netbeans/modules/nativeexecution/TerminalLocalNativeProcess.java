@@ -62,6 +62,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static String dorunScript;
     private final static boolean isWindows;
+    private final static boolean isMacOS;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -71,6 +72,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     static {
         isWindows = Utilities.isWindows();
+        isMacOS = Utilities.isMac();
 
         String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
@@ -204,7 +206,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        if (isWindows) {
+        if (isWindows || isMacOS) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-0", "" + getPID()); // NOI18N
             while (true) {
                 try {
