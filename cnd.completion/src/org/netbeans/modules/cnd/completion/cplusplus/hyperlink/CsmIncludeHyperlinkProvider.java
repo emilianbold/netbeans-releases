@@ -205,7 +205,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
         if (tooltip != null || TRACE_INCLUDES) {
             StringBuilder buf = new StringBuilder(tooltip == null ? "" : tooltip);
-            CsmFile includeFile = target.getIncludeFile();
+            CsmFile includeFile = target == null ? null : target.getIncludeFile();
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
             if (includeFile == null || TRACE_INCLUDES) {
                 // append include stack
