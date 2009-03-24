@@ -824,6 +824,24 @@ final class NbInstaller extends ModuleInstaller {
         }
         return true;
     }
+
+    public @Override boolean shouldDelegateClasspathResource(String pkg) {
+        for (Map.Entry<Module,List<Module.PackageExport>> entry : hiddenClasspathPackages.entrySet()) {
+            Module m = entry.getKey();
+            if (!m.isEnabled()) {
+                continue;
+            }
+            for (Module.PackageExport hidden : entry.getValue()) {
+                if (hidden.recursive ? pkg.startsWith(hidden.pkg) : pkg.equals(hidden.pkg)) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Refusing to load classpath package " + pkg + " because of " + m.getCodeNameBase());
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     
     private static final String[] CLASSPATH_PACKAGES = {
         // core.jar shall be inaccessible
@@ -1105,7 +1123,7 @@ final class NbInstaller extends ModuleInstaller {
      * or there is no available cache directory.
      */
     private boolean usingManifestCache;
-    private Object MANIFEST_CACHE = new Object();
+    private final Object MANIFEST_CACHE = new Object();
 
     {
         usingManifestCache = Boolean.valueOf(System.getProperty("netbeans.cache.manifests", "true")).booleanValue();
