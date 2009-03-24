@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -105,6 +106,7 @@ import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -343,10 +345,15 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 public void run() {
                     try {
+                        if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
+                            ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
+                        }
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
                         CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
                         csm.initialize(true, true);
+                    } catch (CancellationException ex) {
+                        cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
