@@ -693,8 +693,8 @@ public class CompilerSetManager {
                             // otherwise STATE_PENDING hangs forever - see #158088
                             state = State.STATE_UNINITIALIZED; //STATE_ERROR;
                             log.log(Level.FINE, "Error initiaizing compiler set @" + hashCode() + //NOI18N
-                                " on " + executionEnvironment, thr);
-                            CompilerSetReporter.report("CSM_Fail");//NOI18N
+                                " on " + executionEnvironment, thr); //NOI18N
+                            CompilerSetReporter.report("CSM_Fail"); //NOI18N
                             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
                         }
                     }
