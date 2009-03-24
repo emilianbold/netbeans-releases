@@ -187,7 +187,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             // only if both opening and closing tags are mandatory - not doing
             // so can result in wrong pair matching:
             if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
-                tag = tk.text().toString();
+                tag = getTokenName(tk);
                 int rangeEnd;
                 // if document is being editted end tag symbol might be accidentally missing:
                 if (ts.moveNext() && isEndTagSymbol(ts.token())) {
@@ -200,7 +200,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
-                    assert ts.token().text().toString().equals(tag) : "tag="+tag+" token="+ts.token();
+                    assert getTokenName(ts.token()).equals(tag) : "tag="+tag+" token="+ts.token();
                     int rangeStart;
                     // if document is being editted end tag symbol might be accidentally missing:
                     if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
