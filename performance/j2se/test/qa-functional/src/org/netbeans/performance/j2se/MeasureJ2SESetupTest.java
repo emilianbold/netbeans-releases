@@ -58,7 +58,7 @@ public class MeasureJ2SESetupTest {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Setup suite");
         System.setProperty("suitename", MeasureJ2SESetupTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(J2SESetup.class,"ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]", ".*"));
+        suite.addTest(NbModuleSuite.create(J2SESetup.class,"websvccommon[0-9]|apisupport[0-9]|profiler[0-9]", ".*"));
 
         return suite;
     }

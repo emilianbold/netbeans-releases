@@ -58,9 +58,7 @@ public class ScriptingMeasureActionsTest1 {
         System.setProperty("suitename", ScriptingMeasureActionsTest1.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProjectTest.class)
-                .addTest(CreatePHPProjectTest.class)
-                .addTest(CreatePHPSampleProjectTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SavingPHPProjectPropertiesTest.class)
                 .addTest(SavingPHPProjectPropertiesTest.class)
                 //needs to be fixed  .addTest(CreateScriptingPackFilesTest.class)
                 .addTest(ScriptingExpandFolderTest.class)

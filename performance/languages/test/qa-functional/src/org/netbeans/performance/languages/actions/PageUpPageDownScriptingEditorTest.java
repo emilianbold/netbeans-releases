@@ -169,7 +169,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     public void testPgUp_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         pgup = true;
         doMeasurement();
     }
@@ -177,8 +177,24 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     public void testPgDn_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         pgup = false;        
+        doMeasurement();
+    }
+
+    public void testPgUp_In_YMLEditor() {
+        testProject = Projects.RAILS_PROJECT;
+        fileName = "yaml20kb.yml";
+        nodePath = "Test Files|unit";
+        pgup = true;
+        doMeasurement();
+    }
+
+    public void testPgDn_In_YMLEditor() {
+        testProject = Projects.RAILS_PROJECT;
+        fileName = "yaml20kb.yml";
+        nodePath = "Test Files|unit";
+        pgup = false;
         doMeasurement();
     }
     
@@ -205,7 +221,23 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         pgup = true;
         doMeasurement();
     }
-    
+
+    public void testPgUp_In_JSONditor() {
+        testProject = Projects.SCRIPTING_PROJECT;
+        nodePath = "Web Pages";
+        fileName = "json20kb.json";
+        pgup = true;
+        doMeasurement();
+    }
+
+    public void testPgDn_In_JSONditor() {
+        testProject = Projects.SCRIPTING_PROJECT;
+        nodePath = "Web Pages";
+        fileName = "json20kb.json";
+        pgup = false;
+        doMeasurement();
+    }
+
     public void testPgDn_In_CSSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
