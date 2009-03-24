@@ -102,6 +102,10 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     abstract protected int getPreservedLineInitialIndentation(JoinedTokenSequence<T1> ts) throws BadLocationException;
 
+    protected boolean isStableFormattingStartToken(Token<T1> token, JoinedTokenSequence<T1> ts) {
+        return false;
+    }
+
     abstract protected boolean isForeignLanguageStartToken(Token<T1> token, JoinedTokenSequence<T1> ts);
 
     abstract protected boolean isForeignLanguageEndToken(Token<T1> token, JoinedTokenSequence<T1> ts);
@@ -132,7 +136,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // go backwards and find a tag in which reformatting area lies:
         while (ts.movePrevious()) {
             Token<T1> tk = ts.token();
-            if (isForeignLanguageStartToken(tk, ts)) {
+            if (isStableFormattingStartToken(tk, ts) && ts.offset() <= startOffset) {
                 break;
             }
             // if closing tag was found jump to opening one but
@@ -156,7 +160,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 break;
             }
 
-            if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk, ts)) {
+            if (isStartTagSymbol(tk) || isStableFormattingStartToken(tk, ts)) {
                     int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), ts.offset());
                     if (firstNonWhite != -1 && firstNonWhite == ts.offset()) {
                         foundOffset = ts.offset();

@@ -234,6 +234,12 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "  <p>\n  <table>\n  </table>^",
             "  <p>\n  <table>\n  </table>\n  ^", null);
+
+        // #160651
+        insertNewline(
+            "<html>^<style>",
+            "<html>\n    ^<style>", null);
+
     }
 
 }
