@@ -106,7 +106,16 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                client.remove(new File [] { file }, true); // delete all files recursively
+                ISVNStatus status = getStatus(client, file);
+                /**
+                 * Copy a folder, it becames svn added/copied.
+                 * Revert its parent and check 'Delete new files', the folder becomes unversioned.
+                 * 'Delete new files' deletes the folder and invokes this method.
+                 * But client.remove cannot be called since the folder is unversioned and we do not want to propagate an exception
+                 */
+                if (hasMetadata(file.getParentFile())) {
+                    client.remove(new File [] { file }, true); // delete all files recursively
+                }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
@@ -415,6 +424,7 @@ class FilesystemHandler extends VCSInterceptor {
                 client.revert(file, false);
                 // our goal was ony to fix the metadata ->
                 //  -> get rid of the reverted file
+                internalyDeletedFiles.add(file); // prevents later removal in afterDelete if the file is recreated
                 file.delete();
             }
         } catch (SVNClientException ex) {
@@ -469,8 +479,8 @@ class FilesystemHandler extends VCSInterceptor {
                             } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                                 from.renameTo(to);
                             } else {
-                                client.move(from, to, force);
-                            }
+                                    client.move(from, to, force);
+                                    }
                         } finally {
                             // we moved the files so schedule them a for a refresh
                             // in the following afterMove call
