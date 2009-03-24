@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -117,6 +118,33 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertTrue (rootFo.getFileSystem() instanceof JarFileSystem);
         File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
         assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
+    }
+
+    public void testNestedJars() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JarOutputStream jos = new JarOutputStream(baos);
+        ZipEntry entry = new ZipEntry("text");
+        jos.putNextEntry(entry);
+        jos.write("content".getBytes());
+        jos.close();
+        File metaJar = new File(getWorkDir(), "meta.jar");
+        jos = new JarOutputStream(new FileOutputStream(metaJar));
+        entry = new ZipEntry("nested.jar");
+        jos.putNextEntry(entry);
+        jos.write(baos.toByteArray());
+        jos.close();
+        FileObject metaJarFO = URLMapper.findFileObject(metaJar.toURI().toURL());
+        assertNotNull(metaJarFO);
+        assertTrue(FileUtil.isArchiveFile(metaJarFO));
+        FileObject metaRoot = FileUtil.getArchiveRoot(metaJarFO);
+        assertNotNull(metaRoot);
+        FileObject nestedJarFO = metaRoot.getFileObject("nested.jar");
+        assertNotNull(nestedJarFO);
+        assertTrue(FileUtil.isArchiveFile(nestedJarFO));
+        FileObject nestedRoot = FileUtil.getArchiveRoot(nestedJarFO);
+        assertNotNull(nestedRoot);
+        FileObject textFO = nestedRoot.getFileObject("text");
+        assertEquals("content", textFO.asText());
     }
 
 }
