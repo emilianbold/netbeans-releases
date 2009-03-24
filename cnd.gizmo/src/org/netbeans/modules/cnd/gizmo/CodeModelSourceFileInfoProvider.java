@@ -76,7 +76,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             if (csmProject == null) {
                 throw new SourceFileInfoCannotBeProvided();
             }
-            String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName;
+            String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
             CsmFunctionDefinition csmFunctionDefinition = getFirstDefinition(csmProject, name);
             if (csmFunctionDefinition == null){
                 throw new SourceFileInfoCannotBeProvided();
