@@ -113,6 +113,7 @@ public class QueryPanel extends javax.swing.JPanel {
         cancelChangesButton.setVisible(false);
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
+        refreshCheckBox.setVisible(false);
         noContentContainer.setVisible(false);
         noContentContainer.add(noContentPanel);
 
@@ -896,6 +897,8 @@ public class QueryPanel extends javax.swing.JPanel {
         jLabel6.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel6.text")); // NOI18N
         jLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        refreshCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout queryHeaderPanelLayout = new org.jdesktop.layout.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -905,7 +908,9 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 627, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 426, Short.MAX_VALUE)
+                        .add(refreshCheckBox)
+                        .add(18, 18, 18)
                         .add(lastRefreshLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lastRefreshDateLabel))
@@ -936,7 +941,8 @@ public class QueryPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(lastRefreshDateLabel)
-                            .add(lastRefreshLabel))))
+                            .add(lastRefreshLabel)
+                            .add(refreshCheckBox))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -972,7 +978,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
+                .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1081,6 +1087,7 @@ public class QueryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel queryHeaderPanel;
     final javax.swing.JTextField queryNameTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JCheckBox reporterCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
@@ -1161,6 +1168,7 @@ public class QueryPanel extends javax.swing.JPanel {
 //        changedList.setEnabled(enable);
         changedBlaBlaLabel.setEnabled(enable);
         changedHintLabel.setEnabled(enable);
+        refreshCheckBox.setEnabled(enable);
 //        newValueTextField.setEnabled(enable);
     }
 
