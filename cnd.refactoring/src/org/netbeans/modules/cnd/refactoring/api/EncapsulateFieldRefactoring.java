@@ -46,6 +46,8 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -58,7 +60,9 @@ import org.openide.util.lookup.Lookups;
  */
 public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     private String getterName;
+    private CsmMethod defaultGetter;
     private String setterName;
+    private CsmMethod defaultSetter;
     private Set<CsmVisibility> methodModifiers;
     private Set<CsmVisibility> fieldModifiers;
     private boolean alwaysUseAccessors;
@@ -138,6 +142,22 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
      */
     public boolean isMethodInline() {
         return methodInline;
+    }
+
+    public CsmMethod getDefaultGetter() {
+        return defaultGetter;
+    }
+
+    public CsmMethod getDefaultSetter() {
+        return defaultSetter;
+    }
+
+    public void setDefaultGetter(CsmMethod defaultGetter) {
+        this.defaultGetter = defaultGetter;
+    }
+
+    public void setDefaultSetter(CsmMethod defaultSetter) {
+        this.defaultSetter = defaultSetter;
     }
 
     /**
