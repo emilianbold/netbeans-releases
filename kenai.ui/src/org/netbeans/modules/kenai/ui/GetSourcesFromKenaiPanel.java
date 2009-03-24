@@ -122,14 +122,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }
 
     public GetSourcesInfo getSelectedSourcesInfo() {
+
         StringTokenizer stok = new StringTokenizer(repoFolderTextField.getText(), ","); // NOI18N
         ArrayList<String> repoFolders = new ArrayList<String>();
         while (stok.hasMoreTokens()) {
             repoFolders.add(stok.nextToken().trim());
         }
         String relPaths[] = repoFolders.size() == 0 ? new String[] { "" } : repoFolders.toArray(new String[repoFolders.size()]); // NOI18N
-        return new GetSourcesInfo(((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature,
-                localFolderTextField.getText(), relPaths);
+        KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+
+        return (featureItem != null) ? new GetSourcesInfo(featureItem.feature,
+                localFolderTextField.getText(), relPaths) : null;
+        
     }
 
     /** This method is called from within the constructor to
