@@ -25,11 +25,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="urlField" alignment="0" pref="428" max="32767" attributes="1"/>
-                  <Component id="nameField" alignment="0" pref="428" max="32767" attributes="1"/>
+                  <Component id="urlField" alignment="0" max="32767" attributes="1"/>
+                  <Component id="nameField" alignment="0" max="32767" attributes="1"/>
                   <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                       <Component id="psswdField" alignment="0" max="32767" attributes="1"/>
-                      <Component id="userField" alignment="0" min="-2" pref="169" max="-2" attributes="1"/>
+                      <Component id="userField" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -38,7 +38,7 @@
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="validateLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="progressPanel" pref="373" max="32767" attributes="0"/>
+              <Component id="progressPanel" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,7 +74,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="progressPanel" min="-2" pref="13" max="-2" attributes="0"/>
+                      <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -93,6 +93,9 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="urlField">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
@@ -118,6 +121,9 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="userField">
+      <Properties>
+        <Property name="columns" type="int" value="18"/>
+      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="userFieldActionPerformed"/>
       </Events>
@@ -126,6 +132,9 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JPasswordField" name="psswdField">
+      <Properties>
+        <Property name="columns" type="int" value="18"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
@@ -141,6 +150,9 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="nameField">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
