@@ -89,6 +89,11 @@ public class BugzillaRepository extends Repository {
     private BugzillaConfiguration bc;
     private RequestProcessor refreshProcessor;
 
+    private final Set<String> issuesToRefresh = new HashSet<String>(5);
+    private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
+    private Task refreshIssuesTask;
+    private Task refreshQueryTask;
+
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
@@ -351,9 +356,6 @@ public class BugzillaRepository extends Repository {
         return BugzillaConfiguration.create(this, BugzillaConfiguration.class);
     }
 
-    private final Set<String> issuesToRefresh = new HashSet<String>(5);
-    private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
-
     private void setupIssueRefreshTask() {
         if(refreshIssuesTask == null) {
             refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
@@ -457,6 +459,4 @@ public class BugzillaRepository extends Repository {
         }
         return refreshProcessor;
     }
-    private Task refreshIssuesTask;
-    private Task refreshQueryTask;
 }
