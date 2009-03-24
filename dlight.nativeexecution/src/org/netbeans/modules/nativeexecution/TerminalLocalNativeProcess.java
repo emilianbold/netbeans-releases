@@ -232,7 +232,24 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         try {
             File resFile = new File(pidFileName + ".res"); // NOI18N
             resFile.deleteOnExit();
-            exitCode = Integer.parseInt(new BufferedReader(new FileReader(resFile)).readLine().trim());
+            int attempts = 10;
+
+            while (attempts-- > 0) {
+                if (resFile.exists() && resFile.length() > 0) {
+                    BufferedReader statusReader = new BufferedReader(new FileReader(resFile));
+                    String exitCodeString = statusReader.readLine();
+                    if (exitCodeString != null) {
+                        exitCode = Integer.parseInt(exitCodeString.trim());
+                    }
+                    break;
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    // Ignore...
+                }
+            }
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {
         }
