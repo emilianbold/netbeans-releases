@@ -385,7 +385,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
             Integer count = cacheCounter.get(tmpObj);
             assert count != null;
             count--;
-            cacheCounter.put(tmpObj, count);
+            if (count == 0) {
+                cacheCounter.remove(tmpObj);
+            } else {
+                cacheCounter.put(tmpObj, count);
+            }
             return count;
         }
     }
