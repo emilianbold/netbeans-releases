@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai;
 
-import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+package org.netbeans.editor.ext.html;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
  *
- * @author Jan Becicka
+ * @author marekfukala
  */
-@IgnoreNonExisting
-public class ProjectsListData extends ListData {
+public class HTMLSyntaxSupportTest extends TestBase {
 
-    public ProjectData projects[];
-
-    @Override
-    public int size() {
-        return projects.length;
+    public HTMLSyntaxSupportTest() {
+        super(HTMLSyntaxSupportTest.class.getName());
     }
+
+    public void testCheckOpenCompletion() throws BadLocationException {
+        Document doc = createDocument();
+        
+        doc.insertString(0, "<", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 1, "<"));
+
+        doc.insertString(1, "div", null);
+        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 4, "div"));
+
+        doc.insertString(4, " ", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 5, " "));
+
+        doc.insertString(5, "/>", null);
+        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 7, "/>"));
+
+        doc.insertString(7, "</", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 9, "</"));
+
+        doc.insertString(9, "div> &", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 15, "div> &"));
+
+    }
+
+    
 }

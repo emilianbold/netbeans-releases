@@ -461,7 +461,11 @@ public class SunStudioDataCollector
         boolean warmUpStatus = false;
 
         try {
-            warmUpStatus = warmUpTaskResult.get().booleanValue();
+            // warmUpTaskResult may be null if invoke init against wrong target
+            // (not one that was validated)
+            warmUpStatus = warmUpTaskResult == null 
+                    ? false
+                    : warmUpTaskResult.get().booleanValue();
         } catch (CancellationException ex) {
             log.fine("Will not start SunStudioDataCollector because of " // NOI18N
                     + ex.getMessage());

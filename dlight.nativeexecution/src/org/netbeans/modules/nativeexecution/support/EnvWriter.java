@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai;
+package org.netbeans.modules.nativeexecution.support;
 
-import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
- * @author Jan Becicka
+ * @author ak119685
  */
-@IgnoreNonExisting
-public class ProjectsListData extends ListData {
+public final class EnvWriter {
 
-    public ProjectData projects[];
+    private final OutputStream os;
 
-    @Override
-    public int size() {
-        return projects.length;
+    public EnvWriter(OutputStream os) {
+        this.os = os;
+    }
+
+    public void write(final Map<String, String> env) throws IOException {
+        if (!env.isEmpty()) {
+            String val = null;
+            // Very simple sanity check of vars...
+            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
+
+            for (String var : env.keySet()) {
+                if (!pattern.matcher(var).matches()) {
+                    continue;
+                }
+
+                val = env.get(var);
+
+                if (val != null) {
+                    os.write((var + "=\"" + env.get(var) + // NOI18N
+                            "\" && export " + var + "\n").getBytes()); // NOI18N
+                    os.flush();
+                }
+            }
+        }
     }
 }
