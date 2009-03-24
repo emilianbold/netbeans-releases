@@ -99,6 +99,8 @@ class GroovyParser extends Parser {
     private static final AtomicLong PARSING_TIME = new AtomicLong(0);
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
+
+    private static long MAX_PARSING_TIME;
     
     private boolean waitJavaScanFinished = true;
 
@@ -477,15 +479,11 @@ class GroovyParser extends Parser {
             compilationUnit.compile(Phases.CLASS_GENERATION);
 
             if (LOG.isLoggable(Level.FINEST)) {
-                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation success in {0}; total time spent {1}; total count {2}",
-                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
+                logParsingTime(context, start);
             }
         } catch (Throwable e) {
             if (LOG.isLoggable(Level.FINEST)) {
-                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation failure in {0}; total time spent {1}; total count {2}",
-                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
+                logParsingTime(context, start);
             }
 
             int offset = -1;
@@ -590,6 +588,20 @@ class GroovyParser extends Parser {
             return r;
         } else {
             return sanitize(context, sanitizing);
+        }
+    }
+
+    private static void logParsingTime(Context context, long start) {
+        long diff = System.currentTimeMillis() - start;
+        long full = PARSING_TIME.addAndGet(diff);
+        LOG.log(Level.FINEST, "Compilation failure in {0} for file {3}; total time spent {1}; total count {2}",
+                new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        synchronized (GroovyParser.class) {
+            if (diff > MAX_PARSING_TIME) {
+                MAX_PARSING_TIME = diff;
+                LOG.log(Level.FINEST, "Maximum parsing time has been updated to {0}; file {1}",
+                    new Object[] {diff, context.snapshot.getSource().getFileObject()});
+            }
         }
     }
 
