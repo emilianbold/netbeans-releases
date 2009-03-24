@@ -41,6 +41,7 @@
 
 package org.apache.tools.ant.module.run;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +83,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -342,6 +344,7 @@ public final class TargetExecutor implements Runnable {
                 stopActions.put(io, sa);
                 rerunActions.put(io, ra);
             }
+            IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.RED);
             io.select();
             task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
