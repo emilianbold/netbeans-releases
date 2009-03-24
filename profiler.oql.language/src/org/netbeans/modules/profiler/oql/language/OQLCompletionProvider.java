@@ -123,6 +123,12 @@ public class OQLCompletionProvider implements CompletionProvider {
                 final TokenSequence ts = th.tokenSequence();
                 final Token<OQLTokenId> currentToken = findCurrentToken(component, ts);
 
+                // sanity test
+                if (currentToken == null) {
+                    resultSet.finish();
+                    return;
+                }
+
                 switch (currentToken.id()) {
                     case UNKNOWN: {
                         String tokentext = currentToken.toString();
