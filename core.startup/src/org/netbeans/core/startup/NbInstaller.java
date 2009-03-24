@@ -819,7 +819,7 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
-        if (LOG.isLoggable(Level.FINER)) {
+        if (LOG.isLoggable(Level.FINER) && /* otherwise ClassCircularityError on LogRecord*/!pkg.equals("java/util/logging/")) {
             LOG.finer("Delegating resource " + pkg + " from " + parent + " for " + m.getCodeNameBase());
         }
         return true;
