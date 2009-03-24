@@ -88,6 +88,9 @@ public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
 
     @Override
     public void prepare(){
+        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
+
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -108,6 +111,7 @@ public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
     
     @Override
     public void close(){
+        repaintManager().resetRegionFilters();
     }    
     
     public void testCreatePhpSampleProject() {

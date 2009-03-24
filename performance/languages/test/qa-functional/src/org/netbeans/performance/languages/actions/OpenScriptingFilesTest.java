@@ -74,7 +74,8 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     public static String testProject;
     protected String nodePath;
     protected String fileName;     
-    
+    private static JPopupMenuOperator popup;
+
     /** Menu item name that opens the editor */
     public static String menuItem;
     
@@ -136,13 +137,13 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         String path = nodePath+"|"+fileName;    
         fileToBeOpened = new Node(getProjectNode(testProject),path);
+         popup =  fileToBeOpened.callPopup();
     }
 
     @Override
     public ComponentOperator open() {
-        JPopupMenuOperator popup =  fileToBeOpened.callPopup();
         popup.pushMenu(menuItem);
-        return null;
+        return new EditorOperator(fileName);
     }
   
     @Override
@@ -171,7 +172,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         doMeasurement();          
     }
 
@@ -216,7 +217,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "yaml20kb.yml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         doMeasurement();          
     }
 
