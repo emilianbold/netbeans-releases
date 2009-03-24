@@ -59,12 +59,13 @@ public final class IndenterContextData<T1 extends TokenId> {
 
     public IndenterContextData(JoinedTokenSequence<T1> joinedTS,
             int lineStartOffset, int lineEndOffset, int lineNonWhiteStartOffset,
-            int nextLineStartOffset) {
+            int nextLineStartOffset, boolean blank) {
         this.lineStartOffset = lineStartOffset;
         this.lineEndOffset = lineEndOffset;
         this.lineNonWhiteStartOffset = lineNonWhiteStartOffset;
         this.joinedTS = joinedTS;
         this.nextLineStartOffset = nextLineStartOffset;
+        this.blankLine = blank;
     }
 
     public int getNextLineStartOffset() {

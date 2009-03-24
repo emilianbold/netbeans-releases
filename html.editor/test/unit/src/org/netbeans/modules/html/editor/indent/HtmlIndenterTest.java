@@ -135,6 +135,12 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<html>\n    <body>\n\t<table>",
             "<html>\n    <body>\n        <table>", null);
+
+        // new line at the end used to cause NPE:
+        format(
+            "<a href=\"a\"><code>Validator</code></a>\n",
+            "<a href=\"a\"><code>Validator</code></a>\n", null);
+
     }
 
     public void testFormattingHTML() throws Exception {

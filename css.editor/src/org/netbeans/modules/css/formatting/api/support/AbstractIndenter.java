@@ -1127,7 +1127,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
 
                 // ask formatter for line indentation:
-                IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset);
+                IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset, emptyLine);
                 cd.setLanguageBlockStart(line == lp.startingLine);
                 cd.setLanguageBlockEnd(line == realEndingLine);
                 List<IndentCommand> preliminaryNextLineIndent = new ArrayList<IndentCommand>();
