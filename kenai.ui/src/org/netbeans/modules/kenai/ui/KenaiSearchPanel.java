@@ -435,16 +435,6 @@ public class KenaiSearchPanel extends JPanel {
 
     }
 
-    private static class KenaiRepositoriesListModel extends DefaultListModel {
-
-        public KenaiRepositoriesListModel() {
-            
-        }
-
-    }
-
-    // ----------
-
     private class KenaiProjectsListRenderer implements ListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             return new ListRendererPanel(list, ((KenaiProjectSearchInfo) value), index, isSelected, cellHasFocus, panelType);
