@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,19 +34,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -54,61 +53,24 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
 
-
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-final class StackDataProviderImpl implements StackDataProvider {
+class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
+    private StackDataStorage storage;
+    private ServiceInfoDataStorage serviceInfoStorage;
 
-  private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
-          FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
+    FunctionsListDataProviderImpl() {
+    }
 
-  private StackDataStorage storage;
-  private ServiceInfoDataStorage serviceInfoDataStorage;
+    public void attachTo(DataStorage storage) {
+        this.storage = (StackDataStorage) storage;
+        attachTo((ServiceInfoDataStorage) storage);
+    }
 
-
-  public void attachTo(DataStorage storage) {
-    this.storage = (StackDataStorage) storage;
-    attachTo((ServiceInfoDataStorage)storage);
-  }
-  
-
-  public List<FunctionMetric> getMetricsList() {
-    return metricsList;
-  }
-
-  public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
-    return storage.getCallers(path, aggregate);
-  }
-
-  public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
-    return storage.getCallees(path, aggregate);
-  }
-
-  public List<FunctionCall> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
-    return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
-  }
-
-  public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
-    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
-  }
-
-  public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCall[0]), false));
-  }
-
-  public FunctionCallTreeTableNode getValueAt(int row) {
-    //throw new UnsupportedOperationException("Not supported yet.");
-    return null;
-  }
-
-  public String getTableValueAt(Column column, int row) {
-    return null;
-  }
-
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-        this.serviceInfoDataStorage = serviceInfoDataStorage;
-     //   throw new UnsupportedOperationException("Not supported yet.");
+    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
@@ -124,7 +86,7 @@ final class StackDataProviderImpl implements StackDataProvider {
             SourceFileInfoProvider provider = iterator.next();
             try {
                 // TODO: pass meaningful values for offset and executable
-                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoStorage.getInfo());
                 if (lineInfo != null && lineInfo.isSourceKnown()) {
                     return lineInfo;
                 }
@@ -132,5 +94,9 @@ final class StackDataProviderImpl implements StackDataProvider {
             }
         }
         return null;
+    }
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        this.serviceInfoStorage = serviceInfoDataStorage;
     }
 }

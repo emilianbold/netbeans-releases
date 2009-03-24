@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
+
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public interface StackDataStorage {//extends StackSupport {
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
+public final class FunctionsListDataProviderImplFactory implements DataProviderFactory{
 
-    public static final String STACK_DATA_STORAGE_TYPE_ID = "stack";
-    public static final String STACK_METADATA_VIEW_NAME = "DtraceStack";
+    private final Collection<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:functions"));
 
-    /**
-     * Submits new stack (sample) to the storage.
-     *
-     * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
-     * @param sampleDuration  number of nanoseconds the program spent in this stack
-     * @return
-     */
-    int putStack(List<CharSequence> stack, long sampleDuration);
+    public DataProvider create() {
+        return new FunctionsListDataProviderImpl();
+    }
 
-    List<Long> getPeriodicStacks(long startTime, long endTime, long interval);
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+        return supportedStorageTypes;
+    }
 
-    List<FunctionMetric> getMetricsList();
+    public Collection<DataModelScheme> getProvidedDataModelScheme() {
+        return providedSchemas;
+    }
 
-    List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate);
+    public boolean provides(DataModelScheme dataModel) {
+        return providedSchemas.contains(dataModel);
+    }
 
-    List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate);
-
-    List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit);
-
-    List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
 }

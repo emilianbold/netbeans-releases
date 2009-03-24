@@ -125,7 +125,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setLoadingContent() {
-        isEmptyContent = true;
+        isEmptyContent = false;
         isLoadingContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -158,9 +158,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setContent(final boolean isEmpty) {
-        if (isLoadingContent){
+        if (isLoadingContent && isEmpty){
             isLoadingContent = false;
-            setContent(isEmpty);
+            setEmptyContent();
+            return;
+        }
+        if (isLoadingContent && !isEmpty){
+            isLoadingContent = false;
+            setNonEmptyContent();
             return;
         }
         if (isEmptyContent && isEmpty) {
