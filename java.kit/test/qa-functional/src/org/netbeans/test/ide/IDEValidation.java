@@ -1406,27 +1406,6 @@ public class IDEValidation extends JellyTestCase {
         CountingSecurityManager.assertReflection(0, "allowed-reflection.txt");
     }
     
-    public void testBlacklistedClassesHandler() throws Exception {
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
-        assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
-        if (bcHandler.isGeneratingWhitelist()) {
-            bcHandler.saveWhiteList(getLog("whitelist.txt"));
-        }
-        try {
-            if (bcHandler.hasWhitelistStorage()) {
-                bcHandler.saveWhiteList();
-                bcHandler.saveWhiteList(getLog("whitelist.txt"));
-                bcHandler.reportDifference(getLog("diff.txt"));
-                assertTrue(bcHandler.reportViolations(getLog("violations.xml")) 
-                        + bcHandler.reportDifference(), bcHandler.noViolations());
-            } else {
-                assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
-            }
-        } finally {
-            bcHandler.unregister();
-        }        
-    }
-    
     /** Closes help window if any. It should not stay open between test cases.
      *  Otherwise it can break next tests.
      */
