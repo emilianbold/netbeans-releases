@@ -1,0 +1,38 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import java.awt.*;
+
+/**
+ * @author ${user}
+ */
+public class ${name} extends Frame {
+
+    public Main () {
+        initComponents();
+    }
+
+    private void initComponents() {
+        pack();
+    }
+
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Main().setVisible(true);
+            }
+        });
+    }
+
+    public void paint(Graphics g) {
+        g.drawString("Hello, World!", 80, 50);
+    }
+}
