@@ -88,6 +88,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             
             final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+            if (sourcesInfo == null) {
+                return;
+            }
+
             final KenaiFeature feature = sourcesInfo.feature;
 
             if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
