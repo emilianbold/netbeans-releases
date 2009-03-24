@@ -121,6 +121,22 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if(issue != null) {
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     void reloadFormInAWT(final boolean force) {
         if (submitting) {
             return;
