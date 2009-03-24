@@ -67,6 +67,7 @@ public class Query_0001 extends Query {
     static final String OTA_SCHEMA_NAME = "OTA_TravelItinerary.xsd";
 
     static final String [] m_aTestMethods = {
+        "InstallSOA",
         "CreateJavaApplication",
         "CreateSchema",
         "QueryUnused1",

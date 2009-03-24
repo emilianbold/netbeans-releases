@@ -48,12 +48,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * Graph legend.
@@ -62,19 +64,22 @@ import javax.swing.SwingConstants;
  */
 public class Legend extends JPanel {
 
-    public Legend(List<GraphDescriptor> descriptors, List<GraphDetail> details) {
+    public Legend(List<GraphDescriptor> descriptors, Map<String, String> details) {
         super(new GridBagLayout());
 
         setBackground(GraphColors.LEGEND_COLOR);
         setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        setSize(new Dimension(80, 60));
         setMinimumSize(new Dimension(80, 60));
         setPreferredSize(new Dimension(80, 60));
+        setOpaque(true);
+        GridBagConstraints c;
 
         for (GraphDescriptor descriptor : descriptors) {
             JLabel label = new JLabel(descriptor.getDescription(), new ColorIcon(descriptor.getColor()), SwingConstants.LEADING);
             label.setForeground(GraphColors.TEXT_COLOR);
             label.setFont(label.getFont().deriveFont(10f));
-            GridBagConstraints c = new GridBagConstraints();
+            c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridwidth = GridBagConstraints.REMAINDER;
@@ -83,12 +88,57 @@ public class Legend extends JPanel {
             add(label, c);
         }
 
-        GridBagConstraints c = new GridBagConstraints();
+        c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        add(Box.createVerticalGlue(), c);
+        add(Box.createVerticalStrut(4), c);
+
+        for (Map.Entry<String, String> entry : details.entrySet()) {
+            JLabel name = new JLabel(entry.getValue());
+            name.setForeground(GraphColors.TEXT_COLOR);
+            name.setFont(name.getFont().deriveFont(10f));
+            c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = new Insets(0, 4, 4, 4);
+            add(name, c);
+            JLabel value = new JLabel();
+            value.setName(entry.getKey());
+            value.setForeground(GraphColors.TEXT_COLOR);
+            value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
+            c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.weightx = 1.0;
+            c.insets = new Insets(0, 0, 4, 4);
+            add(value, c);
+        }
+    }
+
+    public void updateDetail(final String name, final String value) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateDetailImpl(name, value);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateDetailImpl(name, value);
+                }
+            });
+        }
+    }
+
+    private void updateDetailImpl(String name, String value) {
+        for (int i = 0; i < getComponentCount(); ++i) {
+            Component comp = getComponent(i);
+            if (comp instanceof JLabel && name.equals(comp.getName())) {
+                ((JLabel)comp).setText(value);
+                repaint();
+                break;
+            }
+        }
     }
 
     private static class ColorIcon implements Icon {

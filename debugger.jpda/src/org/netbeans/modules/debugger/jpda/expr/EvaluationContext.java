@@ -141,6 +141,10 @@ public class EvaluationContext {
         return frame;
     }
 
+    ObjectReference getContextVariable() {
+        return contextVariable;
+    }
+
     public ObjectReference getContextObject() {
         if (contextVariable != null) {
             return contextVariable;

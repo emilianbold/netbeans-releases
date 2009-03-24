@@ -43,6 +43,7 @@ package org.netbeans.performance.languages.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import java.io.IOException;
@@ -99,7 +100,8 @@ public class OpenRubyProjectTest extends PerformanceTestCase {
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
         openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
         String paths = workdir + java.io.File.separator+ projectName;
-        path.setText(paths);        
+        path.setText(paths);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EXPLORER_FILTER);
     }
 
     @Override
@@ -112,6 +114,7 @@ public class OpenRubyProjectTest extends PerformanceTestCase {
     public void close() {
         closeAllModal();
         CommonUtilities.actionOnProject(projectName, "Close");
+        repaintManager().resetRegionFilters();
     }
 
     @Override

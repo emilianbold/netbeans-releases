@@ -284,6 +284,9 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
      * @return a live bean representing the final DD
      */
     public RootInterface getDeploymentDescriptor(String location) {
+        if ("ejb-jar.xml".equals(location)) { //NOI18N
+            location = J2eeModule.EJBJAR_XML;
+        }
         if (J2eeModule.EJBJAR_XML.equals(location)) {
             try {
                 FileObject content = getContentDirectory();

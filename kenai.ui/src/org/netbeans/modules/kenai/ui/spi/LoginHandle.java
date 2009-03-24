@@ -18,7 +18,7 @@ public abstract class LoginHandle {
      * The name of property which is fired when the list of user's member projects
      * has changed (projects added, removed, renamed). The property value is undefined.
      */
-    public static final String PROP_MEMBER_PROJECT_LIST = "memberProjects";
+    public static final String PROP_MEMBER_PROJECT_LIST = "memberProjects"; // NOI18N
 
     /**
      *

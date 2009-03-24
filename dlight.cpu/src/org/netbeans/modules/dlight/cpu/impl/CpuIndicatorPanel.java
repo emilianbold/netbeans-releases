@@ -49,7 +49,6 @@ import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.GraphDetail;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
 import org.openide.util.NbBundle;
@@ -57,15 +56,23 @@ import org.openide.util.NbBundle;
 /**
  * @author Alexey Vladykin
  */
-public class CpuIndicatorPanel extends GraphPanel<PercentageGraph, Legend> {
+public class CpuIndicatorPanel {
 
     private static final Color COLOR_SYS = GraphColors.COLOR_1;
     private static final Color COLOR_USR = GraphColors.COLOR_3;
     private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
     private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
 
+    private final PercentageGraph graph;
+    private final GraphPanel<PercentageGraph, Legend> panel;
+
     /*package*/ CpuIndicatorPanel(CpuIndicator indicator) {
-        super(getTitle(), createGraph(indicator), createLegend(), null, null);
+        graph = createGraph(indicator);
+        panel = new GraphPanel(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+    }
+
+    public GraphPanel getPanel() {
+        return panel;
     }
 
     private static String getTitle() {
@@ -77,6 +84,8 @@ public class CpuIndicatorPanel extends GraphPanel<PercentageGraph, Legend> {
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
+        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
+        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
 
         MouseListener ml = new MouseAdapter() {
 
@@ -92,11 +101,11 @@ public class CpuIndicatorPanel extends GraphPanel<PercentageGraph, Legend> {
     }
 
     private static Legend createLegend() {
-        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<GraphDetail>emptyList());
+        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<String, String>emptyMap());
     }
 
     /*package*/ void addData(int sys, int usr) {
-        getGraph().addData(sys, usr);
+        graph.addData(sys, usr);
     }
 
     /*package*/ void setSysValue(int v) {
