@@ -356,6 +356,9 @@ public class MakeActionProvider implements ActionProvider {
                         cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
+                        String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), message, title, JOptionPane.ERROR_MESSAGE);
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
