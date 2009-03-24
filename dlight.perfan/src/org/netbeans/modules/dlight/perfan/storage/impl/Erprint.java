@@ -293,8 +293,10 @@ public final class Erprint {
 
         public void reset() throws IOException {
             synchronized (lock) {
-                while (doneSignal.getCount() > 0) {
-                    doneSignal.countDown();
+                if (doneSignal != null) {
+                    while (doneSignal.getCount() > 0) {
+                        doneSignal.countDown();
+                    }
                 }
 
                 reset(null);

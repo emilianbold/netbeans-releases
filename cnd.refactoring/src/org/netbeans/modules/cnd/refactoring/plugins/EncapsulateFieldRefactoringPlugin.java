@@ -41,9 +41,11 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +53,12 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenProcessor;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -62,9 +69,13 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils.InsertInfo;
@@ -227,6 +238,208 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         }
     }
 
+    private FieldAccessInfo prepareFieldAccessInfo(final CsmReference ref, final Document doc) {
+        final FieldAccessTokenProcessor tp = new FieldAccessTokenProcessor(ref.getStartOffset(), doc);
+        if (doc != null) {
+            doc.render(new Runnable() {
+
+                public void run() {
+                    try {
+                        int start = CndTokenUtilities.getLastCommandSeparator(doc, ref.getStartOffset());
+                        CndTokenUtilities.processTokens(tp, doc, start, doc.getLength());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
+        return tp.getFieldAccessInfo();
+    }
+
+    private final static class FieldAccessInfo {
+
+        private int startOffset = -1;
+        private int endOffset = -1;
+        private CharSequence origParamsText = "";
+        private List<CharSequence> paramText = new ArrayList<CharSequence>();
+
+        public CharSequence getOriginalParamsText() {
+            return origParamsText;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public List<CharSequence> getParametersText() {
+            return paramText;
+        }
+
+        private void addParam(String param) {
+            paramText.add(param);
+        }
+
+        public void setStartOffsetIfNeeded(int startOffset) {
+            if (this.startOffset < 0) {
+                this.startOffset = startOffset;
+                this.endOffset = startOffset;
+            }
+        }
+
+        private boolean hasParam(int index) {
+            return index < paramText.size();
+        }
+
+        private CharSequence getParameter(int index) {
+            return paramText.get(index);
+        }
+
+        private boolean isValid() {
+            return endOffset > startOffset;
+        }
+
+        private void setEndOffset(int offset) {
+            endOffset = offset;
+        }
+
+        @Override
+        public String toString() {
+            return origParamsText + "[" + startOffset + "-" + endOffset + "] params:" + paramText; // NOI18N
+        }
+    }
+
+    private final static class FieldAccessTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+
+        enum State {
+
+            START, AFTER_FIELD_ACCESS, LVALUE, END
+        }
+        private State state = State.START;
+        private BlockConsumer blockConsumer;
+        private final int refStartPos;
+        private final FieldAccessInfo fldInfo;
+        private final Document doc;
+        private Boolean inPP = null;
+        private int curParamStartOffset = -1;
+
+        private FieldAccessTokenProcessor(int refStartPos, Document doc) {
+            fldInfo = new FieldAccessInfo();
+            this.doc = doc;
+            this.refStartPos = refStartPos;
+        }
+
+        public boolean isStopped() {
+            return state == State.END;
+        }
+
+        public FieldAccessInfo getFieldAccessInfo() {
+            return fldInfo;
+        }
+
+        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+            if (blockConsumer != null) {
+                if (blockConsumer.isLastToken(token)) {
+                    blockConsumer = null;
+                }
+                return false;
+            }
+            if (inPP == null) {
+                if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                    inPP = Boolean.TRUE;
+                    return true;
+                } else {
+                    inPP = Boolean.FALSE;
+                }
+            } else if (inPP == Boolean.FALSE) {
+                if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                    return false;
+                }
+            }
+            switch (state) {
+                case START:
+                    if (tokenOffset == refStartPos) {
+                        state = State.AFTER_FIELD_ACCESS;
+                        fldInfo.startOffset = tokenOffset;
+                        fldInfo.origParamsText = token.text();
+                    }
+                    break;
+                case AFTER_FIELD_ACCESS:
+                    afterFieldAccess(token, tokenOffset);
+                    break;
+            }
+            return false;
+        }
+
+        private void afterFieldAccess(Token<CppTokenId> token, int offset) {
+            if (!isWS(token)) {
+                switch (token.id()) {
+                    case LPAREN:
+                        blockConsumer = new BlockConsumer(CppTokenId.LT, CppTokenId.GT);
+                        break;
+                    case SEMICOLON:
+                    case RPAREN:
+                        state = State.END;
+                        break;
+                    case EQ:
+                        state = State.LVALUE;
+                        break;
+                }
+            }
+        }
+
+        private boolean isWS(Token<CppTokenId> t) {
+            switch (t.id()) {
+                case WHITESPACE:
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case LINE_COMMENT:
+                case ESCAPED_LINE:
+                case ESCAPED_WHITESPACE:
+                    return true;
+            }
+            return false;
+        }
+
+        public void start(int startOffset, int firstTokenOffset, int lastOffset) {
+        }
+
+        public void end(int offset, int lastTokenOffset) {
+            if (fldInfo.startOffset != fldInfo.endOffset) {
+                try {
+                    fldInfo.origParamsText = doc.getText(fldInfo.startOffset, fldInfo.endOffset - fldInfo.startOffset);
+                } catch (BadLocationException ex) {
+                    // skip
+                }
+            }
+        }
+        private static class BlockConsumer {
+
+            private final CppTokenId openBracket;
+            private final CppTokenId closeBracket;
+            private int depth;
+
+            public BlockConsumer(CppTokenId openBracket, CppTokenId closeBracket) {
+                this.openBracket = openBracket;
+                this.closeBracket = closeBracket;
+                depth = 0;
+            }
+
+            public boolean isLastToken(Token<CppTokenId> token) {
+                boolean stop = false;
+                if (token.id() == openBracket) {
+                    ++depth;
+                } else if (token.id() == closeBracket) {
+                    --depth;
+                    stop = depth <= 0;
+                }
+                return stop;
+            }
+        }
+    }
 //    private CsmVisibility resolveVisibility(CsmClass clazz) {
 //        NestingKind nestingKind = clazz.getNestingKind();
 //
@@ -367,7 +580,8 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         final String getterName = refactoring.getGetterName();
         final String setterName = refactoring.getSetterName();
         // prepare to generate declaration/definition
-        if ((getterName != null || setterName != null) && (csmFile.equals(classDeclarationFile) || csmFile.equals(classDefinitionFile))) {
+        if (((getterName != null && refactoring.getDefaultGetter() == null) || (setterName != null && refactoring.getDefaultSetter() == null)) && (csmFile.equals(classDeclarationFile) || csmFile.equals(classDefinitionFile))) {
+//      SortBy sortBy = refactoring.getContext().lookup(SortBy.class);
             fo = CsmUtilities.getFileObject(csmFile);
             CsmClass enclosing = refactoring.getEnclosingClass();
             InsertInfo[] insertPositons = GeneratorUtils.getInsertPositons(null, enclosing, insPt);
@@ -375,14 +589,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 DeclarationGenerator.Kind declKind = refactoring.isMethodInline() ? DeclarationGenerator.Kind.INLINE_DEFINITION : DeclarationGenerator.Kind.DECLARATION;
                 // create declaration
                 InsertInfo declInsert = insertPositons[0];
-                if (getterName != null) {
+                if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, declKind);
                     addDiff(declInsert, text,
                             getterName,
                             refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
                             mr, fo);
                 }
-                if (setterName != null) {
+                if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, declKind);
                     addDiff(declInsert, text,
                             setterName,
@@ -394,14 +608,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 // create definition
                 DeclarationGenerator.Kind defKind = DeclarationGenerator.Kind.EXTERNAL_DEFINITION;
                 InsertInfo defInsert = insertPositons[1];
-                if (getterName != null) {
+                if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, defKind);
                     addDiff(defInsert, text,
                             getterName,
                             "EncapsulateFieldInsertDefinition", // NOI18N
                             mr, fo);
                 }
-                if (setterName != null) {
+                if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, defKind);
                     addDiff(defInsert, text,
                             setterName,
@@ -409,12 +623,24 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                             mr, fo);
                 }
             }
-            if (refactoring.isAlwaysUseAccessors()) {
-                // change all references
+        }
+        // change references
+        if (refactoring.isAlwaysUseAccessors()) {
+            fo = fo != null ? fo : CsmUtilities.getFileObject(csmFile);
+            ces = ces != null ? ces : CsmUtilities.findCloneableEditorSupport(csmFile);
+            // do not interrupt refactoring
+            Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(field, csmFile, CsmReferenceKind.ALL, null);
+            if (refs.size() > 0) {
+                List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+                Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+
+                    public int compare(CsmReference o1, CsmReference o2) {
+                        return o1.getStartOffset() - o2.getStartOffset();
+                    }
+                });
+                processRefactoredReferences(sortedRefs, fo, ces, mr, outProblem);
             }
         }
-//        SortBy sortBy = refactoring.getContext().lookup(SortBy.class);
-        // replace all useges
     }
 
     private Document getDoc(CloneableEditorSupport ces) {
@@ -430,6 +656,19 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             Exceptions.printStackTrace(ex);
         }
         return doc;
+    }
+
+    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr, AtomicReference<Problem> outProblem) {
+        for (CsmReference curRef : sortedRefs) {
+            CsmObject encl = CsmRefactoringUtils.getEnclosingElement(curRef);
+            // change in functions, but not in constructors/destructors
+            if (CsmKindUtilities.isFunction(encl)) {
+                if (!CsmKindUtilities.isConstructor(encl) && CsmKindUtilities.isDestructor(encl)
+                    && !encl.equals(refactoring.getDefaultGetter()) && !encl.equals(refactoring.getDefaultSetter())) {
+//                    FieldAccessInfo fldAccess = prepareFieldAccessInfo(curRef, getDoc(ces));
+                }
+            }
+        }
     }
 //    @Override
 //    public Problem prepare(RefactoringElementsBag bag) {
