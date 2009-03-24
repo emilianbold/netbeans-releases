@@ -355,8 +355,11 @@ final class DocumentContent implements AbstractDocument.Content, CharSeq, GapSta
         }
 
         public int length() {
-            // to comply to AbstractDocument.getText() do not include ending '\n'
-            return DocumentContent.this.length() - 1;
+            // this is slightly different from AbstractDocument.getText(), which does not include ending '\n'
+            // see #159502; in general various highliging code needs accessing the artifical
+            // '\n' at the end of a document, because it is the only way how to define
+            // line highlights (ie. highligh that expands beyond EOL) for the last line in the document.
+            return DocumentContent.this.length();
         }
 
         @Override
