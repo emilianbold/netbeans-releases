@@ -194,7 +194,7 @@ public class Graph extends JComponent {
         return String.format("%d", value);
     }
 
-    /*package*/ static enum AxisOrientation {
+    private static enum AxisOrientation {
         HORIZONTAL,
         VERTICAL
     }
@@ -216,11 +216,13 @@ public class Graph extends JComponent {
 
         public void setUpperLimit(int limit) {
             this.max = limit;
+            repaint();
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            graph.drawAxis(g, orientation, getSize());
+            super.paintComponent(g);
+            graph.drawVerticalAxis(g, getWidth(), getHeight());
         }
 
     }
