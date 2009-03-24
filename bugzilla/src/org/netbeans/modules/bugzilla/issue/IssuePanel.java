@@ -46,9 +46,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -155,7 +158,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     changedUpdate(e);
                 }
                 public void changedUpdate(DocumentEvent e) {
-                    updateMessagePanel();
+                    updateNoSummary();
                 }
             });
         }
@@ -243,7 +246,7 @@ public class IssuePanel extends javax.swing.JPanel {
             addCommentArea.setText(""); // NOI18N
         }
         updateFieldStatuses();
-        updateMessagePanel();
+        updateNoSummary();
         reloading = false;
     }
 
@@ -412,29 +415,49 @@ public class IssuePanel extends javax.swing.JPanel {
         ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));
         blocksField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(blocksLabel));
         dependsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(dependsLabel));
+        CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
+        blocksField.getDocument().addDocumentListener(cyclicDependencyListener);
+        dependsField.getDocument().addDocumentListener(cyclicDependencyListener);
     }
 
-    private boolean noSummary = false;
-    private void updateMessagePanel() {
+    private void updateNoSummary() {
         if (summaryField.getText().trim().length() == 0) {
             if (!noSummary) {
                 noSummary = true;
-                messagePanel.removeAll();
-                submitButton.setEnabled(false);
-                JLabel noSummaryLabel = new JLabel();
-                noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-                String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
-                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
-                messagePanel.add(noSummaryLabel);
-                messagePanel.setVisible(true);
-                messagePanel.revalidate();
+                updateMessagePanel();
             }
         } else {
             if (noSummary) {
                 noSummary = false;
-                submitButton.setEnabled(true);
-                messagePanel.setVisible(false);
+                updateMessagePanel();
             }
+        }
+    }
+
+    private boolean noSummary = false;
+    private boolean cyclicDependency = false;
+    private void updateMessagePanel() {
+        messagePanel.removeAll();
+        if (noSummary) {
+            JLabel noSummaryLabel = new JLabel();
+            noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
+            String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+            noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+            messagePanel.add(noSummaryLabel);
+        }
+        if (cyclicDependency) {
+            JLabel cyclicDependencyLabel = new JLabel();
+            cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
+            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(cyclicDependencyLabel);
+        }
+        if (noSummary || cyclicDependency) {
+            submitButton.setEnabled(false);
+            messagePanel.setVisible(true);
+            messagePanel.revalidate();
+        } else {
+            submitButton.setEnabled(true);
+            messagePanel.setVisible(false);
         }
     }
 
@@ -1244,6 +1267,46 @@ public class IssuePanel extends javax.swing.JPanel {
 
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
+        }
+    }
+
+    class CyclicDependencyDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            Set<Integer> bugs1 = bugs(blocksField.getText());
+            Set<Integer> bugs2 = bugs(dependsField.getText());
+            bugs1.retainAll(bugs2);
+            if (bugs1.isEmpty()) {
+                if (cyclicDependency) {
+                    cyclicDependency = false;
+                    updateMessagePanel();
+                }
+            } else {
+                if (!cyclicDependency) {
+                    cyclicDependency = true;
+                    updateMessagePanel();
+                }
+            }
+        }
+
+        private Set<Integer> bugs(String values) {
+            Set<Integer> bugs = new HashSet<Integer>();
+            StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                try {
+                    bugs.add(Integer.parseInt(token));
+                } catch (NumberFormatException nfex) {}
+            }
+            return bugs;
         }
 
     }
