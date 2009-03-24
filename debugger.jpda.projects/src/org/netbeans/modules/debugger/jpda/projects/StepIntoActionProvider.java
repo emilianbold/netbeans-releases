@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -60,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 
@@ -115,13 +118,24 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
     }
     
     private void invokeAction() {
-        ((ActionProvider) MainProjectManager.getDefault ().
-            getMainProject ().getLookup ().lookup (
+        Project p = MainProjectManager.getDefault ().getMainProject ();
+        ActionProvider actionProvider = p.getLookup ().lookup (
                 ActionProvider.class
-            )).invokeAction (
-                ActionProvider.COMMAND_DEBUG_STEP_INTO, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
             );
+        if (Arrays.asList(actionProvider.getSupportedActions ()).contains(ActionProvider.COMMAND_DEBUG_STEP_INTO) &&
+            actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_STEP_INTO, p.getLookup())) {
+
+            actionProvider.invokeAction (
+                    ActionProvider.COMMAND_DEBUG_STEP_INTO,
+                    p.getLookup ()
+                );
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+            setEnabled (
+                ActionsManager.ACTION_STEP_INTO,
+                false
+            );
+        }
     }
     
     private boolean shouldBeEnabled () {
@@ -129,8 +143,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
         if (p == null) return false;
-        ActionProvider actionProvider = (ActionProvider) p.getLookup ().
-            lookup (ActionProvider.class);
+        ActionProvider actionProvider = p.getLookup().lookup(ActionProvider.class);
         if (actionProvider == null) return false;
         String[] sa = actionProvider.getSupportedActions ();
         int i, k = sa.length;
@@ -146,7 +159,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         // check if this action should be enabled
         return actionProvider.isActionEnabled (
             ActionProvider.COMMAND_DEBUG_STEP_INTO,
-            MainProjectManager.getDefault ().getMainProject ().getLookup ()
+            p.getLookup ()
         );
     }
     
