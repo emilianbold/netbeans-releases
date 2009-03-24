@@ -144,31 +144,6 @@ class GroovyParser extends Parser {
         lastResult.setErrors(errors);
     }
 
-//    public void parseFiles(Job job) {
-//        ParseListener listener = job.listener;
-//        SourceFileReader reader = job.reader;
-//        for (ParserFile file : job.files) {
-//            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-//            listener.started(beginEvent);
-//
-//            ParserResult result = null;
-//
-//            try {
-//                CharSequence buffer = reader.read(file);
-//                String source = asString(buffer);
-//                int caretOffset = reader.getCaretOffset(file);
-//                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
-//                result = parseBuffer(context, Sanitize.NONE);
-//            } catch (IOException ioe) {
-//                listener.exception(ioe);
-//                result = createParseResult(file, null, null, null);
-//            }
-//
-//            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-//            listener.finished(doneEvent);
-//        }
-//    }
-
     void setWaitJavaScanFinished(boolean shouldWait) {
         waitJavaScanFinished = shouldWait;
     }
