@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
@@ -204,6 +205,8 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      */
     public static final class EncapsulateFieldInfo {
         final CsmField field;
+        final CsmMethod defaultGetter;
+        final CsmMethod defaultSetter;
         final String getterName;
         final String setterName;
         /**
@@ -212,10 +215,13 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
          * @param getterName 
          * @param setterName 
          */
-        public EncapsulateFieldInfo(CsmField field, String getterName, String setterName) {
+        public EncapsulateFieldInfo(CsmField field, String getterName, String setterName,
+                CsmMethod defaultGetter, CsmMethod defaultSetter) {
             this.field = field;
             this.getterName = getterName;
             this.setterName = setterName;
+            this.defaultGetter = defaultGetter;
+            this.defaultSetter = defaultSetter;
         }
         
         /**
@@ -238,6 +244,9 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
          * @return Value of property field.
          */
         public CsmField getField() { return field; }
-        
+
+        public CsmMethod getDefaultGetter() { return defaultGetter; }
+
+        public CsmMethod getDefaultSetter() { return defaultSetter; }
     }
 }

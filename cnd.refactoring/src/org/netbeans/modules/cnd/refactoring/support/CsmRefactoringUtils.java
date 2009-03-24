@@ -270,9 +270,9 @@ public final class CsmRefactoringUtils {
 
     public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
-        while (decl instanceof CsmReference) {
-            decl = ((CsmReference)decl).getOwner();
-        }
+//        while (decl instanceof CsmReference) {
+//            decl = ((CsmReference)decl).getOwner();
+//        }
         if (CsmKindUtilities.isOffsetable(decl)) {
             return findInnerFileObject((CsmOffsetable)decl);
         }

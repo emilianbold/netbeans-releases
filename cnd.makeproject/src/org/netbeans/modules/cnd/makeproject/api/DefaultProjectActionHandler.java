@@ -68,7 +68,7 @@ import org.openide.windows.InputOutput;
 public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
 
     private ProjectActionEvent pae;
-    private ExecutorTask executorTask;
+    private volatile ExecutorTask executorTask;
     private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
 
     // VK: this is just to tie two pieces of logic together:
@@ -251,6 +251,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             try {
                 executorTask = projectExecutor.execute(io);
             } catch (java.io.IOException ioe) {
+                ioe.printStackTrace();
             }
         } else {
             assert false;
@@ -285,7 +286,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public void cancel() {
-        executorTask.stop();
+        ExecutorTask et = executorTask;
+        if (et != null) {
+            executorTask.stop();
+        }
     }
 
     public void executionStarted() {

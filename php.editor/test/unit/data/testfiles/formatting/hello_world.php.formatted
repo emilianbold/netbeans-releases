@@ -6,23 +6,23 @@
   </head>
   <body>
     <?php
-    
-    if (true) {
+
+    if (true){
       echo "test";
     } else {
       echo "test";
     }
-    
+
     function function_name() {
       echo "test";
-    
-      if (true) {
+
+      if (true){
         echo "test";
       } else {
         echo "test";
       }
     }
-    
+
     ?>
   </body>
 </html>
