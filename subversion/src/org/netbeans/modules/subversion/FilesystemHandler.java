@@ -171,6 +171,33 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     /**
+     * Moves folder's content between different repositories.
+     * Does not move folders, only files inside them.
+     * The created tree in the target working copy is created without subversion metadata.
+     * @param from folder being moved. MUST be a folder.
+     * @param to a folder from's content shall be moved into
+     * @throws java.io.IOException if error occurs
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException if error occurs
+     */
+    private void moveFolderToDifferentRepository(File from, File to) throws IOException, SVNClientException {
+        assert from.isDirectory();
+        assert to.getParentFile().exists();
+        if (!to.exists()) {
+            if (to.mkdir()) {
+                cache.refreshAsync(to);
+            } else {
+                Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName() + ": Cannot create folder " + to);
+            }
+        }
+        File[] files = from.listFiles();
+        for (File file : files) {
+            if (!SvnUtils.isAdministrative(file)) {
+                svnMoveImplementation(file, new File(to, file.getName()));
+            }
+        }
+    }
+
+    /**
      * Tries to determine if the <code>file</code> is supposed to be really removed by svn or not.<br/>
      * i.e. unversioned files should not be removed at all.
      * This method refreshed the file cache synchronally, do not run it directly from Interceptor methods, use a separated thread.
@@ -479,8 +506,25 @@ class FilesystemHandler extends VCSInterceptor {
                             } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                                 from.renameTo(to);
                             } else {
+                                SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
+                                SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
+                                if (repositorySource.equals(repositoryTarget)) {
+                                    // use client.move only for a single repository
                                     client.move(from, to, force);
+                                } else {
+                                    if (from.isDirectory()) {
+                                        // tree should be moved separately, otherwise the metadata from the source WC will be copied too
+                                        moveFolderToDifferentRepository(from, to);
+                                    } else if (from.renameTo(to)) {
+                                        client.remove(new File[] {from}, force);
+                                        Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    } else {
+                                        Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
+                                                + ": cannot rename {0} to {1}", new Object[] {from, to});
                                     }
+                                }
+                            }
                         } finally {
                             // we moved the files so schedule them a for a refresh
                             // in the following afterMove call
