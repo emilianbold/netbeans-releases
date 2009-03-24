@@ -403,11 +403,15 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
        if (name == null) {
             return null;
         }
-        String path = provider.getConfigSupport().getContentRelativePath(name);
-        if (path == null) {
-            path = name;
+        if ("web.xml".equals(name)) { //NOI18N
+            name = J2eeModule.WEB_XML;
+        } else {
+            String path = provider.getConfigSupport().getContentRelativePath(name);
+            if (path != null) {
+                name = path;
+            }
         }
-        return getDDFile(path);
+        return getDDFile(name);
     }
 
    /**
