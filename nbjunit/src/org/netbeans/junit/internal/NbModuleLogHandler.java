@@ -51,9 +51,12 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=Handler.class)
+/** Registered in 'META-INF/services/java.util.logging.Handler' via
+ * special classloader that delegates to FakeMetaInf.txt
+ * 
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
 public final class NbModuleLogHandler extends Handler {
     private static StringBuffer text;
     private static Level msg;
