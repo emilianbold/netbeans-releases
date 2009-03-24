@@ -47,21 +47,10 @@ import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 @IgnoreNonExisting
 public class ProjectsListData extends ListData {
 
-    public ProjectListItem projects[];
+    public ProjectData projects[];
 
     @Override
     public int size() {
         return projects.length;
-    }
-
-    @IgnoreNonExisting
-    public static class ProjectListItem {
-
-        public String href;
-        public String name;
-        public String display_name;
-        public String image;
-        public String web_url;
-        public String tags;
     }
 }
