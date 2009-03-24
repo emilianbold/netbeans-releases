@@ -210,12 +210,11 @@ public class BugzillaRepository extends Repository {
         final List<Issue> issues = new ArrayList<Issue>();
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
-                try {
-                    Issue issue = getIssueCache().setIssueData(BugzillaIssue.getID(taskData), taskData);
-                    issues.add(issue); // XXX we don't cache this issues - why?
-                } catch (IOException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-                }
+                BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
+
             }
         };
 
