@@ -637,8 +637,7 @@ class GroovyParser extends Parser {
             new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));
 
-        // parsing API
-        //context.listener.error(error);
+        context.errorHandler.error(error);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = startOffset;

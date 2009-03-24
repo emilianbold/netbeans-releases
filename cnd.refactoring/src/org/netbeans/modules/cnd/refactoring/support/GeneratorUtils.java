@@ -558,41 +558,12 @@ public class GeneratorUtils {
         } else {
             RefactoringSession session = RefactoringSession.create(getGetterSetterDisplayName(type));
             EncapsulateFieldsRefactoring refactoring = new EncapsulateFieldsRefactoring(null, path);
-    //        ModificationResult mr = new ModificationResult(path.getFile().getProject());
 
             Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
             for (CsmField field : fields) {
                 String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field) : null;
                 String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field) : null;
-                refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName));
-    //            if (type != SETTERS_ONLY) {
-    //                if (inlineMethods) {
-    //                    String getter = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
-    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
-    //                    mr.addDifference(decl.fo, diff);
-    //                } else {
-    //                    String getterDecl = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.DECLARATION);
-    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
-    //                    mr.addDifference(decl.fo, diffDecl);
-    //                    String getterDef = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
-    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
-    //                    mr.addDifference(def.fo, diffDef);
-    //                }
-    //            }
-    //            if (type != GETTERS_ONLY) {
-    //                if (inlineMethods) {
-    //                    String getter = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
-    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
-    //                    mr.addDifference(decl.fo, diff);
-    //                } else {
-    //                    String getterDecl = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.DECLARATION);
-    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
-    //                    mr.addDifference(decl.fo, diffDecl);
-    //                    String getterDef = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
-    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
-    //                    mr.addDifference(def.fo, diffDef);
-    //                }
-    //            }
+                refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName, null, null));
             }
             refactoring.setRefactorFields(refFields);
             refactoring.setFieldModifiers(Collections.<CsmVisibility>emptySet());

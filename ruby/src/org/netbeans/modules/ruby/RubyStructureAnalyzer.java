@@ -108,6 +108,7 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * @todo Rewrite various other helper classes to use the scanned structure
@@ -1121,7 +1122,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
             // TODO, should we really show the information about the type we are
             // not able to fully infer? Does it bother users or do they like it?
             if (type.hasUnknownMember()) {
-                types += ", _unknown_"; // NOI18N
+                NbBundle.getMessage(RubyStructureAnalyzer.class, "RubyUnknownType");
+                types += ", " + NbBundle.getMessage(RubyStructureAnalyzer.class, "RubyUnknownType");
             }
             return types;
         }

@@ -45,6 +45,8 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
@@ -68,18 +70,9 @@ public final class KenaiProject {
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
-    private String    name;
-
-    private URL       web_url;
-
     private ProjectData     data;
     
     private KenaiFeature[] features;
-
-    /**
-     * When detailed properties of this project has been fetched.
-     */
-    private long        detailsTimestamp;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -129,7 +122,7 @@ public final class KenaiProject {
      * @return
      */
     public synchronized String getName() {
-        return name;
+        return data.name;
     }
 
     /**
@@ -137,7 +130,11 @@ public final class KenaiProject {
      * @return
      */
     public synchronized URL getWebLocation() {
-        return web_url;
+        try {
+            return new URL(data.web_url);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     /**
@@ -162,6 +159,7 @@ public final class KenaiProject {
      *
      */
     public synchronized String getTags() {
+        fetchDetailsIfNotAvailable();
         return data.tags;
     }
 
@@ -187,6 +185,7 @@ public final class KenaiProject {
      * @see KenaiFeature
      */
     public synchronized KenaiFeature[] getFeatures() {
+        fetchDetailsIfNotAvailable();
         if (features==null) {
             features=new KenaiFeature[data.features.length];
             int i=0;
@@ -261,15 +260,10 @@ public final class KenaiProject {
 
     void fillInfo(ProjectData prj) {
         synchronized (this) {
-            detailsTimestamp = System.currentTimeMillis();
-            this.data = prj;
-
-            this.name = data.name;
-            try {
-                this.web_url = new URL(data.web_url);
-            } catch (MalformedURLException ex) {
-                throw new IllegalArgumentException(ex);
+            if (prj.updated_at==null && this.data!=null && this.data.updated_at!=null) {
+                return;
             }
+            this.data = prj;
             features = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
@@ -280,14 +274,15 @@ public final class KenaiProject {
     }
 
     private void fetchDetailsIfNotAvailable() {
-        if (detailsTimestamp > 0) return;
+        if (this.data.updated_at != null) {
+            return;
+        }
 
-//        try {
-//            ProjectData prj = kenai.getDetails(name);
-//            fillInfo(prj);
-//        } catch (KenaiException kenaiException) {
-//            Utils.logError(this, kenaiException);
-//        }
+        try {
+            refresh();
+        } catch (KenaiException kenaiException) {
+            Logger.getLogger(KenaiProject.class.getName()).log(Level.SEVERE, null, kenaiException);
+        }
     }
 
     /**
@@ -307,7 +302,7 @@ public final class KenaiProject {
             return false;
         }
         final KenaiProject other = (KenaiProject) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+        if ((this.data.name == null) ? (other.data.name != null) : !this.data.name.equals(other.data.name)) {
             return false;
         }
         return true;
@@ -316,7 +311,7 @@ public final class KenaiProject {
     @Override
     public synchronized int hashCode() {
         int hash = 5;
-        hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 13 * hash + (this.data.name != null ? this.data.name.hashCode() : 0);
         return hash;
     }
 
