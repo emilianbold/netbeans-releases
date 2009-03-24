@@ -181,6 +181,14 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    void opened() {
+        repository.scheduleForRefresh(getID());
+    }
+
+    void closed() {
+        repository.stopRefreshing(getID());
+    }
+
     @Override
     public String getDisplayName() {
         return data.isNew() ?
