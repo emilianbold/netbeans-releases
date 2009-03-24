@@ -370,7 +370,9 @@ class CategoryPanelFormatters extends StorablePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formattersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersAddButtonActionPerformed
-        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine("Name:", "Add Variable Formatter");
+        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.addDLG.nameLabel"),
+                NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.addDLG.title"));
         DialogDisplayer.getDefault().notify(nd);
         VariablesFormatter f = new VariablesFormatter(nd.getInputText());
         ((DefaultListModel) formattersList.getModel()).addElement(f);
