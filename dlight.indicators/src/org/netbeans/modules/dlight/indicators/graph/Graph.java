@@ -50,14 +50,18 @@ import javax.swing.JComponent;
  */
 public class Graph extends JComponent {
 
+    public interface LabelRenderer {
+        String render(int value);
+    }
+
     private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
     private final GraphPainter graph;
     private Axis hAxis;
     private Axis vAxis;
 
-    public Graph(int scale, GraphDescriptor ... descriptors) {
+    public Graph(int scale, LabelRenderer renderer, GraphDescriptor ... descriptors) {
         setOpaque(true);
-        graph = new GraphPainter(scale, descriptors);
+        graph = new GraphPainter(scale, renderer, descriptors);
 //        ToolTipManager.sharedInstance().registerComponent(this);
 //        addAncestorListener(new AncestorListener() {
 //            public void ancestorAdded(AncestorEvent event) {

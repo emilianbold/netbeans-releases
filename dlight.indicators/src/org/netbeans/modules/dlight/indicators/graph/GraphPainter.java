@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 
 /**
  * A delegate that is responsible for painting,
@@ -69,6 +70,7 @@ class GraphPainter {
     private Color backgroundTopColor = GraphColors.GRADIENT_TOP_COLOR;
     private Color backgroundBottomColor = GraphColors.GRADIENT_BOTTOM_COLOR;
 
+    private final LabelRenderer renderer;
     private final GraphDescriptor[] descriptors;
     private final int seriesCount;
 
@@ -89,12 +91,13 @@ class GraphPainter {
 
     private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
 
-    public GraphPainter(int  scale, GraphDescriptor[] descriptors, int width, int height) {
+    public GraphPainter(int  scale, LabelRenderer renderer, GraphDescriptor[] descriptors, int width, int height) {
         //setBackground(new Color(128, 128, 128, 0)); // transparent
         this.scale = scale;
         this.descriptors = descriptors;
         this.width = width;
         this.height = height;
+        this.renderer = renderer;
         seriesCount = descriptors.length;
         data = new CyclicArray<int[]>(1000);
 //        initCacheImage();
@@ -110,8 +113,8 @@ class GraphPainter {
 //        cachedImage = newImage;
 //    }
 
-    public GraphPainter(int scale, GraphDescriptor... descriptors) {
-        this(scale, descriptors, 32, 32);
+    public GraphPainter(int scale, LabelRenderer renderer, GraphDescriptor... descriptors) {
+        this(scale, renderer, descriptors, 32, 32);
     }
 
     public void setGridColor(Color color) {
@@ -338,9 +341,9 @@ class GraphPainter {
             // if 'previous' label overlaps the current one, we will just skip it (current)
             if (nextLabelPosition == -1 || labelPosition < nextLabelPosition) {
                 if (labelPosition <= h && labelValue <= scale) {
-                    String label = Integer.toString(labelValue);
+                    String label = renderer == null? Integer.toString(labelValue) : renderer.render(labelValue);
                     int labelLen = fm.stringWidth(label);
-                    g2.drawString(label, w - 10 - labelLen, labelPosition);
+                    g2.drawString(label, w - 5 - labelLen, labelPosition);
                     nextLabelPosition = labelPosition - fontHeight - 4;
                 }
             }
