@@ -70,8 +70,9 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byPeople;
     final ExpandablePanel byLastChange;
     private JComponent tableComponent;
-    private NoContentPanel noContentPanel;
     private QueryController controller;
+    private static final Color ERROR_COLOR = new Color(153,0,0);
+    private Color defaultTextColor;
 
     /** Creates new form QueryPanel */
     public QueryPanel(JComponent tableComponent, QueryController controller) {
@@ -81,9 +82,9 @@ public class QueryPanel extends javax.swing.JPanel {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        defaultTextColor = noContentLabel.getForeground();
 
         this.tableComponent = tableComponent;
-        noContentPanel = new NoContentPanel();
         tablePanel.add(tableComponent);
 
         JTree tv = new JTree();
@@ -114,8 +115,7 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
         refreshCheckBox.setVisible(false);
-        noContentContainer.setVisible(false);
-        noContentContainer.add(noContentPanel);
+        noContentPanel.setVisible(false);
 
         summaryComboBox.setModel(new DefaultComboBoxModel());
         commentComboBox.setModel(new DefaultComboBoxModel());
@@ -135,7 +135,7 @@ public class QueryPanel extends javax.swing.JPanel {
         priorityList.setCellRenderer(new ParameterValueCellRenderer());
         changedList.setCellRenderer(new ParameterValueCellRenderer());
 
-        saveErrorLabel.setForeground(new Color(153,0,0));
+        saveErrorLabel.setForeground(ERROR_COLOR);
         Image img = ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"); //NOI18N
         saveErrorLabel.setIcon( new ImageIcon(img) );
         saveErrorLabel.setVisible(false);
@@ -197,7 +197,8 @@ public class QueryPanel extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        noContentContainer = new javax.swing.JPanel();
+        noContentPanel = new javax.swing.JPanel();
+        noContentLabel = new javax.swing.JLabel();
 
         byLastChangePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -957,8 +958,11 @@ public class QueryPanel extends javax.swing.JPanel {
 
         queryHeaderPanelLayout.linkSize(new java.awt.Component[] {jLabel4, jLabel5, jLabel6, modifyButton, removeButton, seenButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        noContentContainer.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
-        noContentContainer.setLayout(new java.awt.BorderLayout());
+        noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        noContentPanel.setLayout(new java.awt.GridBagLayout());
+
+        noContentLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.noContentLabel.text")); // NOI18N
+        noContentPanel.add(noContentLabel, new java.awt.GridBagConstraints());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -966,7 +970,7 @@ public class QueryPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(searchPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(queryHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
+            .add(noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
             .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -978,7 +982,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))
+                .add(noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1076,7 +1080,8 @@ public class QueryPanel extends javax.swing.JPanel {
     public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     final javax.swing.JTextField newValueTextField = new javax.swing.JTextField();
-    private javax.swing.JPanel noContentContainer;
+    private javax.swing.JLabel noContentLabel;
+    private javax.swing.JPanel noContentPanel;
     final javax.swing.JComboBox peopleComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel peopleLabel = new javax.swing.JLabel();
     final javax.swing.JTextField peopleTextField = new javax.swing.JTextField();
@@ -1186,23 +1191,35 @@ public class QueryPanel extends javax.swing.JPanel {
         }
     }
 
+    void showError(String text) {
+        noContentPanel.setVisible(true);
+        tableSummaryLabel.setVisible(false);
+        tableFieldsPanel.setVisible(false);
+        if(text != null) {
+            noContentLabel.setForeground(ERROR_COLOR);
+            noContentLabel.setText(text);
+        }
+    }
 
     void showSearchingProgress(boolean on, String text) {
-        noContentContainer.setVisible(on);
+        noContentPanel.setVisible(on);
         tableSummaryLabel.setVisible(!on);
         tableFieldsPanel.setVisible(!on);
         if(on && text != null) {
-            noContentPanel.setText(text);
+            noContentLabel.setForeground(defaultTextColor);
+            noContentLabel.setText(text);
         }
     }
 
     void showRetrievingProgress(boolean on, String text, boolean searchPanelVisible) {
-        noContentContainer.setVisible(on);
+        noContentPanel.setVisible(on);
+        noContentLabel.setForeground(Color.red);
         if(searchPanelVisible) {
             searchPanel.setVisible(!on);
         }
         if(on && text != null) {
-            noContentPanel.setText(text);
+            noContentLabel.setForeground(defaultTextColor);
+            noContentLabel.setText(text);
         }
     }
 
