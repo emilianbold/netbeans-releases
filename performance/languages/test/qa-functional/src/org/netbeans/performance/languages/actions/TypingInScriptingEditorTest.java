@@ -96,8 +96,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileToBeOpened = new Node(getProjectNode(testProject),path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
+        waitNoEvent(5000);
     }
     
     @Override
@@ -117,7 +116,6 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     }
 
     public void shutdown() {
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
     }
@@ -139,7 +137,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_RHTML_EditorTyping() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         doMeasurement();
     }
 
@@ -174,7 +172,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_YML_EditorTyping() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "yaml20kB.yml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
         doMeasurement();
     }
 

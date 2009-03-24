@@ -139,7 +139,7 @@ public class MainSubMenusTest extends PerformanceTestCase {
     }
 
     public void testWindowOutputMenu(){
-        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.core.output2.Bundle", "Menu/Window/Output");
+        testSubMenu("org.netbeans.core.windows.resources.Bundle","Menu/Window", "org.netbeans.core.io.ui.Bundle", "Menu/Window/Output");
     }
 
     public void testWindowNavigatingMenu(){

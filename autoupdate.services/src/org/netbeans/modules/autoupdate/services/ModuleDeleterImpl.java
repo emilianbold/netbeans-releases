@@ -46,11 +46,14 @@ import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.CharBuffer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -355,7 +358,7 @@ public final class ModuleDeleterImpl  {
     
     private Node getModuleConfiguration (File moduleUpdateTracking) {
         Document document = null;
-        InputStream is;
+        InputStream is=null;
         try {
             is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
@@ -364,10 +367,37 @@ public final class ModuleDeleterImpl  {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            err.log(Level.WARNING, null, saxe);
+            err.log(Level.WARNING, "SAXException when reading " + moduleUpdateTracking, saxe);
+            //for issue #158186 investigation purpose need to add additional logging to see what is corrupted and how
+            FileReader reader=null;
+            try {
+                reader=new FileReader(moduleUpdateTracking);
+                char[] text=new char[1024];
+                String fileContent="";
+                while(reader.read(text)>0)
+                {
+                    fileContent+=String.copyValueOf(text);
+                }
+                err.log(Level.WARNING, "SAXException in file:\n------FILE START------\n " + fileContent+"\n------FILE END-----\n");
+            }
+            catch(Exception ex)
+            {
+                //don't need to fail in logging
+            }
+            finally
+            {
+                if(reader!=null)
+                {
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                        //don't need any info from logging fail
+                    }
+                }
+            }
             return null;
         } catch (IOException ioe) {
-            err.log(Level.WARNING, null, ioe);
+            err.log(Level.WARNING, "IOException when reading " + moduleUpdateTracking, ioe);
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
