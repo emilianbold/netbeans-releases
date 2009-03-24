@@ -64,6 +64,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private List<EliminatedTag> eliminatedTags;
     private boolean inOpeningTagAttributes;
     private boolean inUnformattableTagContent;
+    private String unformattableTagName = null;
     private int attributesIndent;
     private int firstPreservedLineIndent = -1;
 
@@ -359,12 +360,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         String lastOpenTagName = null;
 
-        // are we within a content of a tag which is not formattable:
-        if (isInUnformattableTagContent() && (context.isBlankLine() ||
-                isTagContentToken(LexUtilities.getTokenAtOffset(ts, context.getLineNonWhiteStartOffset())))) {
-            // ignore this line
-            iis.add(new IndentCommand(IndentCommand.Type.DO_NOT_INDENT_THIS_LINE, context.getLineStartOffset()));
-        }
+        boolean unformattableTagContent = isInUnformattableTagContent();
 
         while (!context.isBlankLine() && ts.moveNext() &&
             ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset()) ||
@@ -391,7 +387,20 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 ts.moveNext();
             } else if (isCloseTagNameToken(token)) {
                 lineItems.add(createMarkupItem(token, false, getIndentationSize()));
-                setInUnformattableTagContent(false);
+                String tokenName = getTokenName(token);
+                // unformattable tags can be nested (eg. textarea within pre) so
+                // make sure we close unformattable section only by corresponing tag:
+                if (isTagContentUnformattable(tokenName) && tokenName.equals(unformattableTagName)) {
+                    setInUnformattableTagContent(false);
+                    if (unformattableTagContent) {
+                        // if line starts with for example "</pre>" (that is there is no
+                        // other text before closing token) then we can indent that line:
+                        if (context.getLineStartOffset()+2 == ts.offset()) {
+                            unformattableTagContent = false;
+                        }
+                    }
+                }
+                lastOpenTagName = null;
             } else if (isEndTagSymbol(token) || isEndTagClosingSymbol(token)) {
                 if (isInOpeningTagAttributes()) {
                     setInOpeningTagAttributes(false);
@@ -410,8 +419,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     }
                 } else {
                     // now we are within tag's content; check if it is unformattable
-                    if (lastOpenTagName != null && isTagContentUnformattable(lastOpenTagName)) {
-                        setInUnformattableTagContent(true);
+                    if (lastOpenTagName != null && !isInUnformattableTagContent() &&
+                            isTagContentUnformattable(lastOpenTagName)) {
+                        setInUnformattableTagContent(true, lastOpenTagName);
                     }
                 }
             }
@@ -430,6 +440,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             } else if (isForeignLanguageEndToken(token, ts)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_END, context.getLineStartOffset()));
             }
+        }
+
+        // are we within a content of a tag which is not formattable:
+        if (unformattableTagContent) {
+            // ignore this line
+            iis.add(new IndentCommand(IndentCommand.Type.DO_NOT_INDENT_THIS_LINE, context.getLineStartOffset()));
         }
 
         int index = fileStack.size();
@@ -766,8 +782,14 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return inUnformattableTagContent;
     }
 
+    private void setInUnformattableTagContent(boolean inUnformattableTagContent, String unformattableTagName) {
+        this.inUnformattableTagContent = inUnformattableTagContent;
+        this.unformattableTagName = unformattableTagName;
+    }
+
     private void setInUnformattableTagContent(boolean inUnformattableTagContent) {
         this.inUnformattableTagContent = inUnformattableTagContent;
+        this.unformattableTagName = null;
     }
 
     private static class EliminatedTag {
