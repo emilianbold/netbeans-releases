@@ -86,6 +86,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            } else {
+                runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
             }
         }
 
@@ -110,16 +112,18 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         ExternalTerminal terminal = t;
 
         final String commandLine = info.getCommandLine();
-        String workingDirectory = info.getWorkingDirectory(true);
+        String wDir = info.getWorkingDirectory(true);
 
-        if (workingDirectory == null) {
+        String workingDirectory = wDir;
+
+        if (isWindows || workingDirectory == null) {
             workingDirectory = "."; // NOI18N
         }
 
         File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
         pidFile.deleteOnExit();
-        String pidFName = pidFile.toString();
-        String envFileName = pidFName + ".env"; // NOI18N
+        pidFileName = pidFile.toString();
+        String envFileName = pidFileName + ".env"; // NOI18N
 
         final ExternalTerminalAccessor terminalInfo =
                 ExternalTerminalAccessor.getDefault();
@@ -130,13 +134,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         String cmd = commandLine;
 
+        String pidFName = pidFileName;
+
         if (isWindows) {
             pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
             envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
             cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
         }
-
-        pidFileName = pidFName;
 
         List<String> command = terminalInfo.wrapCommand(
                 info.getExecutionEnvironment(),
@@ -144,11 +148,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 dorunScript,
                 "-w", workingDirectory, // NOI18N
                 "-e", envFileName, // NOI18N
-                "-p", pidFileName, // NOI18N
+                "-p", pidFName, // NOI18N
                 "-x", terminalInfo.getPrompt(terminal), // NOI18N
                 cmd);
 
         ProcessBuilder pb = new ProcessBuilder(command);
+
+        if (isWindows && wDir != null) {
+            pb.directory(new File(wDir));
+        }
 
         Map<String, String> env = info.getEnvVariables();
 
@@ -162,7 +170,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         termProcess = pb.start();
 
-        processOutput = termProcess.getInputStream();
+        processOutput = new ByteArrayInputStream(new byte[0]);
         processError = termProcess.getErrorStream();
         processInput = null;
 
