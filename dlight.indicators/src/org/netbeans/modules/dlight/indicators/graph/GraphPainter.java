@@ -291,10 +291,10 @@ class GraphPainter {
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 1; i < sampleCount; ++i) {
-                    int prevValue = data.get(firstSample + i - 1)[ser] * height / scale;
-                    int currValue = data.get(firstSample + i)[ser] * height / scale;
-                    g.drawLine(left + PIXELS_PER_SAMPLE * (i - 1) , top + height - 1 - prevValue,
-                               lastx = left + PIXELS_PER_SAMPLE * i, lasty = top + height - 1 - currValue);
+                    int prevValue = data.get(firstSample + i - 1)[ser] * (height - 3) / scale;
+                    int currValue = data.get(firstSample + i)[ser] * (height - 3) / scale;
+                    g.drawLine(left + PIXELS_PER_SAMPLE * (i - 1) , top + height - 2 - prevValue,
+                               lastx = left + PIXELS_PER_SAMPLE * i, lasty = top + height - 2 - currValue);
                 }
                 g2.setStroke(BALL_STROKE);
                 g2.setColor(Color.WHITE);
