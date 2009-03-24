@@ -195,9 +195,7 @@ public class QmakeProjectWriter {
         IncludeToString includeVisitor = new IncludeToString(compilerSet);
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(includeVisitor));
-        LibraryToString libVisitor = new LibraryToString();
-        write(bw, Variable.LIBS, Operation.ADD,
-                configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
+        write(bw, Variable.LIBS, Operation.ADD, getLibs());
 
         for (String line : configuration.getQmakeConfiguration().getCustomDefs().getValue()) {
             bw.write(line);
@@ -273,15 +271,37 @@ public class QmakeProjectWriter {
         return list;
     }
 
+    private String getLibs() {
+        StringBuilder buf = new StringBuilder();
+        CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
+        LibraryToString libVisitor = new LibraryToString(compilerSet);
+        buf.append(configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
+        if (compilerSet != null) {
+            if (0 < buf.length()) {
+                buf.append(' '); // NOI18N
+            }
+            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, compilerSet.getDynamicLibrarySearchOption());
+            buf.append(configuration.getLinkerConfiguration().getDynamicSearch().toString(dynamicSearchVisitor));
+        }
+        return buf.toString();
+    }
+
     private String expandAndQuote(String s) {
         return IpeUtils.quoteIfNecessary(configuration.expandMacros(s));
     }
 
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
 
+        private final CompilerSet compilerSet;
+
+        public LibraryToString(CompilerSet compilerSet) {
+            this.compilerSet = compilerSet;
+        }
+
         public String toString(LibraryItem item) {
             switch (item.getType()) {
                 case LibraryItem.PROJECT_ITEM:
+                    return projectLibToString(item);
                 case LibraryItem.LIB_FILE_ITEM:
                     return IpeUtils.quoteIfNecessary(item.getPath());
                 case LibraryItem.LIB_ITEM:
@@ -291,6 +311,17 @@ public class QmakeProjectWriter {
                 default:
                     return ""; // NOI18N
             }
+        }
+
+        private String projectLibToString(LibraryItem item) {
+            StringBuilder buf = new StringBuilder();
+            if (compilerSet != null) {
+                buf.append(compilerSet.getDynamicLibrarySearchOption());
+                buf.append(IpeUtils.quoteIfNecessary(IpeUtils.getDirName(item.getPath())));
+                buf.append(' '); // NOI18N
+            }
+            buf.append(IpeUtils.quoteIfNecessary(item.getPath()));
+            return buf.toString();
         }
 
     }
