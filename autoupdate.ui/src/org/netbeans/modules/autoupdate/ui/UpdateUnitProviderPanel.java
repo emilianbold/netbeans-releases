@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -110,10 +111,11 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                 }
                 
                 private boolean isValid() {
-                    boolean isOk = getProviderName().length() > 0 && getProviderURL ().length () > 0;
+                    final String providerName = getProviderName();
+                    boolean isOk = providerName.length() > 0 && getProviderURL ().length () > 0;
                     if (isOk) {
-                        isOk = (isEdit && getProviderName().equals (originalName))
-                                || ! getNamesOfProviders ().contains (getProviderName ());
+                        isOk = (isEdit && providerName.equals (originalName))
+                                || ! getNamesOfProviders ().contains (providerName);
                     }
                     if (isOk) {
                         String s = getProviderURL ();
@@ -123,7 +125,13 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
                             if(s.startsWith("http:") && !s.startsWith("http://")) {
                                 isOk = false;
                             }
-
+                            if(isOk) {
+                                //workaround for Issue #160766
+                                //Use "_removed" here instead of UpdateUnitProviderImpl.REMOVED_MASK since is private and not in api/spi
+                                if( (providerName + "_removed").length() > Preferences.MAX_NAME_LENGTH) {
+                                    isOk = false;
+                                }
+                            }
                         } catch (MalformedURLException x) {
                             isOk = false;
                         } catch (URISyntaxException x) {
