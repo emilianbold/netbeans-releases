@@ -40,6 +40,7 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -60,6 +61,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends AbstractIndenter<T1> {
 
     private Stack<MarkupItem> stack = null;
+    private List<EliminatedTag> eliminatedTags;
     private boolean inOpeningTagAttributes;
     private boolean inUnformattableTagContent;
     private int attributesIndent;
@@ -114,6 +116,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         inOpeningTagAttributes = false;
         inUnformattableTagContent = false;
         attributesIndent = 0;
+        eliminatedTags = new ArrayList<EliminatedTag>();
     }
 
     @Override
@@ -174,10 +177,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // go backwards and find any closed tags with in given range and eliminate them:
         while (ts.movePrevious()) {
             Token<T1> tk = ts.token();
+            String tag;
             // if closing tag was found jump to opening one but
             // only if both opening and closing tags are mandatory - not doing
             // so can result in wrong pair matching:
             if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
+                tag = tk.text().toString();
                 int rangeEnd;
                 // if document is being editted end tag symbol might be accidentally missing:
                 if (ts.moveNext() && isEndTagSymbol(ts.token())) {
@@ -190,6 +195,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
+                    assert ts.token().text().toString().equals(tag) : "tag="+tag+" token="+ts.token();
                     int rangeStart;
                     // if document is being editted end tag symbol might be accidentally missing:
                     if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
@@ -201,6 +207,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     }
                     if (rangeStart < rangeEnd) {
                         rangesToIgnore.add(rangeStart, rangeEnd);
+                        eliminatedTags.add(new EliminatedTag(rangeStart, rangeEnd, tag));
                     }
                 }
             }
@@ -217,15 +224,19 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (optionalEnd && empty != null && !empty.booleanValue()) {
                 children = getTagChildren(tagName);
             }
-            return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false);
+            return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
         } else {
-            return new MarkupItem(tagName, false, indentation, false, null, false, false);
+            return new MarkupItem(tagName, false, indentation, false, null, false, false, false);
         }
 
     }
 
     private static MarkupItem createVirtualMarkupItem(String tagName, boolean empty) {
-        return new MarkupItem(tagName, false, -1, false, null, empty, true);
+        return new MarkupItem(tagName, false, -1, false, null, empty, true, false);
+    }
+
+    private static MarkupItem createEliminatedMarkupItem(String tagName, boolean openingTag) {
+        return new MarkupItem(tagName, openingTag, -1, false, null, false, false, true);
     }
 
     private boolean moveToOpeningTag(JoinedTokenSequence<T1> tokenSequence) {
@@ -328,6 +339,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     @Override
     protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent)
             throws BadLocationException {
+
+        // check if there are any tags which were eliminated prior to this line 
+        // and use them to close any tags with optional end tag:
+        processEliminatedTags(context.getLineStartOffset());
+
         Stack<MarkupItem> fileStack = getStack();
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
@@ -468,6 +484,28 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return iis;
     }
 
+    private void processEliminatedTags(int lineStartOffset) {
+        List<MarkupItem> items = new ArrayList<MarkupItem>();
+        generateVirtualMarkupItemsForEliminatedTags(items, lineStartOffset);
+        if (items.size() > 0) {
+            addTags(items);
+        }
+    }
+
+    private void generateVirtualMarkupItemsForEliminatedTags(List<MarkupItem> lineItems, int lineStartOffset) {
+        Iterator<EliminatedTag> it = eliminatedTags.iterator();
+        while (it.hasNext()) {
+            EliminatedTag et = it.next();
+            if (et.end <= lineStartOffset) {
+                // it is enough to add opening tag:
+                lineItems.add(createEliminatedMarkupItem(et.tag, true));
+                it.remove();
+            } else {
+                break;
+            }
+        }
+    }
+
     private String getTokenName(Token<T1> token) {
         //
         // trim() is here intentionally to get rid of new line character
@@ -495,9 +533,10 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         public Set<String> children;
         public boolean virtual;
         public boolean empty;
+        public boolean eliminated;
 
         public MarkupItem(String tagName, boolean openingTag, int indentLevel,
-                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual) {
+                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual, boolean eliminated) {
             this.tagName = tagName;
             this.openingTag = openingTag;
             this.indentLevel = indentLevel;
@@ -506,6 +545,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             this.children = children;
             this.empty = empty;
             this.virtual = virtual;
+            this.eliminated = eliminated;
         }
 
         @Override
@@ -541,7 +581,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     getStack().addAll(calculateAllVirtualCloseTagsForCloseTag(newItem));
                 }
             }
-            getStack().push(newItem);
+            if (!newItem.eliminated) {
+                getStack().push(newItem);
+            }
         }
     }
 
@@ -724,4 +766,16 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         this.inUnformattableTagContent = inUnformattableTagContent;
     }
 
+    private static class EliminatedTag {
+        private int start;
+        private int end;
+        private String tag;
+
+        public EliminatedTag(int start, int end, String tag) {
+            this.start = start;
+            this.end = end;
+            this.tag = tag;
+        }
+
+    }
 }

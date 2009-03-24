@@ -228,6 +228,12 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "  <html\n     a=b\n       c=d>^",
             "  <html\n     a=b\n       c=d>\n      ^", null);
+
+        // #160646 - check that unneeded tags are eliminated but
+        // used to close tag with optional end:
+        insertNewline(
+            "  <p>\n  <table>\n  </table>^",
+            "  <p>\n  <table>\n  </table>\n  ^", null);
     }
 
 }
