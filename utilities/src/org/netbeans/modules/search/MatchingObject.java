@@ -594,10 +594,10 @@ final class MatchingObject implements PropertyChangeListener {
                 return InvalidityStatus.CHANGED;
             }
 
-            String replacedString = resultModel.basicCriteria.getReplaceString();
+            String replacedString = resultModel.basicCriteria.getReplaceExpr();
             if (resultModel.basicCriteria.isRegexp()){
                 Matcher m = resultModel.basicCriteria.getTextPattern().matcher(matchedSubstring);
-                replacedString = m.replaceFirst(replacedString);
+                replacedString = m.replaceFirst(resultModel.basicCriteria.getReplaceString());
             }
             
             content.replace(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift, replacedString);
