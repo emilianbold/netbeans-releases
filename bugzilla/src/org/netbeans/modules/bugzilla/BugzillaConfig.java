@@ -59,6 +59,8 @@ public class BugzillaConfig {
     private static final String LAST_CHANGE_FROM = "bugzilla.last_change_from"; // XXX
     private static final String REPO_NAME        = "bugzilla.repository_";
     private static final String QUERY_NAME       = "bugzilla.query_";
+    private static final String QUERY_REFRESH    = "bugzilla.query_refresh";
+    private static final String ISSUE_REFRESH    = "bugzilla.issue_refresh";
     private static final String DELIMITER        = "<=>";
 
     private BugzillaConfig() { }
@@ -72,6 +74,22 @@ public class BugzillaConfig {
 
     public Preferences getPreferences() {
         return NbPreferences.forModule(BugzillaConfig.class);
+    }
+
+    public void setQueryRefresh(int i) {
+        getPreferences().putInt(QUERY_REFRESH, i);
+    }
+
+    public void setIssueRefresh(int i) {
+        getPreferences().putInt(ISSUE_REFRESH, i);
+    }
+
+    public int getQueryRefresh() {
+        return getPreferences().getInt(QUERY_REFRESH, 30);
+    }
+
+    public int getIssueRefresh() {
+        return getPreferences().getInt(ISSUE_REFRESH, 15);
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
