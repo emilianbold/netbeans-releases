@@ -43,15 +43,15 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="809" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="809" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="450" max="32767" attributes="0"/>
+              <EmptySpace pref="743" max="32767" attributes="0"/>
               <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -79,7 +79,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="messagePanel" max="32767" attributes="0"/>
+                      <Component id="messagePanel" pref="635" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -142,8 +142,8 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
-                          <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
+                          <Component id="scrollPane1" alignment="0" pref="645" max="32767" attributes="0"/>
+                          <Component id="summaryField" alignment="0" pref="645" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
@@ -570,7 +570,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="382" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="645" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
