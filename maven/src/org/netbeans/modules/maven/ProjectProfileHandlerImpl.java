@@ -212,7 +212,8 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
                 ProfilesXpp3Reader reader = new ProfilesXpp3Reader();
                 InputStream in = null;
                 try {
-                    ProfilesRoot root = reader.read(profiles.getInputStream());
+                    in = profiles.getInputStream();
+                    ProfilesRoot root = reader.read(in);
                     List<org.apache.maven.profiles.Profile> profs = root.getProfiles();
                     for (org.apache.maven.profiles.Profile prf : profs) {
                         profileIds.add(prf.getId());
