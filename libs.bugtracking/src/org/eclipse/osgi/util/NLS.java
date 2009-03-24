@@ -40,6 +40,13 @@
  */
 package org.eclipse.osgi.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.openide.util.NbBundle;
+
 /**
  * @author Maros Sandor
  *
@@ -47,27 +54,40 @@ package org.eclipse.osgi.util;
  */
 public class NLS {
     
-    public static void initializeMessages(String bundleName, Class messagesClass) {
-        
+    public static void initializeMessages(String bundleName, Class clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            if((field.getModifiers() & (Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL)) == (Modifier.PUBLIC | Modifier.STATIC)) {
+                try {
+                    field.set(null, NbBundle.getBundle(bundleName).getString(field.getName()));
+                } catch (IllegalArgumentException ex) {
+                    // should not happen
+                    BugtrackingRuntime.LOG.log(Level.SEVERE, bundleName, ex);
+                } catch (IllegalAccessException ex) {
+                    // should not happen
+                    BugtrackingRuntime.LOG.log(Level.SEVERE, bundleName, ex);
+                }
+            }
+        }
     }
 
-    public static String bind(String s, Object o) {
-        return o != null ? o.toString() : "";
+    public static String bind(String m, Object o) {
+        return MessageFormat.format(m, o);
     }
 
-    public static String bind(String s, String repositoryUrl) {
-        return null;
+    public static String bind(String m, String s) {
+        return MessageFormat.format(m, s);
     }
 
-    public static String bind(String repositoryLoginFailure, String repositoryUrl, String errorMessage) {
-        return null;
+    public static String bind(String m, String s1, String s2) {
+        return MessageFormat.format(m, s1, s2);
     }
 
-    public static String bind(String errorIo, Object[] strings) {
-        return null;
+    public static String bind(String m, Object[] args) {
+        return MessageFormat.format(m, args);
     }
 
-    public static String bind(String errorIo, Object obj1, Object obj2) {
-        return obj2 != null ? obj2.toString() : "";
+    public static String bind(String m, Object obj1, Object obj2) {
+        return MessageFormat.format(m, obj1, obj2);
     }
 }
