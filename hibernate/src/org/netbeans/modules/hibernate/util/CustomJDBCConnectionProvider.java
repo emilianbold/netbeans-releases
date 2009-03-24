@@ -97,7 +97,13 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
                     password = connectionProperties.getProperty("connection.password"); //NOI18N
 
                 }
-                
+
+                // Sometimes the username can be empty
+                // See Issue 159417 for details
+                if (username == null) {
+                    username = "";
+                }
+
                 // Some Database (such as HSQLDB) alow empty password.
                 if(password == null) {
                     password = "";

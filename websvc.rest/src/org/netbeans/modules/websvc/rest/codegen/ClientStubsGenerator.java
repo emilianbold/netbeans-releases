@@ -63,6 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,7 +78,6 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
-import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
@@ -297,7 +297,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String proxyUrl2 = findBaseUrl(targetPrj);
             if(proxyUrl2 == null)
                 proxyUrl2 = url;
-            ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
+            WebRestSupport restSupport = (WebRestSupport)p.getLookup().lookup(RestSupport.class);
+            ServletMapping servletMap = restSupport.getRestServletMapping(restSupport.getWebApp());
             String path = "/resources";
             if(servletMap != null)
                 path = servletMap.getUrlPattern();
