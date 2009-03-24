@@ -56,6 +56,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final static String shell;
+    private final static boolean isWindows;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -70,6 +71,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 
         shell = sh;
+        
+        isWindows = Utilities.isWindows();
     }
 
     // TODO: For now cygwin is the ONLY tested environment on Windows!
@@ -120,6 +123,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             }
         }
 
+        if (isWindows) {
+            pb.directory(wdir);
+        }
+
         Process pr = null;
 
         try {
@@ -141,13 +148,17 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         EnvWriter ew = new EnvWriter(processInput);
         ew.write(env);
 
-        if (wdir != null) {
+        if (!isWindows && wdir != null) {
             processInput.write(("cd \"" + wdir + "\"\n").getBytes()); // NOI18N
         }
 
         String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+
+        if (isWindows) {
+            cmd = cmd.replaceAll("\\\\", "/");
+        }
+
         processInput.write(cmd.getBytes());
-        processInput.write("exit $?\n".getBytes()); // NOI18N
         processInput.flush();
 
         readPID(processOutput);
