@@ -545,9 +545,32 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         return indent;
     }
 
-    // for testing
+    // for services
     public CppIndentTask(Document doc) {
         this.doc = doc;
+    }
+
+    /**
+     * returns indentation for line containing given offset
+     * @param offset offset on line
+     * @return indentation of line containing offset
+     */
+    public int getLineIndentation(int caretOffset) {
+        if (codeStyle == null) {
+            codeStyle = CodeStyle.getDefault(doc);
+        }
+        int lineOffset;
+        try {
+            lineOffset = IndentUtils.lineStartOffset(doc, caretOffset);
+        } catch (BadLocationException ex) {
+            return 0;
+        }
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+        if (ts == null) {
+            return 0;
+        }
+        int indent = indentLine(new TokenItem(ts, true), caretOffset);
+        return indent;
     }
 
     // for testing

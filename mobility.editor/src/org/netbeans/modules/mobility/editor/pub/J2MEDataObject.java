@@ -66,15 +66,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
-import org.netbeans.modules.mobility.editor.J2MEKit;
+import org.netbeans.modules.mobility.editor.DocumentPreprocessor;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TextSwitcher;
-import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -82,16 +82,13 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node.Cookie;
-import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -105,7 +102,7 @@ public class J2MEDataObject extends MultiDataObject {
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
     
     private J2MEEditorSupport jes;
-    
+
     public J2MEDataObject(FileObject pf, MultiFileLoader loader)  throws DataObjectExistsException {
         super(pf,loader);
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
@@ -179,9 +176,9 @@ public class J2MEDataObject extends MultiDataObject {
         
         private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
-    
-        private J2MEKit kit;
-        
+
+        private DocumentPreprocessor documentPreprocessor;
+
         static {
             try {
                 setAlreadyModified = CloneableEditorSupport.class.getDeclaredMethod("setAlreadyModified", new Class[] {Boolean.TYPE}); //NOI18N
@@ -343,9 +340,13 @@ public class J2MEDataObject extends MultiDataObject {
             /** override to return j2me editor kit
             * @return editor kit
             */
+        @Override
         protected EditorKit createEditorKit() {
-            if (kit == null) kit = new J2MEKit();
-            return kit;
+            if (documentPreprocessor == null){
+                documentPreprocessor = new DocumentPreprocessor();
+                EditorRegistry.addPropertyChangeListener(documentPreprocessor);
+            }
+            return super.createEditorKit();
         }
         
         protected boolean notifyModified() {

@@ -105,6 +105,24 @@ is the proper place.
 
     <changes>
 
+        <change id="context.lookup">
+            <summary>Enhance Context class with Lookup so that indenters
+                can communicate with each other.</summary>
+            <version major="1" minor="12"/>
+            <date day="3" month="3" year="2009"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                Let IndentTask and/or ReformatTask implement Lookup.Provider
+                and before executing indentation/reformat call these providers
+                and provide merged result via getLookup() method in Context.
+                Individual formatters check lookup for presence of other formatters
+                and communicate with them via domain specific APIs.
+            </description>
+            <class package="org.netbeans.modules.editor.indent.spi" name="Context"/>
+            <issue number="159479"/>
+        </change>
+
         <change id="CodeStylePreferences.for.embedded.mimeTypes">
             <summary>Adding CodeStylePreferences.get(Document doc, String mimeType)
             and CodeStylePreferences.get(FileObject file, String mimeType).</summary>

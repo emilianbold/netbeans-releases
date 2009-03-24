@@ -77,7 +77,8 @@ public abstract class CsmInstantiationProvider {
     /** Static method to obtain the provider.
      * @return the provider
      */
-    public static synchronized CsmInstantiationProvider getDefault() {
+    public static CsmInstantiationProvider getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultProvider != null) {
             return defaultProvider;
         }

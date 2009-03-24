@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Exceptions;
 
 /**
@@ -92,7 +93,7 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.class)
-public class ReferenceRepositoryImpl extends CsmReferenceRepository {
+public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     public ReferenceRepositoryImpl() {
     }
@@ -203,6 +204,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             }
             return Collections.<CsmReference>emptyList();
         }
+        name = CharSequenceKey.create(name);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
@@ -210,7 +212,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         //if (TraceFlags.TRACE_XREF_REPOSITORY) {
         //    time = System.currentTimeMillis();
         //}
-        Collection<APTToken> tokens = getTokensToResolve(file, name.toString(), startOffset, endOffset);
+        Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             //time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
@@ -242,7 +244,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
     
     // Fast check of name.
-    private boolean hasName(FileImpl file, String name){
+    private boolean hasName(FileImpl file, CharSequence name){
         try {
             if (file.isValid()) {
                 FileBuffer buffer = file.getBuffer();
@@ -250,7 +252,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     return false;
                 }
                 String text = buffer.getText();
-                if (text.indexOf(name) < 0) {
+                if (text.indexOf(name.toString()) < 0) {
                     return false;
                 }
                 // TODO use grep by line and detect whole word
@@ -265,17 +267,17 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return false;
     }
     
-    private Collection<APTToken> getTokensToResolve(FileImpl file, String name, int startOffset, int endOffset) {
+    private Collection<APTToken> getTokensToResolve(FileImpl file, CharSequence name, int startOffset, int endOffset) {
         // in prototype use just unexpanded identifier tokens in file
-        if (!hasName(file, name)){
+        if (name.length() == 0 || !hasName(file, name)){
             return Collections.<APTToken>emptyList();
         }
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
         boolean destructor = false;
-        if (name.startsWith("~")) { // NOI18N
+        if (name.charAt(0) == '~') { // NOI18N
             destructor = true;
-            name = name.substring(1);
+            name = name.subSequence(1, name.length());
         }
         if (ts != null) {
             try {
@@ -285,7 +287,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     if (token.getOffset() >= startOffset) {
                         int id = token.getType();
                         if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
-                                name.equals(token.getText())) {
+                                name.equals(token.getTextID())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
                                 tokens.add(token);
@@ -345,12 +347,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
         if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
-            if (kinds == CsmReferenceKind.ALL) {
-                accept = true;
-            } else { 
-                CsmReferenceKind kind = ref.getKind();
-                accept = kinds.contains(kind);
-            }
+            accept = CsmReferenceResolver.getDefault().isKindOf(ref, kinds);
         }
         return accept;
     }   

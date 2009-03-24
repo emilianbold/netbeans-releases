@@ -1,20 +1,7 @@
 #!/bin/sh
 
-if [ x$BUILD_ID = x ]
-then
-    # Non-Hudson use.
-    if [ x$USERNAME = x ]
-    then
-        BUILD_ID=private
-    else
-        BUILD_ID=$USERNAME-private
-    fi
-    dir=`dirname $0`/../..
-    cd $dir
-fi
-
 set -e
 ant -Dcluster.config=python build
 ant -f python.editor/build-python.xml runtests
-ant -Dcluster.config=python commit-validation 
+#ant -Dcluster.config=python commit-validation 
 

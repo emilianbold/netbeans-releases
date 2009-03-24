@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.api.indicator;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
@@ -49,73 +51,71 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  */
 public abstract class IndicatorConfiguration {
 
-  private IndicatorMetadata metadata;
-  private VisualizerConfiguration visualizerConfiguration;
-
-  static {
-    IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
-  }
-
-  /**
-   * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
-   * @param metadata metadata to create Indicator configuration for
-   */
-  public IndicatorConfiguration(IndicatorMetadata metadata) {
-    this.metadata = metadata;
-  }
-
-  /**
-   * Unique id which will be used to find the proper factory
-   * @return id
-   */
-  public abstract String getID();
+    private IndicatorMetadata metadata;
+    private final List<VisualizerConfiguration> visualizerConfigurations;
 
 
-
-  /**
-   * Sets {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
-   * which means Detailed View which will be opened when double or single mouse click on 
-   * {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
-   * @param configuration configuration to create {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
-   * which will represent Detailed View
-   */
-  public final void setVisualizerConfiguration(VisualizerConfiguration configuration) {
-    this.visualizerConfiguration = configuration;
-  }
-
-
-
-  /**
-   * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
-   * @return indicator metadata
-   */
-  protected final IndicatorMetadata getIndicatorMetadata() {
-    return metadata;
-  }
-
-  /**
-   * Returns {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} used
-   * by the indicator as a configuration of Detailed View which will be opened by clicking on the
-   * indicator created on the base of this configuration
-   * @return visualizer configuraion
-   */
-  protected final VisualizerConfiguration getVisualizerConfiguration() {
-    return visualizerConfiguration;
-  }
-
-  private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
-
-
-
-    @Override
-    public IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration) {
-      return configuration.getIndicatorMetadata();
+    static {
+        IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
     }
 
-    @Override
-    public VisualizerConfiguration getVisualizerConfiguration(IndicatorConfiguration configuration) {
-      return configuration.getVisualizerConfiguration();
+    /**
+     * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
+     * @param metadata metadata to create Indicator configuration for
+     */
+    public IndicatorConfiguration(IndicatorMetadata metadata) {
+        this.metadata = metadata;
+        visualizerConfigurations = new ArrayList<VisualizerConfiguration>();
     }
-  }
+
+    /**
+     * Unique id which will be used to find the proper factory
+     * @return id
+     */
+    public abstract String getID();
+
+    /**
+     * Sets {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
+     * which means Detailed View which will be opened when double or single mouse click on
+     * {@link org.netbeans.modules.dlight.spi.indicator.Indicator}
+     * @param configuration configuration to create {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}
+     * which will represent Detailed View
+     */
+    public final void addVisualizerConfiguration(VisualizerConfiguration configuration) {
+        if (configuration != null && !visualizerConfigurations.contains(configuration)) {
+            this.visualizerConfigurations.add(configuration);
+        }
+    }
+
+    /**
+     * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
+     * @return indicator metadata
+     */
+    protected final IndicatorMetadata getIndicatorMetadata() {
+        return metadata;
+    }
+
+    /**
+     * Returns  a list of {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} used
+     * by the indicator as a configuration of Detailed View which will be opened by clicking on the
+     * indicator created on the base of this configuration
+     * @return visualizer configuraions list
+     */
+    protected final List<VisualizerConfiguration> getVisualizerConfigurations() {
+        return visualizerConfigurations;
+    }
+
+    private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
+
+        @Override
+        public IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration) {
+            return configuration.getIndicatorMetadata();
+        }
+
+        @Override
+        public List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration) {
+            return configuration.getVisualizerConfigurations();
+        }
+    }
 
 }

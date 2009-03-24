@@ -47,6 +47,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -107,8 +109,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	    AST next = child.getNextSibling();
 	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
 		List<CharSequence> l = new ArrayList<CharSequence>();
-		l.add(child.getText());
-                APTStringManager manager = QualifiedNameCache.getManager();
+                APTStringManager manager = NameCache.getManager();
+		l.add(manager.getString(child.getText()));
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
@@ -136,7 +138,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
-            APTStringManager manager = QualifiedNameCache.getManager();
+            APTStringManager manager = NameCache.getManager();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
@@ -210,8 +212,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
-                CsmNamespace ns = (CsmNamespace) owner;
-                for (CsmDeclaration decl : ns.getDeclarations()) {
+                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION),
+                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace)owner), filter);
+                while (it.hasNext()) {
+                    CsmDeclaration decl = it.next();
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
@@ -280,8 +286,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public FunctionImplEx(DataInput input) throws IOException {
 	super(input);
         // can be null
-        String read = PersistentUtils.readUTF(input);
-        this.qualifiedName = read == null ? null : QualifiedNameCache.getManager().getString(read);
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
     }
 }

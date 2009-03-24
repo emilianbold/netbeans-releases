@@ -200,12 +200,8 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
   }
 
   public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
-    try {
       return stackStorage.getHotSpotFunctions(metric, limit);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-      return new ArrayList<FunctionCall>();
-    }
+
   }
 
   @Override

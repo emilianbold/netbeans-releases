@@ -58,13 +58,15 @@ public class ScriptingMeasureActionsTest2 {
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(TypingInScriptingEditorTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenScriptingFilesTest.class)
+                .addTest(TypingInScriptingEditorTest.class)
                 .addTest(ScriptingCodeCompletionInEditorTest.class)
-                .addTest(OpenScriptingFilesTest.class)
-                .addTest(SaveModifiedScriptingFilesTest.class)
                 .addTest(PageUpPageDownScriptingEditorTest.class)
                 .addTest(OpenRubyProjectTest.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));
+                .addTest(CreatePHPProjectTest.class)
+                .addTest(CreatePHPSampleProjectTest.class)
+//      TB fixed          .addTest(CreateRubyProjectTest.class)
+                .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|enterprise[0-9]").reuseUserDir(true)));
 
         return suite;        
     }

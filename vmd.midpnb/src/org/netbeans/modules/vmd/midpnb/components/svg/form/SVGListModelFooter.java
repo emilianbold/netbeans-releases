@@ -48,7 +48,6 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.PropertyValue.Kind;
 import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 
-
 /**
  * @author ads
  *
@@ -59,44 +58,57 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
      * @see org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter#generateClassInitializationFooter(org.netbeans.modules.vmd.api.codegen.MultiGuardedSection)
      */
     @Override
-    public void generateClassInitializationFooter( MultiGuardedSection section ) {
+    public void generateClassInitializationFooter(MultiGuardedSection section) {
         PropertyValue value = null;
-        if ( getComponent().getType().equals( SVGListCD.TYPEID) ){
-            value = getComponent().readProperty( SVGListCD.PROP_MODEL);
+        if (getComponent().getType().equals(SVGListCD.TYPEID)) {
+            value = getComponent().readProperty(SVGListCD.PROP_ELEMENTS);
+        } else if (getComponent().getType().equals(SVGComboBoxCD.TYPEID)) {
+            value = getComponent().readProperty(SVGComboBoxCD.PROP_MODEL);
         }
-        else if (getComponent().getType().equals( SVGComboBoxCD.TYPEID) ){
-            value = getComponent().readProperty( SVGComboBoxCD.PROP_MODEL);
-        }
-        if ( value == null ){
+        if (value == null) {
             return;
         }
-        if ( value.getKind().equals( Kind.USERCODE )){
-            section.getWriter().write( CodeReferencePresenter.
-                    generateDirectAccessCode(getComponent()) +".setModel("+
-                    value.getUserCode()+");\n");     // NOI18N
-        }
-        else {
+        if (value.getKind().equals(Kind.USERCODE)) {
+            section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".setModel(" +
+                    value.getUserCode() + ");\n");     // NOI18N
+        } else {
             List<PropertyValue> list = value.getArray();
-            
-            if ( list == null || list.isEmpty() ){
+
+            if (list == null || list.isEmpty()) {
                 return;
             }
 
             section.getWriter().write("java.util.Vector vector = new java.util.Vector();\n");  //NOI18N
-            
-            for (PropertyValue propertyValue : list) {
-                String item = propertyValue.getPrimitiveValue().toString();
-                section.getWriter().write( "vector.addElement(\""+ item +"\");\n");
+            if (getComponent().getType().equals(SVGListCD.TYPEID)) {
+                for (PropertyValue propertyValue : list) {
+                    PropertyValue  itemValue  = propertyValue.getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING);
+                    String item = null;
+                    if (itemValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        item = itemValue.getUserCode();
+                    } else {
+                        item = (String) itemValue.getPrimitiveValue().toString();
+                    }
+                    if (itemValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        section.getWriter().write("vector.addElement(" + item + ");\n");
+                    } else {
+                        section.getWriter().write("vector.addElement(\"" + item + "\");\n");
+                    }
+                }
+            } else if (getComponent().getType().equals(SVGComboBoxCD.TYPEID)) {
+                for (PropertyValue propertyValue : list) {
+                    if (propertyValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        section.getWriter().write("vector.addElement(" + propertyValue.getUserCode() + ");\n");
+                    } else {
+                        section.getWriter().write("vector.addElement(\"" + propertyValue.getPrimitiveValue().toString() + "\");\n");
+                    }
+                }
             }
-            
-            section.getWriter().write( CodeReferencePresenter.
-                    generateDirectAccessCode(getComponent()) +".setModel(");
-            if ( getComponent().getType().equals( SVGListCD.TYPEID) ){
-                section.getWriter().write( "new org.netbeans.microedition.svg." +
+            section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".setModel(");
+            if (getComponent().getType().equals(SVGListCD.TYPEID)) {
+                section.getWriter().write("new org.netbeans.microedition.svg." +
                         "SVGList.DefaultListModel(vector));\n");  // NOI18N
-            }
-            else if ( getComponent().getType().equals( SVGComboBoxCD.TYPEID) ){
-                section.getWriter().write( "new org.netbeans.microedition.svg." +
+            } else if (getComponent().getType().equals(SVGComboBoxCD.TYPEID)) {
+                section.getWriter().write("new org.netbeans.microedition.svg." +
                         "SVGComboBox.DefaultModel(vector));\n");  // NOI18N
             }
         }
@@ -106,7 +118,6 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
      * @see org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter#generateClassInitializationHeader(org.netbeans.modules.vmd.api.codegen.MultiGuardedSection)
      */
     @Override
-    public void generateClassInitializationHeader( MultiGuardedSection section ) {
+    public void generateClassInitializationHeader(MultiGuardedSection section) {
     }
-
 }

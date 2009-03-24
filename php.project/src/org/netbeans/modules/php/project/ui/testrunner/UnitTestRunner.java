@@ -44,8 +44,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.input.LineProcessors;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.OutputLineHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -55,6 +60,7 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.util.NbBundle;
+import org.openide.windows.OutputWriter;
 
 /**
  * Test runner UI for PHP unit tests. One must call {@link #start()} first
@@ -67,6 +73,7 @@ import org.openide.util.NbBundle;
 public final class UnitTestRunner {
     private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());
     private static final Manager MANAGER = Manager.getInstance();
+    private static final PhpOutputLineHandler PHP_OUTPUT_LINE_HANDLER = new PhpOutputLineHandler();
     private final TestSession testSession;
     private volatile boolean started = false;
 
@@ -74,8 +81,9 @@ public final class UnitTestRunner {
         assert project != null;
         assert sessionType != null;
         assert rerunHandler != null;
-        testSession = new TestSession("PHPUnit test session", project, sessionType); // NOI18N
+        testSession = new TestSession("PHPUnit test session", project, sessionType, new PhpTestRunnerNodeFactory()); // NOI18N
         testSession.setRerunHandler(rerunHandler);
+        testSession.setOutputLineHandler(PHP_OUTPUT_LINE_HANDLER);
     }
 
     public void start() {
@@ -134,5 +142,13 @@ public final class UnitTestRunner {
 
         MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_OutputInOutput"), false);
         MANAGER.sessionFinished(testSession);
+    }
+
+    private static final class PhpOutputLineHandler implements OutputLineHandler {
+        private static final LineConvertor CONVERTOR = LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+
+        public void handleLine(OutputWriter out, String text) {
+            LineProcessors.printing(out, CONVERTOR, true).processLine(text);
+        }
     }
 }

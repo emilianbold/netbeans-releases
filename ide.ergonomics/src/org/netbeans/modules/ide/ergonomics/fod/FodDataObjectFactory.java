@@ -73,6 +73,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /** Support for special dataobjects that can dynamically FoD objects.
  *
@@ -80,6 +82,7 @@ import org.openide.util.WeakListeners;
  */
 public class FodDataObjectFactory implements DataObject.Factory {
     private static MultiFileLoader delegate;
+    private static final Set<FileObject> ignore = new WeakSet<FileObject>();
 
     private FileObject definition;
     
@@ -98,6 +101,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
         }
         if (fo.getMIMEType().endsWith("+xml")) {
             OpenAdvancedAction.registerCandidate(fo);
+            return null;
+        }
+        if (ignore.contains(fo)) {
             return null;
         }
         if (delegate == null) {
@@ -136,7 +142,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
             return dn;
         }
 
-
+        public Lookup getLookup() {
+            return getCookieSet().getLookup();
+        }
 
         public void open() {
             delegate(true);
@@ -165,6 +173,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
                 dialog = null;
             }
 
+            FoDFileSystem.LOG.log(Level.FINER, "Opening file {0}", this);
             this.open = open;
             Task task = RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
             if (dialog != null) {
@@ -176,8 +185,10 @@ public class FodDataObjectFactory implements DataObject.Factory {
 
         private void finishOpen() {
             if (success) {
+                ignore.add(getPrimaryFile());
                 try {
                     DataObject obj = DataObject.find(fo);
+                    FoDFileSystem.LOG.log(Level.FINER, "finishOpen {0}", obj);
                     Class<?> what = open ? OpenCookie.class : EditCookie.class;
                     Object oc = obj.getLookup().lookup(what);
                     if (oc == this) {
@@ -235,6 +246,8 @@ public class FodDataObjectFactory implements DataObject.Factory {
 
         public void stateChanged(ChangeEvent e) {
             FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
+            FoDFileSystem.LOG.log(Level.FINER, "Refresh state of {0}", this);
+            ignore.add(getPrimaryFile());
             if (info == null || info.isEnabled()) {
                 dispose();
             }

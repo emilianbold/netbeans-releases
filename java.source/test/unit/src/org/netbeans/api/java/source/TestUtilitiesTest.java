@@ -45,11 +45,13 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -65,7 +67,7 @@ public class TestUtilitiesTest extends NbTestCase {
     private static ClassPath compile;
     private static ClassPath source;
     
-    public void testWaitScanFinished () throws Exception {
+    public void testWaitScanFinished () throws Exception {        
         final File wf = getWorkDir();
         final File cache = FileUtil.normalizeFile(new File (wf,"cache"));
         cache.mkdirs();
@@ -75,7 +77,7 @@ public class TestUtilitiesTest extends NbTestCase {
         compile = ClassPathSupport.createClassPath(new URL[0]);
         source = ClassPathSupport.createClassPath(new URL[]{sourceDir.toURI().toURL()});
         TestUtilities.setCacheFolder(cache);
-        assertTrue(TestUtilities.scheduleCompilationAndWait(sourceDir, sourceDir, 10, TimeUnit.SECONDS));
+        IndexingManager.getDefault().refreshIndexAndWait(sourceDir.toURL(), null);
         assertTrue(TestUtilities.waitScanFinished(10, TimeUnit.SECONDS));
     }
     

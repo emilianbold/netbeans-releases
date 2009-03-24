@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.Locator;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -74,6 +76,9 @@ public final class RubyTestsuiteNode extends TestsuiteNode {
 
     @Override
     public Action getPreferredAction() {
+        if (report == null) {
+            return null;
+        }
         Testcase testcase = getFirstTestCase();
         if (testcase == null) {
             // need to have at least one test case to locate the test file
@@ -89,8 +94,8 @@ public final class RubyTestsuiteNode extends TestsuiteNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if (context) {
-            return new Action[0];
+        if (context || report == null) {
+            return new Action[]{new SuiteRunningAction()};
         }
         List<Action> actions = new ArrayList<Action>(3);
         Action preferred = getPreferredAction();
@@ -108,4 +113,27 @@ public final class RubyTestsuiteNode extends TestsuiteNode {
         return actions.toArray(new Action[actions.size()]);
     }
 
+    /**
+     * Action to display when the suite is still running, i.e. when no real actions
+     * can work yet.
+     */
+    private static final class SuiteRunningAction extends AbstractAction {
+
+        @Override
+        public Object getValue(String key) {
+            if (NAME.equals(key)) {
+                return NbBundle.getMessage(SuiteRunningAction.class, "LBL_RunningTests");
+            }
+            return super.getValue(key);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // do nothing
+        }
+    }
 }

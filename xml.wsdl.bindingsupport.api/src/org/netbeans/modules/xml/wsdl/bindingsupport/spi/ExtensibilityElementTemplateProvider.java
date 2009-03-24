@@ -123,7 +123,30 @@ public abstract class ExtensibilityElementTemplateProvider {
     public List<ValidationInfo> validate(Port port) {
         return Collections.EMPTY_LIST;
     }
+
+    /**
+     * Implementation of this is required if there are wsdl template files defined in the template.xml
+     * filePath parameter will provide the relative path specified in the wsdlTemplate file attribute.
+     * Not abstract because, some implementation may not use this.
+     * 
+     * @param filePath relative path of the file
+     * @return InputStream of the file
+     */
+     public InputStream getTemplateFileInputStream(String filePath) {
+         return null;
+     }
     
-    
+     /**
+      * Implementation of this is required for customizing the wsdl wizard. If you do not want to add custom panels,
+      * do not implement it the default wsdl iterator will be used.
+      * 
+      * 
+      * @param context the WSDLWizardContext object
+      * @return the iterator.
+      */
+     public WSDLWizardExtensionIterator getWSDLWizardExtensionIterator(WSDLWizardContext context) {
+         return null;
+     }
+     
     
 }

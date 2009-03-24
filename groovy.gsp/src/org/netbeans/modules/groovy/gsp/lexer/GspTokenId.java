@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.gsp.lexer;
 
-import org.netbeans.modules.groovy.gsp.lexer.GspLexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;

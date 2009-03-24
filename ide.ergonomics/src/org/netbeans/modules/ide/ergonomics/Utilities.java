@@ -79,7 +79,7 @@ public class Utilities {
 
                 public void run() {
                     String notFound = NbBundle.getMessage(Utilities.class, "LBL_FeatureNotFound");
-                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo), notFound);
+                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFound);
                 }
             });
         } catch (InterruptedException ex) {

@@ -89,9 +89,12 @@ public class ArrayPropertyOrderingController implements InspectorOrderingControl
      */
     public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
         List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders.size());
+        if (component == null) {
+            return new ArrayList<InspectorFolder>(folders);
+        }
         List<PropertyValue> array = component.readProperty(propertyName).getArray();
         if (array == null) {
-            return orderedList;
+            return new ArrayList<InspectorFolder>(folders);
         }
         for (PropertyValue value : array) {
             DesignComponent itemsComponent = value.getComponent();

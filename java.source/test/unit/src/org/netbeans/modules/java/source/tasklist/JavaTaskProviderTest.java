@@ -112,7 +112,7 @@ public class JavaTaskProviderTest extends NbTestCase {
         TaskManagerImpl tm = new TaskManagerImpl();
         TaskScanningScopeImpl scope1 = new TaskScanningScopeImpl(file1, file2);
         
-        TaskCache.getDefault().dumpErrors(src.getURL(), file1.getURL(), FileUtil.toFile(file1), Arrays.asList(new DiagnosticImpl(Kind.ERROR, "x", 3)));
+        TaskCache.getDefault().dumpErrors(src.getURL(), file1.getURL(), Arrays.asList(new DiagnosticImpl(Kind.ERROR, "x", 3)));
         
         jtp.setScope(scope1, Accessor.DEFAULT.createCallback(tm, jtp));
         jtp.waitWorkFinished();
@@ -120,7 +120,7 @@ public class JavaTaskProviderTest extends NbTestCase {
         assertTasks(file1, Task.create(file1, "nb-tasklist-error", "x", 3));
         assertTasks(file2);
         
-        TaskCache.getDefault().dumpErrors(src.getURL(), file2.getURL(), FileUtil.toFile(file2), Arrays.asList(new DiagnosticImpl(Kind.ERROR, "y", 4)));
+        TaskCache.getDefault().dumpErrors(src.getURL(), file2.getURL(), Arrays.asList(new DiagnosticImpl(Kind.ERROR, "y", 4)));
         JavaTaskProvider.refresh(file2);
         jtp.waitWorkFinished();
         

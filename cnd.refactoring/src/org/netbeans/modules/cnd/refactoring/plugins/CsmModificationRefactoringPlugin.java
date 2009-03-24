@@ -41,14 +41,12 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -90,14 +88,15 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     }
 
     public final Problem prepare(RefactoringElementsBag elements) {
+        Problem out = null;
         try {
             Collection<CsmFile> files = getRefactoredFiles();
             fireProgressListenerStart(ProgressEvent.START, files.size());
-            createAndAddElements(files, elements, refactoring);
+            out = createAndAddElements(files, elements, refactoring);
         } finally {
             fireProgressListenerStop();
         }
-        return null;
+        return out;
     }
 
     protected abstract Collection<CsmFile> getRefactoredFiles();
@@ -161,7 +160,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     }
 
     @Override
-    protected final ModificationResult processFiles(Collection<CsmFile> files) {
+    protected final ModificationResult processFiles(Collection<CsmFile> files, AtomicReference<Problem> outProblem) {
         ModificationResult out = null;
         for (CsmFile csmFile : files) {
             if (isCancelled()) {
@@ -171,11 +170,11 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
             if (out == null) {
                 out = new ModificationResult(csmFile.getProject());
             }
-            processFile(csmFile, out);
+            processFile(csmFile, out, outProblem);
             fireProgressListenerStep();
         }
         return out;
     }
 
-    protected abstract void processFile(CsmFile csmFile, ModificationResult mr);
+    protected abstract void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem);
 }

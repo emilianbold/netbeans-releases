@@ -165,7 +165,6 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
     /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
     private final WeakReference<WSDLModel> wsdlmodel;
 
-//	private final Children children;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -210,14 +209,6 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         this (Children.create(factory, false), element, new InstanceContent(), newTypesFactory);
         this.factory = factory;
     }
-    
-//    public WSDLElementNode(Children children, T element) {
-//        this(children, element, null);
-//    }
-//    
-//    public WSDLElementNode(Children children, T element, NewTypesFactory newTypesFactory) {
-//        this (children, element, new InstanceContent(), newTypesFactory);
-//    }
 
     /**
      * Constructor hack to allow creating our own Lookup.
@@ -234,12 +225,8 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         //and update when childrenAdded and childrenRemoved
         super(children, createLookup(element.getModel(), contents));
         mNewTypesFactory = newTypesFactory;
-//        this.children = children;
         mElement = element;
         mLookupContents = contents;
-//        if (hasChildren()) {
-//        	setChildren(children);
-//        }
         // Add various objects to the lookup.
         // Keep this node and its cookie implementation at the top of the
         // lookup, as they provide cookies needed elsewhere, and we want
@@ -1019,17 +1006,6 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
    }
 
    private void updateChildren() {
-//       boolean hasChildren = hasChildren();
-//       if (getChildren() == Children.LEAF) {
-//    	   if (hasChildren) setChildren(children);
-//       } else {
-//    	   if (!hasChildren) setChildren(Children.LEAF);
-//       }
-//       Children myChildren = getChildren();
-//       if (myChildren instanceof RefreshableChildren) {
-//           ((RefreshableChildren) myChildren).refreshChildren();
-//       }
-       
        if (factory instanceof Refreshable) {
            ((Refreshable) factory).refreshChildren(true);
        }

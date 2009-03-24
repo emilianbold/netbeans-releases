@@ -150,12 +150,12 @@ public class CSSTCController implements PropertyChangeListener {
     private void previewableActivated(TopComponent tc) {
         this.lastCSSTC = tc;
         WindowManager.getDefault().findTopComponentGroup("Csswsgrp").open();
-        CssEditorSupport.getDefault().cssTCActivated(tc);
+//        CssEditorSupport.getDefault().cssTCActivated(tc);
     }
 
     private void notPreviewableActivated() {
         this.lastCSSTC = null;
         WindowManager.getDefault().findTopComponentGroup("Csswsgrp").close();
-        CssEditorSupport.getDefault().cssTCDeactivated();
+//        CssEditorSupport.getDefault().cssTCDeactivated();
     }
 }

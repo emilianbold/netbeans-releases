@@ -19,6 +19,7 @@
  */
 package org.netbeans.microedition.svg;
 
+import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRGBColor;
 
 /**
@@ -59,9 +60,15 @@ import org.w3c.dom.svg.SVGRGBColor;
 public class SVGButton extends SVGAbstractButton {
     
     private       SVGRGBColor         bodyColor;
+
+    private static final String STEXT = "stext";            // NOI18N
+    private static final String STEXT_SUFFIX = DASH+STEXT;  // NOI18N
     
     public SVGButton( SVGForm form, String elemId) {
         super(form, elemId);
+
+        myShadowText = (SVGLocatableElement) getElementById( getElement(),
+                getElement().getId() + STEXT_SUFFIX);
     }
         
     public void pressButton() { 
@@ -100,6 +107,17 @@ public class SVGButton extends SVGAbstractButton {
             isSelected = selected;
         }
     }
+
+    public void setText(String text){
+       super.setText(text);
+       if ( text == null ){
+           text ="";
+       }
+       if ( myShadowText != null ){
+            setTraitSafely(myShadowText, SVGTextField.TRAIT_TEXT, text.trim());
+       }
+    }
     
     private       boolean             isSelected = false;
+    private       SVGLocatableElement myShadowText;
 }

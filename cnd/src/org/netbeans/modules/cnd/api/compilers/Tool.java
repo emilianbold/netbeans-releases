@@ -109,13 +109,13 @@ public class Tool {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
-    public String getHostKey() {
-        if (executionEnvironment.isLocal()) {
-            return CompilerSetManager.LOCALHOST; // executionEnvironment.getHost();
-        } else {
-            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
-        }
-    }
+//    public String getHostKey() {
+//        if (executionEnvironment.isLocal()) {
+//            return CompilerSetManager.LOCALHOST; // executionEnvironment.getHost();
+//        } else {
+//            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
+//        }
+//    }
 
     public ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;

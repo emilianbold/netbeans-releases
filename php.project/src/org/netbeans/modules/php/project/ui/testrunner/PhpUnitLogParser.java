@@ -66,6 +66,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private final TestSessionVO testSession;
     private TestSuiteVO testSuite; // actual test suite
     private TestCaseVO testCase; // actual test case
+    private String file; // actual file
     private Content content = Content.NONE;
     private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
 
@@ -97,7 +98,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if ("testsuite".equals(qName)) { // NOI18N
-            processTestSuite(attributes);
+            processTestSuiteStart(attributes);
         } else if ("testcase".equals(qName)) { // NOI18N
             processTestCase(attributes);
         } else if ("failure".equals(qName)) { // NOI18N
@@ -110,7 +111,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if ("testsuite".equals(qName)) { // NOI18N
-            testSuite = null;
+            processTestSuiteEnd();
         } else if ("testcase".equals(qName)) { // NOI18N
             assert testCase != null;
             testCase = null;
@@ -130,7 +131,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
         }
     }
 
-    private void processTestSuite(Attributes attributes) {
+    private void processTestSuiteStart(Attributes attributes) {
         if (testSession.getTime() == -1
                 && testSession.getTests() == -1) {
             // no active suite yet => set total/session info
@@ -138,15 +139,19 @@ public final class PhpUnitLogParser extends DefaultHandler {
             testSession.setTime(getTime(attributes));
         }
 
-        String file = getFile(attributes);
+        file = getFile(attributes);
         if (file != null) {
-            // 'real' suite found
-            assert testSuite == null;
             testSuite = new TestSuiteVO(
                     getName(attributes),
                     file,
                     getTime(attributes));
+        }
+    }
+
+    private void processTestSuiteEnd() {
+        if (testSuite != null) {
             testSession.addTestSuite(testSuite);
+            testSuite = null;
         }
     }
 
@@ -239,7 +244,11 @@ public final class PhpUnitLogParser extends DefaultHandler {
     }
 
     private String getFile(Attributes attributes) {
-        return attributes.getValue("file"); // NOI18N
+        String f = attributes.getValue("file");
+        if (f != null) {
+            return f;
+        }
+        return file;
     }
 
     private int getLine(Attributes attributes) {

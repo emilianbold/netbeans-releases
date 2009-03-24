@@ -78,26 +78,30 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         private int lexerState;
         private int lexerSubState;
         private int lexerEmbeddingState;
-        private String attributeName;
+        private String jsAttributeName;
+        private String cssAttributeName;
 
-        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName) {
+        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String jsAttributeName, String cssAttributeName) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.lexerEmbeddingState = lexerEmbeddingState;
-            this.attributeName = attributeName;
+            this.jsAttributeName = jsAttributeName;
+            this.cssAttributeName = cssAttributeName;
         }
 
         @Override
         public String toString() {
            // return "state=" + (lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState) + "," + attributeName.toString();
            int state = lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
-           return Integer.toString(state) + "," + attributeName.toString();
+           return Integer.toString(state) 
+                   + (jsAttributeName != null ? "," + jsAttributeName.toString() : "")
+                   + (cssAttributeName != null ? "," + cssAttributeName.toString() : "");
         }
     }
     
     public Object state() {
-        if (attributeName != null) {
-            return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attributeName);
+        if (jsAttributeName != null || cssAttributeName != null) {
+            return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, jsAttributeName, cssAttributeName);
         } else {
             return lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
         }
@@ -106,6 +110,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     //script and style tag names
     private static final String SCRIPT = "script";
     private static final String STYLE = "style";
+
+    private static final String STYLE_ATTR = "style";
     
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
@@ -114,7 +120,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
      */
     private int lexerSubState = INIT;
     private int lexerState    = INIT;
-    private String attributeName;
+    private String jsAttributeName;
+    private String cssAttributeName;
     
     /** indicated whether we are in a script */
     private int lexerEmbeddingState = INIT;
@@ -211,7 +218,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 lexerState = cs.lexerState;
                 lexerSubState = cs.lexerSubState;
                 lexerEmbeddingState = cs.lexerEmbeddingState;
-                attributeName = cs.attributeName;
+                jsAttributeName = cs.jsAttributeName;
+                cssAttributeName = cs.cssAttributeName;
             } else {
                 int encoded = ((Integer) info.state()).intValue();
                 this.lexerSubState = encoded / 1000000;
@@ -252,6 +260,18 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     (secondChar == 'n' || secondChar == 'N')) {
                 return EVENT_HANDLER_NAMES.contains(attributeName.toString().toLowerCase(Locale.ENGLISH));
             }
+        }
+        return false;
+    }
+
+    private boolean isStyleAttributeName(CharSequence chs) {
+        if(chs.length() == STYLE_ATTR.length()) {
+            for(int i = 0; i < chs.length(); i++) {
+                if(Character.toLowerCase(chs.charAt(i)) != Character.toLowerCase(STYLE_ATTR.charAt(i))) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
@@ -560,7 +580,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_ARG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        attributeName = isJavascriptEventHandlerName(input.readText()) ? input.readText().toString() : null;
+                        jsAttributeName = isJavascriptEventHandlerName(input.readText()) ? input.readText().toString() : null;
+                        cssAttributeName = isStyleAttributeName(input.readText()) ? input.readText().toString() : null;
                         return token(HTMLTokenId.ARGUMENT);
                     }
                     break;
@@ -642,11 +663,16 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        if (attributeName != null) {
-                            attributeName = null;
+                        if (jsAttributeName != null) {
+                            jsAttributeName = null;
                             return token(HTMLTokenId.VALUE_JAVASCRIPT);
                         }
-                        attributeName = null;
+                        jsAttributeName = null;
+                         if (cssAttributeName != null) {
+                            cssAttributeName = null;
+                            return token(HTMLTokenId.VALUE_CSS);
+                        }
+                        cssAttributeName = null;
                         return token(HTMLTokenId.VALUE);
                     }
                     break;
@@ -655,11 +681,16 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     switch( actChar ) {
                         case '\'':
                             lexerState = ISP_TAG_X;
-                            if (attributeName != null) {
-                                attributeName = null;
+                            if (jsAttributeName != null) {
+                                jsAttributeName = null;
                                 return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
-                            attributeName = null;
+                            jsAttributeName = null;
+                            if (cssAttributeName != null) {
+                                cssAttributeName = null;
+                                return token(HTMLTokenId.VALUE_CSS);
+                            }
+                            cssAttributeName = null;
                             return token(HTMLTokenId.VALUE);
                             
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
@@ -684,11 +715,16 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     switch( actChar ) {
                         case '"':
                             lexerState = ISP_TAG_X;
-                            if (attributeName != null) {
-                                attributeName = null;
+                            if (jsAttributeName != null) {
+                                jsAttributeName = null;
                                 return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
-                            attributeName = null;
+                            jsAttributeName = null;
+                            if (cssAttributeName != null) {
+                                cssAttributeName = null;
+                                return token(HTMLTokenId.VALUE_CSS);
+                            }
+                            cssAttributeName = null;
                             return token(HTMLTokenId.VALUE);
 
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
@@ -988,8 +1024,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
-                if (attributeName != null) {
+                if (jsAttributeName != null) {
                     return token(HTMLTokenId.VALUE_JAVASCRIPT);
+                }
+                if (cssAttributeName != null) {
+                    return token(HTMLTokenId.VALUE_CSS);
                 }
                 return token(HTMLTokenId.VALUE);
                 

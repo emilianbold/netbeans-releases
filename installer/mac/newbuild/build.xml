@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${basedir}/tomcat" target="clean"/>
         <ant dir="${basedir}/openesb" target="clean"/>
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
-        <delete dir="${basedir}/netBeans/soa/build"/>
+        <!--<delete dir="${basedir}/netBeans/soa/build"/>-->
         <delete dir="${basedir}/netBeans/ruby/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
@@ -90,13 +90,12 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <property name="clusters" value="cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                         soa(soa),
                                          ruby(ruby),                                       
                                          php(php), 
                                          enterprise(javaee), identity(javaee), xml(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
         </for-each>                                                  
@@ -136,7 +135,6 @@ Microsystems, Inc. All Rights Reserved.
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
 					webcommon(${webcommon-title}),
-                                        soa(${soa-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})"/>        
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
@@ -413,7 +411,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
-                <filter token="SIZE_SOA" value="${sizeof.soa}"/>
+                <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
                 <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>

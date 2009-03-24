@@ -55,6 +55,26 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.failOn">
+        <api name="nbjunit"/>
+        <summary>Easy way to fail the test on error or warning</summary>
+        <version major="1" minor="58"/>
+        <date day="15" month="3" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="compatible" binary="compatible" source="compatible" modification="no"/>
+        <description>
+            <p>
+            Do you need to fail the test when some wrong message or
+            exception is logged? Easy now with
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnMessage(java.util.logging.Level)">
+                Configuration.failOnMessage(Level.WARNING)</a> and
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnException(java.util.logging.Level)">
+                Configuration.failOnException(Level.INFO)</a>.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="155444"/>
+    </change>
     <change id="NbModuleSuite.honorAutoloadEager">
         <api name="nbjunit"/>
         <summary>Leave autoloads as autoloads and eagers as eager</summary>

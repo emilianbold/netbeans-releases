@@ -9,6 +9,7 @@ Searchable Keys:
   constant : RED;String
   fqn : Colors
   method : red
+  require : constants
 
 Not Searchable Keys:
   attrs : |MODULE|
@@ -20,6 +21,7 @@ Searchable Keys:
   class-ig : converter
   constant : VERSION;Fixnum
   fqn : Colors::Converter
+  require : constants
 
 Not Searchable Keys:
   attrs : |MODULE|

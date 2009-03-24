@@ -60,12 +60,13 @@ import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-
 
 /**
  * Walk through the JRuby AST and note interesting things
@@ -83,7 +84,8 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
  * @todo Stash unused variables in a list I can reference from a quickfix!
  * @author Tor Norbye
  */
-public class RubySemanticAnalyzer implements SemanticAnalyzer {
+public class RubySemanticAnalyzer extends SemanticAnalyzer {
+    
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static final Set<String> JAVA_PREFIXES = new HashSet<String>();
@@ -113,7 +115,18 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) {
+    @Override
+    public int getPriority() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void run(Result info, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
@@ -143,7 +156,8 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
+            // XXX - Parsing API
+//            if (rpr.getTranslatedSource() != null) {
                 Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
                 for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
@@ -153,7 +167,7 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
                 }
                 
                 highlights = translated;
-            }
+//            }
             
             this.semanticHighlights = highlights;
         } else {
@@ -473,4 +487,5 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
             }
         }
     }
+
 }

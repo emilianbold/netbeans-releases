@@ -41,14 +41,17 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -89,33 +92,37 @@ public class AstUtilitiesTest extends JsTestBase {
     // Make sure we don't bomb out analyzing any of these files
     public void testStress() throws Exception {
         for (String file : JAVASCRIPT_TEST_FILES) {
-            CompilationInfo info = getInfo(file);
-            BaseDocument doc = LexUtilities.getDocument(info, false);
-            List<Node> allNodes = new ArrayList<Node>();
-            Node root = AstUtilities.getRoot(info);
-            assertNotNull(file + " had unexpected parsing errors", root);
-            //if (root == null) {
-            //    continue;
-            //}
-            addAllNodes(root, allNodes);
-            List<Node> callNodes = new ArrayList<Node>();
-            
-            AstUtilities.addNodesByType(root, new int[] { Token.CALL, Token.NEW }, callNodes);
-            for (Node callNode : callNodes) {
-                String s = AstUtilities.getCallName(callNode, true);
-                String t = AstUtilities.getCallName(callNode, false);
-            }
+            FileObject f = getTestFile(file);
+            Source source = Source.create(f);
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws Exception {
+                    JsParseResult jspr = AstUtilities.getParseResult(resultIterator.getParserResult());
+                    List<Node> allNodes = new ArrayList<Node>();
+                    Node root = jspr.getRootNode();
+                    assertNotNull(jspr.getSnapshot().getSource().getFileObject().getPath() + " had unexpected parsing errors", root);
+                    //if (root == null) {
+                    //    continue;
+                    //}
+                    addAllNodes(root, allNodes);
+                    List<Node> callNodes = new ArrayList<Node>();
 
-            for (Node node : allNodes) {
-                String type = AstUtilities.getExpressionType(node);
-                TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, doc, node);
-                AstUtilities.getFirstChild(node);
-                AstUtilities.getSecondChild(node);
-                AstUtilities.getRange(node);
-                AstUtilities.getRange(info, node);
-                AstUtilities.getNameRange(node);
-                AstUtilities.isNameNode(node);
-            }
+                    AstUtilities.addNodesByType(root, new int[] { Token.CALL, Token.NEW }, callNodes);
+                    for (Node callNode : callNodes) {
+                        String s = AstUtilities.getCallName(callNode, true);
+                        String t = AstUtilities.getCallName(callNode, false);
+                    }
+
+                    for (Node node : allNodes) {
+                        String type = AstUtilities.getExpressionType(node);
+                        TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(jspr, node);
+                        AstUtilities.getFirstChild(node);
+                        AstUtilities.getSecondChild(node);
+                        AstUtilities.getRange(node);
+                        AstUtilities.getNameRange(node);
+                        AstUtilities.isNameNode(node);
+                    }
+                }
+            });
         }
     }
     

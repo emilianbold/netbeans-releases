@@ -44,12 +44,17 @@ import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.api.configuration.ConfigurationService;
 import com.sun.esb.management.api.deployment.DeploymentService;
 import com.sun.esb.management.api.installation.InstallationService;
+import com.sun.esb.management.api.notification.EventNotification;
+import com.sun.esb.management.api.notification.EventNotificationListener;
+import com.sun.esb.management.api.notification.NotificationService;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.Notification;
+import javax.management.openmbean.CompositeDataSupport;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
@@ -61,26 +66,30 @@ import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
+import static org.netbeans.modules.sun.manager.jbi.NotificationConstants.*;
 
 /**
  * Abstract super class for all nodes in JBI manager.
  *
  * @author jqian
  */
-public abstract class AppserverJBIMgmtNode extends AbstractNode 
-        implements PropertySheetOwner {
-
+public abstract class AppserverJBIMgmtNode extends AbstractNode
+        implements PropertySheetOwner, EventNotificationListener {
+   
     protected static final String GENERAL_SHEET_SET_NAME = "GENERAL"; // NOI18N
-    
     protected static final String SERVER_TARGET = AppserverJBIMgmtController.SERVER_TARGET;
-    
-    protected static final String MODEL_BEAN_INFO_PACKAGE_NAME = 
+    protected static final String MODEL_BEAN_INFO_PACKAGE_NAME =
             "org.netbeans.modules.sun.manager.jbi.management.model.beaninfo"; // NOI18N
-
+    
     private static Logger logger;
     private NodeType nodeType;
-    private AppserverJBIMgmtController appsrvrJBIMgmtController;
+    private AppserverJBIMgmtController appsrvrJBIMgmtController;    
     
+    // Used for ordering event notifications
+    private long lastSequenceNumber = -1;
+
     /**
      *
      *
@@ -126,18 +135,18 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode
             String displayNameLabel,
             String descriptionLabel,
             Map<Attribute, ? extends MBeanAttributeInfo> properties) {
-        
+
         if (properties == null) {
             return;
         }
-        
+
         try {
             PropertySupport[] propertySupports =
                     createPropertySupportArray(properties);
 
             Sheet.Set sheetSet = createSheetSet(
                     name, displayNameLabel, descriptionLabel, propertySupports);
-            
+
             if (sheetSet != null) {
                 sheet.put(sheetSet);
             }
@@ -278,6 +287,78 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode
 //     * @returns the updated Attribute accessed from the Sheet.
 //     */
 //    public abstract Attribute setSheetProperty(String attrName, Object value);
+    
+    protected String getInstalledIconBadgeName() {
+        return IconConstants.INSTALLED_ICON;
+    }
+
+    protected String getStoppedIconBadgeName() {
+        return IconConstants.STOPPED_ICON;
+    }
+
+    protected String getUnknownIconBadgeName() {
+        return IconConstants.UNKNOWN_ICON;
+    }
+    
+    protected void registerNotificationListener() {
+        try {
+            NotificationService notificationService = 
+                    getAppserverJBIMgmtController().getNotificationService();
+            if (notificationService != null) {
+                notificationService.addNotificationEventListener(this);
+            }
+        } catch (ManagementRemoteException ex) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    "Unable to get the runtime notification service. You might need to (re)start the server.",
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
+    
+    public void processNotification(EventNotification eventNotification) {
+        Notification notification = eventNotification.getNotification();
+        
+        long newSequenceNumber = notification.getSequenceNumber();
+            
+        if (lastSequenceNumber < newSequenceNumber) {
+            lastSequenceNumber = newSequenceNumber;
+            
+            CompositeDataSupport userData = (CompositeDataSupport) notification.getUserData();
+            String sourceName = (String) userData.get(NOTIFICATION_SOURCE_NAME);        
+            String sourceType = (String) userData.get(NOTIFICATION_SOURCE_TYPE);       
+            String eventType = (String) userData.get(NOTIFICATION_EVENT_TYPE); 
+
+            if (shouldProcessNotification(sourceName, sourceType, eventType)) { 
+                processNotificationData(userData);        
+            }
+        }
+    }
+    
+    /**
+     * Whether the current node should process the given event.
+     * @param sourceName
+     * @param sourceType
+     * @param eventType
+     * @return
+     */
+    protected abstract boolean shouldProcessNotification(String sourceName, 
+            String sourceType, String eventType);
+    
+    /**
+     * Processes the given notification user data.
+     * @param data
+     */
+    protected abstract void processNotificationData(CompositeDataSupport data);
+    
+    private static RequestProcessor myProcessor = new RequestProcessor("jbimgr");
+    
+    protected static void postToRequestProcessorThread(final Runnable runnable) {
+        if (myProcessor.isRequestProcessorThread()) {
+            runnable.run();
+        } else {
+            myProcessor.post(runnable);
+        }
+    }
 
     /**
      * Returns the logger for all nodes.

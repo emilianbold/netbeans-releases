@@ -3,12 +3,15 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <!--
     <tocitem text="IDE Basics">
         <tocitem text="Getting Started">
             <tocitem text="Web Applications" target="webapps_process" />
         </tocitem>
     </tocitem>
+    -->
     <tocitem text="Web Applications" expand="false">
+        <!--
         <tocitem text="About Web Applications">
             <tocitem text="About Web Applications" target="about_webapps" />
             <tocitem text="Working with Web Applications" target="webapps_process" />
@@ -16,6 +19,7 @@
             <tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
             <tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />
         </tocitem>
+        -->
         <tocitem text="Creating Web Applications">
             <tocitem text="About Creating Web Applications" target="about_create_webapps" />
             <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />

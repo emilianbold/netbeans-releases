@@ -146,9 +146,9 @@ public class PushAction extends ContextAction {
 
     static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
         // If the repository has no default pull path then inform user
-        String tmpPushPath = HgRepositoryContextCache.getPushDefault(ctx);
+        String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(ctx);
         if(tmpPushPath == null) {
-            tmpPushPath = HgRepositoryContextCache.getPullDefault(ctx);
+            tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
         }
         if(tmpPushPath == null) {
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N

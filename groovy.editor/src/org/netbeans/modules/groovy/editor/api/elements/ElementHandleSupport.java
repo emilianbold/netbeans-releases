@@ -45,13 +45,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,10 +60,10 @@ import org.openide.filesystems.FileObject;
  */
 public class ElementHandleSupport {
 
-    public static ElementHandle createHandle(CompilationInfo info, final GroovyElement object) {
+    public static ElementHandle createHandle(ParserResult info, final GroovyElement object) {
         if (object instanceof KeywordElement || object instanceof CommentElement) {
             // Not tied to an AST - just pass it around
-            return new GroovyElementHandle(null, object, info.getFileObject());
+            return new GroovyElementHandle(null, object, info.getSnapshot().getSource().getFileObject());
         }
 
         if (object instanceof IndexedElement) {
@@ -92,18 +92,18 @@ public class ElementHandleSupport {
 
         ASTNode root = AstUtilities.getRoot(info);
 
-        return new GroovyElementHandle(root, object, info.getFileObject());
+        return new GroovyElementHandle(root, object, info.getSnapshot().getSource().getFileObject());
     }
 
     @SuppressWarnings("unchecked")
     public static ElementHandle createHandle(ParserResult result, final AstElement object) {
         ASTNode root = AstUtilities.getRoot(result);
 
-        return new GroovyElementHandle(root, object, result.getFile().getFileObject());
+        return new GroovyElementHandle(root, object, result.getSnapshot().getSource().getFileObject());
     }
     
-    public static GroovyElement resolveHandle(CompilationInfo info, ElementHandle handle) {
-        GroovyElementHandle h = (GroovyElementHandle)handle;
+    public static GroovyElement resolveHandle(ParserResult info, ElementHandle handle) {
+        GroovyElementHandle h = (GroovyElementHandle) handle;
         ASTNode oldRoot = h.root;
         ASTNode oldNode;
 
@@ -220,6 +220,12 @@ public class ElementHandleSupport {
         public Set<Modifier> getModifiers() {
             return object.getModifiers();
         }
+
+        // FIXME parsing API
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
     }
 
     // FIXME could it be ElementKind.OTHER or can we use url?
@@ -269,6 +275,11 @@ public class ElementHandleSupport {
             // FIXME
             return false;
         }
+
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
 
     }
 

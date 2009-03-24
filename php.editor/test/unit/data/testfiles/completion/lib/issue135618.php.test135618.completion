@@ -1,5 +1,5 @@
 Code completion result for source line:
 self::|BBB;
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CONSTANT   ? AAA                                      A135618
 CONSTANT   ? BBB                                      B135618

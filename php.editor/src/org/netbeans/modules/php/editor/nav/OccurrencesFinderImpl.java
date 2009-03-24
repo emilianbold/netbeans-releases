@@ -46,10 +46,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -62,7 +66,7 @@ import org.netbeans.modules.php.editor.model.PhpKind;
  *
  * @author Radek Matous
  */
-public class OccurrencesFinderImpl implements OccurrencesFinder {
+public class OccurrencesFinderImpl extends OccurrencesFinder {
     private int offset;
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
 
@@ -76,15 +80,16 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
     }
 
     public void cancel() {
+        //TODO: implement me 
     }
     
-    public void run(CompilationInfo parameter) throws Exception {
-        for (OffsetRange r : compute(parameter, offset)) {
+    public void run(Result result, SchedulerEvent event) {
+        for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
             range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
         }
     }
     
-    static Collection<OffsetRange> compute(final CompilationInfo parameter, final int offset) {
+    static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
@@ -111,5 +116,15 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
             }
         }
         return result;
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 }

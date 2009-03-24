@@ -126,6 +126,7 @@ import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.tasklist.ErrorAnnotator;
 import org.netbeans.modules.java.source.tasklist.JavaTaskProvider;
@@ -242,17 +243,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
 
     private synchronized void open () throws IllegalStateException {
-        if (notInitialized) {
-            try {
-                this.cpImpl.setExcludesListener (this);
-                this.cp.addPropertyChangeListener(this);
-                this.registerFileSystemListener();
-                submitBatch();
-                notInitialized = false;
-            } catch (TooManyListenersException e) {
-                throw new IllegalStateException ();
-            }
-        }
+//        if (notInitialized) {
+//            try {
+//                this.cpImpl.setExcludesListener (this);
+//                this.cp.addPropertyChangeListener(this);
+//                this.registerFileSystemListener();
+//                submitBatch();
+//                notInitialized = false;
+//            } catch (TooManyListenersException e) {
+//                throw new IllegalStateException ();
+//            }
+//        }
     }
     
     public void close () {
@@ -377,19 +378,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         submit (_currentWork);
     }
     
-    public synchronized boolean isScanInProgress() {
-        // true, when updater is not initilized, there is no scanning task
-        // submitted and GlobalSourcePath is actually changing.
-        return notInitialized || this.noSubmited > 0 || !GlobalSourcePath.getDefault().isFinished();
-    }
-
-    public synchronized void waitScanFinished () throws InterruptedException {
-        while (isScanInProgress()) {
-            this.wait(1000);
-        }
-    }
-    
-    
     private synchronized boolean isDirty () {
         if (this.dirty) {
             this.dirty = false;
@@ -427,14 +415,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final URL original = new File (parentFile,originalName).toURI().toURL();
                             submit(Work.delete(original,root,fo.isFolder(),origVs));
                             if (TasklistSettings.isTasklistEnabled()) {
-                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, original, FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
-                                if (TasklistSettings.isBadgesEnabled()) {
-                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                    if (an != null) {
-                                        an.updateInError(toRefresh);
-                                    }
-                                }
+//                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, original, FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
+//                                if (TasklistSettings.isBadgesEnabled()) {
+//                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+//
+//                                    if (an != null) {
+//                                        an.updateInError(toRefresh);
+//                                    }
+//                                }
                             }
                         }
                         final Work work = Work.compile (fo,root,vs);
@@ -503,15 +491,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     markRootTasklistDirty(root);
                     submit(Work.delete(fo,root,isFolder,vs));
                     if (TasklistSettings.isTasklistEnabled()) {
-                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, fo.getURL(), FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
-                        if (TasklistSettings.isBadgesEnabled()) {
-                            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-                            
-                            if (an != null) {
-                                an.updateInError(toRefresh);
-                            }
-                        }
-                        JavaTaskProvider.refresh(fo);
+//                        Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, fo.getURL(), FileUtil.toFile(fo), Collections.<Diagnostic>emptyList());
+//                        if (TasklistSettings.isBadgesEnabled()) {
+//                            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+//
+//                            if (an != null) {
+//                                an.updateInError(toRefresh);
+//                            }
+//                        }
+//                        JavaTaskProvider.refresh(fo);
                     }
                 }
             }
@@ -1065,7 +1053,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     private static File getAttributeFile(URL root) throws IOException {
-        File dirtyFile = Index.getClassFolder(root);
+        File dirtyFile = JavaIndex.getClassFolder(root);
         
         return new File(dirtyFile.getParentFile(), "attributes.properties");
     }
@@ -1332,6 +1320,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         public Void run () throws IOException {
+            if (true) return null;
             ACTIVITY_LOGGER.finest("START");    //NOI18N
             final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
             PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
@@ -1500,10 +1489,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 Object[] data = new Object[2 * root2DebugData.size() + 1];
                                 int index = 0;
 
-                                data[index++] = Index.getCacheFolder().getName();
+                                data[index++] = "bflmpsvz";//XXX: Index.getCacheFolder().getName();
                                 
                                 for (Entry<URL, String> e : root2DebugData.entrySet()) {
-                                    File cacheFile = Index.getClassFolder(e.getKey(), true);
+                                    File cacheFile = JavaIndex.getClassFolder(e.getKey(), true);
 
                                     if (cacheFile != null) {
                                         data[index] = cacheFile.getParentFile().getName();
@@ -2131,7 +2120,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } else {
                     if (TasklistSettings.isTasklistEnabled()) {
                         //excluded file, make sure any errors attached to it are deleted:
-                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURI().toURL(), child, Collections.<Diagnostic>emptyList()));
+//                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURI().toURL(), child, Collections.<Diagnostic>emptyList()));
                     }
                 }
             }
@@ -2251,7 +2240,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (TasklistSettings.isTasklistEnabled()) {
                 //delete .err files for files that were deleted while the IDE was stopped:
                 for (File f : existingFilesInError) {
-                    errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, f.toURI().toURL(), f, Collections.<Diagnostic>emptyList()));
+//                    errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, f.toURI().toURL(), f, Collections.<Diagnostic>emptyList()));
                 }
                 if (TasklistSettings.isBadgesEnabled() && !errorBadgesToRefresh.isEmpty()) {
                     ErrorAnnotator an = ErrorAnnotator.getAnnotator();
@@ -2314,7 +2303,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         filters.put(root, filter);
                     }
                 }
-                final File classCache = Index.getClassFolder(rootFile);
+                final File classCache = JavaIndex.getClassFolder(rootFile);
                 final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
                 Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
@@ -2368,7 +2357,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
-                    final File classCache = Index.getClassFolder (rootFile);
+                    final File classCache = JavaIndex.getClassFolder (rootFile);
                     final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()),false);
                     final String relativePath = FileObjects.getRelativePath (rootFile,fileFile);
                     final int index = relativePath.lastIndexOf('.');  //NOI18N
@@ -2469,16 +2458,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 if (TasklistSettings.isTasklistEnabled()) {
-                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
-
-                                    if (TasklistSettings.isBadgesEnabled()) {
-                                        //XXX: maybe move to the common path (to be used also in the else branch:
-                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                        if (an != null) {
-                                            an.updateInError(toRefresh);
-                                        }
-                                    }
+//                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
+//
+//                                    if (TasklistSettings.isBadgesEnabled()) {
+//                                        //XXX: maybe move to the common path (to be used also in the else branch:
+//                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+//
+//                                        if (an != null) {
+//                                            an.updateInError(toRefresh);
+//                                        }
+//                                    }
 
                                     JavaTaskProvider.refresh(fo);
                                 }
@@ -2538,7 +2527,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final File fileFile = FileUtil.normalizeFile(new File (URI.create(file.toExternalForm())));
             final String offset = FileObjects.getRelativePath (rootFile,fileFile);
             assert offset != null && offset.length() > 0 : String.format("File %s not under root %s ", fileFile.getAbsolutePath(), rootFile.getAbsolutePath());  // NOI18N                        
-            final File classCache = Index.getClassFolder (rootFile);
+            final File classCache = JavaIndex.getClassFolder (rootFile);
             final File[] affectedFiles = getAffectedCacheFiles(offset, classCache, folder, virtual);            
             if (affectedFiles != null && affectedFiles.length > 0) {
                 Set<ElementHandle<TypeElement>> removed = new HashSet<ElementHandle<TypeElement>>();
@@ -2616,7 +2605,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         private void updateBinary (final URL file, final URL root) throws IOException {            
             CachingArchiveProvider.getDefault().clearArchive(root);                       
-            File cacheFolder = Index.getClassFolder(root);
+            File cacheFolder = JavaIndex.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
             ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(root, false);
             if (uq == null) {
@@ -2733,7 +2722,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                     long start = System.currentTimeMillis();
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                    final File cacheRoot = Index.getClassFolder(root);
+                    final File cacheRoot = JavaIndex.getClassFolder(root);
                     Collection<File> files = toRecompile.get(root);
 
                     long cur = System.currentTimeMillis();
@@ -3250,7 +3239,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         
                         if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null && !activeTuple.virtual) {
-                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeTuple.file, diag));
+//                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeTuple.file, diag));
                         }
                         Log.instance(jt.getContext()).nerrors = 0;
                         if (compiledFiles != null && !activeTuple.virtual) {
@@ -3389,7 +3378,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         File[] res = null;
         File classCache = null;
         try {
-            classCache = Index.getClassFolder (root.getURL());
+            classCache = JavaIndex.getClassFolder (root.getURL());
             if (classCache != null) {
                 String offset = FileUtil.getRelativePath(root, file);
                 if (offset != null) {
@@ -3532,7 +3521,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
         
-    private static void readRSFile (final File f, final File root, final List<? super File> files) throws IOException {
+    public static void readRSFile (final File f, final File root, final List<? super File> files) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (f), "UTF-8"));
         try {
             String binaryName;
@@ -3564,7 +3553,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         assert root != null;
         List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
         String path = FileObjects.getRelativePath(root, source);
-        File cache = Index.getClassFolder(root.toURI().toURL());
+        File cache = JavaIndex.getClassFolder(root.toURI().toURL());
         File f = new File (cache,path+'.'+FileObjects.RX);      //NOI18N
         boolean rf = false;
         if (f.exists()) {
@@ -3645,14 +3634,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public static synchronized RepositoryUpdater getDefault () {
         if (instance == null) {
             instance = new RepositoryUpdater ();
-            //todo: Workaround until indexing will be a part of parsing
-            org.netbeans.modules.parsing.impl.Utilities.setIndexingStatus(
-                    new org.netbeans.modules.parsing.impl.Utilities.IndexingStatus() {
-                        public boolean isScanInProgress() {
-                            return instance.isScanInProgress();
-                        }
-                    }
-            );
         }
         return instance;
     }        

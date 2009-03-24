@@ -151,4 +151,8 @@ public final class DelegateRepository implements Repository {
             }
         }
     }
+
+    public void debugDistribution() {
+        delegate.debugDistribution();
+    }
 }

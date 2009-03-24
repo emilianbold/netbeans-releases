@@ -51,14 +51,15 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -70,6 +71,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class DuplicateHashKeys extends RubyAstRule {
+    
     public DuplicateHashKeys() {
     }
 
@@ -84,7 +86,7 @@ public class DuplicateHashKeys extends RubyAstRule {
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         // Note - we're placing both Strings and ByteList instances into this
         // Set<CharSequence>. A String and a ByteList will never be equal. That's
@@ -122,7 +124,7 @@ public class DuplicateHashKeys extends RubyAstRule {
                     if (lexRange != null) {
                         List<HintFix> fixList = Collections.emptyList();
                         String displayName = NbBundle.getMessage(DuplicateHashKeys.class, "DuplicateHashName", name);
-                        Hint desc = new Hint(this, displayName, info.getFileObject(), lexRange, fixList, 1000);
+                        Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), lexRange, fixList, 1000);
                         result.add(desc);
 
                     }

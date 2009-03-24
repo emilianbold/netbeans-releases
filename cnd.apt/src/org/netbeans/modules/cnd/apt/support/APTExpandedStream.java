@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.impl.support.*;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * TokenStream responsible to expand all containing macros and as result
@@ -329,7 +330,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
     // we are trying to prevent such experiments, especially in IDE
     private static final long MACRO_EXPANDING_THREASHOLD = 16*1024;
     private static List<APTToken> subsituteParams(APTMacro macro, List<List<APTToken>> params, APTMacroCallback callback, boolean expandPPExpression) throws TokenStreamException {
-        final Map<String/*getTokenTextKey(token)*/, List<APTToken>> paramsMap = createParamsMap(macro, params);
+        final Map<CharSequence/*getTokenTextKey(token)*/, List<APTToken>> paramsMap = createParamsMap(macro, params);
         final List<APTToken> expanded = new LinkedList<APTToken>();
         final APTTokenStream body = new APTCommentsFilter(macro.getBody());
         int state = BODY_STREAM;
@@ -364,7 +365,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             case APTTokenTypes.ID:
                             {
                                 // may be it is parameter of macro to substitute with input parameter value  
-                                List<APTToken> paramValue = paramsMap.get(token.getText());
+                                List<APTToken> paramValue = paramsMap.get(token.getTextID());
                                 if (paramValue != null) {
                                     // found param, so expand it and skip current token
                                     List<APTToken> expandedValue = expandParamValue(paramValue, callback, expandPPExpression);
@@ -433,7 +434,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     // stringize next token, it must be param
                     // unless macro is incomplete
                     if (laToken != null && laToken.getType() == APTTokenTypes.ID) {
-                        APTToken stringized = stringizeParam(paramsMap.get(laToken.getText()));
+                        APTToken stringized = stringizeParam(paramsMap.get(laToken.getTextID()));
                         laToken = body.nextToken();
                         switch (laToken.getType()) {
                             case APTTokenTypes.DBL_SHARP:
@@ -470,14 +471,14 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         return APTUtils.isInt(left) && APTUtils.isID(right) && APTUtils.areAdjacent(left, right);
     }
 
-    private static Map<String, List<APTToken>> createParamsMap(APTMacro macro, List<List<APTToken>> params) {
-        Map<String, List<APTToken>> map = new HashMap<String, List<APTToken>>();
+    private static Map<CharSequence, List<APTToken>> createParamsMap(APTMacro macro, List<List<APTToken>> params) {
+        Map<CharSequence, List<APTToken>> map = new HashMap<CharSequence, List<APTToken>>();
         Collection<APTToken> macroParams = macro.getParams();
         int numInList = params.size();
         int i=0;
         APTToken lastMacroParam = null;
         for (APTToken macroParam : macroParams) {
-            map.put(macroParam.getText(), i < numInList ? params.get(i) : Collections.<APTToken>emptyList());
+            map.put(macroParam.getTextID(), i < numInList ? params.get(i) : Collections.<APTToken>emptyList());
             i++;
             lastMacroParam = macroParam;
         }
@@ -485,7 +486,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         // if remains values and last param of macro is VA_ARG => 
         // add all remains to the last value separating by comma as it was in macro call
         if (i < numInList && APTUtils.isVaArgsToken(lastMacroParam)) {
-            List<APTToken> vaArgsVal = map.get(lastMacroParam.getText());
+            List<APTToken> vaArgsVal = map.get(lastMacroParam.getTextID());
             for (; i < numInList; i++) {
                 vaArgsVal.add(APTUtils.COMMA_TOKEN);
                 vaArgsVal.addAll(params.get(i));
@@ -494,9 +495,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         return map;
     }    
 
-    private static List<APTToken> createConcatenation(APTToken tokenLeft, List<APTToken> tokensRight, final Map<String/*getTokenTextKey(token)*/, List<APTToken>> paramsMap) {
+    private static List<APTToken> createConcatenation(APTToken tokenLeft, List<APTToken> tokensRight, final Map<CharSequence/*getTokenTextKey(token)*/, List<APTToken>> paramsMap) {
         //TODO: finish it, use lexer
-        List<APTToken> valLeft = paramsMap.get(tokenLeft.getText());
+        List<APTToken> valLeft = paramsMap.get(tokenLeft.getTextID());
         String leftText;
         if (valLeft != null) {
             leftText = toText(valLeft, false);
@@ -505,9 +506,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         }
         StringBuilder tokensRightMerged = new StringBuilder();
         for (APTToken token : tokensRight) {
-            tokensRightMerged.append(token.getText());
+            tokensRightMerged.append(token.getTextID());
         }
-        List<APTToken> valRight = paramsMap.get(tokensRightMerged.toString());
+        List<APTToken> valRight = paramsMap.get(CharSequenceKey.create(tokensRightMerged));
         String rightText;
         if (valRight != null) {
             rightText = toText(valRight, false);
@@ -544,9 +545,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         for (int i = 0; i < tokens.size(); ++i) {
             APTToken token = tokens.get(i);
             if (stringize) {
-                out.append(escape(token.getText()));
+                out.append(escape(token.getTextID()));
             } else {
-                out.append(token.getText());
+                out.append(token.getTextID());
                 if (i + 1 < tokens.size() && !APTUtils.areAdjacent(token, tokens.get(i + 1))) {
                     out.append(' '); // NOI18N
                 }

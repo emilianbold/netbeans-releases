@@ -113,6 +113,9 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
                             new Object[] {getToken().getLine(), getToken().getText().trim()} );                
                 }
             }
+            if (condition != null){
+                ((ArrayList)condition).trimToSize();
+            }
             return false;
         } else if (!APTUtils.isCommentToken(ttype)) {
             if (condition == null) {

@@ -85,7 +85,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest  {
             getPropertySupport(null, 
                 new Attribute("OutboundThreads", 4), 
                 new JBIComponentConfigurationMBeanAttributeInfo(
-                configDescriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false));
+                configDescriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false),
+                "foo");
         assertTrue(propSupport.getValue() instanceof Integer);
 
         // boolean
@@ -93,7 +94,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest  {
             getPropertySupport(null, 
                 new Attribute("UseJVMProxySettings", true), 
                 new JBIComponentConfigurationMBeanAttributeInfo(
-                configDescriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false));
+                configDescriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false),
+                "foo");
         assertTrue(propSupport.getValue() instanceof Boolean);
         
         // string
@@ -101,7 +103,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest  {
             getPropertySupport(null, 
                 new Attribute("ProxyHost", "localhost"), 
                 new JBIComponentConfigurationMBeanAttributeInfo(
-                configDescriptor.getChild("ProxyHost"), "java.lang.String", true, true, false));
+                configDescriptor.getChild("ProxyHost"), "java.lang.String", true, true, false),
+                "foo");
         assertTrue(propSupport.getValue() instanceof String);
         assertFalse(propSupport.getPropertyEditor() instanceof ComboBoxPropertyEditor);
 
@@ -110,7 +113,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest  {
             getPropertySupport(null, 
                 new Attribute("ProxyType", "SOCKS"), 
                 new JBIComponentConfigurationMBeanAttributeInfo(
-                configDescriptor.getChild("ProxyType"), "java.lang.String", true, true, false));
+                configDescriptor.getChild("ProxyType"), "java.lang.String", true, true, false),
+                "foo");
         assertTrue(propSupport.getValue() instanceof String);
         PropertyEditor propEditor = propSupport.getPropertyEditor();
         assertTrue(propEditor instanceof ComboBoxPropertyEditor);
@@ -127,7 +131,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest  {
             getPropertySupport(null, 
                 new Attribute("ProxyPassword", "somePassword"), 
                 new JBIComponentConfigurationMBeanAttributeInfo(
-                configDescriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false));
+                configDescriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false),
+                "foo");
         assertTrue(propSupport.getValue() instanceof String);
         assertTrue(propSupport.getPropertyEditor() instanceof PasswordEditor);
     }

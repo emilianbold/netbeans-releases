@@ -63,7 +63,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
                                     List<CharSequence> systemIncludePaths,
                                     List<CharSequence> userIncludePaths) {
-        this.baseFile = FilePathCache.getString(path);
+        this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;

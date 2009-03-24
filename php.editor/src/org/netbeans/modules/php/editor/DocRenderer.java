@@ -39,19 +39,21 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
@@ -83,7 +85,7 @@ class DocRenderer {
     private static final String TABLE_STYLE= "style=\"border-style:solid; border-color: black; border-width: 1px; width: 100%; border-collapse: collapse;\""; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
 
-    static String document(CompilationInfo info, ElementHandle element) {
+    static String document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
             return pHPDOCTagElement.getDoc();
@@ -101,17 +103,17 @@ class DocRenderer {
         return null;
     }
 
-    private static String documentIndexedElement(CompilationInfo info, IndexedElement indexedElement) {
+    private static String documentIndexedElement(ParserResult info, IndexedElement indexedElement) {
 
         StringBuilder description = new StringBuilder();
         final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
 
         String location = null;
         
-        if (indexedElement.getFile().isPlatform()){
+        if (indexedElement.isPlatform()){
             location = NbBundle.getMessage(DocRenderer.class, "PHPPlatform");
         } else {
-            FileObject fobj = indexedElement.getFile().getFileObject();
+            FileObject fobj = indexedElement.getFileObject();
 
             if (fobj != null) {
                 Project project = FileOwnerQuery.getOwner(fobj);
@@ -150,13 +152,11 @@ class DocRenderer {
             if (fo == null){
                 return null;
             }
-           
-            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
-            try {
-                model.runUserActionTask(new PHPDocExtractor(
-                        header, phpDoc, indexedElement), true);
 
-            } catch (IOException ex) {
+            UserTask task = new PHPDocExtractor(header, phpDoc, indexedElement);
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(fo)), task);
+            } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -171,7 +171,7 @@ class DocRenderer {
 
     }
 
-    private static class PHPDocExtractor implements CancellableTask<CompilationInfo> {
+    private static class PHPDocExtractor extends UserTask {
 
         private CCDocHtmlFormatter header;
         private StringBuilder phpDoc;
@@ -351,9 +351,10 @@ class DocRenderer {
             return null;
         }
 
-        public void run(CompilationInfo ci) throws Exception {
-            ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
-            Program program = Utils.getRoot(presult.getInfo());
+         @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult presult = (ParserResult)resultIterator.getParserResult();
+            Program program = Utils.getRoot(presult);
 
             if (program != null) {
                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());

@@ -45,7 +45,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -79,6 +78,9 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     WSUtils.updateClients(prj, jaxWsSupport);
+                    if (jaxWsSupport.getServices().size() > 0) {
+                        MavenModelUtils.reactOnServerChanges(prj);
+                    }
                 }
             }
         };

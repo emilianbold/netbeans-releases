@@ -46,6 +46,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -56,7 +57,9 @@ import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 public class TransportTestCase extends RemoteTestBase {
 
     static {
-        System.setProperty("CND_REMOTE_TESTUSERINFO", "rdtest:tester33@endif.russia");
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
     }
     public TransportTestCase(String testName) {
         super(testName);
@@ -67,7 +70,7 @@ public class TransportTestCase extends RemoteTestBase {
             final String randomString = "i am just a random string, it does not matter that I mean";
             RemoteCommandSupport rcs = new RemoteCommandSupport(getExecutionEnvironment(), "echo " + randomString);
             rcs.run();
-            rcs.disconnect();
+//            rcs.disconnect();
             assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getExecutionEnvironment() + "' returned " + rcs.getExitStatus();
             assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
         } else {
@@ -93,6 +96,8 @@ public class TransportTestCase extends RemoteTestBase {
             HostInfoProvider hip = HostInfoProvider.getDefault();
             assert hip.fileExists(getExecutionEnvironment(), "/etc/passwd");
             assert !hip.fileExists(getExecutionEnvironment(), "/etc/passwd/noway");
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 
@@ -102,6 +107,8 @@ public class TransportTestCase extends RemoteTestBase {
             System.err.println("Environment: " + env);
             assert env != null && env.size() > 0;
             assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 
@@ -119,15 +126,23 @@ public class TransportTestCase extends RemoteTestBase {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(sb.toString());
             out.close();
-            RemoteCopySupport rcs = new RemoteCopySupport(getExecutionEnvironment());
+            ExecutionEnvironment execEnv = getExecutionEnvironment();
+            RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
             String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
             HostInfoProvider hip = HostInfoProvider.getDefault();
-            assert hip.fileExists(getExecutionEnvironment(), remoteFile);
-            RemoteCommandSupport rcs2 = new RemoteCommandSupport(getExecutionEnvironment(), "cat " + remoteFile);
-            assert rcs2.run() == 0;
+            assert hip.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
+            String catCommand = "cat " + remoteFile;
+            RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
+//            assert rcs2.run() == 0; // add more output
+            int rc = rcs2.run();
+            if (rc != 0) {
+                assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
+            }
             assert rcs2.getOutput().equals(sb.toString());
-            assert RemoteCommandSupport.run(getExecutionEnvironment(), "rm " + remoteFile) == 0;
+            assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
     

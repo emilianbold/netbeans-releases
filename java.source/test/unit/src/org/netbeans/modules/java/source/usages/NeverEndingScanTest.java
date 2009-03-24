@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.source.usages;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  *
@@ -59,11 +60,11 @@ public class NeverEndingScanTest extends NbTestCase {
      */
     public void testNeverendingScan() throws InterruptedException {
         int counter = 0;
-        while (RepositoryUpdater.getDefault().isScanInProgress() && counter < 8) {
+        while (IndexingManager.getDefault().isIndexing() && counter < 8) {
             Thread.sleep(1000);
             counter++;
         }
-        assertFalse("Scan does not end", RepositoryUpdater.getDefault().isScanInProgress());
+        assertFalse("Scan does not end", IndexingManager.getDefault().isIndexing());
     }
 
 }

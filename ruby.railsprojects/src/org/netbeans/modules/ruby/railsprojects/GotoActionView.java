@@ -47,15 +47,14 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-
 
 /**
  * Rails action for jumping to the action corresponding to a view, or the

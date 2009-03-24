@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -171,6 +172,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int errorCount = 0;
+    private int lastParseTime;
 
     public static enum State {
 
@@ -198,8 +200,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
-    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
+    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
     private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
     private Reference<List<CsmReference>> lastMacroUsages = null;
     private ChangeListener fileBufferChangeListener = new ChangeListener() {
@@ -220,7 +222,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
@@ -359,11 +361,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (handlers == DUMMY_HANDLERS) {
             handlers = getPreprocHandlers();
         }
+        long time;
         synchronized (stateLock) {
             switch (stateRef.get()) {
                 case INITIAL:
                 case PARTIAL:
                     state = State.BEING_PARSED;
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             _parse(preprocHandler);
@@ -379,6 +383,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }  // if not, someone marked it with new state
                         }
                         stateLock.notifyAll();
+                        lastParseTime = (int)(System.currentTimeMillis() - time);
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
@@ -387,6 +393,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 case MODIFIED:
                     state = State.BEING_PARSED;
                     boolean first = true;
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             if (first) {
@@ -407,6 +414,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         }
                         postParse();
                         stateLock.notifyAll();
+                        lastParseTime = (int)(System.currentTimeMillis() - time);
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
@@ -433,6 +442,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // FIXUP: there should be a notificator per project instead!
             Notificator.instance().reset();
         }
+    }
+
+    // returns parse/rearse time in milliseconds.
+    int getLastParseTime(){
+        return lastParseTime;
     }
 
     public boolean validate() {
@@ -545,11 +559,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             declarationsLock.writeLock().lock();
             uids = declarations.values();
             declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
-            staticFunctionDeclarationUIDs.clear();
-            staticVariableUIDs.clear();
             sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
+        }
+        try {
+            staticLock.writeLock().lock();
+            staticFunctionDeclarationUIDs.clear();
+            staticVariableUIDs.clear();
+        } finally {
+            staticLock.writeLock().unlock();
         }
         clearFakeRegistrations();
 
@@ -1410,8 +1429,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new OffsetSortedKey(declaration);
     }
 
-    public String getAbsolutePath() {
-        return fileBuffer.getFile().getAbsolutePath();
+    public CharSequence getAbsolutePath() {
+        return fileBuffer.getAbsolutePath();
     }
 
     public File getFile() {
@@ -1575,11 +1594,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
-        output.writeUTF(state.toString());
+        output.writeInt(lastParseTime);
+        output.writeByte((byte)state.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
@@ -1597,13 +1617,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readOffsetSortedToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
-        factory.readNameSortedToUIDMap(this.macros, input, null);
+        factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         // not null UID
@@ -1613,7 +1633,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
         lastParsed = input.readLong();
-        state = State.valueOf(input.readUTF());
+        lastParseTime = input.readInt();
+        state = State.values()[input.readByte()];
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
     }
@@ -1736,7 +1757,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private OffsetSortedKey(int offset, String name) {
             start = offset;
-            this.name = name;
+            this.name = NameCache.getManager().getString(name);
         }
 
         public int compareTo(OffsetSortedKey o) {
@@ -1766,12 +1787,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            output.writeUTF(name.toString());
+            PersistentUtils.writeUTF(name, output);
         }
 
         public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getManager().getString(input.readUTF());
+            name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
     }
 
@@ -1786,7 +1807,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private NameSortedKey(CharSequence name, int start) {
             this.start = start;
-            this.name = name;
+            this.name = NameCache.getManager().getString(name);
         }
 
         public int compareTo(NameSortedKey o) {
@@ -1815,21 +1836,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
 
         public static NameSortedKey getStartKey(CharSequence name) {
-            return new NameSortedKey(CharSequenceKey.create(name), 0);
+            return new NameSortedKey(name, 0);
         }
 
         public static NameSortedKey getEndKey(CharSequence name) {
-            return new NameSortedKey(CharSequenceKey.create(name), Integer.MAX_VALUE);
+            return new NameSortedKey(name, Integer.MAX_VALUE);
         }
 
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            output.writeUTF(name.toString());
+            PersistentUtils.writeUTF(name, output);
         }
 
         public NameSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getManager().getString(input.readUTF());
+            name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
     }
 

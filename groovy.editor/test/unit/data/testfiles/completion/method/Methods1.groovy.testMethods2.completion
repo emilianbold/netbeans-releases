@@ -1,6 +1,6 @@
 Code completion result for source line:
 new URL("http://google.com").getP|r
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getPath()                       [PUBLIC]   String
 METHOD     getPort()                       [PUBLIC]   int

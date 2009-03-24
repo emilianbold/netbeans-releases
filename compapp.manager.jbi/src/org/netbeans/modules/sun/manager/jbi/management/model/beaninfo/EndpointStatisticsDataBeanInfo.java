@@ -118,11 +118,11 @@ public class EndpointStatisticsDataBeanInfo extends SimpleBeanInfo {
                     "LBL_MSG_EXCHANGE_DELIVERY_CHANNEL_TIME_AVERAGE", // NOI18N
                     "DSC_MSG_EXCHANGE_DELIVERY_CHANNEL_TIME_AVERAGE");    // NOI18N
 
-            PropertyDescriptor msgExchangeMessageServiceTimeAveragePD =
-                    getPropertyDescriptor(
-                    "getMessageExchangeMessageServiceTimeAverage", null, // NOI18N
-                    "LBL_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE", // NOI18N
-                    "DSC_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE");    // NOI18N
+//            PropertyDescriptor msgExchangeMessageServiceTimeAveragePD =
+//                    getPropertyDescriptor(
+//                    "getMessageExchangeMessageServiceTimeAverage", null, // NOI18N
+//                    "LBL_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE", // NOI18N
+//                    "DSC_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE");    // NOI18N
 
 
             PropertyDescriptor propertyDescriptors[] = {
@@ -136,7 +136,7 @@ public class EndpointStatisticsDataBeanInfo extends SimpleBeanInfo {
                 numOfSentErrorsPD,
                 msgExchangeComponentTimeAveragePD,
                 msgExchangeDeliveryChannelTimeAveragePD,
-                msgExchangeMessageServiceTimeAveragePD
+//                msgExchangeMessageServiceTimeAveragePD
             };
 
             return propertyDescriptors;

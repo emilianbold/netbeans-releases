@@ -48,11 +48,12 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
+import org.netbeans.modules.sun.manager.jbi.editors.ApplicationVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.JBILogLevelEditor;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBINode;
+import org.netbeans.modules.sun.manager.jbi.util.StackTraceUtil;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.PropertySupport;
 
@@ -141,7 +142,7 @@ public class JBIPropertySupportFactory {
                 if (tabularData != null) {
                     tabularType = tabularData.getTabularType();
                 }
-                return new EnvironmentVariablesEditor(false, tabularType, null, // FIXME
+                return new ApplicationVariablesEditor(false, tabularType, null, // FIXME
                         info.isWritable());  
             }
         };
@@ -165,7 +166,7 @@ public class JBIPropertySupportFactory {
             final Attribute attr, 
             final MBeanAttributeInfo info) {
         return new ApplicationConfigurationsPropertySupport(
-                parent, attr, info);
+                parent, attr, info, parent.getName());
     }
   
     public static PropertySupport createLogLevelProperty(
@@ -227,6 +228,13 @@ class MyPropertySupport<T> extends PropertySupport<T> {
     }
 
     public void setValue(T attrValue) {
+        // #156551
+        if (!canWrite() && StackTraceUtil.isCalledBy(
+                "org.openide.explorer.propertysheet.PropertyDialogManager", // NOI18N
+                "cancelValue")) { // NOI18N
+            return;
+        }
+
         try {
             attribute = parent.setSheetProperty(getName(), attrValue);
         } catch (RuntimeException rex) {

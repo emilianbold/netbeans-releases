@@ -80,7 +80,7 @@ public enum DialogBindingTokenId implements TokenId {
             FileObject fo = (FileObject)inputAttributes.getValue(languagePath, "dialogBinding.fileObject"); //NOI18N
             if (fo == null)
                 return null;
-            Language l = MimeLookup.getLookup(fo.getMIMEType()).lookup(Language.class);
+            Language<?> l = MimeLookup.getLookup(fo.getMIMEType()).lookup(Language.class);
             return l != null ? LanguageEmbedding.create(l, 0, 0) : null;
         }
 

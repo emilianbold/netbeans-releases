@@ -43,7 +43,22 @@ import javax.swing.Icon;
 import org.openide.util.Lookup;
 
 /**
- * Settings of tool tip/icon for IO component (tab)
+ * Settings of tool tip/icon for IO component (tab).
+ * <p>
+ * Client usage:
+ * <pre>
+ *  // settings of IO tab icon, tooltip
+ *  InputOutput io = ...;
+ *  Icon icon = ...;
+ *  IOTab.setIcon(io, icon);
+ *  IOTab.setToolTipText(io, "text");
+ * </pre>
+ * How to support {@link IOTab} in own {@link IOProvider} implementation:
+ * <ul>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement {@link org.openide.util.Lookup.Provider}
+ *   <li> Extend {@link IOTab} and implement its abstract methods
+ *   <li> Place instance of {@link IOTab} to {@link Lookup} provided by {@link InputOutput}
+ * </ul>
  * @since 1.15
  * @author Tomas Holy
  */

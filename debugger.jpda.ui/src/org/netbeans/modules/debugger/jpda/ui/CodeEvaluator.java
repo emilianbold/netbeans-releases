@@ -45,7 +45,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -53,18 +52,15 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -81,32 +77,16 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.HistoryPanel.Item;
-import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
+import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.Model;
-import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.Models.CompoundModel;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
-import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.NodeModelFilter;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TableModelFilter;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -128,14 +108,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private HistoryPanel historyPanel;
     private Reference<JPDADebugger> debuggerRef = new WeakReference(null);
     private DbgManagerListener dbgManagerListener;
-    private EvaluatorModelListener viewModelListener;
-    private PropertyChangeListener csfListener;
     private TopComponent resultView;
     private Set<String> editItemsSet = new HashSet<String>();
     private ArrayList<String> editItemsList = new ArrayList<String>();
     private JPopupMenu editItemsMenu;
+    private JButton dropDownButton;
 
-    private static volatile CodeEvaluator currentEvaluator;
+    private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
+
     private Variable result;
     private RequestProcessor.Task evalTask =
             new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
@@ -152,13 +132,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
-        JButton dropDown = createDropDownButton();
+        dropDownButton = createDropDownButton();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        rightPanel.add(dropDown, gridBagConstraints);
+        rightPanel.add(dropDownButton, gridBagConstraints);
 
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {
@@ -173,9 +153,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane.getDocument().addDocumentListener(this);
         codePane.addKeyListener(this);
         documentPtr[0] = codePane.getDocument();
-
-        currentEvaluator = this; // [TODO]
-
         dbgManagerListener = new DbgManagerListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION,
@@ -187,16 +164,21 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private JButton createDropDownButton() {
         editItemsMenu = new JPopupMenu();
-        JButton button = DropDownButtonFactory.createDropDownButton(
-            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png", false), editItemsMenu); // [TODO] change icon
-        button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
-        button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
+        Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/drop_down_arrow.png", false);
+        final JButton button = new JButton(icon);
+        button.setToolTipText(NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip"));
+        button.setEnabled(false);
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(0, 0, 0, 0));
         button.setFocusable(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (editItemsList.size() > 0) {
-                    codePane.setText(editItemsList.get(0));
-                } // if
+                if (editItemsMenu.isShowing()) {
+                    editItemsMenu.setVisible(false);
+                } else {
+                    editItemsMenu.show(button, 0, button.getHeight());
+                }
             } // actionPerformed
         });
         return button;
@@ -216,6 +198,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     item.addActionListener(new MenuItemListener(str));
                     editItemsMenu.add(item);
                 }
+                dropDownButton.setEnabled(!editItemsList.isEmpty());
             }
         });
     }
@@ -349,13 +332,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         add(separatorPanel, gridBagConstraints);
 
-        rightPanel.setPreferredSize(new java.awt.Dimension(64, 209));
+        rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
         rightPanel.setLayout(new java.awt.GridBagLayout());
 
         evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.gif"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
+        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 20));
         evaluateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 evaluateButtonActionPerformed(evt);
@@ -462,18 +446,23 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 //                if (result == null && resultView == null) { // [TODO]
 //                    return ; // Ignore when nothing to display and nothing is initialized.
 //                }
-                if (resultView == null) {
-                    resultView = getResultViewInstance();
+                if (preferences.getBoolean("show_evaluator_result", false)) {
+                    TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
+                    view.open();
+                    view.requestActive();
+                } else {
+                    if (resultView == null) {
+                        resultView = getResultViewInstance();
+                    }
+                    if (result != null) {
+                        resultView.open();
+                        resultView.requestActive();
+                    }
                 }
-                if (result != null) {
-                    resultView.open();
-                }
-                resultView.requestActive();
-                //viewModelListener.updateModel();
+                getInstance().requestActive();
                 fireResultChange();
             }
         });
-        // viewModelListener.updateModel();
     }
 
     private void addResultToHistory(final String expr, Variable result) {
@@ -499,7 +488,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 } else {
                     editItemsList.add(0, expr);
                     editItemsSet.add(expr);
-                    if (editItemsList.size() > 15) { // [TODO] constant
+                    if (editItemsList.size() > 20) { // [TODO] constant
                         String removed = editItemsList.remove(editItemsList.size() - 1);
                         editItemsSet.remove(removed);
                     }
@@ -583,15 +572,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void initResult(ResultView view) {
         javax.swing.JComponent tree = Models.createView (Models.EMPTY_MODEL);
         view.add (tree, BorderLayout.CENTER);
-        viewModelListener = new EvaluatorModelListener (
-            tree
-        );
         Dimension tps = tree.getPreferredSize();
         tps.height = tps.width/2;
         tree.setPreferredSize(tps);
-        tree.setName(NbBundle.getMessage(Evaluator2.class, "Evaluator.ResultA11YName"));
+        tree.setName(NbBundle.getMessage(CodeEvaluator.class, "Evaluator.ResultA11YName"));
         tree.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(Evaluator2.class, "Evaluator.ResultA11YDescr"));
+                NbBundle.getMessage(CodeEvaluator.class, "Evaluator.ResultA11YDescr"));
         // view.setLabelFor(tree);
         JTextField referenceTextField = new JTextField();
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
@@ -670,242 +656,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                 });
             }
-        }
-    }
-
-    /**
-     * Inspired by org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener.
-     */
-    private static class EvaluatorModelListener extends DebuggerManagerAdapter {
-
-        private String          viewType;
-        private JComponent      view;
-        private List models = new ArrayList(11);
-
-
-        public EvaluatorModelListener(JComponent view) {
-            this.viewType = "ResultView"; // NOI18N
-            this.view = view;
-            DebuggerManager.getDebuggerManager ().addDebuggerListener (
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                this
-            );
-            updateModel ();
-        }
-
-        public void destroy () {
-            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                this
-            );
-            Models.setModelsToView (
-                view,
-                Models.EMPTY_MODEL
-            );
-        }
-
-        @Override
-        public void propertyChange (PropertyChangeEvent e) {
-            CodeEvaluator eval = currentEvaluator;
-            if (eval != null) {
-                eval.csfListener = null;
-//                DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
-//                if (de == null) return;
-//                JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
-//                eval.setDebugger(debugger);
-                eval.checkDebuggerState();
-            }
-            //updateModel ();
-        }
-
-        public synchronized void updateModel () {
-            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-            DebuggerEngine e = dm.getCurrentEngine ();
-
-            List treeModels;
-            List treeModelFilters;
-            List treeExpansionModels;
-            List nodeModels;
-            List nodeModelFilters;
-            List tableModels;
-            List tableModelFilters;
-            List nodeActionsProviders;
-            List nodeActionsProviderFilters;
-            List columnModels;
-            List mm;
-            ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
-            treeModels =            cp.lookup (viewType, TreeModel.class);
-            treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
-            treeExpansionModels =   cp.lookup (viewType, TreeExpansionModel.class);
-            nodeModels =            cp.lookup (viewType, NodeModel.class);
-            nodeModelFilters =      cp.lookup (viewType, NodeModelFilter.class);
-            tableModels =           cp.lookup (viewType, TableModel.class);
-            tableModelFilters =     cp.lookup (viewType, TableModelFilter.class);
-            nodeActionsProviders =  cp.lookup (viewType, NodeActionsProvider.class);
-            nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
-            columnModels =          cp.lookup (viewType, ColumnModel.class);
-            mm =                    cp.lookup (viewType, Model.class);
-
-            List treeNodeModelsCompound = new ArrayList(11);
-            treeNodeModelsCompound.add(treeModels);
-            for (int i = 0; i < 2; i++) {
-                treeNodeModelsCompound.add(Collections.EMPTY_LIST);
-            }
-            treeNodeModelsCompound.add(nodeModels);
-            for (int i = 0; i < 7; i++) {
-                treeNodeModelsCompound.add(Collections.EMPTY_LIST);
-            }
-            CompoundModel treeNodeModel = Models.createCompoundModel(treeNodeModelsCompound);
-            /*
-            List nodeModelsCompound = new ArrayList(11);
-            nodeModelsCompound.add(new ArrayList()); // An empty tree model will be added
-            for (int i = 0; i < 2; i++) {
-                nodeModelsCompound.add(Collections.EMPTY_LIST);
-            }
-            nodeModelsCompound.add(nodeModels);
-            for (int i = 0; i < 7; i++) {
-                nodeModelsCompound.add(Collections.EMPTY_LIST);
-            }
-            CompoundModel nodeModel = Models.createCompoundModel(nodeModelsCompound);
-             */
-            EvaluatorModel eTreeNodeModel = new EvaluatorModel(treeNodeModel, treeNodeModel);
-
-            models.clear();
-            treeModels.clear();
-            treeModels.add(eTreeNodeModel);
-            models.add(treeModels);
-            models.add(treeModelFilters);
-            models.add(treeExpansionModels);
-            nodeModels.clear();
-            nodeModels.add(eTreeNodeModel);
-            models.add(nodeModels);
-            models.add(nodeModelFilters);
-            models.add(tableModels);
-            models.add(tableModelFilters);
-            models.add(nodeActionsProviders);
-            models.add(nodeActionsProviderFilters);
-            models.add(columnModels);
-            models.add(mm);
-
-            Models.setModelsToView (
-                view,
-                Models.createCompoundModel (models)
-            );
-        }
-
-    }
-
-    private static class EvaluatorModel implements TreeModel, ExtendedNodeModel {
-
-        private CompoundModel treeModel;
-        private CompoundModel nodeModel;
-
-        public EvaluatorModel(CompoundModel treeModel, CompoundModel nodeModel) {
-            this.treeModel = treeModel;
-            this.nodeModel = nodeModel;
-        }
-
-        public void addModelListener(ModelListener l) {
-            treeModel.addModelListener(l);
-        }
-
-        public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
-            if (TreeModel.ROOT.equals(parent)) {
-                CodeEvaluator eval = currentEvaluator;
-                if (eval == null || eval.result == null) {
-                    return new Object[] {};
-                } else {
-                    return new Object[] { eval.result };
-                }
-            } else {
-                return treeModel.getChildren(parent, from, to);
-            }
-        }
-
-        public int getChildrenCount(Object node) throws UnknownTypeException {
-            if (TreeModel.ROOT.equals(node)) {
-                return currentEvaluator == null ? 0 : 1;
-            } else {
-                return treeModel.getChildrenCount(node);
-            }
-        }
-
-        public Object getRoot() {
-            return TreeModel.ROOT;
-        }
-
-        public boolean isLeaf(Object node) throws UnknownTypeException {
-            if (TreeModel.ROOT.equals(node)) {
-                return false;
-            } else {
-                return treeModel.isLeaf(node);
-            }
-        }
-
-        public void removeModelListener(ModelListener l) {
-            treeModel.removeModelListener(l);
-        }
-
-        public String getDisplayName(Object node) throws UnknownTypeException {
-            CodeEvaluator eval = currentEvaluator;
-            if (eval != null && eval.result != null) {
-                if (node == eval.result) {
-                    return eval.getExpression();
-                }
-            }
-            return nodeModel.getDisplayName(node);
-        }
-
-        public String getIconBase(Object node) throws UnknownTypeException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        public String getShortDescription(Object node) throws UnknownTypeException {
-            CodeEvaluator eval = currentEvaluator;
-            if (eval != null && eval.result != null) {
-                if (node == eval.result) {
-                    return eval.getExpression();
-                }
-            }
-            return nodeModel.getShortDescription(node);
-        }
-
-        public boolean canRename(Object node) throws UnknownTypeException {
-            return nodeModel.canRename(node);
-        }
-
-        public boolean canCopy(Object node) throws UnknownTypeException {
-            return nodeModel.canCopy(node);
-        }
-
-        public boolean canCut(Object node) throws UnknownTypeException {
-            return nodeModel.canCut(node);
-        }
-
-        public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
-            return nodeModel.clipboardCopy(node);
-        }
-
-        public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
-            return nodeModel.clipboardCut(node);
-        }
-
-        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
-            return nodeModel.getPasteTypes(node, t);
-        }
-
-        public void setName(Object node, String name) throws UnknownTypeException {
-            nodeModel.setName(node, name);
-        }
-
-        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-            CodeEvaluator eval = currentEvaluator;
-            if (eval != null && eval.result != null) {
-                if (node == eval.result) {
-                    return WatchesNodeModel.WATCH;
-                }
-            }
-            return nodeModel.getIconBaseWithExtension(node);
         }
     }
 

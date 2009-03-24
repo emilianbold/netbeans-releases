@@ -9,9 +9,9 @@ import org.jruby.nb.ast.DefnNode;
 import org.jruby.nb.ast.DefsNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
 
 
@@ -19,7 +19,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
     private List<String> parameters;
     private Modifier access = Modifier.PUBLIC;
 
-    public AstMethodElement(CompilationInfo info, Node node) {
+    public AstMethodElement(ParserResult info, Node node) {
         super(info, node);
     }
 

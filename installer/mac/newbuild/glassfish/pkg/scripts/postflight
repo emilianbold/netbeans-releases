@@ -22,11 +22,13 @@ set -e
 #update netbeans.conf
 script_dir=`dirname "$0"`
 
+JAVA_HOME=`"$script_dir"/get_current_jdk.sh`
+
 . "$script_dir"/env.sh
 
 "$script_dir"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$2"
 
-"$script_dir"/unpack200.sh "$2" "$2"
+"$script_dir"/unpack200.sh "$2" "$2" "$JAVA_HOME"
 
 cd "$2"
 
@@ -35,7 +37,6 @@ echo Configuring GlassFish in `pwd`
 ant_bin=./lib/ant/bin/ant
 
 #set JAVA_HOME to be used by ant
-JAVA_HOME=`"$script_dir"/get_current_jdk.sh`
 java_exe="$JAVA_HOME/bin/java"
 
 getPort() {

@@ -41,19 +41,21 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
+import java.io.StringWriter;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,6 +63,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
@@ -78,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -85,7 +90,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Milan Kuchtiak
  */
-final class WsdlPanel implements WizardDescriptor.FinishablePanel {
+public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     public static final String FILE_NAME = "FILE_NAME";
     
@@ -93,11 +98,12 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     public static final String WSDL_DEFINITION_NAME = "WSDL_DEFINITION_NAME";
     public static final String ENCODING = "PROJECT_ENCODING";
-    
+    public static final String GENERATE_PARTNER_LINKTYPE = 
+            "GENERATE_PARTNER_LINKTYPE";
     
     private static final String DEFAULT_TARGET_NAMESPACE = "urn:WS/wsdl"; //NOI18N
     
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private ChangeSupport changeSupport = new ChangeSupport(this);
     private WsdlUIPanel gui;
 
     private Project project;
@@ -113,15 +119,25 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     private TextChangeListener mListener = new TextChangeListener();
     
-    WsdlPanel(Project project) {
+    private boolean hasNext = true;
+    private boolean isFinishable = true;
+    private WSDLWizardContext context;
+    private boolean mGeneratePartnerLinkType = true;
+    
+    public WsdlPanel(WSDLWizardContext context, Project project) {
+        this.context = context;
         this.project = project;
     }
     
-    TemplateWizard getTemplateWizard() {
+    public WSDLWizardContext getWSDLWizardContext() {
+        return context;
+    }
+    
+    public TemplateWizard getTemplateWizard() {
         return templateWizard;
     }
     
-    void setNameTF(JTextField nameTF) {
+    public void setNameTF(JTextField nameTF) {
         gui.attachFileNameListener(nameTF);
         if(nameTF != null) {
             nameTF.getDocument().removeDocumentListener(mListener);//remove existing one
@@ -135,6 +151,18 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             gui = new WsdlUIPanel(this);
             gui.getSchemaFileTextField().addPropertyChangeListener(new SchemaImportTextChangeListener());
             gui.getSchemaFileTextField().getDocument().addDocumentListener(new SchemaImportTextChangeListener());
+            gui.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("HAS_NEXT")) {
+                        hasNext = ((Boolean)evt.getNewValue()).booleanValue();
+                        context.setHasNext(hasNext);
+                    } else if (evt.getPropertyName().equals("IS_FINISHABLE")) {
+                        isFinishable = ((Boolean)evt.getNewValue()).booleanValue();
+                    }
+                    changeSupport.fireChange();
+                }
+            });
 //            gui.setPreferredSize(new Dimension(450, 400));
         }
         return gui;
@@ -148,8 +176,8 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         return new HelpCtx(WsdlPanel.class);
     }
 
-    void cleanup() {
-        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+    public void cleanup() {
+        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WSDLWizardConstants.TEMP_WSDLMODEL);
         if (tempModel != null) {
             DataObject dobj = ActionHelper.getDataObject(tempModel);
             if (dobj != null) {
@@ -161,7 +189,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 }
             }
         }
-        templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
+        templateWizard.putProperty(WSDLWizardConstants.TEMP_WSDLMODEL, null);
 
         if (mTempWSDLModel != null) {
             DataObject dobj = ActionHelper.getDataObject(mTempWSDLModel);
@@ -175,6 +203,8 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             }
             mTempWSDLModel = null;
         }
+        templateWizard.putProperty(WSDLWizardConstants.TEMP_WSDLFILE, null);
+        tempWSDLFile = null;
     }
     
     public boolean isValid() {
@@ -186,7 +216,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
             }*/
             
-            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
+            templateWizard.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         }
         return this.mErrorMessage == null;
         
@@ -194,30 +224,33 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     
     public void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+        changeSupport.addChangeListener(l);
     }
 
     public void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-
-    protected void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
-        }
+        changeSupport.removeChangeListener(l);
     }
 
     public void readSettings( Object settings ) {
         templateWizard = (TemplateWizard)settings;
-
+         
+        // when WsdlUIPanel was instantiated, the templateWizard (which
+        // has the flag to enable the concrete configuration only) is still null so need to query here
+        if (gui != null) {
+            boolean disableAbstract = false;
+            Object flag = templateWizard.getProperty("bindingConcreteConfiguration");
+            if ((templateWizard != null) && (flag != null) &&
+                    (flag instanceof Boolean)) {
+                Boolean boolVal = Boolean.valueOf(flag.toString());
+                if (boolVal.booleanValue()) {
+                    disableAbstract = true;
+                }           
+           
+            }            
+            gui.disableWSDLTypeSection(disableAbstract);
+        }
         //if user come to first panel we need to discard out temp wsdl model
-        cleanup();
-
-        templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE, null);
-        tempWSDLFile = null;
-        
+        //cleanup();
     }
 
     public void storeSettings(Object settings) {
@@ -235,23 +268,84 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         wiz.putProperty(WSDL_TARGETNAMESPACE, targetNamespace);
         String definitionName = fileName;
         wiz.putProperty(WSDL_DEFINITION_NAME, definitionName);
+        wiz.putProperty(GENERATE_PARTNER_LINKTYPE, mGeneratePartnerLinkType);
         try {
+            //LocalizedTemplateGroup ltg = (LocalizedTemplateGroup) templateWizard.getProperty(WSDLWizardConstants.BINDING_TYPE);
+            LocalizedTemplate lt  = (LocalizedTemplate) templateWizard.getProperty(WSDLWizardConstants.BINDING_SUBTYPE);
+            
+            if (tempWSDLFile != null && gui != null) {
+                LocalizedTemplate userSelectedBindingSubType = gui.getBindingSubType();
+                if (lt != null) {
+                    //If lt is not null, then it means concrete was selected before.
+                    //So cleanup the model unless the same binding is selected.
+                    if (userSelectedBindingSubType == null || !lt.getName().equals(userSelectedBindingSubType.getName())) {
+                        cleanup();
+                    }
+                } else {
+                    if (userSelectedBindingSubType != null) {
+                        cleanup();
+                    }
+                }
+            }
+            
             if (tempWSDLFile == null) {
                 
                 // Create a temporary file for storing our settings.
                 tempWSDLFile = File.createTempFile(fileName + "RIT", ".wsdl"); // NOI18N
-                populateFileFromTemplate(tempWSDLFile);
+                if (gui != null && gui.getWSDLTemplateStream() != null) {
+                    InputStream stream = gui.getWSDLTemplateStream();
+                    String encoding = (String) templateWizard.getProperty(ENCODING);
+                    if (stream.markSupported()) {
+                        stream.reset();
+                    }
+                    BufferedReader reader = null;
+                    StringBuilder strBuilder = new StringBuilder();
+                    try {
+                        reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        String line = null;
+                        while ((line = reader.readLine()) != null) {
+                            strBuilder.append(line).append('\n');
+                        }
+                    } finally {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    }
+                    
+                    String content = strBuilder.toString();
+                    content = content.replaceAll("#SERVICE_NAME", fileName);
+                    content = content.replaceAll("#TARGET_NAMESPACE", targetNamespace);
+                    
+                    FileOutputStream outputFileStream = null;
+                    OutputStreamWriter writer = null;
+                    try {
+                        outputFileStream = new FileOutputStream(tempWSDLFile);
+                        writer = new OutputStreamWriter(outputFileStream, encoding);
+                        writer.write(content);
+                    } finally {
+                        if (writer != null) {
+                            writer.close();
+                        }
+                        if (outputFileStream != null) {
+                            outputFileStream.close();
+                        }
+                    }
+                    
+                } else {
+                    populateFileFromTemplate(tempWSDLFile);
+                }
+
                 tempWSDLFile.deleteOnExit();
                 templateWizard.putProperty(
-                        WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
+                        WSDLWizardConstants.TEMP_WSDLFILE, tempWSDLFile);
                 mTempWSDLModel = prepareModelFromFile(tempWSDLFile, definitionName);
                 wiz.putProperty(
-                        WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
+                        WSDLWizardConstants.TEMP_WSDLMODEL, mTempWSDLModel);
             } else {
                 wiz.putProperty(
-                        WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
+                        WSDLWizardConstants.TEMP_WSDLMODEL, mTempWSDLModel);
                 wiz.putProperty(
-                        WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
+                        WSDLWizardConstants.TEMP_WSDLFILE, tempWSDLFile);
                 mTempWSDLModel.startTransaction();
                 mTempWSDLModel.getDefinitions().setTargetNamespace(targetNamespace);
                 mTempWSDLModel.getDefinitions().setName(definitionName);
@@ -260,6 +354,13 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                             mTempWSDLModel.getFactory().createTypes());
                 }
                 mTempWSDLModel.endTransaction();
+            }
+            
+            ((WSDLWizardContextImpl)context).setWSDLModel(mTempWSDLModel);
+            
+            if (gui != null) {
+                templateWizard.putProperty(WSDLWizardConstants.BINDING_TYPE, gui.getBindingType());
+                templateWizard.putProperty(WSDLWizardConstants.BINDING_SUBTYPE, gui.getBindingSubType());
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
@@ -302,9 +403,11 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 stringBuilder.delete(30, 35);
                 stringBuilder.insert(30, encoding);
             }
+            String content = stringBuilder.toString();
+
             FileOutputStream stream = new FileOutputStream(file);
             OutputStreamWriter writer = new OutputStreamWriter(stream, encoding);
-            writer.write(stringBuilder.toString());
+            writer.write(content);
             writer.close();
             stream.close();
         }
@@ -325,15 +428,19 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         ModelSource modelSource = org.netbeans.modules.xml.retriever.
                 catalog.Utilities.getModelSource(fobj, fobj.canWrite());
         WSDLModel model = WSDLModelFactory.getDefault().getModel(modelSource);
-        model.startTransaction();
-        model.getDefinitions().setName(definitionName);
-        String ns = getNS();
-        model.getDefinitions().setTargetNamespace(ns);
-        ((AbstractDocumentComponent) model.getDefinitions()).addPrefix("tns", ns);
-        if (model.getDefinitions().getTypes() == null) {
-            model.getDefinitions().setTypes(model.getFactory().createTypes());
+        if (model.getState() == WSDLModel.State.VALID) {
+            model.startTransaction();
+            model.getDefinitions().setName(definitionName);
+            String ns = getNS();
+            model.getDefinitions().setTargetNamespace(ns);
+            ((AbstractDocumentComponent) model.getDefinitions()).addPrefix("tns", ns);
+            if (model.getDefinitions().getTypes() == null) {
+                model.getDefinitions().setTypes(model.getFactory().createTypes());
+            }
+            model.endTransaction();
+        } else {
+            assert false : "Model is invalid, correct the template if any";
         }
-        model.endTransaction();
         return model;
     }
 
@@ -354,18 +461,9 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public boolean isFinishPanel() {
-        return isValid();
+        return isFinishable;
     }
 
-    private void fireChangeEvent() {
-        Iterator<ChangeListener> it = this.listeners.iterator();
-        ChangeEvent e = new ChangeEvent(this);
-        while(it.hasNext()) {
-            ChangeListener l = it.next();
-            l.stateChanged(e);
-        }
-    }
-    
     private boolean isValidName(Document doc) {
         try {
             String text = doc.getText(0, doc.getLength());
@@ -388,7 +486,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     private void validateFileName() {
         boolean validFileName = isValidName(this.fileNameTextField.getDocument());
         if(!validFileName) {
-            fireChangeEvent();
+            changeSupport.fireChange();
             return;
         }
     }
@@ -437,14 +535,17 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             gui.validateSchemas();
         } catch (WizardValidationException e) {
             mErrorMessage = e.getLocalizedMessage();
-            fireChangeEvent();
+            changeSupport.fireChange();
             return;
         }
         mErrorMessage = null;
-        fireChangeEvent();
+        changeSupport.fireChange();
     }
     
     
+    public boolean hasNext() {
+        return hasNext;
+    }
     
     
 }

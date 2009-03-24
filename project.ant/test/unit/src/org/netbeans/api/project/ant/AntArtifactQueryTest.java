@@ -78,7 +78,11 @@ public class AntArtifactQueryTest extends NbTestCase {
     private ProjectManager pm;
     
     protected @Override void setUp() throws Exception {
-        super.setUp();
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
+
         MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(), TestUtil.testProjectFactory());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");

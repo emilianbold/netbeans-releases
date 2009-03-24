@@ -1,0 +1,3 @@
+org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowResultButton()
+org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowWatchesButton()
+org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createNewWatchButton()

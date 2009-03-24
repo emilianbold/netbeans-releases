@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.gsf.spi.CommentHandler;
+import org.netbeans.modules.csl.spi.CommentHandler;
 
 /**
  *

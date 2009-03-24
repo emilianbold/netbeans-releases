@@ -110,8 +110,9 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{
+        return new Action[] {
                     CommonProjectActions.newFileAction(),
+                    SystemAction.get(TestRestServicesAction.class),
                     null,
                     SystemAction.get(FindAction.class),
                     null,

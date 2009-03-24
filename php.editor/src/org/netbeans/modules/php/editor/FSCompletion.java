@@ -47,6 +47,7 @@ import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,9 +61,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -95,58 +99,49 @@ public class FSCompletion implements CompletionProvider {
         return new AsyncCompletionTask(new AsyncCompletionQuery() {
             protected void query(final CompletionResultSet resultSet, final Document doc, final int caretOffset) {
                 try {
-                FileObject file = NavUtils.getFile(doc);
-                
-                if (file == null || caretOffset == -1) {
-                    return ;
-                }
+                    FileObject file = NavUtils.getFile(doc);
 
-                final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
-                
-                SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
-                        public void cancel() {}
-                        public void run(CompilationInfo parameter) throws Exception {
-                            List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
-                            
-                            if (path.size() < 2) {
-                                return ;
-                            }
-                            
-                            ASTNode d1 = path.get(path.size() - 1);
-                            ASTNode d2 = path.get(path.size() - 2);
-                            
-                            if (d2 instanceof ParenthesisExpression) {
-                                if (path.size() < 3) {
-                                    return ;
+                    if (file == null || caretOffset == -1) {
+                        return;
+                    }
+
+                    final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+                    try {
+                        ParserManager.parse(Collections.singleton(Source.create(file)), new UserTask() {
+
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                                List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
+                                if (path.size() < 2) {
+                                    return;
                                 }
-                                d2 = path.get(path.size() - 3);
+                                ASTNode d1 = path.get(path.size() - 1);
+                                ASTNode d2 = path.get(path.size() - 2);
+                                if (d2 instanceof ParenthesisExpression) {
+                                    if (path.size() < 3) {
+                                        return;
+                                    }
+                                    d2 = path.get(path.size() - 3);
+                                }
+                                if (!(d1 instanceof Scalar) || !(d2 instanceof Include)) {
+                                    return;
+                                }
+                                Scalar s = (Scalar) d1;
+                                if (s.getScalarType() != Type.STRING || !NavUtils.isQuoted(s.getStringValue())) {
+                                    return;
+                                }
+                                int startOffset = s.getStartOffset() + 1;
+                                String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
+                                List<FileObject> relativeTo = new LinkedList<FileObject>();
+                                relativeTo.addAll(includePath);
+                                relativeTo.add(parameter.getSnapshot().getSource().getFileObject().getParent());
+                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject())));
                             }
-                            
-                            if (!(d1 instanceof Scalar) || !(d2 instanceof Include)) {
-                                return ;
-                            }
-                            
-                            Scalar s = (Scalar) d1;
-                            
-                            if (s.getScalarType() != Type.STRING || !NavUtils.isQuoted(s.getStringValue())) {
-                                return ;
-                            }
-                            
-                            int startOffset = s.getStartOffset() + 1;
-                            String prefix = parameter.getText().substring(startOffset, caretOffset);
-                            List<FileObject> relativeTo = new LinkedList<FileObject>();
-                            relativeTo.addAll(includePath);
-                            
-                            relativeTo.add(parameter.getFileObject().getParent());
-                            
-                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix,
-                                    startOffset, new PHPIncludesFilter(parameter.getFileObject())));
-                        }
-                }, true);
-                } catch (IOException e) {
-                    Logger.getLogger(FSCompletion.class.getName()).log(Level.WARNING, null, e);
-                } catch (Throwable t) {
-                    t.printStackTrace();
+                        });
+                    } catch (ParseException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 } finally {
                     resultSet.finish();
                 }

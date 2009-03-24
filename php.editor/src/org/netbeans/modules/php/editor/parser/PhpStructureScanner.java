@@ -45,14 +45,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.ClassDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FieldsFromTagProperty;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FunctionDeclarationHandle;
@@ -71,7 +71,7 @@ import org.openide.util.ImageUtilities;
  */
 public class PhpStructureScanner implements StructureScanner {
 
-    private CompilationInfo info;
+    private ParserResult info;
 
     private static ImageIcon INTERFACE_ICON = null;
 
@@ -89,7 +89,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
 
-    public List<? extends StructureItem> scan(final CompilationInfo info) {
+    public List<? extends StructureItem> scan(final ParserResult info) {
         this.info = info;
         Program program = Utils.getRoot(info);
         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -100,7 +100,7 @@ public class PhpStructureScanner implements StructureScanner {
         return Collections.emptyList();
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
         Program program = Utils.getRoot(info);
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
@@ -108,7 +108,7 @@ public class PhpStructureScanner implements StructureScanner {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
                     @SuppressWarnings("unchecked")
-                    Map<String, List<OffsetRange>> lastCorrect = (Map<String, List<OffsetRange>>) info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    Map<String, List<OffsetRange>> lastCorrect = (Map<String, List<OffsetRange>>) info.getSnapshot().getSource().getDocument(false).getProperty(LAST_CORRECT_FOLDING_PROPERTY);
                     if (lastCorrect != null){
                         return lastCorrect;
                     }
@@ -130,7 +130,7 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
-            info.getDocument().putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
+            info.getSnapshot().getSource().getDocument(false).putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
             return folds;
         }
         return Collections.emptyMap();

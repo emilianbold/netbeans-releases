@@ -51,6 +51,6 @@ import java.io.Reader;
  */
 public interface APTFileBuffer {
     public File getFile();
-
+    public CharSequence getAbsolutePath();
     public Reader getReader() throws IOException;    
 }

@@ -30,12 +30,13 @@ package org.netbeans.modules.ruby.rhtml;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.ruby.RubyCodeCompleter;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
@@ -45,15 +46,16 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
  * @author Tor Norbye
  */
 public class RhtmlCompleter extends RubyCodeCompleter {
+    
     /**
      *  @todo Pass in the completion type? (Smart versus documentation etc.)
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
      */
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CompilationInfo info = context.getInfo();
+        Parser.Result parserResult = context.getParserResult();
         int caretOffset = context.getCaretOffset();
-        Document doc = info.getDocument();
+        Document doc = RubyUtils.getDocument(parserResult);
         if (doc != null && isWithinRuby(doc, caretOffset)) {
             return super.complete(context);
         }

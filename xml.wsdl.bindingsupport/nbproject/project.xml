@@ -6,6 +6,23 @@
             <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -24,6 +41,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -39,18 +64,18 @@
                         <specification-version>7.9.0.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.compapp.manager.jbi</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.sca.designer</friend>
+                <friend>org.netbeans.modules.sca.platform.openesb</friend>
+                <friend>org.netbeans.modules.sca.platform.tuscany</friend>
+                <package>org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor</package>
+                <package>org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ui</package>
+                <package>org.netbeans.modules.xml.wsdl.bindingsupport.configeditor</package>
+                <package>org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.template</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.template.localized</package>
             </friend-packages>

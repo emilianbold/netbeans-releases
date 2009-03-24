@@ -30,6 +30,8 @@ import org.netbeans.modules.e2e.api.wsdl.Part;
 import org.netbeans.modules.e2e.api.wsdl.Port;
 import org.netbeans.modules.e2e.api.wsdl.PortType;
 import org.netbeans.modules.e2e.api.wsdl.Service;
+import org.netbeans.modules.e2e.api.wsdl.Message.MessageReference;
+import org.netbeans.modules.e2e.api.wsdl.PortType.PortTypeReference;
 import org.netbeans.modules.e2e.api.wsdl.extensions.ExtensibilityElement;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPAddress;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBinding;
@@ -119,6 +121,13 @@ class WSDLValidator {
                     checkBindingOperation( bindingOperation );
                 }
                 PortType portType = binding.getPortType();
+                if ( portType instanceof PortTypeReference ){
+                    PortTypeReference reference = (PortTypeReference)portType;
+                    if ( !reference.isValid() ){
+                        addMessage( ErrorLevel.FATAL, "0016", binding.getName(), 
+                                reference.getQName().toString() ); 
+                    }
+                }
                 for( Operation operation : portType.getOperations()) {
 //                    System.err.println("Checking operation: " + operation.getName());
                     checkOperation( operation );
@@ -186,24 +195,61 @@ class WSDLValidator {
             return;
         }
         Message message = output.getMessage();
-        if( message.getParts().size() == 0 ) {
-            addMessage( ErrorLevel.FATAL, "0014", message.getName());
-        } else if( message.getParts().size() > 1 ) {
-            addMessage( ErrorLevel.FATAL, "0006", operation.getName());
-        } else {
-            
+        boolean isValid = true; 
+        if ( message instanceof MessageReference ){
+            MessageReference reference = (MessageReference)message;
+            isValid = reference.isValid();
+            if ( !isValid ){
+                QName name = reference.getQName();
+                addMessage(ErrorLevel.FATAL, "0017", operation.getName(), 
+                        name.toString());
+            }
         }
+        if ( isValid ){
+            if( message.getParts().size() == 0 ) {
+                addMessage( ErrorLevel.FATAL, "0014", message.getName());
+            } else if( message.getParts().size() > 1 ) {
+                addMessage( ErrorLevel.FATAL, "0006", operation.getName());
+            }
+        }
+        
         for( Part part : message.getParts()) {
             QName elementName = part.getElementName();
             QName typeName = part.getTypeName();
+            if ( elementName != null && typeName != null ){
+                addMessage( ErrorLevel.FATAL, "0023", message.getName(),
+                        operation.getName(),part.getName() );
+                continue;
+            }
             Element element = null;
             Type type = null;
             if( elementName != null ) {
                 element = definition.getSchemaHolder().getSchemaElement( elementName );
-                type = element.getType();
-                checkType( element, new HashSet());
-            } else {
-                addMessage( ErrorLevel.FATAL, "0008", operation.getName());
+                if ( element == null ){
+                    addMessage( ErrorLevel.FATAL, "0019", message.getName(),
+                            operation.getName(),part.getName(), elementName.toString());
+                }
+                else { 
+                    checkType( element, null,  new HashSet<Element>());
+                }
+            }
+            /*
+             * javax.microedition.xml.rpc.Operation.newInstance() method
+             * takes ONLY Elements as input/output arguments.  
+             * It is not possible to put there Type argument.
+             * So "type" attribute should not be used here.
+             * 
+             * else if ( typeName != null ){
+                type = definition.getSchemaHolder().getSchemaType( typeName );
+                if ( type == null ){
+                    addMessage( ErrorLevel.FATAL, "0021", message.getName(),
+                            operation.getName(),part.getName(), typeName.toString());
+                }
+                checkType( null, type, new HashSet<Element>());
+            }*/
+            else {
+                addMessage( ErrorLevel.FATAL, "0008", message.getName(),
+                        operation.getName(),part.getName());
             }
         }
         
@@ -213,32 +259,72 @@ class WSDLValidator {
             addMessage( ErrorLevel.FATAL, "0009", operation.getName());
             return;
         }
+        isValid = true;
         message = input.getMessage();
-        if( message.getParts().size() == 0 ) {            
-            addMessage( ErrorLevel.FATAL, "0014", message.getName());
-        } else if( message.getParts().size() > 1 ) {
-            addMessage( ErrorLevel.FATAL, "0006", operation.getName());
-        } else {
-            
+        if ( message instanceof MessageReference ){
+            MessageReference reference = (MessageReference)message;
+            isValid = reference.isValid();
+            if ( !isValid ){
+                QName name = reference.getQName();
+                addMessage(ErrorLevel.FATAL, "0018", operation.getName(), 
+                        name.toString());
+            }
+        }
+        if ( isValid ){
+            if( message.getParts().size() == 0 ) {            
+                addMessage( ErrorLevel.FATAL, "0014", message.getName());
+            } else if( message.getParts().size() > 1 ) {
+                addMessage( ErrorLevel.FATAL, "0006", operation.getName());
+            } 
         }
         
         for( Part part : message.getParts()) {
             QName elementName = part.getElementName();
             QName typeName = part.getTypeName();
+            if ( elementName != null && typeName != null ){
+                addMessage( ErrorLevel.FATAL, "0024", message.getName(),
+                        operation.getName(),part.getName() );
+                continue;
+            }
             Element element = null;
             Type type = null;
             if( elementName != null ) {
                 element = definition.getSchemaHolder().getSchemaElement( elementName );
-                type = element.getType();
-                checkType( element, new HashSet());
-            } else {
-                addMessage( ErrorLevel.FATAL, "0008", operation.getName());
+                if ( element == null ){
+                    addMessage( ErrorLevel.FATAL, "0022", message.getName(),
+                            operation.getName(),part.getName(), elementName.toString());
+                }
+                else {
+                    checkType( element, null, new HashSet<Element>());
+                }
+            }
+            /*
+             * javax.microedition.xml.rpc.Operation.newInstance() method
+             * takes ONLY Elements as input/output arguments.  
+             * It is not possible to put there Type argument.
+             * So "type" attribute should not be used here.
+             * 
+             else if ( typeName != null ){
+                type = definition.getSchemaHolder().getSchemaType( typeName );
+                if ( type == null ){
+                    addMessage( ErrorLevel.FATAL, "0021", message.getName(),
+                            operation.getName(),part.getName(), typeName.toString());
+                }
+                checkType( null, type, new HashSet<Element>());
+            }*/
+            else {
+                addMessage( ErrorLevel.FATAL, "0008", message.getName(),
+                        operation.getName(),part.getName());
             }
         }
     }
     
-    private void checkType( Element element, Set<Element> usedComplexTypes ) {
-        Type type = element.getType();
+    private void checkType( Element element,  Type type,
+            Set<Element> usedComplexTypes ) 
+    {
+        if ( type == null ){
+            type = element.getType();
+        }
         if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
             QName typeName = type.getName();
             if( SchemaConstants.TYPE_INT.equals( typeName )) {
@@ -257,7 +343,9 @@ class WSDLValidator {
                 addMessage( ErrorLevel.FATAL, "0003", typeName.toString());
             }
         } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-            usedComplexTypes.add( element );
+            if ( element!= null ){
+                usedComplexTypes.add( element );
+            }
             if( type.getSubconstructs().size() == 0 ) {
                 return;
             } else {
@@ -265,17 +353,29 @@ class WSDLValidator {
                     if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
                         Element sce = (Element) sc;
                         if( !usedComplexTypes.contains( sce )) {
-                            checkType( sce, usedComplexTypes );
+                            checkType( sce, null, usedComplexTypes );
                         } else {
                             addMessage( ErrorLevel.FATAL, "0010" );
                         }
                     } else {
-                        addMessage( ErrorLevel.FATAL, "0005", element.getName().toString());
+                        if ( element != null ){
+                            addMessage( ErrorLevel.FATAL, "0005", 
+                                    element.getName().toString());
+                        }
+                        else {
+                            addMessage( ErrorLevel.FATAL, "0025", 
+                                    type.getName().toString());
+                        }
                     }
                 }
             }
         } else {
-            addMessage( ErrorLevel.FATAL, "0004", element.getName().toString());
+            if ( element != null ){
+                addMessage( ErrorLevel.FATAL, "0004", element.getName().toString());
+            }
+            else {
+                addMessage( ErrorLevel.FATAL, "0026", type.getName().toString());
+            }
         }
     }
     
@@ -299,7 +399,7 @@ class WSDLValidator {
         result.add( new ValidationResult( errorLevel, NbBundle.getMessage( WSDLValidator.class, messageKey, param1, param2 )));
     }
     
-    private void addMessage( ValidationResult.ErrorLevel errorLevel, String messageKey, String[] params ) {
+    private void addMessage( ValidationResult.ErrorLevel errorLevel, String messageKey, String... params ) {
         result.add( new ValidationResult( errorLevel, NbBundle.getMessage( WSDLValidator.class , messageKey, params )));
     }
 }

@@ -152,7 +152,11 @@ public class SourceRootsSupport implements SourceRootsProvider {
     }
 
     public URL[] getSourceRoots() {
-        maybeUpdateDefaultSources();
+        if (sourceRoots.length == 0) {
+            URL[] defaults = getDefaultSourceRoots();
+            if (defaults != null)
+                return defaults;
+        }
         return sourceRoots;
     }
 

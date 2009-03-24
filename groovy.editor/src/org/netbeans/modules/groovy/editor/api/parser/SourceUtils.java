@@ -46,14 +46,12 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,50 +62,51 @@ import org.openide.filesystems.FileObject;
 public class SourceUtils {
 
     // package private
-    static void runUserActionTask(final FileObject fileObject, final CancellableTask<GroovyParserResult> task, boolean waitJavaScanFinisihed) throws Exception {
-        ParserFile parserFile = new DefaultParserFile(fileObject, null, false);
-        if (parserFile != null) {
-            List<ParserFile> files = Collections.singletonList(parserFile);
-            SourceFileReader reader =
-                new SourceFileReader() {
-                    public CharSequence read(ParserFile file)
-                        throws IOException {
-                        Document doc = AstUtilities.getBaseDocument(fileObject, true);
-
-                        if (doc == null) {
-                            return ""; // NOI18N
-                        }
-
-                        try {
-                            return doc.getText(0, doc.getLength());
-                        } catch (BadLocationException ble) {
-                            IOException ioe = new IOException();
-                            ioe.initCause(ble);
-                            throw ioe;
-                        }
-                    }
-
-                    public int getCaretOffset(ParserFile fileObject) {
-                        return -1;
-                    }
-                };
-
-            DefaultParseListener listener = new DefaultParseListener();
-
-            // TODO - embedding model?
-            TranslatedSource translatedSource = null; // TODO - determine this here?
-            Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-            GroovyParser parser = new GroovyParser();
-            parser.setWaitJavaScanFinished(waitJavaScanFinisihed);
-            parser.parseFiles(job);
-
-            GroovyParserResult result = (GroovyParserResult) listener.getParserResult();
-            task.run(result);
-        }
-    }
+//    static void runUserActionTask(final FileObject fileObject, final CancellableTask<GroovyParserResult> task, boolean waitJavaScanFinisihed) throws Exception {
+//        ParserFile parserFile = new DefaultParserFile(fileObject, null, false);
+//        if (parserFile != null) {
+//            List<ParserFile> files = Collections.singletonList(parserFile);
+//            SourceFileReader reader =
+//                new SourceFileReader() {
+//                    public CharSequence read(ParserFile file)
+//                        throws IOException {
+//                        Document doc = AstUtilities.getBaseDocument(fileObject, true);
+//
+//                        if (doc == null) {
+//                            return ""; // NOI18N
+//                        }
+//
+//                        try {
+//                            return doc.getText(0, doc.getLength());
+//                        } catch (BadLocationException ble) {
+//                            IOException ioe = new IOException();
+//                            ioe.initCause(ble);
+//                            throw ioe;
+//                        }
+//                    }
+//
+//                    public int getCaretOffset(ParserFile fileObject) {
+//                        return -1;
+//                    }
+//                };
+//
+//            DefaultParseListener listener = new DefaultParseListener();
+//
+//            // TODO - embedding model?
+//            TranslatedSource translatedSource = null; // TODO - determine this here?
+//            Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+//            GroovyParser parser = new GroovyParser();
+//            parser.setWaitJavaScanFinished(waitJavaScanFinisihed);
+//            parser.parseFiles(job);
+//
+//            GroovyParserResult result = (GroovyParserResult) listener.getParserResult();
+//            task.run(result);
+//        }
+//    }
     
-    public static void runUserActionTask(final FileObject fileObject, final CancellableTask<GroovyParserResult> task) throws Exception {
-        runUserActionTask(fileObject, task, true);
+    public static void runUserActionTask(final FileObject fileObject, final UserTask task) throws Exception {
+        Source source = Source.create(fileObject);
+        ParserManager.parse(Collections.singleton(source), task);
     }
 
 }

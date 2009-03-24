@@ -39,56 +39,27 @@
 package org.netbeans.modules.nativeexecution.support;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.openide.util.RequestProcessor;
 
 /**
  * Default implementation of tasks executor service.
- * Currently it just uses Executors.newCachedThreadPool() as a thread
- * pool for tasks execution threads.
+ * Uses RequestProcessor but allows submit Callable tasks.
  */
 public class NativeTaskExecutorService {
 
     private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
-    private static final Boolean NAMED_THREADS =
-            Boolean.getBoolean("nativeexecutor.namedthreads"); // NOI18N
-    private final static ExecutorService executorService = Executors.newCachedThreadPool();
-
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                executorService.shutdown();
-            }
-        });
-    }
 
     public static <T> Future<T> submit(final Callable<T> task, String name) {
-        Future<T> result = null;
-
-        if (NAMED_THREADS) {
-            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-            final FutureTask<T> ftask = new FutureTask<T>(task);
-            processor.post(ftask);
-            result = ftask;
-        } else {
-            result = executorService.submit(task);
-        }
-
-        return result;
+        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+        final FutureTask<T> ftask = new FutureTask<T>(task);
+        processor.post(ftask);
+        return ftask;
     }
 
     public static void submit(final Runnable task, String name) {
-        if (NAMED_THREADS) {
-            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-            processor.post(task);
-        } else {
-            executorService.submit(task);
-        }
+        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+        processor.post(task);
     }
 }

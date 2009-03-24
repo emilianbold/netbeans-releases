@@ -166,6 +166,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return CREATORS;
     }
 
+    private static final int MAX_RESULT_COUNT = 512;
+
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {
         return EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir();
@@ -921,6 +923,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                     }
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr,getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;

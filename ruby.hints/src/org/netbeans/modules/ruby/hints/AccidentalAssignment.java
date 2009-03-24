@@ -38,9 +38,9 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -48,25 +48,26 @@ import javax.swing.JComponent;
 import org.jruby.nb.ast.IfNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.ParseTreeWalker;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.openide.util.NbBundle;
-import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.ParseTreeVisitor;
+import org.netbeans.modules.ruby.ParseTreeWalker;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Identify "accidental" assignments of the form "if (a = b)" which should have been "if (a == b)"
@@ -81,11 +82,10 @@ public class AccidentalAssignment extends RubyAstRule {
         return Collections.singleton(NodeType.IFNODE);
     }
 
-    public void run(RubyRuleContext context,
-            List<Hint> result) {
+    public void run(final RubyRuleContext context, final List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult parserResult = context.parserResult;
         
         IfNode ifNode = (IfNode) node;
         Node condition = ifNode.getCondition();
@@ -102,11 +102,11 @@ public class AccidentalAssignment extends RubyAstRule {
                 String displayName = NbBundle.getMessage(AccidentalAssignment.class,
                         "AccidentalAssignment");
                 OffsetRange range = AstUtilities.getRange(condition);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(parserResult, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
                     fixList.add(new ConvertAssignmentFix(context, condition));
-                    Hint desc = new Hint(this, displayName, info.getFileObject(),
+                    Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(parserResult),
                             range, fixList, 600);
                     result.add(desc);
                 }

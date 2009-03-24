@@ -44,8 +44,6 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -130,14 +128,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         }
     }
 
-    protected String getDefaultPath() {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getNames().length > 0){
-            return compiler.getNames()[0];
-        }
-        return ""; // NOI18N
-    }
-
     protected String getCompilerStderrCommand() {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null){
@@ -169,16 +159,9 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 //            //systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
 //            return;
 //        }
-        String path = getPath();
-        if (path != null && path.length() == 0) {
-            return;
-        }
-        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
-            path = getDefaultPath();
-        }
         try {
-            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
-            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStdoutCommand(), true);
+            getSystemIncludesAndDefines(getCompilerStderrCommand(), false);
+            getSystemIncludesAndDefines(getCompilerStdoutCommand(), true);
             // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
             if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
                 systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
@@ -186,7 +169,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
     }

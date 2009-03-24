@@ -16,6 +16,7 @@
                 <friend>org.netbeans.modules.websvc.jaxws21</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
+                <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <friend>org.netbeans.modules.identity.profile.api</friend>
                 <friend>org.netbeans.modules.xml.jaxb</friend>
                 <friend>org.netbeans.modules.websvc.components.strikeiron</friend>

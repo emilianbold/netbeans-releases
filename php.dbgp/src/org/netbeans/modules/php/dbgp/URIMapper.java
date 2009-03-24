@@ -39,13 +39,17 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.project.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -63,12 +67,45 @@ abstract class URIMapper {
         return toWebServerURI(localFile, true);
     }
 
-    static URIMapper.MultiMapper createMultiMapper(URI webServerURI, FileObject sourceFileObj, FileObject sourceRoot) {
+    static URIMapper.MultiMapper createMultiMapper(URI webServerURI, FileObject sourceFileObj,
+            FileObject sourceRoot, List<Pair<String, String>> pathMapping) {
+        //typicaly should be mappers called in this order:
+        //- 1. mapper provided by user via project UI if any
+        //- 2. base mapper
+        //- 3. last resort mapper (one to one mapper)
+        //TODO: we could also implement mapper with UI asking the user to add info for
+        //mapping instead of lsat resort mapper implemented by one to one
         MultiMapper mergedMapper = new MultiMapper();
+        for (Pair<String, String> pair : pathMapping) {
+            //1. mapper provided by user via project UI if any
+            String uriPath = pair.first;
+            String filePath = pair.second;
+            if (uriPath.length() > 0 && filePath.length() > 0) {
+                if (!uriPath.startsWith("file:")) {//NOI18N
+                    uriPath = "file:" + uriPath;//NOI18N
+                }
+                if (!uriPath.endsWith("/")) {//NOI18N
+                    uriPath += "/";//NOI18N
+                }
+                URI remoteURI = URI.create(uriPath);
+                File localFile = new File(filePath);
+                FileObject localFo = FileUtil.toFileObject(localFile);
+                if (localFo != null && localFo.isFolder()) {
+                    URIMapper customMapper = URIMapper.createBasedInstance(remoteURI, localFile);
+                    mergedMapper.addAsLastMapper(customMapper);
+                }
+            }
+        }
+
+        //2. base mapper that checks sourceFileObj && webServerURI to create webServerURIBase and  sourceFileObjBase
+        //used for conversions
         URIMapper defaultMapper = createDefaultMapper(webServerURI, sourceFileObj, sourceRoot);
         if (defaultMapper != null) {
-            mergedMapper.addAsFirstMapper(defaultMapper);
+            mergedMapper.addAsLastMapper(defaultMapper);
         }
+        //3. last resort just one to one mapper (should be called as last)
+        mergedMapper.addAsLastMapper(createOneToOne());
+
         return mergedMapper;
     }
     static URIMapper createDefaultMapper(URI webServerURI, FileObject sourceFileObj, FileObject sourceRoot) {
@@ -86,19 +123,16 @@ abstract class URIMapper {
                     return null;
                 }
             }
-            if (sourceFile.equals(webServerFile)) {
-                return createOneToOne();
-            } else {
+            if (!sourceFile.equals(webServerFile)) {
                 File sourceRootFile = FileUtil.toFile(sourceRoot);
                 assert sourceRootFile != null;
-                //File[] bases = findBases(webServerFile, sourceFile, sourceRootFile);
-                URI[] bases = findBases(webServerURI, sourceFile, sourceRootFile);                
+                URI[] bases = findBases(webServerURI, sourceFile, sourceRootFile);
                 if (bases != null) {
                     URI webServerBase = bases[0];
                     File sourceBase = new File(bases[1]);
                     assert webServerBase != null;
                     assert sourceBase != null;
-                    return new DefaultMapper(webServerBase, sourceBase);
+                    return new BaseMapper(webServerBase, sourceBase);
                 }
             }
         }
@@ -110,14 +144,27 @@ abstract class URIMapper {
 
     static URIMapper createOneToOne() {
         return new URIMapper() {
+            private Map<File, File> can2AbsFile = new HashMap<File, File>();
 
             @Override
             File toSourceFile(URI remoteURI) {
-                return new File(remoteURI);
+                File retval = new File(remoteURI);
+                File absFile = can2AbsFile.get(retval);
+                return (absFile != null) ? absFile : retval;
             }
 
             @Override
             URI toWebServerURI(File localFile, boolean includeHostPart) {
+                File canonicalFile = null;
+                try {
+                    canonicalFile = localFile.getCanonicalFile();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (!localFile.equals(canonicalFile)) {
+                    can2AbsFile.put(canonicalFile, localFile);
+                    localFile = canonicalFile;
+                }
                 return toURI(localFile, includeHostPart);
             }
 
@@ -125,7 +172,7 @@ abstract class URIMapper {
     }
 
     static URIMapper createBasedInstance(URI baseRemoteURI, File baseLocalFolder) {
-        return new DefaultMapper(baseRemoteURI, baseLocalFolder);
+        return new BaseMapper(baseRemoteURI, baseLocalFolder);
     }
 
     private static URI[] findBases(URI webServerURI, File sourceFile, File sourceRoot) {
@@ -158,14 +205,14 @@ abstract class URIMapper {
         return new URI[]{baseURI, baseFile.toURI()};
     }
 
-    private static class DefaultMapper extends URIMapper {
+    private static class BaseMapper extends URIMapper {
 
         private static final String FILE_SCHEME = "file";
         private URI baseWebServerURI;
         private URI baseSourceURI;
         private File baseSourceFolder;
 
-        DefaultMapper(URI baseWebServerURI, File baseSourceFolder) {
+        BaseMapper(URI baseWebServerURI, File baseSourceFolder) {
             if (!baseSourceFolder.exists()) {
                 throw new IllegalArgumentException();
             }
@@ -190,7 +237,7 @@ abstract class URIMapper {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
                 return new File(baseSourceURI.resolve(relativizedURI));
             }
-            return new File(webServerURI);
+            return null;
         }
 
         @Override
@@ -207,7 +254,7 @@ abstract class URIMapper {
                     return retval;
                 }
             }
-            return toURI(sourceFile, includeHostPart);
+            return null;
         }
     }
 

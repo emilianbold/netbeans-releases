@@ -78,6 +78,21 @@ static void write_five() {
 }
 function<void() > static_func2(write_five);
 
+// IZ#151530 : Variable is resolved as function
+class T {
+public:
+    int i;
+    T(int) {}
+};
+template <class P> P foo() {
+    return 0;
+};
+T v(foo<int>()); // resolved as function declaration
+int main() {
+    v.i = 0; // unresolved i
+    return 0;
+}
+
 
 //
 // Functions

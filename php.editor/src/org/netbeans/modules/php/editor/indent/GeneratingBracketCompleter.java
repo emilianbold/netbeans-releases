@@ -39,17 +39,18 @@
 
 package org.netbeans.modules.php.editor.indent;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
@@ -89,54 +90,56 @@ public class GeneratingBracketCompleter {
         if (file == null) {
             return ;
         }
-
-        SourceModel model = SourceModelFactory.getInstance().getModel(file);
-        
         try {
-            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                public void cancel() {}
-                public void run(final CompilationInfo parameter) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    final ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                     //find coresponding ASTNode:
                     //TODO: slow and ugly:
                     class Result extends Error {
+
                         private ASTNode node;
+
                         public Result(ASTNode node) {
                             this.node = node;
                         }
                     }
                     ASTNode n = null;
                     try {
-                    new DefaultVisitor() {
-                        @Override
-                        public void scan(ASTNode node) {
-                            if (node != null) {
-                                Comment c = Utils.getCommentForNode(Utils.getRoot(parameter), node);
+                        new DefaultVisitor() {
 
-                                if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
-                                    //found:
-                                    throw new Result(node);
+                            @Override
+                            public void scan(ASTNode node) {
+                                if (node != null) {
+                                    Comment c = Utils.getCommentForNode(Utils.getRoot(parameter), node);
+
+                                    if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
+                                        //found:
+                                        throw new Result(node);
+                                    }
                                 }
+                                super.scan(node);
                             }
-                            super.scan(node);
-                        }
-                    }.scan(Utils.getRoot(parameter));
+                        }.scan(Utils.getRoot(parameter));
                     } catch (Result r) {
                         n = r.node;
                     }
 
                     if (n == null) {
                         //no found
-                        return ;
+                        return;
                     }
 
                     if (n instanceof FunctionDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parameter, (FunctionDeclaration) n);
                     }
-                    
+
                     if (n instanceof MethodDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parameter, ((MethodDeclaration) n).getFunction());
                     }
-                    
+
                     if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
                         Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
 
@@ -149,20 +152,21 @@ public class GeneratingBracketCompleter {
                             }
                         }
                     }
-                    
+
                     if (n instanceof FieldsDeclaration) {
                         generateFieldDoc(doc, offset, indent, parameter, (FieldsDeclaration) n);
                     }
                 }
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+        
     }
     
     static final String TYPE_PLACEHOLDER = "<type>";
     
-    private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, FunctionDeclaration decl) throws BadLocationException {
+    private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, ParserResult info, FunctionDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
         
         ScannerImpl i = new ScannerImpl(info, decl);
@@ -232,7 +236,7 @@ public class GeneratingBracketCompleter {
         }
     }
     
-    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, AttributedElement el) throws BadLocationException {
+    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, ParserResult info, AttributedElement el) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
 
         generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
@@ -241,7 +245,7 @@ public class GeneratingBracketCompleter {
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
     
-    private static void generateFieldDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, FieldsDeclaration decl) throws BadLocationException {
+    private static void generateFieldDoc(BaseDocument doc, int offset, int indent, ParserResult info, FieldsDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
         
         generateDocEntry(doc, toAdd, "@var", indent, null, null);
@@ -257,7 +261,7 @@ public class GeneratingBracketCompleter {
         private SemiAttribute sa;
         private FunctionDeclaration decl;
 
-        public ScannerImpl(CompilationInfo info, FunctionDeclaration decl) {
+        public ScannerImpl(ParserResult info, FunctionDeclaration decl) {
             sa = SemiAttribute.semiAttribute(info);
             this.decl = decl;
         }

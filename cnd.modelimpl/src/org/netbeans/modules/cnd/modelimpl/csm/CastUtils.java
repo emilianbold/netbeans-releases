@@ -56,8 +56,10 @@ public class CastUtils {
     
     public static boolean isCast(AST ast) {
 	switch( ast.getType() ) {
-	    case CPPTokenTypes.CSM_USER_TYPE_CAST:
+	    case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
 	    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+	    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
+	    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
 		return true;
 	    default:
 		return false;

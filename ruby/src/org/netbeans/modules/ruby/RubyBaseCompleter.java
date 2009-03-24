@@ -39,7 +39,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.csl.api.CompletionProposal;
 
 abstract class RubyBaseCompleter {
 

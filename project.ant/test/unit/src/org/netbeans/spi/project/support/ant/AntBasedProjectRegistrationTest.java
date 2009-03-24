@@ -42,6 +42,7 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -50,6 +51,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.AnnotationProcessorTestUtils;
@@ -104,6 +107,21 @@ public class AntBasedProjectRegistrationTest extends NbTestCase {
         assertNotNull("Annotation project found", p.getLookup().lookup(AnnotatedProject.class));
         assertEquals(1, AnnotatedProject.factoryCalls);
         AnnotatedProject.factoryCalls = 0;
+    }
+
+    public void testCanThrowIOException() throws Exception {
+        File f = FileUtil.toFile(projdir);
+        LocalFileSystem fs = new LocalFileSystem();
+        fs.setRootDirectory(f.getParentFile());
+        FileObject prj = fs.findResource(f.getName());
+        IOException e = new IOException("Mine");
+        AnnotatedProject.throwEx = e;
+        try {
+            Project p = pm.findProject(prj);
+            fail("Exception shall be thrown");
+        } catch (IOException ex) {
+            assertSame("It is our exception", e, ex);
+        }
     }
 
     public void testTypeNeedsToBeProject() throws Exception {
@@ -164,9 +182,15 @@ public class AntBasedProjectRegistrationTest extends NbTestCase {
     )
     public static final class AnnotatedProject extends AntBasedTestUtil.TestAntBasedProject {
         static int factoryCalls;
+        private static IOException throwEx;
         
         public AnnotatedProject(AntProjectHelper h) throws IOException {
             super(h, null);
+            IOException e = throwEx;
+            if (e != null) {
+                throwEx = null;
+                throw e;
+            }
         }
 
         @Override

@@ -57,8 +57,6 @@ public final class GrailsSettings {
     private static final String GRAILS_HOME_KEY = "grailsHome"; // NOI18N
     private static final String GRAILS_PORT_KEY = "grailsPrj-Port-"; // NOI18N
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-"; // NOI18N
-    private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-"; // NOI18N
-    private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-"; // NOI18N
     private static final String GRAILS_JAVA_PLATFORM_KEY = "grailsPrj-JavaPlatform-"; // NOI18N
 
     // Which browser to use for client side debugging Firfox or Internet Explorer ?
@@ -66,6 +64,10 @@ public final class GrailsSettings {
     private static final String GRAILS_DEBUG_BROWSER_KEY = "grailsPrj-DebugBrowser-"; // NOI18N
 
     private static final String GRAILS_DISPLAY_BROWSER_KEY = "grailsPrj-DisplayBrowser-"; // NOI18N
+
+    private static final String GRAILS_PROJECT_PLUGINS_DIR_KEY = "grailsPrj-ProjectPluginsDir-"; // NOI18N
+
+    private static final String GRAILS_GLOBAL_PLUGINS_DIR_KEY = "grailsPrj-GlobalPluginsDir-"; // NOI18N
 
     private static GrailsSettings instance;
 
@@ -140,31 +142,6 @@ public final class GrailsSettings {
         getPreferences().put(getEnvKey(prj), env.toString());
     }
 
-    // Should we Autodeploy right after a 'grails war' command?
-    public boolean getAutoDeployFlagForProject(Project prj) {
-        assert prj != null;
-        return getPreferences().getBoolean(getAutodeployKey(prj), false);
-    }
-
-    public void setAutoDeployFlagForProject(Project prj, boolean flag) {
-        assert prj != null;
-
-        getPreferences().putBoolean(getAutodeployKey(prj), flag);
-    }
-
-    // Where should the WAR-File be deployed to?
-    public String getDeployDirForProject(Project prj) {
-        assert prj != null;
-        return getPreferences().get(getDeployKey(prj), null);
-    }
-
-    public void setDeployDirForProject(Project prj, String dir) {
-        assert prj != null;
-        assert dir != null;
-
-        getPreferences().put(getDeployKey(prj), dir);
-    }
-
     // Which browser to use for client side debugging Firfox or Internet Explorer ?
     public String getDebugBrowserForProject(Project prj) {
         assert prj != null;
@@ -203,6 +180,30 @@ public final class GrailsSettings {
         getPreferences().putBoolean(getDisplayBrowserKey(prj), displayBrowser);
     }
 
+    public String getProjectPluginsDirForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().get(getProjectPluginsDirKey(prj), null);
+    }
+
+    public void setProjectPluginsDirForProject(Project prj, String dir) {
+        assert prj != null;
+
+        getPreferences().put(getProjectPluginsDirKey(prj), dir);
+    }
+
+    public String getGlobalPluginsDirForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().get(getGlobalPluginsDirKey(prj), null);
+    }
+
+    public void setGlobalPluginsDirForProject(Project prj, String dir) {
+        assert prj != null;
+
+        getPreferences().put(getGlobalPluginsDirKey(prj), dir);
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -221,16 +222,6 @@ public final class GrailsSettings {
         return GRAILS_ENV_KEY + getProjectName(prj);
     }
 
-    private String getDeployKey(Project prj) {
-        assert prj != null;
-        return GRAILS_DEPLOY_KEY + getProjectName(prj);
-    }
-
-    private String getAutodeployKey(Project prj) {
-        assert prj != null;
-        return GRAILS_AUTODEPLOY_KEY + getProjectName(prj);
-    }
-
     private String getDebugBrowserKey(Project prj) {
         assert prj != null;
         return GRAILS_DEBUG_BROWSER_KEY + getProjectName(prj);
@@ -244,6 +235,16 @@ public final class GrailsSettings {
     private String getDisplayBrowserKey(Project prj) {
         assert prj != null;
         return GRAILS_DISPLAY_BROWSER_KEY + getProjectName(prj);
+    }
+
+    private String getProjectPluginsDirKey(Project prj) {
+        assert prj != null;
+        return GRAILS_PROJECT_PLUGINS_DIR_KEY + getProjectName(prj);
+    }
+
+    private String getGlobalPluginsDirKey(Project prj) {
+        assert prj != null;
+        return GRAILS_GLOBAL_PLUGINS_DIR_KEY + getProjectName(prj);
     }
 
     private Preferences getPreferences() {

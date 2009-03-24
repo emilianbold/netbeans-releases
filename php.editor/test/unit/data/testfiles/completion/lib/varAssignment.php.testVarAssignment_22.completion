@@ -1,5 +1,7 @@
 Code completion result for source line:
 $self1->|aCreateA();
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
 METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment
+METHOD     aStaticCreateA()                [STATIC]   clsAVarAssignment
+METHOD     aStaticCreateC()                [STATIC]   clsAVarAssignment

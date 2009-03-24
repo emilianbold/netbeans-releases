@@ -42,15 +42,14 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import groovyjarjarasm.asm.Opcodes;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -70,9 +69,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -85,16 +82,18 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.elements.AstElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
@@ -103,79 +102,29 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 public class AstUtilities {
 
 
-    public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
+    public static int getAstOffset(Parser.Result info, int lexOffset) {
+        GroovyParserResult result = getParseResult(info);
         if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                return ts.getAstOffset(lexOffset);
-            }
+            return result.getSnapshot().getEmbeddedOffset(lexOffset);
         }
-
         return lexOffset;
     }
 
-    public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
-        DataObject dobj;
+//    public static int getAstOffset(CompilationInfo info, int lexOffset) {
+//        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
+//        if (result != null) {
+//            TranslatedSource ts = result.getTranslatedSource();
+//            if (ts != null) {
+//                return ts.getAstOffset(lexOffset);
+//            }
+//        }
+//
+//        return lexOffset;
+//    }
 
-        try {
-            dobj = DataObject.find(fileObject);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            if (ec == null) {
-                throw new IOException("Can't open " + fileObject.getNameExt());
-            }
-
-            Document document;
-
-            if (forceOpen) {
-                document = ec.openDocument();
-            } else {
-                document = ec.getDocument();
-            }
-
-            if (document instanceof BaseDocument) {
-                return ((BaseDocument)document);
-            } else {
-                // Must be testsuite execution
-                try {
-                    Class c = Class.forName("org.netbeans.modules.groovy.editor.test.GroovyTestBase");
-                    if (c != null) {
-                        @SuppressWarnings("unchecked")
-                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
-                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
-    }
-
-    public static GroovyParserResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-
-        if (result == null) {
-            return null;
-        } else {
-            return ((GroovyParserResult)result);
-        }
-    }
-
-    // TODO use this from all the various places that have this inlined...
-    public static ModuleNode getRoot(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-
-        if (result == null) {
-            return null;
-        }
-
-        return getRoot(result);
+    public static GroovyParserResult getParseResult(Parser.Result info) {
+        assert info instanceof GroovyParserResult : "Expecting GroovyParseResult, but have " + info; //NOI18N
+        return (GroovyParserResult) info;
     }
 
     public static ModuleNode getRoot(ParserResult r) {
@@ -183,13 +132,11 @@ public class AstUtilities {
 
         GroovyParserResult result = (GroovyParserResult)r;
 
-        ParserResult.AstTreeNode ast = result.getAst();
-
-        if (ast == null) {
+        if (result.getRootElement() == null) {
             return null;
         }
-
-        return (ModuleNode) ast.getAstNode();
+        
+        return result.getRootElement().getModuleNode();
     }
 
     public static OffsetRange getRangeFull(ASTNode node, BaseDocument doc) {
@@ -431,9 +378,15 @@ public class AstUtilities {
         final ASTNode[] nodes = new ASTNode[1];
         FileObject fileObject = o.getFileObject();
         assert fileObject != null : "null FileObject for IndexedElement " + o;
+
         try {
-            SourceUtils.runUserActionTask(fileObject, new CancellableTask<GroovyParserResult>() {
-                public void run(GroovyParserResult result) throws Exception {
+            Source source = Source.create(fileObject);
+            // FIXME can we move this out of task (?)
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+
                     String signature = o.getSignature();
                     if (signature == null) {
                         return;
@@ -450,11 +403,31 @@ public class AstUtilities {
                             return;
                         }
                     }
-
                 }
-                public void cancel() {}
             });
-        } catch (Exception ex) {
+//            SourceUtils.runUserActionTask(fileObject, new CancellableTask<GroovyParserResult>() {
+//                public void run(GroovyParserResult result) throws Exception {
+//                    String signature = o.getSignature();
+//                    if (signature == null) {
+//                        return;
+//                    }
+//                    // strip class name from signature: Foo#method1() -> method1()
+//                    int index = signature.indexOf('#');
+//                    if (index != -1) {
+//                        signature = signature.substring(index + 1);
+//                    }
+//                    for (AstElement element : result.getStructure().getElements()) {
+//                        ASTNode node = findBySignature(element, signature);
+//                        if (node != null) {
+//                            nodes[0] = node;
+//                            return;
+//                        }
+//                    }
+//
+//                }
+//                public void cancel() {}
+//            });
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
         return nodes[0];

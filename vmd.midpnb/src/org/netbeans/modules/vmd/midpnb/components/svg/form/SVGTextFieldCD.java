@@ -146,8 +146,8 @@ public class SVGTextFieldCD extends ComponentDescriptor{
                 createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGTextFieldEventSourceCD.TYPEID )
+                MidpCodePresenterSupport.createAddImportPresenter()
+                //new SVGCodeFooter( SVGTextFieldEventSourceCD.TYPEID )
         );
     }
     

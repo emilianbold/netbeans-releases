@@ -103,18 +103,36 @@ public final class OptionsExportModel {
         return categories;
     }
 
-    /** Returns true if at least one item in this model is enabled.
-     * @return true if at least one item in this model is enabled.
+    /** Returns state of model - ENABLED, DISABLED or PARTIAL.
+     * @return state of model
      */
-    boolean isEnabled() {
+    State getState() {
+        int enabled = 0;
+        int disabled = 0;
         for (OptionsExportModel.Category category : getCategories()) {
-            for (OptionsExportModel.Item item : category.getItems()) {
-                if (item.isEnabled()) {
-                    return true;
-                }
+            if (category.getState() == State.ENABLED) {
+                enabled++;
+            } else if (category.getState() == State.DISABLED) {
+                disabled++;
             }
         }
-        return false;
+        int size = getCategories().size();
+        if (enabled == size) {
+            return State.ENABLED;
+        } else if (disabled == size) {
+            return State.DISABLED;
+        } else {
+            return State.PARTIAL;
+        }
+    }
+
+    /** Sets state of all categories according to given value.
+     * @param state new state
+     */
+    void setState(State state) {
+        for (OptionsExportModel.Category category : getCategories()) {
+            category.setState(state);
+        }
     }
 
     /** Copies files from source (zip file or userdir) to target dir according
@@ -296,7 +314,26 @@ public final class OptionsExportModel {
     /** Represents 3 state of category. */
     static enum State {
 
-        ENABLED, DISABLED, PARTIAL
+        ENABLED(Boolean.TRUE),
+        DISABLED(Boolean.FALSE),
+        PARTIAL(null);
+        private final Boolean bool;
+
+        State(Boolean bool) {
+            this.bool = bool;
+        }
+
+        public Boolean toBoolean() {
+            return bool;
+        }
+
+        public static State valueOf(Boolean bool) {
+            if (bool == null) {
+                return PARTIAL;
+            } else {
+                return bool ? ENABLED : DISABLED;
+            }
+        }
     };
 
     /** Represents category in UI holding several items. */
@@ -403,10 +440,8 @@ public final class OptionsExportModel {
 
         private void updateItems(State state) {
             for (Item item : getItems()) {
-                if (state == State.DISABLED) {
-                    item.setEnabled(false);
-                } else if (state == State.ENABLED) {
-                    item.setEnabled(true);
+                if (state != State.PARTIAL) {
+                    item.setEnabled(state.toBoolean());
                 }
             }
         }

@@ -1,6 +1,6 @@
 Code completion result for source line:
 1.0.d|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     div(Character)                             Number
 METHOD     div(Number)                                Number

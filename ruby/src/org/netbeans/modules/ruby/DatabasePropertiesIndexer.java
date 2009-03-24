@@ -39,16 +39,19 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.ruby.FindersHelper.FinderMethod;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.openide.filesystems.FileObject;
 
 /**
  * Indexes Rails specific database related properties.
@@ -59,11 +62,11 @@ final class DatabasePropertiesIndexer {
 
     private final RubyIndex index;
     private final String prefix;
-    private final NameKind kind;
+    private final QuerySupport.Kind kind;
     private final String classFqn;
     private final Set<IndexedMethod> methods;
 
-    private DatabasePropertiesIndexer(RubyIndex index, String prefix, NameKind kind, String classFqn, Set<IndexedMethod> methods) {
+    public DatabasePropertiesIndexer(RubyIndex index, String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
         this.index = index;
         this.prefix = prefix;
         this.kind = kind;
@@ -71,7 +74,7 @@ final class DatabasePropertiesIndexer {
         this.methods = methods;
     }
 
-    static void indexDatabaseProperties(RubyIndex index, String prefix, NameKind kind,
+    static void indexDatabaseProperties(RubyIndex index, String prefix, QuerySupport.Kind kind,
             String classFqn, Set<IndexedMethod> methods) {
         DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods);
         indexer.addDatabaseProperties();
@@ -87,22 +90,20 @@ final class DatabasePropertiesIndexer {
         String tableName = RubyUtils.tableize(classFqn);
 
         String searchField = RubyIndexer.FIELD_DB_TABLE;
-        Set<SearchResult> result = new HashSet<SearchResult>();
-        index.search(searchField, tableName, NameKind.EXACT_NAME, result);
+        Collection<? extends IndexResult> result = index.query(searchField, tableName, QuerySupport.Kind.EXACT);
 
         List<TableDefinition> tableDefs = new ArrayList<TableDefinition>();
         TableDefinition schema = null;
 
-        for (SearchResult map : result) {
-            assert map != null;
+        for (IndexResult ir : result) {
+            assert ir != null;
 
-            String version = map.getValue(RubyIndexer.FIELD_DB_VERSION);
-            assert tableName.equals(map.getValue(RubyIndexer.FIELD_DB_TABLE));
-            String fileUrl = map.getPersistentUrl();
+            String version = ir.getValue(RubyIndexer.FIELD_DB_VERSION);
+            assert tableName.equals(ir.getValue(RubyIndexer.FIELD_DB_TABLE));
 
-            TableDefinition def = new TableDefinition(tableName, version, fileUrl);
+            TableDefinition def = new TableDefinition(tableName, version, ir.getFile());
             tableDefs.add(def);
-            String[] columns = map.getValues(RubyIndexer.FIELD_DB_COLUMN);
+            String[] columns = ir.getValues(RubyIndexer.FIELD_DB_COLUMN);
 
             if (columns != null) {
                 for (String column : columns) {
@@ -121,7 +122,7 @@ final class DatabasePropertiesIndexer {
 
         if (tableDefs.size() > 0) {
             Map<String, String> columnDefs = new HashMap<String, String>();
-            Map<String, String> fileUrls = new HashMap<String, String>();
+            Map<String, FileObject> fileUrls = new HashMap<String, FileObject>();
             Set<String> currentCols = new HashSet<String>();
             if (schema != null) {
                 addColumnsFromSchema(schema, columnDefs, fileUrls, currentCols);
@@ -142,7 +143,7 @@ final class DatabasePropertiesIndexer {
 
     private void addColumnsFromMigrations(List<TableDefinition> tableDefs,
             Map<String, String> columnDefs,
-            Map<String, String> fileUrls,
+            Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
         // Apply migration files
@@ -177,7 +178,7 @@ final class DatabasePropertiesIndexer {
 
     private void addColumnsFromSchema(TableDefinition schema,
             Map<String, String> columnDefs,
-            Map<String, String> fileUrls,
+            Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
         List<String> cols = schema.getColumns();
@@ -207,20 +208,20 @@ final class DatabasePropertiesIndexer {
 
     private void createMethodsForColumns(String tableName,
             Map<String, String> columnDefs,
-            Map<String, String> fileUrls,
+            Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
         for (String column : currentCols) {
             if (column.startsWith(prefix)) {
-                if (kind == NameKind.EXACT_NAME) {
+                if (kind == QuerySupport.Kind.EXACT) {
                     // Ensure that the method is not longer than the prefix
                     if ((column.length() > prefix.length())) {
                         continue;
                     }
                 } else {
                     // REGEXP, CAMELCASE filtering etc. not supported here
-                    assert (kind == NameKind.PREFIX) ||
-                            (kind == NameKind.CASE_INSENSITIVE_PREFIX);
+                    assert (kind == QuerySupport.Kind.PREFIX) ||
+                            (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
                 }
 
                 String c = columnDefs.get(column);
@@ -229,7 +230,7 @@ final class DatabasePropertiesIndexer {
                 if (semicolonIndex != -1) {
                     type = c.substring(semicolonIndex + 1);
                 }
-                String fileUrl = fileUrls.get(column);
+                FileObject fileUrl = fileUrls.get(column);
 
                 String signature = column;
                 String fqn = tableName + "#" + column;
@@ -249,16 +250,10 @@ final class DatabasePropertiesIndexer {
 
     private void createDynamicFinders(String tableName,
             Map<String, String> columnDefs,
-            Map<String, String> fileUrls,
+            Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
-        List<FindersHelper.FinderMethod> finders = new ArrayList<FindersHelper.FinderMethod>();
-        for (String finderPrefix : FindersHelper.FINDER_PREFIXES) {
-            if (prefix.startsWith(finderPrefix) || finderPrefix.startsWith(prefix)) {
-                finders.addAll(FindersHelper.getFinderSignatures(finderPrefix, currentCols));
-            }
-        }
-
+        List<FinderMethod> finders = new ArrayList<FinderMethod>(FindersHelper.getFinderSignatures(prefix, currentCols));
 
         for (FindersHelper.FinderMethod finder : finders) {
             String methodName = finder.getName();
@@ -268,7 +263,7 @@ final class DatabasePropertiesIndexer {
             }
             // XXX: what's this needed for?
             String column = finder.getColumn();
-            String fileUrl = fileUrls.get(column);
+            FileObject fileUrl = fileUrls.get(column);
 
             String clz = classFqn;
             String require = null;
@@ -291,10 +286,10 @@ final class DatabasePropertiesIndexer {
         private String version;
         /** table is redundant, I only search by exact tablenames anyway */
         private String table;
-        private String fileUrl;
+        private FileObject fileUrl;
         private List<String> cols;
 
-        TableDefinition(String table, String version, String fileUrl) {
+        TableDefinition(String table, String version, FileObject fileUrl) {
             this.table = table;
             this.version = version;
             this.fileUrl = fileUrl;
@@ -311,7 +306,7 @@ final class DatabasePropertiesIndexer {
             return version.compareTo(o.version);
         }
 
-        String getFileUrl() {
+        FileObject getFileUrl() {
             return fileUrl;
         }
 

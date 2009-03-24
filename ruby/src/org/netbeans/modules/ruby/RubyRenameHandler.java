@@ -56,12 +56,11 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
-
 
 /**
  * Handle renaming of local elements
@@ -100,10 +99,11 @@ end
  * @author Tor Norbye
  */
 public class RubyRenameHandler implements InstantRenamer {
+    
     public RubyRenameHandler() {
     }
 
-    public boolean isRenameAllowed(CompilationInfo info, int caretOffset,
+    public boolean isRenameAllowed(ParserResult info, int caretOffset,
         String[] explanationRetValue) {
         Node root = AstUtilities.getRoot(info);
 
@@ -170,7 +170,7 @@ public class RubyRenameHandler implements InstantRenamer {
         return false;
     }
 
-    public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
+    public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -257,7 +257,7 @@ public class RubyRenameHandler implements InstantRenamer {
         return regions;
     }
 
-    private void addLocals(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
+    private void addLocals(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
         if (node.nodeId == NodeType.LOCALVARNODE) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
@@ -366,7 +366,7 @@ public class RubyRenameHandler implements InstantRenamer {
     // Test both parent blocks, sibling blocks and descendant blocks
     // Make sure the "isUsed" detection is smarter too.
     
-    private void addDynamicVars(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
+    private void addDynamicVars(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
         switch (node.nodeId) {
         case DVARNODE:
             if (((INameNode)node).getName().equals(name)) {

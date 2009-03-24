@@ -109,6 +109,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers="; // NOI18N
     public static final String RESPONSE_HEADER="^done,asm_insns="; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
+
+    private static final String COMMENT_PREFIX="!"; // NOI18N
     
     private static FileObject fo = null;
     
@@ -160,18 +162,23 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 if (combinedPos != -1 && combinedPos < addressPos) {
                     int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
-                    //String path = debugger.getRunDirectory();
-                    String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                    if (srcFile != null && srcFile.getName().equals(fileStr)) {
-                        FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
-                        if (src_fo != null) {
-                            try {
-                                text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
-                            } catch (DataObjectNotFoundException doe) {
-                                // do nothing
+                    if (lineIdx > 0) {
+                        //String path = debugger.getRunDirectory();
+                        String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                        if (srcFile != null && srcFile.getName().equals(fileStr)) {
+                            FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
+                            if (src_fo != null) {
+                                try {
+                                    String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();
+                                    if (lineText != null && lineText.length() > 0) {
+                                        text.addLine(COMMENT_PREFIX + lineText); // NOI18N
+                                    }
+                                } catch (Exception ex) {
+                                    // do nothing
+                                }
+                            } else {
+                                text.addLine(COMMENT_PREFIX + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                             }
-                        } else {
-                            text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                         }
                     }
                     pos = combinedPos+1;
@@ -454,6 +461,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static boolean isInDisasm() {
         //TODO: optimize
         DataObject dobj = EditorContextBridge.getContext().getCurrentDataObject();
+        if (dobj == null) {
+            dobj = EditorContextBridge.getContext().getMostRecentDataObject();
+        }
         if (dobj == null) {
             return false;
         }

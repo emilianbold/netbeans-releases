@@ -42,7 +42,6 @@ package org.netbeans.modules.groovy.editor.completion;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.List;
@@ -50,15 +49,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -70,13 +69,13 @@ public final class DynamicElementHandler {
 
     private static final Logger LOGGER = Logger.getLogger(DynamicElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private DynamicElementHandler(CompilationInfo info) {
+    private DynamicElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static DynamicElementHandler forCompilationInfo(CompilationInfo info) {
+    public static DynamicElementHandler forCompilationInfo(ParserResult info) {
         return new DynamicElementHandler(info);
     }
 
@@ -85,6 +84,10 @@ public final class DynamicElementHandler {
     // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
             String className, String prefix, int anchor, boolean nameOnly, boolean leaf, FileObject classSource) {
+
+        if (info.getSnapshot().getSource().getFileObject() == null) {
+            return Collections.emptyMap();
+        }
 
         CompletionContext context = new CompletionContext(anchor, classSource,
                 sourceClassName, className, prefix, false, getProperties(className), leaf, nameOnly);
@@ -106,6 +109,10 @@ public final class DynamicElementHandler {
     public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
             String className, String prefix, int anchor, boolean leaf, FileObject classSource) {
 
+        if (info.getSnapshot().getSource().getFileObject() == null) {
+            return Collections.emptyMap();
+        }
+        
         CompletionContext context = new CompletionContext(anchor, classSource,
                 sourceClassName, className, prefix, false, getProperties(className), leaf, false);
 
@@ -124,14 +131,17 @@ public final class DynamicElementHandler {
     }
 
     private List<String> getProperties(String className) {
-        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
-        if (index == null) {
-            return Collections.emptyList();
+        FileObject f = info.getSnapshot().getSource().getFileObject();
+        if (f == null) {
+            return Collections.<String>emptyList();
         }
 
-        Set<IndexedField> fields = index.getFields(".*", className, NameKind.REGEXP,
-                EnumSet.allOf(SearchScope.class));
+
+        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(f,
+                Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
+
+        Set<IndexedField> fields = index.getFields(".*", className, QuerySupport.Kind.REGEXP);
 
         if (fields.size() == 0) {
             LOGGER.log(Level.FINEST, "Nothing found in GroovyIndex");

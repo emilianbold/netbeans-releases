@@ -64,11 +64,7 @@ public class J2EESetup extends JellyTestCase {
     public void testAddAppServer() {
         CommonUtilities.addApplicationServer();
     }
-
-    public void testInstallPlugin() {
-        CommonUtilities.installPlugin("JAX-RPC Web Services");
-    }
-               
+          
     public void testOpenTestApplications() {
         try {
             this.openDataProjects("TestApplication");
@@ -97,36 +93,6 @@ public class J2EESetup extends JellyTestCase {
 
     }
     
-    public void testOpenDeployTest() {
-
-        try {
-            this.openDataProjects("DeployTest");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-    }
-
-    public void testOpenDeployTest_ejb() {
-
-        try {
-            this.openDataProjects("DeployTest/DeployTest-ejb");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-    }
-
-    public void testOpenDeployTest_war() {
-
-        try {
-            this.openDataProjects("DeployTest/DeployTest-war");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-    }
-
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }      

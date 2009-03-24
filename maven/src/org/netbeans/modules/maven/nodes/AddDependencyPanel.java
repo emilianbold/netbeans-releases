@@ -51,8 +51,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -71,12 +73,16 @@ import javax.swing.text.Document;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
@@ -119,10 +125,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private NotificationLineSupport nls;
 
     /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject mavenProject) {
-        this(mavenProject, true);
+    public AddDependencyPanel(MavenProject mavenProject, Project prj) {
+        this(mavenProject, true, prj);
     }
-    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan) {
+    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
@@ -215,7 +221,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         } else {
             tabPane.setEnabledAt(1, false);
         }
-
+        pnlOpenProjects.add(new OpenListPanel(this, prj), BorderLayout.CENTER);
     }
 
     public JButton getOkButton() {
@@ -346,10 +352,13 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         resultsPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         progressLabel = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
+        pnlDepMan = new javax.swing.JPanel();
         artifactsLabel = new javax.swing.JLabel();
         artifactPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        pnlOpen = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        pnlOpenProjects = new javax.swing.JPanel();
 
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_GroupId")); // NOI18N
@@ -377,10 +386,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(lblVersion))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lblScope)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -390,7 +399,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         coordPanelLayout.setVerticalGroup(
             coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txtGroupId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lblGroupId))
@@ -449,11 +458,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))
+                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))
                     .add(searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(resultsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 202, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 265, Short.MAX_VALUE)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(searchPanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
@@ -463,7 +472,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                             .add(searchPanelLayout.createSequentialGroup()
                                 .add(jLabel1)
                                 .add(14, 14, 14))
-                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))))
+                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -480,7 +489,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(resultsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -495,28 +504,55 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel2.text", new Object[] {})); // NOI18N
         artifactPanel.add(jLabel2, java.awt.BorderLayout.PAGE_END);
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout pnlDepManLayout = new org.jdesktop.layout.GroupLayout(pnlDepMan);
+        pnlDepMan.setLayout(pnlDepManLayout);
+        pnlDepManLayout.setHorizontalGroup(
+            pnlDepManLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+                .add(pnlDepManLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
                     .add(artifactsLabel))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+        pnlDepManLayout.setVerticalGroup(
+            pnlDepManLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(artifactsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jPanel2.TabConstraints.tabTitle", new Object[] {}), jPanel2); // NOI18N
+        tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.pnlDepMan.TabConstraints.tabTitle", new Object[] {}), pnlDepMan); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel3.text")); // NOI18N
+
+        pnlOpenProjects.setLayout(new java.awt.BorderLayout());
+
+        org.jdesktop.layout.GroupLayout pnlOpenLayout = new org.jdesktop.layout.GroupLayout(pnlOpen);
+        pnlOpen.setLayout(pnlOpenLayout);
+        pnlOpenLayout.setHorizontalGroup(
+            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlOpenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(jLabel3))
+                .addContainerGap())
+        );
+        pnlOpenLayout.setVerticalGroup(
+            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlOpenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.pnlOpen.TabConstraints.tabTitle"), pnlOpen); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -546,12 +582,15 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private javax.swing.JPanel coordPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblArtifactId;
     private javax.swing.JLabel lblGroupId;
     private javax.swing.JLabel lblScope;
     private javax.swing.JLabel lblVersion;
+    private javax.swing.JPanel pnlDepMan;
+    private javax.swing.JPanel pnlOpen;
+    private javax.swing.JPanel pnlOpenProjects;
     private javax.swing.JLabel progressLabel;
     private javax.swing.JLabel resultsLabel;
     private javax.swing.JPanel resultsPanel;
@@ -599,6 +638,18 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             }
         }
         Collections.sort(vers);
+        // also include properties/expressions that could be related to version
+        // management
+        List<String> propList = new ArrayList<String>();
+        for (Object propKey : project.getProperties().keySet()) {
+            String key = (String)propKey;
+            if (key.endsWith(".version")) { //NOI18N
+                // is this the correct heuristics?
+                propList.add("${" + key + "}");
+            }
+        }
+        Collections.sort(propList);
+        vers.addAll(propList);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 versionCompleter.setValueList(vers);
@@ -641,13 +692,23 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         MavenProject localProj = project;
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
+        //mkleint: without the managementKey checks I got some entries multiple times.
+        // do we actually need to traverse the parent poms, are they completely resolved anyway?
+        //XXX
+        Set<String> knownKeys = new HashSet<String>();
 
         while (localProj != null) {
             curDM = localProj.getDependencyManagement();
             if (curDM != null) {
                 @SuppressWarnings("unchecked")
                 List<Dependency> ds = curDM.getDependencies();
-                result.addAll(ds);
+                for (Dependency d : ds) {
+                    if (knownKeys.contains(d.getManagementKey())) {
+                        continue;
+                    }
+                    result.add(d);
+                    knownKeys.add(d.getManagementKey());
+                }
             }
             localProj = localProj.getParent();
         }
@@ -1048,6 +1109,91 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     depPanel.tabPane.setEnabledAt(1, !dmEmpty);
                     if (dmEmpty) {
                         depPanel.tabPane.setToolTipTextAt(1, NbBundle.getMessage(AddDependencyPanel.class, "TXT_No_DM"));
+                    }
+                }
+            });
+        }
+
+    }
+
+
+    private static class OpenListPanel extends JPanel implements ExplorerManager.Provider,
+            PropertyChangeListener, Runnable {
+
+        private ListView lv;
+        private ExplorerManager manager;
+        private Project project;
+        private AddDependencyPanel depPanel;
+
+        public OpenListPanel(AddDependencyPanel depPanel, Project project) {
+            this.depPanel = depPanel;
+            this.project = project;
+            lv = new ListView();
+            //lv.setDefaultProcessor(this);
+            manager = new ExplorerManager();
+            manager.addPropertyChangeListener(this);
+            setLayout(new BorderLayout());
+            add(lv, BorderLayout.CENTER);
+
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            Node[] selNodes = manager.getSelectedNodes();
+            if (selNodes.length == 1) {
+                Project prj = selNodes[0].getLookup().lookup(Project.class);
+                NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
+                MavenProject m = mav.getMavenProject();
+                depPanel.txtGroupId.setText(m.getGroupId());
+                depPanel.txtArtifactId.setText(m.getArtifactId());
+                depPanel.txtVersion.setText(m.getVersion()); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setLoading(true);
+                depPanel.versionCompleter.setLoading(true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        depPanel.populateArtifact();
+                        depPanel.populateVersion();
+                    }
+                });
+            } else {
+                depPanel.txtGroupId.setText(""); //NOI18N
+                depPanel.txtArtifactId.setText(""); //NOI18N
+                depPanel.txtVersion.setText(""); //NOI18N
+                //reset completion.
+                depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
+            }
+        }
+
+        /** Loads dependencies outside EQ thread, updates tab state in EQ */
+        public void run() {
+            Project[] prjs = OpenProjects.getDefault().getOpenProjects();
+            final List<Node> toRet = new ArrayList<Node>();
+            for (Project p : prjs) {
+                if (p == project) {
+                    continue;
+                }
+                NbMavenProject mav = p.getLookup().lookup(NbMavenProject.class);
+                if (mav != null) {
+                    LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+                    toRet.add(lvp.createLogicalView());
+                }
+            }
+            Children.Array ch = new Children.Array();
+            ch.add(toRet.toArray(new Node[0]));
+            Node root = new AbstractNode(ch);
+            getExplorerManager().setRootContext(root);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    boolean opEmpty = toRet.isEmpty();
+                    depPanel.tabPane.setEnabledAt(2, !opEmpty);
+                    if (opEmpty) {
+                        depPanel.tabPane.setToolTipTextAt(1, NbBundle.getMessage(AddDependencyPanel.class, "TXT_No_Opened"));
                     }
                 }
             });

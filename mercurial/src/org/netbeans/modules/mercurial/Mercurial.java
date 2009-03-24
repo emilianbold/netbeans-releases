@@ -66,11 +66,11 @@ import org.openide.util.NbBundle;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 
 /**
@@ -78,7 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Maros Sandor
  */
-public class Mercurial implements LookupListener {
+public class Mercurial {
     public static final int HG_FETCH_20_REVISIONS = 20;
     public static final int HG_FETCH_50_REVISIONS = 50;
     public static final int HG_FETCH_ALL_REVISIONS = -1;
@@ -133,6 +133,11 @@ public class Mercurial implements LookupListener {
     private boolean gotVersion;
 
     private Result<? extends HgHook> hooksResult;
+    private Result<? extends HyperlinkProvider> hpResult;
+    /**
+     * Hyperlink providers available
+     */
+    private List<HyperlinkProvider> hyperlinkProviders;
 
     private Mercurial() {
     }
@@ -147,11 +152,13 @@ public class Mercurial implements LookupListener {
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
 
         hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        hooksResult.addLookupListener(this);
+        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+        setHyperlinkProviders();
     }
 
     public void resultChanged(LookupEvent ev) {
         hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
+        setHyperlinkProviders();
     }
 
 
@@ -524,8 +531,10 @@ public class Mercurial implements LookupListener {
         return mercurialInterceptor.isRefreshScheduled(file);
     }
 
-
     public List<HgHook> getHooks() {
+        if(hooksResult == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<HgHook> ret = new ArrayList<HgHook>();
         Collection<? extends HgHook> hooks = hooksResult.allInstances();
         if (hooks.size() > 0) {
@@ -536,4 +545,21 @@ public class Mercurial implements LookupListener {
         return ret;
     }
 
+    private void setHyperlinkProviders () {
+        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
+        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        hyperlinkProviders = Collections.unmodifiableList(providersList);
+    }
+
+    /**
+     *
+     * @return registered hyperlink providers
+     */
+    public List<HyperlinkProvider> getHyperlinkProviders() {
+        if (hyperlinkProviders == null) {
+            setHyperlinkProviders();
+        }
+        return hyperlinkProviders;
+    }
 }

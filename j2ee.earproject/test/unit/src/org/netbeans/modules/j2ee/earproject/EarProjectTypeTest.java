@@ -73,7 +73,7 @@ public final class EarProjectTypeTest extends NbTestCase {
             if ("org.netbeans.modules.j2ee.earproject".equals(instance.getType()))
             prjType = instance;
         }
-        MockLookup.setInstances(prjType);
+        MockLookup.setLayersAndInstances(prjType);
         assertNotNull(prjType);
     }
     

@@ -204,7 +204,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         adjustPreferredSizes();
                         return;
                     }
-
+                    
                     jEditorPane1.getScrollPane().setBorder(null);
                     jEditorPane2.getScrollPane().setBorder(null);
                     jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
@@ -217,7 +217,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         setSource1(ss1);
                         setSource2(ss2);
                     } catch (IOException ioex) {
-                        org.openide.ErrorManager.getDefault().notify(ioex);
+                        Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Diff source unavailable", ioex);
                     }
                     
                     if (!secondSourceAvailable) {
@@ -251,11 +251,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                  SwingUtilities.invokeAndWait(awtTask);
             }
         } catch (InterruptedException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+                    + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
         } catch (InvocationTargetException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+                    + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
         }
 
         if (binaryDiff) {
@@ -287,18 +287,39 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (type == DiffController.LocationType.DifferenceIndex) {
                     setDifferenceImpl(location);
                 } else {
-                    if (pane == DiffController.DiffPane.Base) {
-                        setBaseLineNumberImpl(location);
-                    } else {
-                        setModifiedLineNumberImpl(location);
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (pane == DiffController.DiffPane.Base) {
+                                setBaseLineNumberImpl(location);
+                            } else {
+                                setModifiedLineNumberImpl(location);
+                            }
+                        }
+                    });
                 }
             }
         });
     }
 
     private void setModifiedLineNumberImpl(int line) {
-        
+        initGlobalSizes(); // The window might be resized in the mean time.
+        try {
+            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2.getEditorPane());
+            if (editorUI == null) return;
+            int off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
+            jEditorPane2.getEditorPane().setCaretPosition(off2);
+
+            int lineHeight = editorUI.getLineHeight();
+
+            int offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
+            int lineOffset = lineHeight * line - offset;
+
+            JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
+
+            rightScrollBar.setValue((int) (lineOffset));
+        } catch (IndexOutOfBoundsException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        }
     }
 
     private void setBaseLineNumberImpl(int line) {
@@ -308,20 +329,18 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             if (editorUI == null) return;
             int lineHeight = editorUI.getLineHeight();
     
-            int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 5;
+            int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 2 + 1;
             int lineOffset = lineHeight * line - offset;
-    
-            double scrollFactor = manager.getScrollFactor();
     
             int off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
             jEditorPane1.getEditorPane().setCaretPosition(off1);
     
             JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
             JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
-    
+
             leftScrollBar.setValue(lineOffset);
-            rightScrollBar.setValue((int) (lineOffset / scrollFactor));
-            
+            rightScrollBar.setValue(lineOffset);
+
             updateCurrentDifference();
         } catch (IndexOutOfBoundsException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -573,7 +592,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private int computeCurrentDifference() {
-        if (manager == null) return 0;
+        // jViewport == null iff initialization failed
+        if (manager == null || jViewport2 == null) return 0;
         Rectangle viewRect = jViewport2.getViewRect();
         int bottom = viewRect.y + viewRect.height * 4 / 5;
         DiffViewManager.DecoratedDifference [] ddiffs = manager.getDecorations();
@@ -837,7 +857,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setSource2(StreamSource ss) throws IOException {
-        secondSourceAvailable = false;         
+        secondSourceAvailable = false;
         EditorKit kit = jEditorPane2.getEditorPane().getEditorKit();
         if (kit == null) throw new IOException("Missing Editor Kit"); // NOI18N
         

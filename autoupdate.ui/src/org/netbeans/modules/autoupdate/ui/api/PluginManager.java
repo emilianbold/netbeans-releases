@@ -39,27 +39,13 @@
 
 package org.netbeans.modules.autoupdate.ui.api;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
-import org.netbeans.modules.autoupdate.ui.actions.FlashingIcon;
 import org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,94 +74,5 @@ public final class PluginManager {
         OperationInfo<InstallSupport> info = updateContainer.listAll ().get (0);
         OperationType doOperation = info.getUpdateUnit ().getInstalled () == null ? OperationType.INSTALL : OperationType.UPDATE;
         return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, updateContainer));
-    }
-
-    public static JComponent createStatusLineIcon (Icon img, final Runnable onMouseClick) {
-        if (img == null) {
-            throw new IllegalArgumentException ("Icon cannot be null."); // NOI18N
-        }
-        if (onMouseClick == null) {
-            throw new IllegalArgumentException ("Runnable onMouseClick cannot be null."); // NOI18N
-        }
-        toRun = onMouseClick;
-        final JComponent icon = new FlashingIcon (img) {
-            @Override
-            protected void onMouseClick () {
-                onMouseClick.run ();
-            }
-
-            @Override
-            protected void timeout () {}
-        };
-        return icon;
-    }
-
-    public static void setStatusLineIconVisible (final JComponent component, final JComponent message, boolean visible) {
-        if (component == null) {
-            throw new IllegalArgumentException ("Icon cannot be null."); // NOI18N
-        }
-        FlashingIcon flasher = null;
-        if (component instanceof FlashingIcon) {
-            flasher = (FlashingIcon) component;
-        } else if (component instanceof Container) {
-            for (Component c : ((Container) component).getComponents ()) {
-                if (c instanceof FlashingIcon) {
-                    flasher = (FlashingIcon) c;
-                    break;
-                }
-            }
-        }
-        if (flasher == null) {
-            throw new IllegalArgumentException ("Component must be instanceof FlashingIcon or a container of any FlashingIcon."); // NOI18N
-        }
-        if (visible) {
-            flasher.startFlashing ();
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    BalloonManager.show (component, message, new AbstractAction () {
-                        public void actionPerformed (ActionEvent e) {
-                            if (toRun != null) {
-                                toRun.run ();
-                            }
-                        }
-                    }, 30000);
-                }
-            });
-            flasher.addMouseListener( new MouseAdapter() {
-                    RequestProcessor.Task t = null;
-                    private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
-
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        t = RP.post (new Runnable () {
-                            public void run () {
-                                BalloonManager.show (component, message, new AbstractAction () {
-                                    public void actionPerformed (ActionEvent e) {
-                                        if (toRun != null) {
-                                            toRun.run ();
-                                        }
-                                    }
-                                }, 30000);
-                            }
-                        }, ToolTipManager.sharedInstance ().getInitialDelay ());
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent e) {
-                        if( null != t ) {
-                            t.cancel ();
-                            t = null;
-                            BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
-                        }
-                    }
-            });
-        } else {
-            for (MouseListener l : flasher.getMouseListeners ()) {
-                flasher.removeMouseListener (l);
-            }
-            flasher.disappear ();
-            BalloonManager.dismiss ();
-        }
-
     }
 }

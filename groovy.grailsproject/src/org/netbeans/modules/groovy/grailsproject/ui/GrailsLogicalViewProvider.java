@@ -142,7 +142,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_UPGRADE,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Upgrade_Name"), null));
             actions.add(null);
-            actions.add(new GrailsCommandAction(project));
+            actions.add(SystemAction.get(GrailsCommandAction.class));
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
             actions.add(new ManagePluginsAction(project));

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 
 /**

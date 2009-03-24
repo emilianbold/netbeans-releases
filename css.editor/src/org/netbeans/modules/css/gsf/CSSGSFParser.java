@@ -38,145 +38,143 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTree;
-import org.netbeans.modules.css.parser.CssParserResultHolder;
-import java.io.IOException;
+import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.parser.ASCII_CharStream;
 import java.io.StringReader;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.css.parser.CssParserAccess;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.css.parser.CSSParser;
+import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.parser.TokenMgrError;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Marek Fukala
  */
-public class CSSGSFParser implements Parser, PositionManager {
+public class CSSGSFParser extends Parser {
 
-    /** logger for timers/counters */
-    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
-    private static String asString(CharSequence sequence) {
-        if (sequence instanceof String) {
-            return (String) sequence;
-        } else {
-            return sequence.toString();
-        }
-    }
+    private final CSSParser PARSER = new CSSParser();
+    private CssParserResult lastResult = null;
 
-    public void parseFiles(Job job) {
-        List<ParserFile> files = job.files;
+    //string which is substituted instead of any 
+    //templating language in case of css embedding
+    public static final String GENERATED_CODE = "@@@"; //NOI18N
+    private static final String ERROR_MESSAGE_PREFIX = NbBundle.getMessage(CSSGSFParser.class, "unexpected_symbols");
 
-        for (ParserFile file : files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            job.listener.started(beginEvent);
-
-            CSSParserResult result = null;
-
-            try {
-                CssParserAccess.CssParserResult css_result = null;
-                
-                //test if the translated source is up-to-date and if so 
-                //use cached parser result created during sanitization of the source
-                if (job.translatedSource instanceof CssParserResultHolder) {
-                    css_result = ((CssParserResultHolder) job.translatedSource).result();
-                }
-                
-                if(css_result == null) {
-                    CharSequence buffer = job.reader.read(file);
-                    String source = asString(buffer);
-
-                    CssParserAccess parserAccess = CssParserAccess.getDefault();
-                    css_result = parserAccess.parse(new StringReader(source));
-                }
-
-                result = new CSSParserResult(this, file, css_result.root());
-
-//                debugParserResult(result);
-                
-                for (Error error : css_result.errors(file)) {
-                    job.listener.error(error);
-                }
-
-                SimpleNode root = css_result.root();
-                //test if the parsing succeeded
-                if(root != null) {
-                    //do some semantic checking of the parse tree
-                    List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(root);
-                    for (Error err : semanticErrors) {
-                        job.listener.error(err);
-                    }
-                }
-
-            } catch (IOException ioe) {
-                job.listener.exception(ioe);
-                result = new CSSParserResult(this, file, null);
-            }
-
-            if (TIMERS.isLoggable(Level.FINE)) {
-                LogRecord rec = new LogRecord(Level.FINE, "CSS parse result"); // NOI18N
-                rec.setParameters(new Object[] { result });
-                TIMERS.log(rec);
-            }
-
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            job.listener.finished(doneEvent);
-        }
-    }
-
-    public PositionManager getPositionManager() {
-        return this;
-    }
-
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-        if (object instanceof CssAstElement) {
-            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-            final TranslatedSource source = presult.getTranslatedSource();
-            CssAstElement handle = (CssAstElement) object;
-            return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source), 
-                    AstUtils.documentPosition(handle.node().endOffset(), source));
-        } else {
-            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
-                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
-        }
-    }
-    
-    private static JFrame debugFrame = null;
-    private static JPanel debugPanel = null;
-
-    private void debugParserResult(ParserResult result) {
-        if (debugFrame == null) {
-            debugFrame = new JFrame("css ast view"); //NOI18N
-            debugPanel = new JPanel(new BorderLayout());
-            debugPanel.setPreferredSize(new Dimension(400, 800));
-            debugFrame.setContentPane(debugPanel);
-            debugFrame.setVisible(true);
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) {
+        List<ParseException> parseExceptions = new ArrayList<ParseException>(1);
+        SimpleNode root = null;
+        try {
+            PARSER.errors().clear();
+            PARSER.ReInit(new ASCII_CharStream(new StringReader(snapshot.getText().toString())));
+            root = PARSER.styleSheet();
+            parseExceptions = PARSER.errors();
+        } catch (ParseException pe) {
+            parseExceptions.add(pe);
+        } catch (TokenMgrError tme) {
+            parseExceptions.add(new ParseException(tme.getMessage()));
         }
 
-        JTree tree = new JTree(result.getAst());
-        debugPanel.removeAll();
-        debugPanel.add(tree, BorderLayout.CENTER);
-        for (int i = 0; i < tree.getRowCount(); i++) {
-            tree.expandRow(i);
-        }
-        debugFrame.pack();
+        List<Error> errors = new ArrayList<Error>();
+        errors.addAll(errors(parseExceptions, snapshot.getSource().getFileObject())); //parser errors
+        errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
+        this.lastResult = new CssParserResult(this, snapshot, root, errors);
     }
-    
+
+        @Override
+    public Result getResult(Task task) {
+        return lastResult;
+    }
+
+    @Override
+    public void cancel() {
+        //xxx do we need this? can we do that?
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        //no-op, no state changes supported
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        //no-op, no state changes supported
+    }
+
+    public List<Error> errors(List<ParseException> parseExceptions, FileObject fo) {
+        List<Error> errors = new ArrayList<Error>(parseExceptions.size());
+        for (ParseException pe : parseExceptions) {
+            Error e = createError(pe, fo);
+            if (e != null) {
+                errors.add(e);
+            }
+        }
+        return errors;
+    }
+
+    public static  boolean containsGeneratedCode(CharSequence text) {
+        return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
+    }
+
+    private Error createError(ParseException pe, FileObject fo) {
+        Token lastSuccessToken = pe.currentToken;
+        if (lastSuccessToken == null) {
+            //The pe was created in response to a TokenManagerError
+            return new DefaultError(pe.getMessage(), pe.getMessage(), null, fo,
+                    0, 0, Severity.ERROR);
+        }
+        Token errorToken = lastSuccessToken.next;
+        int from = errorToken.offset;
+
+        if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
+            String errorMessage = buildErrorMessage(pe);
+            return new DefaultError(errorMessage, errorMessage, null, fo,
+                    from, from, Severity.ERROR);
+        }
+        return null;
+    }
+
+    private String buildErrorMessage(ParseException pe) {
+        StringBuilder buff = new StringBuilder();
+        buff.append(ERROR_MESSAGE_PREFIX);
+
+        int maxSize = 0;
+        for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
+            if (maxSize < pe.expectedTokenSequences[i].length) {
+                maxSize = pe.expectedTokenSequences[i].length;
+            }
+        }
+
+        Token tok = pe.currentToken.next;
+        buff.append('"');
+        for (int i = 0; i < maxSize; i++) {
+            buff.append(tok.image);
+            if (i < maxSize - 1) {
+                buff.append(',');
+                buff.append(' ');
+            }
+            tok = tok.next;
+        }
+        buff.append('"');
+
+        return buff.toString();
+    }
+
 }

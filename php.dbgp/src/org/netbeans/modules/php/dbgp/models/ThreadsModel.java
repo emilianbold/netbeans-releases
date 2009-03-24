@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.dbgp.models;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.swing.Action;
@@ -52,7 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.ConversionUtils;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -177,7 +176,8 @@ public class ThreadsModel extends ViewModelSupport
             if ( id == null ){
                 return 0;
             }
-            return StartActionProviderImpl.getInstance().getSessions(id).size();
+            SessionManager sessionManager = SessionManager.getInstance();
+            return sessionManager.findSessionsById(id).size();
         }
         throw new UnknownTypeException(node);
     }
@@ -249,12 +249,9 @@ public class ThreadsModel extends ViewModelSupport
                 return;
             }
             DebugSession current = 
-                StartActionProviderImpl.getInstance().getCurrentSession(id);
+                SessionManager.getInstance().getCurrentSession(id);
             
             if (! session.equals( current)) {
-                Session sess = getSession();
-                StartActionProviderImpl.getInstance().setCurrentSession(
-                        sess, session );
                 StatusCommand command = new StatusCommand( 
                         session.getTransactionId() );
                 session.sendCommandLater(command);
@@ -360,7 +357,7 @@ public class ThreadsModel extends ViewModelSupport
     private boolean isCurrent( DebugSession session ){
         SessionId id = getSessionId();
         DebugSession current = 
-            StartActionProviderImpl.getInstance().getCurrentSession(id);
+            SessionManager.getInstance().getCurrentSession(id);
         return session.equals( current );
     }
     

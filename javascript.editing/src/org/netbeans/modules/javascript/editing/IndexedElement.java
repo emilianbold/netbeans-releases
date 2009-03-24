@@ -39,24 +39,26 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
-import java.io.IOException;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
 
@@ -68,14 +70,15 @@ import org.openide.util.Exceptions;
  */
 public abstract class IndexedElement extends JsElement {
 
+    private static final Logger LOG = Logger.getLogger(IndexedElement.class.getName());
+    
     protected ElementKind kind;
     protected String fqn;
     protected String name;
     protected String in;
     protected JsIndex index;
-    protected String fileUrl;
+    protected IndexResult indexResult;
     protected Document document;
-    protected FileObject fileObject;
     protected int flags;
     protected String attributes;
     protected EnumSet<BrowserVersion> compatibility;
@@ -83,38 +86,38 @@ public abstract class IndexedElement extends JsElement {
     protected boolean smart;
     protected boolean inherited = true;
 
-    IndexedElement(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+    IndexedElement(String fqn, String name, String in, JsIndex index, IndexResult indexResult, String attributes, int flags, ElementKind kind) {
         this.fqn = fqn;
         this.name = name;
         this.in = in;
         this.index = index;
-        this.fileUrl = fileUrl;
+        this.indexResult = indexResult;
         this.attributes = attributes;
         this.flags = flags;
         this.kind = kind;
     }
 
-    static IndexedElement create(String attributes, String fileUrl, String fqn, String name, String in, int attrIndex, JsIndex index, boolean createPackage) {
+    static IndexedElement create(String attributes, String fqn, String name, String in, int attrIndex, JsIndex index, IndexResult indexResult, boolean createPackage) {
         int flags = IndexedElement.decode(attributes, attrIndex, 0);
         if (createPackage) {
-            IndexedPackage func = new IndexedPackage(fqn, name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
+            IndexedPackage func = new IndexedPackage(fqn, name, in, index, indexResult, attributes, flags, ElementKind.PACKAGE);
             return func;
         }
         if ((flags & FUNCTION) != 0) {
             ElementKind kind =((flags & CONSTRUCTOR) != 0) ? ElementKind.CONSTRUCTOR : ElementKind.METHOD;
-            IndexedFunction func = new IndexedFunction(fqn, name, in, index, fileUrl, attributes, flags, kind);
+            IndexedFunction func = new IndexedFunction(fqn, name, in, index, indexResult, attributes, flags, kind);
             return func;
         } else if ((flags & GLOBAL) != 0) {
             ElementKind kind = Character.isUpperCase(name.charAt(0)) ? ElementKind.CLASS : ElementKind.GLOBAL;
-            IndexedProperty property = new IndexedProperty(fqn, name, in, index, fileUrl, attributes, flags, kind);
+            IndexedProperty property = new IndexedProperty(fqn, name, in, index, indexResult, attributes, flags, kind);
             return property;
         } else {
-            IndexedProperty property = new IndexedProperty(fqn, name, in, index, fileUrl, attributes, flags, ElementKind.PROPERTY);
+            IndexedProperty property = new IndexedProperty(fqn, name, in, index, indexResult, attributes, flags, ElementKind.PROPERTY);
             return property;
         }
     }
 
-    static IndexedElement create(String name, String signature, String fileUrl, JsIndex index, boolean createPackage) {
+    static IndexedElement create(String name, String signature, JsIndex index, IndexResult indexResult, boolean createPackage) {
         String elementName = null;
         int nameEndIdx = signature.indexOf(';');
         assert nameEndIdx != -1;
@@ -144,12 +147,12 @@ public abstract class IndexedElement extends JsElement {
             int nextDot = elementName.indexOf('.', name.length());
             if (nextDot != -1) {
                 String pkg = elementName.substring(0, nextDot);
-                IndexedPackage element = new IndexedPackage(null, pkg, fqn, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
+                IndexedPackage element = new IndexedPackage(null, pkg, fqn, index, indexResult, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
                 return element;
             }
         }
         
-        IndexedElement element = IndexedElement.create(signature, fileUrl, fqn, elementName, funcIn, inEndIdx, index, createPackage);
+        IndexedElement element = IndexedElement.create(signature, fqn, elementName, funcIn, inEndIdx, index, indexResult, createPackage);
         
         return element;
     }
@@ -169,7 +172,7 @@ public abstract class IndexedElement extends JsElement {
         return signature;
     }
     
-    public JsIndex getIndex() {
+    private JsIndex getIndex() {
         return index;
     }
 
@@ -216,51 +219,30 @@ public abstract class IndexedElement extends JsElement {
         return Collections.emptySet();
     }
 
-    public String getFilenameUrl() {
-        return fileUrl;
+    protected final String getFilenameUrl() {
+        try {
+            return indexResult.getFile().getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+            LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
     }
 
     public Document getDocument() {
         if (document == null) {
             FileObject fo = getFileObject();
 
-            if (fo == null) {
-                return null;
+            if (fo != null) {
+                document = GsfUtilities.getDocument(fo, true);
             }
-
-            document = GsfUtilities.getDocument(fileObject, true);
         }
 
         return document;
     }
 
-    public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
-    }
-
     @Override
     public FileObject getFileObject() {
-        if ((fileObject == null) && (fileUrl != null)) {
-            fileObject = JsIndex.getFileObject(fileUrl);
-
-            if (fileObject == null) {
-                // Don't try again
-                fileUrl = null;
-            }
-//
-//            // Prefer sdoc files for doc-only items
-//            if (isDocOnly() && !fileUrl.endsWith(".sdoc")) { // NOI18N
-//                // This is probably a builtin library reference; correct the URL
-//                FileObject fo = JsIndexer.findScriptDocFor(fileUrl, fileObject);
-//                if (fo != null) {
-//                    fileObject = fo;
-//                }
-//            }
-        }
-
-        return fileObject;
+        return indexResult.getFile();
     }
 
     protected int getAttributeSection(int section) {
@@ -306,7 +288,8 @@ public abstract class IndexedElement extends JsElement {
                 }
                 if (docOffset < doc.getLength()) {
                     //return LexUtilities.gatherDocumentation(null, doc, docOffset);
-                    OffsetRange range = LexUtilities.getCommentBlock(doc, docOffset, false);
+                    Source docSource = Source.create(doc);
+                    OffsetRange range = LexUtilities.getCommentBlock(docSource.createSnapshot(), docOffset, false);
                     if (range != OffsetRange.NONE) {
                         String comment = doc.getText(range.getStart(), range.getLength());
                         String[] lines = comment.split("\n");
@@ -398,7 +381,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT, null);
             for (IndexedElement e : elements) {
                 if (e.isDocumented()) {
                     return e;
@@ -417,7 +400,7 @@ public abstract class IndexedElement extends JsElement {
                 queryName = queryType;
                 queryType = null;
             }
-            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, QuerySupport.Kind.EXACT, null);
             for (IndexedElement e : elements) {
                 if (!e.isDocOnly()) {
                     return e;

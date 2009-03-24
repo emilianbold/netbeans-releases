@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -70,6 +72,67 @@ import org.openide.util.Parameters;
  * @author Jan Pokorsky
  */
 public final class SourceUtilsEx {
+
+    /**
+     * Returns a source file in which the passed element
+     * is declared in. This tuned up version of {@code SourceUtils.getFile}
+     * is necessary as sequential invocations of {@code SourceUtils.getFile} are
+     * excessively slow.
+     *
+     * @param element an element to find {@link FileObject} for
+     * @param cpInfo scope where the file will be searched
+     * @param cache a cache
+     * @return the source file
+     * @see SourceUtils#getFile(org.netbeans.api.java.source.ElementHandle, org.netbeans.api.java.source.ClasspathInfo) SourceUtils.getFile
+     */
+    public static FileObject getFile(final Element element, final ClasspathInfo cpInfo, final Cache cache) {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("cpInfo", cpInfo);   //NOI18N
+        Parameters.notNull("cache", cache);   //NOI18N
+
+        Element current = element;
+        Element prev = current.getKind() == ElementKind.PACKAGE ? current : null;
+        while (current.getKind() != ElementKind.PACKAGE) {
+            prev = current;
+            current = current.getEnclosingElement();
+        }
+        if (prev == null) {
+            return null;
+        }
+
+        final ElementKind kind = prev.getKind();
+        String fqn;
+        if (kind.isClass() || kind.isInterface()) {
+            fqn = ((TypeElement) prev).getQualifiedName().toString();
+        } else if (kind == ElementKind.PACKAGE) {
+            fqn = ((PackageElement) prev).getQualifiedName().toString();
+        } else {
+            return null;
+        }
+
+        Object cached = cache.cacheOfSrcFiles.get(fqn);
+        if (cached == null) {
+            final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
+            cached = SourceUtils.getFile(handle, cpInfo);
+            cache.cacheOfSrcFiles.put(fqn, cached != null ? cached : Cache.NULL);
+        } else if (cached == Cache.NULL) {
+            cached = null;
+        }
+        return (FileObject) cached;
+    }
+
+    /**
+     * Cached environment that helps to speed up
+     * {@link Element} to {@link FileObject} translations.
+     */
+    public static final class Cache {
+
+        private static final Object NULL = new Object();
+        /**
+         * mapping of top level classes FQN to their source files
+         */
+        private final Map<String, Object> cacheOfSrcFiles = new HashMap<String, Object>();
+    }
 
     /**
      * Returns a collection of source files in which the passed handles

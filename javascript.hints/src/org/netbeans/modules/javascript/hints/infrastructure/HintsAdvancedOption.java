@@ -24,8 +24,7 @@ made subject to such option by the copyright holder.
 
 package org.netbeans.modules.javascript.hints.infrastructure;
 
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -49,8 +48,13 @@ public class HintsAdvancedOption extends AdvancedOption {
 
     public synchronized OptionsPanelController create() {
         if ( panelController == null ) {
-            HintsManager manager = HintsProvider.Factory.getManager(JsTokenId.JAVASCRIPT_MIME_TYPE);
-            assert manager != null;
+            HintsManager manager = HintsManager.getManagerForMimeType (JsTokenId.JAVASCRIPT_MIME_TYPE);
+
+            //looks like ergonomics IDE can cause the manager or the language is not found
+            if(manager == null) {
+                return null;
+            }
+
             panelController = manager.getOptionsController();
         }
         

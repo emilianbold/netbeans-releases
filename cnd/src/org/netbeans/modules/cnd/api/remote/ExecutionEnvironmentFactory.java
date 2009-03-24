@@ -49,7 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * 1) share a single local execurion environment
  * 2) probably remote executione environments as well
  * 3) during transitional period,
- * transform string hkey (user@host) to ExecutionEnvironment
+ * transform the user@host string to ExecutionEnvironment
  *
  * I guess the (3) will die some time
  * and the class will be moved to

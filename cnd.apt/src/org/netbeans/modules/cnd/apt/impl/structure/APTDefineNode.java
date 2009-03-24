@@ -126,6 +126,12 @@ public final class APTDefineNode extends APTMacroBaseNode
     public boolean accept(APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
+            if (bodyTokens != null){
+                ((ArrayList)bodyTokens).trimToSize();
+            }
+            if (params != null){
+                ((ArrayList)params).trimToSize();
+            }
             return false;
         } else {
             switch (state) {
@@ -237,7 +243,7 @@ public final class APTDefineNode extends APTMacroBaseNode
             return false;
         }
         for (APTToken param : params) {
-            if (param.getText().equals(id.getText())) {
+            if (param.getTextID().equals(id.getTextID())) {
                 return true;
             }
         }

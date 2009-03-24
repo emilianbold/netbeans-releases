@@ -39,17 +39,15 @@
 
 package org.netbeans.modules.profiler.oql.language.ui;
 
-import java.io.IOException;
 import javax.swing.JEditorPane;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.profiler.oql.language.OQLTokenId;
 import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,33 +56,41 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=OQLEditorImpl.class)
 public class OQLEditor extends OQLEditorImpl{
-    private JEditorPane newPane() {
-        JEditorPane editorPane;
+    volatile boolean validFlag = false;
+
+    final private TokenHierarchyListener thl = new TokenHierarchyListener() {
+
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            TokenSequence ts = evt.tokenHierarchy().tokenSequence();
+            boolean oldValidity = validFlag;
+            if (ts.tokenCount() == 0) {
+                validFlag = false;
+                pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+                return;
+            }
+            while (ts.moveNext()) {
+                if (ts.token().id() == OQLTokenId.ERROR) {
+                    validFlag = false;
+                    pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+                    return;
+                }
+            }
+            validFlag = true;
+            pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+        }
+    };
+
+    private JEditorPane createEditor() {
         String mimeType = "text/x-oql"; // NOI18N
-        editorPane = new JEditorPane();
+        JEditorPane editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        try {
-            //NOI18N
-            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql"); // NOI18N
-            DataObject dobj = DataObject.find(fo);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            Document doc = ec.openDocument();
-            doc.putProperty(EditorCookie.class, ec);
-            doc.putProperty(JEditorPane.class, editorPane);
-            editorPane.setDocument(doc);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        editorPane.setOpaque(false);
-
+        TokenHierarchy th = TokenHierarchy.get(editorPane.getDocument());
+        th.addTokenHierarchyListener(thl);
         return editorPane;
     }
 
-    public JEditorPane getEditorPane() {
-        return newPane();
+    synchronized public JEditorPane getEditorPane() {
+        return createEditor();
     }
 }

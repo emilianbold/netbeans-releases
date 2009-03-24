@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
         </pathconvert>
 
+        <property name="enabled.clusters" value=""/>
         <selector id="old.project.included.files">
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                 <param name="excludeModules" value="${disabled.modules}"/>

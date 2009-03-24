@@ -55,7 +55,7 @@ NAMESPACE DEFINITOIN iz143977_1 [2:1/21-40:2/1332] SCOPE: iz143977_1.cc
                     id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
                      [24:47/763-24:52/768]  TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Parm1  [24:47/763-24:52/768]  INIT: null  SCOPE: CreateObject 
                 RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::AP TEXT=AP*  [24:17/733-24:20/736]
-    CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class>> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
+    CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class> class FactoryErrorPolicy=DefaultFactoryError> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'
         MEMBERS:
@@ -112,7 +112,7 @@ NAMESPACE iz143977_1 (iz143977_1)
                     id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
                      [24:47/763-24:52/768]  TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Parm1  [24:47/763-24:52/768]  INIT: null  SCOPE: CreateObject 
                 RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::AP TEXT=AP*  [24:17/733-24:20/736]
-    CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class>> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
+    CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class> class FactoryErrorPolicy=DefaultFactoryError> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'
         MEMBERS:

@@ -91,9 +91,16 @@ public interface GlassfishModule {
     public static final String JRUBY_CONTAINER = "jruby"; // NOI18N
 
     // Resource types
+    public static final String JDBC = "JDBC"; // NOI18N
     public static final String JDBC_RESOURCE = "jdbc-resource"; // NOI18N
     public static final String JDBC_CONNECTION_POOL = "jdbc-connection-pool"; // NOI18N
     public static final String SESSION_PRESERVATION_FLAG = "preserveSessionsOn";
+
+    public static final String CONNECTORS = "CONNECTORS"; // NOI18N
+    public static final String CONN_RESOURCE = "connector-resource"; // NOI18N
+    public static final String CONN_CONNECTION_POOL = "connector-connection-pool"; // NOI18N
+    public static final String ADMINOBJECT_RESOURCE = "admin-object"; // NOI18N
+    
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -280,6 +287,13 @@ public interface GlassfishModule {
      */
     public AppDesc [] getModuleList(String container);
     
+    /**
+     * Map of the resources of specified type currently deployed on the server.
+     *
+     * @return map of resources current deployed.
+     */
+    public Map<String, ResourceDesc> getResourcesMap(String type);
+
     /**
      * Returns the current server state (stopped, running, etc.)
      * 

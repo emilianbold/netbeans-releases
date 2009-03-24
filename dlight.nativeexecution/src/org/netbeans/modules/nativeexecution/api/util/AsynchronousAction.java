@@ -55,5 +55,5 @@ public interface AsynchronousAction extends Action {
     /**
      * Synchronous action invocation.
      */
-    public void invoke();
+    public void invoke() throws Exception;
 }

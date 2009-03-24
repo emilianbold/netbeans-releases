@@ -154,7 +154,7 @@ public final class APTMacroImpl implements APTMacro {
         if (retValue == 0) {
             // init hash
             retValue = 31*retValue + macroType.ordinal();
-            retValue = 31*retValue + getName().getText().hashCode();
+            retValue = 31*retValue + getName().getTextID().hashCode();
             retValue = 31*retValue + (file == null ? 0 : file.hashCode());
             // TODO: probably we don't need params and body becuase file is the same and name is positions based
             retValue = 31*retValue + Arrays.hashCode(paramsArray);

@@ -142,9 +142,10 @@ final class RootNode extends AbstractNode {
 
         /* Called from the EventDispatch thread */
 
-        updateStatistics(report);
+        TestsuiteNode suiteNode = children.displayReport(report);
+        updateStatistics();
         updateDisplayName();
-        return children.displayReport(report);
+        return suiteNode;
     }
 
     /**
@@ -154,22 +155,28 @@ final class RootNode extends AbstractNode {
 
         /* Called from the EventDispatch thread */
 
-        for (Report report : reports) {
-            updateStatistics(report);
-        }
-        updateDisplayName();
         children.displayReports(reports);
+        updateStatistics();
+        updateDisplayName();
     }
 
     /**
      */
-    private void updateStatistics(final Report report) {
-        totalTests += report.getTotalTests();
-        failures += report.getFailures();
-        errors += report.getErrors();
-        pending += report.getPending();
-        detectedPassedTests += report.getDetectedPassedTests();
-        elapsedTimeMillis += report.getElapsedTimeMillis();
+    private synchronized void updateStatistics() {
+        totalTests = 0;
+        failures = 0;
+        errors = 0;
+        pending = 0;
+        detectedPassedTests = 0;
+        elapsedTimeMillis = 0;
+        for(Report rep: children.getReports()){
+            totalTests += rep.getTotalTests();
+            failures += rep.getFailures();
+            errors += rep.getErrors();
+            pending += rep.getPending();
+            detectedPassedTests += rep.getDetectedPassedTests();
+            elapsedTimeMillis += rep.getElapsedTimeMillis();
+        }
     }
 
     float getPassedPercentage() {

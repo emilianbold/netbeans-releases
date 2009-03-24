@@ -156,7 +156,8 @@ public class RubyCoverageProviderTest extends RubyTestBase {
             fail();
         }
 
-        CodeCoverageTestHelper.checkCoverage(this, projectPath, exeFile);
+//        CodeCoverageTestHelper.checkCoverage(this, projectPath, exeFile);
+        fail("Codecoverage has to be rewritten for CSL/ParsingAPI");
     }
 
 //    private void checkCoverageWithRake(String projectPath, String target, String exeFile) throws Exception {

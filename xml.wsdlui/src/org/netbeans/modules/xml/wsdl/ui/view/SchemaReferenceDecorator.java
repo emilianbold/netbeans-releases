@@ -91,7 +91,6 @@ public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
             
             //For wsdl, imported schema's should have a namespace.
             if (model instanceof SchemaModel) {
-                
                 String tns = ((SchemaModel) model).getSchema().getTargetNamespace();
                 if (tns == null) {
                     return NbBundle.getMessage(SchemaReferenceDecorator.class,

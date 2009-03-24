@@ -1,4 +1,4 @@
-<Program start='0' end='93'>
+<Program start='0' end='92'>
     <Comments>
     </Comments>
     <Statements>
@@ -46,6 +46,6 @@
                 </IfStatement>
             </Block>
         </FunctionDeclaration>
-        <EmptyStatement start='90' end='93'/>
+        <EmptyStatement start='90' end='92'/>
     </Statements>
 </Program>

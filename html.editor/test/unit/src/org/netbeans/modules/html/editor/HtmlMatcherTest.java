@@ -27,21 +27,13 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -61,34 +53,35 @@ public class HtmlMatcherTest extends TestBase {
         super(name);
     }
 
-    @Override
-    public void setUp() {
-        try {
-            super.setUp();
+//    @Override
+//    public void setUp() {
+//        try {
+//            super.setUp();
+//
+//            FileSystem memFS = FileUtil.createMemoryFileSystem();
+//            FileObject fo = memFS.getRoot().createData("test", "html");
+//            assertNotNull(fo);
+//
+//            DataObject dobj = DataObject.find(fo);
+//            assertNotNull(dobj);
+//
+//            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+//            assertNotNull(cookie);
+//
+//            document = cookie.openDocument();
+//            assertEquals(0, document.getLength());
+//
+//            LanguageRegistry registry = LanguageRegistry.getInstance();
+//            Language l = registry.getLanguageByMimeType("text/html");
+//            assertNotNull(l);
+//        } catch (Exception ex) {
+//            throw new IllegalStateException("Error setting up tests", ex);
+//        }
+//
+//    }
 
-            FileSystem memFS = FileUtil.createMemoryFileSystem();
-            FileObject fo = memFS.getRoot().createData("test", "html");
-            assertNotNull(fo);
-
-            DataObject dobj = DataObject.find(fo);
-            assertNotNull(dobj);
-
-            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-            assertNotNull(cookie);
-
-            document = cookie.openDocument();
-            assertEquals(0, document.getLength());
-
-            LanguageRegistry registry = LanguageRegistry.getInstance();
-            Language l = registry.getLanguageByMimeType("text/html");
-            assertNotNull(l);
-        } catch (IOException ex) {
-            throw new IllegalStateException("Error setting up tests", ex);
-        }
-        
-    }
-
-    public void testCreateMatcher() {
+    public void testCreateMatcher() throws BadLocationException {
+        setDocumentText(""); //init document
         createMatcher(0, false, 1);
         createMatcher(0, true, 1);
     }
@@ -206,6 +199,7 @@ public class HtmlMatcherTest extends TestBase {
     }
     
     private void setDocumentText(String text) throws BadLocationException {
+        document = createDocument();        
         document.remove(0, document.getLength());
         document.insertString(0, text, null);
     }

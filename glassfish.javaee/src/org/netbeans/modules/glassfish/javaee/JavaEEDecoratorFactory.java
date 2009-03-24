@@ -87,6 +87,8 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     private static final String JDBC_RESOURCE_ICON = 
             "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
+    private static final String CONN_RESOURCE_ICON =
+            "org/netbeans/modules/glassfish/javaee/resources/connector.gif"; // NOI18N
     
     public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
@@ -112,6 +114,12 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
+
+    public static final Decorator JDBC_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public Image getOpenedIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+    };
     
     public static final Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
@@ -124,12 +132,37 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
         @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
     };
+
+    public static final Decorator CONNECTORS_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONN_RESOURCE_ICON); }
+        @Override public Image getOpenedIcon(int type) { return ImageUtilities.loadImage(CONN_RESOURCE_ICON); }
+    };
     
     public static final Decorator CONNECTION_POOLS = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
         @Override public String getCmdPropertyName() { return "jdbc_connection_pool_id"; }
         @Override public boolean isCascadeDelete() { return true; }
+    };
+
+    public static final Decorator CONN_RESOURCE = new ResourceDecorator() {
+        @Override public boolean canUnregister() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONN_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "connector_resource_name"; }
+    };
+    
+    public static final Decorator CONN_CONNECTION_POOL = new ResourceDecorator() {
+        @Override public boolean canUnregister() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONN_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "poolname"; }
+        @Override public boolean isCascadeDelete() { return true; }
+    };
+
+    public static final Decorator ADMINOBJECT_RESOURCE = new ResourceDecorator() {
+        @Override public boolean canUnregister() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONN_RESOURCE_ICON); }
+        @Override public String getCmdPropertyName() { return "jndi_name"; }
     };
 
     private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
@@ -142,6 +175,11 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         decoratorMap.put("ear_ContractProvider", J2EE_APPLICATION);
         decoratorMap.put(GlassfishModule.JDBC_RESOURCE, JDBC_MANAGED_DATASOURCES);
         decoratorMap.put(GlassfishModule.JDBC_CONNECTION_POOL, CONNECTION_POOLS);
+        decoratorMap.put(GlassfishModule.JDBC, JDBC_FOLDER);
+        decoratorMap.put(GlassfishModule.CONNECTORS, CONNECTORS_FOLDER);
+        decoratorMap.put(GlassfishModule.CONN_RESOURCE, CONN_RESOURCE);
+        decoratorMap.put(GlassfishModule.CONN_CONNECTION_POOL, CONN_CONNECTION_POOL);
+        decoratorMap.put(GlassfishModule.ADMINOBJECT_RESOURCE, ADMINOBJECT_RESOURCE);
     };
     
 }

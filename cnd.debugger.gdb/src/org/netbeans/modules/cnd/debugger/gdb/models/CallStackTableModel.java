@@ -56,10 +56,14 @@ public class CallStackTableModel implements TableModel, Constants {
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
         if (row instanceof CallStackFrame) {
             if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                String loc = ((CallStackFrame) row).getFullname();
-                loc += ":"; // NOI18N
-                loc += ((CallStackFrame) row).getLineNumber();
-		return loc;
+                CallStackFrame csf = (CallStackFrame) row;
+                if (csf.getFullname() != null) {
+                    return csf.getFullname() + ":" + csf.getLineNumber(); // NOI18N
+                } else if (csf.getFrom() != null) {
+                    return csf.getFrom();
+                } else {
+                    return "";
+                }
             }
         }
         throw new UnknownTypeException(row);

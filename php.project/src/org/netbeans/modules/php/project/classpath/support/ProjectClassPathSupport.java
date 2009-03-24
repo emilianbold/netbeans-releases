@@ -41,7 +41,7 @@
 package org.netbeans.modules.php.project.classpath.support;
 
 import java.io.File;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 // copied from java.project

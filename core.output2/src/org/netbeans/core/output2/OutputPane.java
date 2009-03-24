@@ -55,10 +55,17 @@ import org.openide.util.NbPreferences;
 
 
 class OutputPane extends AbstractOutputPane {
+
+    OutputTab parent;
+
+    public OutputPane(OutputTab parent) {
+        this.parent = parent;
+    }
+
     @Override
     protected void documentChanged() {
         super.documentChanged();
-        findOutputTab().documentChanged();
+        findOutputTab().documentChanged(this);
     }
 
     protected void caretEnteredLine(int line) {
@@ -189,7 +196,7 @@ class OutputPane extends AbstractOutputPane {
     }
 
     private OutputTab findOutputTab() {
-        return  (OutputTab) SwingUtilities.getAncestorOfClass (OutputTab.class, this);
+        return parent;
     }
 
     @Override
@@ -259,11 +266,15 @@ class OutputPane extends AbstractOutputPane {
             return NbPreferences.forModule(OutputPane.class).getBoolean("wrap", false); //NOI18N
         }
     }
-    
-    private static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+
     protected JEditorPane createTextView() {
-        JEditorPane result = GTK ? new GEP() : new JEditorPane();
-        
+        JEditorPane result = new JEditorPane();
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
+            result.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
+            result.setBackground(UIManager.getColor("text")); //NOI18N
+        }
+
         // we don't want the background to be gray even though the text there is not editable
         result.setDisabledTextColor(result.getBackground());
         
@@ -334,12 +345,4 @@ class OutputPane extends AbstractOutputPane {
         }
         
     }
-    
-    private static final class GEP extends JEditorPane {
-        @Override
-        public java.awt.Color getBackground() {
-            return UIManager.getColor("text");
-        }
-    }
-
 }

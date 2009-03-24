@@ -70,6 +70,7 @@ import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
@@ -101,6 +102,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
     private javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private transient MultiViewElementCallback multiViewCallback;
     private ExplorerManager manager;
+    private PropertyChangeListener awtPCL = new XAMUtils.AwtPropertyChangeListener(this);
     
     public SchemaABEViewMultiViewElement() {
         super();
@@ -118,27 +120,26 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         String property = evt.getPropertyName();        
         if(!AXIModel.STATE_PROPERTY.equals(property)) {
             return;
-        }        
+        }
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         State newState = (State)evt.getNewValue();
         if(newState == AXIModel.State.VALID) {
             errorMessage = null;
             recreateUI();
             return;
         }
-        
+
         if(errorMessage == null)
             errorMessage = NbBundle.getMessage(
                     SchemaColumnViewMultiViewElement.class,
                     "MSG_InvalidSchema");
-        //fix for IZ:116057
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
-            }
-        });
+
+        setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
         emptyUI(errorMessage);
     }
-    
+
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -484,7 +485,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
             axiModel = AXIModelFactory.getDefault().getModel(sModel);
             if (axiModel != null) {
                 PropertyChangeListener pcl = WeakListeners.
-                        create(PropertyChangeListener.class, this, axiModel);
+                        create(PropertyChangeListener.class, awtPCL, axiModel);
                 axiModel.addPropertyChangeListener(pcl);
             }
         } catch (IOException e) {

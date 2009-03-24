@@ -47,12 +47,12 @@ import org.openide.util.NbBundle;
  */
 public class OpenAsPanel extends javax.swing.JPanel {
 
-    private String extension;
     private FileAssociationsModel model;
     
     /** Creates new OpenAsPanel */
     public OpenAsPanel() {
         initComponents();
+        lblDescription.setText("<html>" + lblDescription.getText() + "</html>");  //NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.AD")); // NOI18N
     }
 
@@ -69,7 +69,6 @@ public class OpenAsPanel extends javax.swing.JPanel {
     }
 
     void setExtension(String extension) {
-        this.extension = extension;
         lblExtension.setText(NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.lblExtension.text", extension)); // NOI18N
         updateList();
     }
@@ -87,24 +86,15 @@ public class OpenAsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtDescription = new javax.swing.JTextPane();
+        jPanel1 = new javax.swing.JPanel();
         lblExtension = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstMimeTypes = new javax.swing.JList();
+        jPanel2 = new javax.swing.JPanel();
+        lblDescription = new javax.swing.JLabel();
 
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setOpaque(false);
-
-        txtDescription.setBorder(null);
-        txtDescription.setEditable(false);
-        txtDescription.setText(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.text")); // NOI18N
-        txtDescription.setOpaque(false);
-        jScrollPane1.setViewportView(txtDescription);
-        txtDescription.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.AN")); // NOI18N
-        txtDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.AD")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(250, 300));
+        setLayout(new java.awt.BorderLayout());
 
         lblExtension.setLabelFor(lstMimeTypes);
         lblExtension.setText("Treat files as:"); // NOI18N
@@ -112,38 +102,57 @@ public class OpenAsPanel extends javax.swing.JPanel {
         lstMimeTypes.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(lstMimeTypes);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblExtension))
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(lblExtension))
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
                 .add(lblExtension)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
         );
+
+        add(jPanel1, java.awt.BorderLayout.CENTER);
+
+        lblDescription.setText(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.lblDescription.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(lblDescription)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(lblDescription)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        add(jPanel2, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblDescription;
     private javax.swing.JLabel lblExtension;
     private javax.swing.JList lstMimeTypes;
-    private javax.swing.JTextPane txtDescription;
     // End of variables declaration//GEN-END:variables
 
 }

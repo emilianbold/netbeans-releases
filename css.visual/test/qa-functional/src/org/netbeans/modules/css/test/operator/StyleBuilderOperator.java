@@ -68,14 +68,12 @@ public class StyleBuilderOperator extends TopComponentOperator{
     private static final String uiBundle = "org.netbeans.modules.css.visual.ui.Bundle";
     private static final String DIALOG_NAME =
             Bundle.getString(uiBundle, "FONT_FAMILY_EDITOR_TITLE");
-    private static final String BUILDER_TITLE =
-            Bundle.getString(uiBundle, "CTL_CSSStyleBuilderTopComponent");
     
     /** CSS StyleBuilderOperator is created.
      *  Builder window must be displayed.
      */
-    public StyleBuilderOperator(){
-        super(waitTopComponent(null, BUILDER_TITLE, 0, new StyleBuilderComponentChooser()));
+    public StyleBuilderOperator(String ruleName){
+        super(waitTopComponent(null, ruleName + " - Style Builder", 0, new StyleBuilderComponentChooser()));
     }
     
     /** This function dislays CSS style builder window and returns operator for it
@@ -83,9 +81,9 @@ public class StyleBuilderOperator extends TopComponentOperator{
      *@return navigator operator
      *
      */
-    public static StyleBuilderOperator invokeBuilder() {
+    public StyleBuilderOperator invokeBuilder() {
         new StyleBuilderAction().perform();
-        return new StyleBuilderOperator();
+        return new StyleBuilderOperator("");
     }
     
     public CSSPaneOperator setPane(Panes panes){
@@ -107,18 +105,16 @@ public class StyleBuilderOperator extends TopComponentOperator{
     }
     
     private static final class StyleBuilderAction extends Action{
-        private static final String StyleBuilderActionName = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
-                + "|Other|" +
-                Bundle.getStringTrimmed(uiBundle, "CTL_CSSStyleBuilderAction");
+        private static final String StyleBuilderActionName = "Window|Other|CSS Style Builder";
         
         public StyleBuilderAction() {
-            super(StyleBuilderActionName, null, "org.netbeans.modules.navigator.StyleBuilderAction");
+            super(StyleBuilderActionName, null);
         }
     }
     
     private static final class StyleBuilderComponentChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
-            return(comp.getClass().getName().equals("org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent"));
+            return(comp.getClass().getName().equals("org.netbeans.modules.css.visual.api.StyleBuilderTopComponent"));
         }
         
         public String getDescription() {

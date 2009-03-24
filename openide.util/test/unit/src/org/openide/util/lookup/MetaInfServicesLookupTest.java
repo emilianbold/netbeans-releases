@@ -56,39 +56,42 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Set;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import junit.framework.Test;
 import org.bar.Comparator2;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 /** Test finding services from manifest.
  * @author Jesse Glick
  */
 public class MetaInfServicesLookupTest extends NbTestCase {
     private Logger LOG;
-    private Map<ClassLoader,Lookup> lookups = new HashMap<ClassLoader,Lookup>();
+    private Map<ClassLoader,Lookup> lookups = new WeakHashMap<ClassLoader,Lookup>();
     
     public MetaInfServicesLookupTest(String name) {
         super(name);
         LOG = Logger.getLogger("Test." + name);
     }
-    
+
     protected String prefix() {
         return "META-INF/services/";
     }
@@ -97,11 +100,13 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         return Lookups.metaInfServices(c);
     }
     
+    @Override
     protected Level logLevel() {
         return Level.INFO;
     }
 
     private Lookup getTestedLookup(ClassLoader c) {
+        MockServices.setServices();
         Lookup l = lookups.get(c);
         if (l == null) {
             l = createLookup(c);
@@ -168,7 +173,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
                 os.write(ch);
             }
             from.close();
-            os.closeEntry();;
+            os.closeEntry();
         }
         os.close();
         LOG.info("done " + jar);
@@ -177,6 +182,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     ClassLoader c1, c2, c2a, c3, c4;
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         ClassLoader app = getClass().getClassLoader().getParent();
@@ -200,6 +206,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }, c0);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         Set<Reference<Lookup>> weak = new HashSet<Reference<Lookup>>();
         for (Lookup l : lookups.values()) {
@@ -217,7 +224,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         Lookup l = getTestedLookup(c2);
         Class xface = c1.loadClass("org.foo.Interface");
         List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
-        assertEquals(2, results.size());
+        assertEquals("Two items in result: " + results, 2, results.size());
         // Note that they have to be in order:
         assertEquals("org.foo.impl.Implementation1", results.get(0).getClass().getName());
         assertEquals("org.bar.Implementation2", results.get(1).getClass().getName());
@@ -288,8 +295,9 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         class Loader extends ClassLoader {
             private int counter;
 
+            @Override
             protected URL findResource(String name) {
-                if (name.equals("META-INF/services/java.lang.Object")) {
+                if (name.equals(prefix() + "java.lang.Object")) {
                     counter++;
                 }
 
@@ -299,8 +307,9 @@ public class MetaInfServicesLookupTest extends NbTestCase {
                 return retValue;
             }
 
+            @Override
             protected Enumeration findResources(String name) throws IOException {
-                if (name.equals("META-INF/services/java.lang.Object")) {
+                if (name.equals(prefix() + "java.lang.Object")) {
                     counter++;
                 }
                 Enumeration retValue;
@@ -315,6 +324,71 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         Object no = l.lookup(String.class);
         assertNull("Not found of course", no);
         assertEquals("No lookup of Object", 0, loader.counter);
+    }
+
+    public void testCanGarbageCollectClasses() throws Exception {
+        class Loader extends ClassLoader {
+            public Loader() {
+                super(Loader.class.getClassLoader().getParent());
+            }
+
+            @Override
+            protected URL findResource(String name) {
+                if (name.equals(prefix() + "java.lang.Runnable")) {
+                    return Loader.class.getResource("MetaInfServicesLookupTestRunnable.txt");
+                }
+
+                URL retValue;
+
+                retValue = super.findResource(name);
+                return retValue;
+            }
+
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                if (name.equals("org.openide.util.lookup.MetaInfServicesLookupTestRunnable")) {
+                    try {
+                        InputStream is = getClass().getResourceAsStream("MetaInfServicesLookupTestRunnable.class");
+                        byte[] arr = new byte[is.available()];
+                        int read = is.read(arr);
+                        assertEquals("Fully read", arr.length, read);
+                        return defineClass(name, arr, 0, arr.length);
+                    } catch (IOException ex) {
+                        throw new ClassNotFoundException("Cannot load", ex);
+                    }
+                }
+                throw new ClassNotFoundException();
+            }
+
+
+
+            @Override
+            protected Enumeration findResources(String name) throws IOException {
+                if (name.equals(prefix() + "java.lang.Runnable")) {
+                    return Enumerations.singleton(findResource(name));
+                }
+                return super.findResources(name);
+            }
+        }
+        Loader loader = new Loader();
+        Lookup l = getTestedLookup(loader);
+
+
+        Object no = l.lookup(Runnable.class);
+        assertNotNull("Found of course", no);
+        assertEquals("The right name", "MetaInfServicesLookupTestRunnable", no.getClass().getSimpleName());
+        if (no.getClass().getClassLoader() != loader) {
+            fail("Wrong classloader: " + no.getClass().getClassLoader());
+        }
+
+        WeakReference<Object> ref = new WeakReference<Object>(no.getClass());
+        loader = null;
+        no = null;
+        l = null;
+        lookups.clear();
+        MockLookup.setInstances();
+        Thread.currentThread().setContextClassLoader(null);
+        assertGC("Class can be garbage collected", ref);
     }
 
     public void testListenersAreNotifiedWithoutHoldingALockIssue36035() throws Exception {
@@ -356,10 +430,10 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     public void testWrongOrderAsInIssue100320() throws Exception {
         ClassLoader app = getClass().getClassLoader().getParent();
         ClassLoader c0 = app;
-        ClassLoader c1 = new URLClassLoader(new URL[] {
+        ClassLoader ctmp = new URLClassLoader(new URL[] {
             findJar("problem100320.jar"),
         }, c0);
-        Lookup lookup = Lookups.metaInfServices(c1, prefix());
+        Lookup lookup = Lookups.metaInfServices(ctmp, prefix());
 
         Collection<?> colAWT = lookup.lookupAll(Component.class);
         assertEquals("There is enough objects to switch to InheritanceTree", 12, colAWT.size());
@@ -367,7 +441,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         
         List<?> col1 = new ArrayList<Object>(lookup.lookupAll(Comparator.class));
         assertEquals("Two", 2, col1.size());
-        Collection<?> col2 = lookup.lookupAll(c1.loadClass(Comparator2.class.getName()));
+        Collection<?> col2 = lookup.lookupAll(ctmp.loadClass(Comparator2.class.getName()));
         assertEquals("One", 1, col2.size());
         List<?> col3 = new ArrayList<Object>(lookup.lookupAll(Comparator.class));
         assertEquals("Two2", 2, col3.size());

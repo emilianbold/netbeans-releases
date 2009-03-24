@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
@@ -81,7 +80,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         public synchronized PathMap getMapper() {
             if (mapper == null) {
-                mapper = RemotePathMap.getPathMap(ExecutionEnvironmentFactory.getHostKey(executionEnvironment));
+                mapper = RemotePathMap.getPathMap(executionEnvironment);
             }
             return mapper;
         }
@@ -104,11 +103,12 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             return envCache;
         }
 
+        //TODO (execution): do we still need this?
         public boolean isCshShell() {
             if (isCshShell == null) {
                 //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "PATH=/bin:/usr/bin export"); // NOI18N
-                support.setPreserveCommand(true); // to avoid endless loop
+//                support.setPreserveCommand(true); // to avoid endless loop
                 isCshShell = Boolean.valueOf(support.run() != 0);
             }
             return isCshShell.booleanValue();

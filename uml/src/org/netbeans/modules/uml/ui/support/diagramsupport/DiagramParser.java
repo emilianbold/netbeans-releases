@@ -143,9 +143,6 @@ public class DiagramParser implements IDiagramParser
                 } 
 
             if (!reader.hasNext() || jumpToEnd) {
-//                    System.out.println("---DiagramParser: DiagInfo = name "+diagInfo.getDiagramName()+"  namespace = "+diagInfo.getDiagramNamespaceXMIID()
-//                            +"  proj id = "+diagInfo.getDiagramProjectXMIID()+" diagType = "+diagInfo.getDiagramTypeName()
-//                            +" diagXMIID = "+diagInfo.getDiagramXMIID()+"  zoom = "+diagInfo.getZoom());
                 break;
             } else {
                 event = reader.next();

@@ -50,6 +50,9 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.PortTypeGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,45 +104,45 @@ public class NewWSDLGenerator {
             Map configurationMap = new HashMap();
             
             //portType
-            String portTypeName = (String) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.PORTTYPE_NAME);
-            String operationName = (String) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.OPERATION_NAME);
-            OperationType ot = (OperationType) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.OPERATION_TYPE);
+            String portTypeName = (String) this.mTemplateWizard.getProperty(WSDLWizardConstants.PORTTYPE_NAME);
+            String operationName = (String) this.mTemplateWizard.getProperty(WSDLWizardConstants.OPERATION_NAME);
+            OperationType ot = (OperationType) this.mTemplateWizard.getProperty(WSDLWizardConstants.OPERATION_TYPE);
             
-            configurationMap.put(WizardPortTypeConfigurationStep.PORTTYPE_NAME, portTypeName);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
+            configurationMap.put(WSDLWizardConstants.PORTTYPE_NAME, portTypeName);
+            configurationMap.put(WSDLWizardConstants.OPERATION_NAME, operationName);
+            configurationMap.put(WSDLWizardConstants.OPERATION_TYPE, ot);
            
             //opertion type
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.OPERATION_INPUT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WSDLWizardConstants.OPERATION_INPUT);
             
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.OPERATION_OUTPUT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WSDLWizardConstants.OPERATION_OUTPUT);
             
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.OPERATION_FAULT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mTemplateWizard.getProperty(WSDLWizardConstants.OPERATION_FAULT);
 
             
-            Map<String, String> namespaceToPrefixMap = (Map<String, String>) mTemplateWizard.getProperty(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+            Map<String, String> namespaceToPrefixMap = (Map<String, String>) mTemplateWizard.getProperty(WSDLWizardConstants.NAMESPACE_TO_PREFIX_MAP);
+            configurationMap.put(WSDLWizardConstants.OPERATION_INPUT, inputMessageParts);
+            configurationMap.put(WSDLWizardConstants.OPERATION_OUTPUT, outputMessageParts);
+            configurationMap.put(WSDLWizardConstants.OPERATION_FAULT, faultMessageParts);
+            configurationMap.put(WSDLWizardConstants.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
             //binding
-            String bindingName = (String) this.mTemplateWizard.getProperty(WizardBindingConfigurationStep.BINDING_NAME);
-            LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mTemplateWizard.getProperty(WizardBindingConfigurationStep.BINDING_TYPE);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+            String bindingName = (String) this.mTemplateWizard.getProperty(WSDLWizardConstants.BINDING_NAME);
+            LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mTemplateWizard.getProperty(WSDLWizardConstants.BINDING_TYPE);
+            configurationMap.put(WSDLWizardConstants.BINDING_NAME, bindingName);
+            configurationMap.put(WSDLWizardConstants.BINDING_TYPE, bindingType);
            
             //this could be null for a binding which does not have a sub type
-            LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mTemplateWizard.getProperty(WizardBindingConfigurationStep.BINDING_SUBTYPE);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+            LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mTemplateWizard.getProperty(WSDLWizardConstants.BINDING_SUBTYPE);
+            configurationMap.put(WSDLWizardConstants.BINDING_SUBTYPE, bindingSubType);
             
             //service and port
-            String serviceName = (String) this.mTemplateWizard.getProperty(WizardBindingConfigurationStep.SERVICE_NAME);
-            String servicePortName = (String) this.mTemplateWizard.getProperty(WizardBindingConfigurationStep.SERVICEPORT_NAME);
-            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+            String serviceName = (String) this.mTemplateWizard.getProperty(WSDLWizardConstants.SERVICE_NAME);
+            String servicePortName = (String) this.mTemplateWizard.getProperty(WSDLWizardConstants.SERVICEPORT_NAME);
+            configurationMap.put(WSDLWizardConstants.SERVICE_NAME, serviceName);
+            configurationMap.put(WSDLWizardConstants.SERVICEPORT_NAME, servicePortName);
             
             mModel.getDefinitions().setName((String) configurationMap.get(WsdlPanel.WSDL_DEFINITION_NAME));
             

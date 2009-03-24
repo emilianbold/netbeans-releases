@@ -40,9 +40,9 @@
  */
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
+import java.awt.Cursor;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.websvc.jaxrpc.actions.JaxRpcWsdlCookie;
 import org.netbeans.modules.websvc.core.webservices.ui.DeleteWsDialog;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.ErrorManager;
@@ -59,7 +59,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.actions.*;
 import org.openide.util.HelpCtx;
 import javax.swing.Action;
-import org.openide.util.Utilities;
 import java.awt.Image;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.websvc.jaxrpc.actions.AddOperationAction;
@@ -467,7 +466,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
                             WebServicesRegistryView registryView = (WebServicesRegistryView)Lookup.getDefault().
                                     lookup(WebServicesRegistryView.class);
                             TopComponent currentComponent = TopComponent.getRegistry().getActivated();
-                            currentComponent.setCursor(org.openide.util.Utilities.createProgressCursor(currentComponent));
+                            currentComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             try{
                                 boolean success = registryView.registerService(url, true);
                                 if(!success) {

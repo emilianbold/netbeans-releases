@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.loader;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -594,7 +595,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void showHistory() {
-            getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
+            getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     Dialog dlg = null;

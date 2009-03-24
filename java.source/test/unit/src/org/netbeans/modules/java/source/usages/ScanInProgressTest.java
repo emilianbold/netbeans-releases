@@ -51,7 +51,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -65,7 +64,9 @@ import org.openidex.search.SearchInfo;
 import java.awt.EventQueue;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.project.ui.ExtIcon;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
@@ -200,7 +201,7 @@ public class ScanInProgressTest extends NbTestCase implements PropertyChangeList
 
         //OpenProjectList.waitProjectsFullyOpen();
         //assertEquals("Finally notified in API", 1, events);
-        RepositoryUpdater.getDefault().waitScanFinished();
+        SourceUtils.waitScanFinished();
         assertEquals("All projects opened", 10, TestProjectOpenedHookImpl.opened);
 
 
@@ -210,7 +211,7 @@ public class ScanInProgressTest extends NbTestCase implements PropertyChangeList
             SearchInfo s = n.getLookup().lookup(SearchInfo.class);
             assertNotNull("Nodes have correct project of this type", s);
         }
-        assertFalse(RepositoryUpdater.getDefault().isScanInProgress());
+        assertFalse(IndexingManager.getDefault().isIndexing());
         assertTrue(result);
     }
 
@@ -287,7 +288,7 @@ public class ScanInProgressTest extends NbTestCase implements PropertyChangeList
             }
             opened++;
             toOpen.countDown();
-            result &= RepositoryUpdater.getDefault().isScanInProgress();
+            result &= IndexingManager.getDefault().isIndexing();
             assertTrue(result);
         }
 

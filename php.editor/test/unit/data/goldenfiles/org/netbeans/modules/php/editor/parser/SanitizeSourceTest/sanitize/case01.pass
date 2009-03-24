@@ -1,8 +1,8 @@
-<Program start='0' end='276'>
+<Program start='0' end='286'>
     <Comments>
     </Comments>
     <Statements>
-        <ClassDeclaration start='6' end='276' modifier='NONE'>
+        <ClassDeclaration start='6' end='286' modifier='NONE'>
             <ClassName>
                 <Identifier start='12' end='28' name='blog_Application'/>
             </ClassName>
@@ -11,7 +11,7 @@
             <Interfaces>
                 <Identifier start='40' end='51' name='Application'/>
             </Interfaces>
-            <Block start='52' end='276' isCurly='true'>
+            <Block start='52' end='286' isCurly='true'>
                 <ClassConstantDeclaration start='56' end='84'>
                     <Names>
                         <Identifier start='62' end='74' name='VARNAME_VIEW'/>
@@ -40,8 +40,8 @@
                         </Variable>
                     </InitialValues>
                 </FieldsDeclaration>
-                <MethodDeclaration start='136' end='274' modifiers='public'>
-                    <FunctionDeclaration start='143' end='274' isReference='false'>
+                <MethodDeclaration start='136' end='284' modifiers='public'>
+                    <FunctionDeclaration start='143' end='284' isReference='false'>
                         <Identifier start='152' end='159' name='process'/>
                         <FormalParameters>
                             <FormalParameter start='160' end='165' isMandatory='false'>
@@ -56,12 +56,12 @@
                                 </DefaultValue>
                             </FormalParameter>
                         </FormalParameters>
-                        <Block start='167' end='274' isCurly='true'>
-                            <SwitchStatement start='173' end='270'>
+                        <Block start='167' end='284' isCurly='true'>
+                            <SwitchStatement start='173' end='280'>
                                 <Variable start='181' end='186' isDollared='true'>
                                     <Identifier start='182' end='186' name='path'/>
                                 </Variable>
-                                <Block start='188' end='270' isCurly='true'>
+                                <Block start='188' end='280' isCurly='true'>
                                 </Block>
                             </SwitchStatement>
                         </Block>

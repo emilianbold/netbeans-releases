@@ -96,19 +96,21 @@ public final class ProjectUtilities {
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater (new Runnable () {
 
-            final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
+            final TopComponent ptLogicalTC = findDefault(ProjectTab_ID_LOGICAL);
+            final ExplorerManager.Provider ptLogicalExplorerManager = (ExplorerManager.Provider) ptLogicalTC;
 
             public void run () {
-                if (ptLogial == null) {
+                if (ptLogicalExplorerManager == null) {
                     Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Cannot find Project widnow, aborting.");
                     return;
                 }
-                Node root = ptLogial.getExplorerManager ().getRootContext ();                
+                Node root = ptLogicalExplorerManager.getExplorerManager ().getRootContext ();
                 for(Node projNode : root.getChildren().getNodes()) {
                     Project p = projNode.getLookup().lookup(Project.class);
                     if(p != null && p.getProjectDirectory().equals(project.getProjectDirectory())) {
                         try {
-                            ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
+                            ptLogicalExplorerManager.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
+                            ptLogicalTC.requestActive();
                         } catch (Exception ignore) {
                             // may ignore it
                         }    
@@ -124,9 +126,9 @@ public final class ProjectUtilities {
      * from window system. "projectTab_tc" is name of settings file defined in module layer.
      * For example ProjectTabAction uses this method to create instance if necessary.
      */
-    private static synchronized ExplorerManager.Provider findDefault( String tcID ) {
+    private static synchronized TopComponent findDefault( String tcID ) {
         TopComponent tc = WindowManager.getDefault().findTopComponent( tcID );
-        return (ExplorerManager.Provider) tc;
+        return tc;
     }
 
     /**

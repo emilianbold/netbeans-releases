@@ -1,6 +1,6 @@
 Code completion result for source line:
 document.createAttribute("foo").specified.|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     toSource() : void                          Boolean
 METHOD     toString() : String                        Boolean
 METHOD     valueOf() : void                           Boolean

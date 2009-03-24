@@ -52,17 +52,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -74,67 +69,177 @@ public class BuildConfig {
 
     private final GrailsProject project;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
     private Object buildSettingsInstance;
 
     private File projectRoot;
 
-    private FileChangeListener listener = new BuildConfigListener();
+    private List<GrailsPlugin> localPlugins;
 
-    private boolean initialized;
+    private File projectPluginsDir;
 
+    private File globalPluginsDir;
+    
     public BuildConfig(GrailsProject project) {
         this.project = project;
+        this.projectRoot = FileUtil.toFile(project.getProjectDirectory());
+
+        loadLocalPluginsDefault();
+        loadProjectPluginsDirDefault();
+        loadGlobalPluginsDirDefault();
     }
 
-    public synchronized void load() {
-        if (!initialized) {
-            reload();
-            initialized = true;
+    private boolean isFilePresent() {
+        FileObject root = project.getProjectDirectory();
+        return root.getFileObject("grails-app/conf/BuildConfig.groovy") != null; // NOI18N
+    }
+
+    private synchronized void loadProjectPluginsDirDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            File cached = config.getProjectPluginsDir();
+            if (cached != null && isFilePresent()) {
+                projectPluginsDir = cached;
+            } else {
+                projectPluginsDir = getProjectPluginsDirDefault11();
+            }
+        } else {
+            projectPluginsDir = getProjectPluginsDir10();
         }
     }
 
-    private synchronized void reload() {
+    private File getProjectPluginsDirDefault11() {
+        GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
+
+        File pluginsDirFile;
+        String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+        if (strPluginsDir == null) {
+            File projectWorkDirFile;
+            String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+            if (projectWorkDir == null) {
+                File workDirFile;
+                String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                if (workDir == null) {
+                    workDir = System.getProperty("user.home"); // NOI18N
+                    workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                    workDirFile = new File(workDir);
+                } else {
+                    workDirFile = new File(workDir);
+                    if (!workDirFile.isAbsolute()) {
+                        workDirFile = new File(projectRoot, workDir);
+                    }
+                }
+                projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+            } else {
+                projectWorkDirFile = new File(projectWorkDir);
+                if (!projectWorkDirFile.isAbsolute()) {
+                    projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                }
+            }
+            pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+        } else {
+            pluginsDirFile = new File(strPluginsDir);
+            if (!pluginsDirFile.isAbsolute()) {
+                pluginsDirFile = new File(projectRoot, strPluginsDir);
+            }
+        }
+
+        return pluginsDirFile;
+    }
+
+    private synchronized void loadGlobalPluginsDirDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            File cached = config.getGlobalPluginsDir();
+            if (cached != null && isFilePresent()) {
+                globalPluginsDir = cached;
+            } else {
+                globalPluginsDir = getGlobalPluginsDirDefault11();
+            }
+        } else {
+            globalPluginsDir = getGlobalPluginsDir10();
+        }
+    }
+
+    private File getGlobalPluginsDirDefault11() {
+        GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
+
+        File pluginsDirFile;
+        String strPluginsDir = System.getProperty("grails.global.plugins.dir"); // NOI18N
+        if (strPluginsDir == null) {
+            File workDirFile;
+            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            if (workDir == null) {
+                workDir = System.getProperty("user.home"); // NOI18N
+                workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                workDirFile = new File(workDir);
+            } else {
+                workDirFile = new File(workDir);
+                if (!workDirFile.isAbsolute()) {
+                    workDirFile = new File(projectRoot, workDir);
+                }
+            }
+            pluginsDirFile = new File(workDirFile, "global-plugins"); // NOI18N
+        } else {
+            pluginsDirFile = new File(strPluginsDir);
+            if (!pluginsDirFile.isAbsolute()) {
+                pluginsDirFile = new File(projectRoot, strPluginsDir);
+            }
+        }
+
+        return pluginsDirFile;
+    }
+
+    private synchronized void loadLocalPluginsDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            // TODO cache
+        }
+        localPlugins = Collections.emptyList();
+    }
+
+    public void reload() {
         long start = System.currentTimeMillis();
 
-        File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
-        assert newProjectRoot != null;
+        File currentProjectPluginsDir;
+        File currentGlobalPluginsDir;
+        synchronized (this) {
+            File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
+            assert newProjectRoot != null;
 
-        if (!newProjectRoot.equals(projectRoot)) {
-            String buildConfig = "grails-app" + File.separator + "conf"
-                    + File.separator + "BuildConfig.groovy"; // NOI18N
-
-            if (listener != null && projectRoot != null) {
-                FileUtil.removeFileChangeListener(listener, new File(projectRoot, buildConfig));
+            if (!newProjectRoot.equals(projectRoot)) {
+                projectRoot = newProjectRoot;
             }
-            FileUtil.addFileChangeListener(listener, new File(newProjectRoot, buildConfig));
-            projectRoot = newProjectRoot;
+
+            buildSettingsInstance = loadBuildSettings();
+            LOGGER.log(Level.FINE, "Took {0} ms to load BuildSettings for {1}",
+                    new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
+
+            loadLocalPlugins();
+            currentProjectPluginsDir = loadProjectPluginsDir();
+            currentGlobalPluginsDir = loadGlobalPluginsDir();
         }
 
-
-        buildSettingsInstance = loadBuildSettings();
-        LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
-                new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
-    }
-
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+            if (config != null) {
+                config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
+                config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
+            }
+        }
     }
 
     public synchronized File getProjectPluginsDir() {
-        load();
-
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getProjectPluginsDir11();
-        }
-        return getProjectPluginsDir10();
+        return projectPluginsDir;
     }
 
+    private synchronized File loadProjectPluginsDir() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            projectPluginsDir = getProjectPluginsDir11();
+        } else {
+            projectPluginsDir = getProjectPluginsDir10();
+        }
+        return projectPluginsDir;
+    }
+    
     private File getProjectPluginsDir10() {
         assert Thread.holdsLock(this);
         return new File(projectRoot, "plugins"); // NOI18N
@@ -175,14 +280,18 @@ public class BuildConfig {
     }
 
     public synchronized File getGlobalPluginsDir() {
-        load();
-
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getGlobalPluginsDir11();
-        }
-        return getGlobalPluginsDir10();
+        return globalPluginsDir;
     }
 
+    private synchronized File loadGlobalPluginsDir() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            globalPluginsDir = getGlobalPluginsDir11();
+        } else {
+            globalPluginsDir = getGlobalPluginsDir10();
+        }
+        return globalPluginsDir;
+    }
+    
     private File getGlobalPluginsDir10() {
         assert Thread.holdsLock(this);
         return null;
@@ -222,12 +331,15 @@ public class BuildConfig {
     }
 
     public synchronized List<GrailsPlugin> getLocalPlugins() {
-        load();
+        return Collections.unmodifiableList(localPlugins);
+    }
 
+    private synchronized void loadLocalPlugins() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getLocalPlugins11();
+            localPlugins = getLocalPlugins11();
+        } else {
+            localPlugins = getLocalPlugins10();
         }
-        return getLocalPlugins10();
     }
 
     private List<GrailsPlugin> getLocalPlugins10() {
@@ -311,36 +423,47 @@ public class BuildConfig {
         return null;
     }
 
-    private class BuildConfigListener implements FileChangeListener {
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // noop
+    //////
+
+    public File getProjectPluginsDirDefault(GrailsPlatform platform) {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
+            File pluginsDirFile;
+            String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+            if (strPluginsDir == null) {
+                File projectWorkDirFile;
+                String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+                if (projectWorkDir == null) {
+                    File workDirFile;
+                    String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                    if (workDir == null) {
+                        workDir = System.getProperty("user.home"); // NOI18N
+                        workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                        workDirFile = new File(workDir);
+                    } else {
+                        workDirFile = new File(workDir);
+                        if (!workDirFile.isAbsolute()) {
+                            workDirFile = new File(projectRoot, workDir);
+                        }
+                    }
+                    projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+                } else {
+                    projectWorkDirFile = new File(projectWorkDir);
+                    if (!projectWorkDirFile.isAbsolute()) {
+                        projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                    }
+                }
+                pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+            } else {
+                pluginsDirFile = new File(strPluginsDir);
+                if (!pluginsDirFile.isAbsolute()) {
+                    pluginsDirFile = new File(projectRoot, strPluginsDir);
+                }
+            }
+
+            return pluginsDirFile;
         }
 
-        public void fileChanged(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileFolderCreated(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            fireChange();
-        }
-
-        public void fireChange() {
-            reload();
-            changeSupport.fireChange();
-        }
-
+        return new File(projectRoot, "plugins");
     }
 }

@@ -51,11 +51,11 @@ import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
 import javax.swing.JComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -104,7 +104,7 @@ public class ImplementAbstractMethods extends ModelRule {
         diggest = computedDigest;
         for (CachedFixInfo fixInfo : cahcedFixedInfo.values()) {
             hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
-                    context.compilationInfo.getFileObject(), fixInfo.classNameRange,
+                    context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
                     Collections.<HintFix>singletonList(new Fix(context,
                     fixInfo)), 500));
         }

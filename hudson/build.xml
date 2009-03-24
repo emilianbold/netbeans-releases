@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hudson" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="debug">
+        <ant dir="../hudson" target="netbeans"/>
+        <ant dir="../hudson.maven" target="netbeans"/>
+        <ant dir="../hudson.subversion" target="netbeans"/>
+        <ant dir="../hudson.mercurial" target="netbeans"/>
+        <ant dir="../hudson.j2seproject" target="netbeans"/>
+        <ant dir="../nbbuild" target="tryme-debug"/>
+    </target>
+</project>

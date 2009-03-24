@@ -42,14 +42,9 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -59,15 +54,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -87,13 +78,13 @@ import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
-import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -587,13 +578,11 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 LazyUnit.storeLazyUnits (model.getOperation (), null);
                 AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
             }
-            notifyInstallRestartNeeded (support, r, true); // NOI18N
+            notifyInstallRestartNeeded (support, r); // NOI18N
         }
     }
     
-    private static RestartNeededNotification.UpdatesFlasher flasher;
-    
-    private static void notifyInstallRestartNeeded (final InstallSupport support, final Restarter r, boolean showToolTip) {
+    private static void notifyInstallRestartNeeded (final InstallSupport support, final Restarter r) {
         final Runnable onMouseClick = new Runnable () {
             public void run () {
                 try {
@@ -603,107 +592,40 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
             }
         };
-        notifyRestartNeeded (onMouseClick, getBundle ("InstallSupport_RestartNeeded"), showToolTip);
+        notifyRestartNeeded (onMouseClick, getBundle ("InstallSupport_RestartNeeded"));
     }
     
-    static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip, boolean showToolTip) {
+    static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip) {
         final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
                                             getBundle ("RestartConfirmation_Message"),
                                             getBundle ("RestartConfirmation_Title"),
                                             NotifyDescriptor.YES_NO_OPTION);
-        final Runnable confirmOnClick = new Runnable () {
-            public void run () {
-                BalloonManager.dismiss ();
+        ActionListener onClickAction = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 DialogDisplayer.getDefault ().notify (nd);
                 if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
                     onMouseClick.run ();
                 }
             }
         };
-        flasher = RestartNeededNotification.getFlasher (confirmOnClick);
-        assert flasher != null : "Updates Flasher cannot be null.";
-        flasher.startFlashing ();
-        final Runnable showBalloon = new Runnable () {
-            public void run () {
-                BalloonManager.show (flasher, createBalloonContent (tooltip), new AbstractAction () {
-                    public void actionPerformed (ActionEvent e) {
-                        confirmOnClick.run ();
-                    }
-                }, Utilities.getShowingBalloonTimeout ());
-            }
-        };
-        if (showToolTip) {
-            SwingUtilities.invokeLater (showBalloon);
-        }
-        flasher.addMouseListener (new MouseAdapter () {
-            RequestProcessor.Task t = null;
-            private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                t = RP.post (new Runnable () {
-                    public void run () {
-                        showBalloon.run ();
-                    }
-                }, ToolTipManager.sharedInstance ().getInitialDelay ());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if( null != t ) {
-                    t.cancel ();
-                    t = null;
-                    BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
-                }
-            }
-        });
+        NotificationDisplayer.getDefault().notify(tooltip, 
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false),
+                getBundle("RestartNeeded_Details"), onClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
-    private static NetworkProblemNotification.UpdatesFlasher nwProblemFlasher;
-    
     private void notifyNetworkProblem (final OperationException ex) {
         // Some network problem found
-        final Runnable onMouseClick = new Runnable () {
-            public void run () {
+        ActionListener onMouseClickAction = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
                 problem.showNetworkProblemDialog ();
-                if (nwProblemFlasher != null) {
-                    nwProblemFlasher.disappear ();
-                }
-                BalloonManager.dismiss ();
             }
         };
-        nwProblemFlasher = NetworkProblemNotification.getFlasher (onMouseClick);
-        assert nwProblemFlasher != null : "Updates Flasher cannot be null.";
-        nwProblemFlasher.startFlashing ();
-        final Runnable showBalloon = new Runnable () {
-            public void run () {
-                BalloonManager.show (nwProblemFlasher,
-                        createBalloonContent (getBundle ("InstallSupport_InBackground_NetworkError")), // NOI18N
-                        new AbstractAction () {
-                            public void actionPerformed (ActionEvent e) {
-                                onMouseClick.run ();
-                            }
-                }, 0);
-            }
-        };
-        SwingUtilities.invokeLater (showBalloon);
-        nwProblemFlasher.addMouseListener (new MouseAdapter () {
-            @Override
-            public void mouseEntered (MouseEvent e) {
-                showBalloon.run ();
-            }
-        });
-    }
-
-    private static JComponent createBalloonContent (String msg) {
-        JPanel panel = new JPanel (new GridBagLayout ());
-        panel.setOpaque (false);
-        JLabel top = new JLabel (msg);
-        top.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/info_icon.png", false)); //NOI18N
-        top.setIconTextGap (10);
-        panel.add (top, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
-        return panel;
+        String title = getBundle ("InstallSupport_InBackground_NetworkError");
+        String description = getBundle ("InstallSupport_InBackground_NetworkError_Details");
+        NotificationDisplayer.getDefault().notify(title, 
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
     public HelpCtx getHelp() {
@@ -749,7 +671,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 } catch (OperationException x) {
                     log.log (Level.INFO, x.getMessage (), x);
                 }
-                notifyInstallRestartNeeded (support, restarter, false); // NOI18N
+                notifyInstallRestartNeeded (support, restarter); // NOI18N
                 return ;
             }
         } else {

@@ -90,6 +90,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private boolean                 bIncomingSearch;
     private AbstractAction nextAction;
     private AbstractAction prevAction;
+    private SearchHistoryTopComponent.DiffResultsViewFactory diffViewFactory;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -98,6 +99,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.roots = roots;
         this.repositoryUrl = null;
         this.criteria = criteria;
+        this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
@@ -116,6 +118,21 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         initComponents();
         setupComponents();
         refreshComponents(true);
+    }
+
+    /**
+     * Sets the factory creating the appropriate DiffResultsView to display.
+     * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.
+     */
+    public void setDiffResultsViewFactory(SearchHistoryTopComponent.DiffResultsViewFactory fac) {
+        if (fac != null) {
+            this.diffViewFactory = fac;
+        }
+    }
+
+    public void disableFileChangesOption(boolean b) {
+        fileInfoCheckBox.setEnabled(false);
+        fileInfoCheckBox.setSelected(false);
     }
 
     void setOutSearch() {
@@ -279,7 +296,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     resultsPanel.add(summaryView.getComponent());
                 } else {
                     if (diffView == null) {
-                        diffView = new DiffResultsView(this, results);
+                        diffView = diffViewFactory.createDiffResultsView(this, results);
                     }
                     resultsPanel.add(diffView.getComponent());
                 }
@@ -443,8 +460,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JSeparator();
-        bNext = new javax.swing.JButton();
-        bPrev = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         showMergesChkBox = new javax.swing.JCheckBox();
         resultsPanel = new javax.swing.JPanel();
@@ -568,7 +583,7 @@ private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//
 }//GEN-LAST:event_showMergesChkBoxStateChanged
 
 private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileInfoCheckBoxActionPerformed
-        HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected());
+        HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected() && fileInfoCheckBox.isEnabled());
 }//GEN-LAST:event_fileInfoCheckBoxActionPerformed
 
     public void insertUpdate(DocumentEvent e) {
@@ -598,8 +613,8 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton bNext;
-    private javax.swing.JButton bPrev;
+    final javax.swing.JButton bNext = new javax.swing.JButton();
+    final javax.swing.JButton bPrev = new javax.swing.JButton();
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
     final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();

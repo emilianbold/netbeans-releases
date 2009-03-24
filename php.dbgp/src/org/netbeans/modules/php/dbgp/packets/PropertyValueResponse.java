@@ -41,7 +41,7 @@
 package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.w3c.dom.Node;
 
 
@@ -69,7 +69,7 @@ public class PropertyValueResponse extends DbgpResponse {
     @Override
     public void process( DebugSession session, DbgpCommand command )
     {
-        DebugSession currentSession = StartActionProviderImpl.getInstance().
+        DebugSession currentSession = SessionManager.getInstance().
         getCurrentSession( session.getSessionId() );
         if ( currentSession == session ){
             // perform update local view only if response appears in current session

@@ -166,7 +166,9 @@ public class Installer extends ModuleInstall implements Runnable {
     /** Flag to store status of last metrics upload */
     private static boolean logMetricsUploadFailed = false;
     
-    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
+    private static String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
+    private static String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
+    private static String USAGE_STATISTICS_NB_OF_IDE_STARTS = "usageStatisticsNbOfIdeStarts"; // NOI18N
     private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
@@ -185,6 +187,7 @@ public class Installer extends ModuleInstall implements Runnable {
             } else if (CMD_METRICS_CANCEL.equals(cmd)) {
                 corePref.putBoolean(USAGE_STATISTICS_ENABLED, false);
             }
+            corePref.putBoolean(USAGE_STATISTICS_SET_BY_IDE, true);
         }
     };
 
@@ -244,7 +247,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
-        logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
+        logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
         if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
@@ -252,7 +255,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
-        logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
+        logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED, false);
         if (logMetricsEnabled) {
             //Handler for metrics
             log = Logger.getLogger(METRICS_LOGGER_NAME);
@@ -294,54 +297,49 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     private void usageStatisticsReminder () {
-        boolean keyExists = false;
-        String [] keys = null;
-        try {
-            keys = corePref.keys();
-            for (int i = 0; i < keys.length; i++) {
-                if (USAGE_STATISTICS_ENABLED.equals(keys[i])) {
-                    keyExists = true;
-                    break;
-                }
-            }
-        } catch (BackingStoreException exc) {
-            Exceptions.printStackTrace(exc);
-            //Not able to confirm if key exists or not
-            keyExists = true;
+        //Increment number of IDE starts, stop at 4 because we are interested at second start
+        long nbOfIdeStarts = corePref.getLong(USAGE_STATISTICS_NB_OF_IDE_STARTS, 0);
+        nbOfIdeStarts++;
+        if (nbOfIdeStarts < 4) {
+            corePref.putLong(USAGE_STATISTICS_NB_OF_IDE_STARTS, nbOfIdeStarts);
         }
+        boolean setByIde = corePref.getBoolean(USAGE_STATISTICS_SET_BY_IDE, false);
+        boolean usageEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED, false);
 
-        if (keyExists) {
-            //If key exists do not ask user
+        //If "usageStatisticsEnabled" was set by IDE do not ask again.
+        if (setByIde) {
             return;
         }
-
-        metricsEnable.addActionListener(l);
-        metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
-        //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
-        Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
-                Installer.class, "LBL_MetricsEnable"));
-        metricsEnable.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
-        metricsEnable.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
-
-        metricsCancel.addActionListener(l);
-        metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
-        //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
-        Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
-                Installer.class, "LBL_MetricsCancel"));
-        metricsCancel.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
-        metricsCancel.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
-
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            public void run() {
-                showDialog();
-            }
-        });
+        //If "usageStatisticsEnabled" was not set by IDE, it is false and it is second start ask again
+        if (!setByIde && !usageEnabled && (nbOfIdeStarts == 2)) {
+            metricsEnable.addActionListener(l);
+            metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
+            //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+            Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
+                    Installer.class, "LBL_MetricsEnable"));
+            metricsEnable.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
+            metricsEnable.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
+            
+            metricsCancel.addActionListener(l);
+            metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
+            //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+            Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
+                    Installer.class, "LBL_MetricsCancel"));
+            metricsCancel.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
+            metricsCancel.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
+            
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                public void run() {
+                    showDialog();
+                }
+            });
+        }
     }
-
+    
     private void showDialog () {
         final JPanel panel = new ReminderPanel();
         DialogDescriptor descriptor = new DialogDescriptor(
@@ -1753,7 +1751,8 @@ public class Installer extends ModuleInstall implements Runnable {
     } // end of Submit
 
     protected static String createMessage(Throwable thr){
-        while (thr.getCause() != null){
+        //ignore causes with empty stacktraces -> they are just annotations
+        while ((thr.getCause() != null) && (thr.getCause().getStackTrace().length != 0)){
             thr = thr.getCause();
         }
         String message = thr.toString();
@@ -2061,6 +2060,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (corePref.equals(evt.getNode()) && USAGE_STATISTICS_ENABLED.equals(evt.getKey())) {
                 boolean newVal = Boolean.parseBoolean(evt.getNewValue());
                 if (newVal != logMetricsEnabled) {
+                    corePref.putBoolean(USAGE_STATISTICS_SET_BY_IDE, true);
                     logMetricsEnabled = newVal;
                     Logger log = Logger.getLogger(METRICS_LOGGER_NAME);
                     if (logMetricsEnabled) {

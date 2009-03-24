@@ -275,9 +275,9 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         
         f = FileUtil.normalizeFile(f);
         
-        if (f.getAbsolutePath().startsWith(Index.getCacheFolder().getAbsolutePath())) {
-            return null;
-        }
+//        if (f.getAbsolutePath().startsWith(Index.getCacheFolder().getAbsolutePath())) {//XXX
+//            return null;
+//        }
         
         return f;
     }

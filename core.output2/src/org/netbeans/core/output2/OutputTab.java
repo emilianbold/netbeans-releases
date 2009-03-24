@@ -41,15 +41,16 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -59,7 +60,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -70,11 +72,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
@@ -103,6 +105,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         OutputDocument doc = new OutputDocument (((NbWriter) io.getOut()).out());
         setDocument(doc);
 
+        installKBActions();
+        getActionMap().put("jumpPrev", this.prevErrorAction); // NOI18N
+        getActionMap().put("jumpNext", this.nextErrorAction); // NOI18N
+        getActionMap().put(FindAction.class.getName(), this.findAction);
+        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, this.copyAction);
+    }
+
+    private void installKBActions() {
         installKeyboardAction(copyAction);
         installKeyboardAction(selectAllAction);
         installKeyboardAction(findAction);
@@ -117,12 +127,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         installKeyboardAction(navToLineAction);
         installKeyboardAction(postMenuAction);
         installKeyboardAction(clearAction);
-
-        getActionMap().put("jumpPrev", this.prevErrorAction); // NOI18N
-        getActionMap().put("jumpNext", this.nextErrorAction); // NOI18N
-        getActionMap().put(FindAction.class.getName(), this.findAction);
-        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, this.copyAction);
-
+        installKeyboardAction(filterAction);
     }
 
     @Override
@@ -139,6 +144,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     public void reset() {
+        if (origPane != null) {
+            setOutputPane(origPane);
+        }
         setDocument(new OutputDocument(((NbWriter) io.getOut()).out()));
         io.setClosed(false);
     }
@@ -152,7 +160,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     protected AbstractOutputPane createOutputPane() {
-        return new OutputPane();
+        return new OutputPane(this);
     }
 
     protected void inputSent(String txt) {
@@ -190,13 +198,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     public void lineClicked(int line) {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out == null) {
             return;
         }
         OutputListener l = out.getLines().getListenerForLine(line);
         if (l != null) {
-            ControllerOutputEvent oe = new ControllerOutputEvent (io, line);
+            ControllerOutputEvent oe = new ControllerOutputEvent(io, out, line);
             l.outputLineAction(oe);
             //Select the text on click
             getOutputPane().sendCaretToLine(line, true);
@@ -204,7 +212,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     boolean linePressed(int line, Point p) {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             return out.getLines().getListenerForLine(line) != null;
         } else {
@@ -223,7 +231,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         }
         
         int result = -1;
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             if (Controller.LOG) Controller.log ("Looking for first appropriate" +
                 " listener line to send the caret to");
@@ -239,12 +247,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     private boolean hasOutputListeners = false;
 
-    public void documentChanged() {
-        boolean hadOutputListeners = hasOutputListeners;
-        if (getFirstNavigableListenerLine() == -1) {
-            return;
+    public void documentChanged(OutputPane pane) {
+        if (filtOut != null && pane == origPane) {
+            filtOut.readFrom(io.out());
         }
-        hasOutputListeners = io.out() != null && io.out().getLines().firstListenerLine() >= 0;
+        boolean hadOutputListeners = hasOutputListeners;
+        hasOutputListeners = getOut() != null && getOut().getLines().firstListenerLine() >= 0;
         if (hasOutputListeners != hadOutputListeners) {
             hasOutputListenersChanged(hasOutputListeners);
         }
@@ -265,7 +273,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * first line which shows an error (if any).
      */
     private void navigateToFirstErrorLine() {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             int line = getFirstNavigableListenerLine();
             if (Controller.LOG) {
@@ -298,7 +306,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     public void closed() {
         io.setClosed(true);
         Controller.getDefault().removeTab(io);
-        io.setClosed(true);
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
             //Will dispose the document
@@ -324,70 +331,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * @return if it should be locked
      */
     public boolean shouldRelock(int dot) {
-        OutWriter w = io.out();
+        OutWriter w = getOut();
         if (w != null && !w.isClosed()) {
             int dist = Math.abs(w.getLines().getCharCount() - dot);
             return dist < 100;
         }
         return false;
-    }
-    
-    ActionListener getFindActionListener(Action next, Action prev, Action copy) {
-        if (findActionListener == null) {
-            findActionListener = new FindActionListener(this, next, prev, copy);
-        }
-        return findActionListener;
-    }
-    
-    private ActionListener findActionListener;
-    
-    /**
-     * An action listener which listens to the default button of the find
-     * dialog.
-     */
-    static class FindActionListener implements ActionListener {
-        OutputTab tab;
-        Action findNextAction;
-        Action findPreviousAction;
-        Action copyAction;
-        FindActionListener(OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
-            this.tab = tab;
-            this.findNextAction = findNextAction;
-            this.findPreviousAction = findPreviousAction;
-            this.copyAction = copyAction;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            FindDialogPanel panel = (FindDialogPanel)
-                SwingUtilities.getAncestorOfClass(FindDialogPanel.class,
-                (JComponent) e.getSource());
-            if (panel == null) {
-                //dialog disposed
-                panel = (FindDialogPanel) ((JComponent)
-                    e.getSource()).getClientProperty("panel"); //NOI18N
-            }
-
-            String s = panel.getPattern();
-            if (s == null || s.length() == 0) {
-                Toolkit.getDefaultToolkit().beep();
-
-                return;
-            }
-            OutWriter out = tab.getIO().out();
-            if (out != null && !out.isDisposed()) {
-                Matcher matcher = out.getLines().find(s);
-                if (matcher != null && matcher.find()) {
-                    int start = matcher.start();
-                    int end = matcher.end();
-                    tab.getOutputPane().setSelection(start, end);
-                    findNextAction.setEnabled(true);
-                    findPreviousAction.setEnabled(true);
-                    copyAction.setEnabled(true);
-                    panel.getTopLevelAncestor().setVisible(false);
-                    tab.requestFocus();
-                }
-            }
-        }
     }
 
     /**
@@ -397,7 +346,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * @return An output listener or null
      */
     private OutputListener listenerForLine(int line) {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             return out.getLines().getListenerForLine(line);
         }
@@ -433,7 +382,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * @param backward If the search should be done in reverse
      */
     private void sendCaretToError(boolean backward) {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             int line = getOutputPane().getCaretLine();
             if (!getOutputPane().isLineSelected(line)) {
@@ -467,62 +416,34 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     /**
-     * Find the next match for the previous search contents, starting at
-     * the current caret position.
-     *
+     * Searching from current position
+     * @param reversed true for reverse search
+     * @return true if found
      */
-    private void findNext() {
-        OutWriter out = io.out();
+    private boolean find(boolean reversed) {
+        OutWriter out = getOut();
         if (out != null) {
-            String lastPattern = FindDialogPanel.getPanel().getPattern();
-            if (lastPattern != null) {
-                out.getLines().find(lastPattern);
+            String lastPattern = FindDialogPanel.result();
+            if (lastPattern == null) {
+                return false;
             }
-            Matcher matcher = out.getLines().getForwardMatcher();
-            int pos = getOutputPane().getCaretPos();
-            if (pos >= getOutputPane().getLength() || pos < 0) {
+            int pos = reversed ? getOutputPane().getSelectionStart() : getOutputPane().getCaretPos();
+            if (pos > getOutputPane().getLength() || pos < 0) {
                 pos = 0;
             }
-
-            if (matcher != null && matcher.find(pos)) {
-                getOutputPane().setSelection(matcher.start(), matcher.end());
-                copyAction.setEnabled(true);
+            boolean regExp = FindDialogPanel.regExp();
+            boolean matchCase = FindDialogPanel.matchCase();
+            int[] sel = reversed ? out.getLines().rfind(pos, lastPattern, regExp, matchCase)
+                    : out.getLines().find(pos, lastPattern, regExp, matchCase);
+            if (sel != null) {
+                getOutputPane().unlockScroll();
+                getOutputPane().setSelection(sel[0], sel[1]);
+                return true;
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
         }
-    }
-
-    /**
-     * Find the match before the current caret position, using the previously
-     * searched for value.
-     *
-     * @param tab The tab
-     */
-    private void findPrevious() {
-        OutWriter out = io.out();
-        if (out != null) {
-            String lastPattern = FindDialogPanel.getPanel().getPattern();
-            if (lastPattern != null) {
-                out.getLines().find(lastPattern);
-            }
-            Matcher matcher = out.getLines().getReverseMatcher();
-
-            int length = getOutputPane().getLength();
-            int pos = length - getOutputPane().getSelectionStart();
-
-            if (pos >= getOutputPane().getLength() - 1 || pos < 0) {
-                pos = 0;
-            }
-            if (matcher != null && matcher.find(pos)) {
-                int start = length - matcher.end();
-                int end = length - matcher.start();
-                getOutputPane().setSelection(start, end);
-                copyAction.setEnabled(true);
-            } else {
-                Toolkit.getDefaultToolkit().beep();
-            }
-        }
+        return false;
     }
 
     /**
@@ -534,7 +455,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * Invokes a file dialog and if a file is chosen, saves the output to that file.
      */
     void saveAs() {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out == null) {
             return;
         }
@@ -623,7 +544,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * line, it will be sent <code>outputLineAction</code>.
      */
     private void openLineIfError() {
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         if (out != null) {
             int line = getOutputPane().getCaretLine();
             OutputListener lis = out.getLines().getListenerForLine(line);
@@ -665,7 +586,17 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             if (popupItems[i] instanceof JSeparator) {
                 popup.add((JSeparator) popupItems[i]);
             } else {
-                if (popupItems[i] != wrapAction) {
+                if (popupItems[i] == wrapAction) {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
+                    item.setSelected(getOutputPane().isWrapped());
+                    activeActions.add((TabAction) popupItems[i]);
+                    popup.add(item);
+                } else if (popupItems[i] == filterAction) {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
+                    item.setSelected(origPane != null);
+                    activeActions.add((TabAction) popupItems[i]);
+                    popup.add(item);
+                } else {
                     if ((popupItems[i] == closeAction && !io.getIOContainer().isCloseable(this))
                             || (popupItems[i] == fontTypeAction && getOutputPane().isWrapped())) {
                         continue;
@@ -675,11 +606,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     if (popupItems[i] == findAction) {
                         item.setMnemonic(KeyEvent.VK_F);
                     }
-                } else {
-                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
-                    item.setSelected(getOutputPane().isWrapped());
-                    activeActions.add((TabAction) popupItems[i]);
-                    popup.add(item);
                 }
             }
         }
@@ -699,8 +625,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         OutputPane pane = (OutputPane) getOutputPane();
         int len = pane.getLength();
         boolean enable = len > 0;
-        findAction.setEnabled(enable);
-        OutWriter out = io.out();
+        OutWriter out = getOut();
         saveAsAction.setEnabled(enable);
         selectAllAction.setEnabled(enable);
         copyAction.setEnabled(pane.hasSelection());
@@ -726,6 +651,45 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         }
     }
 
+    FilteredOutput filtOut;
+    AbstractOutputPane origPane;
+
+    private void setFilter(String pattern, boolean regExp, boolean matchCase) {
+        if (pattern == null) {
+            assert origPane != null;
+            setOutputPane(origPane);
+            origPane = null;
+            filtOut.dispose();
+            filtOut = null;
+        } else {
+            assert origPane == null;
+            origPane = getOutputPane();
+            filtOut = new FilteredOutput(pattern, regExp, matchCase);
+            setOutputPane(filtOut.getPane());
+            try {
+                waitCursor(true);
+                filtOut.readFrom(io.out());
+                installKBActions();
+            } finally {
+                waitCursor(false);
+            }
+        }
+        validate();
+        getOutputPane().repaint();
+        requestFocus();
+    }
+
+    private void waitCursor(boolean enable) {
+        RootPaneContainer root = ((RootPaneContainer) getTopLevelAncestor());
+        Cursor cursor = Cursor.getPredefinedCursor(enable ? Cursor.WAIT_CURSOR : Cursor.DEFAULT_CURSOR);
+        root.getGlassPane().setCursor(cursor);
+        root.getGlassPane().setVisible(enable);
+    }
+
+    OutWriter getOut() {
+        return origPane != null ? filtOut.getWriter() : io.out();
+    }
+
     private void disableHtmlName() {
         Controller.getDefault().removeFromUpdater(this);
         String escaped;
@@ -737,6 +701,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         //#88204 apostophes are escaped in xm but not html
         io.getIOContainer().setTitle(this, escaped.replace("&apos;", "'"));
     }
+
     private static final int ACTION_COPY = 0;
     private static final int ACTION_WRAP = 1;
     private static final int ACTION_SAVEAS = 2;
@@ -755,6 +720,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private static final int ACTION_LARGERFONT = 15;
     private static final int ACTION_SMALLERFONT = 16;
     private static final int ACTION_FONTTYPE = 17;
+    private static final int ACTION_FILTER = 18;
 
     Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
     Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
@@ -766,6 +732,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action findAction = new TabAction(ACTION_FIND, "ACTION_FIND"); //NOI18N
     Action findNextAction = new TabAction(ACTION_FINDNEXT, "ACTION_FIND_NEXT"); //NOI18N
     Action findPreviousAction = new TabAction(ACTION_FINDPREVIOUS, "ACTION_FIND_PREVIOUS"); //NOI18N
+    Action filterAction = new TabAction(ACTION_FILTER, "ACTION_FILTER"); //NOI18N
     Action largerFontAction = new TabAction(ACTION_LARGERFONT, "ACTION_LARGER_FONT"); //NOI18N
     Action smallerFontAction = new TabAction(ACTION_SMALLERFONT, "ACTION_SMALLER_FONT"); //NOI18N
     Action fontTypeAction = new TabAction(ACTION_FONTTYPE, "ACTION_FONT_TYPE"); //NOI18N
@@ -780,7 +747,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action prevTabAction = new TabAction(ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
-        copyAction, new JSeparator(), findAction, findNextAction, new JSeparator(),
+        copyAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
         wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
         clearAction, closeAction,};
 
@@ -878,23 +845,20 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     getOutputPane().selectAll();
                     break;
                 case ACTION_FIND:
-                    int start = getOutputPane().getSelectionStart();
-                    int end = getOutputPane().getSelectionEnd();
-                    String str = null;
-                    if (start > 0 && end > start) {
-                        try {
-                            str = getOutputPane().getDocument().getText(start, end - start);
-                        } catch (BadLocationException ex) {
-                            ex.printStackTrace();
+                     {
+                        String pattern = getFindDlgResult(getOutputPane().getSelectedText(), "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
+                        if (pattern != null && find(false)) {
+                            findNextAction.setEnabled(true);
+                            findPreviousAction.setEnabled(true);
+                            requestFocus();
                         }
                     }
-                    FindDialogPanel.showFindDialog(getFindActionListener(findNextAction, findPreviousAction, copyAction), str);
                     break;
                 case ACTION_FINDNEXT:
-                    findNext();
+                    find(false);
                     break;
                 case ACTION_FINDPREVIOUS:
-                    findPrevious();
+                    find(true);
                     break;
                 case ACTION_NAVTOLINE:
                     openLineIfError();
@@ -922,10 +886,44 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case ACTION_FONTTYPE:
                     showFontChooser();
                     break;
+                case ACTION_FILTER:
+                    if (origPane != null) {
+                        setFilter(null, false, false);
+                    } else {
+                        String pattern = getFindDlgResult(getOutputPane().getSelectedText(),
+                                "LBL_Filter_Title", "LBL_Filter_What", "BTN_Filter"); //NOI18N
+                        if (pattern != null) {
+                            setFilter(pattern, FindDialogPanel.regExp(), FindDialogPanel.matchCase());
+                        }
+                    }
+                    break;
                 default:
                     assert false;
             }
         }
+    }
+
+    private boolean validRegExp(String pattern) {
+        try {
+            Pattern.compile(pattern);
+            return true;
+        } catch (PatternSyntaxException ex) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), 
+                    NbBundle.getMessage(OutputTab.class, "FMT_Invalid_RegExp", pattern),
+                    NbBundle.getMessage(OutputTab.class, "LBL_Invalid_RegExp"), JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    private String getFindDlgResult(String selection, String title, String label, String button) {
+        String pattern = FindDialogPanel.getResult(selection, title, label, button); //NOI18N
+        while (pattern != null && FindDialogPanel.regExp()) {
+            if (validRegExp(pattern)) {
+                break;
+            }
+            pattern = FindDialogPanel.getResult(pattern, title, label, button); //NOI18N
+        }
+        return pattern;
     }
 
     private static class ProxyAction implements Action {
@@ -1005,6 +1003,77 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             //do nothing
+        }
+    }
+
+    private class FilteredOutput {
+        String pattern;
+        OutWriter out;
+        OutputPane pane;
+        OutputDocument doc;
+        int readCount;
+        Pattern compPattern;
+        boolean regExp;
+        boolean matchCase;
+
+        public FilteredOutput(String pattern, boolean regExp, boolean matchCase) {
+            this.pattern = (regExp || matchCase) ? pattern : pattern.toLowerCase();
+            this.regExp = regExp;
+            this.matchCase = matchCase;
+            out = new OutWriter();
+            pane = new OutputPane(OutputTab.this);
+            doc = new OutputDocument(out);
+            pane.setDocument(doc);
+        }
+
+        boolean passFilter(String str) {
+            if (regExp) {
+                if (compPattern == null) {
+                    compPattern = matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                }
+                return compPattern.matcher(str).find();
+            } else {
+                return matchCase ? str.contains(pattern) : str.toLowerCase().contains(pattern);
+            }
+        }
+
+        OutputPane getPane() {
+            return pane;
+        }
+
+        OutWriter getWriter() {
+            return out;
+        }
+
+        synchronized void readFrom(OutWriter orig) {
+            AbstractLines lines = (AbstractLines) orig.getLines();
+            while (readCount < lines.getLineCount()) {
+                try {
+                    int line = readCount++;
+                    String str = lines.getLine(line);
+                    if (!passFilter(str)) {
+                        continue;
+                    }
+                    OutputListener l = lines.getListenerForLine(line);
+                    Color c = lines.getLineColor(line);
+                    boolean imp = lines.isImportantHyperlink(line);
+                    boolean err = lines.isErr(line);
+                    if (l != null || c != null) {
+                        out.print(str, l, imp, c, false);
+                    } else {
+                        out.print(str);
+                    }
+                    if (err) {
+                        ((AbstractLines) out.getLines()).markErr();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        void dispose() {
+            out.dispose();
         }
     }
 }

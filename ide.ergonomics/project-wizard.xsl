@@ -108,13 +108,15 @@
 
     <!-- attach type -->
     <xsl:template match="file" mode="attach-types">
-        <xsl:element name="file">
-            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:if test="@url">
-                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
-            </xsl:if>
-            <xsl:apply-templates mode="attach-types"/>
-        </xsl:element>
+        <xsl:if test="attr[@stringvalue='org.netbeans.spi.debugger.ui.AttachType']">
+            <xsl:element name="file">
+                <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+                <xsl:if test="@url">
+                    <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+                </xsl:if>
+                <xsl:apply-templates mode="attach-types"/>
+            </xsl:element>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="attr[@name='instanceCreate']" mode="attach-types">

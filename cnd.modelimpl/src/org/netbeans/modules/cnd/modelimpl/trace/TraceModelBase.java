@@ -70,7 +70,7 @@ public class TraceModelBase {
     // to be based on the file that we currently compile rather then current dir
     private boolean pathsRelCurFile = false;
 
-    public TraceModelBase() {
+    public TraceModelBase(boolean clearCache) {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
@@ -79,7 +79,9 @@ public class TraceModelBase {
             model = new ModelImpl();
         }
         model.startup();
-        RepositoryUtils.cleanCashes();
+        if (clearCache) {
+            RepositoryUtils.cleanCashes();
+        }
         currentIncludePaths = quoteIncludePaths;
     }
 
@@ -89,12 +91,14 @@ public class TraceModelBase {
         this.currentIncludePaths = this.quoteIncludePaths;
     }
 
-    protected final void shutdown() {
+    protected final void shutdown(boolean clearCache) {
         waitModelTasks();
         model.shutdown();
         waitModelTasks();
-        RepositoryUtils.cleanCashes();
-        RepositoryUtils.debugClear();
+        if (clearCache){
+            RepositoryUtils.cleanCashes();
+            RepositoryUtils.debugClear();
+        }
     }
 
     private void waitModelTasks() {

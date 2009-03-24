@@ -46,6 +46,10 @@ import javax.swing.text.BadLocationException;
 /**
  * Reformat task performs actual reformatting within offset bounds of the given context.
  *
+ * Since org.netbeans.modules.editor.indent/2 1.12 classes implementing this
+ * interface can implement also Lookup.Provider and provide a lookup which will be
+ * available to formatters via {@link Context#getLookup()}.
+ *
  * @author Miloslav Metelka
  */
 

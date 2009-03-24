@@ -38,14 +38,12 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  * Run an interactive remote command. This class differs from RemoteCommandSupport in that
@@ -59,6 +57,7 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
     private OutputStream out;
     private final String cmd;
     private final Map<String, String> env;
+    private final Process process;
 
     public RemoteInteractiveCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
         this(execEnv, cmd, env, null, null);
@@ -71,49 +70,50 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         this.in = in;
         this.out = out;
 
-        if (!isFailedOrCancelled()) {
+        if (isFailedOrCancelled()) {
+            process = null;
+        } else {
             log.fine("RemoteInteractiveCommandSupport<Init>: Running [" + cmd + "] on " + execEnv);
-            try {
-                channel = createChannel();
-            } catch (JSchException jse) {
-            }
+            process = createProcess();
         }
     }
-    
-    public InputStream getInputStream() throws IOException {
-        return channel.getInputStream();
-    }
-    
-    public OutputStream getOutputStream() throws IOException {
-        return channel.getOutputStream();
-    }
 
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        StringBuilder cmdline = new StringBuilder();
-
-        if (env != null) {
-            cmdline.append(ShellUtils.prepareExportString(env));
+    private Process createProcess() {
+        try {
+            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+            pb = pb.addEnvironmentVariables(env);
+            return pb.call();
+        } catch (IOException ioe) {
+            log.warning("IO failure during running " + cmd + " : " + ioe.getMessage());
+            return null;
         }
-        cmdline.append(cmd);
-
-        echannel.setCommand(ShellUtils.wrapCommand(key, cmdline.toString()));
-        echannel.setInputStream(in);
-        echannel.setOutputStream(out);
-        echannel.setErrStream(out);
-        echannel.connect();
-        return echannel;
     }
+
+    
+//    protected String substituteCommand() {
+//        StringBuilder cmdline = new StringBuilder();
+//
+//        if (env != null) {
+//            cmdline.append(ShellUtils.prepareExportString(env));
+//        }
+//        cmdline.append(cmd);
+//
+//        return ShellUtils.wrapCommand(executionEnvironment, cmdline.toString());
+//    }
 
     int waitFor() {
-        while (channel != null && !channel.isClosed() && channel.isConnected()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
+        try {
+            return (process == null) ? -1 : process.waitFor();
+        } catch (InterruptedException ex) {
+            return -1; //TODO: (execution) correct error processing
         }
-        return getExitStatus();
+    }
 
+    public InputStream getInputStream() throws IOException {
+        return process == null ? null : process.getInputStream();
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return process == null ? null : process.getOutputStream();
     }
 }

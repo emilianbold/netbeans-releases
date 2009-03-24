@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -48,16 +49,36 @@ import org.openide.util.lookup.ServiceProviders;
  *
  */
 @ServiceProviders({
-    @ServiceProvider(service = DataCollectorFactory.class)
+    @ServiceProvider(service = DataCollectorFactory.class),
+    @ServiceProvider(service = IndicatorDataProviderFactory.class)
 })
 public final class MultipleDtraceDataCollectorFactory
-        implements DataCollectorFactory<MultipleDTDCConfiguration> {
+    implements DataCollectorFactory<MultipleDTDCConfiguration>,
+    IndicatorDataProviderFactory<MultipleDTDCConfiguration> {
+
+    private final Object lock = new Object();
+    
+    private MultipleDtraceDataCollector currentCollector = null;
 
     public MultipleDtraceDataCollector create(MultipleDTDCConfiguration configuration) {
-        return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
+        //return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
+        synchronized (lock) {
+            if (currentCollector == null) {
+                currentCollector = new MultipleDtraceDataCollector(configuration);
+            } else {
+                currentCollector.addConfiguration(configuration);
+            }
+            return currentCollector;
+        }
     }
 
     public String getID() {
         return MultipleDTDCConfigurationAccessor.getDefault().getID();
+    }
+
+    public void reset() {
+        synchronized (lock) {
+            currentCollector = null;
+        }
     }
 }

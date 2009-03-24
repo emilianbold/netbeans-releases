@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.sps.impl.SPSLocalImpl;
 import org.netbeans.modules.nativeexecution.sps.impl.SPSRemoteImpl;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
 public final class SolarisPrivilegesSupportProvider {
 
@@ -56,25 +56,29 @@ public final class SolarisPrivilegesSupportProvider {
 
     public static SolarisPrivilegesSupport getSupportFor(ExecutionEnvironment execEnv) {
         SolarisPrivilegesSupport result = instances.get(execEnv);
+
         if (result == null) {
             if (execEnv.isLocal()) {
                 try {
                     result = SPSLocalImpl.getNewInstance(execEnv);
                 } catch (SignatureException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getInstance().severe("Resource signature is wrong: " + ex.getMessage()); // NOI18N
                 } catch (MissingResourceException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getInstance().severe("Resource not found: " + ex.getMessage()); // NOI18N
                 }
             } else {
                 result = SPSRemoteImpl.getNewInstance(execEnv);
             }
 
-            SolarisPrivilegesSupport oldRef = instances.putIfAbsent(execEnv, result);
+            if (result != null) {
+                SolarisPrivilegesSupport oldRef = instances.putIfAbsent(execEnv, result);
 
-            if (oldRef != null) {
-                result = oldRef;
+                if (oldRef != null) {
+                    result = oldRef;
+                }
             }
         }
+
         return result;
     }
 }

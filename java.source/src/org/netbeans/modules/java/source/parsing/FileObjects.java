@@ -721,24 +721,41 @@ public class FileObjects {
 	}
 
 	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-            
+        return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
+    }
+	@Override
+	public boolean equals(Object other) {
+	    if (!(other instanceof RegularFileObject))
+		return false;
+	    RegularFileObject o = (RegularFileObject) other;
+	    return f.equals(o.f);
+	}
+
+	@Override
+	public int hashCode() {
+	    return f.hashCode();
+	}
+        
+    }
+    
+	public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
             char[] result;
             Reader in;
-            
+
             if (encoding != null) {
-                in = new InputStreamReader (new FileInputStream(this.f), encoding);
+                in = new InputStreamReader (ins, encoding);
             } else {
-                in = new InputStreamReader (new FileInputStream(this.f));
+                in = new InputStreamReader (ins);
             }
-            if (this.filter != null) {
-                in = this.filter.filterReader(in);
+            if (filter != null) {
+                in = filter.filterReader(in);
             }
             int red = 0;
             try {
-                int len = (int)this.f.length();
+                int len = (int) expectedLength;
                 if (len == 0) len++; //len - red would be 0 while reading from the stream
                 result = new char [len+1];
-                int rv;	    
+                int rv;
                 while ((rv=in.read(result,red,len-red))>=0) {
                     red += rv;
                     //In case the filter enlarged the file
@@ -756,22 +773,6 @@ public class FileObjects {
             CharSequence buffer = CharBuffer.wrap (result, 0, red);
             return buffer;
 	}
-
-	@Override
-	public boolean equals(Object other) {
-	    if (!(other instanceof RegularFileObject))
-		return false;
-	    RegularFileObject o = (RegularFileObject) other;
-	    return f.equals(o.f);
-	}
-
-	@Override
-	public int hashCode() {
-	    return f.hashCode();
-	}
-        
-    }
-    
     
     private static class NewFromTemplateFileObject extends RegularFileObject {
         

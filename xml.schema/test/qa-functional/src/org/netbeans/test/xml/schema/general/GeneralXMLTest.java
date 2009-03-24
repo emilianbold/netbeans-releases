@@ -869,5 +869,4 @@ public class GeneralXMLTest extends JellyTestCase {
         fail( "Invalid new element name, expected \"" + sResult + "\", found \"" + sText + "\"" );
     }
   }
-
 }

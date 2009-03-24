@@ -736,21 +736,19 @@ final class ModuleListParser {
             // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
             // Neither operation is likely to be needed, but just in case.
             File build = fu.normalize(fu.resolveFile(basedir, buildS).getAbsolutePath());
-            if (!build.isDirectory()) {
-                throw new IOException("No such netbeans.dest.dir: " + build);
-            }
-
-            // expand clusters in build
-            File[] clusters = build.listFiles();
-            if (clusters == null) {
-                throw new IOException("Cannot examine dir " + build);
-            }
-
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
             if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans"))) {
                 // Potentially orphaned module to be built against specific binaries, plus perhaps other source deps.
+                if (!build.isDirectory()) {
+                    throw new IOException("No such netbeans.dest.dir: " + build);
+                }
+                // expand clusters in build
+                File[] clusters = build.listFiles();
+                if (clusters == null) {
+                    throw new IOException("Cannot examine dir " + build);
+                }
                 entries = scanBinaries(project, clusters);
                 // Add referenced module in case it does not appear otherwise.
                 Entry e = scanStandaloneSource(properties, project);

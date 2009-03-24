@@ -56,79 +56,131 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
 /**
- * 
+ *
  * @author Peter Williams
  */
 public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refreshable {
-    
+
     private Lookup lookup;
+    private String type;
     private final static Node WAIT_NODE = Hk2ItemNode.createWaitNode();
-    
-    Hk2ResourcesChildren(Lookup lookup) {
+
+    Hk2ResourcesChildren(Lookup lookup, String type) {
         this.lookup = lookup;
+        this.type = type;
     }
 
     public void updateKeys(){
-        setKeys(new Object[] { WAIT_NODE });
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            Vector<Object> keys = new Vector<Object>();
-            
-            public void run() {
-                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
-                if(commonSupport != null) {
-                    try {
-                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(ip);
-                        
-                        Decorator decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_CONNECTION_POOL, null);
-                        if(decorator instanceof ResourceDecorator) {
-                            List<ResourceDesc> cpList = mgr.getResources(GlassfishModule.JDBC_CONNECTION_POOL);
-                            for(ResourceDesc resource: cpList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, ConnectionPoolCustomizer.class));
-                            }
-                        }
-                        
-                        decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_RESOURCE, null);
-                        if(decorator instanceof ResourceDecorator) {
-                            List<ResourceDesc> jdbcList = mgr.getResources(GlassfishModule.JDBC_RESOURCE);
-                            for(ResourceDesc resource: jdbcList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, JdbcResourceCustomizer.class));
-                            }
-                        }
-                    } catch (Exception ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                    }
-                    
-                    setKeys(keys);
-                }
+        Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
+        String[] childTypes = NodeTypes.getChildTypes(type);
+        if(childTypes != null) {
+            for(int i = 0; i < childTypes.length; i++) {
+                String childtype = childTypes[i];
+                keys.add(new Hk2ItemNode(lookup,
+                    new Hk2Resources(lookup, childtype),
+                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+childtype), //TODO
+                    Hk2ItemNode.REFRESHABLE_FOLDER));
             }
-        }, 0);
+        }
+        setKeys(keys);
+
     }
-    
+
     @Override
     protected void addNotify() {
         updateKeys();
     }
-    
+
     @Override
     protected void removeNotify() {
         setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
-    
+
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof Hk2ItemNode){
             return new Node [] { (Hk2ItemNode) key };
         }
-        
+
         if (key instanceof String && key.equals(WAIT_NODE)){
             return new Node [] { WAIT_NODE };
         }
-        
+
         return null;
+    }
+
+    class Hk2Resources extends Children.Keys<Object> implements Refreshable {
+
+        private Lookup lookup;
+        private String type;
+
+        private final Node WAIT_NODE = Hk2ItemNode.createWaitNode();
+
+        Hk2Resources(Lookup lookup, String type) {
+            this.lookup = lookup;
+            this.type = type;
+        }
+
+        public void updateKeys() {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                Vector<Object> keys = new Vector<Object>();
+
+                public void run() {
+                    GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                    if (commonSupport != null) {
+                        try {
+                            java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                            CommandRunner mgr = new CommandRunner(ip);
+                            Decorator decorator = DecoratorManager.findDecorator(type, null);
+                            List<ResourceDesc> reslourcesList = mgr.getResources(type);
+                            for (ResourceDesc resource : reslourcesList) {
+                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(type)));
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+
+                        setKeys(keys);
+                    }
+                }
+            }, 0);
+        }
+
+        @Override
+        protected void addNotify() {
+            updateKeys();
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
+        }
+
+        protected org.openide.nodes.Node[] createNodes(Object key) {
+            if (key instanceof Hk2ItemNode) {
+                return new Node[]{(Hk2ItemNode) key};
+            }
+
+            if (key instanceof String && key.equals(WAIT_NODE)) {
+                return new Node[]{WAIT_NODE};
+            }
+
+            return null;
+        }
+
+        private Class getCustomizer(String type){
+            Class customizer = null;
+            if(type.equals(GlassfishModule.JDBC_CONNECTION_POOL)){
+                customizer = ConnectionPoolCustomizer.class;
+            }else if(type.equals(GlassfishModule.JDBC_RESOURCE)){
+                customizer = JdbcResourceCustomizer.class;
+            }
+            return customizer;
+        }
     }
 }

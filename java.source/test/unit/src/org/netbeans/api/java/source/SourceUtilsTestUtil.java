@@ -47,27 +47,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.ActivatedDocumentListener;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -85,7 +80,6 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -100,7 +94,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     private static SourceUtilsTestUtil DEFAULT_LOOKUP = null;
     
     public SourceUtilsTestUtil() {
-        Assert.assertNull(DEFAULT_LOOKUP);
+//        Assert.assertNull(DEFAULT_LOOKUP);
         DEFAULT_LOOKUP = this;
     }
     
@@ -182,21 +176,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
      * and the caches are created for them.
      */
     public static void compileRecursively(FileObject sourceRoot) throws Exception {
-        List<FileObject> queue = new LinkedList();
-        
-        queue.add(sourceRoot);
-        
-        while (!queue.isEmpty()) {
-            FileObject file = queue.remove(0);
-            
-            if (file.isData()) {
-                CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(file, sourceRoot);
-                
-                l.await(60, TimeUnit.SECONDS);
-            } else {
-                queue.addAll(Arrays.asList(file.getChildren()));
-            }
-        }
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
     }
 
     private static List<URL> bootClassPath;

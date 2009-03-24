@@ -42,7 +42,6 @@
  *
  * Created on 04.12.2008, 15:20:12
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.util.LinkedList;
@@ -50,13 +49,14 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListElementEventSourceCD;
 
 /**
  *
  * @author den
  */
 public class SVGListPropertyCustomEditor extends javax.swing.JPanel {
-    
+
     private static final String NEW_LINE = "\n";    // NOI18N
     private static final String CARET_RET = "\r";   // NOI18N
 
@@ -102,32 +102,51 @@ public class SVGListPropertyCustomEditor extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    void cleanUp(){
-        
+
+    void cleanUp() {
     }
 
-    void setValue( PropertyValue value ) {
+    void removeElemnts() {
+        myTextArea.setText(null);
+        myTextArea.removeAll();
+    }
+
+    void setValue(PropertyValue value) {
+        myTextArea.setText(null);
+        myTextArea.removeAll();
         List<PropertyValue> list = value.getArray();
-        if ( list != null ){
-            int i=0;
+        if (list == null || !list.iterator().hasNext()) {
+            return;
+        }
+        if (list.iterator().next().getType() != SVGListElementEventSourceCD.TYPEID) {
+            int i = 0;
             for (PropertyValue propertyValue : list) {
                 String item = propertyValue.getPrimitiveValue().toString();
                 i++;
-                myTextArea.append( item );
-                if ( i != list.size() ){
+                myTextArea.append(item);
+                if (i != list.size()) {
+                    myTextArea.append(NEW_LINE);
+                }
+            }
+        } else {
+            int i = 0;
+            for (PropertyValue propertyValue : list) {
+                String item = (String) propertyValue.getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
+                i++;
+                myTextArea.append(item);
+                if (i != list.size()) {
                     myTextArea.append(NEW_LINE);
                 }
             }
         }
     }
-    
-    List<String> getValue(){
+
+    List<String> getValue() {
         String text = myTextArea.getText();
-        StringTokenizer tokenizer = new StringTokenizer( text , NEW_LINE + CARET_RET);
+        StringTokenizer tokenizer = new StringTokenizer(text, NEW_LINE + CARET_RET);
         List<String> result = new LinkedList<String>();
-        while ( tokenizer.hasMoreTokens() ){
-            result.add( tokenizer.nextToken() );
+        while (tokenizer.hasMoreTokens()) {
+            result.add(tokenizer.nextToken());
         }
         return result;
     }
@@ -137,5 +156,4 @@ public class SVGListPropertyCustomEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane myScrollPane;
     private javax.swing.JTextArea myTextArea;
     // End of variables declaration//GEN-END:variables
-
 }

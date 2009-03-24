@@ -40,111 +40,111 @@
  */
 package org.netbeans.modules.refactoring.javascript.plugins;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsUtils;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.ModificationResult;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.javascript.RetoucheUtils;
-import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public abstract class JsRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, CancellableTask<CompilationController> {
+public abstract class JsRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
-    private Phase whatRun = Phase.DEFAULT;
-    private Problem problem;
-    protected volatile boolean cancelRequest = false;
-    private volatile CancellableTask currentTask;
+// XXX: parsingapi
+//    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
+    private boolean cancelled;
     
 
-    protected abstract Problem preCheck(CompilationController javac) throws IOException;
-    protected abstract Problem checkParameters(CompilationController javac) throws IOException;
-    protected abstract Problem fastCheckParameters(CompilationController javac) throws IOException;
-
-    protected abstract Source getJsSource(Phase p);
-
-    public void cancel() {
-    }
-
-    public final void run(CompilationController javac) throws Exception {
-        switch(whatRun) {
-        case PRECHECK:
-            this.problem = preCheck(javac);
-            break;
-        case CHECKPARAMETERS:
-            this.problem = checkParameters(javac);
-            break;
-        case FASTCHECKPARAMETERS:
-            this.problem = fastCheckParameters(javac);
-            break;
-        default:
-            throw new IllegalStateException();
-        }
-    }
+// XXX: parsingapi
+//    protected abstract Problem preCheck(ResultIterator resultIterator) throws IOException;
+//    protected abstract Problem checkParameters(ResultIterator resultIterator) throws IOException;
+//    protected abstract Problem fastCheckParameters(ResultIterator resultIterator) throws IOException;
+//
+//    protected abstract Source getJsSource(Phase p);
+//
+//    public final Problem preCheck() {
+//        return run(Phase.PRECHECK);
+//    }
+//
+//    public final Problem checkParameters() {
+//        return run(Phase.CHECKPARAMETERS);
+//    }
+//
+//    public final Problem fastCheckParameters() {
+//        return run(Phase.FASTCHECKPARAMETERS);
+//    }
+//
+//    private Problem run(final Phase refactorinPhase) {
+//        Source js = getJsSource(refactorinPhase);
+//        if (js == null) {
+//            return null;
+//        }
+//
+//        try {
+//            final Problem [] problem = new Problem [] { null };
+//
+//            ParserManager.parse(Collections.singleton(js), new UserTask() {
+//                public @Override void run(ResultIterator resultIterator) throws Exception {
+//                    switch(refactorinPhase) {
+//                    case PRECHECK:
+//                        problem[0] = JsRefactoringPlugin.this.preCheck(resultIterator);
+//                        break;
+//                    case CHECKPARAMETERS:
+//                        problem[0] = JsRefactoringPlugin.this.checkParameters(resultIterator);
+//                        break;
+//                    case FASTCHECKPARAMETERS:
+//                        problem[0] = JsRefactoringPlugin.this.fastCheckParameters(resultIterator);
+//                        break;
+//                    default:
+//                        throw new IllegalStateException();
+//                    }
+//                }
+//            });
+//
+//            return problem[0];
+//        } catch (ParseException ex) {
+//            throw new RuntimeException(ex);
+//        }
+//    }
     
-    public Problem preCheck() {
-        return run(Phase.PRECHECK);
-    }
-
-    public Problem checkParameters() {
-        return run(Phase.CHECKPARAMETERS);
-    }
-
-    public Problem fastCheckParameters() {
-        return run(Phase.FASTCHECKPARAMETERS);
-    }
-
-    private Problem run(Phase s) {
-        this.whatRun = s;
-        this.problem = null;
-        Source js = getJsSource(s);
-        if (js==null) {
-            return null;
-        }
-        try {
-            js.runUserActionTask(this, true);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return problem;
-    }
-    
-    public void cancelRequest() {
-        cancelRequest = true;
-        if (currentTask!=null) {
-            currentTask.cancel();
+    public final void cancelRequest() {
+        synchronized (this) {
+            cancelled = true;
         }
     }
 
-    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        if (cpInfo==null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
-            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
-            refactoring.getContext().add(cpInfo);
+    protected final boolean isCancelled() {
+        synchronized (this) {
+            return cancelled;
         }
-        return cpInfo;
     }
+
+// XXX: parsingapi
+//    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
+//        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+//        if (cpInfo==null) {
+//            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
+//            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
+//            refactoring.getContext().add(cpInfo);
+//        }
+//        return cpInfo;
+//    }
     
     protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
@@ -165,81 +165,82 @@ public abstract class JsRefactoringPlugin extends ProgressProviderAdapter implem
             return result;
         }
     }
-    
-    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
-        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
-        for (FileObject file : data) {
-            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-            if (cp != null) {
-                FileObject root = cp.findOwnerRoot(file);
-                if (root != null) {
-                    List<FileObject> subr = result.get (root);
-                    if (subr == null) {
-                        subr = new LinkedList<FileObject>();
-                        result.put (root,subr);
-                    }
-                    subr.add (file);
+
+// XXX: parsingapi
+//    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
+//        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
+//        for (FileObject file : data) {
+//            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+//            if (cp != null) {
+//                FileObject root = cp.findOwnerRoot(file);
+//                if (root != null) {
+//                    List<FileObject> subr = result.get (root);
+//                    if (subr == null) {
+//                        subr = new LinkedList<FileObject>();
+//                        result.put (root,subr);
+//                    }
+//                    subr.add (file);
+//                }
+//            }
+//        }
+//        return result.values();
+//    }
+
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, TransformTask task) {
+        // Process Ruby files and RHTML files separately - and OTHER files separately
+        // TODO - now that I don't need separate RHTML models any more, can
+        // I just do a single pass?
+        Set<Source> sources = new HashSet<Source>(2*files.size());
+        for (FileObject file : files) {
+            if (RetoucheUtils.isJsFile(file)) {
+                // RetoucheUtils.isJsFile includes HTML files, PHP files, etc.
+                // where as JsUtils.isJsFile includes ONLY pure JavaScript files
+                if ((!JsUtils.isJsFile(file)) && file.getSize() >= 1024*1024) {
+                    // Skip really large HTML files
+                    continue;
                 }
+                sources.add(Source.create(file));
             }
         }
-        return result.values();
-    }        
 
-    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
-        currentTask = task;
-        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
-            // Process Ruby files and RHTML files separately - and OTHER files separately
-            // TODO - now that I don't need separate RHTML models any more, can
-            // I just do a single pass?
-            Set<FileObject> jsFiles = new HashSet<FileObject>(2*files.size());
-            for (FileObject file : files) {
-                if (RetoucheUtils.isJsFile(file)) {
-                    // RetoucheUtils.isJsFile includes HTML files, PHP files, etc.
-                    // where as JsUtils.isJsFile includes ONLY pure JavaScript files
-                    if ((!JsUtils.isJsFile(file)) && file.getSize() >= 1024*1024) {
-                        // Skip really large HTML files
-                        continue;
-                    }
-                    jsFiles.add(file);
-                }
-            }
-
-            Iterable<? extends List<FileObject>> work = groupByRoot(jsFiles);
-            for (List<FileObject> fos : work) {
-                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
-                try {
-                    results.add(source.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
-            }
-        } finally {
-            currentTask = null;
+            ParserManager.parse(sources, task);
+            return task.results;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
-        return results;
+        
+//        Iterable<? extends List<FileObject>> work = groupByRoot(jsFiles);
+//        for (List<FileObject> fos : work) {
+//            final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
+//            try {
+//                results.add(source.runModificationTask(task));
+//            } catch (IOException ex) {
+//                throw (RuntimeException) new RuntimeException().initCause(ex);
+//            }
+//        }
     }
     
-    protected class TransformTask implements CancellableTask<WorkingCopy> {
-        private SearchVisitor visitor;
-        private JsElementCtx treePathHandle;
-        public TransformTask(SearchVisitor visitor, JsElementCtx searchedItem) {
-            this.visitor = visitor;
-            this.treePathHandle = searchedItem;
-        }
+    protected abstract class TransformTask extends UserTask {
+        private final Collection<ModificationResult> results = new ArrayList<ModificationResult>();
         
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            visitor.setWorkingCopy(compiler);
-            visitor.scan();
-            
-            //for (JsElementCtx tree : visitor.getUsages()) {
-            //    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            //}
-
+        public final void run(ResultIterator resultIterator) throws ParseException {
+            visit(resultIterator);
             fireProgressListenerStep();
         }
-    }
+
+        protected abstract Collection<ModificationResult> process(JsParseResult jspr);
+
+        private void visit(ResultIterator resultIterator) throws ParseException {
+            if (resultIterator.getSnapshot().getMimeType().equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+                JsParseResult jspr = AstUtilities.getParseResult(resultIterator.getParserResult());
+                Collection<ModificationResult> r = process(jspr);
+                results.addAll(r);
+            }
+
+            for(Embedding e : resultIterator.getEmbeddings()) {
+                visit(resultIterator.getResultIterator(e));
+            }
+        }
+    } // End of TransformTask class
 }

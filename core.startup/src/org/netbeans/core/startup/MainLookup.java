@@ -122,10 +122,12 @@ public final class MainLookup extends ProxyLookup {
      * @see "#28465"
      */
     public static final void moduleLookupReady(Lookup moduleLookup) {
-        MainLookup l = (MainLookup)Lookup.getDefault();
-        Lookup[] newDelegates = l.getLookups().clone();
-        newDelegates[2] = moduleLookup;
-        l.setLookups(newDelegates);
+        if (Lookup.getDefault() instanceof MainLookup) {
+            MainLookup l = (MainLookup)Lookup.getDefault();
+            Lookup[] newDelegates = l.getLookups().clone();
+            newDelegates[2] = moduleLookup;
+            l.setLookups(newDelegates);
+        }
     }
 
     /** When all module classes are accessible thru systemClassLoader, this

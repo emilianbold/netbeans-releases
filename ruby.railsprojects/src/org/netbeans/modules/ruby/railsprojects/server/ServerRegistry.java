@@ -67,11 +67,16 @@ import org.openide.util.lookup.Lookups;
  * possibly implement an instance provider for WEBrick/Mongrel instead of 
  * handling them here.
  * 
- * @author peterw99, Erno Mononen
+ * @author peterw99, Erno Mononen, Michal Papis
  */
 public class ServerRegistry implements VetoableChangeListener {
 
     private static ServerRegistry defaultRegistry;
+
+    /**
+     * Switch for enabling support for Phusion Passenger.
+     */
+    private static boolean ENABLE_PASSENGER = Boolean.getBoolean("passenger.support"); //NOI18N
 
     private ServerRegistry() {
     }
@@ -161,6 +166,9 @@ public class ServerRegistry implements VetoableChangeListener {
             result.initGlassFish();
             result.initMongrel();
             result.initWEBrick();
+            if (ENABLE_PASSENGER) {
+                result.initPassenger();
+            }
             platform.addPropertyChangeListener(result);
             instances.put(platform, result);
             return result;
@@ -223,6 +231,29 @@ public class ServerRegistry implements VetoableChangeListener {
 
         private void initWEBrick() {
             WEBrick candidate = new WEBrick(platform);
+            if (!servers.contains(candidate)) {
+                servers.add(candidate);
+            }
+        }
+
+        private void initPassenger() {
+            GemManager gemManager = platform.getGemManager();
+            if (gemManager == null) {
+                return;
+            }
+
+            String passengerVersion = gemManager.getLatestVersion(Passenger.GEM_NAME);
+            if (passengerVersion == null) {
+                // remove all passengers
+                for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
+                    if (it.next() instanceof Passenger) {
+                        it.remove();
+                    }
+                }
+                return;
+
+            }
+            Passenger candidate = new Passenger(platform, passengerVersion);
             if (!servers.contains(candidate)) {
                 servers.add(candidate);
             }

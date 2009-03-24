@@ -99,6 +99,7 @@ public final class Product extends RegistryNode implements StatusInterface {
     
     private Status initialStatus;
     private Status currentStatus;
+    private boolean reinstallationForced;
     
     private List<ExtendedUri> logicUris;
     private List<ExtendedUri> dataUris;
@@ -728,13 +729,19 @@ public final class Product extends RegistryNode implements StatusInterface {
     public Status getStatus() {
         return currentStatus;
     }
-    
+
     public void setStatus(final Status status) {
         if (initialStatus == null) {
             initialStatus = status;
         }
-        
+
         currentStatus = status;
+
+        if (initialStatus == Status.INSTALLED &&
+                currentStatus == Status.TO_BE_INSTALLED) {
+            reinstallationForced = true;
+        }
+
     }
     
     public boolean hasStatusChanged() {
@@ -746,10 +753,11 @@ public final class Product extends RegistryNode implements StatusInterface {
             if (getUninstallationError() != null) {
                 return DetailedStatus.FAILED_TO_UNINSTALL;
             }
-            if (hasStatusChanged() && (getInstallationWarnings() != null)) {
+            if ((hasStatusChanged() || reinstallationForced)
+                    && (getInstallationWarnings() != null)) {
                 return DetailedStatus.INSTALLED_WITH_WARNINGS;
             }
-            if (hasStatusChanged()) {
+            if (hasStatusChanged() || reinstallationForced) {
                 return DetailedStatus.INSTALLED_SUCCESSFULLY;
             }
         }

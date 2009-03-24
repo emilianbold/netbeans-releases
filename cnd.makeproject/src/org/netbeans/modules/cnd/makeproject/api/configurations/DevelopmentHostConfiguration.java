@@ -40,6 +40,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -48,25 +51,28 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author gordonp
  */
 public class DevelopmentHostConfiguration {
 
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
     private final int def;
+
+    // TODO: rewrite! list/value concept is error prone!
+
     private int value;
-    private String[] names;
+    private List<ExecutionEnvironment> servers;
+
     private boolean modified;
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
     private static ServerList serverList = null;
 
-    public DevelopmentHostConfiguration(String host) {
-        names = getServerNames();
+    public DevelopmentHostConfiguration(ExecutionEnvironment execEnv) {
+        servers = getServerEnvironments();
         value = 0;
-        for (int i = 0; i < names.length; i++) {
-            if (host.equals(names[i])) {
+        for (int i = 0; i < servers.size(); i++) {
+            if (execEnv.equals(servers.get(i))) {
                 value = i;
                 break;
             }
@@ -75,8 +81,9 @@ public class DevelopmentHostConfiguration {
         pcs = new PropertyChangeSupport(this);
     }
 
+    /** TODO: deprecate and remove, see #158983 */
     public String getName() {
-        return names[value];
+        return ExecutionEnvironmentFactory.getHostKey(servers.get(value));
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -84,7 +91,7 @@ public class DevelopmentHostConfiguration {
     }
 
     public String getDisplayName(boolean displayIfNotFound) {
-        String out = names[value];
+        String out = getName();
         if (displayIfNotFound && !isOnline()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
@@ -106,9 +113,10 @@ public class DevelopmentHostConfiguration {
     }
 
     public void setValue(final String v, boolean firePC) {
-        for (int i = 0; i < names.length; i++) {
-            if (v.equals(names[i])) {
-                String oname = names[value];
+        for (int i = 0; i < servers.size(); i++) {
+            String currName = ExecutionEnvironmentFactory.getHostKey(servers.get(i));
+            if (v.equals(currName)) {
+                String oname = currName;
                 value = i;
                 if (firePC) {
                     pcs.firePropertyChange(PROP_DEV_HOST, oname, this);
@@ -122,20 +130,20 @@ public class DevelopmentHostConfiguration {
         // User will be asked about connection after choosing action like build for this particular project
         // or after click on brand-new "..." button!
         addDevelopmentHost(v);
-        names = getServerNames();
+        servers = getServerEnvironments();
         setValue(v, firePC);
     }
 
     private boolean addDevelopmentHost(String host) {
         ServerList list = Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.addServer(host, false, false);
+            list.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(host), false, false);
         }
         return list != null;
     }
 
     public void reset() {
-        names = getServerNames();
+        servers = getServerEnvironments();
         value = def;
     }
 
@@ -156,8 +164,8 @@ public class DevelopmentHostConfiguration {
         String oldName = getName();
         String newName = conf.getName();
 
-        if (names.length != conf.names.length) {
-            names = getServerNames();
+        if (servers.size() != conf.servers.size()) {
+            servers = getServerEnvironments();
             dirty2 = true;
         }
         if (!newName.equals(oldName)) {
@@ -169,7 +177,7 @@ public class DevelopmentHostConfiguration {
 
     @Override
     public DevelopmentHostConfiguration clone() {
-        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
+        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getExecutionEnvironment());
         // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());
         return clone;
@@ -184,11 +192,19 @@ public class DevelopmentHostConfiguration {
     }
 
     public String[] getServerNames() {
-        if (getServerList() != null) {
-            String[] nu = getServerList().getServerNames();
-            return nu;
+        List<String> l = new ArrayList<String>();
+        int pos = 0;
+        for (ExecutionEnvironment env : getServerEnvironments()) {
+            l.add(ExecutionEnvironmentFactory.getHostKey(env));
         }
-        return new String[]{CompilerSetManager.LOCALHOST};
+        return l.toArray(new String[l.size()]);
+    }
+
+    public List<ExecutionEnvironment> getServerEnvironments() {
+        if (getServerList() != null) {
+            return getServerList().getEnvironments();
+        }
+        return Arrays.asList(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
     }
 
     private static ServerList getServerList() {

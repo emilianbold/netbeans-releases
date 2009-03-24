@@ -57,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 
@@ -191,11 +192,10 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         // destroy method.
         SchemaModel model = reference.get().getModel();
         if (model != null) {
-            weakModelListener=
-                    WeakListeners.propertyChange(this,model);
+            weakModelListener = WeakListeners.propertyChange(awtPCL, model);
             model.addPropertyChangeListener(weakModelListener);
             weakComponentListener = (ComponentListener) WeakListeners.create(
-                    ComponentListener.class, this, model);
+                    ComponentListener.class, awtCL, model);
             model.addComponentListener(weakComponentListener);
         }
         // Determine default names for the node
@@ -315,6 +315,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      *
      *
      */
+    @Override
     public boolean equals(Object o) {
         // Without this, the tree view collapses when nodes are changed.
         if (o instanceof SchemaComponentNode) {
@@ -330,6 +331,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      *
      *
      */
+    @Override
     public int hashCode() {
         // Without this, the tree view collapses when nodes are changed.
         return reference.hashCode();
@@ -671,6 +673,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      * Checks for references to this component, and if none are found,
      * remove it from the model.
      */
+    @Override
     public void destroy() throws IOException {
         SchemaModel model = getReference().get().getModel();
         if(model == null) {
@@ -744,6 +747,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
                     "PROP_SchemaComponentNode_IDDesc"),
                     StringEditor.class
                     ){
+                @Override
                 public void setValue(Object o) throws
                         IllegalAccessException, InvocationTargetException {
                     if (o instanceof String) {
@@ -786,6 +790,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
                 }
                 public void setValue(Object val) throws IllegalAccessException,IllegalArgumentException,InvocationTargetException {
                 }
+                @Override
                 public PropertyEditor getPropertyEditor() {
                     return new StructurePropertyEditor();
                 }
@@ -865,6 +870,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         return new NewTypesFactory();
     }
     
+    @Override
     public final NewType[] getNewTypes() {
         if(isEditable()) {
             return getNewTypesFactory().getNewTypes(getReference(), null);
@@ -881,6 +887,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     ////////////////////////////////////////////////////////////////////////////
     
     public void childrenAdded(ComponentEvent evt) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         if (isValid()) {
             if(evt.getSource() == getReference().get())
             {
@@ -895,6 +904,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     }
     
     public void childrenDeleted(ComponentEvent evt) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         if (isValid()) {
             if(evt.getSource() == getReference().get())
             {
@@ -909,6 +921,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     }
     
     public void valueChanged(ComponentEvent evt) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         if (isValid())
         {
             T component = getReference().get();
@@ -944,7 +959,11 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      * Fires properties changed events if needed.
      * Subclasses override if needed.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         if (isValid() && event.getSource() == getReference().get()) {
             try {
                 updateDisplayName();
@@ -1017,6 +1036,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         return name;
     }
     
+    @Override
     public String getDisplayName() {
         String instanceName = getDefaultDisplayName();
         return instanceName.length()==0 ? instanceName : 
@@ -1029,6 +1049,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         ? "" : instanceName; 
     }
     
+    @Override
     public String getHtmlDisplayName() {
         String name = getDefaultDisplayName();
         // Need to escape any HTML meta-characters in the name.
@@ -1043,10 +1064,12 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     
     private class StructurePropertyEditor extends PropertyEditorSupport
             implements ExPropertyEditor {
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return getCustomizer();
         }
@@ -1073,6 +1096,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         new DesignGotoType(),
         new SuperGotoType(),
     };
+
+    private PropertyChangeListener awtPCL = new XAMUtils.AwtPropertyChangeListener(this);
+    private ComponentListener awtCL = new XAMUtils.AwtComponentListener(this);
 
     /**
      * Implement ReferenceableProvider

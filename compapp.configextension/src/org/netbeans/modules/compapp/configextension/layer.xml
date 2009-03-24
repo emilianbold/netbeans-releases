@@ -6,7 +6,7 @@
         <folder name="ConfigExtension">
             <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
             <attr name="extensionType" stringvalue="endpoint"/>
-            <attr name="extensionTarget" stringvalue="sun-http-binding|sun-etl-engine"/>
+            <attr name="extensionTarget" stringvalue=".*-binding|sun-etl-engine|sun-edm-engine|jbi4corba"/>
             <attr name="prefix" stringvalue="config"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/configuration"/>
             <attr name="description" stringvalue="Application Configuration Extension"/>
@@ -36,6 +36,57 @@
                     <attr name="description" stringvalue="Whether to enable this endpoint in the binding component service unit's descriptor"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
+            </folder>
+        </folder>
+
+        <folder name="SSLHostnameVerifierExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionSubType" stringvalue="provide"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="verifier"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/httpbc/ssl/hostname_verifier"/>
+            <attr name="description" stringvalue="SSL Hostname Verifier Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <folder name="hostname-verifier">
+                <file name="verification">
+                    <attr name="type" stringvalue="Boolean"/>
+                    <attr name="defaultValue" stringvalue="true"/>
+                    <attr name="description" stringvalue="Whether to use hostname verification"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+                <!--file name="classname">
+                    <attr name="type" stringvalue="String"/>
+                    <attr name="description" stringvalue="Custom hostname verifier class name"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file-->
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            </folder>
+        </folder>
+
+        <folder name="HTTPClientConnectionExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionSubType" stringvalue="provide"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="clientconn"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/httpbc/client_connection"/>
+            <attr name="description" stringvalue="HTTP Client Connection Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <folder name="client-connection">
+                <file name="connectTimeout">
+                    <attr name="type" stringvalue="NonNegativeInteger"/>
+                    <!--attr name="defaultValue" stringvalue="0"/-->
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+                <file name="readTimeout">
+                    <attr name="type" stringvalue="NonNegativeInteger"/>
+                    <!--attr name="defaultValue" stringvalue="0"/-->
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             </folder>
         </folder>
         

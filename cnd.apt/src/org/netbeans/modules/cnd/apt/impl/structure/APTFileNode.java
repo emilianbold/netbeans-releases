@@ -66,7 +66,7 @@ public final class APTFileNode extends APTContainerNode
     
     /** Creates a new instance of APTFileNode */
     public APTFileNode(CharSequence path) {
-        this.path = FilePathCache.getString(path);
+        this.path = FilePathCache.getManager().getString(path);
         tokenized = true;
     }
     

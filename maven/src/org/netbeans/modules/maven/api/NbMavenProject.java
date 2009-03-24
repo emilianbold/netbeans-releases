@@ -46,7 +46,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -61,6 +65,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.nodes.DependenciesNode;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
@@ -100,6 +105,8 @@ public final class NbMavenProject {
         impl.assign();
     }
     private RequestProcessor.Task task;
+    private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
+    private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
     
     
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
@@ -118,12 +125,9 @@ public final class NbMavenProject {
         public void doFireReload(NbMavenProject watcher) {
             watcher.doFireReload();
         }
-        
+
     }
 
-    public URI getEarAppDirectory() {
-        return project.getEarAppDirectory();
-    }
 
     
     private class FCHSL implements FileChangeListener {
@@ -160,7 +164,11 @@ public final class NbMavenProject {
         project = proj;
         //TODO oh well, the sources is the actual project instance not the watcher.. a problem?
         support = new PropertyChangeSupport(proj);
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        task = createBinaryDownloadTask(BINARYRP);
+    }
+
+    private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
+        return rp.create(new Runnable() {
             public void run() {
                     //#146171 try the hardest to avoid NPE for files/directories that
                     // seemed to have been deleted while the task was scheduled.
@@ -177,12 +185,12 @@ public final class NbMavenProject {
                         return;
                     }
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"), 
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                             null, null);
-                    
-                    boolean ok = true; 
+
+                    boolean ok = true;
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
@@ -260,6 +268,9 @@ public final class NbMavenProject {
         return project.getGeneratedSourceRoots();
     }
     
+    public URI getEarAppDirectory() {
+        return project.getEarAppDirectory();
+    }
     
     public static final String TYPE_JAR = "jar"; //NOI18N
     public static final String TYPE_WAR = "war"; //NOI18N
@@ -307,17 +318,105 @@ public final class NbMavenProject {
     } 
 
     /**
-     * asynchronous dependency download, scheduled to some time in the future.
+     * asynchronous dependency download, scheduled to some time in the future. Useful
+     * for cases when a 3rd party codebase calls maven classes and can do so repeatedly in one sequence.
      */
     public synchronized void triggerDependencyDownload() {
         task.schedule(1000);
     }
 
+    /**
+     * Not to be called from AWT, will wait til the project binary dependency resolution finishes.
+     */
     public synchronized void synchronousDependencyDownload() {
         assert !SwingUtilities.isEventDispatchThread() : " Not to be called from AWT, can take significant amount ot time to download dependencies from the network."; //NOI18N
         task.schedule(0);
         task.waitFinished();
     }
+
+    /**
+     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode)
+     * Not to be called from AWT thread. The current thread will continue after downloading binaries and firing project change event.
+     *
+     */
+    public void downloadDependencyAndJavadocSource() {
+        synchronousDependencyDownload();
+        triggerSourceJavadocDownload(true);
+        triggerSourceJavadocDownload(false);
+    }
+
+
+    public void triggerSourceJavadocDownload(final boolean javadoc) {
+        NONBINARYRP.post(new Runnable() {
+            public void run() {
+                MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                @SuppressWarnings("unchecked")
+                Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
+                ProgressContributor[] contribs = new ProgressContributor[arts.size()];
+                for (int i = 0; i < arts.size(); i++) {
+                    contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N
+                }
+                String label = javadoc ? NbBundle.getMessage(NbMavenProject.class, "Progress_Javadoc") : NbBundle.getMessage(NbMavenProject.class, "Progress_Source");
+                AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
+                        contribs, null, null);
+                handle.start();
+                try {
+                    ProgressTransferListener.setAggregateHandle(handle);
+                    int index = 0;
+                    for (Artifact a : arts) {
+                        downloadOneJavadocSources(online, contribs[index], project, a, javadoc);
+                        index++;
+                    }
+                } finally {
+                    handle.finish();
+                    ProgressTransferListener.clearAggregateHandle();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            fireProjectReload();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    private static void downloadOneJavadocSources(MavenEmbedder online, ProgressContributor progress,
+                                               NbMavenProjectImpl project, Artifact art, boolean isjavadoc) {
+        progress.start(2);
+        if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
+            progress.finish();
+            return;
+        }
+        try {
+            if (isjavadoc) {
+                Artifact javadoc = project.getEmbedder().createArtifactWithClassifier(
+                    art.getGroupId(),
+                    art.getArtifactId(),
+                    art.getVersion(),
+                    art.getType(),
+                    "javadoc"); //NOI18N
+                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Javadoc", art.getId()), 1);
+                online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            } else {
+                Artifact sources = project.getEmbedder().createArtifactWithClassifier(
+                    art.getGroupId(),
+                    art.getArtifactId(),
+                    art.getVersion(),
+                    art.getType(),
+                    "sources"); //NOI18N
+                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Sources",art.getId()), 1);
+                online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            }
+        } catch (ArtifactNotFoundException ex) {
+            // just ignore..ex.printStackTrace();
+        } catch (ArtifactResolutionException ex) {
+            // just ignore..ex.printStackTrace();
+        } finally {
+            progress.finish();
+        }
+    }
+
     
     public synchronized void removeWatchedPath(String relPath) {
         removeWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));

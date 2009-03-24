@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+
 
 /**
  *
@@ -47,7 +50,15 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
  */
 public interface IndexImpl {
 
-    public void addDocument (Indexable indexable, IndexDocumentImpl document);
+    public void addDocument (IndexDocumentImpl document);
 
-    public void removeDocument (Indexable indexable);
+    public void removeDocument (String relativePath);
+
+    public void store () throws IOException;
+
+    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
+
+    public void fileModified(String relativePath);
+
+    public Collection<? extends String> getStaleFiles();
 }

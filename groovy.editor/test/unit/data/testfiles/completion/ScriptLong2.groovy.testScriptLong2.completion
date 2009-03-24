@@ -1,6 +1,6 @@
 Code completion result for source line:
 l.comp|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Long)                 [PUBLIC]   int

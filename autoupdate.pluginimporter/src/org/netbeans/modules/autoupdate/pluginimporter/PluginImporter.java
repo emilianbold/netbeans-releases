@@ -237,6 +237,13 @@ public class PluginImporter {
         dest = FileUtil.normalizeFile (dest);
         FileObject destFolderFO = FileUtil.toFileObject (dest);
 
+        File destFile;
+        if ((destFile = new File (dest, srcFO.getNameExt ())).exists ()) {
+            if (! destFile.delete ()) {
+                // if failed delete of the destFile => don't copy, otherwise will cause #159188
+                return ;
+            }
+        }
         FileObject res = FileUtil.copyFile (srcFO, destFolderFO, srcFO.getName ());
         LOG.finest (srcFO + " was copied to " + destFolderFO + ". Result is: " + res);
     }

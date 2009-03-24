@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -769,7 +769,7 @@ public abstract class TreeView extends JScrollPane {
         return false;
     }
     
-    private TreePath getTreePath(Node node) {
+    TreePath getTreePath(Node node) {
         return new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, node)));
     }
 
@@ -1381,6 +1381,7 @@ public abstract class TreeView extends JScrollPane {
 
             for (int i = 0; i < paths.length; i++) {
                 Node n = Visualizer.findNode(paths[i].getLastPathComponent());
+                n = getOriginalNode (n);
 
                 if( isUnderRoot( manager.getRootContext(), n ) ) {
                     ll.add(n);
@@ -1388,7 +1389,7 @@ public abstract class TreeView extends JScrollPane {
             }
             callSelectionChanged(ll.toArray(new Node[ll.size()]));
         }
-        
+
         /** Checks whether given Node is a subnode of rootContext.
         * @return true if specified Node is under current rootContext
         */
@@ -1416,6 +1417,10 @@ public abstract class TreeView extends JScrollPane {
         }
     }
      // end of TreePropertyListener
+
+    Node getOriginalNode (Node n) {
+        return n;
+    }
 
     /** Popup adapter.
     */

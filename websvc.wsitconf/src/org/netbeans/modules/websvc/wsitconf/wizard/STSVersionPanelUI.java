@@ -48,6 +48,7 @@ package org.netbeans.modules.websvc.wsitconf.wizard;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -65,7 +66,7 @@ public class STSVersionPanelUI extends javax.swing.JPanel {
         initComponents();
 
         // detect and fill appropriate config options
-        WSStackVersion wsStackVersion = Util.getHighestWSStackVersion(project);
+        WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             if ((wsStackVersion == null) && (cfgVersion.isSupported(wsStackVersion))) {
                 supportedConfigVersions.add(cfgVersion);

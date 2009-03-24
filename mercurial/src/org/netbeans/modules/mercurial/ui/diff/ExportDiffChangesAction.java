@@ -46,12 +46,10 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
@@ -61,18 +59,16 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
-import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.*;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
  * Exports diff to file:
@@ -116,12 +112,13 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
+        File [] files = null;
         boolean noop;
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
         if (noop) {
@@ -130,71 +127,22 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        final JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffChangesAction.class, "ACSD_Export"));
-        chooser.setDialogTitle(NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_Export_Title"));
-        chooser.setMultiSelectionEnabled(false);
-        javax.swing.filechooser.FileFilter[] old = chooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            javax.swing.filechooser.FileFilter fileFilter = old[i];
-            chooser.removeChoosableFileFilter(fileFilter);
-
-        }
-        chooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
-        chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
-            public boolean accept(File f) {
-                return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(ExportDiffChangesAction.class, "BK3002");
-            }
-        });
-        
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);        
-        chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffChangesAction.class, "MNE_Export_ExportAction").charAt(0));
-        chooser.setApproveButtonText(NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_Export_ExportAction"));
-        DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_Export_Title"));
-        dd.setOptions(new Object[0]);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-
-        chooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String state = e.getActionCommand();
-                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File destination = chooser.getSelectedFile();
-                    String name = destination.getName();
-                    boolean requiredExt = false;
-                    requiredExt |= name.endsWith(".diff");  // NOI18N
-                    requiredExt |= name.endsWith(".dif");   // NOI18N
-                    requiredExt |= name.endsWith(".patch"); // NOI18N
-                    if (requiredExt == false) {
-                        File parent = destination.getParentFile();
-                        destination = new File(parent, name + ".patch"); // NOI18N
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(files, HgModuleConfig.getDefault().getPreferences()) {
+            @Override
+            public void writeDiffFile(final File toFile) {
+                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                File root = HgUtils.getRootFile(context);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport ps = new HgProgressSupport() {
+                    protected void perform() {
+                        OutputLogger logger = getLogger();
+                        async(this, context, toFile, logger);
                     }
-
-                    if (destination.exists()) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffChangesAction.class, "BK3005", destination.getAbsolutePath()));
-                        nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-                        DialogDisplayer.getDefault().notify(nd);
-                        if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
-                            return;
-                        }
-                    }
-                    HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent()); // NOI18N
-                    final File out = destination;
-                    File root = HgUtils.getRootFile(context);
-                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-                    HgProgressSupport ps = new HgProgressSupport() {
-                        protected void perform() {
-                            OutputLogger logger = getLogger();
-                            async(this, context, out, logger);
-                        }
-                    };
-                    ps.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress"));
-                }
-                dialog.dispose();
+                };
+                ps.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
             }
-        });
-        dialog.setVisible(true);
+        };
+        exportDiffSupport.export();
 
     }
 

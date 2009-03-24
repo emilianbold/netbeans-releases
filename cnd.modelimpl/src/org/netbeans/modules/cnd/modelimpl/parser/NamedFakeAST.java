@@ -61,7 +61,7 @@ public final class NamedFakeAST extends FakeAST implements Serializable {
     /** Set the token text for this node */
     @Override
     public void setText(String text_) {
-        text = TextCache.getString(text_);
+        text = TextCache.getManager().getString(text_);
     } 
 
     /** Get the token text for this node */

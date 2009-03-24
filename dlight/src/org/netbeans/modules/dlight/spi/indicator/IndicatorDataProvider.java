@@ -41,7 +41,9 @@ package org.netbeans.modules.dlight.spi.indicator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -55,7 +57,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
  * to notify all indicators subscribed to it using {@link #subscribe(org.netbeans.modules.dlight.spi.indicator.Indicator) }
  * @param <T> indicator data provider configuration implementation that can be used to create {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} instance
  */
-public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener {
+public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener, Validateable<DLightTarget> {
 
   private final Collection<Indicator> listeners = new ArrayList<Indicator>();
 
@@ -130,4 +132,11 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
    */
   public abstract Collection<DataTableMetadata> getDataTablesMetadata();
 
+
+  /**
+   * Returns name which will be used to filter indicator data
+   * provider which will be currently used
+   * @return data provider name
+   */
+  public abstract String getName();
 }

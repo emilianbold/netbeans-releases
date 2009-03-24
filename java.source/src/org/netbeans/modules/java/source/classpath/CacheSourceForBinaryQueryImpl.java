@@ -45,8 +45,7 @@ import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.source.usages.Index;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -69,7 +68,7 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         if (!FILE_PROTOCOL.equals (binaryRoot.getProtocol())) {
             return null;
         }
-        URL sourceURL = Index.getSourceRootForClassFolder(binaryRoot);
+        URL sourceURL = JavaIndex.getSourceRootForClassFolder(binaryRoot);
         SourceForBinaryQuery.Result result = null;
         if (sourceURL != null) {            
             for ( SourceForBinaryQueryImplementation impl :Lookup.getDefault().lookupAll(SourceForBinaryQueryImplementation.class)) {

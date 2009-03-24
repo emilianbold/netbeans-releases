@@ -73,9 +73,7 @@ public class GroovyLookupProvider implements LookupProvider {
         protected void projectOpened() {
             GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
             if (extender != null) {
-                // FIXME this will not update 6.5 build script as
-                // it acts as a modified by user
-                extender.refreshBuildScript();
+                extender.refreshBuildScript(true);
             }
         }
 

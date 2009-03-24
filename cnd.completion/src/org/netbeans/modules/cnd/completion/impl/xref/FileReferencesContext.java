@@ -78,6 +78,7 @@ public final class FileReferencesContext {
     private List<Offsets> fileObjectOffsets;
     private List<Offsets> fileDeclarationsOffsets;
     private Map<String,CsmUID<CsmMacro>> projectMacros;
+    private SymTabCache symTabCache = new SymTabCache();
     
     FileReferencesContext(CsmScope csmScope){
         if (CsmKindUtilities.isFile(csmScope)) {
@@ -101,6 +102,7 @@ public final class FileReferencesContext {
             projectMacros = null;
             libEnumerators = null;
         }
+        symTabCache.clear();
     }
     
     public boolean isCleaned(){
@@ -112,6 +114,10 @@ public final class FileReferencesContext {
             return;
         }
         lastOffset = offset;
+    }
+
+    public SymTabCache getSymTabCache(){
+        return symTabCache;
     }
 
     public Collection<CsmEnumerator> getLibEnumerators(String name){

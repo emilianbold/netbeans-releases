@@ -651,7 +651,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
     
     /** Pair that wraps another Lookup.Item
      */
-    private static final class PairWrap extends AbstractLookup.Pair {
+    static final class PairWrap extends AbstractLookup.Pair {
         private Lookup.Item<?> item;
         private boolean created;
         

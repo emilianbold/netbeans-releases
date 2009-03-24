@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.TestCase;
@@ -48,18 +48,72 @@ import org.netbeans.modules.ruby.FindersHelper.FinderMethod;
  *
  * @author Erno Mononen
  */
-public class FindersHelperTest extends TestCase{
-
+public class FindersHelperTest extends TestCase {
 
     public void testGetFindersAttributes() {
-        List<FinderMethod> result = FindersHelper.getFinderSignatures("", Arrays.asList("name", "title", "price", "url"));
+        List<FinderMethod> result =
+                FindersHelper.getFinderSignatures("", Arrays.asList("name", "title", "price", "url"));
 
-        assertEquals(64, result.size());
-//        // some basic checking
-        assertTrue(containsMethod("name(name, *options)", result));
-        assertTrue(containsMethod("name_and_price(name, price, *options)", result));
-        assertTrue(containsMethod("name_and_price_and_title(name, price, title, *options)", result));
-        assertTrue(containsMethod("name_and_title_and_price(name, title, price, *options)", result));
+        assertEquals(256, result.size());
+        // some basic checking
+        assertTrue(containsMethod("find_by_name(name, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_price(name, price, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_price_and_title(name, price, title, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_title_and_price(name, title, price, *options)", result));
+    }
+
+    public void testGetScopedBy() {
+        List<FinderMethod> result =
+                FindersHelper.getFinderSignatures("scoped_by_", Arrays.asList("name", "title"));
+
+        assertEquals(4, result.size());
+        // scoped_by methods should not have the *options hash
+        assertTrue(containsMethod("scoped_by_name(name)", result));
+        assertTrue(containsMethod("scoped_by_name_and_title(name, title)", result));
+    }
+
+    public void testGetByPrefix() {
+        List<FinderMethod> result =
+                FindersHelper.getFinderSignatures("sco",
+                Arrays.asList("name", "title"));
+
+        assertEquals(4, result.size());
+        for (FinderMethod each : result) {
+            assertTrue(each.getSignature().startsWith("sco"));
+        }
+        result = FindersHelper.getFinderSignatures("find_b", Arrays.asList("name", "title"));
+
+        assertEquals(4, result.size());
+        for (FinderMethod each : result) {
+            assertTrue(each.getSignature().startsWith("find_by"));
+        }
+    }
+
+    public void testExtractColumns() {
+        List<String> columns = FindersHelper.extractColumns("find_by_name_and_title");
+        assertEquals(2, columns.size());
+        assertTrue(columns.contains("name"));
+        assertTrue(columns.contains("title"));
+    }
+
+    public void testDepth() {
+        List<String> columns = new ArrayList<String>();
+        for (int i = 0; i < 5; i++) {
+            columns.add("column" + i);
+        }
+        List<FinderMethod> result = FindersHelper.getFinderSignatures("", columns);
+        assertEquals(1300, result.size());
+
+        columns.clear();
+
+        // tests that an excessive amount of columns doesn't create millions
+        // of methods for code completion
+        for (int i = 0; i < 500; i++) {
+            columns.add("column" + i);
+        }
+
+        assertEquals(2000, FindersHelper.getFinderSignatures("", columns).size());
+
     }
 
     private boolean containsMethod(String methodName, List<FinderMethod> finders) {
@@ -69,6 +123,18 @@ public class FindersHelperTest extends TestCase{
             }
         }
         return false;
+    }
+
+    public void testIsFinderMethod() {
+        assertTrue(FindersHelper.isFinderMethod("find_by_name"));
+        assertTrue(FindersHelper.isFinderMethod("find_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_all_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_last_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("scoped_by_title"));
+        assertTrue(FindersHelper.isFinderMethod("find"));
+
+        assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
+        assertFalse(FindersHelper.isFinderMethod("findery"));
     }
 
     public void testNextAttributeLocation() {
@@ -83,7 +149,4 @@ public class FindersHelperTest extends TestCase{
         assertEquals("find_by_name_and", FindersHelper.subToNextAttribute(name, 12));
         assertEquals("find_by_name_and_price_and", FindersHelper.subToNextAttribute(name, 22));
     }
-
-
-
 }

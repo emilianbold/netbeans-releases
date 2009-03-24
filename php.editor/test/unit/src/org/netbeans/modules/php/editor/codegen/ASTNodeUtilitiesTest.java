@@ -40,8 +40,9 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.nav.TestBase;
 
 /**
@@ -72,9 +73,12 @@ public class ASTNodeUtilitiesTest extends TestBase {
                 "?>";
         final int offset = code.indexOf('|');
         code = code.replace('|', ' ');
-        performTest(new String[] { code }, new CancellableTask<CompilationInfo>() {
+        performTest(new String[] { code }, new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo info) throws Exception {
+            
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ParserResult info = (ParserResult)resultIterator.getParserResult();
                 Set<String> varNames = ASTNodeUtilities.getVariablesInScope(info, offset, new ASTNodeUtilities.VariableAcceptor() {
                     public boolean acceptVariable(String variableName) {
                         return true;

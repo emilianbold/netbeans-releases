@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.output;
 
+import java.awt.Color;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
@@ -68,8 +69,13 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.skipLine();
             return;
         }
+        if ("BUILD SUCCESSFUL".equals(line)) { //NOI18N
+            visitor.setColor(Color.GREEN.darker().darker());
+            return;
+        }
         if (LOW_MVN.matcher(line).matches()) {
             visitor.setLine(line + NbBundle.getMessage(GlobalOutputProcessor.class, "TXT_ChangeSettings"));
+            visitor.setColor(Color.RED);
             visitor.setOutputListener(new OutputListener() {
                 public void outputLineSelected(OutputEvent ev) {}
                 public void outputLineAction(OutputEvent ev) {
@@ -86,6 +92,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
 //            visitor.setLine(sequenceId);
         } else {
             visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N
+            visitor.setColor(Color.GRAY);
         }
     }
 

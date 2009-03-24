@@ -247,6 +247,9 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Editors">
+        <file name="JavaBinaryIndexer.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory"/>
+        </file>
         <folder name="text">
             <folder name="x-java">
                 <file name="Reformatter.instance">
@@ -254,6 +257,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="JavacParser.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.JavacParserFactory"/>
+                </file>
+                <file name="JavaIndexer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory"/>
                 </file>
             </folder>
         </folder>

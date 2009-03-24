@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -168,7 +169,7 @@ public class TaskProcessor {
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+                LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
         final Request request = currentRequest.getTaskToCancel();
@@ -337,6 +338,8 @@ public class TaskProcessor {
                 }
                 if (!found) {
                     toRemove.add (task);
+                    // there was a modification in toRemove, wake up the thread
+                    requests.add(Request.NONE);
                 }
                 SourceAccessor.getINSTANCE().taskRemoved(source);
             }
@@ -539,17 +542,16 @@ public class TaskProcessor {
         }
         return false;
     }
-    
-    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+
+    /* test */ static StackTraceElement findCaller(StackTraceElement[] elements) {
         for (StackTraceElement e : elements) {
-            if (Source.class.getName().equals(e.getClassName())) {
+            if (TaskProcessor.class.getName().equals(e.getClassName()) ||
+                e.getClassName().startsWith(ParserManager.class.getName()) ||
+                e.getClassName().startsWith("java.lang.") //NOI18N
+            ) {
                 continue;
             }
-            
-            if (e.getClassName().startsWith("java.lang.")) {
-                continue;
-            }
-            
+
             return e;
         }        
         return null;
@@ -585,8 +587,8 @@ public class TaskProcessor {
                                 }
                             }
                         }
-                        final Request r = requests.poll(2,TimeUnit.SECONDS);
-                        if (r != null) {
+                        final Request r = requests.take();
+                        if (r != null && r != Request.NONE) {
                             currentRequest.setCurrentTask(r);
                             try {                            
                                 final SourceCache sourceCache = r.cache;
@@ -765,22 +767,9 @@ public class TaskProcessor {
     //@ThreadSafe
     public static class Request {
         
-        static final Request DUMMY = new Request (new ParserResultTask(){
-            @Override
-            public int getPriority() {
-                return 0;
-            }
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return null;
-            }
-            @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(Result result, SchedulerEvent event) {
-            }
-        },null, false, false, null);
+        static final Request DUMMY = new Request ();
+
+        static final Request NONE = new Request();
         
         private final SchedulerTask task;
         private final SourceCache cache;
@@ -803,11 +792,24 @@ public class TaskProcessor {
             this.bridge = bridge;
             this.schedulerType = schedulerType;
         }
-        
-        private Request () {  
-            task = null;
-            cache = null;
-            reschedule = bridge = false;
+
+        private Request () {
+            this (new ParserResultTask(){
+                @Override
+                public int getPriority() {
+                    return 0;
+                }
+                @Override
+                public Class<? extends Scheduler> getSchedulerClass() {
+                    return null;
+                }
+                @Override
+                public void cancel() {
+                }
+                @Override
+                public void run(Result result, SchedulerEvent event) {
+                }
+            },null,false,false,null);
         }
         
         public @Override String toString () {            
@@ -893,10 +895,10 @@ public class TaskProcessor {
         boolean setCurrentTask (Request reference) throws InterruptedException {
             boolean result = false;
             assert !parserLock.isHeldByCurrentThread();
-            assert reference == null || reference.cache == null || !Thread.currentThread().holdsLock(reference.cache.getSnapshot().getSource());
+            assert reference == null || reference.cache == null || !Thread.holdsLock(reference.cache.getSnapshot().getSource());
             synchronized (INTERNAL_LOCK) {
                 while (this.canceledReference!=null) {
-                    assert canceledReference.cache == null || !Thread.currentThread().holdsLock(canceledReference.cache.getSnapshot().getSource());
+                    assert canceledReference.cache == null || !Thread.holdsLock(canceledReference.cache.getSnapshot().getSource());
                     INTERNAL_LOCK.wait();
                 }
                 result = this.canceled.getAndSet(false);
@@ -1066,8 +1068,8 @@ public class TaskProcessor {
                 boolean _canceled = canceled.getAndSet(true);
                 if (!_canceled) {
                     for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-                        DeferredTask task = it.next();
-                        if (task.task == this.task) {
+                        DeferredTask t = it.next();
+                        if (t.task == this.task) {
                             it.remove();
                             return true;
                         }

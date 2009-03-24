@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.openide.util.test.MockLookup;
 
 /** Test of ProjectSupport class.
  * @author Jiri Skrivanek 
@@ -61,6 +62,7 @@ public class ProjectSupportTest extends NbTestCase {
 
     /** Set up. */
     protected void setUp() throws IOException {
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         System.out.println("########  "+getName()+"  #######");
     }

@@ -204,4 +204,39 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#159324 : Unresolved variable definition
         performTest("iz159324.cc");
     }
+
+    public void testIZ158872() throws Exception {
+        // IZ#158872 : inline keyword break code model for template definition
+        performTest("iz158872.cc");
+    }
+
+    public void testIZ159238() throws Exception {
+        // IZ#159238 : parser fails on attribute after friend
+        performTest("iz159238.cc");
+    }
+
+    public void testIZ158124() throws Exception {
+        // IZ#158124 : parser breaks on (( ))
+        performTest("iz158124.cc");
+    }
+
+    public void testIZ156009() throws Exception {
+        // IZ#156009 : parser fails on declaration with __attribute__
+        performTest("iz156009.cc");
+    }
+
+    public void testIZ158615() throws Exception {
+        // IZ#158615 : Intervals are unresolved
+        performTest("iz158615.cc");
+    }
+
+    public void testIZ158684() throws Exception {
+        // IZ#158684 : Invalid syntax error
+        performTest("iz158684.cc");
+    }
+
+    public void testIZ134182() throws Exception {
+        // IZ#134182 : missed const in function parameter
+        performTest("iz134182.cc");
+    }
 }

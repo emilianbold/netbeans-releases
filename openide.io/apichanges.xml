@@ -104,12 +104,34 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Color-control-prg-scrolling">
+      <api name="io"/>
+      <summary>Adding API to control output color and programmatical scrolling</summary>
+      <version major="1" minor="16"/>
+      <date day="6" month="3" year="2009"/>
+      <author login="t_h"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Adding "feature class" to control output color and programmatical scrolling.
+        <code>
+            <a href="@TOP@/org/openide/windows/IOColorLines.html">IOColorLines</a>,
+            <a href="@TOP@/org/openide/windows/IOColors.html">IOColors</a>,
+            <a href="@TOP@/org/openide/windows/IOPosition.html">IOPosition</a>,
+        </code>
+        </p>
+      </description>
+      <class package="org.openide.windows" name="IOPosition"/>
+      <class package="org.openide.windows" name="IOColors"/>
+      <class package="org.openide.windows" name="IOColorLines"/>
+      <issue number="157911" />
+    </change>
+
     <change id="IO-enhancements">
       <api name="io"/>
       <summary> Multiple IOProvider support, possibility to specify "parent container"
       for IO tab</summary>
       <version major="1" minor="15"/>
-      <date day="5" month="2" year="2008"/>
+      <date day="5" month="2" year="2009"/>
       <author login="t_h"/>
       <compatibility addition="yes" binary="compatible" semantic="compatible" />
       <description>

@@ -68,7 +68,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         super.setUp();
         File projectRoot = Manager.normalizeFile(getProjectRoot());
         assertTrue(projectRoot.exists());
-	traceModel = new  TraceModelBase();
+	traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot.getAbsolutePath());
     }

@@ -240,6 +240,9 @@ public class CustomizationWSEditor implements WSEditor {
             return;
         }
         Definitions definitions = wsdlModel.getDefinitions();
+        if (definitions == null) { // invalid (broken) wsdl model
+            return;
+        }
         if (definitions.getImports().size() == 0) {
             wsdlModels.put(wsdlModel, Boolean.valueOf(dobj.isModified()));
             return;

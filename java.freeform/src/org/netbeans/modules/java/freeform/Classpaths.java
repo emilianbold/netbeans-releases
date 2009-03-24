@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -648,11 +649,18 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             computeMatcher();
         }
         private boolean computeMatcher() {
-            String includes = null;
-            String excludes = null;
+            String incl = null;
+            String excl = null;
+            URI rootURI = URI.create(root.toExternalForm());
             // Annoying to duplicate logic from FreeformSources.
             // But using SourceGroup.contains is not an option since that requires FileObject creation.
-            File rootFolder = new File(URI.create(root.toExternalForm()));
+            File rootFolder;
+            try {
+                rootFolder = new File(rootURI);
+            } catch (IllegalArgumentException x) {
+                Logger.getLogger(Classpaths.class.getName()).warning("Illegal source root: " + rootURI);
+                rootFolder = null;
+            }
             Element genldata = Util.getPrimaryConfigurationData(helper);
             Element foldersE = Util.findElement(genldata, "folders", Util.NAMESPACE); // NOI18N
             if (foldersE != null) {
@@ -667,15 +675,15 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                                 if (location != null && helper.resolveFile(location).equals(rootFolder)) {
                                     Element includesE = Util.findElement(folderE, "includes", Util.NAMESPACE); // NOI18N
                                     if (includesE != null) {
-                                        includes = evaluator.evaluate(Util.findText(includesE));
-                                        if (includes != null && includes.matches("\\$\\{[^}]+\\}")) { // NOI18N
+                                        incl = evaluator.evaluate(Util.findText(includesE));
+                                        if (incl != null && incl.matches("\\$\\{[^}]+\\}")) { // NOI18N
                                             // Clearly intended to mean "include everything".
-                                            includes = null;
+                                            incl = null;
                                         }
                                     }
                                     Element excludesE = Util.findElement(folderE, "excludes", Util.NAMESPACE); // NOI18N
                                     if (excludesE != null) {
-                                        excludes = evaluator.evaluate(Util.findText(excludesE));
+                                        excl = evaluator.evaluate(Util.findText(excludesE));
                                     }
                                 }
                             }
@@ -683,14 +691,14 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                     }
                 }
             }
-            if (!Utilities.compareObjects(includes, this.includes) || !Utilities.compareObjects(excludes, this.excludes)) {
-                this.includes = includes;
-                this.excludes = excludes;
-                matcher = new PathMatcher(includes, excludes, rootFolder);
+            if (!Utilities.compareObjects(incl, includes) || !Utilities.compareObjects(excl, excludes)) {
+                includes = incl;
+                excludes = excl;
+                matcher = new PathMatcher(incl, excl, rootFolder);
                 return true;
             } else {
                 if (matcher == null) {
-                    matcher = new PathMatcher(includes, excludes, rootFolder);
+                    matcher = new PathMatcher(incl, excl, rootFolder);
                 }
                 return false;
             }

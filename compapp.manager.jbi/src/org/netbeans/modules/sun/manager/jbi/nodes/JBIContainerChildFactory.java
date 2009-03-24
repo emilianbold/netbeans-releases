@@ -44,7 +44,6 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.JBIComponentInfo;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import com.sun.jbi.ui.common.ServiceUnitInfo;
-import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.util.List;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;

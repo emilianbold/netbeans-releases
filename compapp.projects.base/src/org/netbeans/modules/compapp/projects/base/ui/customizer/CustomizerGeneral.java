@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.projects.base.ui.customizer;
 
 import java.awt.Component;
@@ -52,13 +50,19 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
     private IcanproProjectProperties webProperties;
     private VisualPropertySupport vps;
     private boolean bValidation = true;
-
-    /** Creates new form CustomizerCompile */
+    private boolean showAllowBetaFeatures = false;
+    
     public CustomizerGeneral(IcanproProjectProperties webProperties) {
+        this(webProperties, false);
+    }
+    
+    /** Creates new form CustomizerCompile */
+    public CustomizerGeneral(IcanproProjectProperties webProperties, boolean showAllowBetaFeatures) {
+        this.showAllowBetaFeatures = showAllowBetaFeatures;
+        this.webProperties = webProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_A11YDesc")); //NOI18N
 
-        this.webProperties = webProperties;
         vps = new VisualPropertySupport(webProperties);
 
         // allow build with error
@@ -77,18 +81,38 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         }
         // allow background validation
         jCheckBox2.setSelected(isAllowBackgroundValidation());
+        // show validation warnings
+        jCheckBox3.setSelected(isShowValidationWarnings());
+    }
+
+    private void setAllowBetaFeatures(boolean value) {
+//      set(IcanproConstants.BETA_FEATURES_FLAG, value);
+        webProperties.put(IcanproConstants.BETA_FEATURES_FLAG, Boolean.valueOf(value));
     }
 
     private void setAllowBackgroundValidation(boolean value) {
       set(ALLOW_BACKGROUND_VALIDATION, value);
     }
 
+    private void setShowValidationWarnings(boolean value) {
+      set(SHOW_VALIDATION_WARNINGS, value);
+    }
+
+    private boolean isAllowBackgroundValidation() {
+      return get(ALLOW_BACKGROUND_VALIDATION, true);
+    }
+
+    private boolean isShowValidationWarnings() {
+      return get(SHOW_VALIDATION_WARNINGS, true);
+    }
+
     private void set(String name, boolean value) {
       getPreferences().putBoolean(name, value);
     }
   
-    private boolean isAllowBackgroundValidation() {
-      return get(ALLOW_BACKGROUND_VALIDATION, true);
+    private boolean isAllowBetaFeatures() {
+        Object allowBetaFeatures = webProperties.get(IcanproConstants.BETA_FEATURES_FLAG);
+        return allowBetaFeatures instanceof Boolean && ((Boolean)allowBetaFeatures).booleanValue();
     }
 
     private boolean get(String name, boolean defaultValue) {
@@ -99,7 +123,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
       return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
     } 
 
-    public void initValues(  ) {
+    public void initValues() {
         FileObject projectFolder = webProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile(projectFolder);
         jTextFieldProjectFolder.setText(pf == null ? "" : pf.getPath()); // NOI18N
@@ -194,7 +218,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
             throw new UnsupportedOperationException();
         }
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -213,6 +237,10 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         jComboBoxEncoding = new javax.swing.JComboBox();
         jCheckBox1 = new javax.swing.JCheckBox();
         jCheckBox2 = new javax.swing.JCheckBox();
+        jCheckBox3 = new javax.swing.JCheckBox();
+        allowBetaFeaturesCheckBox = new javax.swing.JCheckBox();
+        allowBetaFeaturesCheckBox.setVisible(showAllowBetaFeatures);
+        allowBetaFeaturesCheckBox.setSelected(showAllowBetaFeatures && isAllowBetaFeatures());
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -243,6 +271,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
             }
         });
 
+        jCheckBox2.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox2.text")); // NOI18N
         jCheckBox2.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox2.toolTipText")); // NOI18N
         jCheckBox2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -250,6 +279,27 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         jCheckBox2.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jCheckBox2validationHandler(evt);
+            }
+        });
+
+        jCheckBox3.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox3, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox3.text")); // NOI18N
+        jCheckBox3.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox3.toolTipText")); // NOI18N
+        jCheckBox3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jCheckBox3.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jCheckBox3validationHandler(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(allowBetaFeaturesCheckBox, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.allowBetaFeaturesCheckBox.text")); // NOI18N
+        allowBetaFeaturesCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.allowBetaFeaturesCheckBox.toolTipText")); // NOI18N
+        allowBetaFeaturesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        allowBetaFeaturesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        allowBetaFeaturesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                allowBetaFeaturesCheckBoxvalidationHandler(evt);
             }
         });
 
@@ -275,7 +325,9 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                             .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(jCheckBox1)
-                    .add(jCheckBox2))
+                    .add(jCheckBox2)
+                    .add(jCheckBox3)
+                    .add(allowBetaFeaturesCheckBox))
                 .addContainerGap())
         );
 
@@ -284,7 +336,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .add(19, 19, 19)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelProjectName)
                     .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -304,34 +356,39 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                 .add(jCheckBox1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckBox2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(allowBetaFeaturesCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_ProjectFolder_A11YDesc")); // NOI18N
         jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox1.text")); // NOI18N
-        jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox2.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jCheckBox1validationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1validationHandler
-        // TODO add your handling code here:
-        if (evt.getStateChange() == ItemEvent.SELECTED) {
-            //bValidation = false;
-            webProperties.put(IcanproConstants.VALIDATION_FLAG, true);
-            //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "false", false);
-        } else {
-            webProperties.put(IcanproConstants.VALIDATION_FLAG, false);
-            //   bValidation = true;
-            //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "true",false);
-        }
+        webProperties.put(IcanproConstants.VALIDATION_FLAG, evt.getStateChange() == ItemEvent.SELECTED);
     }//GEN-LAST:event_jCheckBox1validationHandler
 
     private void jCheckBox2validationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox2validationHandler
         setAllowBackgroundValidation(evt.getStateChange() == ItemEvent.SELECTED);
     }//GEN-LAST:event_jCheckBox2validationHandler
 
+    private void jCheckBox3validationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox3validationHandler
+        setShowValidationWarnings(evt.getStateChange() == ItemEvent.SELECTED);
+    }//GEN-LAST:event_jCheckBox3validationHandler
+
+    private void allowBetaFeaturesCheckBoxvalidationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_allowBetaFeaturesCheckBoxvalidationHandler
+    // TODO add your handling code here:
+        setAllowBetaFeatures(evt.getStateChange() == ItemEvent.SELECTED);
+    }//GEN-LAST:event_allowBetaFeaturesCheckBoxvalidationHandler
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox allowBetaFeaturesCheckBox;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
+    private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JComboBox jComboBoxEncoding;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelProjectName;
@@ -342,5 +399,6 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
     private javax.swing.JTextField jTextFieldServiceUnitDescription;
     // End of variables declaration//GEN-END:variables
 
+    private static final String SHOW_VALIDATION_WARNINGS = "show.validation.warnings"; // NOI18N
     private static final String ALLOW_BACKGROUND_VALIDATION = "allow.background.validation"; // NOI18N
 }

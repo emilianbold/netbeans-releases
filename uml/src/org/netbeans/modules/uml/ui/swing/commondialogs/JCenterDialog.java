@@ -53,6 +53,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
@@ -68,6 +71,8 @@ import org.openide.windows.WindowManager;
 public class JCenterDialog extends JDialog
 {
 
+    private Component lastComponent;
+
    /**
     * @throws java.awt.HeadlessException
     */
@@ -75,6 +80,7 @@ public class JCenterDialog extends JDialog
    {
       super();
       setLocationRelativeTo(null);
+      registerListener();
    }
 
    /**
@@ -84,8 +90,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Frame owner) throws HeadlessException
    {
       super(owner);
-      //setLocationRelativeTo(owner);
       center(owner);
+      registerListener();
    }
 
    /**
@@ -96,8 +102,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Frame owner, boolean modal) throws HeadlessException
    {
       super(owner, modal);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -108,8 +114,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Frame owner, String title) throws HeadlessException
    {
       super(owner, title);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -121,8 +127,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Frame owner, String title, boolean modal) throws HeadlessException
    {
       super(owner, title, modal);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -134,8 +140,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Frame owner, String title, boolean modal, GraphicsConfiguration gc)
    {
       super(owner, title, modal, gc);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -145,8 +151,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Dialog owner) throws HeadlessException
    {
       super(owner);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -157,8 +163,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Dialog owner, boolean modal) throws HeadlessException
    {
       super(owner, modal);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -168,9 +174,7 @@ public class JCenterDialog extends JDialog
     */
    public JCenterDialog(Dialog owner, String title) throws HeadlessException
    {
-      super(owner, title);
-      //setLocationRelativeTo(owner);
-		center(owner);
+      this(owner, title,false);
    }
 
    /**
@@ -182,8 +186,8 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Dialog owner, String title, boolean modal) throws HeadlessException
    {
       super(owner, title, modal);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
 
    /**
@@ -196,42 +200,38 @@ public class JCenterDialog extends JDialog
    public JCenterDialog(Dialog owner, String title, boolean modal, GraphicsConfiguration gc) throws HeadlessException
    {
       super(owner, title, modal, gc);
-      //setLocationRelativeTo(owner);
 		center(owner);
+        registerListener();
    }
    
    public void center(Frame frame)
    {
-//       if (frame != null)
-//       {
-//           Point p = frame.getLocation();
-//           if (p != null)
-//           {
-//               int centerX = (p.x + frame.getWidth()) / 2;
-//               int centerY = (p.y + frame.getHeight()) / 2;
-//               int dialogHalfWidth = getWidth() / 2;
-//               int dialogHalfHeight = getHeight() / 2;
-//               setLocation(centerX - dialogHalfWidth, centerY - dialogHalfHeight);
-//           }
-//       }
        center((Component)frame);
    }
    
    public void center(Dialog dia)
    {
-//       if (dia != null)
-//       {
-//           Point p = dia.getLocation();
-//           if (p != null)
-//           {
-//               int centerX = (p.x + dia.getWidth()) / 2;
-//               int centerY = (p.y + dia.getHeight()) / 2;
-//               int dialogHalfWidth = getWidth() / 2;
-//               int dialogHalfHeight = getHeight() / 2;
-//               setLocation(centerX - dialogHalfWidth, centerY - dialogHalfHeight);
-//           }
-//       }
        center((Component)dia);
+   }
+
+   private void registerListener()
+   {
+        addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                center(lastComponent);
+            }
+        }
+        );
+        addWindowStateListener(new WindowAdapter()
+        {
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                super.windowStateChanged(e);
+            }
+        }
+        );
    }
         
 	public void center(Component comp)
@@ -240,7 +240,7 @@ public class JCenterDialog extends JDialog
             {
                 comp = WindowManager.getDefault().getMainWindow();
             }
-            
+            lastComponent=comp;
             if (comp != null)
             {
                 Point p = comp.getLocation();
@@ -257,6 +257,7 @@ public class JCenterDialog extends JDialog
             }
         }
    
+    @Override
 	protected JRootPane createRootPane() {
 	  ActionListener actionListener = new ActionListener() {
 		 public void actionPerformed(ActionEvent actionEvent) {
@@ -270,10 +271,10 @@ public class JCenterDialog extends JDialog
           }
 		 }
 	  };
-	  JRootPane rootPane = new JRootPane();
+	  JRootPane rtPane = new JRootPane();
 	  KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-	  rootPane.registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-	  return rootPane;
+	  rtPane.registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+	  return rtPane;
 	}
 
 }

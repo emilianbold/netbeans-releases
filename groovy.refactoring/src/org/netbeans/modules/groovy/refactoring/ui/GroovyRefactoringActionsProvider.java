@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -53,7 +54,8 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.Utils;
-import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -169,7 +171,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         return false;
     }
 
-    public static abstract class TextComponentTask implements Runnable, CancellableTask<GroovyParserResult> {
+    public static abstract class TextComponentTask extends UserTask implements Runnable {
         private JTextComponent textC;
         private int caret;
         private int start;
@@ -188,11 +190,9 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             assert end != -1;
         }
 
-        public void cancel() {
-        }
-
-        public void run(GroovyParserResult cc) throws Exception {
-//            cc.toPhase(Phase.RESOLVED);
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            GroovyParserResult cc = AstUtilities.getParseResult(resultIterator.getParserResult());
             ASTNode root = AstUtilities.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?
@@ -200,7 +200,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
                 return;
             }
 
-            BaseDocument doc = Utils.getDocument(cc.getInfo(), fileObject);
+            BaseDocument doc = Utils.getDocument(cc, fileObject);
             AstPath path = new AstPath(root, caret, doc);
 
             GroovyRefactoringElement ctx = new GroovyRefactoringElement((ModuleNode) root, path.leaf(), fileObject);
@@ -232,7 +232,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
     }
 
-    public static abstract class NodeToElementTask implements Runnable, CancellableTask<GroovyParserResult>  {
+    public static abstract class NodeToElementTask extends UserTask implements Runnable {
         private Node node;
         private RefactoringUI ui;
         private final FileObject fileObject;
@@ -243,14 +243,14 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             this.fileObject = fileObject;
         }
 
-        public void cancel() {
-        }
-
-        public void run(GroovyParserResult info) throws Exception {
-//            info.toPhase(Phase.ELEMENTS_RESOLVED);
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            GroovyParserResult info = AstUtilities.getParseResult(resultIterator.getParserResult());
             ASTNode root = AstUtilities.getRoot(info);
             if (root != null) {
-                GroovyRefactoringElement fileCtx = new GroovyRefactoringElement((ModuleNode) root, root, info.getInfo().getFileObject());
+                // FIXME parsing API
+                GroovyRefactoringElement fileCtx = new GroovyRefactoringElement((ModuleNode) root, root,
+                        info.getSnapshot().getSource().getFileObject());
                 ui = createRefactoringUI(fileCtx, info);
             }
         }

@@ -49,7 +49,7 @@ import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.execute.MavenJavaExecutor;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,7 +84,7 @@ public final class RunUtils {
             }
         }
         
-        if (!useEmbedded && MavenExecutionSettings.canFindExternalMaven()) {
+        if (!useEmbedded && MavenSettings.canFindExternalMaven()) {
             exec = new MavenCommandLineExecutor(config);
         } else {
             if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutEmbeddedBuild()) {

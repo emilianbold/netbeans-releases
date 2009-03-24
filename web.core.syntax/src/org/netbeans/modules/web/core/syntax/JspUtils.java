@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -48,7 +49,12 @@ import java.net.URLClassLoader;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -60,7 +66,49 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class JspUtils {
 
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
-    
+
+    /** Create a TokenHierarchy instance for file based Snapshot.
+     * Use this method of getting the token hierarchy instead of
+     * directly using TokenHierarchy.create(...) for the Snapshot content.
+     * This method will also initialize JSP coloring data instance and
+     * it to the TokenHierarchy's input attributes.
+     * This is necessary if you want the JSP lexing to be driven by
+     * the JSP parser result.
+     */
+    public static TokenHierarchy<CharSequence> createJspTokenHierarchy(Snapshot jspSnapshot) {
+        String mimeType = jspSnapshot.getMimeType();
+
+        assert mimeType.equals(JSPKit.JSP_MIME_TYPE) ||
+                mimeType.equals(JSPKit.TAG_MIME_TYPE);
+
+        FileObject fo = jspSnapshot.getSource().getFileObject();
+        if(fo == null) {
+            //error
+            throw new IllegalArgumentException("Given snapshot is not filebased!"); //NOI18N
+        }
+
+        JSPColoringData data = getJSPColoringData(fo);
+
+        if(data == null) {
+            //error
+            throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
+        }
+
+        JspParseData jspParseData = new JspParseData((Map<String,String>)data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
+        
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(
+                jspSnapshot.getText(),
+                true,
+                JspTokenId.language(),
+                Collections.EMPTY_SET,
+                inputAttributes);
+        
+        return th;
+    }
+
+
     
     /** Returns the MIME type of the content language for this page set in this file's attributes. 
      * If nothing is set, defaults to 'text/html'.
@@ -98,13 +146,13 @@ public class JspUtils {
     /**
      * @param fo A FileObject representing a JSP like file.
      */
-    public static JSPColoringData getJSPColoringData (Document doc, FileObject fo) {
+    public static JSPColoringData getJSPColoringData (FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        JSPColoringData result = null;
-        if (doc != null && fo != null && fo.isValid()){
+        JSPColoringData result = null; 
+        if (fo != null && fo.isValid()){
             JspContextInfo context = JspContextInfo.getContextInfo (fo);
             if (context != null)
-                result = context.getJSPColoringData (doc, fo);
+                result = context.getJSPColoringData (fo);
         }
         return result;
     }
@@ -112,29 +160,29 @@ public class JspUtils {
     /** 
      * @param fo A FileObject representing a JSP like file.
      */
-    public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
+    public static JspParserAPI.ParseResult getCachedParseResult(FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
         //TODO: assert that the fo really represents a JSP like file
         JspContextInfo contextInfo = JspContextInfo.getContextInfo(fo);
         if(contextInfo == null) {
             return null;
         } else {
-            return contextInfo.getCachedParseResult(doc, fo, successfulOnly, preferCurrent, forceParse);
+            return contextInfo.getCachedParseResult(fo, successfulOnly, preferCurrent, forceParse);
         }
     }
     
     /** 
      * @param fo A FileObject representing a JSP like file.
      */
-    public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
-        return getCachedParseResult(doc, fo, successfulOnly, preferCurrent, false);
+    public static JspParserAPI.ParseResult getCachedParseResult(FileObject fo, boolean successfulOnly, boolean preferCurrent) {
+        return getCachedParseResult(fo, successfulOnly, preferCurrent, false);
     }
     
     /** 
      * @param fo A FileObject representing a JSP like file.
      */
-    public static URLClassLoader getModuleClassLoader(Document doc, FileObject fo) {
+    public static URLClassLoader getModuleClassLoader(FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        return JspContextInfo.getContextInfo(fo).getModuleClassLoader(doc, fo);
+        return JspContextInfo.getContextInfo(fo).getModuleClassLoader(fo);
     }
     
     /** Returns the root of the web module containing the given file object.
@@ -148,9 +196,9 @@ public class JspUtils {
      * @return the root of the web module, or null if a directory containing WEB-INF 
      *   is not on the path from resource to the root
      */
-    public static FileObject guessWebModuleRoot (Document doc, FileObject fo) {
+    public static FileObject guessWebModuleRoot (FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        return JspContextInfo.getContextInfo (fo).guessWebModuleRoot (doc, fo);
+        return JspContextInfo.getContextInfo (fo).guessWebModuleRoot (fo);
     }
     
     public static FileObject getFileObject(Document doc, String path){
@@ -159,7 +207,7 @@ public class JspUtils {
         FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
         
         if (fobj != null){
-            return getFileObject(doc, fobj, path);
+            return getFileObject(fobj, path);
         }
         return null;
     }
@@ -170,7 +218,7 @@ public class JspUtils {
      * @param path
      * @return
      */
-    public static FileObject getFileObject(Document doc,FileObject file, String path){
+    public static FileObject getFileObject(FileObject file, String path){
         if (path == null)       // it the path is null -> don't find it
             return file;
         path = path.trim();
@@ -179,7 +227,7 @@ public class JspUtils {
             find = file.getParent();
         
         if (path.length() > 0 && path.charAt(0) == '/'){  // is the absolute path in the web module?
-            find = JspUtils.guessWebModuleRoot(doc, file);  // find the folder, where the absolut path starts
+            find = JspUtils.guessWebModuleRoot(file);  // find the folder, where the absolut path starts
             if (find == null)
                 return null;            // we are not able to find out the webmodule root
             
@@ -202,10 +250,10 @@ public class JspUtils {
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
-    public static Map getTaglibMap(Document doc, FileObject fo) {
+    public static Map getTaglibMap(FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
         JspContextInfo jspci = JspContextInfo.getContextInfo (fo);
-        return jspci == null ? null : jspci.getTaglibMap (doc, fo);
+        return jspci == null ? null : jspci.getTaglibMap (fo);
     }
     
     /** This method returns an image, which is displayed for the FileObject in the explorer.
@@ -213,7 +261,7 @@ public class JspUtils {
      * @param fo file object for which the icon is looking for
      * @return an Image which is dislayed in the explorer for the file.
      */
-    public static java.awt.Image getIcon(Document doc, FileObject fo){
+    public static java.awt.Image getIcon(FileObject fo){
         try {
             return DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
         }catch(DataObjectNotFoundException e) {

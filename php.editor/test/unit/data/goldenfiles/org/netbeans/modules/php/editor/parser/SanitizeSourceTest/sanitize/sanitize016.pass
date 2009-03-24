@@ -1,5 +1,6 @@
-<Program start='0' end='246'>
+<Program start='0' end='256'>
     <Comments>
+        Comment start='170' end='180' commentType='multiLine'/>
     </Comments>
     <Statements>
         <ClassDeclaration start='7' end='65' modifier='NONE'>
@@ -23,7 +24,7 @@
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <ClassDeclaration start='67' end='195' modifier='NONE'>
+        <ClassDeclaration start='67' end='205' modifier='NONE'>
             <ClassName>
                 <Identifier start='73' end='77' name='test'/>
             </ClassName>
@@ -31,7 +32,7 @@
             </SuperClassName>
             <Interfaces>
             </Interfaces>
-            <Block start='78' end='195' isCurly='true'>
+            <Block start='78' end='205' isCurly='true'>
                 <FieldsDeclaration start='84' end='98' modifier='private'>
                     <VariableNames>
                         <Variable start='92' end='97' isDollared='true'>
@@ -62,32 +63,32 @@
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>
-                <MethodDeclaration start='170' end='194' modifiers='public'>
-                    <FunctionDeclaration start='177' end='194' isReference='false'>
-                        <Identifier start='186' end='190' name='name'/>
+                <MethodDeclaration start='180' end='204' modifiers='public'>
+                    <FunctionDeclaration start='187' end='204' isReference='false'>
+                        <Identifier start='196' end='200' name='name'/>
                         <FormalParameters>
                         </FormalParameters>
-                        <Block start='192' end='194' isCurly='true'>
+                        <Block start='202' end='204' isCurly='true'>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <ClassDeclaration start='195' end='246' modifier='NONE'>
+        <ClassDeclaration start='205' end='256' modifier='NONE'>
             <ClassName>
-                <Identifier start='201' end='206' name='hello'/>
+                <Identifier start='211' end='216' name='hello'/>
             </ClassName>
             <SuperClassName>
             </SuperClassName>
             <Interfaces>
             </Interfaces>
-            <Block start='207' end='246' isCurly='true'>
-                <MethodDeclaration start='213' end='244' modifiers='public'>
-                    <FunctionDeclaration start='213' end='244' isReference='false'>
-                        <Identifier start='222' end='233' name='__construct'/>
+            <Block start='217' end='256' isCurly='true'>
+                <MethodDeclaration start='223' end='254' modifiers='public'>
+                    <FunctionDeclaration start='223' end='254' isReference='false'>
+                        <Identifier start='232' end='243' name='__construct'/>
                         <FormalParameters>
                         </FormalParameters>
-                        <Block start='236' end='244' isCurly='true'>
+                        <Block start='246' end='254' isCurly='true'>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>

@@ -29,6 +29,7 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 
 /**
  *
@@ -56,4 +57,10 @@ public class RepositoryValidation extends RepositoryValidationBase {
         performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
         assertNoExceptions();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        getTestModelHelper().shutdown(false);
+    }
+
 }

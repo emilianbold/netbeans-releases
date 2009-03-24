@@ -47,20 +47,26 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Writer;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -91,6 +97,12 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             FileObject f = d.getPrimaryFile();
             files.add(f);
         }
+        Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
+        if (methods.size() == 1) {
+            SingleMethod method = methods.iterator().next();
+            files.add(method.getFile());
+        }
+
         return files.toArray(new FileObject[files.size()]);
     }
 
@@ -114,7 +126,12 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     public final RunConfig createConfigForDefaultAction(String actionName, Project project, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
+        @SuppressWarnings("unchecked")
         Map<String, String> replaceMap = lookup.lookup(Map.class);
+        if (replaceMap == null) { //#159698
+            replaceMap = new HashMap<String, String>();
+            Logger.getLogger(AbstractMavenActionsProvider.class.getName()).log(Level.FINE, "Missing replace tokens map when executing maven build. Could lead to problems with execution. See issue #159698 for details.", new Exception()); //NOI18N
+        }
         FileObject fo = null;
         if (fos.length > 0) {
             fo = fos[0];
@@ -255,7 +272,12 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 }
             }
             if (action != null) {
-                return new ModelRunConfig(project, action, actionName, selectedFile);
+                ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile);
+                if (replaceMap.containsKey(DefaultReplaceTokenProvider.METHOD_NAME)) {
+                    //sort of hack to push the method name through the current apis..
+                    mrc.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, replaceMap.get(DefaultReplaceTokenProvider.METHOD_NAME));
+                }
+                return mrc;
             }
         } catch (XmlPullParserException ex) {
             ex.printStackTrace();

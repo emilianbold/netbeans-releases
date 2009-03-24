@@ -6,6 +6,7 @@ Searchable Keys:
   class-ig : object
   fqn : Object
   method : foo(unusedparam,unusedparam2,usedparam)|TOPLEVEL|
+  require : unused
 
 Not Searchable Keys:
   attrs : |CLASS|

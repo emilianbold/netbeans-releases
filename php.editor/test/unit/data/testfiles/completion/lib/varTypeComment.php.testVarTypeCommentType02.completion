@@ -1,4 +1,4 @@
 Code completion result for source line:
 /* @var $hello VarTypeComment|Test */
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CLASS      VarTypeCommentTest                         varTypeComment.php

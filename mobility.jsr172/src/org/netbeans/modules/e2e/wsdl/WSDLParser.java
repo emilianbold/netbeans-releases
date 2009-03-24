@@ -40,6 +40,8 @@ import org.netbeans.modules.e2e.api.wsdl.Part;
 import org.netbeans.modules.e2e.api.wsdl.Port;
 import org.netbeans.modules.e2e.api.wsdl.PortType;
 import org.netbeans.modules.e2e.api.wsdl.Service;
+import org.netbeans.modules.e2e.api.wsdl.Message.MessageReference;
+import org.netbeans.modules.e2e.api.wsdl.PortType.PortTypeReference;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPAddress;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBinding;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBody;
@@ -252,7 +254,7 @@ public class WSDLParser extends DefaultHandler {
                 if( localName.equals( WSDLConstants.MESSAGE.getLocalPart()) && state.peek().equals( DEFINITION )) {
                     state.push( MESSAGE );
                     String name = attributes.getValue( "name" );
-                    message = new MessageImpl( name );
+                    message = new MessageImpl( new QName( targetNamespace, name) );
                     return;
                 }
                 // Message Part
@@ -266,7 +268,8 @@ public class WSDLParser extends DefaultHandler {
                 // PortType
                 if( localName.equals( WSDLConstants.PORT_TYPE.getLocalPart()) && state.peek().equals( DEFINITION )) {
                     state.push( PORT_TYPE );
-                    portType = new PortTypeImpl( attributes.getValue( "name" ));
+                    portType = new PortTypeImpl( new QName( targetNamespace, 
+                            attributes.getValue( "name" )));
                     return;
                 }
                 // Operation
@@ -278,21 +281,35 @@ public class WSDLParser extends DefaultHandler {
                 }
                 if( localName.equals( WSDLConstants.INPUT.getLocalPart()) && state.peek().equals( OPERATION )) {
                     state.push( INPUT );
-                    String messageName = parseQName( attributes.getValue( "message" )).getLocalPart();
-                    input = new InputImpl( attributes.getValue( "name" ), definition.getMessage( messageName ));
+                    QName messageRef = parseQName( attributes.getValue( "message" ));
+                    String messageName = messageRef.getLocalPart();
+                    Message message = definition.getMessage( messageRef );
+                    if ( message == null ){
+                        message = new MessageImpl.MessageReferenceImpl( messageRef );
+                    }
+                    input = new InputImpl( attributes.getValue( "name" ), 
+                            message);
                     return;
                 }
                 if( localName.equals( WSDLConstants.OUTPUT.getLocalPart()) && state.peek().equals( OPERATION )) {
                     state.push( OUTPUT );
-                    String messageName = parseQName( attributes.getValue( "message" )).getLocalPart();
-                    output = new OutputImpl( attributes.getValue( "name" ), definition.getMessage( messageName ));
+                    QName messageRef = parseQName( attributes.getValue( "message" ));
+                    String messageName = messageRef.getLocalPart();
+                    Message message = definition.getMessage( messageRef );
+                    if ( message == null ){
+                        message = new MessageImpl.MessageReferenceImpl( messageRef );
+                    }
+                    output = new OutputImpl( attributes.getValue( "name" ), 
+                            message );
                     return;
                 }
                 // Fault
                 if( localName.equals( WSDLConstants.FAULT.getLocalPart()) && state.peek().equals( OPERATION )) {
                     state.push( FAULT );
-                    String messageName = attributes.getValue( "message" );
-                    fault = new FaultImpl(  attributes.getValue( "name" ), definition.getMessage( messageName ));
+                    QName messageName = parseQName( 
+                            attributes.getValue( "message" ));
+                    fault = new FaultImpl(  attributes.getValue( "name" ), 
+                            definition.getMessage( messageName ));
                     return;
                 }
                 
@@ -301,7 +318,13 @@ public class WSDLParser extends DefaultHandler {
                     state.push( BINDING );
                     QName typeQName = parseQName( attributes.getValue( "type" ));
                     binding = new BindingImpl( attributes.getValue( "name" ));
-                    binding.setPortType( definition.getPortType( typeQName.getLocalPart()));
+                    PortType portType = definition.getPortType( typeQName );
+                    if ( portType == null ) {
+                        portType = new PortTypeImpl.PortTypeReferenceImpl(
+                            typeQName  );
+                    }
+                    
+                    binding.setPortType( portType );
                     return;
                 }
                 // BindingOperation

@@ -71,7 +71,9 @@ public final class Report {
     private Collection<Testcase> tests;
     private FileLocator fileLocator;
     private Project project;
-    
+
+    protected boolean completed;
+
     /**
      */
     public Report(String suiteClassName, Project project) {
@@ -79,6 +81,7 @@ public final class Report {
         this.project = project;
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.tests = new ArrayList<Testcase>(10);
+        this.completed = true;
     }
 
     public FileLocator getFileLocator() {
@@ -103,18 +106,18 @@ public final class Report {
     
     /**
      */
-    void update(Report report) {
-        
-        //PENDING - should be synchronized
-        
-        this.suiteClassName = report.suiteClassName;
-        this.totalTests = report.totalTests;
-        this.failures = report.failures;
-        this.errors = report.errors;
-        this.pending = report.pending;
-        this.elapsedTimeMillis = report.elapsedTimeMillis;
-        this.detectedPassedTests = report.detectedPassedTests;
-        this.tests = report.tests;
+    public void update(Report report) {
+        synchronized(this){
+            this.suiteClassName = report.suiteClassName;
+            this.totalTests = report.totalTests;
+            this.failures = report.failures;
+            this.errors = report.errors;
+            this.pending = report.pending;
+            this.elapsedTimeMillis = report.elapsedTimeMillis;
+            this.detectedPassedTests = report.detectedPassedTests;
+            this.tests = report.tests;
+            this.completed = report.completed;
+        }
     }
     
     public Status getStatus() {

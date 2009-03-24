@@ -44,22 +44,27 @@ package org.netbeans.modules.ruby.rhtml.editor.completion;
 import java.io.File;
 import java.util.Collection;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+//import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+//import org.netbeans.modules.gsf.LanguageRegistry;
+//import org.netbeans.modules.gsf.api.EditHistory;
+//import org.netbeans.modules.gsf.api.EmbeddingModel;
+//import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+//import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.EditHistory;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.hints.infrastructure.Pair;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HTMLKit;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel.UpdateState;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
+//import org.netbeans.modules.gsf.api.Error;
+//import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel.UpdateState;
+//import org.netbeans.modules.gsf.api.Severity;
+//import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -92,55 +97,57 @@ public class RhtmlModelTest extends RubyTestBase {
         super.tearDown();
     }
 
-    private TranslatedSource getTranslatedSource(String relFilePath) throws Exception {
-        File jsFile = new File(getDataDir(), relFilePath);
-        if (!jsFile.exists()) {
-            NbTestCase.fail("File " + jsFile + " not found.");
-        }
+//    private TranslatedSource getTranslatedSource(String relFilePath) throws Exception {
+//        File jsFile = new File(getDataDir(), relFilePath);
+//        if (!jsFile.exists()) {
+//            NbTestCase.fail("File " + jsFile + " not found.");
+//        }
+//
+//        BaseDocument doc = getDocument(getTestFile(relFilePath));
+//
+//        return getTranslatedSource(doc, relFilePath);
+//    }
 
-        BaseDocument doc = getDocument(getTestFile(relFilePath));
-
-        return getTranslatedSource(doc, relFilePath);
-    }
-
-    private TranslatedSource getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
-        File jsFile = new File(getDataDir(), relFilePath);
-        if (!jsFile.exists()) {
-            NbTestCase.fail("File " + jsFile + " not found.");
-        }
-        String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
-        String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
-
-        Language lexerLanguage;
-        String mimeType;
-        if (relFilePath.endsWith(".html")) {
-            mimeType = HTML_MIME_TYPE;
-            lexerLanguage = HTMLTokenId.language();
-        } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
-            mimeType = RHTML_MIME_TYPE;
-            lexerLanguage = RhtmlTokenId.language();
-        } else {
-            fail("Unexpected file extension for " + relFilePath);
-            return null;
-        }
-
-        EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(RubyInstallation.RUBY_MIME_TYPE, mimeType);
-        assertNotNull(model);
-
-        doc.putProperty("mimeType", mimeType);
-        doc.putProperty(org.netbeans.api.lexer.Language.class, lexerLanguage);
-
-        Collection<? extends TranslatedSource> translations = model.translate(doc);
-        assertNotNull(translations);
-        assertEquals(1, translations.size());
-        TranslatedSource translatedSource = translations.iterator().next();
-
-        return translatedSource;
-    }
-
+//    private TranslatedSource getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
+//        File jsFile = new File(getDataDir(), relFilePath);
+//        if (!jsFile.exists()) {
+//            NbTestCase.fail("File " + jsFile + " not found.");
+//        }
+//        String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
+//        String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
+//
+//        Language lexerLanguage;
+//        String mimeType;
+//        if (relFilePath.endsWith(".html")) {
+//            mimeType = HTML_MIME_TYPE;
+//            lexerLanguage = HTMLTokenId.language();
+//        } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
+//            mimeType = RHTML_MIME_TYPE;
+//            lexerLanguage = RhtmlTokenId.language();
+//        } else {
+//            fail("Unexpected file extension for " + relFilePath);
+//            return null;
+//        }
+//
+////        EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(RubyInstallation.RUBY_MIME_TYPE, mimeType);
+////        assertNotNull(model);
+//
+//        doc.putProperty("mimeType", mimeType);
+//        doc.putProperty(org.netbeans.api.lexer.Language.class, lexerLanguage);
+//
+//        Collection<? extends TranslatedSource> translations = model.translate(doc);
+//        assertNotNull(translations);
+//        assertEquals(1, translations.size());
+//        TranslatedSource translatedSource = translations.iterator().next();
+//
+//        return translatedSource;
+//    }
+//
     private void checkEruby(String relFilePath) throws Exception {
-        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-        String generatedRuby = translatedSource.getSource();
+        ParserResult pr = getParserResult(relFilePath);
+//        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
+//        String generatedRuby = translatedSource.getSource();
+        CharSequence generatedRuby = pr.getSnapshot().getText();
 
         assertDescriptionMatches(relFilePath, generatedRuby.toString(), false, ".rb");
 
@@ -148,12 +155,12 @@ public class RhtmlModelTest extends RubyTestBase {
         File rubyFile = new File(getDataDir(), relFilePath + ".rb");
         FileObject rubyFo = FileUtil.toFileObject(rubyFile);
         assertNotNull(rubyFo);
-        CompilationInfo info = getInfo(rubyFo);
-        assertNotNull(info);
-        assertNotNull("Parse error on translated source; " + info.getErrors(), AstUtilities.getRoot(info));
+//        CompilationInfo info = getInfo(rubyFo);
+//        assertNotNull(info);
+        assertNotNull("Parse error on translated source; " + pr.getDiagnostics(), AstUtilities.getRoot(pr));
         // Warnings are okay:
         //assertTrue(info.getErrors().toString(), info.getErrors().size() == 0);
-        for (Error error : info.getErrors()) {
+        for (org.netbeans.modules.csl.api.Error error : pr.getDiagnostics()) {
             assertTrue(error.toString(), error.getSeverity() != Severity.ERROR);
         }
     }
@@ -163,9 +170,11 @@ public class RhtmlModelTest extends RubyTestBase {
         // Translate source... then iterate through the source positions and assert
         // that everything in the source matches. Also make sure that the stuff that
         // doesn't match is properly placed...
-        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-        translatedSource.getSource(); // ensure initialized
-        String text = readFile(getTestFile(relFilePath));
+        ParserResult pr = getParserResult(relFilePath);
+//        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
+//        translatedSource.getSource(); // ensure initialized
+//        String text = readFile(getTestFile(relFilePath));
+        String text = pr.getSnapshot().getText().toString();
 
         assertNotNull(checkBeginLine);
         assertNotNull(checkEndLine);
@@ -190,11 +199,13 @@ public class RhtmlModelTest extends RubyTestBase {
 
         // First, make sure that all positions that are defined work symmetrically
         for (int i = 0; i < text.length(); i++) {
-            int astOffset = translatedSource.getAstOffset(i);
+//            int astOffset = translatedSource.getAstOffset(i);
+            int astOffset = pr.getSnapshot().getOriginalOffset(i);
             if (astOffset == -1) {
                 continue;
             }
-            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+//            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+            int lexOffset = pr.getSnapshot().getEmbeddedOffset(astOffset);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
             }
@@ -206,12 +217,14 @@ public class RhtmlModelTest extends RubyTestBase {
         // Next check the provided region to make sure we actually define AST offsets there
 
         for (int i = checkBeginOffset; i < checkEndOffset; i++) {
-            int astOffset = translatedSource.getAstOffset(i);
+//            int astOffset = translatedSource.getAstOffset(i);
+            int astOffset = pr.getSnapshot().getOriginalOffset(i);
             if (astOffset == -1) {
                 fail("Lexical offset " + i + " didn't map to an ast offset; " + getSourceWindow(text, i));
             }
             // Probably not needed, this should follow from the first check section
-            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+//            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+            int lexOffset = pr.getSnapshot().getEmbeddedOffset(i);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
             }
@@ -221,45 +234,45 @@ public class RhtmlModelTest extends RubyTestBase {
         }
     }
 
-    private Pair<RubyTranslatedSource,String> checkIncrementalUpdate(String relFilePath, UpdateState expectedState, String... edits) throws Exception {
-        // TODO
-        // Translate source... then iterate through the source positions and assert
-        // that everything in the source matches. Also make sure that the stuff that
-        // doesn't match is properly placed...
-        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-        translatedSource.getSource(); // ensure initialized
-        String text = readFile(getTestFile(relFilePath));
-
-        Pair<EditHistory,String> pair = getEditHistory(text, edits);
-        EditHistory history = pair.getA();
-        String modifiedText = pair.getB();
-
-        assertTrue(translatedSource instanceof RubyTranslatedSource);
-        RubyTranslatedSource jts = (RubyTranslatedSource)translatedSource;
-        UpdateState state = jts.incrementalUpdate(history);
-        assertEquals(expectedState, state);
-
-        if (state != UpdateState.FAILED) {
-            // Check that offsets are what they should be
-            // First, make sure that all positions that are defined work symmetrically
-            for (int i = 0; i < text.length(); i++) {
-                int astOffset = translatedSource.getAstOffset(i);
-                if (astOffset == -1) {
-                    continue;
-                }
-                int lexOffset = translatedSource.getLexicalOffset(astOffset);
-                if (lexOffset == -1) {
-                    fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
-                }
-                if (lexOffset != i) {
-                    fail("Lexical position " + i + " mapped to ast offset " + astOffset + " and then mapped back to lexical " + lexOffset + " instead of " + i + "; " + getSourceWindow(text, i));
-                }
-            }
-        }
-
-        // For additional checks
-        return new Pair<RubyTranslatedSource,String>(jts, modifiedText);
-    }
+//    private Pair<RubyTranslatedSource,String> checkIncrementalUpdate(String relFilePath, UpdateState expectedState, String... edits) throws Exception {
+//        // TODO
+//        // Translate source... then iterate through the source positions and assert
+//        // that everything in the source matches. Also make sure that the stuff that
+//        // doesn't match is properly placed...
+//        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
+//        translatedSource.getSource(); // ensure initialized
+//        String text = readFile(getTestFile(relFilePath));
+//
+//        Pair<EditHistory,String> pair = getEditHistory(text, edits);
+//        EditHistory history = pair.getA();
+//        String modifiedText = pair.getB();
+//
+//        assertTrue(translatedSource instanceof RubyTranslatedSource);
+//        RubyTranslatedSource jts = (RubyTranslatedSource)translatedSource;
+//        UpdateState state = jts.incrementalUpdate(history);
+//        assertEquals(expectedState, state);
+//
+//        if (state != UpdateState.FAILED) {
+//            // Check that offsets are what they should be
+//            // First, make sure that all positions that are defined work symmetrically
+//            for (int i = 0; i < text.length(); i++) {
+//                int astOffset = translatedSource.getAstOffset(i);
+//                if (astOffset == -1) {
+//                    continue;
+//                }
+//                int lexOffset = translatedSource.getLexicalOffset(astOffset);
+//                if (lexOffset == -1) {
+//                    fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
+//                }
+//                if (lexOffset != i) {
+//                    fail("Lexical position " + i + " mapped to ast offset " + astOffset + " and then mapped back to lexical " + lexOffset + " instead of " + i + "; " + getSourceWindow(text, i));
+//                }
+//            }
+//        }
+//
+//        // For additional checks
+//        return new Pair<RubyTranslatedSource,String>(jts, modifiedText);
+//    }
 
     public void testEruby() throws Exception {
         checkEruby("testfiles/conv.rhtml");
@@ -293,36 +306,39 @@ public class RhtmlModelTest extends RubyTestBase {
     }
 
     public void testIncrementalUpdate1() throws Exception {
-        Pair<RubyTranslatedSource,String> pair = checkIncrementalUpdate("testfiles/conv.rhtml", UpdateState.UPDATED,
-                "Create ^new article", REMOVE+"new ",
-                "Create ^article", INSERT+"old"
-                );
-
-        // Check offsets
-        RubyTranslatedSource source = pair.getA();
-        String text = pair.getB();
-
-        int offset = getCaretOffset(text, "Create ^old");
-        assertTrue(offset != -1);
-        int astOffset = source.getAstOffset(offset);
-        assertTrue(astOffset != -1);
-        int lexOffset = source.getLexicalOffset(astOffset);
-        assertEquals(offset, lexOffset);
+        fail("Not migrated to CSL yet");
+//        Pair<RubyTranslatedSource,String> pair = checkIncrementalUpdate("testfiles/conv.rhtml", UpdateState.UPDATED,
+//                "Create ^new article", REMOVE+"new ",
+//                "Create ^article", INSERT+"old"
+//                );
+//
+//        // Check offsets
+//        RubyTranslatedSource source = pair.getA();
+//        String text = pair.getB();
+//
+//        int offset = getCaretOffset(text, "Create ^old");
+//        assertTrue(offset != -1);
+//        int astOffset = source.getAstOffset(offset);
+//        assertTrue(astOffset != -1);
+//        int lexOffset = source.getLexicalOffset(astOffset);
+//        assertEquals(offset, lexOffset);
     }
 
     public void testIncrementalUpdate4() throws Exception {
+        fail("Not migrated to CSL yet");
         // Edits outside should be completed without parse result updates
-        checkIncrementalUpdate("testfiles/conv.rhtml", UpdateState.UPDATED,
-                "^begin action", INSERT+"bbb"
-                );
+//        checkIncrementalUpdate("testfiles/conv.rhtml", UpdateState.UPDATED,
+//                "^begin action", INSERT+"bbb"
+//                );
     }
 
     public void testIncrementalUpdate8() throws Exception {
         String relFilePath = "testfiles/conv.rhtml";
         BaseDocument doc = getDocument(getTestFile(relFilePath));
-        final TranslatedSource ts = getTranslatedSource(doc, relFilePath);
-        assertNotNull(ts);
+//        final TranslatedSource ts = getTranslatedSource(doc, relFilePath);
+//        assertNotNull(ts);
 
+        ParserResult pr = getParserResult(relFilePath);
         // Now apply some updates
         final EditHistory history = new EditHistory();
         getEditHistory(doc, history,
@@ -335,10 +351,11 @@ public class RhtmlModelTest extends RubyTestBase {
         history.testHelperNotifyToken(true, RhtmlTokenId.RUBY);
 
 
+        fail("Not migrated to CSL yet");
         // Assert the translated source model is correctly updated
-        assertTrue(ts instanceof RubyTranslatedSource);
-        RubyTranslatedSource jts = (RubyTranslatedSource)ts;
-        UpdateState state = jts.incrementalUpdate(history);
-        assertEquals(IncrementalEmbeddingModel.UpdateState.FAILED, state);
+//        assertTrue(ts instanceof RubyTranslatedSource);
+//        RubyTranslatedSource jts = (RubyTranslatedSource)ts;
+//        UpdateState state = jts.incrementalUpdate(history);
+//        assertEquals(IncrementalEmbeddingModel.UpdateState.FAILED, state);
     }
 }

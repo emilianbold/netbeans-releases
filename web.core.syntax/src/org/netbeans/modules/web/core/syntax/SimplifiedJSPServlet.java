@@ -170,7 +170,7 @@ public class SimplifiedJSPServlet {
          //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
         //Needs to be removed after properly fixing the issue
         if (!DocumentUtilities.isWriteLocked(doc)) {
-            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
+            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
             if (parseResult == null || !parseResult.isParsingSuccess()) {
                 processingSuccessful = false;
                 return;
@@ -345,7 +345,7 @@ public class SimplifiedJSPServlet {
         }
 
         JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
-        JSPColoringData coloringData = JspUtils.getJSPColoringData(doc, fobj);
+        JSPColoringData coloringData = JspUtils.getJSPColoringData(fobj);
 
         if (coloringData != null && coloringData.getPrefixMapper() != null){
             Collection<String> prefixes = coloringData.getPrefixMapper().keySet();
@@ -410,7 +410,7 @@ public class SimplifiedJSPServlet {
             return null;
         }
         
-        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, true, false);
+        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
 
         if (parseResult != null) {
             return parseResult.getPageInfo();

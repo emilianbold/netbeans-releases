@@ -74,6 +74,9 @@ public class AttachTypeProxy extends AttachType implements Controller, Callable<
     public static AttachType create(FileObject fob) {
         FeatureInfo whichProvides = FoDFileSystem.getInstance().whichProvides(fob);
         String displayName = (String) fob.getAttribute("displayName");
+        if (displayName == null) {
+            throw new IllegalArgumentException("No displayName attribute: " + fob);
+        }
         return new AttachTypeProxy(displayName, whichProvides);
     }
     
@@ -96,7 +99,7 @@ public class AttachTypeProxy extends AttachType implements Controller, Callable<
     @Override
     public JComponent getCustomizer() {
         if (delegate == null) {
-            return new ConfigurationPanel(attachTypeName, this, featureInfo);
+            return new ConfigurationPanel(attachTypeName, this, featureInfo, false);
         } else {
             return delegate.getCustomizer();
         }

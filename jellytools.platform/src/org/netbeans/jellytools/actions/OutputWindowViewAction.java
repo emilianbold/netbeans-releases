@@ -51,7 +51,7 @@ public class OutputWindowViewAction extends Action {
         Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                 "Menu/Window") +
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "Menu/Window/Output")+
+        Bundle.getStringTrimmed("org.netbeans.core.io.ui.Bundle", "Menu/Window/Output")+
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
                                 "OutputWindow");

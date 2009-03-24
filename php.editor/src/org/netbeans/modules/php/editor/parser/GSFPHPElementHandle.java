@@ -43,10 +43,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -58,14 +59,14 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class GSFPHPElementHandle implements ElementHandle {
     
-    final private CompilationInfo info;
+    final private ParserResult info;
     
-    GSFPHPElementHandle(CompilationInfo info) {
+    GSFPHPElementHandle(ParserResult info) {
         this.info = info;
     }
 
     public FileObject getFileObject() {
-        return info.getFileObject();
+        return info.getSnapshot().getSource().getFileObject();
     }
 
     public String getMimeType() {
@@ -84,12 +85,22 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
     
     public abstract ASTNode getASTNode();
 
+    public OffsetRange getOffsetRange(ParserResult result) {
+        GSFPHPElementHandle h = (GSFPHPElementHandle) this;
+
+        if (h.getASTNode() != null) {
+            return new OffsetRange(h.getASTNode().getStartOffset(), h.getASTNode().getEndOffset());
+        } else {
+            return OffsetRange.NONE;
+        }
+    }
+
     
     public static class ClassDeclarationHandle extends GSFPHPElementHandle {
 
         private ClassDeclaration declaration;
         
-        public ClassDeclarationHandle (CompilationInfo info, ClassDeclaration declaration) {
+        public ClassDeclarationHandle (ParserResult info, ClassDeclaration declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -122,7 +133,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
         private InterfaceDeclaration declaration;
         
-        public InterfaceDeclarationHandle (CompilationInfo info, InterfaceDeclaration declaration) {
+        public InterfaceDeclarationHandle (ParserResult info, InterfaceDeclaration declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -154,7 +165,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
         private FunctionDeclaration declaration;
         
-        public FunctionDeclarationHandle (CompilationInfo info, FunctionDeclaration declaration) {
+        public FunctionDeclarationHandle (ParserResult info, FunctionDeclaration declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -185,7 +196,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
         private ClassConstantDeclaration declaration;
         
-        public ClassConstantDeclarationHandle (CompilationInfo info, ClassConstantDeclaration declaration) {
+        public ClassConstantDeclarationHandle (ParserResult info, ClassConstantDeclaration declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -218,7 +229,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         
         private MethodDeclaration declaration;
         
-        public MethodDeclarationHandle (CompilationInfo info, MethodDeclaration declaration) {
+        public MethodDeclarationHandle (ParserResult info, MethodDeclaration declaration) {
             super (info, declaration.getFunction());
             this.declaration = declaration;
         }
@@ -241,7 +252,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         private FunctionInvocation invocation;
         private String name = null;
         
-        public GlobalConstant (CompilationInfo info, FunctionInvocation invocation) {
+        public GlobalConstant (ParserResult info, FunctionInvocation invocation) {
             super (info);
             this.invocation = invocation;
         }
@@ -277,7 +288,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
         private FieldsDeclaration declaration;
         
-        public FieldsDeclarationHandle (CompilationInfo info, FieldsDeclaration declaration) {
+        public FieldsDeclarationHandle (ParserResult info, FieldsDeclaration declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -312,7 +323,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
         private PHPDocVarTypeTag declaration;
 
-        public FieldsFromTagProperty (CompilationInfo info, PHPDocVarTypeTag declaration) {
+        public FieldsFromTagProperty (ParserResult info, PHPDocVarTypeTag declaration) {
             super (info);
             this.declaration = declaration;
         }

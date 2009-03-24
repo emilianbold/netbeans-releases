@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 
 /**
@@ -66,7 +65,7 @@ final class OffsetableDeclarationKey extends OffsetableKey {
     }
     
     public OffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
-	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), NameCache.getManager().getString(Integer.toString(index)));
+	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), Integer.toString(index));
 	// we use index for unnamed objects
     }
     

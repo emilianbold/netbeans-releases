@@ -43,9 +43,13 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -76,24 +80,30 @@ public class JsAnalyzerTest extends JsTestBase {
         return super.getStructureScanner();
     }
 
-    private void checkImports(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        JsParseResult result = AstUtilities.getParseResult(info);
-        AnalysisResult analysisResult = JsAnalyzer.analyze(result, info);
-        List<String> imports = analysisResult.getImports();
-        if (imports.size() > 1) {
-            Collections.sort(imports);
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        for (String s : imports) {
-            sb.append(s);
-            sb.append("\n");
-        }
-        
-        String annotatedSource = sb.toString();
+    private void checkImports(final String relFilePath) throws Exception {
+        FileObject f = getTestFile(relFilePath);
+        Source source = Source.create(f);
 
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".imports");
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                JsParseResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                AnalysisResult analysisResult = JsAnalyzer.analyze(result);
+                List<String> imports = analysisResult.getImports();
+                if (imports.size() > 1) {
+                    Collections.sort(imports);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (String s : imports) {
+                    sb.append(s);
+                    sb.append("\n");
+                }
+
+                String annotatedSource = sb.toString();
+
+                assertDescriptionMatches(relFilePath, annotatedSource, false, ".imports");
+            }
+        });
     }
     
     public void testAnalysis() throws Exception {

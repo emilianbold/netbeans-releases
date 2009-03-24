@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.profiler.oql.language;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -50,24 +53,34 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  *
- * @author Jan Jancura
+ * @author Jaroslav Bachorik
  */
 class OQLLexer implements Lexer<OQLTokenId> {
+    private static final String TOKEN_FROM = "FROM"; // NOI18N
+    private static final String TOKEN_INSTANCEOF = "INSTANCEOF"; // NOI18N
+    private static final String TOKEN_SELECT = "SELECT"; // NOI18N
+    private static final String TOKEN_WHERE = "WHERE"; // NOI18N
 
     enum State {
-        BEFORE_SELECT,
-        AFTER_SELECT,
-        AFTER_FROM,
-        AFTER_INSTANCEOF,
-        AFTER_CLASS,
-        AFTER_ID,
-        AFTER_WHERE
+        INIT,
+        IN_SELECT,
+        IN_FROM,
+        IN_WHERE,
+        IN_CLASSNAME,
+        PLAIN_JS,
+        FROM,
+        FROM_INSTANCEOF,
+        CLASS_ALIAS,
+        JSBLOCK,
+        JSBLOCK1,
+        ERROR
     };
 
     private LexerInput          input;
     private TokenFactory<OQLTokenId>
                                 tokenFactory;
-    private State               state = State.BEFORE_SELECT;
+    private State               state = State.INIT;
+    final private Pattern       classPattern = Pattern.compile("(\\[*)[a-z]+(?:[a-z 0-9]*)(?:[\\. \\$][a-z 0-9]+)*(\\[\\])*", Pattern.CASE_INSENSITIVE); // NOI18N
 
 
     OQLLexer (LexerRestartInfo<OQLTokenId> info) {
@@ -78,189 +91,288 @@ class OQLLexer implements Lexer<OQLTokenId> {
     }
 
     public Token<OQLTokenId> nextToken () {
+        for (;;) {
+            int actChar = input.read();
+            if (actChar == LexerInput.EOF) {
+                break;
+            }
+            switch (state) {
+                case INIT: {
+                    String lastToken = input.readText().toString().toUpperCase();
+                    if (Character.isWhitespace(actChar)) {
+                        return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                    } else {
+                        input.backup(input.readLength());
+                        if (TOKEN_SELECT.startsWith(lastToken.trim())) {
+                            state = State.IN_SELECT;
+                        } else {
+                            state = State.PLAIN_JS;
+                        }
+                    }
+                    break;
+                }
+                case IN_SELECT: {
+                    String lastToken = input.readText().toString().toUpperCase();
+                    String trimmed = lastToken.trim();
+
+                    if (Character.isWhitespace(actChar)) {
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (TOKEN_SELECT.equals(trimmed)) {
+                            state = State.JSBLOCK;
+                            input.backup(1);
+                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
+                        } else {
+                            state = State.ERROR;
+                            input.backup(input.readLength());
+                        }
+                    } else {
+                        if (!TOKEN_SELECT.startsWith(trimmed)) {
+                            input.backup(input.readLength());
+                            state = State.PLAIN_JS;
+                        }
+                    }
+                    break;
+                }
+
+                case IN_FROM: {
+                    if (Character.isWhitespace(actChar)) {
+                        String lastToken = input.readText().toString().toUpperCase();
+                        if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (TOKEN_FROM.equals(lastToken.trim())) {
+                            input.backup(1);
+                            state = State.FROM;
+                            return tokenFactory.createToken(OQLTokenId.KEYWORD, lastToken.trim().length(), PartType.COMPLETE);
+                        } else {
+                            state = State.ERROR;
+                            input.backup(input.readLength());
+                        }
+                    }
+                    break;
+                }
+
+                case FROM: {
+                    String lastToken = input.readText().toString().toUpperCase();
+                    if (TOKEN_INSTANCEOF.startsWith(lastToken.trim())) {
+                        state = State.FROM_INSTANCEOF;
+                        input.backup(input.readLength());
+                    } else {
+                        state = State.IN_CLASSNAME;
+                    }
+                    break;
+                }
+
+                case FROM_INSTANCEOF: {
+                    String lastToken = input.readText().toString().toUpperCase();
+                    String trimmed = lastToken.trim();
+                    if (!TOKEN_INSTANCEOF.startsWith(trimmed)) {
+                        state = State.IN_CLASSNAME;
+                        input.backup(input.readLength());
+                    }
+                    if (Character.isWhitespace(actChar)) {
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (TOKEN_INSTANCEOF.equals(trimmed)) {
+                            state = State.IN_CLASSNAME;
+                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
+                        } else {
+                            state = State.ERROR;
+                            input.backup(input.readLength());
+                        }
+                    }
+                    break;
+                }
+
+                case JSBLOCK: {
+                    if (Character.isWhitespace(actChar)) {
+                        String lastToken = input.readText().toString().toUpperCase();
+                        String trimmed = lastToken.trim();
+                        if (trimmed.endsWith(TOKEN_FROM)) {
+                            state = State.IN_FROM;
+                            if (input.readLength() > 5) {
+                                input.backup(5);
+                                return tokenFactory.createToken(OQLTokenId.JSBLOCK);
+                            } else {
+                                state = State.ERROR;
+                                input.backup(input.readLength());
+                                break;
+                            }
+                        } else if (TOKEN_SELECT.equals(trimmed) || TOKEN_INSTANCEOF.equals(trimmed) || TOKEN_WHERE.equals(trimmed)) {
+                            state = State.ERROR;
+                            input.backup(input.readLength());
+                        }
+                    } else if (actChar == '(' || actChar == ')' || actChar == '[' ||
+                               actChar == ']' || actChar == '{' || actChar == '}' ||
+                               actChar == '.' || actChar == ',') {
+                        state = State.JSBLOCK1;
+                        input.backup(1);
+                        if (input.readLength() > 0) {
+                            return tokenFactory.createToken(OQLTokenId.JSBLOCK);
+                        }
+                    }
+                    break;
+                }
+
+                case JSBLOCK1: {
+                    if (actChar == '(' || actChar == ')' || actChar == '[' ||
+                       actChar == ']' || actChar == '{' || actChar == '}') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.BRACE);
+                    } else if (actChar == '.') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.DOT);
+                    } else if (actChar == ',') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.COMMA);
+                    }
+                    break;
+                }
+
+                case IN_CLASSNAME: {
+                    if (Character.isWhitespace(actChar)) {
+                        String lastToken = input.readText().toString().toUpperCase();
+                        Matcher matcher = classPattern.matcher(lastToken.trim());
+                        if (matcher.matches()) {
+                            if ((isEmpty(matcher.group(1)) ? 0 : 1) + (isEmpty(matcher.group(2)) ? 0 : 1) > 1) {
+                                return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
+//                                input.backup(input.readLength());
+                            }
+                            state = State.CLASS_ALIAS;
+                            return tokenFactory.createToken(OQLTokenId.CLAZZ);
+                        }
+                    }
+                    break;
+                }
+
+                case CLASS_ALIAS: {
+                    String lastToken = input.readText().toString().toUpperCase();
+
+                    if (TOKEN_SELECT.equals(lastToken) ||
+                        TOKEN_FROM.equals(lastToken) ||
+                        TOKEN_INSTANCEOF.equals(lastToken) ||
+                        TOKEN_WHERE.equals(lastToken)) {
+                        state = State.ERROR;
+                        input.backup(input.readLength());
+                        break;
+                    }
+                    if (Character.isWhitespace(actChar)) {
+                        if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        state = State.IN_WHERE;
+                        return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
+                    }
+                    if (!Character.isLetter(actChar)) {
+                        state = State.ERROR;
+                        input.backup(1);
+                        break;
+                    }
+                    break;
+                }
+
+                case IN_WHERE: {
+                    String lastToken = input.readText().toString().toUpperCase();
+                    String trimmed = lastToken.trim();
+
+                    if (!TOKEN_WHERE.startsWith(trimmed)) {
+                        state = State.ERROR;
+                        input.backup(input.readLength());
+                    }
+                    if (Character.isWhitespace(actChar)) {
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (TOKEN_WHERE.equals(trimmed)) {
+                            state = State.JSBLOCK;
+                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
+                        } else {
+                            state = State.ERROR;
+                            input.backup(input.readLength());
+                        }
+                    }
+                    break;
+                }
+
+                case PLAIN_JS: {
+                    break;
+                }
+                case ERROR: {
+                    return tokenFactory.createToken(OQLTokenId.ERROR);
+                }
+            } // switch (state)
+        }
+
+        if (input.readLength() == 0) return null;
         switch (state) {
-            case BEFORE_SELECT:
-                if (input.read () == 's' &&
-                    input.read () == 'e' &&
-                    input.read () == 'l' &&
-                    input.read () == 'e' &&
-                    input.read () == 'c' &&
-                    input.read () == 't'
-                ) {
-                    state = State.AFTER_SELECT;
-                    return tokenFactory.createToken (OQLTokenId.KEYWORD);
+            case INIT: {
+                return tokenFactory.createToken(OQLTokenId.UNKNOWN);
+            }
+            case IN_SELECT: {
+                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+            }
+            case JSBLOCK: {
+                String lastToken = input.readText().toString().trim().toUpperCase();
+                if (lastToken.endsWith(TOKEN_FROM)) {
+                    state = State.IN_FROM;
+                    if (input.readLength() > 5) {
+                        input.backup(5);
+                        return tokenFactory.createToken(OQLTokenId.JSBLOCK);
+                    } else {
+                        state = State.ERROR;
+                        return tokenFactory.createToken(OQLTokenId.ERROR);
+                    }
+                } else {
+                    return tokenFactory.createToken(OQLTokenId.JSBLOCK, input.readLength(), PartType.START);
                 }
-                if (input.readLength () == 0)
-                    return null;
-                return tokenFactory.createToken (OQLTokenId.ERROR);
-            case AFTER_SELECT:
-            case AFTER_WHERE:
-                int i = input.read ();
-                switch (i) {
-                    case LexerInput.EOF:
-                        return null;
-                    case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': case '8': case '9':
-                        return finishNumberLiteral(input.read(), false);
-                    case '0': // in a number literal
-                        i = input.read();
-                            if (i == 'x' || i == 'X') { // in hexadecimal (possibly floating-point) literal
-                                boolean inFraction = false;
-                                while (true) {
-                                    switch (input.read()) {
-                                        case '0': case '1': case '2': case '3': case '4':
-                                        case '5': case '6': case '7': case '8': case '9':
-                                        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-                                        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-                                            break;
-                                        case '.': // hex float literal
-                                            if (!inFraction) {
-                                                inFraction = true;
-                                            } else { // two dots in the float literal
-                                                return tokenFactory.createToken (OQLTokenId.HEX_NUMBER);
-                                            }
-                                            break;
-                                        case 'p': case 'P': // binary exponent
-                                            return finishFloatExponent();
-                                        default:
-                                            input.backup(1);
-                                            // if float then before mandatory binary exponent => invalid
-                                            return tokenFactory.createToken (OQLTokenId.HEX_NUMBER);
-                                    }
-                                } // end of while(true)
-                            }
-                            return finishNumberLiteral(i, false);
-                    case '"':
-                        do {
-                            i = input.read ();
-                            if (i == '\\') {
-                                i = input.read ();
-                                i = input.read ();
-                            }
-                        } while (
-                            i != '"' &&
-                            i != '\n' &&
-                            i != '\r' &&
-                            i != LexerInput.EOF
-                        );
-                        return tokenFactory.createToken (OQLTokenId.STRING);
-                    case '\'':
-                        do {
-                            i = input.read ();
-                            if (i == '\\') {
-                                i = input.read ();
-                                i = input.read ();
-                            }
-                        } while (
-                            i != '\'' &&
-                            i != '\n' &&
-                            i != '\r' &&
-                            i != LexerInput.EOF
-                        );
-                        return tokenFactory.createToken (OQLTokenId.STRING);
-                    case '>':
-                    case '<':
-                    case '=':
-                    case '!':
-                    case '*':
-                    case '/':
-                    case '+':
-                    case '-':
-                    case '%':
-                        return tokenFactory.createToken (OQLTokenId.OPERATOR);
-                    case '(':
-                    case ')':
-                    case '[':
-                    case ']':
-                        return tokenFactory.createToken (OQLTokenId.BRACES);
-                    default:
-                        String id = readIdentifier (i);
-                        if (id != null) {
-                            if (state == State.AFTER_SELECT &&
-                                id.equals ("from")
-                            ) {
-                                state = State.AFTER_FROM;
-                                return tokenFactory.createToken (OQLTokenId.KEYWORD);
-                            }
-                        }
-                        return tokenFactory.createToken (OQLTokenId.IDENTIFIER);
-                }// switch (i)
-            case AFTER_FROM:
-                i = input.read ();
-                switch (i) {
-                    case LexerInput.EOF:
-                        return null;
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
-                        return tokenFactory.createToken (OQLTokenId.WHITESPACE);
-                    default:
-                        String id = readIdentifier (i);
-                        if (id != null) {
-                            if (id.equals ("instanceof")) {
-                                state = State.AFTER_INSTANCEOF;
-                                return tokenFactory.createToken (OQLTokenId.KEYWORD);
-                            }
-                            return readClass ();
-                        }
-                        return tokenFactory.createToken (OQLTokenId.ERROR);
+            }
+            case PLAIN_JS: {
+                return tokenFactory.createToken(OQLTokenId.JSBLOCK);
+            }
+            case IN_FROM: {
+                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+            }
+            case FROM: {
+                return tokenFactory.createToken(OQLTokenId.UNKNOWN);
+            }
+            case FROM_INSTANCEOF: {
+                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+            }
+            case IN_CLASSNAME: {
+                String lastToken = input.readText().toString().trim().toUpperCase();
+                Matcher matcher = classPattern.matcher(lastToken);
+                if (matcher.matches()) {
+                    if ((isEmpty(matcher.group(1)) ? 0 : 1) + (isEmpty(matcher.group(2)) ? 0 : 1) > 1) {
+                        return tokenFactory.createToken(OQLTokenId.ERROR);
+                    }
+                    state = State.CLASS_ALIAS;
+                    input.backup(1);
+                    return tokenFactory.createToken(OQLTokenId.CLAZZ);
+                } else {
+                    return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
                 }
-            case AFTER_INSTANCEOF:
-                i = input.read ();
-                switch (i) {
-                    case LexerInput.EOF:
-                        return null;
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
-                        return tokenFactory.createToken (OQLTokenId.WHITESPACE);
-                    default:
-                        String id = readIdentifier (input.read ());
-                        if (id != null)
-                            return readClass ();
-                        return tokenFactory.createToken (OQLTokenId.ERROR);
+            }
+            case CLASS_ALIAS: {
+                String lastToken = input.readText().toString().toUpperCase();
+
+                if (TOKEN_SELECT.equals(lastToken) ||
+                    TOKEN_FROM.equals(lastToken) ||
+                    TOKEN_INSTANCEOF.equals(lastToken) ||
+                    TOKEN_WHERE.equals(lastToken)) {
+                    state = State.ERROR;
+//                    input.backup(input.readLength());
+                    return tokenFactory.createToken(OQLTokenId.ERROR);
+                } else {
+                    return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
                 }
-            case AFTER_CLASS:
-                i = input.read ();
-                switch (i) {
-                    case LexerInput.EOF:
-                        return null;
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
-                        return tokenFactory.createToken (OQLTokenId.WHITESPACE);
-                    default:
-                        String id = readIdentifier (i);
-                        if (id == null)
-                            return tokenFactory.createToken (OQLTokenId.ERROR);
-                        state = State.AFTER_ID;
-                        return tokenFactory.createToken (OQLTokenId.IDENTIFIER);
-                }
-            case AFTER_ID:
-                i = input.read ();
-                switch (i) {
-                    case LexerInput.EOF:
-                        return null;
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
-                        return tokenFactory.createToken (OQLTokenId.WHITESPACE);
-                    default:
-                        String id = readIdentifier (i);
-                        if (id != null &&id.equals ("where")) {
-                            state = State.AFTER_WHERE;
-                            return tokenFactory.createToken (OQLTokenId.KEYWORD);
-                        }
-                        return tokenFactory.createToken (OQLTokenId.ERROR);
-                }
-            default:
-                input.read ();
-                return tokenFactory.createToken (OQLTokenId.ERROR);
-        } // switch (state)
+            }
+            case IN_WHERE: {
+                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+            }
+            case ERROR: {
+                return tokenFactory.createToken(OQLTokenId.ERROR);
+            }
+            default: {
+                return tokenFactory.createToken(OQLTokenId.UNKNOWN);
+            }
+        }
+    }
+
+    final private static boolean isEmpty(String string) {
+        return string == null || string.length() == 0;
     }
 
     public Object state () {
@@ -268,102 +380,6 @@ class OQLLexer implements Lexer<OQLTokenId> {
     }
 
     public void release () {
-    }
-
-    private Token<OQLTokenId> finishNumberLiteral(int c, boolean inFraction) {
-        while (true) {
-            switch (c) {
-                case '.':
-                    if (!inFraction) {
-                        inFraction = true;
-                    } else { // two dots in the literal
-                        return tokenFactory.createToken (OQLTokenId.NUMERIC);
-                    }
-                    break;
-                case 'l': case 'L': // 0l or 0L
-                    return tokenFactory.createToken (OQLTokenId.NUMERIC);
-                case 'd': case 'D':
-                    return tokenFactory.createToken (OQLTokenId.NUMERIC);
-                case 'f': case 'F':
-                    return tokenFactory.createToken (OQLTokenId.NUMERIC);
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                    break;
-                case 'e': case 'E': // exponent part
-                    return finishFloatExponent();
-                default:
-                    input.backup (1);
-                    return tokenFactory.createToken (OQLTokenId.NUMERIC);
-            }
-            c = input.read();
-        }
-    }
-
-    private Token<OQLTokenId> finishFloatExponent() {
-        int c = input.read();
-        if (c == '+' || c == '-') {
-            c = input.read();
-        }
-        if (c < '0' || '9' < c)
-            return tokenFactory.createToken (OQLTokenId.NUMERIC);
-        do {
-            c = input.read();
-        } while ('0' <= c && c <= '9'); // reading exponent
-        switch (c) {
-            case 'd': case 'D':
-                return tokenFactory.createToken (OQLTokenId.NUMERIC);
-            case 'f': case 'F':
-                return tokenFactory.createToken (OQLTokenId.NUMERIC);
-            default:
-                input.backup(1);
-                return tokenFactory.createToken (OQLTokenId.NUMERIC);
-        }
-    }
-
-    private String readIdentifier (int i) {
-        if (i == LexerInput.EOF) return null;
-        while (
-            (i >= 'a' && i <= 'z') ||
-            (i >= 'A' && i <= 'Z')
-        )
-            i = input.read ();
-        if (i == LexerInput.EOF)
-            return input.readText ().toString ();
-        if (input.readLength () > 1) {
-            if (i != LexerInput.EOF)
-                input.backup (1);
-            return input.readText ().toString ();
-        }
-        return null;
-    }
-
-    private Token<OQLTokenId> readClass () {
-        while (true) {
-            int i = input.read ();
-            if (i != '.') {
-                while (i == '[') {
-                    if (input.read () != ']') {
-                        if (i != LexerInput.EOF)
-                            input.backup (2);
-                        else
-                            input.backup (1);
-                        state = State.AFTER_CLASS;
-                        return tokenFactory.createToken (OQLTokenId.CLASS);
-                    }
-                    i = input.read ();
-                }
-                if (i != LexerInput.EOF)
-                    input.backup (1);
-                state = State.AFTER_CLASS;
-                return tokenFactory.createToken (OQLTokenId.CLASS);
-            }
-            String id = readIdentifier (input.read ());
-            if (id != null) continue;
-            if (i != LexerInput.EOF)
-                input.backup (1);
-            state = State.AFTER_CLASS;
-            return tokenFactory.createToken (OQLTokenId.CLASS);
-        }
     }
 }
 

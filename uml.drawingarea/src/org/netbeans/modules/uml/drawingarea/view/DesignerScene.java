@@ -326,7 +326,6 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         }
         else
         {
-//            System.out.println("***WARNING: can't create "+node.getFirstSubjectsType());
         }
         
         return widget;

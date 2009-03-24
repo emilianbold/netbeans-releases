@@ -93,7 +93,7 @@ public class AddJDBCDriverDialogTest extends PerformanceTestCase {
         MENU = Bundle.getStringTrimmed(BUNDLE, "AddNewDriver");
         TITLE = Bundle.getStringTrimmed(BUNDLE, "AddDriverDialogTitle");
         
-        String path = Bundle.getStringTrimmed(BUNDLE, "NDN_Databases") + "|" + Bundle.getStringTrimmed(BUNDLE, "NDN_Drivers");
+        String path = Bundle.getStringTrimmed(BUNDLE, "Databases") + "|Drivers";
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);
         thenode.select();
     }

@@ -1,6 +1,6 @@
 Code completion result for source line:
 var.to_i|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     to_i                                       NilClass
 ------------------------------------
 METHOD     to_i                                       BigDecimal

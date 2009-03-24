@@ -1,0 +1,66 @@
+{
+name:issues
+description:Bugzilla issue tracking system
+type:issues
+display_name:Bugzilla
+}
+{
+name:lists
+description:Mailing lists
+type:lists
+display_name:Mailing List
+}
+{
+name:subversion
+description:Subversion source code repository
+type:scm
+display_name:Subversion
+}
+{
+name:wiki
+description:Wiki
+type:wiki
+display_name:Wiki
+}
+{
+name:mercurial
+description:Mercurial source code repository
+type:scm
+display_name:Mercurial
+}
+{
+name:forum
+description:Web-based forum
+type:forum
+display_name:Message Forum
+}
+{
+name:downloads
+description:File Downloads
+type:downloads
+display_name:Downloads
+}
+{
+name:external_repository
+description:External source code repository
+type:scm
+display_name:External
+}
+{
+name:external_issues
+description:External issue tracking system
+type:issues
+display_name:External
+}
+{
+name:jira
+description:JIRA issue tracking system
+type:issues
+display_name:JIRA
+}
+{
+name:git
+description:Git source code repository
+type:scm
+display_name:Git
+}

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ide.ergonomics.ant;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -51,6 +52,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -113,6 +115,11 @@ public final class ExtractLayer extends Task {
         bundleFilter = b;
     }
 
+    private File badgeFile;
+    public void setBadgeIcon(File f) {
+        badgeFile = f;
+    }
+
     @Override
     public void execute() throws BuildException {
         if (moduleSet.isEmpty()) {
@@ -126,6 +133,12 @@ public final class ExtractLayer extends Task {
         }
         if (clusterName == null) {
             throw new BuildException();
+        }
+        BufferedImage badgeIcon;
+        try {
+            badgeIcon = badgeFile == null ? null : ImageIO.read(badgeFile);
+        } catch (IOException ex) {
+            throw new BuildException("Error reading " + badgeFile, ex);
         }
 
         Pattern concatPattern;
@@ -217,7 +230,12 @@ public final class ExtractLayer extends Task {
                             }
                             if (copyPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
-                                icons.add(new ZipResource(jar, "UTF-8", zipEntry));
+                                Resource zr = new ZipResource(jar, "UTF-8", zipEntry);
+                                if (badgeIcon != null) {
+                                    icons.add(new IconResource(zr, badgeIcon));
+                                } else {
+                                    icons.add(zr);
+                                }
                             }
                         }
                     } finally {

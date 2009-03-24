@@ -3,8 +3,8 @@
     <head>
         <title> TITULEK
         </title>
-        
-        
+
+
         <style type="text/css">
             h1 {
                 color: black;
@@ -27,65 +27,66 @@
         </style>
     </head>
     <body>
-    
-    <!-- text elements-->
-    <h1>Header 1 </h1>
-    <h2>Header 2 </h2>
-    <b>bold</b>
-    <i>italic</i>
-    <big>BIG</big>
-    <small>small</small>
-    
-    <!-- lists -->
-    <ul>
-        <li>first</li>
-        <li>second</li>
-    </ul>
-    
-    <!-- link -->
-    <a href='syntax.html'></a>
-    
-    <table border='1'>
-        <tr >
-            <th></th>
-        </tr>
-        <tr>
-            <td align='center'></td>
-        </tr>
-    </table>
-    <div style=" text-align: center" >
-        <form name='questionnaire' action='save'>
-            <input type='input' name='name' value='Jirka'>
-            <textarea cols='10' rows='5'>
+
+        <!-- text elements-->
+        <h1>Header 1 </h1>
+        <h2>Header 2 </h2>
+        <b>bold</b>
+        <i>italic</i>
+        <big>BIG</big>
+        <small>small</small>
+
+        <!-- lists -->
+        <ul>
+            <li>first</li>
+            <li>second</li>
+        </ul>
+
+        <!-- link -->
+        <a href='syntax.html'></a>
+
+        <table border='1'>
+            <tr >
+                <th></th>
+            </tr>
+            <tr>
+                <td align='center'></td>
+            </tr>
+        </table>
+        <div style=" text-align: center" >
+            <form name='questionnaire' action='save'>
+                <input type='input' name='name' value='Jirka'>
+                <textarea cols='10' rows='5'>
 Any text
-            </textarea>
-            <input type='button' value='Hotovo'>
-        </form>
-    </div>
-    
-    <script type='text/javascript'>
-        function(){
-            alert('Message');
-        }
-    </script>
-    
-    <img alt='short_desc' src='syntax.png'>
-    
-    <pre>
+                </textarea>
+                <input type='button' value='Hotovo'>
+            </form>
+        </div>
+
+        <script type='text/javascript'>
+            function(){
+                alert('Message');
+            }
+        </script>
+
+        <img alt='short_desc' src='syntax.png'>
+
+        <pre>
 some text
-    </pre>
-    <body>
-        <tr>
-            <td style="color: blue;">
-                INLINE STYLE
-            </td>
-        </tr>
+        </pre>
+        <table>
+            <tr>
+                <td style="color: blue;">
+                    INLINE STYLE
+                </td>
+            </tr>
+        </table>
         <!--
 
-                    test comment
+                test comment
 
 
-             --> 
-        
+        --> 
+
     </body>
 </html>

@@ -1,6 +1,6 @@
 Code completion result for source line:
 new Test().get|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getAge()                        [PUBLIC]   Object
 METHOD     getAt(String)                              Object

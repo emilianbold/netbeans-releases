@@ -181,6 +181,9 @@ public final class MidpProjectSupport {
         assert (primaryFile != null);
         
         Project project = getProjectForDocument(document);
+        if (project == null || primaryFile == null || !primaryFile.isValid()) {
+            return new HashMap<FileObject, FileObject>(0);
+        }
         List<ClassPath> classPathList = getClassPath(project, primaryFile);
         
         assert(classPathList != null);

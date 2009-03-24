@@ -1,5 +1,5 @@
 Code completion result for source line:
 import java.lang.Ab|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      AbstractMethodError                        null

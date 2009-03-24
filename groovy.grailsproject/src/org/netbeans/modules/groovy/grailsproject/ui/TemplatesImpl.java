@@ -39,19 +39,20 @@
 
 package org.netbeans.modules.groovy.grailsproject.ui;
 
+import org.netbeans.modules.groovy.grailsproject.templates.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
-import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsArtifacts;
+import org.netbeans.modules.groovy.grailsproject.templates.GrailsArtifacts;
 
 /**
  *
  * @author schmidtm
  * @author Martin Adamek
  */
-public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplates  {
+public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates  {
 
     public static final String GROOVY_CLASS = "Templates/Groovy/GroovyClass.groovy";
     public static final String GROOVY_SCRIPT = "Templates/Groovy/GroovyScript.groovy";

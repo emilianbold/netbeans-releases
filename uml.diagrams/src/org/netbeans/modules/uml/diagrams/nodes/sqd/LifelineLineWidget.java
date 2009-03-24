@@ -72,7 +72,7 @@ public class LifelineLineWidget extends CustomizableWidget implements DiagramNod
     //private Widget centerWidget;
     
   
-    private final int active_semi_width=5;
+    private final int active_semi_width=15;
     private final int bottom_margin=16;
     private  boolean destroy;
     

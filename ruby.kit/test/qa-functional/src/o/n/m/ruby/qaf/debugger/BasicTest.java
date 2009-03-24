@@ -162,7 +162,7 @@ public class BasicTest extends JellyTestCase {
         lineNumber = Util.waitStopped(eo, lineNumber + 1);
         assertTrue("Debugger not at \"date2 = Date.today\"", eo.getText(lineNumber).indexOf("date2 =") > -1);
 
-        TopComponentOperator localVariablesTCO = new TopComponentOperator("Local Variables");//NOI18N
+        TopComponentOperator localVariablesTCO = new TopComponentOperator("Variables");//NOI18N
         assertEquals("date1", new JTableOperator(localVariablesTCO).getModel().getValueAt(1, 0).toString());
 
         new StepIntoAction().perform();

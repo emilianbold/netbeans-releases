@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.util;
 
 import java.lang.ref.WeakReference;
@@ -49,9 +48,9 @@ import java.util.*;
  * @author Vladimir Kvashin
  */
 public class WeakList<T> implements Iterable<T> {
-    
+
     private List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
-    
+
     /**
      * Adds a weak reference to the given element to this list
      */
@@ -63,52 +62,52 @@ public class WeakList<T> implements Iterable<T> {
      * Adds all weak references frim the given iterator to this list
      */
     public synchronized void addAll(Iterator<T> elements) {
-	while( elements.hasNext() ) {
-	    list.add(new WeakReference<T>(elements.next()));
-	}
+        while (elements.hasNext()) {
+            list.add(new WeakReference<T>(elements.next()));
+        }
     }
-    
+
     /*
      * Removes all references to the given element from this list
      */
     public synchronized void remove(T element) {
-	for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
-	    WeakReference<T> ref = it.next();
-            if( ref.get() == element ) {
+        for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
+            WeakReference<T> ref = it.next();
+            if (ref.get() == element) {
                 it.remove();
             }
         }
     }
-    
+
     /** Removes all elements */
     public synchronized void clear() {
-	list.clear();
+        list.clear();
     }
-    
+
     /** 
      * Returns an iterator of non-null references.
      * NB: it iterates over a snapshot made at the moment of the call
      */
     public synchronized Iterator<T> iterator() {
         List<T> result = new ArrayList<T>();
-	addTo(result);
+        addTo(result);
         return result.iterator();
     }
-    
+
     public synchronized Collection<T> join(Collection<? extends T> collection) {
         List<T> result = new ArrayList<T>(collection.size() + list.size());
-	result.addAll(collection);
-	addTo(result);
+        result.addAll(collection);
+        addTo(result);
         return result;
     }
-    
+
     private void addTo(Collection<T> collection) {
         for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
             WeakReference<T> ref = it.next();
             T element = ref.get();
-            if( element != null ) {
+            if (element != null) {
                 collection.add(element);
             }
-        }    
+        }
     }
 }

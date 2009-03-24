@@ -44,6 +44,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -456,7 +457,7 @@ public class ProjectTab extends TopComponent
     private final RequestProcessor RP = new RequestProcessor();
     
     public void selectNodeAsync(FileObject object) {
-        setCursor( Utilities.createProgressCursor( this ) );
+        setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
         open();
         requestActive();
         selectNodeAsyncNoSelect(object);

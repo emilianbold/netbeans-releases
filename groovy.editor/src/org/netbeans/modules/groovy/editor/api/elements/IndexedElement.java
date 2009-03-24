@@ -46,11 +46,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,8 +59,8 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public abstract class IndexedElement extends GroovyElement {
-    
-    protected String fileUrl;
+
+    protected IndexResult result;
     protected final String classFqn;
     protected final GroovyIndex index;
     protected final String attributes;
@@ -69,11 +68,11 @@ public abstract class IndexedElement extends GroovyElement {
     protected int flags;
     protected int docLength = -1;
     private Document document;
-    private FileObject fileObject;
+    //private FileObject fileObject;
 
-    protected IndexedElement(GroovyIndex index, String fileUrl, String classFqn, String attributes, int flags) {
+    protected IndexedElement(GroovyIndex index, IndexResult result, String classFqn, String attributes, int flags) {
         this.index = index;
-        this.fileUrl = fileUrl;
+        this.result = result;
         this.attributes = attributes;
         this.classFqn = classFqn;
         this.flags = flags;
@@ -81,13 +80,9 @@ public abstract class IndexedElement extends GroovyElement {
 
     public abstract String getSignature();
 
-    public final String getFileUrl() {
-        return fileUrl;
-    }
-
     @Override
     public String toString() {
-        return getSignature() + ":" + getFileUrl();
+        return getSignature();
     }
 
     public GroovyIndex getIndex() {
@@ -107,30 +102,22 @@ public abstract class IndexedElement extends GroovyElement {
                 return null;
             }
 
-            document = AstUtilities.getBaseDocument(fileObject, true);
+            document = LexUtilities.getDocument(fo, true);
         }
 
         return document;
     }
 
-    public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
-    }
+// FIXME parsing API
+//    public ParserFile getFile() {
+//        boolean platform = false; // XXX FIND OUT WHAT IT IS!
+//
+//        return new DefaultParserFile(getFileObject(), null, platform);
+//    }
 
     @Override
     public FileObject getFileObject() {
-        if ((fileObject == null) && (fileUrl != null)) {
-            fileObject = GroovyIndex.getFileObject(fileUrl);
-
-            if (fileObject == null) {
-                // Don't try again
-                fileUrl = null;
-            }
-        }
-
-        return fileObject;
+        return result.getFile();
     }
 
     @Override

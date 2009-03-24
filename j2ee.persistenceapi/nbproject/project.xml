@@ -134,6 +134,7 @@
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api</package>
                 <package>org.netbeans.modules.j2ee.persistence.api.metadata.orm</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi</package>

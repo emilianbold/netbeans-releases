@@ -44,8 +44,8 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public final class CreateHostVisualPanel3 extends JPanel {
 
@@ -58,17 +58,17 @@ public final class CreateHostVisualPanel3 extends JPanel {
         return CreateHostWizardIterator.getString("CreateHostVisualPanel3.Title");//NOI18N
     }
 
-    private String hkey;
+    private ExecutionEnvironment execEnv;
     private ToolsCacheManager cacheManager;
 
-    void init(String hkey, ToolsCacheManager cacheManager) {
+    void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
+        this.execEnv = execEnv;
         this.cacheManager = cacheManager;
-        this.hkey = hkey;
-        textHostDisplayName.setText(RemoteUtils.getHostName(hkey));
-        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hkey);
+        textHostDisplayName.setText(execEnv.getHost());
+        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
-        labelUsernameValue.setText(RemoteUtils.getUserName(hkey));
-        labelHostnameValue.setText(RemoteUtils.getHostName(hkey));
+        labelUsernameValue.setText(execEnv.getHost());
+        labelHostnameValue.setText(execEnv.getHost());
         List<String> sets = csm.getCompilerSetDisplayNames();
         cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
         List<CompilerSet> sets2 = csm.getCompilerSets();

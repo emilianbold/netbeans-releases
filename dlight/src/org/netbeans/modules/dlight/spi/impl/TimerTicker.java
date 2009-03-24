@@ -44,29 +44,29 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 public final class TimerTicker
-        extends IndicatorDataProvider<TimerIDPConfiguration>
-        implements Runnable {
+    extends IndicatorDataProvider<TimerIDPConfiguration>
+    implements Runnable {
 
-    private static final TimerTaskExecutionService service;
     private static final DataTableMetadata tableMetadata;
     private final Object lock = new String(TimerTicker.class.getName());
     private final IndicatorDataProviderConfiguration configuration;
     private long startTime = 0;
-    private Future tickerTask;
+    private Future tickerService;
 
 
     static {
-        service = TimerTaskExecutionService.getInstance();
         tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
-                Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+            Arrays.asList(TimerIDPConfiguration.TIME_INFO));
     }
 
     TimerTicker(TimerIDPConfiguration configuration) {
@@ -76,23 +76,22 @@ public final class TimerTicker
     private void targetStarted(DLightTarget target) {
         synchronized (lock) {
             resetIndicators();
-            tickerTask = service.scheduleAtFixedRate(this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
+            tickerService = DLightExecutorService.scheduleAtFixedRate(
+                this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
             startTime = System.currentTimeMillis();
         }
     }
 
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {
-            if (tickerTask != null) {
-                tickerTask.cancel(true);
-                tickerTask = null;
-            }
+            tickerService.cancel(true);
+            tickerService = null;
         }
     }
 
     public void run() {
         DataRow data = new DataRow(Arrays.asList(TimerIDPConfiguration.TIME_ID),
-                Arrays.<Object>asList(System.currentTimeMillis() - startTime));
+            Arrays.<Object>asList(System.currentTimeMillis() - startTime));
 
         notifyIndicators(Arrays.asList(data));
     }
@@ -103,7 +102,7 @@ public final class TimerTicker
     }
 
     public void targetStateChanged(
-            DLightTarget source, State oldState, State newState) {
+        DLightTarget source, State oldState, State newState) {
 
         switch (newState) {
             case RUNNING:
@@ -122,5 +121,31 @@ public final class TimerTicker
                 targetFinished(source);
                 return;
         }
+    }
+
+    public ValidationStatus validate(DLightTarget objectToValidate) {
+        return ValidationStatus.validStatus();
+    }
+
+    public void invalidate() {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ValidationStatus getValidationStatus() {
+        // throw new UnsupportedOperationException("Not supported yet.");
+        return ValidationStatus.validStatus();
+    }
+
+    public void addValidationListener(ValidationListener listener) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeValidationListener(ValidationListener listener) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getName() {
+        return "Timer";
     }
 }

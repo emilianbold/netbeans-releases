@@ -116,7 +116,7 @@ public class APTIncludeUtils {
                 exists = files.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.exists());
-                    files.put(FilePathCache.getString(path).toString(), exists);
+                    files.put(FilePathCache.getManager().getString(path).toString(), exists);
                 } else {
                     //hits ++;
                 }
@@ -137,7 +137,7 @@ public class APTIncludeUtils {
                 exists = dirs.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.isDirectory());
-                    dirs.put(FilePathCache.getString(path).toString(), exists);
+                    dirs.put(FilePathCache.getManager().getString(path).toString(), exists);
                 } else {
                     //hits ++;
                 }

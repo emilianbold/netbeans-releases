@@ -55,8 +55,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationDialogPanel;
-import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -98,46 +97,20 @@ public class BindingNewType extends NewType {
 
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             String bindName = panel.getBindingName();
-            LocalizedTemplateGroup bindingType = panel.getBindingType();
-            //this could be null for a binding which does not have a sub type
-            LocalizedTemplate bindingSubType = panel.getBindingSubType();
-            String serviceName = panel.getServiceName();
-            String servicePortName = panel.getServicePortName();
-            Map configurationMap = new HashMap();
             
-            boolean createServicePort = panel.canAutoCreateServicePort();
-
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindName);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
-
-
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
-
-            //service and port
-            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
-            configurationMap.put(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT, createServicePort);
-            
-            PortType pt = panel.getPortType();
-            model.startTransaction();
-            BindingGenerator generator = new BindingGenerator(model, pt, configurationMap);
-            generator.execute();
-            Binding binding = generator.getBinding();
-            Port port = generator.getPort();
-
-            String targetNamespace = model.getDefinitions().getTargetNamespace();
+            panel.commit();
+            if (model.isIntransaction()) {
+                model.endTransaction();
+            }
+            Binding binding = model.findComponentByName(bindName, Binding.class);
             if (binding != null) {
-                bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                ActionHelper.selectNode(binding);
             }
-            
-            if (createServicePort) {
-                if (port != null) {
-                    bindingSubType.getMProvider().postProcess(targetNamespace, port);
-                }
+        } else {
+            panel.rollback();
+            if (model.isIntransaction()) {
+                model.rollbackTransaction();
             }
-
-            model.endTransaction();
-            ActionHelper.selectNode(binding);
         }
     }
 

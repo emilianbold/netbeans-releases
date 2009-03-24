@@ -30,7 +30,7 @@ package org.netbeans.modules.css.visual.api;
 import java.io.File;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 
 /**
  * A context class representig a parsed css source. 
@@ -43,7 +43,7 @@ public final class CssRuleContext {
 
     private File file;
     private Document doc;
-    private CssRule selectedRule;
+    private CssRuleContent selectedRule;
     private CssModel model;
 
     /**
@@ -54,7 +54,7 @@ public final class CssRuleContext {
      * @param doc source editor document for the model
      * @param file 
      */
-    public CssRuleContext(CssRule selectedRule, CssModel model, Document doc, File basePath) {
+    public CssRuleContext(CssRuleContent selectedRule, CssModel model, Document doc, File basePath) {
         this.selectedRule = selectedRule;
         this.model = model;
         this.file = basePath;
@@ -62,7 +62,7 @@ public final class CssRuleContext {
     }
 
     /** @param  a selected css rule from the list of rules held by the css model. */
-    public CssRule selectedRule() {
+    public CssRuleContent selectedRuleContent() {
         return selectedRule;
     }
 
@@ -81,12 +81,13 @@ public final class CssRuleContext {
         return doc;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof CssRuleContext)) {
             return false;
         } else {
             CssRuleContext c = (CssRuleContext) o;
-            return c.document() == document() && c.base() == base() && c.selectedRule() == selectedRule();
+            return c.document() == document() && c.base() == base() && c.selectedRuleContent() == selectedRuleContent();
         }
     }
 }

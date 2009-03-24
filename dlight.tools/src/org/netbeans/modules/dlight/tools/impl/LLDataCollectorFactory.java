@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.tools.impl;
 
 import org.netbeans.modules.dlight.tools.*;
@@ -59,16 +58,22 @@ public class LLDataCollectorFactory implements
     public String getID() {
         return LLDataCollectorConfiguration.ID;
     }
-
     private LLDataCollector tool;
 
     public LLDataCollector create(LLDataCollectorConfiguration configuration) {
-        if (tool == null) {
-            tool = new LLDataCollector(configuration);
-        } else {
-            tool.addConfiguration(configuration);
+        synchronized (this) {
+            if (tool == null) {
+                tool = new LLDataCollector(configuration);
+            } else {
+                tool.addConfiguration(configuration);
+            }
+            return tool;
         }
-        return tool;
     }
 
+    public void reset() {
+        synchronized (this) {
+            tool = null;
+        }
+    }
 }

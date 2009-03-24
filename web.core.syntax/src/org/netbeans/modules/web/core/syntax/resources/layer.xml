@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-jsp">
                 <attr name="useCustomEditorKit" boolvalue="true"/>
@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
             <folder name="x-jsp">
                 <folder name="text">
                     <folder name="x-java">
+                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance"/>
                         <folder name="CodeTemplates">
                             <folder name="Defaults">
                                 <file name="codetemplates.shadow">
@@ -86,11 +87,11 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
@@ -102,7 +103,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-web-core-syntax-JspBracesMatching.instance">
                         <attr name="position" intvalue="40"/>
@@ -140,7 +141,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForJsp"/>
@@ -177,12 +178,13 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="GsfHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-JSPParserFactory.instance" />
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance" />
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance" />
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">
@@ -200,11 +202,11 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
@@ -215,7 +217,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -270,7 +272,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">
@@ -282,11 +284,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="GsfHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance" />
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance" />
             </folder>
         </folder>
     </folder>

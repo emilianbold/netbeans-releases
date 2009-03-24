@@ -49,7 +49,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -62,22 +61,18 @@ import org.openide.util.actions.SystemAction;
 public abstract class UndeployAction extends NodeAction {
 
     protected void performAction(final Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    for (Node node : activatedNodes) {
-                        Lookup lookup = node.getLookup();
-                        Undeployable undeployable = lookup.lookup(Undeployable.class);
+        try {
+            for (Node node : activatedNodes) {
+                Lookup lookup = node.getLookup();
+                Undeployable undeployable = lookup.lookup(Undeployable.class);
 
-                        if (undeployable != null) {
-                            undeployable.undeploy(isForceAction());
-                        }
-                    }
-                } catch (RuntimeException rex) {
-                    //gobble up exception
+                if (undeployable != null) {
+                    undeployable.undeploy(isForceAction());
                 }
             }
-        });
+        } catch (RuntimeException rex) {
+            //gobble up exception
+        }
     }
 
     protected boolean enable(Node[] activatedNodes) {

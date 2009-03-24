@@ -263,7 +263,7 @@ public class AttrSupports {
                     ClassLoader cld = null;
                     try {
                         FileObject fileObject = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
-                        cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
+                        cld = JspUtils.getModuleClassLoader(fileObject);
                         Class beanClass = Class.forName(className, false, cld);
                         Introspector.flushFromCaches(beanClass);
                         BeanInfo benInfo = Introspector.getBeanInfo(beanClass);
@@ -356,7 +356,7 @@ public class AttrSupports {
         protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
             List<String> l = new ArrayList<String>();
             FileObject orig = sup.getFileObject();
-            FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
+            FileObject documentBase = JspUtils.guessWebModuleRoot(orig);
             if (documentBase != null) {
                 FileObject webInfTags = JspUtils.findRelativeFileObject(documentBase, "WEB-INF/tags");
                 if (webInfTags != null) {
@@ -415,7 +415,7 @@ public class AttrSupports {
             
             try {
                 FileObject orig = sup.getFileObject();
-                FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
+                FileObject documentBase = JspUtils.guessWebModuleRoot(orig);
                 // need to normalize fileNamePart with respect to orig
                 String ctxPath = JspUtils.resolveRelativeURL("/"+orig.getPath(), path);  // NOI18N
                 //is this absolute path?
@@ -461,7 +461,7 @@ public class AttrSupports {
                     if (file.isFolder())
                         resFolders.put(file.getNameExt(), JspCompletionItem.createFileCompletionItem(file.getNameExt() + "/", offset, java.awt.Color.BLUE, PACKAGE_ICON));
                     else{
-                        java.awt.Image icon = JspUtils.getIcon(sup.getDocument(), file);
+                        java.awt.Image icon = JspUtils.getIcon(file);
                         if (icon != null)
                             resFiles.put(file.getNameExt(), JspCompletionItem.createFileCompletionItem(file.getNameExt(), offset, java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
                         else

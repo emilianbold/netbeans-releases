@@ -21,9 +21,11 @@ set -e
 
 dirname=`dirname "$0"`
 
+jdk_home=`"$dirname"/get_current_jdk.sh`
+
 . "$dirname"/env.sh
 
-"$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans"
+"$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans" "$jdk_home"
 
 "$dirname"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR"
 
@@ -32,8 +34,6 @@ dirname=`dirname "$0"`
 "$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
 
 "$dirname"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$MYSQL_INSTALL_DIR"
-
-jdk_home=`"$dirname"/get_current_jdk.sh`
 
 cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/etc

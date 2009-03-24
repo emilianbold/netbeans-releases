@@ -43,6 +43,7 @@ package org.netbeans.modules.search;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -58,6 +59,7 @@ import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
@@ -76,13 +78,10 @@ import org.openide.windows.WindowManager;
  * @author kaktus
  */
 final class ResultView extends TopComponent {
+
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
     
-    /** */
-    private static final String RESULTS_CARD = "results";               //NOI18N
-    
-    /** */
-    private static final String ISSUES_CARD = "issues";                 //NOI18N
-                           
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "search-results";                  //NOI18N
     
@@ -96,6 +95,8 @@ final class ResultView extends TopComponent {
     private JPopupMenu pop;
     private PopupListener popL;
     private CloseListener closeL;
+
+    private JPanel emptyPanel;
 
     /**
      * Returns a singleton of this class.
@@ -157,6 +158,14 @@ final class ResultView extends TopComponent {
         closeL = new CloseListener();
 
         initActions();
+        
+        emptyPanel = new JPanel();
+        add(emptyPanel, BorderLayout.CENTER);
+        if( isMacLaf ) {
+            emptyPanel.setBackground(macBackground);
+            setBackground(macBackground);
+            setOpaque(true);
+        }
     }
     
     private void initActions() {
@@ -222,6 +231,9 @@ final class ResultView extends TopComponent {
         assert EventQueue.isDispatchThread();
 
         IssuesPanel issuesPanel = new IssuesPanel(title, problems);
+        if( isMacLaf ) {
+            issuesPanel.setBackground(macBackground);
+        }
         searchToViewMap.get(replaceToSearchMap.get(task)).displayIssues(issuesPanel);
         if (!isOpened()) {
             open();
@@ -275,25 +287,27 @@ final class ResultView extends TopComponent {
     }
 
     private void addTabPanel(JPanel panel) {
-        if (getComponentCount() == 0) {
-            add(panel, BorderLayout.CENTER);
+        Component comp = getComponent(0);
+        if (comp instanceof JTabbedPane) {
+            ((JTabbedPane) comp).addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
+            ((JTabbedPane) comp).setSelectedComponent(panel);
+            comp.validate();
         } else {
-            Component comp = getComponent(0);
-            if (comp instanceof JTabbedPane) {
-                ((JTabbedPane) comp).addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
-                ((JTabbedPane) comp).setSelectedComponent(panel);
-                comp.validate();
-            } else {
-                remove(comp);
-                JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
-                pane.addMouseListener(popL);
-                pane.addPropertyChangeListener(closeL);
-                add(pane, BorderLayout.CENTER);
-                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
-                pane.addTab(getTabTitle(panel), null, panel, panel.getToolTipText()); 
-                pane.setSelectedComponent(panel);
-                pane.validate();
+            remove(comp);
+            JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
+            pane.addMouseListener(popL);
+            pane.addPropertyChangeListener(closeL);
+            if( isMacLaf ) {
+                pane.setBackground(macBackground);
+                pane.setOpaque(true);
             }
+            add(pane, BorderLayout.CENTER);
+            if (comp instanceof ResultViewPanel){
+                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
+            }
+            pane.addTab(getTabTitle(panel), null, panel, panel.getToolTipText());
+            pane.setSelectedComponent(panel);
+            pane.validate();
         }
         validate();
         requestActive();
@@ -342,6 +356,7 @@ final class ResultView extends TopComponent {
                 Manager.getInstance().stopSearching(viewToSearchMap.get(comp));
             }
             remove(comp);
+            add(emptyPanel, BorderLayout.CENTER);
             close();
         } else {
             close();
@@ -466,6 +481,10 @@ final class ResultView extends TopComponent {
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel == null){
             panel = new ResultViewPanel(task);
+            if( isMacLaf ) {
+                panel.setBackground(macBackground);
+            }
+
             addSearchPair(panel, task);
             addTabPanel(panel);
         }

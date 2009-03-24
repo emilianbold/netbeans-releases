@@ -41,31 +41,27 @@
 
 package org.netbeans.modules.groovy.gsp;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
 
 
 public class GspLanguage extends DefaultLanguageConfig {
 
     public GspLanguage() {
+        super();
     }
 
     @Override
@@ -84,11 +80,6 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.<FileObject>emptyList();
-    }
-
-    @Override
     public String getDisplayName() {
         return "GSP";
     }
@@ -98,11 +89,6 @@ public class GspLanguage extends DefaultLanguageConfig {
         return "gsp"; // NOI18N
     }
 
-    @Override
-    public Map<String,String> getSourceGroupNames() {
-        return Collections.emptyMap();
-    }
-    
     @Override
     public boolean isUsingCustomEditorKit() {
         return true;
@@ -129,9 +115,10 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Indexer getIndexer() {
+    public EmbeddingIndexerFactory getIndexerFactory() {
         return null;
     }
+
 
     @Override
     public InstantRenamer getInstantRenamer() {
@@ -155,7 +142,7 @@ public class GspLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return null;
+        return new GspParser();
     }
 
     @Override
@@ -170,7 +157,7 @@ public class GspLanguage extends DefaultLanguageConfig {
     
     @Override
     public StructureScanner getStructureScanner() {
-        return new StructureAnalyzer();
+        return new GspStructureScanner();
     }
 
     @Override

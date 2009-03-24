@@ -5,6 +5,7 @@ Searchable Keys:
   class : Base
   class-ig : base
   fqn : ActionController::Base
+  require : action_controller
 
 Not Searchable Keys:
   attrs : |CLASS|

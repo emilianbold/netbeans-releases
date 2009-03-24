@@ -45,9 +45,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,12 +59,15 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -81,43 +84,42 @@ import org.openide.util.Exceptions;
  */
 public class PHPIndex {
 
+    private static final Logger LOG = Logger.getLogger(PHPIndex.class.getName());
+
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
     public static final int ANY_ATTR = 0xFFFFFFFF;
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
-    static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
-    private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
-    private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
-    private static final Set<String> TERMS_CLASS = Collections.singleton(PHPIndexer.FIELD_CLASS);
-    private static final Set<String> TERMS_VAR = Collections.singleton(PHPIndexer.FIELD_VAR);
-    private static final Set<String> TERMS_ALL = new HashSet<String>();
-    private static final Set<String> TERMS_CONSTRUCTOR = new HashSet<String>();
+    private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR};
 
-    {        
-        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CLASS);
-        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CONSTRUCTOR);
-        TERMS_ALL.add(PHPIndexer.FIELD_BASE);
-        TERMS_ALL.add(PHPIndexer.FIELD_CONST);
-        TERMS_ALL.add(PHPIndexer.FIELD_CLASS);
-        TERMS_ALL.add(PHPIndexer.FIELD_VAR);
-    }
-
-    private final Index index;
+    private final QuerySupport index;
 
     /** Creates a new instance of JsIndex */
-    public PHPIndex(Index index) {
+    private PHPIndex(QuerySupport index) {
         this.index = index;
     }
 
-    public static PHPIndex get(Index index) {
-        return new PHPIndex(index);
+    public static PHPIndex get(Collection<FileObject> roots) {
+        try {
+            return new PHPIndex(QuerySupport.forRoots(PHPIndexer.Factory.NAME,
+                    PHPIndexer.Factory.VERSION,
+                    roots.toArray(new FileObject[roots.size()])));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            return new PHPIndex(null);
+        }
+
     }
 
-    public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, NameKind nameKind) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    public static PHPIndex get(ParserResult info){
+        // TODO: specify the claspath ids to improve performance and avoid conflicts
+        return get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP), Collections.<String>emptySet()));
+    }
+
+    public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {
         final Collection<IndexedElement> elements = new ArrayList<IndexedElement>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
@@ -125,7 +127,8 @@ public class PHPIndex {
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
 
         // search through the top leve elements
-        search(PHPIndexer.FIELD_TOP_LEVEL, prefix.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_ALL);
+        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, 
+                prefix.toLowerCase(), QuerySupport.Kind.PREFIX, TOP_LEVEL_TERMS);
 
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
@@ -138,144 +141,159 @@ public class PHPIndex {
         return elements;
     }
 
-    protected void findClasses(final Set<SearchResult> result, NameKind kind, String name, Collection<IndexedClass> classes) {
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
-                if (signatures == null) {
-                    continue;
-                }
-                for (String signature : signatures) {
-                    Signature sig = Signature.get(signature);
-                    String className = sig.string(1);
-                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-                        //case sensitive
-                        if (!className.toLowerCase().startsWith(name.toLowerCase())) {
-                            continue;
-                        }
-                    } else if (kind == NameKind.EXACT_NAME) {
-                        if (!className.toLowerCase().equals(name.toLowerCase())) {
-                            continue;
-                        }
+    protected void findClasses(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedClass> classes) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                String className = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!className.toLowerCase().startsWith(name.toLowerCase())) {
+                        continue;
                     }
-                    //TODO: handle search kind
-                    int offset = sig.integer(2);
-                    String superClass = sig.string(3);
-                    superClass = superClass.length() == 0 ? null : superClass;
-                    IndexedClass clazz = new IndexedClass(className, null, this, map.getPersistentUrl(), superClass, offset, 0);
-                    //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
-                    classes.add(clazz);
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!className.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
                 }
+                //TODO: handle search kind
+                int offset = sig.integer(2);
+                String superClass = sig.string(3);
+                superClass = superClass.length() == 0 ? null : superClass;
+                IndexedClass clazz = new IndexedClass(className, null, this, map.getUrl().toString(), superClass, offset, 0);
+                //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                classes.add(clazz);
             }
         }
     }
 
-    protected void findConstants(final Set<SearchResult> result, NameKind kind, String name, Collection<IndexedConstant> constants) {
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
-                if (signatures == null) {
-                    continue;
-                }
-                for (String signature : signatures) {
-                    Signature sig = Signature.get(signature);
-                    //sig.string(0) is the case insensitive search key
-                    String constName = sig.string(1);
-                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-                        //case sensitive
-                        if (!constName.startsWith(name)) {
-                            continue;
-                        }
+    protected void findConstants(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedConstant> constants) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String constName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!constName.startsWith(name)) {
+                        continue;
                     }
-                    int offset = sig.integer(2);
-                    IndexedConstant constant = new IndexedConstant(constName, null, this, map.getPersistentUrl(), offset, 0, null);
-                    //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
-                    constants.add(constant);
                 }
+                int offset = sig.integer(2);
+                IndexedConstant constant = new IndexedConstant(constName, null, this, map.getUrl().toString(), offset, 0, null);
+                //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                constants.add(constant);
             }
         }
     }
 
-    protected void findFunctions(final Set<SearchResult> result, NameKind kind, String name, Collection<IndexedFunction> functions) {
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
-                if (signatures == null) {
-                    continue;
-                }
-                for (String signature : signatures) {
-                    Signature sig = Signature.get(signature);
-                    //sig.string(0) is the case insensitive search key
-                    String funcName = sig.string(1);
-                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-                        //case sensitive - TODO does it make sense?
-                        if (!funcName.startsWith(name)) {
-                            continue;
-                        }
-                    } else if (kind == NameKind.EXACT_NAME) {
-                        if (!funcName.equalsIgnoreCase(name)) {
-                            // PHP func names r case-insensitive
-                            continue;
-                        }
+    protected void findFunctions(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedFunction> functions) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String funcName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive - TODO does it make sense?
+                    if (!funcName.startsWith(name)) {
+                        continue;
                     }
-                    int offset = sig.integer(3);
-                    String arguments = sig.string(2);
-                    IndexedFunction func = new IndexedFunction(funcName, null, this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
-                    int[] optionalArgs = extractOptionalArgs(sig.string(4));
-                    func.setOptionalArgs(optionalArgs);
-                    //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
-                    functions.add(func);
-                    String retType = sig.string(5);
-                    retType = retType.length() == 0 ? null : retType;
-                    func.setReturnType(retType);
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!funcName.equalsIgnoreCase(name)) {
+                        // PHP func names r case-insensitive
+                        continue;
+                    }
                 }
+                int offset = sig.integer(3);
+                String arguments = sig.string(2);
+                IndexedFunction func = new IndexedFunction(funcName, null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
+                int[] optionalArgs = extractOptionalArgs(sig.string(4));
+                func.setOptionalArgs(optionalArgs);
+                //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                functions.add(func);
+                String retType = sig.string(5);
+                retType = retType.length() == 0 ? null : retType;
+                func.setReturnType(retType);
             }
         }
     }
 
-    protected void findTopVariables(final Set<SearchResult> result, NameKind kind, String name, Collection<IndexedVariable> vars) {
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_VAR);
-                if (signatures == null) {
-                    continue;
-                }
-                for (String signature : signatures) {
-                    Signature sig = Signature.get(signature);
-                    //sig.string(0) is the case insensitive search key
-                    String constName = sig.string(1);
-                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
-                        //case sensitive
-                        if (!constName.startsWith(name)) {
-                            continue;
-                        }
-                    } else if (kind == NameKind.EXACT_NAME) {
-                        if (!constName.equals(name)) {
-                            continue;
-                        }
+    protected void findTopVariables(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedVariable> vars) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_VAR);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String constName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!constName.startsWith(name)) {
+                        continue;
                     }
-                    String typeName = sig.string(2);
-                    typeName = typeName.length() == 0 ? null : typeName;
-                    int offset = sig.integer(3);
-                    IndexedVariable var = new IndexedVariable(constName, null, this,
-                            map.getPersistentUrl(), offset, 0, typeName);
-                    //var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
-                    vars.add(var);
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!constName.equals(name)) {
+                        continue;
+                    }
                 }
+                String typeName = sig.string(2);
+                typeName = typeName.length() == 0 ? null : typeName;
+                int offset = sig.integer(3);
+                IndexedVariable var = new IndexedVariable(constName, null, this,
+                        map.getUrl().toString(), offset, 0, typeName);
+                //var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                vars.add(var);
             }
         }
+
     }
 
-    private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
-            Set<SearchScope> scope, Set<String> terms) {
+    private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
         try {
-            index.search(key, name, kind, scope, result, terms);
+            Collection<? extends IndexResult> results = index.query(key, name, kind, terms);
 
-            return true;
-        } catch (IOException ioe) {
+            if (LOG.isLoggable(Level.FINE)) {
+                String msg = "PHPIndex.search(" + key + ", " + name + ", " + kind + ", " //NOI18N
+                        + (terms == null || terms.length == 0 ? "no terms" : Arrays.asList(terms)) + ")"; //NOI18N
+                LOG.fine(msg);
+                
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, null, new Throwable(msg));
+                }
+
+                for(IndexResult r : results) {
+                    LOG.fine("Fields in " + r + " (" + r.getFile().getPath() + "):"); //NOI18N
+                    for(String field : PHPIndexer.ALL_FIELDS) {
+                        String value = r.getValue(field);
+                        if (value != null) {
+                            LOG.fine(" <" + field + "> = <" + value + ">"); //NOI18N
+                        }
+                    }
+                    LOG.fine("----"); //NOI18N
+                }
+
+                LOG.fine("===="); //NOI18N
+            }
+
+        return results;
+    } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-
-            return false;
+            return Collections.<IndexResult>emptySet();
         }
     }
 
@@ -334,11 +352,11 @@ public class PHPIndex {
     }
 
     /** returns constnats of a class. */
-    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
+    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
         Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
        
         // #147730 - prefer the current file
-        File currentFile = getCurrentFile(context);
+        FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
@@ -348,7 +366,7 @@ public class PHPIndex {
                 if (!constants.containsKey(constantName) || className.equals(typeName)){
                     constants.put(constantName, const0);
                     
-                    if (currentFile != null && currentFile.equals(const0.getFile().getFile())) {
+                    if (currentFile != null && currentFile.equals(const0.getFileObject())) {
                         currentFileClasses.add(className);
                     }
                 }
@@ -375,11 +393,11 @@ public class PHPIndex {
     }
 
     /** returns all methods of a class or an interface. */
-    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
         
         // #147730 - prefer the current file
-        File currentFile = getCurrentFile(context);
+        FileObject currentFile = (context != null) ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
@@ -390,7 +408,7 @@ public class PHPIndex {
                 
                 if (!methods.containsKey(methodName) || className.equals(typeName)){
                     methods.put(methodName, method);
-                    if (currentFile != null && currentFile.equals(method.getFile().getFile())) {
+                    if (currentFile != null && currentFile.equals(method.getFileObject())) {
                         currentFileClasses.add(className);
                     }
                 }
@@ -419,11 +437,11 @@ public class PHPIndex {
     }
 
     /** returns all fields of a class or an interface. */
-    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
         
         // #147730 - prefer the current file
-        File currentFile = getCurrentFile(context);
+        FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
@@ -435,7 +453,7 @@ public class PHPIndex {
                     fields.put(fieldName, field);
                 }
                 
-                if (currentFile != null && field != null && currentFile.equals(field.getFile().getFile())) {
+                if (currentFile != null && field != null && currentFile.equals(field.getFileObject())) {
                     currentFileClasses.add(className);
                 }
             }
@@ -446,21 +464,22 @@ public class PHPIndex {
         return result;
     }
 
-    /** Current file for the context or <code>null</code> */
-    private File getCurrentFile(PHPParseResult context) {
-        if (context != null && context.getFile() != null) {
-            return context.getFile().getFile();
-        }
-        return null;
-    }
+//    /** Current file for the context or <code>null</code> */
+//    private File getCurrentFile(PHPParseResult context) {
+//        context.getSnapshot().getSource().getFileObject().
+//        if (context != null && context.getFile() != null) {
+//            return context.getFile().getFile();
+//        }
+//        return null;
+//    }
 
     // #147730 - prefer the current file
-    private void filterClassMembers(Collection<? extends IndexedElement> elements, Set<String> currentFileClasses, File currentFile) {
+    private void filterClassMembers(Collection<? extends IndexedElement> elements, Set<String> currentFileClasses, FileObject currentFile) {
         if (elements.size() > 0 && currentFileClasses.size() > 0) {
             for (Iterator<? extends IndexedElement> it = elements.iterator(); it.hasNext();) {
                 IndexedElement method = it.next();
                 if (currentFileClasses.contains(method.getIn())
-                        && !currentFile.equals(method.getFile().getFile())) {
+                        && !currentFile.equals(method.getFileObject())) {
                     it.remove();
                 }
             }
@@ -485,7 +504,7 @@ public class PHPIndex {
 
         processedClasses.add(className);
         List<String> assumedParents = new LinkedList<String>();
-        Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
+        Collection<IndexedClass>classes = getClasses(context, className, QuerySupport.Kind.EXACT);
         
         if (classes != null) {
             for (IndexedClass clazz : classes) {
@@ -506,9 +525,9 @@ public class PHPIndex {
     }
 
     /** returns local constnats of a class. */
-    public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
+    public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind, ALL_SCOPE);
+        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
 
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
@@ -517,7 +536,7 @@ public class PHPIndex {
             int offset = sig.integer(1);
 
             IndexedConstant prop = new IndexedConstant(propName, typeName,
-                    this, signaturesMap.get(signature), offset, 0, null);
+                    this, signaturesMap.get(signature).getUrl().toString(), offset, 0, null);
 
             constants.add(prop);
 
@@ -527,11 +546,11 @@ public class PHPIndex {
     }
 
     public Collection<IndexedFunction> getConstructors(PHPParseResult result, String typeName) {
-        NameKind kind = NameKind.CASE_INSENSITIVE_PREFIX;
+        QuerySupport.Kind kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         String name = typeName;//NOI18N
         int attrMask = PHPIndex.ANY_ATTR;
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, ALL_SCOPE, true);
+        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, true);
 
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
@@ -548,7 +567,7 @@ public class PHPIndex {
                 int offset = sig.integer(2);
 
                 IndexedFunction func = new IndexedFunction(funcName, funcName,
-                        this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+                        this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
@@ -563,9 +582,9 @@ public class PHPIndex {
     }
 
     /** returns methods of a class. */
-    public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+    public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind, ALL_SCOPE);
+        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind);
 
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
@@ -582,7 +601,7 @@ public class PHPIndex {
                 int offset = sig.integer(2);
 
                 IndexedFunction func = new IndexedFunction(funcName, typeName,
-                        this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+                        this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
@@ -598,9 +617,9 @@ public class PHPIndex {
     }
 
     /** returns fields of a class. */
-    public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+    public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind, ALL_SCOPE);
+        Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind);
 
         for (String signature : signaturesMap.keySet()) {
             Signature sig = Signature.get(signature);
@@ -620,7 +639,7 @@ public class PHPIndex {
                 }
 
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
-                        this, signaturesMap.get(signature), offset, flags, type,ElementKind.FIELD);
+                        this, signaturesMap.get(signature).getUrl().toString(), offset, flags, type,ElementKind.FIELD);
 
                 fields.add(prop);
             }
@@ -629,21 +648,22 @@ public class PHPIndex {
         return fields;
     }
 
-    private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope) {
-        return getTypeSpecificSignatures(typeName, fieldName, name, kind, scope, false);
+    private Map<String, IndexResult> getTypeSpecificSignatures(String typeName, String fieldName, String name, QuerySupport.Kind kind) {
+        return getTypeSpecificSignatures(typeName, fieldName, name, kind, false);
     }
 
-    private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope, boolean forConstructor) {
-        final Set<SearchResult> searchResult = new HashSet<SearchResult>();
-        Map<String, String> signatures = new HashMap<String, String>();
+    private Map<String, IndexResult> getTypeSpecificSignatures(String typeName, String fieldName, String name,
+            QuerySupport.Kind kind, boolean forConstructor) {
+        Map<String, IndexResult> signatures = new HashMap<String, IndexResult>();
         String[] fields = forConstructor ? new String[]{PHPIndexer.FIELD_CLASS} :
             new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE};
 
         for (String indexField : fields) {
-                search(indexField, typeName.toLowerCase(), NameKind.PREFIX,
-                        searchResult, scope, forConstructor ? TERMS_CONSTRUCTOR : TERMS_BASE);
+            final Collection<? extends IndexResult> indexResult = search(indexField, typeName.toLowerCase(), QuerySupport.Kind.PREFIX,
+                        forConstructor ? new String [] {indexField, fieldName, PHPIndexer.FIELD_CONSTRUCTOR} :
+                            new String [] {indexField, fieldName, PHPIndexer.FIELD_BASE});
 
-            for (SearchResult typeMap : searchResult) {
+            for (IndexResult typeMap : indexResult) {
                 String[] typeSignatures = typeMap.getValues(indexField);
                 String[] rawSignatures = typeMap.getValues(fieldName);
 
@@ -654,7 +674,6 @@ public class PHPIndex {
                 assert typeSignatures.length == 1;
                 String foundTypeName = getSignatureItem(typeSignatures[0], 1);
                 foundTypeName = (foundTypeName != null) ? foundTypeName.toLowerCase() : null;
-                String persistentURL = typeMap.getPersistentUrl();
 
                 if (forConstructor) {
                     if (!foundTypeName.startsWith(typeName.toLowerCase())) {
@@ -671,10 +690,15 @@ public class PHPIndex {
 
                     // TODO: now doing IC prefix search only, handle other search types
                     // according to 'kind'
-                    if ((kind == NameKind.CASE_INSENSITIVE_PREFIX && elemName.toLowerCase().startsWith(name.toLowerCase())) || (kind == NameKind.PREFIX && elemName.startsWith(name)) || (kind == NameKind.EXACT_NAME && elemName.equals(name))) {
-                        signatures.put(signature, persistentURL);
-                    }
 
+                    if (elemName != null){
+                        if ((kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX
+                                && elemName.toLowerCase().startsWith(name.toLowerCase()))
+                                || (kind == QuerySupport.Kind.PREFIX && elemName.startsWith(name))
+                                || (kind == QuerySupport.Kind.EXACT && elemName.equals(name))) {
+                            signatures.put(signature, typeMap);
+                        }
+                    }
                 }
             }
         }
@@ -685,6 +709,7 @@ public class PHPIndex {
     //faster parsing of signatures.
     //use Signature class if you need to search in the same signature
     //multiple times
+    @CheckForNull
     static String getSignatureItem(String signature, int index) {
         int searchIndex = 0;
         for(int i = 0; i < signature.length(); i++) {
@@ -706,95 +731,79 @@ public class PHPIndex {
         return null;
     }
 
-    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
-        return getFunctions(context, name, kind, ALL_SCOPE);
-    }
     /** returns GLOBAL functions. */
-    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, QuerySupport.Kind kind) {
+        
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_BASE, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_BASE);
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_BASE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
+
         findFunctions(result, kind, name, functions);
         return functions;
     }
-    public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind) {
-        return getTopLevelVariables(context, name, kind, ALL_SCOPE);
-    }
-    public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    
+    public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, QuerySupport.Kind kind) {
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
-        search(PHPIndexer.FIELD_VAR, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_VAR);
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_VAR, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_VAR);
         findTopVariables(result, kind, name, vars);
         return vars;
     }
 
-
-    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
-        return getConstants(context, name, kind, ALL_SCOPE);
-    }
     /** returns GLOBAL constants. */
-    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, QuerySupport.Kind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_CONST);
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CONST, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_CONST);
         findConstants(result, kind, name, constants);
         return constants;
     }
 
     public Set<FileObject> filesWithIdentifiers(String identifierName) {
         final Set<FileObject> result = new HashSet<FileObject>();
-        final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
-        search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
-        for (SearchResult searchResult : idSearchResult) {
-            result.add(FileUtil.toFileObject(new File(URI.create(searchResult.getPersistentUrl()))));
+        
+        Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
+        for (IndexResult indexResult : idIndexResult) {
+            result.add(FileUtil.toFileObject(new File(URI.create(indexResult.getUrl().toString()))));
         }
         return result;
     }
 
-    public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,NameKind nameKind) {
-        return typeNamesForIdentifier(identifierName, kind, nameKind, ALL_SCOPE);
-    }
 
-    public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,NameKind nameKind, Set<SearchScope> scope) {
+    public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,QuerySupport.Kind nameKind) {
         final Set<String> result = new HashSet<String>();
-        final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
-        search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, scope, TERMS_BASE);
-        for (SearchResult searchResult : idSearchResult) {
-            if (searchResult.getPersistentUrl() != null) {
-                String[] signatures = searchResult.getValues(PHPIndexer.FIELD_IDENTIFIER_DECLARATION);
-                if (signatures == null) {
+        Collection<? extends IndexResult> idIndexResult = search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX);
+        for (IndexResult IndexResult : idIndexResult) {
+            String[] signatures = IndexResult.getValues(PHPIndexer.FIELD_IDENTIFIER_DECLARATION);
+            if (signatures == null) {
+                continue;
+            }
+            for (String sign : signatures) {
+                IdentifierSignature idSign = IdentifierSignature.createDeclaration(Signature.get(sign));
+                if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||
+                        idSign.getTypeName() == null) {
                     continue;
                 }
-                for (String sign : signatures) {
-                    IdentifierSignature idSign = IdentifierSignature.createDeclaration(Signature.get(sign));
-                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||
-                            idSign.getTypeName() == null) {
-                        continue;
-                    }
-                    switch(nameKind) {
-                        case CASE_INSENSITIVE_PREFIX:
-                            if (!idSign.getName().startsWith(identifierName.toLowerCase())) {
-                                continue;
-                            }
-                            break;
-                        case PREFIX:
-                            if (!idSign.getName().startsWith(identifierName)) {
-                                continue;
-                            }
-                            break;
-                        default:
-                            assert false : nameKind.toString();
+                switch (nameKind) {
+                    case CASE_INSENSITIVE_PREFIX:
+                        if (!idSign.getName().startsWith(identifierName.toLowerCase())) {
                             continue;
-                    }
-                    if (kind == null) {
-                        result.add(idSign.getTypeName());
-                    } else if (kind.equals(ElementKind.FIELD) && idSign.isField()) {
-                        result.add(idSign.getTypeName());
-                    } else if (kind.equals(ElementKind.METHOD) && idSign.isMethod()) {
-                        result.add(idSign.getTypeName());
-                    } else if (kind.equals(ElementKind.CONSTANT) && idSign.isClassConstant()) {
-                        result.add(idSign.getTypeName());
-                    }
+                        }
+                        break;
+                    case PREFIX:
+                        if (!idSign.getName().startsWith(identifierName)) {
+                            continue;
+                        }
+                        break;
+                    default:
+                        assert false : nameKind.toString();
+                        continue;
+                }
+                if (kind == null) {
+                    result.add(idSign.getTypeName());
+                } else if (kind.equals(ElementKind.FIELD) && idSign.isField()) {
+                    result.add(idSign.getTypeName());
+                } else if (kind.equals(ElementKind.METHOD) && idSign.isMethod()) {
+                    result.add(idSign.getTypeName());
+                } else if (kind.equals(ElementKind.CONSTANT) && idSign.isClassConstant()) {
+                    result.add(idSign.getTypeName());
                 }
             }
         }
@@ -802,68 +811,58 @@ public class PHPIndex {
     }
 
 
-    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
-        return getClasses(context, name, kind, ALL_SCOPE);
-    }
-
-    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, QuerySupport.Kind kind) {
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
-        search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_CLASS);
+        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         findClasses(result, kind, name, classes);
 
         return classes;
     }
 
-    public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, NameKind kind) {
-        return getInterfaces(context, name, kind, ALL_SCOPE);
-    }
-
-    public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
+    public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, QuerySupport.Kind kind) {
+        Collection<? extends IndexResult> result = null;
         Collection<IndexedInterface> ifaces = new ArrayList<IndexedInterface>();
         if (name != null && name.trim().length() > 0) {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_BASE);
+            result = search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         } else {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, scope, null);
+            result = search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         }
 
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_IFACE);
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_IFACE);
 
-                if (signatures == null) {
-                    continue;
-                }
+            if (signatures == null) {
+                continue;
+            }
 
-                for (String signature : signatures) {
-                    Signature sig = Signature.get(signature);
-                    String ifaceName = sig.string(1);
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                String ifaceName = sig.string(1);
 
-                    if(kind == NameKind.PREFIX) {
-                        //case sensitive
-                        if(!ifaceName.toLowerCase().startsWith(name.toLowerCase())) {
-                            continue;
-                        }
-                    } else if(kind == NameKind.EXACT_NAME) {
-                        if(!ifaceName.toLowerCase().equals(name.toLowerCase())) {
-                            continue;
-                        }
+                if (kind == QuerySupport.Kind.PREFIX) {
+                    //case sensitive
+                    if (!ifaceName.toLowerCase().startsWith(name.toLowerCase())) {
+                        continue;
                     }
-
-                    //TODO: handle search kind
-
-                    int offset = sig.integer(2);
-                    String interfaces[] = sig.string(3).split(","); //NOI18N
-
-                    IndexedInterface iface = new IndexedInterface(ifaceName, null,
-                            this, map.getPersistentUrl(), interfaces, offset, 0);
-
-                    //iface.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
-                    ifaces.add(iface);
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!ifaceName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
                 }
+
+                //TODO: handle search kind
+
+                int offset = sig.integer(2);
+                String interfaces[] = sig.string(3).split(","); //NOI18N
+
+                IndexedInterface iface = new IndexedInterface(ifaceName, null,
+                        this, map.getUrl().toString(), interfaces, offset, 0);
+
+                //iface.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                ifaces.add(iface);
             }
         }
+
 
         return ifaces;
     }
@@ -877,7 +876,7 @@ public class PHPIndex {
             Collection<String> newInterfaces = new TreeSet<String>();
 
             for (String rawIface: unprocessedIfaces) {
-                for (IndexedInterface iface : getInterfaces(context, rawIface, NameKind.EXACT_NAME)){
+                for (IndexedInterface iface : getInterfaces(context, rawIface, QuerySupport.Kind.EXACT)){
                     ifacesByName.add(iface);
                     alreadyProcessed.add(iface.getName());
 
@@ -899,23 +898,20 @@ public class PHPIndex {
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");
         ArrayList<String> includes = new ArrayList<String>();
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-        search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
+        final Collection<? extends IndexResult> result = search("filename", "file:" + filePath, QuerySupport.Kind.EXACT); //NOI18N
 
-        for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_INCLUDE);
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_INCLUDE);
 
-                if (signatures == null) {
-                    continue;
-                }
+            if (signatures == null) {
+                continue;
+            }
 
-                for (String signature : signatures) {
+            for (String signature : signatures) {
 
-                    for (String incl : signature.split(";")){
-                        if (incl.length() > 0) {
-                            includes.add(incl);
-                        }
+                for (String incl : signature.split(";")) {
+                    if (incl.length() > 0) {
+                        includes.add(incl);
                     }
                 }
             }
@@ -1005,7 +1001,7 @@ public class PHPIndex {
         String processedFileURL = null;
 
         try {
-            processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+            processedFileURL = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
 
             if (url.equals(processedFileURL)){
                 return true;

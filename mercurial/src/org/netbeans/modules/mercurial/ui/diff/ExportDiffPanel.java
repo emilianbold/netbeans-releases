@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.diff;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.util.Set;
 import java.util.Vector;
@@ -47,18 +48,12 @@ import java.util.LinkedHashSet;
 import javax.swing.SwingUtilities;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.Dialog;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -66,19 +61,17 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
-import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
 
 
 /**
  *
  * @author  Padraig O'Briain
  */
-public class ExportDiffPanel extends javax.swing.JPanel implements ActionListener {
+public class ExportDiffPanel extends javax.swing.JPanel {
 
     private File                            repository;
     private RequestProcessor.Task           refreshViewTask;
-    private Thread                          refreshViewThread;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialExportDiff", 1);  // NOI18N
     private RepositoryRevision              repoRev;
     private File fileToDiff;
@@ -86,7 +79,9 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
     private File [] roots;
-    
+
+    AbstractExportDiffPanel p;
+
     /** Creates new form ExportDiffPanel */
     public ExportDiffPanel(File repo, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
         this.fileToDiff = fileToDiff;
@@ -102,8 +97,6 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             exportHintLabel.setText(NbBundle.getMessage(ExportDiffPanel.class, 
                     "ExportDiffPanel.exportHintLabel.text.forFileDiff")); // NOI18N
         }
-        browseButton.addActionListener(this);
-        refreshViewTask.schedule(0);
     }
 
     public String getSelectedRevision() {
@@ -119,7 +112,14 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     }
 
     public String getOutputFileName() {
-        return outputFileTextField.getText();
+        return p.getOutputFileText();
+    }
+
+    void setInsidePanel(AbstractExportDiffPanel insidePanel) {
+        p = insidePanel;
+        jPanel1.setLayout(new BorderLayout());
+        jPanel1.add(insidePanel, BorderLayout.NORTH);
+        refreshViewTask.schedule(0);
     }
 
     /** This method is called from within the constructor to
@@ -132,11 +132,10 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
         revisionsLabel = new javax.swing.JLabel();
         revisionsComboBox = new javax.swing.JComboBox();
-        fileLabel = new javax.swing.JLabel();
-        browseButton = new javax.swing.JButton();
         exportHintLabel = new javax.swing.JLabel();
         changesetPanel1 = new org.netbeans.modules.mercurial.ui.repository.ChangesetPanel();
         jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
 
         revisionsLabel.setLabelFor(revisionsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.revisionsLabel.text")); // NOI18N
@@ -147,48 +146,50 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             }
         });
 
-        fileLabel.setLabelFor(outputFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.fileLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButtonl.text")); // NOI18N
-
         exportHintLabel.setForeground(java.awt.Color.gray);
         org.openide.awt.Mnemonics.setLocalizedText(exportHintLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "LBL_EXPORT_INFO")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.jLabel1.text")); // NOI18N
 
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 562, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 0, Short.MAX_VALUE)
+        );
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(20, 20, 20)
-                                .add(fileLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(outputFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, exportHintLabel)))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(34, 34, 34)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 269, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)))
+                        .add(revisionsComboBox, 0, 380, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(20, 20, 20)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(exportHintLabel)
@@ -197,18 +198,13 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                     .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(revisionsLabel))
                 .add(18, 18, 18)
-                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(fileLabel)
-                    .add(outputFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         revisionsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_revisionsComboBox")); // NOI18N
-        outputFileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_outputFileTextField")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_browseButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
@@ -268,7 +264,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 revisionsComboBox.setModel(targetsModel);
                 revisionsComboBox.setEditable(false);
                 setDefaultOutputFile();
-                refreshViewThread = Thread.currentThread();
                 changesetPanel1.setInfo(repoRev.getLog());
                 Thread.interrupted();  // clear interupted status
                 ph.start();
@@ -277,7 +272,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));
                 revisionsComboBox.setModel(targetsModel);
                 setDefaultOutputFile();
-                refreshViewThread = Thread.currentThread();
                 Thread.interrupted();  // clear interupted status
                 ph.start();
 
@@ -287,7 +281,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ph.finish();
-                    refreshViewThread = null;
                 }
             });
         }
@@ -310,7 +303,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             fileName = HgModuleConfig.getDefault().getExportFilename();            
         }
         File file = new File(folderName, fileName + ".patch");  //NOI18N
-        outputFileTextField.setText(file.getAbsolutePath());
+        p.setOutputFileText(file.getAbsolutePath());
     }
 
     private void refreshRevisions() {
@@ -346,45 +339,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         bGettingRevisions = false;
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == browseButton) {
-            onBrowseClick();
-        }
-    }
-
-    private void onBrowseClick() {
-        File oldFile = null;
-        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
-        fileChooser.setDialogTitle(NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));                                            // NO I18N
-        fileChooser.setMultiSelectionEnabled(false);
-        FileFilter[] old = fileChooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            FileFilter fileFilter = old[i];
-            fileChooser.removeChoosableFileFilter(fileFilter);
-
-        }
-        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
-        fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
-        fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));
-        DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));              // NO I18N
-        dd.setOptions(new Object[0]);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        fileChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String state = e.getActionCommand();
-                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File f = fileChooser.getSelectedFile();
-                    if (f != null) {
-                        outputFileTextField.setText(f.getAbsolutePath());
-                    }
-                }
-                dialog.dispose();
-            }
-        });
-        dialog.setVisible(true);
-    }
-
     private class RefreshViewTask implements Runnable {
         public void run() {
             setupModels();
@@ -392,12 +346,10 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
     private org.netbeans.modules.mercurial.ui.repository.ChangesetPanel changesetPanel1;
     private javax.swing.JLabel exportHintLabel;
-    private javax.swing.JLabel fileLabel;
     private javax.swing.JLabel jLabel1;
-    final javax.swing.JTextField outputFileTextField = new javax.swing.JTextField();
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JComboBox revisionsComboBox;
     private javax.swing.JLabel revisionsLabel;
     // End of variables declaration//GEN-END:variables
