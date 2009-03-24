@@ -320,7 +320,6 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                 }
                 ParameterInfo pi = parameterInfo[i];
                 int originalIndex = pi.getOriginalIndex();
-                CharSequence text;
                 if (originalIndex == -1) {
                     if (i > 0 && needSpaceAfterComma()) {
                         newText.append(" "); // NOI18N
