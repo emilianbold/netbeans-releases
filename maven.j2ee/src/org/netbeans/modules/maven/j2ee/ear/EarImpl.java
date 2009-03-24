@@ -333,6 +333,9 @@ class EarImpl implements EarImplementation,
      * @return a live bean representing the final DD
      */
     public RootInterface getDeploymentDescriptor(String location) {
+        if ("application.xml".equals(location)) { //NOI18N
+            location = J2eeModule.APP_XML;
+        }
         if (J2eeModule.APP_XML.equals(location)) {
             try {
                 
@@ -342,7 +345,7 @@ class EarImpl implements EarImplementation,
                     StringInputStream str = new StringInputStream(
   "<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\" version=\"1.4\">" +//NOI18N
   "<description>description</description>" +//NOI18N
-  "<display-name>application</display-name></application>");//NOI18N
+  "<display-name>" + mavenproject.getMavenProject().getArtifactId() + "</display-name></application>");//NOI18N
                     try {
                         return DDProvider.getDefault().getDDRoot(new InputSource(str));
                     } catch (SAXException ex) {

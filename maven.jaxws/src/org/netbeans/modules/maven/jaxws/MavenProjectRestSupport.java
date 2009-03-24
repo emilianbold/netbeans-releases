@@ -56,7 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -67,8 +66,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
@@ -86,7 +85,7 @@ import org.openide.util.NbBundle;
  * @author Nam Nguyen
  */
 @ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven")
-public class MavenProjectRestSupport extends RestSupport {
+public class MavenProjectRestSupport extends WebRestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
 
@@ -111,7 +110,7 @@ public class MavenProjectRestSupport extends RestSupport {
             //Fix issue#141595, 154378
 //            addSwdpLibrary();
 
-            FileObject ddFO = getDeploymentDescriptor();
+            FileObject ddFO = getWebXml();
             WebApp webApp = getWebApp();
 
             if (webApp == null) {
@@ -183,144 +182,97 @@ public class MavenProjectRestSupport extends RestSupport {
             }            
         }
     }
-
-    private boolean hasRestServletAdaptor(WebApp webApp) {
-        return getRestServletAdaptor(webApp) != null;
-    }
-
-    private Servlet getRestServletAdaptor(WebApp webApp) {
-        if (webApp != null) {
-            for (Servlet s : webApp.getServlet()) {
-                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
-                    return s;
-                }
-            }
-        }
-        return null;
-    }
-
-    private ServletMapping getRestServletMapping(Project project) throws IOException {
-        return getRestServletMapping(getWebApp(project));
-    }
-
-    private ServletMapping getRestServletMapping(WebApp webApp) {
-        for (ServletMapping sm : webApp.getServletMapping()) {
-            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-                return sm;
-            }
-        }
-        return null;
-    }
-
-    private boolean hasRestServletAdaptor() {
-        try {
-            return hasRestServletAdaptor(getWebApp());
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return false;
-        }
-    }
-
-    private FileObject getDeploymentDescriptor() {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            }
-        }
-        return null;
-    }
-
-    private void addResourceConfigToWebApp() throws IOException {
-        FileObject ddFO = getDeploymentDescriptor();
-        WebApp webApp = getWebApp();
-        if (webApp == null) {
-            return;
-        }
-        boolean needsSave = false;
-        try {
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-            if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet");
-                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(getServletAdapterClass());
-                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
-                webApp.addServlet(adaptorServlet);
-                needsSave = true;
-            }
-
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                sm = (ServletMapping) webApp.createBean("ServletMapping");
-                sm.setServletName(adaptorServlet.getServletName());
-                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
-                webApp.addServletMapping(sm);
-                needsSave = true;
-            }
-            if (needsSave) {
-                webApp.write(ddFO);
-            }
-        } catch (IOException ioe) {
-            throw ioe;
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalArgumentException(ex);
-        }
-    }
-
-    private void removeResourceConfigFromWebApp() throws IOException {
-        FileObject ddFO = getDeploymentDescriptor();
-        WebApp webApp = getWebApp();
-        if (webApp == null) {
-            return;
-        }
-        boolean needsSave = false;
-        Servlet restServlet = getRestServletAdaptor(webApp);
-        if (restServlet != null) {
-            webApp.removeServlet(restServlet);
-            needsSave = true;
-        }
-        ServletMapping sm = getRestServletMapping(webApp);
-        if (sm != null) {
-            webApp.removeServletMapping(sm);
-            needsSave = true;
-        }
-        if (needsSave) {
-            webApp.write(ddFO);
-        }
-    }
-
-    private WebApp getWebApp() throws IOException {
-        return getWebApp(project);
-    }
-
-    private WebApp getWebApp(Project project) throws IOException {
-        FileObject fo = getWebXml(project);
-        if (fo != null) {
-            return DDProvider.getDefault().getDDRoot(fo);
-        }
-        return null;
-    }
-
-    private FileObject getWebXml(Project project) throws IOException {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml"); // NOI18N
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public FileObject getPersistenceXml() {
-        PersistenceScope ps = PersistenceScope.getPersistenceScope(getProject().getProjectDirectory());
-        if (ps != null) {
-            return ps.getPersistenceXml();
-        }
-        return null;
-    }
+//
+//    private boolean hasRestServletAdaptor(WebApp webApp) {
+//        return getRestServletAdaptor(webApp) != null;
+//    }
+//
+//    private Servlet getRestServletAdaptor(WebApp webApp) {
+//        if (webApp != null) {
+//            for (Servlet s : webApp.getServlet()) {
+//                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
+//                    return s;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private ServletMapping getRestServletMapping(WebApp webApp) {
+//        for (ServletMapping sm : webApp.getServletMapping()) {
+//            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
+//                return sm;
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private boolean hasRestServletAdaptor() {
+//        try {
+//            return hasRestServletAdaptor(getWebApp());
+//        } catch (IOException ioe) {
+//            Exceptions.printStackTrace(ioe);
+//            return false;
+//        }
+//    }
+//
+//    private void addResourceConfigToWebApp() throws IOException {
+//        FileObject ddFO = getWebXml();
+//        WebApp webApp = getWebApp();
+//        if (webApp == null) {
+//            return;
+//        }
+//        boolean needsSave = false;
+//        try {
+//            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+//            if (adaptorServlet == null) {
+//                adaptorServlet = (Servlet) webApp.createBean("Servlet");
+//                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
+//                adaptorServlet.setServletClass(getServletAdapterClass());
+//                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
+//                webApp.addServlet(adaptorServlet);
+//                needsSave = true;
+//            }
+//
+//            ServletMapping sm = getRestServletMapping(webApp);
+//            if (sm == null) {
+//                sm = (ServletMapping) webApp.createBean("ServletMapping");
+//                sm.setServletName(adaptorServlet.getServletName());
+//                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+//                webApp.addServletMapping(sm);
+//                needsSave = true;
+//            }
+//            if (needsSave) {
+//                webApp.write(ddFO);
+//            }
+//        } catch (IOException ioe) {
+//            throw ioe;
+//        } catch (ClassNotFoundException ex) {
+//            throw new IllegalArgumentException(ex);
+//        }
+//    }
+//
+//    private void removeResourceConfigFromWebApp() throws IOException {
+//        FileObject ddFO = getWebXml();
+//        WebApp webApp = getWebApp();
+//        if (webApp == null) {
+//            return;
+//        }
+//        boolean needsSave = false;
+//        Servlet restServlet = getRestServletAdaptor(webApp);
+//        if (restServlet != null) {
+//            webApp.removeServlet(restServlet);
+//            needsSave = true;
+//        }
+//        ServletMapping sm = getRestServletMapping(webApp);
+//        if (sm != null) {
+//            webApp.removeServletMapping(sm);
+//            needsSave = true;
+//        }
+//        if (needsSave) {
+//            webApp.write(ddFO);
+//        }
+//    }
 
     private FileObject getApplicationContextXml() {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
