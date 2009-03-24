@@ -462,6 +462,9 @@ public class Util {
     }
 
     public static void checkMetroLibrary(Project p) {
+        if (p == null) {
+            return;
+        }
         WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
         if (wsitProvider == null) return;
         if (!wsitProvider.isWsitSupported()) {

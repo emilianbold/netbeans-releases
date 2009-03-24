@@ -130,6 +130,15 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation {
     
     public RootInterface getDeploymentDescriptor(String location) {
 //        System.out.println("NPJM: get DD =" + location);
+        if ("application.xml".equals(location)) { //NOI18N
+            location = J2eeModule.APP_XML;
+        }
+        if ("ejb-jar.xml".equals(location)) { //NOI18N
+            location = J2eeModule.EJBJAR_XML;
+        }
+        if ("web.xml".equals(location)) { //NOI18N
+            location = J2eeModule.WEB_XML;
+        }
         try {
             JarFile fil = new JarFile(artifact.getFile());
             ZipEntry entry = fil.getEntry(location);
