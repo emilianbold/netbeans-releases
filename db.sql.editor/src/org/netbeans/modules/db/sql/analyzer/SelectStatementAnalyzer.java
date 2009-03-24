@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
@@ -85,15 +85,6 @@ public class SelectStatementAnalyzer {
         // Return a non-null FromClause iff there was a FROM clause in the statement.
         FromClause fromClause = (sa.state.isAfter(State.FROM)) ? sa.createFromClause() : null;
         return new SelectStatement(SQLStatementKind.SELECT, sa.startOffset, seq.offset() + seq.token().length(), Collections.unmodifiableList(sa.selectValues), fromClause, Collections.unmodifiableList(sa.subqueries), sa.offset2Context);
-    }
-
-    public static SQLStatementKind detectKind(TokenSequence<SQLTokenId> seq) {
-        SelectStatementAnalyzer sa = doParse(seq, null, true);
-        if (!sa.state.isAfter(State.SELECT)) {
-            return null;
-        }
-        // Currently only SELECT is supported.
-        return SQLStatementKind.SELECT;
     }
 
     private static SelectStatementAnalyzer doParse(TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
