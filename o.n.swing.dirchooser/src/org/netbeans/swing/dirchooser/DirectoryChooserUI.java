@@ -112,6 +112,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
+    private static final long SLOWNESS_TIMEOUT = 20000;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
     
@@ -1063,8 +1064,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         updateWorker = RequestProcessor.getDefault().post(new Runnable() {
             DirectoryNode node;
+            long startTime;
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
+                    startTime = markUpdateStart();
                     // first pass, out of EQ thread
                     setCursor(fileChooser, Cursor.WAIT_CURSOR);
                     node = new DirectoryNode(file);
@@ -1077,12 +1080,37 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     tree.setModel(model);
                     tree.repaint();
                     setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+                    checkUpdate(startTime);
                 }
             }
+
         });
         
     }
-    
+
+    private long markUpdateStart() {
+        if (Utilities.isWindows() && useShellFolder) {
+            return System.currentTimeMillis();
+        }
+        return 0;
+    }
+
+    private void checkUpdate(long startTime) {
+        if (Utilities.isWindows() && useShellFolder) {
+            long elapsed = System.currentTimeMillis() - startTime;
+            if (elapsed > SLOWNESS_TIMEOUT) {
+                JLabel slownessNote = new JLabel(
+                        NbBundle.getMessage(DirectoryChooserUI.class, "MSG_SlownessNote"));
+                slownessNote.setForeground(Color.RED);
+                JPanel slownessP = new JPanel();
+                slownessP.setLayout(new BorderLayout());
+                slownessP.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+                slownessP.add(BorderLayout.CENTER, slownessNote);
+                centerPanel.add(BorderLayout.NORTH, slownessP);
+            }
+        }
+    }
+
     private Boolean isXPStyle() {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Boolean themeActive = (Boolean)toolkit.getDesktopProperty("win.xpstyle.themeActive");
