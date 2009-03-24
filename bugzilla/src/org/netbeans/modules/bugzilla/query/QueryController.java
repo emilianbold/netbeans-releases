@@ -304,7 +304,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void populate(final String urlParameters) {
-        Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+        }
         try {
             BugzillaCommand cmd = new BugzillaCommand() {
                 @Override
@@ -351,7 +353,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             };
             repository.getExecutor().execute(cmd);
         } finally {
-            Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
+            if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+                Bugzilla.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            }
         }
     }
 
