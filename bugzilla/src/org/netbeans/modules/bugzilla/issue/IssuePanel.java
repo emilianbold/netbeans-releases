@@ -443,10 +443,21 @@ public class IssuePanel extends javax.swing.JPanel {
         super.addNotify();
         if (issue != null) {
             // Hack - reset any previous modifications when the issue window is reopened
+            // XXX any chance to get rid of the hack?
             reloadForm(true);
+
+            issue.opened();
         }
     }
-    
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
