@@ -408,8 +408,15 @@ public class PHPIndex {
                 
                 if (!methods.containsKey(methodName) || className.equals(typeName)){
                     methods.put(methodName, method);
-                    if (currentFile != null && currentFile.equals(method.getFileObject())) {
-                        currentFileClasses.add(className);
+                    try {                        
+                        URI sourceURI = currentFile != null ? currentFile.getURL().toURI() : null;
+                        if (sourceURI != null && sourceURI.equals(URI.create(method.getFilenameUrl()))) {
+                            currentFileClasses.add(className);
+                        }
+                    } catch (FileStateInvalidException fileStateInvalidException) {
+                        Exceptions.printStackTrace(fileStateInvalidException);
+                    } catch (URISyntaxException uRISyntaxException) {
+                        Exceptions.printStackTrace(uRISyntaxException);
                     }
                 }
             }
