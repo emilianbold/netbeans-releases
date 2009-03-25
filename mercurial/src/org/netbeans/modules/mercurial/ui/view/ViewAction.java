@@ -54,6 +54,7 @@ import java.io.File;
 import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -129,8 +130,13 @@ public class ViewAction extends ContextAction {
                 if (bConfirmSetHgkProp) {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_SETHGK_PROP_DO_INFO")); // NOI18N
-                    HgConfigFiles.getSysInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
-                }else{
+                    HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+                    if (hcf.getException() == null) {
+                        hcf.setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
+                    } else {
+                        Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+                    }
+                } else {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_NOTSETHGK_PROP_INFO")); // NOI18N
                     logger.output(""); // NOI18N
