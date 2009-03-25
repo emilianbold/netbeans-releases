@@ -49,6 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -124,6 +125,7 @@ public class ParserManagerTest extends NbTestCase {
 
     }
 
+    @RandomlyFails
     public void testParseWhenScanFinished () throws Exception {
         RUEmulator emulator = new RUEmulator();
         Utilities.setIndexingStatus(emulator);

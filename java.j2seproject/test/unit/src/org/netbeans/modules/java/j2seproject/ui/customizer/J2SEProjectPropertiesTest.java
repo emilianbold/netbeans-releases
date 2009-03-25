@@ -64,7 +64,7 @@ public class J2SEProjectPropertiesTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null);
         p = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));

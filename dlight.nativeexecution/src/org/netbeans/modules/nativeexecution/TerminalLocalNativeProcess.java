@@ -42,12 +42,15 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -68,6 +71,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     static {
         isWindows = Utilities.isWindows();
+
         String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
         File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
@@ -82,6 +86,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            } else {
+                runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
             }
         }
 
@@ -100,55 +106,75 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             processInput = null;
             pidFileName = null;
             termProcess = null;
-        } else {
-            ExternalTerminal terminal = t;
-
-            final String commandLine = info.getCommandLine();
-            final String workingDirectory = info.getWorkingDirectory(true);
-            final File wdir =
-                    workingDirectory == null ? null : new File(workingDirectory);
-
-            File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
-            pidFile.deleteOnExit();
-
-            String pidFName = pidFile.toString();
-
-            final ExternalTerminalAccessor terminalInfo =
-                    ExternalTerminalAccessor.getDefault();
-
-            if (terminalInfo.getTitle(terminal) == null) {
-                terminal = terminal.setTitle(commandLine);
-            }
-
-            String cmd = commandLine;
-
-            if (isWindows) {
-                pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
-                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-            }
-
-            pidFileName = pidFName;
-
-            List<String> command = terminalInfo.wrapCommand(
-                    info.getExecutionEnvironment(),
-                    terminal,
-                    dorunScript,
-                    "-p", pidFileName, // NOI18N
-                    "-x", terminalInfo.getPrompt(terminal), // NOI18N
-                    cmd);
-
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.environment().putAll(info.getEnvVariables());
-            pb.directory(wdir);
-
-            termProcess = pb.start();
-
-            processOutput = termProcess.getInputStream();
-            processError = termProcess.getErrorStream();
-            processInput = null;
-
-            waitPID();
+            return;
         }
+
+        ExternalTerminal terminal = t;
+
+        final String commandLine = info.getCommandLine();
+        String wDir = info.getWorkingDirectory(true);
+
+        String workingDirectory = wDir;
+
+        if (isWindows || workingDirectory == null) {
+            workingDirectory = "."; // NOI18N
+        }
+
+        File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
+        pidFile.deleteOnExit();
+        pidFileName = pidFile.toString();
+        String envFileName = pidFileName + ".env"; // NOI18N
+
+        final ExternalTerminalAccessor terminalInfo =
+                ExternalTerminalAccessor.getDefault();
+
+        if (terminalInfo.getTitle(terminal) == null) {
+            terminal = terminal.setTitle(commandLine);
+        }
+
+        String cmd = commandLine;
+
+        String pidFName = pidFileName;
+
+        if (isWindows) {
+            pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
+            envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
+            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+        }
+
+        List<String> command = terminalInfo.wrapCommand(
+                info.getExecutionEnvironment(),
+                terminal,
+                dorunScript,
+                "-w", workingDirectory, // NOI18N
+                "-e", envFileName, // NOI18N
+                "-p", pidFName, // NOI18N
+                "-x", terminalInfo.getPrompt(terminal), // NOI18N
+                cmd);
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+
+        if (isWindows && wDir != null) {
+            pb.directory(new File(wDir));
+        }
+
+        Map<String, String> env = info.getEnvVariables();
+
+        if (!env.isEmpty()) {
+            File envFile = new File(envFileName);
+            OutputStream fos = new FileOutputStream(envFile);
+            EnvWriter ew = new EnvWriter(fos);
+            ew.write(env);
+            fos.close();
+        }
+
+        termProcess = pb.start();
+
+        processOutput = new ByteArrayInputStream(new byte[0]);
+        processError = termProcess.getErrorStream();
+        processInput = null;
+
+        waitPID();
     }
 
     @Override
@@ -252,6 +278,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             if (isFinished() || Thread.currentThread().isInterrupted()) {
+                // TODO: Not very good idea...
                 // use readPID(null) to initiate ERROR state...
                 readPID(null);
                 return;

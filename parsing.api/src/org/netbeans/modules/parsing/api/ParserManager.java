@@ -40,18 +40,22 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LMListener;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -93,11 +97,17 @@ public final class ParserManager {
         final UserTask
                             userTask
     ) throws ParseException {
-        TaskProcessor.runUserTask (new UserTaskAction(sources, userTask), sources);
+        if (sources.size () == 1)
+            TaskProcessor.runUserTask (new UserTaskAction (sources.iterator ().next (), userTask), sources);
+        else
+            TaskProcessor.runUserTask (new MultiUserTaskAction (sources, userTask), sources);
     }
 
     public static Future<Void> parseWhenScanFinished (final Collection<Source>  sources,  final UserTask userTask) throws ParseException {
-        return TaskProcessor.runWhenScanFinished (new UserTaskAction(sources, userTask), sources);
+        if (sources.size () == 1)
+            return TaskProcessor.runWhenScanFinished (new UserTaskAction (sources.iterator ().next (), userTask), sources);
+        else
+            return TaskProcessor.runWhenScanFinished (new MultiUserTaskAction (sources, userTask), sources);
     }
 
     //where
@@ -105,9 +115,33 @@ public final class ParserManager {
     private static class UserTaskAction implements Mutex.ExceptionAction<Void> {
 
         private final UserTask userTask;
+        private final Source source;
+
+        public UserTaskAction (final Source source, final UserTask userTask) {
+            assert source != null;
+            assert userTask != null;
+            this.userTask = userTask;
+            this.source = source;
+        }
+
+        public Void run () throws Exception {
+            SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
+            final ResultIterator resultIterator = new ResultIterator (sourceCache, userTask);
+            try {
+                userTask.run (resultIterator);
+            } finally {
+                ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
+            }
+            return null;
+        }
+    }
+
+    private static class MultiUserTaskAction implements Mutex.ExceptionAction<Void> {
+
+        private final UserTask userTask;
         private final Collection<Source> sources;
 
-        public UserTaskAction (final Collection<Source> sources, final UserTask userTask) {
+        public MultiUserTaskAction (final Collection<Source> sources, final UserTask userTask) {
             assert sources != null;
             assert userTask != null;
             this.userTask = userTask;
@@ -116,15 +150,35 @@ public final class ParserManager {
 
         public Void run () throws Exception {
             //tzezula: Wrong - doesn't work for multiple files!
+            LMListener lMListener = new LMListener ();
+            Parser parser = null;
+            Collection<Snapshot> dvaKluci = null;
             for (Source source : sources) {
                 SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
-                final ResultIterator resultIterator = new ResultIterator (sourceCache, userTask);
+                if (parser == null) {
+                    Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
+                    ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+                    if (parserFactory != null) {
+                        if (dvaKluci == null) {
+                            dvaKluci = new ArrayList<Snapshot> ();
+                            dvaKluci.add (sourceCache.getSnapshot ());
+                            Iterator<Source> it = sources.iterator ();
+                            it.next ();
+                            Source source2 = it.next ();
+                            SourceCache sourceCache2 = SourceAccessor.getINSTANCE ().getCache (source2);
+                            dvaKluci.add (sourceCache2.getSnapshot ());
+                        }
+                        parser = parserFactory.createParser (dvaKluci); //tzezula: Ugly hack!
+                    }
+                }
+                final ResultIterator resultIterator = new ResultIterator (sourceCache, parser, userTask);
                 try {
                     userTask.run (resultIterator);
                 } finally {
                     ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
                 }
-
+                if (lMListener.isLowMemory ())
+                    parser = null;
             }
             return null;
         }

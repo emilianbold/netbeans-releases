@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
  * @author Vladimir Voskresenskky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
-public class FileInfoQueryImpl extends CsmFileInfoQuery {
+public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     public List<String> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);

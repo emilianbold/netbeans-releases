@@ -67,7 +67,7 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     @Override
     public JComponent getComponent() {
-        return panel;
+        return panel.getPanel();
     }
 
     public void reset() {

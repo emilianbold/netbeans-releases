@@ -113,6 +113,16 @@ public class MockLookup extends ProxyLookup {
      */
     public static void setInstances(Object... instances) {
         ClassLoader l = MockLookup.class.getClassLoader();
+        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
+    }
+    /**
+     * Sets the global default lookup with some fixed instances and
+     * content read from Services folder from system file system.
+     * Will also include (at a lower priority) a {@link ClassLoader},
+     * and services found from <code>META-INF/services/*</code> in the classpath.
+     */
+    public static void setLayersAndInstances(Object... instances) {
+        ClassLoader l = MockLookup.class.getClassLoader();
         if (l != Lookup.getDefault().lookup(ClassLoader.class)) {
             setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
         }

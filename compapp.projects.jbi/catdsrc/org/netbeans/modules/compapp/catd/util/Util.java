@@ -47,7 +47,21 @@
 
 package org.netbeans.modules.compapp.catd.util;
 
+import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPConnection;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import junit.framework.TestCase;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
 /**
  *
@@ -130,4 +144,277 @@ public class Util {
         }
     }
 
+    /**
+     * Gets the server instance configuration.
+     * 
+     * @param netBeansUserDir   NetBeans user directory
+     * @return  server instance configuration
+     */
+    private static ServerInstance getServerInstance(String netBeansUserDir) {
+        ServerInstance instance = null;
+        
+        if (netBeansUserDir != null) {
+            String j2eeServerInstanceUrl = null;
+            try {
+                Properties privateProps = loadProperties("nbproject/private/private.properties");
+                j2eeServerInstanceUrl = (String) privateProps.get("j2ee.server.instance");
+            } catch (IOException ex) {
+                System.err.println("Error: Failed to load project properties.");
+            }
+
+            if (j2eeServerInstanceUrl != null) {
+                String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
+                File settingsFile = new File(settingsFileName);
+                if (settingsFile.exists()) {
+                    ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
+                    List<ServerInstance> list = settings.getServerInstances();
+                    for (ServerInstance serverInstance : list) {
+                        String url = serverInstance.getUrl();
+                        if (j2eeServerInstanceUrl.equals(url)) {
+                            instance = serverInstance;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    /**
+     * Utility method to load a properties file
+     */
+    public static Properties loadProperties(String propertiesFile) throws IOException {
+        Properties props = new Properties();
+        // EditableProperties takes case of encoding.
+        EditableProperties editableProps = new EditableProperties();
+        editableProps.load(new FileInputStream(propertiesFile));
+        for (String key : editableProps.keySet()) {
+            props.put(key, editableProps.getProperty(key));
+        }
+
+        return props;
+    }
+
+    /**
+     * If default properties file name is AAA.properties, and context is "xx_yy"
+     * Then load properties in order AAA.properties, AAA_xx.properties, AAA_xx_yy.properties with the property value
+     * loaded later overwriting the property value loaded earlier. That is, AAA_xx_yy.properties has higher priority
+     * than AAA_xx.properties, which in turn has higher priority than AA.properties.
+     * 
+     * @param propertiesFile The default properties file.
+     * @param context Format xx, xx_yy, xx_yy_zz, etc
+     * @return Properties 
+     * @throws java.io.IOException
+     */
+    public static Properties loadProperties(String propertiesFile, String context) throws IOException {
+        String[] contextComponent = new String[0];
+        if (context != null && !context.trim().equals("")) {
+            LinkedList<String> contextComponentList = new LinkedList<String>();
+            StringTokenizer st = new StringTokenizer(context.trim(), "_");
+            while (st.hasMoreTokens()) {
+                contextComponentList.add(st.nextToken());
+            }
+            contextComponent = contextComponentList.toArray(new String[0]);
+        }    
+        Properties ret = loadProperties(propertiesFile);
+        StringBuffer sb = new StringBuffer(propertiesFile.substring(0, propertiesFile.length() - 11)); // 11: .properties
+        for (int i = 0; i < contextComponent.length; i++) {
+            sb.append("_" + contextComponent[i]);
+            String contextPropFilePath = sb.toString() + ".properties";
+            File contextPropFile = new File(contextPropFilePath);
+            if (contextPropFile.exists() && contextPropFile.isFile()) {
+                Properties props = loadProperties(contextPropFilePath);
+                for (Object key : props.keySet()) {
+                    ret.put(key, props.getProperty((String)key));
+                }    
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     * Send a soap message
+     * @param destination URL to send to
+     * @param message message to send
+     * @param expectedHttpStatus expected http status code or null if success is expected
+     * @return reply soap message
+     */
+    public static SOAPMessage sendMessage(String logPrefix,
+            boolean logDetails,
+            SOAPConnection connection,
+            String destination,
+            SOAPMessage message,
+            String expectedHttpStatus,
+            String expectedHttpWarning,
+            String soapAction) throws SOAPException, Exception {
+
+        // Add soapAction if not null
+        if (soapAction != null) {
+            MimeHeaders hd = message.getMimeHeaders();
+            hd.setHeader("SOAPAction", soapAction);
+        }
+
+        // Store standard error output temporarily if we expect a certain error as we do not want
+        // to see the SAAJ output in this case
+        java.io.PrintStream origErr = null;
+        java.io.ByteArrayOutputStream bufferedErr = null;
+        java.io.PrintStream stdErr = null;
+        if ((expectedHttpStatus != null && !expectedHttpStatus.startsWith("2")) || expectedHttpWarning != null) {
+            origErr = System.err;
+            bufferedErr = new java.io.ByteArrayOutputStream();
+            stdErr = new java.io.PrintStream(bufferedErr);
+            System.setErr(stdErr);
+        }
+
+        // Send the message and get a reply
+        SOAPMessage reply = null;
+        long start = 0;
+        if (logDetails) {
+            start = System.currentTimeMillis();
+        }
+
+        // Currently only deal with http soap bc because soap binding is the 
+        // only supported binding type in test driver.
+        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
+
+            String nbUserDir = System.getProperty("NetBeansUserDir");
+            
+            ServerInstance serverInstance = getServerInstance(nbUserDir);
+
+            if (serverInstance == null) {
+                throw new RuntimeException("Unknown server instance.");
+            } else {
+            // Translate ${HttpDefaultPort} first
+            String httpDefaultPort = "HttpDefaultPort";
+            if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
+                try {
+                    ConfigurationService configService =
+                            AdministrationServiceHelper.getConfigurationService(serverInstance);
+                    Map<String, Object> configMap =
+                            configService.getComponentConfigurationAsMap(
+                            "sun-http-binding", "server");
+                    Object httpDefaultPortValue = configMap.get(httpDefaultPort);
+                    System.out.println("");
+                    if (httpDefaultPortValue != null) {
+                        int httpDefaultPortIntValue =
+                                Integer.parseInt(httpDefaultPortValue.toString());
+                        if (httpDefaultPortIntValue != -1) {
+                            destination = destination.replace("${" + httpDefaultPort + "}",
+                                    "" + httpDefaultPortIntValue);
+                            System.out.println("Replace '${HttpDefaultPort}' in WSDL soap location by '" +
+                                    httpDefaultPortIntValue + "' defined in sun-http-binding.");
+                        } else {
+                            System.out.println("WARNING: 'HttpDefaultPort' is not defined in sun-http-binding.");
+                        }
+                    } else {
+                        System.out.println("WARNING: 'HttpDefaultPort' is not found in sun-http-binding's component configuration.");
+                    }
+                } catch (Exception ex) {
+                    if (stdErr != null) {
+                        System.setErr(origErr);
+                        stdErr.flush();
+                        stdErr.close();
+                        origErr.print(bufferedErr.toString());
+                    }
+                    throw ex;
+                }
+            }
+
+            // Translate ${HttpsDefaultPort} next
+            String httpsDefaultPort = "HttpsDefaultPort";
+            if (destination.indexOf("${" + httpsDefaultPort + "}") != -1) {
+                try {
+                    ConfigurationService configService =
+                            AdministrationServiceHelper.getConfigurationService(serverInstance);
+                    Map<String, Object> configMap =
+                            configService.getComponentConfigurationAsMap(
+                            "sun-http-binding", "server");
+                    Object httpsDefaultPortValue = configMap.get(httpsDefaultPort);
+                    System.out.println("");
+                    if (httpsDefaultPortValue != null) {
+                        int httpsDefaultPortIntValue =
+                                Integer.parseInt(httpsDefaultPortValue.toString());
+                        if (httpsDefaultPortIntValue != -1) {
+                            destination = destination.replace("${" + httpsDefaultPort + "}",
+                                    "" + httpsDefaultPortIntValue);
+                            System.out.println("Replace '${HttpsDefaultPort}' in WSDL soap location by '" +
+                                    httpsDefaultPortIntValue + "' defined in sun-http-binding.");
+                        } else {
+                            System.out.println("WARNING: 'HttpsDefaultPort' is not defined in sun-http-binding.");
+                        }
+                    } else {
+                        System.out.println("WARNING: 'HttpsDefaultPort' is not found in sun-http-binding's component configuration.");
+                    }
+                } catch (Exception ex) {
+                    if (stdErr != null) {
+                        System.setErr(origErr);
+                        stdErr.flush();
+                        stdErr.close();
+                        origErr.print(bufferedErr.toString());
+                    }
+                    throw ex;
+                }
+            }
+            }
+        }
+
+        boolean httpSuccess = true;
+        try {
+            reply = connection.call(message, destination);
+        } catch (SOAPException ex) {
+            httpSuccess = false;
+            // This currently relies on the implementation details
+            // to check for the HTTP status as no standard way is currently provide by saaj
+            // It expectes an exception message of the format "Bad response: (404Error"
+            // - where 404 is the status code in this example
+            if (expectedHttpStatus == null || (expectedHttpWarning != null && bufferedErr.toString().indexOf(expectedHttpWarning) < 0)) {
+                if (stdErr != null) {
+                    System.setErr(origErr);
+                    stdErr.flush();
+                    stdErr.close();
+                    origErr.print(bufferedErr.toString());
+                }
+                throw ex;
+            } else {
+                if (ex.getMessage().indexOf(expectedHttpStatus) > -1) {
+                    if (logDetails) {
+                        System.out.println(logPrefix + " Expected HTTP status code " + expectedHttpStatus + " found in reply. ");
+                    }
+                } else {
+                    if (stdErr != null) {
+                        System.setErr(origErr);
+                        stdErr.flush();
+                        stdErr.close();
+                        origErr.print(bufferedErr.toString());
+                    }
+                    TestCase.fail(logPrefix + " Expected HTTP status code " + expectedHttpStatus + " NOT found in reply: " + ex.getMessage());
+                }
+            }
+        }
+        long end = 0;
+        if (logDetails) {
+            end = System.currentTimeMillis();
+        }
+
+        // Ensure standard error isn't redirected/buffered anymore
+        if (origErr != null) {
+            System.setErr(origErr);
+            if (stdErr != null) {
+                stdErr.close();
+            }
+        }
+
+        if (logDetails) {
+            System.out.println(logPrefix + " Call took " + (end - start) + " ms");
+        }
+
+        // If the test expected the call to fail, check that it did.
+        if (expectedHttpStatus != null && httpSuccess && !expectedHttpStatus.startsWith("2")) {
+            TestCase.fail(logPrefix + " Call returned an unexpected 'success' HTTP status code instead of the expected HTTP status code " + expectedHttpStatus);
+        }
+
+        return reply;
+    }    
 }

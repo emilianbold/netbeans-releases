@@ -63,6 +63,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -131,6 +132,7 @@ public class BasicTest extends JellyTestCase {
         // wait for main.rb opened in editor
         EditorOperator eo = new EditorOperator("main.rb");  // NOI18N
         eo.replace("puts \"Hello World\"", "require 'date'\ndate1 = Date.today\ndate2 = Date.today\nputs date2");
+        ProjectSupport.waitScanFinished();
     }
 
     /** Test start of ruby debugger

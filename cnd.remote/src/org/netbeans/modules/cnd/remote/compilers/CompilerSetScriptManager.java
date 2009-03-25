@@ -39,51 +39,57 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
+import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
+import org.netbeans.modules.cnd.remote.support.ShellUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  * Manage the getCompilerSets script.
  * 
  * @author gordonp
  */
-/*package-local*/ class CompilerSetScriptManager {
+/*package-local*/ class CompilerSetScriptManager extends RemoteConnectionSupport {
         
-    private RemoteScriptSupport support;
     private BufferedReader in;
     private StringWriter out;
     private StringTokenizer st;
     private String platform;
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
-    public void setSupport(RemoteScriptSupport support) {
-        this.support = support;
+
+    public CompilerSetScriptManager(ExecutionEnvironment env) {
+        super(env);
     }
+
+//    private String substituteCommand(String script) {
+//        // The PATH stuff makes in much less likely to get a non-standard chmod...
+//        String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
+//        log.finest("RemoteScriptSupport runs: " + cmd);
+//        return ShellUtils.wrapCommand(executionEnvironment, cmd);
+//    }
+
 
     private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
-        if (!support.isFailedOrCancelled()) {
-            ChannelExec channel = (ChannelExec) support.getChannel();
-            channel.setInputStream(null);
-            channel.setErrStream(System.err);
-            
+        if (!isFailedOrCancelled()) {
             try {
-                channel.connect();
-                InputStream is = channel.getInputStream();
+                //String cmd = "(chmod 755 " + SCRIPT + ") && " + SCRIPT;
+                String cmd = SCRIPT;
+                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+                Process process = pb.call();
+                InputStream is = process.getInputStream();
                 in = new BufferedReader(new InputStreamReader(is));
                 out = new StringWriter();
 
                 if (emulateFailure>0) {
                     log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
-                    support.setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
+                    setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
                     emulateFailure--;
                     return;
                 }
@@ -103,22 +109,15 @@ import java.util.logging.Logger;
                 st = new StringTokenizer(out.toString());
             } catch (IOException ex) {
                 log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]") ; // NOI18N
-                support.setFailed(ex.getMessage());
-            } catch (JSchException ex) {
-                log.warning("CSSM.runScript: JSchException"); // NOI18N
-                support.setFailed(ex.getMessage());
-            } finally {
-                support.disconnect();
+                setFailed(ex.getMessage());
+//            } finally {
+//                support.disconnect();
             }
         }
     }
 
     public static final String SCRIPT = ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
 
-    public String getScript() {
-        return SCRIPT;
-    }
-    
     public String getPlatform() {
         return platform;
     }

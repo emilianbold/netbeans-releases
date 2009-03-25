@@ -87,7 +87,7 @@ public class GroovyTestBase extends CslTestBase {
 
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
-        FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
+        //FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
     }
 
     @Override

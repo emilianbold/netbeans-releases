@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.jsch</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -121,10 +130,6 @@
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-20081111.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jsch-20081111.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

@@ -50,6 +50,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -340,7 +341,12 @@ public class MakeUpdateDesc extends MatchingTask {
                 final File licensesDir = new File(desc.getParentFile(), "licenses");
                 if (useLicenseUrl) {
                      if (licensesDir.exists()) {
-                         for (File f : licensesDir.listFiles()) {
+                         File [] licenseFiles = licensesDir.listFiles(new FileFilter() {
+                            public boolean accept(File pathname) {
+                                return pathname.getName().endsWith(".license");
+                            }
+                        });
+                         for (File f : licenseFiles) {
                             f.delete();
                         }
                         } else {

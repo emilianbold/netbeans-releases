@@ -74,7 +74,8 @@ public abstract class CsmIncludeResolver {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmIncludeResolver getDefault() {
+    public static CsmIncludeResolver getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultResolver != null) {
             return defaultResolver;
         }

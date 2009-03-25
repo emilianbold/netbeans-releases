@@ -78,8 +78,9 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     private J2SEProject p;
     private ProjectConfigurationProvider pcp;
 
+    @Override
     protected void setUp() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         d = J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null).getProjectDirectory();
         p = (J2SEProject) ProjectManager.getDefault().findProject(d);

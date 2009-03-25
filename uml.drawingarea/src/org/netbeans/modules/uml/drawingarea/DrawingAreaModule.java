@@ -77,7 +77,6 @@ public class DrawingAreaModule extends ModuleInstall
       
       ICoreProductManager productManager = CoreProductManager.instance();
       ETList<IProductDescriptor> pDesc = productManager.getProducts();
-      //System.out.println("Number of product descriptors: " + pDesc.size());
       if((pDesc != null) && (pDesc.size() > 0))
       {
          for(IProductDescriptor descriptor : pDesc)

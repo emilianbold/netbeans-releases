@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
@@ -143,14 +142,28 @@ public class VariablesTableModel implements TableModel, Constants {
                     return ">" + e + "<";
                     // return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
                 try {
-                    return w.getValue ();
+                        return w.getValue ();
                 } finally {
                     fireChildrenChange(row);
                 }
             } else 
             if (row instanceof Variable) {
                 try {
-                    return ((Variable) row).getValue ();
+                    if (VariablesViewButtons.isShowValuesAsString()) {
+                        if (row instanceof ObjectVariable) {
+                            ObjectVariable objVar = (ObjectVariable) row;
+                            StringBuffer buf = new StringBuffer();
+                            buf.append(getShort(objVar.getType()));
+                            buf.append(" (#");
+                            buf.append(objVar.getUniqueID());
+                            buf.append(')');
+                            return buf.toString();
+                        } else {
+                            return ((Variable) row).getValue ();
+                        }
+                    } else {
+                        return ((Variable) row).getValue ();
+                    }
                 } finally {
                     fireChildrenChange(row);
                 }

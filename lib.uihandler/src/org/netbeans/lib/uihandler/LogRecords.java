@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -128,7 +129,11 @@ public final class LogRecords {
         f.setValidating(false);
         SAXParser p;
         try {
-            f.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true); // NOI18N
+            try{
+                f.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true); // NOI18N
+            }catch (SAXNotRecognizedException snre){
+                LOG.log(Level.INFO, null, snre);
+            }
             p = f.newSAXParser();
         } catch (ParserConfigurationException ex) {
             LOG.log(Level.SEVERE, null, ex);

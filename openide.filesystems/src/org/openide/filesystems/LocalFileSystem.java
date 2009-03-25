@@ -42,6 +42,8 @@
 package org.openide.filesystems;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -410,11 +412,11 @@ public class LocalFileSystem extends AbstractFileSystem {
     // ============================================================================
     //  Begin of the original part
     protected InputStream inputStream(String name) throws java.io.FileNotFoundException {
-        FileInputStream fis;
+        InputStream fis;
         File file = null;
 
         try {
-            fis = new FileInputStream(file = getFile(name));
+            fis = new BufferedInputStream(new FileInputStream(file = getFile(name)));
         } catch (FileNotFoundException exc) {
             if ((file == null) || !file.exists()) {
                 ExternalUtil.annotate(exc, NbBundle.getMessage(LocalFileSystem.class, "EXC_FileOutsideModified", getFile(name)));
@@ -426,9 +428,8 @@ public class LocalFileSystem extends AbstractFileSystem {
         return fis;
     }
 
-    protected OutputStream outputStream(final String name)
-    throws java.io.IOException {
-        OutputStream retVal = new FileOutputStream(getFile(name));
+    protected OutputStream outputStream(final String name) throws java.io.IOException {
+        OutputStream retVal = new BufferedOutputStream(new FileOutputStream(getFile(name)));
 
         // workaround for #42624
         if (Utilities.isMac()) {

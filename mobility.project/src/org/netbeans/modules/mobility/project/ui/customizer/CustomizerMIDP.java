@@ -301,7 +301,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         }
     }
     
-    private void initAllProfiles(final String deviceName, final boolean reset) {
+    private void initAllProfiles(final String deviceName, boolean reset) {
         synchronized (lock) {
             Map<String,J2MEPlatform.J2MEProfile> optProfiles =
                     new HashMap<String,J2MEPlatform.J2MEProfile>();
@@ -346,6 +346,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             //enable/disable profile radio boxes
             c = jPanelProfile.getComponents();
             for (int i=0; i<c.length; i++) {
+                reset = true; //fix for 157499
                 if (c[i] instanceof JRadioButton) {
                     final JRadioButton rb = (JRadioButton)c[i];
                     vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_PROFILE, useDefault);
@@ -354,6 +355,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                     } else {
                         rb.setEnabled(false);
                     }
+                    if (rb.isSelected()) reset = false; //fix for 157499, we need to reset if profile is non sense to default
                 }
             }
             //correct selection of profile to default if necessary

@@ -13,7 +13,7 @@
 <%--CC
 <% request.getSession().|   %>
 void setAttribute (String name , Object value )
-<% request.getSession().setAttribute(name, value)   %>
+<% request.getSession().setAttribute(name, value);   %>
 --%>
 
 <%-- Java completion for session object --%>

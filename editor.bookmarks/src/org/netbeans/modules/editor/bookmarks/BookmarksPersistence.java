@@ -95,7 +95,9 @@ public class BookmarksPersistence {
     }
     
     public static void destroy () {
-        projectsListener.destroy ();
+        if (projectsListener != null) { // #160292
+            projectsListener.destroy ();
+        }
     
         List<Project> projects = new ArrayList (projectToBookmarks.keySet ());
         for (Project project : projects)

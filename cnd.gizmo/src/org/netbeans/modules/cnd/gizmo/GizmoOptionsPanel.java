@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -108,16 +107,33 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
             public void actionPerformed(ActionEvent e) {
                 //throw new UnsupportedOperationException("Not supported yet.");
                 //remove from the list
-                Node[] nodes  = manager.getSelectedNodes();
-                if (nodes == null || nodes.length == 0){
+                Node[] nodes = manager.getSelectedNodes();
+                if (nodes == null || nodes.length == 0 ||  !(manager.getRootContext().getChildren() instanceof DLightConfigurationChildren)) {
                     return;
                 }
+                DLightConfigurationChildren children = (DLightConfigurationChildren) manager.getRootContext().getChildren();
+                List<String> names = children.getNames();
+                //remove nodes by using setKeys
+                if (nodes != null && nodes.length > 0) {
+                    boolean hasBeenRemoved = false;
+                    for (int i = 0; i < nodes.length; i++) {
+                        String nodeName = nodes[i].getDisplayName();
+                        if (names.contains(nodeName)) {
+                            names.remove(nodeName);
+                            hasBeenRemoved = true;
+                        }
+                    }
+                    if (hasBeenRemoved) {
+                       children.setNames(names);
+                    }
+                }
+//            return hasBeenRemoved;
                 manager.getRootContext().getChildren().remove(nodes);
                 //and now
 
                 Node[] allNodes = manager.getRootContext().getChildren().getNodes();
                 String[] result = new String[allNodes.length];
-                for (int i = 0; i < result.length; i++){
+                for (int i = 0; i < result.length; i++) {
                     result[i] = allNodes[i].getDisplayName();
                 }
                 GizmoOptionsPanel.this.options.setSelectedTools(result);
@@ -209,66 +225,52 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
         return manager;
     }
 
-    class DLightConfigurationChildren extends Children.Keys {
-        private final  DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+    class DLightConfigurationChildren extends Children.Keys<String> {
+
+        private final DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         private List<String> names;
 
         public DLightConfigurationChildren(String[] toolNames) {
             //if it is null then use DLightConfiguration
-            if (toolNames != null){
+            if (toolNames != null) {
                 names = new ArrayList<String>();
                 names.addAll(Arrays.asList(toolNames));
                 return;
             }
             List<DLightTool> list = gizmoConfiguration.getToolsSet();
             names = new ArrayList<String>();
-            for (int i = 0, size = list.size(); i < size; i ++){
+            for (int i = 0, size = list.size(); i < size; i++) {
                 names.add(list.get(i).getName());
             }
             setKeys(names);
         }
 
-        @Override
-        protected Node[] createNodes(Object arg0) {
-            return new Node[]{new DLightToolNode(gizmoConfiguration.getToolByName((String)arg0))};
-
+        public List<String> getNames(){
+            return names;
         }
 
         @Override
-        public boolean remove(Node[] nodes) {
-            if (nodes == null || nodes.length == 0){
-                return false;
-            }
-            boolean hasBeenRemoved = false;
-            for (int i = 0; i < nodes.length; i++){
-                String nodeName = nodes[i].getDisplayName();
-                if (names.contains(nodeName)){
-                    names.remove(nodeName);
-                    hasBeenRemoved = true;
-                }
-            }
-            if (hasBeenRemoved){
-                setKeys(names);
-            }
-            return hasBeenRemoved;
-            
+        protected Node[] createNodes(String arg0) {
+            return new Node[]{new DLightToolNode(gizmoConfiguration.getToolByName(arg0))};
+
         }
-
-
-
 
         @Override
         protected void addNotify() {
 //    List<DTraceletProfile> keys = new ArrayList<DTraceletProfile>(list);
             setKeys(names);
         }
+
+        private void setNames(List<String> names) {
+            setKeys(names);
+        }
     }
 
-    class DLightToolNode extends AbstractNode{
+    class DLightToolNode extends AbstractNode {
 
-        private final DLightTool dlightTool ;
+        private final DLightTool dlightTool;
 
-        DLightToolNode(DLightTool tool){
+        DLightToolNode(DLightTool tool) {
             super(Children.LEAF);
             this.dlightTool = tool;
         }
@@ -280,22 +282,16 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
 
         @Override
         public String getHtmlDisplayName() {
-            return "<h3>" + getDisplayName() + "</h3>";
+            return "<h3>" + getDisplayName() + "</h3>"; //NOI18N
         }
-
-
 
         @Override
         public Image getIcon(int type) {
-            if (!dlightTool.hasIcon()){
+            if (!dlightTool.hasIcon()) {
                 return super.getIcon(type);
             }
             return ImageUtilities.loadImage(dlightTool.getIconPath());
         }
-
-
-
-
     }
 
 }

@@ -38,20 +38,23 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  * This support is intended to work with RemoteNativeExecution and provide input (and eventually
@@ -61,19 +64,34 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
-    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
+    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
+            String args, Map<String, String> env, PrintWriter out, Reader userInput) {
         super(execEnv);
 
-        log.fine("RNES<Init>: Running [" + exe + "] on " + executionEnvironment);
+        log.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment);
+        Process process;
         try {
-            setChannelCommand(dirf, exe, args, envp);
-            InputStream is = channel.getInputStream();
+            //String cmd = makeCommand(dirf, exe, args, envp);
+            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd + " 2>&1"); //NOI18N
+            pb = pb.addEnvironmentVariables(env);
+            if (args != null) {
+                pb = pb.setArguments(args.trim().split("[ \t]+")); //NOI18N
+            }
+            String path = null;
+            if (dirf != null) {
+                path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath());
+                pb = pb.setWorkingDirectory(path);
+            }
+            process = pb.call();
+            InputStream is = process.getInputStream();
             Reader in = new InputStreamReader(is);
-            channel.setInputStream(new ReaderInputStream(userInput));
-
-            channel.connect();
-
-            do {
+            if (userInput != null) {
+                InputReaderThread inputReaderThread = new InputReaderThread(
+                        process.getOutputStream(), new ReaderInputStream(userInput));
+                inputReaderThread.start();
+            }
+            
+//            do {
                 int read;
                 while ((read = in.read()) != -1) {
                     if (read == 10) { // from LocalNativeExecution (MAC conversion?)
@@ -84,59 +102,77 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 }
                 try {
                     Thread.sleep(100); // according to jsch samples
-                } catch (Exception ee) {
+                } catch (InterruptedException ie) {
                 }
-            } while (!channel.isClosed());
+//            } while (!channel.isClosed());
 
+            int rc = process.waitFor();            
+            if (rc != 0 && log.isLoggable(Level.FINEST)) {
+                    log.finest("RNES: " + cmd + " on " + executionEnvironment + " in " + path + " finished; rc=" + rc);
+                    if (env == null) {
+                        log.finest("RNES: env == null");
+                    } else {
+                        for (Map.Entry<String, String> entry : env.entrySet()) {
+                            log.finest("\tRNES: " + entry.getKey() + "=" + entry.getValue());
+                        }
+                    }
+                    String errMsg;
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((errMsg = reader.readLine()) != null) {
+                        log.finest("RNES ERROR: " + errMsg);
+                    }
+            }
+            setExitStatus(rc);
             out.flush();
             is.close();
             in.close();
 
-        } catch (JSchException jse) {
-        } catch (IOException ex) {
+        } catch (InterruptedException ie) {
+            // this occurs, for example, when user stops running program - need no report
+        } catch (IOException ioe) {
+            log.log(Level.WARNING, ioe.getMessage(), ioe);
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage(), ex);
         } finally {
             log.finest("RNES return value: " + getExitStatus());
-            disconnect();
+//            disconnect();
         }
     }
 
-    private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
-        String dircmd;
-        String path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath());
-
-        if (path != null) {
-            dircmd = "cd \"" + path + "\"; "; // NOI18N
-        } else {
-            dircmd = "";
-        }
-
-        StringBuilder command = new StringBuilder(); // NOI18N
-
-        // if (enableDisplayVariable) {
-        if (envp == null ) {
-            envp = new String[1];
-            envp[0] = getDisplayString();
-        } else {
-            String[] envp2 = new String[envp.length + 1 ];
-            for (int i = 0; i < envp.length; i++) {
-                envp2[i] = envp[i];
-            }
-            envp2[envp.length] = getDisplayString();
-            envp = envp2;
-        }
-
-        if (envp != null) {
-            command.append(ShellUtils.prepareExportString(envp));
-        }
-        command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
-        command.insert(0, dircmd);
-
-        String theCommand = ShellUtils.wrapCommand(executionEnvironment, command.toString());
-
-        channel = createChannel();
-        log.finest("RNES: running command: " + theCommand);
-        ((ChannelExec) channel).setCommand(theCommand);
-    }
+//    private String makeCommand(File dirf, String exe, String args, String[] envp) {
+//        String dircmd;
+//        String path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath());
+//
+//        if (path != null) {
+//            dircmd = "cd \"" + path + "\"; "; // NOI18N
+//        } else {
+//            dircmd = "";
+//        }
+//
+//        StringBuilder command = new StringBuilder(); // NOI18N
+//
+//        // if (enableDisplayVariable) {
+//        if (envp == null ) {
+//            envp = new String[1];
+//            envp[0] = getDisplayString();
+//        } else {
+//            String[] envp2 = new String[envp.length + 1 ];
+//            for (int i = 0; i < envp.length; i++) {
+//                envp2[i] = envp[i];
+//            }
+//            envp2[envp.length] = getDisplayString();
+//            envp = envp2;
+//        }
+//
+//        if (envp != null) {
+//            command.append(ShellUtils.prepareExportString(envp));
+//        }
+//        command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
+//        command.insert(0, dircmd);
+//
+//        String theCommand = ShellUtils.wrapCommand(executionEnvironment, command.toString());
+//        return theCommand;
+//    }
 
     private static String displayString ;
 
@@ -155,6 +191,47 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         return displayString;
     }
 
+
+    /** Helper class to read the input from the build */
+    private static final class InputReaderThread extends Thread {
+
+        /** This is all output, not just stderr */
+        private InputStream in;
+        private OutputStream pout;
+
+        public InputReaderThread(OutputStream pout, InputStream in) {
+            this.pout = pout;
+            this.in = in;
+            setName("inputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
+        }
+
+        /**
+         *  Reader proc to read input from Output2's input textfield and send it
+         *  to the running process.
+         */
+        @Override
+        public void run() {
+            int ch;
+
+            try {
+                while ((ch = in.read()) != (-1)) {
+                    pout.write((char) ch);
+                    pout.flush();
+                }
+            } catch (IOException e) {
+            } finally {
+                // Handle EOF and other exits
+                try {
+                    pout.flush();
+                    pout.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //TODO (execution): why do we need this?
     private final static class ReaderInputStream extends InputStream {
 
         private final Reader reader;

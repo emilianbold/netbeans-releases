@@ -68,8 +68,13 @@ import org.openide.windows.InputOutput;
 public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
 
     private ProjectActionEvent pae;
-    private ExecutorTask executorTask;
+    private volatile ExecutorTask executorTask;
     private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+
+    // VK: this is just to tie two pieces of logic together:
+    // first is in determining the type of console for remote;
+    // second is in canCancel
+    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
 
     public void init(ProjectActionEvent pae) {
         this.pae = pae;
@@ -128,8 +133,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 }
                 if (!conf.getDevelopmentHost().isLocalhost()) {
-                    //TODO: only output window for remote for now
-                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
+                        //TODO: only output window for remote for now
+                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    }
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     if (HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
@@ -244,6 +251,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             try {
                 executorTask = projectExecutor.execute(io);
             } catch (java.io.IOException ioe) {
+                ioe.printStackTrace();
             }
         } else {
             assert false;
@@ -264,6 +272,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (pae.getType() != ProjectActionEvent.Type.RUN) {
             return true;
         } else {
+            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
+                if (!((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().isLocalhost()) {
+                    return true;
+                }
+            }
             int consoleType = pae.getProfile().getConsoleType().getValue();
             if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                 consoleType = RunProfile.getDefaultConsoleType();
@@ -273,7 +286,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public void cancel() {
-        executorTask.stop();
+        ExecutorTask et = executorTask;
+        if (et != null) {
+            executorTask.stop();
+        }
     }
 
     public void executionStarted() {

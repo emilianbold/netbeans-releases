@@ -101,6 +101,10 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
         return this.fileNameIndex == other.fileNameIndex;
     }
 
+    /*package-local*/int getProjectFileIndex(){
+        return fileNameIndex;
+    }
+
     protected String getFileName() {
         return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }

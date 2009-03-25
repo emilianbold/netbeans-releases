@@ -115,10 +115,14 @@ public class VariablesViewButtons {
         return toggleButton;
     }
 
-    private static boolean isButtonSelected(String name) {
+    public static boolean isShowValuesAsString() {
         Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
+        return preferences.getBoolean(SHOW_VALUE_AS_STRING, false);
+    }
+
+    private static boolean isButtonSelected(String name) {
         if (name.equals(SHOW_VALUE_AS_STRING)) {
-            return preferences.getBoolean(SHOW_VALUE_AS_STRING, false);
+            return isShowValuesAsString();
         }
         return false;
     }

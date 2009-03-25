@@ -64,7 +64,7 @@ public class TestBase extends NbTestCase {
         Object[] newInstances = new Object[instances.length + 1];
         System.arraycopy(instances, 0, newInstances, 0, instances.length);
         newInstances[newInstances.length - 1] = REPOSITORY;
-        MockLookup.setInstances(newInstances);
+        MockLookup.setLayersAndInstances(newInstances);
     }
 
     public TestBase(String name) {

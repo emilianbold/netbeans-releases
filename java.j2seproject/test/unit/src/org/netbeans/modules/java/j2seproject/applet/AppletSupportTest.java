@@ -83,7 +83,7 @@ public class AppletSupportTest extends NbTestCase {
         JavaPlatform platform1 = new TestPlatform("TP1","tp1",new Specification("j2se", new SpecificationVersion("1.4")));
         JavaPlatform platform2 = new TestPlatform("TP2","tp2",new Specification("j2se", new SpecificationVersion("1.5")));
         JavaPlatform platform3 = new TestPlatform("TP2","tp3",new Specification("j2se", new SpecificationVersion("1.5.1")));
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new PlatformProviderImpl(new JavaPlatform[] {
                 platform1,
                 platform2,

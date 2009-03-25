@@ -41,9 +41,13 @@
 
 package org.netbeans.test.editor;
 
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.ide.BlacklistedClassesHandler;
+import org.netbeans.test.ide.BlacklistedClassesHandlerSingleton;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -54,11 +58,54 @@ public class GeneralSanityTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(
+        NbTestSuite s = new NbTestSuite();
+        s.addTest(new GeneralSanityTest("testInitBlacklistedClassesHandler"));
+        s.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(
                 GeneralSanityTest.class
-            ).gui(false).clusters(".*").enableModules(".*").honorAutoloadEager(true)
-        );
+            ).gui(false).clusters(".*").enableModules(".*").
+            honorAutoloadEager(true).
+            addTest(
+                "testBlacklistedClassesHandler",
+                "testOrgOpenideOptionsIsDisabledAutoload"
+            )
+        ));
+        return s;
+    }
+
+    public void testInitBlacklistedClassesHandler() {
+        String configFN = new File(getDataDir(), "BlacklistedClassesHandlerConfig.xml").getPath();
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
+
+        System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
+        if (bcHandler.initSingleton(configFN)) {
+            bcHandler.register();
+            System.out.println("BlacklistedClassesHandler handler added");
+        } else {
+            fail("Cannot initialize blacklisted class handler");
+        }
+    }
+
+
+    public void testBlacklistedClassesHandler() throws Exception {
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
+        assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        if (bcHandler.isGeneratingWhitelist()) {
+            bcHandler.saveWhiteList(getLog("whitelist.txt"));
+        }
+        try {
+            if (bcHandler.hasWhitelistStorage()) {
+                bcHandler.saveWhiteList();
+                bcHandler.saveWhiteList(getLog("whitelist.txt"));
+                bcHandler.reportDifference(getLog("diff.txt"));
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml"))
+                        + bcHandler.reportDifference(), bcHandler.noViolations());
+            } else {
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
+            }
+        } finally {
+            bcHandler.unregister();
+        }
     }
 
     public void testOrgOpenideOptionsIsDisabledAutoload() {
