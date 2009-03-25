@@ -36,36 +36,66 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.editor.completion;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
-import org.netbeans.modules.db.sql.editor.StringUtils;
-import org.netbeans.modules.db.sql.lexer.SQLTokenId;
+package org.netbeans.modules.css.editor.indent;
 
-/**
- *
- * @author Jiri Rechtacek
- */
-public class SQLStatementAnalyzer {
+import org.netbeans.modules.css.formatting.api.embedding.*;
+import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Source;
 
-    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
-        seq.moveStart ();
-        if ( ! seq.moveNext ()) {
-            return null;
-        }
-        if (seq.token () != null && SQLTokenId.WHITESPACE.equals (seq.token ().id ())) {
-            seq.moveNext ();
-        }
-        if (isKeyword ("SELECT", seq)) { // NOI18N
-            return SQLStatementKind.SELECT;
-        } else if (isKeyword ("INSERT", seq)) {
-            return SQLStatementKind.INSERT;
+// not yet finished: depends on adding new API method to parsing.api.Source: getAllEmbeddings()
+
+public class VirtualSourceImpl implements VirtualSource {
+
+    private Iterable<Embedding> embeddings;
+
+    public VirtualSourceImpl(Iterable<Embedding> embedding) {
+        this.embeddings = embedding;
+    }
+
+    public String getSource(int startOffset, int endOffset) {
+        for (Embedding e : embeddings) {
+            int start = e.getSnapshot().getEmbeddedOffset(startOffset);
+            int end = e.getSnapshot().getEmbeddedOffset(endOffset);
+            if (start != -1 && end != -1) {
+                return e.getSnapshot().getText().subSequence(start, end).toString();
+            }
         }
         return null;
     }
 
-    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
-        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("VirtualSourceImpl[\n");
+        for (Embedding e : embeddings) {
+            sb.append("Embedding:"+e+"\n");
+            sb.append("Content:\n");
+            sb.append(e.getSnapshot().getText()+"\n");
+        }
+        sb.append("]");
+        return sb.toString();
     }
+
+
+    public static class Factory implements VirtualSource.Factory {
+
+        public VirtualSource createVirtualSource(Document doc, String mimeOfInterest) {
+            Source s = Source.create(doc);
+//            Iterable<Embedding> embeddings = s.getAllEmbeddings();
+//            List<Embedding> l = new ArrayList<Embedding>();
+//            for (Embedding e : embeddings) {
+//                if (e.getMimeType().equals(mimeOfInterest)) {
+//                    l.add(e);
+//                }
+//            }
+//            if (l.size() > 0) {
+//                return new VirtualSourceImpl(l);
+//            }
+            return null;
+        }
+
+    }
+
 }

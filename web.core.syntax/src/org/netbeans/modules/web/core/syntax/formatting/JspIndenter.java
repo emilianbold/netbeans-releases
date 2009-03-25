@@ -196,4 +196,12 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
         return token.id() == JspTokenId.SYMBOL2 && token.text().toString().equals("%>");
     }
 
+    @Override
+    protected boolean isStableFormattingStartToken(Token<JspTokenId> token, JoinedTokenSequence<JspTokenId> ts) {
+        return token.id() == JspTokenId.SYMBOL2 && (
+                token.text().toString().equals("<%") ||
+                token.text().toString().equals("<%=") ||
+                token.text().toString().equals("<%!"));
+    }
+
 }

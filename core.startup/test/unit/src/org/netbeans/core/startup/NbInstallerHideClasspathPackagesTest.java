@@ -109,6 +109,20 @@ public class NbInstallerHideClasspathPackagesTest extends SetupHid {
             ModuleManagerTest.assertDoesNotOverride(m3, "javax.swing.text.Document");
             ModuleManagerTest.assertDoesNotOverride(m3, "javax.naming.Context");
             ModuleManagerTest.assertDoesNotOverride(m3, "javax.naming.spi.Resolver");
+            // #159586: masked JRE classes should not be accessible from SCL either.
+            ClassLoader scl = mgr.getClassLoader();
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.net.SocketFactory");
+            ModuleManagerTest.assertOverrides(scl, "system class loader", "javax.swing.JPanel");
+            ModuleManagerTest.assertOverrides(scl, "system class loader", "javax.swing.text.Document");
+            ModuleManagerTest.assertOverrides(scl, "system class loader", "javax.naming.Context");
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.naming.spi.Resolver");
+            mgr.disable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
+            scl = mgr.getClassLoader();
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.net.SocketFactory");
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.swing.JPanel");
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.swing.text.Document");
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.naming.Context");
+            ModuleManagerTest.assertDoesNotOverride(scl, "javax.naming.spi.Resolver");
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
