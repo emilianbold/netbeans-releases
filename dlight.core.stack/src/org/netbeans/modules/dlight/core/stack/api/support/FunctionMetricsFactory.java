@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.core.stack.api.impl.FunctionMetricAccessor;
  */
 public final class FunctionMetricsFactory {
 
+    private final Object lock = new Object();
     private static FunctionMetricsFactory instance =
             new FunctionMetricsFactory();
     private final ConcurrentHashMap<FunctionMetricConfiguration, FunctionMetric> metricsCache;
@@ -71,20 +72,22 @@ public final class FunctionMetricsFactory {
      * @return FunctionMetric instance.
      */
     public FunctionMetric getFunctionMetric(FunctionMetricConfiguration metricConfiguration) {
-        FunctionMetric metric = metricsCache.get(metricConfiguration);
+        synchronized(lock){
+            FunctionMetric metric = metricsCache.get(metricConfiguration);
 
-        if (metric != null) {
-            return metric;
+            if (metric != null) {
+                return metric;
+            }
+
+            FunctionMetric newMetric = FunctionMetricAccessor.getDefault().createNew(metricConfiguration);
+
+            metric = metricsCache.putIfAbsent(metricConfiguration, newMetric);
+
+            if (metric != null) {
+                newMetric = metric;
+            }
+
+            return newMetric;
         }
-
-        FunctionMetric newMetric = FunctionMetricAccessor.getDefault().createNew(metricConfiguration);
-
-        metric = metricsCache.putIfAbsent(metricConfiguration, newMetric);
-
-        if (metric != null) {
-            newMetric = metric;
-        }
-
-        return newMetric;
     }
 }
