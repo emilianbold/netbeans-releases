@@ -1030,6 +1030,10 @@ public final class XMLFileSystem extends AbstractFileSystem {
         }
 
         private static final Set<String> NETWORK_PROTOCOLS = new HashSet<String>(Arrays.asList("http", "https", "ftp")); // NOI18N
+        /** One item cache to eliminate File.lastModified queries (see #160390). */
+        private static File lastFile = null;
+        private static Date lastFileDate = null;
+
         public Date lastModified(String name) {
             URL url = null;
             Date retval = null;
@@ -1056,7 +1060,11 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 if ("file".equals(protocol)) { //NOI18N
                     try {
                         File f = new File(URI.create(url.toExternalForm()));
-                        retval = (f.exists()) ? new Date(f.lastModified()) : null;
+                        if (!f.equals(lastFile)) {
+                            lastFile = f;
+                            lastFileDate = new Date(f.lastModified());
+                        }
+                        retval = lastFileDate;
                     } catch (IllegalArgumentException x) {
                         Logger.getLogger(XMLFileSystem.class.getName()).log(Level.FINE, "#121777: " + url, x);
                     }
