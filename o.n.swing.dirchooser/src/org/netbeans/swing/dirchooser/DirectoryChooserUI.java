@@ -112,7 +112,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
-    private static final long SLOWNESS_TIMEOUT = 20000;
+    private static final long SLOWNESS_TIMEOUT = 10000;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
     
