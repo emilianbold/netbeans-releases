@@ -72,6 +72,9 @@ import java.util.List;
  */
 
 public class GeneralPHP extends JellyTestCase {
+
+    // Okey, this is hack and should be removed later
+    protected boolean bRandomCheck = false;
     
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
@@ -339,7 +342,12 @@ public class GeneralPHP extends JellyTestCase {
 
     // Check code completion list
     if( -1 == sText.indexOf( sCheck ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sCheck + "\"" );
+    {
+      if( bRandomCheck )
+        fail( "Invalid completion, looks like issue #153062 still here: \"" + sText + "\", should be: \"" + sCheck + "\"" );
+      else
+        fail( "Invalid completion: \"" + sText + "\", should be: \"" + sCheck + "\"" );
+    }
   }
 
   protected void CheckResultRegex(

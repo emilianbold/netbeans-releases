@@ -640,11 +640,13 @@ final class JUnitOutputReader {
      */
     private void displayOutput(final String text, final boolean error) {
         manager.displayOutput(testSession,text, error);
-        List<String> addedLines = new ArrayList<String>();
-        addedLines.add(text);
-        Testcase tc = testSession.getCurrentTestCase();
-        if (tc != null){
-            tc.addOutputLines(addedLines);
+        if (state == State.TESTCASE_STARTED){
+            List<String> addedLines = new ArrayList<String>();
+            addedLines.add(text);
+            Testcase tc = testSession.getCurrentTestCase();
+            if (tc != null){
+                tc.addOutputLines(addedLines);
+            }
         }
     }
     

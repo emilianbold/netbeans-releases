@@ -697,6 +697,20 @@ public class EditorContextImpl extends EditorContext {
                     Elements elms = ci.getElements();
                     TypeElement classElement = getTypeElement(ci, className, null);
                     if (classElement == null) return ;
+                    if (fieldName == null) {
+                        // If no field name is provided, just find the beginning of the class:
+                        SourcePositions positions =  ci.getTrees().getSourcePositions();
+                        Tree tree = ci.getTrees().getTree(classElement);
+                        int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                        EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+                        StyledDocument doc = editor.openDocument();
+                        int l = doc.getLength();
+                        while (pos < l && doc.getText(pos, 1).charAt(0) != '{') {
+                            pos++;
+                        }
+                        result[0] = NbDocument.findLineNumber(doc, pos) + 2;
+                        return ;
+                    }
                     List classMemberElements = elms.getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
                         Element elm = (Element) it.next();
