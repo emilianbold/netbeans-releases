@@ -154,8 +154,7 @@ public class ReplaceTest extends EditorTestCase {
             replace.replace();
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
-            // check status bar
-            log(editor.lblStatusBar().getText());
+            // check status bar            
             waitForLabel("'testReplaceSelectionRepeated' found at 15:35");            
             // choose the "testReplaceSelectionRepeated" word
             editor.setCaretPosition(15,1);            
@@ -401,12 +400,12 @@ public class ReplaceTest extends EditorTestCase {
      * @param label label which should be displayed on status bar
      */
     public void waitForLabel(String label) {
-        EditorOperator editor = getDefaultSampleEditorOperator();
+        //EditorOperator editor = getDefaultSampleEditorOperator();
         for (int i = 0; i<10; i++) {
-            if (editor.lblStatusBar().getText().equals(label)) break;
+            if (MainWindowOperator.getDefault().getStatusText().equals(label)) break;
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
         }
-        assertEquals(label, editor.lblStatusBar().getText());
+        assertEquals(label, MainWindowOperator.getDefault().getStatusText());
     }
     
     /**
