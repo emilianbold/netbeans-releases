@@ -226,8 +226,8 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
             return new Rectangle(
                     (int) Math.round(rect.getX() * scaleX) + correctionX,
                     (int) Math.round(rect.getY() * scaleY) + correctionY,
-                    (int) Math.round(rect.getWidth() * scaleX),
-                    (int) Math.round(rect.getHeight() * scaleY));
+                    (int) Math.round(rect.getWidth() * scaleX) + 1,
+                    (int) Math.round(rect.getHeight() * scaleY) + 1);
         }
         return null;
     }
