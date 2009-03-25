@@ -239,6 +239,8 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
             ref.setMethodInline(methodInline);
+            ref.setDefaultGetter(info.getDefaultGetter());
+            ref.setDefaultSetter(info.getDefaultSetter());
             ref.getContext().add(refactoring.getContext().lookup(InsertPoint.class));
             ref.getContext().add(refactoring.getContext().lookup(Documentation.class));
             ref.getContext().add(refactoring.getContext().lookup(SortBy.class));

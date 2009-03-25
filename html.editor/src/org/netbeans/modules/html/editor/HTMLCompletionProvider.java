@@ -75,8 +75,10 @@ public class HTMLCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = HTMLSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
-        return type == ExtSyntaxSupport.COMPLETION_POPUP ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
+        Document doc = component.getDocument();
+        int dotPos = component.getCaret().getDot();
+        boolean openCC = HTMLSyntaxSupport.checkOpenCompletion(doc, dotPos, typedText);
+        return openCC ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {

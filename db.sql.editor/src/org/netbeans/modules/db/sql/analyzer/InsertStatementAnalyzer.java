@@ -79,14 +79,6 @@ public class InsertStatementAnalyzer {
                 sa.offset2Context);
     }
 
-    public static SQLStatementKind detectKind (TokenSequence<SQLTokenId> seq) {
-        InsertStatementAnalyzer sa = doParse (seq, null, true);
-        if ( ! sa.state.isAfter (State.INSERT)) {
-            return null;
-        }
-        return SQLStatementKind.INSERT;
-    }
-
     private static InsertStatementAnalyzer doParse (TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
         seq.moveStart ();
         if ( ! seq.moveNext ()) {

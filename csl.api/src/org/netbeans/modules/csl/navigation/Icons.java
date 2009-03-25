@@ -59,7 +59,7 @@ import org.openide.util.ImageUtilities;
  * @author phrebejk
  */
 public final class Icons {
-    private static final String ICON_BASE = "org/netbeans/modules/gsfret/source/resources/icons/";
+    private static final String ICON_BASE = "org/netbeans/modules/csl/source/resources/icons/";
     private static final String GIF_EXTENSION = ".gif";
     private static final String PNG_EXTENSION = ".png";
     private static final String WAIT = ICON_BASE + "wait" + PNG_EXTENSION;

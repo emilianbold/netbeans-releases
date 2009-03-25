@@ -215,7 +215,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     Container parent = pane.getParent();
     Point viewPos = parent instanceof JViewport ? ((JViewport) parent).getViewPosition()
             : null;
-    int start;
+    long start;
     if (sourceFileInfo.hasOffset()){
         start = sourceFileInfo.getOffset();
     }else{
@@ -225,7 +225,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     if (start > 0 && pane.getCaretPosition() == caretPos &&
             pane.getDocument() != null && start < pane.getDocument().getLength() &&
             (viewPos == null || viewPos.equals(((JViewport) parent).getViewPosition()))) {
-      pane.setCaretPosition(start);
+      pane.setCaretPosition((int)start);
     }
     StatusDisplayer.getDefault().setStatusText(""); // NOI18N
   }

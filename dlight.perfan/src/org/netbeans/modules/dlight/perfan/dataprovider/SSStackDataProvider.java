@@ -44,8 +44,10 @@ import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -59,8 +61,12 @@ import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Lookup;
 
 /**
  * This class suppose to be thread-safe.
@@ -96,6 +102,10 @@ class SSStackDataProvider implements StackDataProvider {
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     private static enum CC_MODE {
 
@@ -190,6 +200,31 @@ class SSStackDataProvider implements StackDataProvider {
 
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+        //temporary decision
+  //we should get here SourceFileInfoProvider
+        Collection<? extends SourceFileInfoProvider> sourceInforFileProviders =
+                Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
+
+        if (sourceInforFileProviders.isEmpty()) {
+            return null;
+        }
+        Iterator<? extends SourceFileInfoProvider> iterator = sourceInforFileProviders.iterator();
+        while (iterator.hasNext()) {
+            SourceFileInfoProvider provider = iterator.next();
+            try {
+                // TODO: pass meaningful values for offset and executable
+                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), this.storage.getInfo());
+                if (lineInfo != null && lineInfo.isSourceKnown()) {
+                    return lineInfo;
+                }
+            } catch (SourceFileInfoProvider.SourceFileInfoCannotBeProvided e) {
+            }
+        }
+        return null;
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private static class HotSpotFunctionsFetcherParams {

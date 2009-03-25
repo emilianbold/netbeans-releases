@@ -437,8 +437,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private boolean initDocument() {
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument ENTER");
             EditorKit k;
             Document d;
             synchronized (this) {
@@ -477,8 +475,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 }
             }
             if (tmp.getDocument() == doc) {
-                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                + " -- CloneableEditor.DoInitialize.initDocument RETURN FALSE 1");
                 return false;
             }
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
@@ -490,7 +486,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument RETURN TRUE 1");
+            + " -- CloneableEditor.DoInitialize.initDocument RETURN TRUE");
             return true;
         }
         
@@ -499,15 +495,15 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (isInInitVisual) {
                 return;
             }
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initVisual"
-            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
             isInInitVisual = true;
             // wait for document and init it
             if (!initDocument()) {
                 isInInitVisual = false;
                 return;
             }
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initVisual"
+            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
             if (LOG.isLoggable(Level.FINE)) {
                 /*Exception ex = new Exception();
                 StringWriter sw = new StringWriter(500);

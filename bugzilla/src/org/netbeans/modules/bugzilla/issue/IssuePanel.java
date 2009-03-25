@@ -90,6 +90,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
+    private boolean submitting;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -121,6 +122,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
+        if (submitting) {
+            return;
+        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -439,10 +443,21 @@ public class IssuePanel extends javax.swing.JPanel {
         super.addNotify();
         if (issue != null) {
             // Hack - reset any previous modifications when the issue window is reopened
+            // XXX any chance to get rid of the hack?
             reloadForm(true);
+
+            issue.opened();
         }
     }
-    
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1044,6 +1059,8 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    submitting = true;
+                    issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1054,8 +1071,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             // PENDING notify user
                         }
                     }
-                    issue.submitAndRefresh();
                 } finally {
+                    submitting = false;
                     handle.finish();
                     reloadFormInAWT(true);
                 }

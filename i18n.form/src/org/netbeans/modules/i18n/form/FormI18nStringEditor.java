@@ -144,7 +144,12 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         setValue(text);
     }
         
-    
+    private FormI18nString updateValue(FormI18nString value) {
+        String key = value.getKey();
+        value.setValue(value.getSupport().getResourceHolder().getValueForKey(key));
+        return value;
+    }
+
     /** Overrides superclass method. 
      * @return text for the current value */
     public String getAsText() {
@@ -152,7 +157,8 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         if (value instanceof String || value == null) {
             return (String) value;
         }
-
+        
+        updateValue((FormI18nString) value);
         FormI18nString i18nString = (FormI18nString) value;
         return i18nString.getValue();
     }
