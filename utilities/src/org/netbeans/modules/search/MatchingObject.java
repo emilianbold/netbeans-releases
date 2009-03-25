@@ -580,7 +580,7 @@ final class MatchingObject implements PropertyChangeListener {
 
         int offsetShift = 0;
         for (int i=0; i < textMatches.size(); i++) {
-            if (!matchesSelection[i]){
+            if ((matchesSelection != null) && !matchesSelection[i]){
                 continue;
             }
             TextDetail textDetail = textMatches.get(i);
