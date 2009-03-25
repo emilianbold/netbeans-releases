@@ -310,11 +310,16 @@ public final class DtraceDataCollector
         DLightLogger.assertNonUiThread();
 
         final ExecutionEnvironment execEnv = target.getExecEnv();
+
         ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
 
         try {
+            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
+                return ValidationStatus.invalidStatus(
+                        "dtrace is supported on SunOS only"); // NOI18N
+            }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (ConnectException ex) {
             connected = false;
