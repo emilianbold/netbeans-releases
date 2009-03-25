@@ -23,7 +23,7 @@
                             <attr name="position" intvalue="400"/>
                         </file>
                         <file name="cdc-hi-run" url="cdc-hi-run">
-                            <attr name="position" intvalue="950"/>
+                            <attr name="position" intvalue="975"/>
                         </file>
                     </folder>
                     <folder name="debug-subtargets">
