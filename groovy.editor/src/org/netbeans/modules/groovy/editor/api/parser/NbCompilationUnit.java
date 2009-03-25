@@ -46,6 +46,7 @@ import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
 import java.util.Stack;
+import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -67,24 +68,35 @@ import org.openide.util.Exceptions;
  */
 public final class NbCompilationUnit extends CompilationUnit {
 
-    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
+    public NbCompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
+            CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
+
         super(configuration, security, loader);
-        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, javaSource, waitScanFinished);
+        this.ast = new NbCompileUnit(parser, this.classLoader, security, this.configuration, javaSource, waitScanFinished);
     }
 
     private static final class NbCompileUnit extends CompileUnit {
 
+        private final GroovyParser parser;
+
         private final JavaSource javaSource;
+
         private final boolean waitScanFinished;
 
-        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
+        public NbCompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
+                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
             super(classLoader, codeSource, config);
+            this.parser = parser;
             this.javaSource = javaSource;
             this.waitScanFinished = waitScanFinished;
         }
 
         @Override
         public ClassNode getClass(final String name) {
+            if (parser.isCancelled()) {
+                throw new CancellationException();
+            }
+
             final ClassNode[] classNodes = new ClassNode[] { super.getClass(name) };
             if (classNodes[0] == null) {
                 try {

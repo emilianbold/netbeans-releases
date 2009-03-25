@@ -47,6 +47,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.event.ChangeListener;
@@ -105,6 +107,8 @@ class GroovyParser extends Parser {
     private boolean waitJavaScanFinished = true;
 
     private GroovyParserResult lastResult;
+
+    private AtomicBoolean cancelled = new AtomicBoolean();
     
     public GroovyParser() {
         super();
@@ -120,9 +124,14 @@ class GroovyParser extends Parser {
         // FIXME parsing API
     }
 
+    public boolean isCancelled() {
+        return cancelled.get();
+    }
+
     @Override
     public void cancel() {
-        // FIXME parsing API
+        LOG.log(Level.FINEST, "Parser cancelled");
+        cancelled.set(true);
     }
 
     @Override
@@ -133,6 +142,8 @@ class GroovyParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        cancelled.set(false);
+
         Context context = new Context(snapshot, event);
         final List<Error> errors = new ArrayList<Error>();
         context.errorHandler = new ParseErrorHandler() {
@@ -141,7 +152,12 @@ class GroovyParser extends Parser {
             }
         };
         lastResult = parseBuffer(context, Sanitize.NONE);
-        lastResult.setErrors(errors);
+        if (lastResult != null) {
+            lastResult.setErrors(errors);
+        } else {
+            // FIXME just temporary
+            lastResult = createParseResult(snapshot, null, null);
+        }
     }
 
     void setWaitJavaScanFinished(boolean shouldWait) {
@@ -149,9 +165,7 @@ class GroovyParser extends Parser {
     }
 
     protected GroovyParserResult createParseResult(Snapshot snapshot, AstRootElement rootElement, ErrorCollector errorCollector) {
-        
         GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootElement, errorCollector);
-        
         return parserResult;
     }
     
@@ -389,6 +403,10 @@ class GroovyParser extends Parser {
 
     @SuppressWarnings("unchecked")
     GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+        if (isCancelled()) {
+            return null;
+        }
+
         boolean sanitizedSource = false;
         String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
@@ -440,10 +458,15 @@ class GroovyParser extends Parser {
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
-        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource, waitJavaScanFinished);
+        CompilationUnit compilationUnit = new NbCompilationUnit(this, configuration,
+                null, classLoader, javaSource, waitJavaScanFinished);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
+        if (isCancelled()) {
+            return null;
+        }
+        
         long start = 0;
         if (LOG.isLoggable(Level.FINEST)) {
             PARSING_COUNT.incrementAndGet();
@@ -451,16 +474,16 @@ class GroovyParser extends Parser {
         }
         
         try {
-            compilationUnit.compile(Phases.CLASS_GENERATION);
-
-            if (LOG.isLoggable(Level.FINEST)) {
-                logParsingTime(context, start);
+            try {
+                compilationUnit.compile(Phases.CLASS_GENERATION);
+            } catch (CancellationException ex) {
+                // cancelled probably
+                if (isCancelled()) {
+                    return null;
+                }
+                throw ex;
             }
         } catch (Throwable e) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                logParsingTime(context, start);
-            }
-
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
@@ -538,6 +561,11 @@ class GroovyParser extends Parser {
             LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
             LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
             
+        } finally {
+            if (LOG.isLoggable(Level.FINEST)) {
+                logParsingTime(context, start, isCancelled());
+            }
+            
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -566,11 +594,17 @@ class GroovyParser extends Parser {
         }
     }
 
-    private static void logParsingTime(Context context, long start) {
+    private static void logParsingTime(Context context, long start, boolean cancelled) {
         long diff = System.currentTimeMillis() - start;
         long full = PARSING_TIME.addAndGet(diff);
-        LOG.log(Level.FINEST, "Compilation failure in {0} for file {3}; total time spent {1}; total count {2}",
-                new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        if (cancelled) {
+            LOG.log(Level.FINEST, "Compilation cancelled in {0} for file {3}; total time spent {1}; total count {2}",
+                    new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        } else {
+            LOG.log(Level.FINEST, "Compilation finished in {0} for file {3}; total time spent {1}; total count {2}",
+                    new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        }
+
         synchronized (GroovyParser.class) {
             if (diff > MAX_PARSING_TIME) {
                 MAX_PARSING_TIME = diff;
