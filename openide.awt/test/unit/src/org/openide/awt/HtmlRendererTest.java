@@ -79,21 +79,13 @@ public class HtmlRendererTest extends TestCase {
         doTestRender("<html>text</</html>");
         doTestRender("<html>text<</html>");
         doTestRender("<html>text<</html>&");
+        doTestRender("<html>text<sometag");
         doTestRender55310();
     }
     
     private void doTestRender(String text) {
-        try {
-            HtmlRenderer.renderHTML(text, graphic, 0, 0, 1000, 1000,
-                    Font.getFont("Dialog"), Color.RED, HtmlRenderer.STYLE_TRUNCATE, true);
-        } catch (IllegalArgumentException arg) {
-            // argument exception is ok..
-            if (arg.getMessage().startsWith("HTML rendering failed on string")) {
-                System.err.println("throwing illegal argument for " + text);
-            } else {
-                throw arg;
-            }
-        }
+        HtmlRenderer.renderHTML(text, graphic, 0, 0, 1000, 1000,
+                Font.getFont("Dialog"), Color.RED, HtmlRenderer.STYLE_TRUNCATE, true);
     }
     
     /**

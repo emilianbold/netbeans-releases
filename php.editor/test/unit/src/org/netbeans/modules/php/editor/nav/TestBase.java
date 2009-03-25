@@ -101,8 +101,7 @@ public abstract class TestBase extends CslTestBase {
         if (f != null) {
             f.delete();
         }
-        
-        FileUtil.setMIMEType("php", PHPLanguage.PHP_MIME_TYPE);
+                
         Logger.global.setFilter(new Filter() {
             public boolean isLoggable(LogRecord record) {
                 Throwable t = record.getThrown();

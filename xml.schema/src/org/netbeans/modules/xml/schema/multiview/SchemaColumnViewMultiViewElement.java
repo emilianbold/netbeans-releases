@@ -88,6 +88,7 @@ import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xml.search.api.SearchManager;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.explorer.ExplorerManager;
@@ -127,10 +128,13 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     private ExplorerManager manager;
     private ValidateAction validateAction;
 
+    private PropertyChangeListener awtPCL = new XAMUtils.AwtPropertyChangeListener(this);
+
     /**
      * Nullary constructor for deserialization.
      */
     public SchemaColumnViewMultiViewElement() {
+        super();
     }
 
     public SchemaColumnViewMultiViewElement(SchemaDataObject schemaDataObject) {
@@ -220,6 +224,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         if (!SchemaModel.STATE_PROPERTY.equals(property)) {
             return;
         }
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         State newState = (State)evt.getNewValue();
         if (newState == SchemaModel.State.VALID) {
             errorMessage = null;
@@ -233,12 +240,8 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                     SchemaColumnViewMultiViewElement.class,
                     "MSG_NotWellformedSchema");
         }
-        //fix for IZ:116057
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
-            }
-        });
+
+        setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
         emptyUI(errorMessage);
     }
 
@@ -255,7 +258,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
             schemaModel = editor.getModel();
             if (schemaModel != null) {
                 PropertyChangeListener pcl = WeakListeners.
-                        create(PropertyChangeListener.class, this, schemaModel);
+                        create(PropertyChangeListener.class, awtPCL, schemaModel);
                 schemaModel.addPropertyChangeListener(pcl);
             }
         } catch (IOException io) {
@@ -506,7 +509,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         } catch (IOException ioe) {
             // wait until the model is valid
         }
-        return toolbar;
+        return toolbar == null ? new JToolBar() : toolbar;
     }
 
     @Override

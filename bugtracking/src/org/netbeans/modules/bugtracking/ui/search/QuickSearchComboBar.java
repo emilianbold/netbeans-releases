@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugtracking.ui.search;
 
-import org.netbeans.modules.bugtracking.ui.search.*;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
@@ -97,10 +96,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
 
+    @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().removePropertyChangeListener(listener);
     }
 
+    @Override
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().addPropertyChangeListener(listener);
     }

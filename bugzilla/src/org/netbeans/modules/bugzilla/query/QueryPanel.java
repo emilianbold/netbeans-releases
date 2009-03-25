@@ -37,15 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * QueryPanel.java
- *
- * Created on Oct 14, 2008, 5:45:44 PM
- */
-
 package org.netbeans.modules.bugzilla.query;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;

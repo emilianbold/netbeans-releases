@@ -61,7 +61,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -349,7 +348,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
-//            setExisting();
+            repoPanel.setVisible(false);
+            issue.removePropertyChangeListener(this);
         } 
     }
 

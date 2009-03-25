@@ -107,7 +107,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
-
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png");
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();

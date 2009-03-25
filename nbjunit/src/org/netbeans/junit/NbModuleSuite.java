@@ -39,6 +39,7 @@
 
 package org.netbeans.junit;
 
+import org.netbeans.junit.internal.NbModuleLogHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

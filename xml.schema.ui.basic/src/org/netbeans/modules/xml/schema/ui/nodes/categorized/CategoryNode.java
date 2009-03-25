@@ -167,7 +167,7 @@ public class CategoryNode extends AbstractNode
 		// TODO: Need to allow the children object to do the work here
                 SchemaModel model = parentReference.get().getModel();
                 weakComponentListener = (ComponentListener) WeakListeners.create(
-                        ComponentListener.class, this, model);
+                        ComponentListener.class, awtCL, model);
                 model.addComponentListener(weakComponentListener);
 
                 referenceSet = new HashSet<Component>();
@@ -224,6 +224,7 @@ public class CategoryNode extends AbstractNode
 	 *
 	 *
 	 */
+    @Override
 	public int hashCode() {
 		// Without this, the tree view collapses when nodes are changed.
 		return getName().hashCode();
@@ -341,6 +342,7 @@ public class CategoryNode extends AbstractNode
 	}
 
         @SuppressWarnings("unchecked")
+        @Override
         protected void createPasteTypes(Transferable transferable, List list) {
             if (isValid() && isEditable()) {
                 PasteType type = ComponentPasteType.getPasteType(
@@ -406,6 +408,7 @@ public class CategoryNode extends AbstractNode
 	 *
 	 *
 	 */
+    @Override
 	public NewType[] getNewTypes()
 	{
 		SchemaModel model = getReference().get().getModel();
@@ -563,7 +566,8 @@ public class CategoryNode extends AbstractNode
 	    this.badge = badge;
 	}
 	
-        public String getHtmlDisplayName() {
+    @Override
+    public String getHtmlDisplayName() {
             String name = getDisplayName();
             // Need to escape any HTML meta-characters in the name.
             name = name.replace("<", "&lt;").replace(">", "&gt;");
@@ -599,5 +603,6 @@ public class CategoryNode extends AbstractNode
 	private InstanceContent lookupContents;
         private ComponentListener weakComponentListener;
 	private String badge;
+    private ComponentListener awtCL = new XAMUtils.AwtComponentListener(this);
 	
 }

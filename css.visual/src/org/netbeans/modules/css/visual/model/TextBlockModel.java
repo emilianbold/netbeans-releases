@@ -91,7 +91,7 @@ public class TextBlockModel {
 
     public static class LineHeightList extends DefaultComboBoxModel{
         public LineHeightList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             addElement("normal"); //NOI18N
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
@@ -101,13 +101,13 @@ public class TextBlockModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 
     public static class LetterSpacingList extends DefaultComboBoxModel{
         public LetterSpacingList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -116,13 +116,13 @@ public class TextBlockModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 
     public static class WordSpacingList extends DefaultComboBoxModel{
         public WordSpacingList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -131,13 +131,13 @@ public class TextBlockModel {
             addElement("6");  //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 
     public static class IndentationList extends DefaultComboBoxModel{
         public IndentationList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -146,13 +146,13 @@ public class TextBlockModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 
     public static class TextDirectionList extends DefaultComboBoxModel{
         public TextDirectionList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.DIRECTION);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
@@ -162,7 +162,7 @@ public class TextBlockModel {
 
     public static class HorizontalAlignmentList extends DefaultComboBoxModel{
         public HorizontalAlignmentList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.TEXT_ALIGN);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
@@ -172,7 +172,7 @@ public class TextBlockModel {
     
     public static class VerticalAlignmentList extends DefaultComboBoxModel{
         public VerticalAlignmentList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.VERTICAL_ALIGN);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);

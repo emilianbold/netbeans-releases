@@ -53,11 +53,23 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service = IndicatorDataProviderFactory.class)
 })
 public final class MultipleDtraceDataCollectorFactory
-        implements DataCollectorFactory<MultipleDTDCConfiguration>,
-        IndicatorDataProviderFactory<MultipleDTDCConfiguration>{
+    implements DataCollectorFactory<MultipleDTDCConfiguration>,
+    IndicatorDataProviderFactory<MultipleDTDCConfiguration> {
+
+    private final Object lock = new Object();
+    
+    private MultipleDtraceDataCollector currentCollector = null;
 
     public MultipleDtraceDataCollector create(MultipleDTDCConfiguration configuration) {
-        return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
+        //return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
+        synchronized (lock) {
+            if (currentCollector == null) {
+                currentCollector = new MultipleDtraceDataCollector(configuration);
+            } else {
+                currentCollector.addConfiguration(configuration);
+            }
+            return currentCollector;
+        }
     }
 
     public String getID() {
@@ -65,5 +77,8 @@ public final class MultipleDtraceDataCollectorFactory
     }
 
     public void reset() {
+        synchronized (lock) {
+            currentCollector = null;
+        }
     }
 }

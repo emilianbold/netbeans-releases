@@ -272,23 +272,28 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     }
 
     private Class doLoadClassFromParents(Set<ProxyClassLoader> del, final String path, String pkg, String name, Class cls) throws ClassNotFoundException {
-        // multicovered package, search in order
-        for (ProxyClassLoader pcl : parents) {
-            // all our accessible parents
-            if (del == null || (del.contains(pcl) && shouldDelegateResource(path, pcl))) {
-                // that cover given package
-                Class _cls = pcl.selfLoadClass(pkg, name);
-                if (_cls != null) {
-                    if (cls == null) {
-                        cls = _cls;
-                    } else if (cls != _cls) {
-                        String message = "Will not load class " + name + " arbitrarily from one of " + cls.getClassLoader() + " and " + pcl + " starting from " + this + "; see http://wiki.netbeans.org/DevFaqModuleCCE";
-                        LOGGER.warning(message);
-                        throw new ClassNotFoundException(message);
+            // multicovered package, search in order
+            for (ProxyClassLoader pcl : parents) { // all our accessible parents
+                if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
+                    Class _cls = pcl.selfLoadClass(pkg, name);
+                    if (_cls != null) {
+                        if (cls == null) {
+                            cls = _cls;
+                        } else if (cls != _cls) {
+                            String message = "Will not load class " + name + " arbitrarily from one of " +
+                                    cls.getClassLoader() + " and " + pcl + " starting from " + this +
+                                    "; see http://wiki.netbeans.org/DevFaqModuleCCE";
+                            ClassNotFoundException cnfe = new ClassNotFoundException(message);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(Level.FINE, null, cnfe);
+                            } else {
+                                LOGGER.warning(message);
+                            }
+                            throw cnfe;
+                        }
                     }
                 }
             }
-        }
         return cls;
     }
 
