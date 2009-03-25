@@ -36,33 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.gizmo;
 
-import java.util.Map;
-import org.netbeans.modules.cnd.gizmo.addr2line.Dwarf2NameFinder;
-import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-@ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
-public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
-        if (serviceInfo == null){
-            throw new SourceFileInfoCannotBeProvided();
-        }
-        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
-        if (executable != null) {
-            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
-            finder.lookup(offset);
-            String sourceFile = finder.getSourceFile();
-            int lineNumber = finder.getLineNumber();
-            if (sourceFile != null && 0 <= lineNumber) {
-                return new SourceFileInfo(sourceFile, lineNumber, 0);
-            }
-        }
-        throw new SourceFileInfoCannotBeProvided();
+@ServiceProvider(service = IndicatorComponentEmptyContentProvider.class)
+public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider{
+
+    public List<Indicator> getEmptyContent() {
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        if (gizmoConfiguration == null){
+            return null;
+        }        
+        return gizmoConfiguration.getIndicators();
     }
+
 }
