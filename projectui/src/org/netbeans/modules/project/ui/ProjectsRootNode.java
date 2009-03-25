@@ -208,7 +208,7 @@ public class ProjectsRootNode extends AbstractNode {
                     LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
                     REC.setLoggerName(OpenProjectList.LOGGER.getName());
                     REC.setParameters(new Object[] { msg });
-                    OpenProjectList.LOGGER.log(REC);
+                    OpenProjectList.log(REC);
                 }
             }
         }
@@ -586,6 +586,26 @@ public class ProjectsRootNode extends AbstractNode {
             return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
         }
 
+        /** Get display name used for logging as original display name can cause deadlock issue #160512 */
+        private String getLogName() {
+            String original = super.getDisplayName();
+            if (files != null && files.iterator().hasNext()) {
+                try {
+                    original = files.iterator().next().getFileSystem().getStatus().annotateName(original, files);
+                } catch (FileStateInvalidException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            }
+            return original;
+        }
+        
+        /** Special version of to Strign used for logging as original toString uses display name
+         * => can cause deadlock issue #160512 */
+        private String toStringForLog() {
+            return getClass().getName() + "@" + Integer.toHexString(hashCode()) //NOI18N
+                   + "[Name=" + getName() + ", displayName=" + getLogName() + "]"; //NOI18N
+        }
+
         public @Override String getHtmlDisplayName() {
             String htmlName = getOriginal().getHtmlDisplayName();
             String dispName = null;
@@ -651,10 +671,18 @@ public class ProjectsRootNode extends AbstractNode {
                 fireDisplayNameChange( null, null );
             }
             if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
-                OpenProjectList.LOGGER.log(Level.FINER, "replacing for {0}", this);
+                if (this instanceof ProjectsRootNode.BadgingNode) {
+                    OpenProjectList.log(Level.FINER, "replacing for {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                } else {
+                    OpenProjectList.log(Level.FINER, "replacing for {0}", this);
+                }
                 Project p = getLookup().lookup(Project.class);
                 if (p == null) {
-                    OpenProjectList.LOGGER.log(Level.FINE, "no project in lookup {0}", this);
+                    if (this instanceof ProjectsRootNode.BadgingNode) {
+                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                    } else {
+                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", this);
+                    }
                     return;
                 }
                 FileObject fo = p.getProjectDirectory();
@@ -667,15 +695,15 @@ public class ProjectsRootNode extends AbstractNode {
                     Node n = null;
                     if (logicalView) {
                         n = ch.logicalViewForProject(newProj, null);
-                        OpenProjectList.LOGGER.log(Level.FINER, "logical view {0}", n);
+                        OpenProjectList.log(Level.FINER, "logical view {0}", n);
                     } else {
                         Node[] arr = PhysicalView.createNodesForProject(newProj);
-                        OpenProjectList.LOGGER.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
+                        OpenProjectList.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
                         if (arr.length > 1) {
                             pair.project = newProj;
-                            OpenProjectList.LOGGER.log(Level.FINER, "refreshing for {0}", newProj);
+                            OpenProjectList.log(Level.FINER, "refreshing for {0}", newProj);
                             ch.refresh(newProj);
-                            OpenProjectList.LOGGER.log(Level.FINER, "refreshed for {0}", newProj);
+                            OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);
                             return;
                         }
                         for (Node one : arr) {
@@ -686,28 +714,32 @@ public class ProjectsRootNode extends AbstractNode {
                         }
                         assert n != null : "newProject yields null node: " + newProj;
                     }
-                    OpenProjectList.LOGGER.log(Level.FINER, "change original: {0}", n);
-                    OpenProjectList.LOGGER.log(Level.FINER, "children before change original: {0}", getChildren());
-                    OpenProjectList.LOGGER.log(Level.FINER, "delegate children before change original: {0}", getOriginal().getChildren());
+                    OpenProjectList.log(Level.FINER, "change original: {0}", n);
+                    OpenProjectList.log(Level.FINER, "children before change original: {0}", getChildren());
+                    OpenProjectList.log(Level.FINER, "delegate children before change original: {0}", getOriginal().getChildren());
                     changeOriginal(n, true);
-                    OpenProjectList.LOGGER.log(Level.FINER, "delegate after change original: {0}", getOriginal());
-                    OpenProjectList.LOGGER.log(Level.FINER, "name after change original: {0}", getName());
-                    OpenProjectList.LOGGER.log(Level.FINER, "children after change original: {0}", getChildren());
-                    OpenProjectList.LOGGER.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
+                    OpenProjectList.log(Level.FINER, "delegate after change original: {0}", getOriginal());
+                    OpenProjectList.log(Level.FINER, "name after change original: {0}", getName());
+                    OpenProjectList.log(Level.FINER, "children after change original: {0}", getChildren());
+                    OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
 
                     BadgingLookup bl = (BadgingLookup)getLookup();
                     if (bl.isSearchInfo()) {
-                        OpenProjectList.LOGGER.log(Level.FINER, "is search info {0}", bl);
+                        OpenProjectList.log(Level.FINER, "is search info {0}", bl);
                         bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
                     } else {
-                        OpenProjectList.LOGGER.log(Level.FINER, "no search info {0}", bl);
+                        OpenProjectList.log(Level.FINER, "no search info {0}", bl);
                         bl.setMyLookups(n.getLookup());
                     }
-                    OpenProjectList.LOGGER.log(Level.FINER, "done {0}", this);
+                    if (this instanceof ProjectsRootNode.BadgingNode) {
+                        OpenProjectList.log(Level.FINER, "done {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
+                    } else {
+                        OpenProjectList.log(Level.FINER, "done {0}", this);
+                    }
                     }
                     setProjectFiles();
                 } else {
-                    OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
+                    OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }
             }
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {

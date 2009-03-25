@@ -321,7 +321,6 @@ public class ContextPalette extends JPanel
         else
         {
             g.setColor(BORDER_COLOR);
-            //System.out.println(getInsets().toString());
             g.drawRoundRect(0, 0, barWidth - 1, barHeight - 1, 5, 5);
         }
         

@@ -55,6 +55,7 @@ import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -97,6 +98,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_INSTALLATION_FOLDER_NETBEANS);
         setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY,
                 DEFAULT_UNINSTALL_LIST_LABEL_TEXT);
+        setProperty(UNINSTALL_LIST_NETBEANS_LABEL_TEXT_PROPERTY,
+                DEFAULT_UNINSTALL_LIST_NETBEANS_LABEL_TEXT);
+
         setProperty(INSTALLATION_SIZE_PROPERTY,
                 DEFAULT_INSTALLATION_SIZE);
         setProperty(DOWNLOAD_SIZE_PROPERTY,
@@ -123,6 +127,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NON_EXISTENT_ROOT);
         setProperty(ERROR_CANNOT_WRITE_PROPERTY,
                 DEFAULT_ERROR_CANNOT_WRITE);
+        setProperty(REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY,
+                DEFAULT_REMOVE_NETBEANS_USERDIR_TEXT);
+        setProperty(REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY,
+                DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX);
+        setProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY,
+                DEFAULT_REMOVE_NETBEANS_USERDIR_LINK);
     }
     
     @Override
@@ -182,7 +192,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         private NbiLabel downloadSizeLabel;
         private NbiLabel downloadSizeValue;
-        
+
+        private NbiCheckBox removeUserdirCheckbox;
+        private NbiTextPane removeUserdirPane;
         private NbiPanel spacer;
         
         private List <Pair <Product, NbiCheckBox>> productCheckboxList;
@@ -327,11 +339,33 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 text.append(StringUtils.LF);                
             }
             locationsPane.setText(text);
-            
-            uninstallListLabel.setText(
-                    panel.getProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY));
+
+            List <Product> toUninstall = registry.getProductsToUninstall();
+            Product nbProduct = null;
+            for(Product p : toUninstall) {
+                String uid = p.getUid();
+                if(uid.equals(NB_BASE_UID)) {
+                    nbProduct = p;
+                } else if(!uid.startsWith("nb-")) {
+                    nbProduct = null;
+                    break;
+                }
+            }
+            String uninstallLabelText;
+            if(nbProduct!=null) {
+                String nbName = nbProduct.getDisplayName();
+                try {
+                    nbName = nbProduct.getLogic().getSystemDisplayName();
+                } catch (InitializationException e) {
+                }
+                uninstallLabelText = StringUtils.format(panel.getProperty(UNINSTALL_LIST_NETBEANS_LABEL_TEXT_PROPERTY), nbName);
+            } else {
+                uninstallLabelText = StringUtils.format(panel.getProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY));
+            }
+            uninstallListLabel.setText(uninstallLabelText);
+
             uninstallListPane.setText(
-                    StringUtils.asString(registry.getProductsToUninstall()));
+                    StringUtils.asString(toUninstall));
             
             installationSizeLabel.setText(
                     panel.getProperty(INSTALLATION_SIZE_PROPERTY));
@@ -369,6 +403,49 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     downloadSizeValue.setVisible(true);
                 }
             }
+
+            if(Boolean.getBoolean(REMOVE_NETBEANS_USERDIR_PROPERTY)) {
+                removeUserdirCheckbox.doClick();
+            }
+
+            removeUserdirCheckbox.setVisible(false);
+            removeUserdirPane.setVisible(false);
+            for (Product product : Registry.getInstance().getProductsToUninstall()) {
+                if (product.getUid().equals(NB_BASE_UID)) {
+                    try {
+                        File installLocation = product.getInstallationLocation();
+                        File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
+                        if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {                            
+                            removeUserdirCheckbox.setText(
+                                    StringUtils.format(
+                                    panel.getProperty(REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY),
+                                    userDir.getAbsolutePath()));
+                            removeUserdirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                            removeUserdirCheckbox.setVisible(true);
+
+                            removeUserdirPane.setVisible(true);
+                            removeUserdirPane.setContentType("text/html");
+                            removeUserdirPane.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+
+                            String name = product.getDisplayName();
+                            try {
+                                name = product.getLogic().getSystemDisplayName();
+                            } catch (InitializationException e) {
+                            }
+
+                            removeUserdirPane.setText(
+                                    StringUtils.format(
+                                    panel.getProperty(REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY),
+                                    name, panel.getProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY)));
+
+                        }
+                        break;
+                    } catch (IOException e) {
+                        LogManager.log(e);
+                    }
+                }
+            }
+
             //if(productCheckboxList!=null) {
             //    for(Pair <Product, NbiCheckBox> pair : productCheckboxList) {
             //        pair.getSecond().doClick();
@@ -613,7 +690,34 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     }
                 }
             }
+
+            removeUserdirPane = new NbiTextPane();
+            add(removeUserdirPane, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(11, 11, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
             
+            removeUserdirCheckbox = new NbiCheckBox();            
+            add(removeUserdirCheckbox, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(0, 20, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
+
+            removeUserdirCheckbox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    System.setProperty(REMOVE_NETBEANS_USERDIR_PROPERTY, 
+                            "" + removeUserdirCheckbox.isSelected());
+                }
+            });
+
             add(installationSizeLabel, new GridBagConstraints(
                     0, gridy++,                             // x, y
                     1, 1,                             // width, height
@@ -684,6 +788,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "installation.folder.netbeans"; // NOI18N
     public static final String UNINSTALL_LIST_LABEL_TEXT_PROPERTY =
             "uninstall.list.label.text"; // NOI18N
+    public static final String UNINSTALL_LIST_NETBEANS_LABEL_TEXT_PROPERTY =
+            "uninstall.list.netbeans.label.text"; // NOI18N
+
     public static final String INSTALLATION_SIZE_PROPERTY =
             "installation.size"; // NOI18N
     public static final String DOWNLOAD_SIZE_PROPERTY =
@@ -707,6 +814,14 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "error.non.existent.root"; // NOI18N
     public static final String ERROR_CANNOT_WRITE_PROPERTY =
             "error.cannot.write"; // NOI18N
+    public static final String REMOVE_NETBEANS_USERDIR_PROPERTY =
+            "remove.netbeans.userdir";
+    public static final String REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY =
+            "remove.netbeans.userdir.text";
+    public static final String REMOVE_NETBEANS_USERDIR_LINK_PROPERTY =
+            "remove.netbeans.userdir.link";
+    public static final String REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY =
+            "remove.netbeans.userdir.checkbox";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -727,6 +842,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_UNINSTALL_LIST_LABEL_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.uninstall.list.label.text"); // NOI18N
+    public static final String DEFAULT_UNINSTALL_LIST_NETBEANS_LABEL_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.uninstall.list.netbeans.label.text"); // NOI18N
+
     public static final String DEFAULT_INSTALLATION_SIZE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.installation.size"); // NOI18N
@@ -770,6 +889,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_CANNOT_WRITE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.error.cannot.write"); // NOI18N
+    public static final String DEFAULT_REMOVE_NETBEANS_USERDIR_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.remove.netbeans.userdir.text"); // NOI18N
+    public static final String DEFAULT_REMOVE_NETBEANS_USERDIR_LINK =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.remove.netbeans.userdir.link"); // NOI18N
+    public static final String DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.remove.netbeans.userdir.checkbox"); // NOI18N
+
     public static final String NB_BASE_UID = 
             "nb-base";//NOI18N
     public static final long REQUIRED_SPACE_ADDITION =

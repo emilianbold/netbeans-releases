@@ -61,7 +61,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -159,6 +158,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         repoPanel.setVisible(false);
         setNameAndTooltip();
+        issue.addPropertyChangeListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -261,6 +261,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
+    private BugtrackingController controller;
     private void onRepoSelected() {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
@@ -268,20 +269,20 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 if (repo == null) {
                     return;
                 }
-                if(issue != null) {
-                    BugtrackingController c = issue.getController();
-                    issuePanel.remove(c.getComponent());
+                if(issue != null) {                    
+                    if(controller != null) issuePanel.remove(controller.getComponent());
                     issue.removePropertyChangeListener(IssueTopComponent.this);
                 }
                 issue = repo.createIssue();
                 if (issue == null) {
                     return;
                 }
+                controller = issue.getController();
 
                 final BugtrackingController c = issue.getController();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        issuePanel.add(c.getComponent(), BorderLayout.CENTER);
+                        issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                         issue.addPropertyChangeListener(IssueTopComponent.this);
                         revalidate();
                         repaint();
@@ -314,6 +315,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentClosed() {
         openIssues.remove(this);
+        issue.removePropertyChangeListener(this);
     }
 
     /**
@@ -349,7 +351,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
-//            setExisting();
+            repoPanel.setVisible(false);
+            setNameAndTooltip();
         } 
     }
 

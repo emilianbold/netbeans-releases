@@ -152,8 +152,10 @@ tokens {
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_USER_TYPE_CAST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_USER_TYPE_CAST_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_USER_TYPE_CAST_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_GENERIC_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	
@@ -821,8 +823,8 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                                         LT(1).getLine());
                         }
                         (template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
-                        { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration_template);
-                            else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration_template); }
+                        { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #external_declaration_template);
+                            else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|
 			// Templated function declaration
 			(declaration_specifiers[false, false] function_declarator[false, false] SEMICOLON)=> 
@@ -972,7 +974,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		}
 		(template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
 		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
-		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
+		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
     |
         // Function declaration
         (   (LITERAL___extension__)?
@@ -1191,15 +1193,16 @@ member_declaration_template
 			}
 			function_definition
 			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
-		|
-			{if (statementTrace>=1) 
-				printf("member_declaration_13d[%d]: Templated operator " +
-					    "function\n", LT(1).getLine());
-			}
-			definition = conversion_function_decl_or_def
-			{ if( definition ) #member_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration_template);
-			    else	   #member_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration_template); }
-		|         
+    |
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+            conversion_function_decl_or_def
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_13d[%d]: Templated operator " + "function\n", LT(1).getLine());}
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        definition = conversion_function_decl_or_def
+        {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
+         else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
+    |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
@@ -1388,17 +1391,17 @@ member_declaration
 		}
 		function_definition_with_fun_as_ret_type
 		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
-	|  
-		// User-defined type cast
-		((literal_inline)? conversion_function_decl_or_def)=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_8[%d]: Operator function\n",
-				LT(1).getLine());
-		}
-		(literal_inline)? definition = conversion_function_decl_or_def
-		{ if( definition ) #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
-		    else	   #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
-	|  
+    |
+        // User-defined type cast
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+            conversion_function_decl_or_def
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_8[%d]: Operator function\n", LT(1).getLine());}
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        definition = conversion_function_decl_or_def
+        {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
+         else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
+    |
 		// Hack to handle decls like "superclass::member",
 		// to redefine access to private base class public members
 		(qualified_id (EOF|SEMICOLON))=>
@@ -2116,9 +2119,12 @@ function_direct_declarator [boolean definition]
 		(
 		function_direct_declarator_2[definition]		
 		)
-
-		(options{warnWhenFollowAmbig = false;}:
-		 tq = cv_qualifier)*                
+        // IZ#134182 : missed const in function parameter
+        // we should add "const" to function only if it's not K&R style function
+        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute))
+            =>
+            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
+        )?
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
 		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0

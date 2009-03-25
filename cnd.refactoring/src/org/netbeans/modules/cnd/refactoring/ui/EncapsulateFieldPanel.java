@@ -130,7 +130,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private static final int MOD_DEFAULT_INDEX = 2;
     private static final int MOD_PRIVATE_INDEX = 3;
 
-    private static final Class[] columnTypes = new Class[] {
+    private static final Class<?>[] columnTypes = new Class<?>[] {
         CsmField.class, java.lang.Boolean.class, AccessorInfo.class, java.lang.Boolean.class, AccessorInfo.class
     };
     
@@ -153,7 +153,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(false && EXPERIMENTAL);
+        jCheckAccess.setEnabled(EXPERIMENTAL);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboAccess.setEnabled(false && EXPERIMENTAL);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
@@ -439,7 +439,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .add(layout.createSequentialGroup()
                 .add(jLblTitle)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jButtonSelectAll)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -473,7 +473,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 .add(jInlineMethods)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckAccess)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {jComboAccess, jComboField, jComboInsertPoint, jComboJavadoc, jComboSort}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -631,19 +631,30 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
-        List rows = model.getDataVector();
-        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
-            List row = (List) rowIt.next();
+        List<?> rows = model.getDataVector();
+        for (Iterator<?> rowIt = rows.iterator(); rowIt.hasNext();) {
+            List<?> row = (List<?>) rowIt.next();
             String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
             String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
             if (getterName != null || setterName != null) {
                 // this item contains info about fields
                 @SuppressWarnings("unchecked")
                 MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
+                // getter
+                CsmMethod defaultGetter = null;
+                if (((AccessorInfo) row.get(2)).defaultAccessor != null) {
+                    defaultGetter = (CsmMethod) ((AccessorInfo) row.get(2)).defaultAccessor.getElementHandle();
+                }
+                // setter
+                CsmMethod defaultSetter = null;
+                if (((AccessorInfo) row.get(4)).defaultAccessor != null) {
+                    defaultSetter = (CsmMethod) ((AccessorInfo) row.get(4)).defaultAccessor.getElementHandle();
+                }
                 result.add(new EncapsulateFieldInfo(
                         mi.getElementHandle(),
                         "".equals(getterName)?null:getterName, // NOI18N
-                        "".equals(setterName)?null:setterName)); // NOI18N
+                        "".equals(setterName)?null:setterName,  // NOI18N
+                        defaultGetter, defaultSetter));
             }
         }
 
@@ -737,7 +748,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
          * @return  class which is used in the column
          */
         @Override
-        public Class getColumnClass(int columnIndex) {
+        public Class<?> getColumnClass(int columnIndex) {
             return columnTypes[columnIndex];
         }
 

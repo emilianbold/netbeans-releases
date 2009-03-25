@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.remote.mapper;
 
-import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**

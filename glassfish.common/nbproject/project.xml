@@ -134,6 +134,7 @@
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <friend>org.netbeans.modules.glassfish.phobos</friend>
+                <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
                 <package>org.netbeans.modules.glassfish.spi</package>
             </friend-packages>

@@ -66,8 +66,6 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -96,7 +94,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -138,21 +135,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.repository = repository;
         this.query = query;
         
-        panel = new QueryPanel(query.getTableComponent());
-        panel.addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                if(QueryController.this.query.isSaved() && !QueryController.this.query.wasRun()) {
-                    onRefresh();
-                }
-            }
-            public void ancestorRemoved(AncestorEvent event) {
-                onCancelChanges();
-                if(task != null) {
-                    task.cancel();
-                }
-            }
-            public void ancestorMoved(AncestorEvent event) { }
-        });
+        panel = new QueryPanel(query.getTableComponent(), this);
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -223,6 +206,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
         postPopulate(urlParameters);
     }
 
+    void addNotify() {
+        if(query.isSaved() && !query.wasRun()) {
+            onRefresh();
+        }
+    }
+
+    void removeNotify() {
+        onCancelChanges();
+        if(task != null) {
+            task.cancel();
+        }
+    }
+
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
         try {
             Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
@@ -230,7 +226,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             parameters.put(parameter, t);
             return t;
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Bugzilla.LOG.log(Level.SEVERE, parameter, ex);
         }
         return null;
     }
@@ -278,8 +274,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
-        final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
+        panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
         t[0] = rp.post(new Runnable() {
             public void run() {
                 handle.start();
@@ -288,7 +283,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 } finally {
                     enableFields(true);
                     handle.finish();
-                    panel.showRetrievingProgress(false, progressBar, null, !query.isSaved());
+                    panel.showRetrievingProgress(false, null, !query.isSaved());
                 }
             }
         });
@@ -352,25 +347,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
-            // XXX nice errro msg?
-            return;
-        }
-        List<String> products = bc.getProducts();
-        Iterator<String> i = products.iterator();
-        while (i.hasNext()) {
-            String p = i.next();
-            if (!p.equals(product)) {
-                i.remove();
-            }
-        }
-        productParameter.setParameterValues(toParameterValues(products));
         productParameter.setAlwaysDisabled(true);
-        if (panel.productList.getModel().getSize() > 0) {
-            panel.productList.setSelectedIndex(0);
-            populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-        }
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -726,8 +703,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if (task != null) {
             task.cancel();
         }
-        repository.removeQuery(query);
-        query.fireQueryRemoved();
+        query.remove();
     }
 
     private synchronized void post(Runnable r) {
@@ -744,9 +720,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
-        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(
+                    QueryController.class,
+                    "MSG_SearchingQuery",                                       // NOI18N
+                    new Object[] {
+                        query.getDisplayName() != null ?
+                            query.getDisplayName() :
+                            repository.getDisplayName()}),
+                c);
+        panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
         notifyListener.setProgressHandle(handle);
         handle.start();
         
@@ -838,7 +821,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     panel.showNoContentPanel(false);
-                    panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                    if(query.contains(issue)) {
+                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                    }
                 }
             });
         }

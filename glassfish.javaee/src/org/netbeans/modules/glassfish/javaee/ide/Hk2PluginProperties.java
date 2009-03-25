@@ -196,6 +196,10 @@ public class Hk2PluginProperties {
             // add webservices.jar if exists
             jars.add("webservices"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jaxb"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // v3 post b39?? or so
+            jars.add("webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+
             //
             // these aren't caught by the filterByManifest method, so we add it 'by hand'
             //

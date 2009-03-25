@@ -63,11 +63,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.State;
-import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -251,7 +251,8 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
 //                }
                 boolean reject = true;
                 try {
-                    ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
+                    WebRestSupport restSupport = (WebRestSupport)p.getLookup().lookup(RestSupport.class);
+                    ServletMapping servletMap = restSupport.getRestServletMapping(restSupport.getWebApp());
                     if(servletMap != null) { //Cannot find Servlet Adaptor in web.xml
                         reject = false;
                     }

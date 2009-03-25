@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -245,13 +246,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         //In ideal case this should do nothing,
         //but in Netbeans newlly created folder may
         //already contain files
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot(fo);
         boolean processed = false;
+        FileObject fo = fe.getFile();
+        URL root = null;
         
-        if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+            root = getOwningSourceRoot(fo);
+
+            if (root != null) {
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                processed = true;
+            }
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -261,33 +266,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileDataCreated(FileEvent fe) {
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot (fo);
-        boolean processed = false;
-
-        if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
-        {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
-        }
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File created (" + (processed ? "processed" : "ignored") + "): " //NOI18N
-                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
+        fileChanged(fe);
     }
 
     public void fileChanged(FileEvent fe) {
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot (fo);
         boolean processed = false;
+        FileObject fo = fe.getFile();
+        URL root = null;
 
-        if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
-        {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) &&
+            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes())
+        ) {
+            root = getOwningSourceRoot (fo);
+            if (root != null) {
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                processed = true;
+            }
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -509,7 +503,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    private void scheduleWork(final Work work, boolean wait) {
+    /* test */ void scheduleWork(final Work work, boolean wait) {
         synchronized (this) {
             if (state == State.STARTED) {
                 state = State.INITIAL_SCAN_RUNNING;
@@ -582,12 +576,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     enum State {CREATED, STARTED, INITIAL_SCAN_RUNNING, ACTIVE, STOPPED};
 
-    private static abstract class Work {
+    /* test */ static abstract class Work {
 
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final boolean followUpJob;
         private final CountDownLatch latch;
         private ProgressHandle progressHandle = null;
-        
+
         protected Work(boolean followUpJob) {
             this.followUpJob = followUpJob;
             this.latch = new CountDownLatch(1);
@@ -700,6 +695,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         protected abstract void getDone();
 
+        protected final boolean isCancelled() {
+            return cancelled.get();
+        }
+
         public final void doTheWork() {
             try {
                 getDone();
@@ -716,6 +715,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
+        public final void cancel() {
+            cancelled.set(true);
+        }
     } // End of Work class
 
     private static final class FileListWork extends Work {
@@ -942,6 +944,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private void scanBinaries (final DependenciesContext ctx) {
             assert ctx != null;
             for (URL binary : ctx.newBinaries) {
+                if (isCancelled()) {
+                    break;
+                }
+                
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(binary);
@@ -968,11 +974,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final FileObject rootFo = URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                    String mimeType = ""; //NOI18N
+
                     final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
-                    assert archiveOrDir != null : "No archive or dir " + root; //NOI18N
-                    final FileObject archiveOrDirFo = FileUtil.toFileObject(archiveOrDir);
-                    assert archiveOrDirFo != null : "Can't get FileObject for " + archiveOrDir; //NOI18N
-                    String mimeType = archiveOrDirFo.isFolder() ? "" : archiveOrDirFo.getMIMEType(); //NOI18N
+                    final FileObject archiveOrDirFo = archiveOrDir == null ? null : FileUtil.toFileObject(archiveOrDir);
+                    if (archiveOrDirFo != null && archiveOrDirFo.isData()) {
+                        mimeType = archiveOrDirFo.getMIMEType();
+                    }
 
                     final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
                     if (LOGGER.isLoggable(Level.FINER)) {
@@ -1003,6 +1011,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private void scanSources  (final DependenciesContext ctx) {
             assert ctx != null;
             for (URL source : ctx.newRoots) {
+                if (isCancelled()) {
+                    break;
+                }
+
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(source);
@@ -1084,14 +1096,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public void cancelAll() {
             synchronized (todo) {
-                allCancelled = true;
-                todo.clear();
-                
-                while (scheduled) {
-                    try {
-                        todo.wait(1000);
-                    } catch (InterruptedException ie) {
-                        break;
+                if (!allCancelled) {
+                    // stop accepting new work and clean the queue
+                    allCancelled = true;
+                    todo.clear();
+
+                    // stop the work currently being done
+                    final Work work = workInProgress;
+                    if (work != null) {
+                        work.cancel();
+                    }
+
+                    // wait for until the current work is finished
+                    while (scheduled) {
+                        try {
+                            todo.wait(1000);
+                        } catch (InterruptedException ie) {
+                            break;
+                        }
                     }
                 }
             }
@@ -1138,6 +1160,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         // -------------------------------------------------------------------
 
         private final List<Work> todo = new LinkedList<Work>();
+        private volatile Work workInProgress = null;
         private boolean scheduled = false;
         private boolean allCancelled = false;
 
@@ -1165,14 +1188,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         private Work getWork () {
             synchronized (todo) {
+                Work w;
                 if (todo.size() > 0) {
-                    return todo.remove(0);
+                    w = todo.remove(0);
                 } else {
-                    return null;
+                    w = null;
                 }
+                workInProgress = w;
+                return w;
             }
         }
-
     } // End of Task class
 
     private static final class DependenciesContext {

@@ -138,17 +138,17 @@ final class OnePassCompileWorker extends CompileWorker {
                         jt = null;
                         units.clear();
                         System.gc();
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
-                                i.getURL().toString(),
-                                bootPath == null   ? null : bootPath.toString(),
-                                classPath == null  ? null : classPath.toString(),
-                                sourcePath == null ? null : sourcePath.toString()
-                                ));
 // XXX: commenting out because of #160618
+//                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+//                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+//                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+//                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
+//                                FileUtil.getFileDisplayName(context.getRoot()),
+//                                i.getURL().toString(),
+//                                bootPath == null   ? null : bootPath.toString(),
+//                                classPath == null  ? null : classPath.toString(),
+//                                sourcePath == null ? null : sourcePath.toString()
+//                                ));
 //                        Exceptions.printStackTrace(t);
                     }
                 }
@@ -228,22 +228,22 @@ final class OnePassCompileWorker extends CompileWorker {
                     //Handled above
                     throw (MissingPlatformError) t;
                 }
-                else {
-                    if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
-                                active.jfo.toUri().toString(),
-                                bootPath == null   ? null : bootPath.toString(),
-                                classPath == null  ? null : classPath.toString(),
-                                sourcePath == null ? null : sourcePath.toString()
-                                ));
 // XXX: commenting out because of #160618
+//                else {
+//                    if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
+//                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+//                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+//                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+//                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
+//                                FileUtil.getFileDisplayName(context.getRoot()),
+//                                active.jfo.toUri().toString(),
+//                                bootPath == null   ? null : bootPath.toString(),
+//                                classPath == null  ? null : classPath.toString(),
+//                                sourcePath == null ? null : sourcePath.toString()
+//                                ));
 //                        Exceptions.printStackTrace(t);
-                    }
-                }
+//                    }
+//                }
             }
             return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
         } finally {

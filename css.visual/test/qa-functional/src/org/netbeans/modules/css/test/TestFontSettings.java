@@ -93,7 +93,7 @@ public class TestFontSettings extends CSSTest{
         assertEquals("CHANGE OF ORDER", selectedItems.get(0), afterChanges.get(2));
         assertEquals("CHANGE OF ORDER", selectedItems.get(1), afterChanges.get(0));
         assertEquals("CHANGE OF ORDER", selectedItems.get(2), afterChanges.get(1));
-        fontOperator.ok();
+        fontOperator.close();
         new EditorOperator(newFileName).setCaretPositionToLine(rootRuleLineNumber);
         assertEquals("ADDED FAMILY", familiesCount+1, getSize(fontOper.fontFamilies()));
         String selectedItem = fontOper.fontFamilies().getSelectedValue().toString();
@@ -105,6 +105,7 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontFamily(){
+        openFile(newFileName);
         FontPaneOperator fontOper = initializeFontChanging();
         JListOperator fontFamilies = fontOper.fontFamilies();
         int familiesCount = getSize(fontFamilies);
@@ -118,6 +119,7 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontSize(){
+        openFile(newFileName);
         FontPaneOperator fontOper = initializeFontChanging();
         JListOperator fontSizes = fontOper.fontSizes();
         fontSizes.selectItem("12");
@@ -126,7 +128,7 @@ public class TestFontSettings extends CSSTest{
         JComboBoxOperator fontUnits = fontOper.fontSizeUnits();
         //        assertTrue(fontUnits.isEnabled());
         fontUnits.selectItem("mm");
-        assertTrue(getRootRuleText().contains("font-size: 12mm"));
+        assertTrue(getRootRuleText(), getRootRuleText().contains("font-size: 12mm"));
         fontSizes.selectItem("large");
         fontUnits = fontOper.fontSizeUnits();
         //        assertFalse(fontUnits.isEnabled());
@@ -187,10 +189,13 @@ public class TestFontSettings extends CSSTest{
     }
            
     private FontPaneOperator initializeFontChanging(){
-        EditorOperator eop = new EditorOperator(newFileName);
-        eop.setVisible(true);
+        return initializeFontChanging("root");
+    }
+
+    private FontPaneOperator initializeFontChanging(String ruleName){
+        EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(rootRuleLineNumber);
-        StyleBuilderOperator styleOper= new StyleBuilderOperator().invokeBuilder();
+        StyleBuilderOperator styleOper= new StyleBuilderOperator(ruleName).invokeBuilder();
         return (FontPaneOperator) styleOper.setPane(FONT);
     }
     

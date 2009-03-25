@@ -68,6 +68,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JDIExceptionReporter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -139,8 +140,18 @@ public class TreeEvaluator {
         int idx = currentPackage.lastIndexOf('.');
         currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
         operators = new Operators(vm);
-        int line = LocationWrapper.lineNumber(StackFrameWrapper.location(frame));
-        String url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
+        int line;
+        String url;
+        ObjectReference contextVar =  evaluationContext.getContextVariable();
+        if (contextVar != null) {
+            String className = contextVar.referenceType().name();
+            String relPath = SourcePath.convertClassNameToRelativePath(className);
+            url = evaluationContext.getDebugger().getEngineContext().getURL(relPath, true);
+            line = EditorContextBridge.getContext().getFieldLineNumber(url, className, null);
+        } else {
+            line = LocationWrapper.lineNumber(StackFrameWrapper.location(frame));
+            url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
+        }
         /*try {
             url = frame.location().sourcePath(expression.getLanguage());
         } catch (AbsentInformationException ex) {

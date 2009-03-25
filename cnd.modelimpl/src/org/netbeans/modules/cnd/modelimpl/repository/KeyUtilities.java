@@ -149,6 +149,22 @@ public class KeyUtilities {
         return null;
     }
 
+    // returns unique id of file in project
+    public static int getProjectFileIndex(Key key) {
+        if (key instanceof ProjectFileNameBasedKey) {
+            return ((ProjectFileNameBasedKey) key).getProjectFileIndex();
+        }
+        return -1;
+    }
+
+    // returns unique id of project
+    public static int getProjectIndex(Key key) {
+        if (key instanceof ProjectFileNameBasedKey) {
+            return ((ProjectFileNameBasedKey) key).getUnitId();
+        }
+        return -1;
+    }
+
     public static int getKeyStartOffset(Key key) {
         if (key instanceof OffsetableKey) {
             return ((OffsetableKey) key).getStartOffset();

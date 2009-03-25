@@ -51,6 +51,10 @@ public class NLS {
         
     }
 
+    public static String bind(String s, Object o) {
+        return o != null ? o.toString() : "";
+    }
+
     public static String bind(String s, String repositoryUrl) {
         return null;
     }

@@ -2,74 +2,56 @@ package org.netbeans.modules.dlight.sync;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
+import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.openide.util.NbBundle;
 
-class SyncIndicatorPanel extends JPanel {
+/*package*/ class SyncIndicatorPanel {
+
+    private static final Color GRAPH_COLOR = GraphColors.COLOR_4;
+    private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
 
     private final Graph graph;
+    private final GraphPanel<Graph, Legend> panel;
 
-    private final JLabel lblLocksLabel;
-    private final JLabel lblLocksValue;
+    /*package*/ SyncIndicatorPanel() {
+        graph = createGraph();
+        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+    }
 
-    private Color locksColor = new Color(128, 0, 128);
+    public GraphPanel getPanel() {
+        return panel;
+    }
 
-    SyncIndicatorPanel() {
+    private static String getTitle() {
+        return NbBundle.getMessage(SyncIndicatorPanel.class, "indicator.title"); // NOI18N
+    }
 
-        GraphDescriptor descriptorLocks = new GraphDescriptor(locksColor, NbBundle.getMessage(getClass(), "graph.deccription.locks")); // NOI18N
+    private static Graph createGraph() {
+        Graph graph = new Graph(100, null, DESCRIPTOR);
+        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setMinimumSize(new Dimension(80, 60));
+        graph.setPreferredSize(new Dimension(80, 60));
+        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
+        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
+        return graph;
+    }
 
-        Color borderColor = new Color(0x77, 0x88, 0x88);
-
-        graph = new Graph(100, descriptorLocks); // , descriptorSleep, descriptorLatency);
-        graph.setBorder(BorderFactory.createLineBorder(borderColor));
-        graph.setMinimumSize(new Dimension(66, 32));
-        graph.setPreferredSize(new Dimension(150, 80));
-
-        lblLocksLabel = new JLabel(NbBundle.getMessage(getClass(), "label.locks")); // NOI18N
-        lblLocksValue = new JLabel("00%"); // NOI18N
-        lblLocksValue.setHorizontalAlignment(SwingConstants.RIGHT);
-
-        Color lblColor = locksColor.darker();
-        lblLocksLabel.setForeground(lblColor);
-        lblLocksValue.setForeground(lblColor);
-
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        add(graph);
-
-        JPanel legend = new JPanel(new GridBagLayout());
-        legend.setBackground(Color.WHITE);
-        legend.setBorder(BorderFactory.createLineBorder(borderColor));
-        legend.setMinimumSize(new Dimension(120, 32));
-        legend.setMaximumSize(new Dimension(120, Integer.MAX_VALUE));
-        legend.setPreferredSize(new Dimension(100, 80));
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        legend.add(lblLocksLabel, c);
-        c.gridx = 1;
-        c.insets = new Insets(0, 6, 0, 0);
-        legend.add(lblLocksValue, c);
-
-        add(legend);
+    private static Legend createLegend() {
+        return new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>emptyMap());
     }
 
     public void updated(int[][] values) {
-        for( int i = 0; i < values.length; i++) {
-            //graph.addData(values[i]);
+        for (int i = 0; i < values.length; i++) {
             int lck = values[i][0];
-            graph.addData(new int[] { lck } );
-            lblLocksValue.setText(String.format("%02d%%", lck)); // NOI18N
+            graph.addData(new int[]{lck});
+            //getLegend().setLocksValue(String.format("%02d%%", lck)); // NOI18N
         }
     }
 }

@@ -88,22 +88,18 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
-    
+
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
-        
-        FileUtil.refreshFor(File.listRoots());
-        
-        FileObject workFO = FileUtil.toFileObject(getWorkDir());
-        
-        assertNotNull(workFO);
-        
-        workFO.refresh();
-        
-        sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
-        
+        File wdFile = getWorkDir();
+        FileUtil.refreshFor(wdFile);
+
+        FileObject wd = FileUtil.toFileObject(wdFile);
+        assertNotNull(wd);
+        sourceRoot = FileUtil.createFolder(wd, "src");
+        FileObject buildRoot = FileUtil.createFolder(wd, "build");
+        FileObject cache = FileUtil.createFolder(wd, "cache");
+
         FileObject data = FileUtil.createData(sourceRoot, fileName);
         File dataFile = FileUtil.toFile(data);
         
@@ -120,6 +116,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         
         JavaSource js = JavaSource.forFileObject(data);
         
@@ -254,22 +251,22 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     // common tests to check nothing is reported
     public void testIssue105979() throws Exception {
         String before = "package test; class Test {" +
-            "  return b;" +
-            "}\n";
-        
+                "  return b;" +
+                "}\n";
+
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
-        }
+}
     }
     public void testIssue108246() throws Exception {
-        
+
         String before = "package test; class Test {" +
             "  Integer ii = new Integer(0);" +
             "  String s = ii.toString();" +
             "\n}\n";
-        
+
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
             clearWorkDir();
@@ -278,25 +275,25 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     }
 
     public void testNoHintsForSimpleInitialize() throws Exception {
-        
+
         String before = "package test; class Test {" +
             " { java.lang.System.out.println(); } " +
             "}\n";
-        
+
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
     }
-    
+
     public void testIssue113933() throws Exception {
-        
+
         String before = "package test; class Test {" +
             "  public void test() {" +
             "  super.A();" +
             "\n}\n}\n";
-        
+
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
             clearWorkDir();

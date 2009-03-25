@@ -39,6 +39,7 @@
 
 package org.netbeans.junit;
 
+import org.netbeans.junit.internal.NbModuleLogHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -920,6 +921,9 @@ public class NbModuleSuite {
                 if (isUnit(name)) {
                     return junit.getResource(name);
                 }
+                if (name.equals("META-INF/services/java.util.logging.Handler")) { // NOI18N
+                    return junit.getResource("org/netbeans/junit/internal/FakeMetaInf.txt"); // NOI18N
+                }
                 return super.findResource(name);
             }
 
@@ -927,6 +931,9 @@ public class NbModuleSuite {
             public Enumeration<URL> findResources(String name) throws IOException {
                 if (isUnit(name)) {
                     return junit.getResources(name);
+                }
+                if (name.equals("META-INF/services/java.util.logging.Handler")) { // NOI18N
+                    return junit.getResources("org/netbeans/junit/internal/FakeMetaInf.txt"); // NOI18N
                 }
                 return super.findResources(name);
             }
@@ -942,9 +949,6 @@ public class NbModuleSuite {
                     if (res.startsWith("org.netbeans.junit.ide") || res.startsWith("org/netbeans/junit/ide")) {
                         return false;
                     }
-                    return true;
-                }
-                if (res.startsWith("META-INF/services/java.util.logging.Handler")) {
                     return true;
                 }
                 return false;

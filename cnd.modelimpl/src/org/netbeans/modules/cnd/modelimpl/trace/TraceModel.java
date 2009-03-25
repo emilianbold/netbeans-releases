@@ -1175,7 +1175,10 @@ public class TraceModel extends TraceModelBase {
         }
         errCount = fileImpl.getErrorCount();
         if (dumpPPState) {
-            sleep(100); // so that we don't run ahead of fileParsingFinished event
+            int antiLoop = 0;
+            while (antiLoop++ < 100 && !states.containsKey(fileImpl)) {
+                sleep(100); // so that we don't run ahead of fileParsingFinished event
+            }
             APTPreprocHandler preprocHandler = states.get(fileImpl);
             assert preprocHandler != null;
             dumpMacroMap(preprocHandler.getMacroMap());

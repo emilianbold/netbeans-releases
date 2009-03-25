@@ -41,6 +41,7 @@ package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -164,7 +165,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
             evt.consume();
             invokeSelectedItem();
         } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
-            returnFocus();
+            returnFocus(true);
             displayer.clearModel();
         } else if (evt.getKeyCode() == KeyEvent.VK_F10 &&
                 evt.isShiftDown()) {
@@ -189,7 +190,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
 
         // #137259: invoke only some results were found
         if (list.getModel().getSize() > 0) {
-            returnFocus();
+            returnFocus(false);
             // #137342: run action later to let focus indeed be transferred
             // by previous returnFocus() call
             SwingUtilities.invokeLater(new Runnable() {
@@ -200,14 +201,18 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         }
     }
 
-    private void returnFocus () {
+    private void returnFocus (boolean force) {
         displayer.setVisible(false);
         if (caller != null) {
             TopComponent tc = caller.get();
             if (tc != null) {
                 tc.requestActive();
                 tc.requestFocus();
+                return;
             }
+        }
+        if (force) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         }
     }
 

@@ -43,12 +43,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" pref="500" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="500" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="809" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="809" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="743" max="32767" attributes="0"/>
+              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
@@ -73,73 +78,76 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dummyAttachmentsPanel" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="messagePanel" pref="635" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="osCombo" max="32767" attributes="1"/>
-                          <Group type="102" attributes="0">
-                              <Component id="keywordsField" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="urlField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="targetMilestoneCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="severityCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="priorityCombo" alignment="1" max="32767" attributes="1"/>
-                          <Component id="resolutionCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="statusCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="productCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="componentCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="versionCombo" alignment="0" max="32767" attributes="1"/>
-                          <Component id="platformCombo" alignment="0" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="modifiedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="duplicateLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="reportedField" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="blocksField" max="32767" attributes="1"/>
-                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                  <Component id="blocksButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyAttachmentsPanel" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="osCombo" max="32767" attributes="1"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="keywordsField" max="32767" attributes="1"/>
+                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                      <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="urlField" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="targetMilestoneCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="severityCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="priorityCombo" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="resolutionCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="statusCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="productCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="componentCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="versionCombo" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="platformCombo" alignment="0" max="32767" attributes="1"/>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="dependsField" max="32767" attributes="1"/>
-                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                  <Component id="dependsOnButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="modifiedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="duplicateLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="ccField" alignment="0" max="32767" attributes="1"/>
-                              <Component id="assignedField" alignment="0" max="32767" attributes="1"/>
-                              <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
-                              <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
-                              <Component id="duplicateField" alignment="0" max="32767" attributes="1"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="reportedField" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="blocksField" max="32767" attributes="1"/>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Component id="blocksButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="dependsField" max="32767" attributes="1"/>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Component id="dependsOnButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="ccField" alignment="0" max="32767" attributes="1"/>
+                                      <Component id="assignedField" alignment="0" max="32767" attributes="1"/>
+                                      <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
+                                      <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
+                                      <Component id="duplicateField" alignment="0" max="32767" attributes="1"/>
+                                  </Group>
+                              </Group>
                           </Group>
+                          <Component id="scrollPane1" alignment="0" pref="645" max="32767" attributes="0"/>
+                          <Component id="summaryField" alignment="0" pref="645" max="32767" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="scrollPane1" alignment="0" pref="382" max="32767" attributes="0"/>
-                  <Component id="summaryField" alignment="0" pref="382" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="450" max="32767" attributes="0"/>
-              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -253,17 +261,21 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
+                  <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="messagePanel" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="dummyCommentsPanel" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -558,7 +570,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="382" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="645" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -654,5 +666,11 @@
         </Property>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPanel" name="messagePanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
+        <Property name="axis" type="int" value="3"/>
+      </Layout>
+    </Container>
   </SubComponents>
 </Form>

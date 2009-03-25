@@ -488,13 +488,24 @@ public final class StorageImpl <K extends Object, V extends Object> {
                 Set<String> changedIds;
                 
                 synchronized (filters) {
-                    changedIds = rebuild();
+                    if (!rebuilding) {
+                        rebuilding = true;
+                        try {
+                            changedIds = rebuild();
+                        } finally {
+                            rebuilding = false;
+                        }
+                    } else {
+                        // ignore the event, see #159714
+                        return;
+                    }
                 }
                 
                 resetCaches(changedIds);
             }
         };
         private static final Map<String, Reference<StorageImpl>> callbacks = new HashMap<String, Reference<StorageImpl>>();
+        private static boolean rebuilding = false;
         
         private final String storageDescriptionId;
         private final List<StorageFilter> filtersForId = new ArrayList<StorageFilter>();

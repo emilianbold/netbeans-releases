@@ -89,8 +89,10 @@ public final class ClassNameTextField extends JTextField {
     public static final int STATUS_EMPTY = 1;
     /** status: the class name is not valid */
     public static final int STATUS_INVALID = 2;
-    /** */
+    /** status: the class name is valid but not a default*/
     public static final int STATUS_VALID_NOT_DEFAULT = 3;
+    /** status: the class name is valid but not ends with 'Test'*/
+    public static final int STATUS_VALID_END_NOT_TEST = 4;
 
     /**
      * internal status - when the text is empty or when it ends with a dot
@@ -216,10 +218,13 @@ public final class ClassNameTextField extends JTextField {
         int internalStatus = documentListener.status;
         switch (internalStatus) {
             case STATUS_VALID:
-                externalStatus = (defaultText == null)
-                                        || defaultText.equals(getText())
-                                 ? STATUS_VALID
-                                 : STATUS_VALID_NOT_DEFAULT;
+                if(!getText().endsWith("Test")){                        //NOI18N
+                    externalStatus = STATUS_VALID_END_NOT_TEST;
+                }else if((defaultText != null) && !defaultText.equals(getText())){
+                    externalStatus = STATUS_VALID_NOT_DEFAULT;
+                }else{
+                    externalStatus = STATUS_VALID;
+                }
                 break;
             case STATUS_BEFORE_PART:
                 externalStatus = (getText().length() == 0) ? STATUS_EMPTY

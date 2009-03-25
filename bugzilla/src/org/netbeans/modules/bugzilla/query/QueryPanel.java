@@ -37,15 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * QueryPanel.java
- *
- * Created on Oct 14, 2008, 5:45:44 PM
- */
-
 package org.netbeans.modules.bugzilla.query;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -78,10 +71,13 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byLastChange;
     private JComponent tableComponent;
     private NoContentPanel noContentPanel;
+    private QueryController controller;
 
     /** Creates new form QueryPanel */
-    public QueryPanel(JComponent tableComponent) {
+    public QueryPanel(JComponent tableComponent, QueryController controller) {
         initComponents();
+        this.controller = controller;
+
         Font f = new JLabel().getFont();
         int s = f.getSize();
         nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -146,6 +142,18 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setRenderer(new FilterCellRenderer());
         validate();
         repaint();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        controller.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.removeNotify();
     }
 
     void setQueryRunning(boolean running) {
@@ -1171,31 +1179,27 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
 
-    void showSearchingProgress(boolean on, JComponent progressBar, String text) {
-//        searchPanel.setVisible(!on);
+    void showSearchingProgress(boolean on, String text) {
         noContentContainer.setVisible(on);
         tableSummaryLabel.setVisible(!on);
         tableFieldsPanel.setVisible(!on);
         if(on && text != null) {
             noContentPanel.setText(text);
         }
-        noContentPanel.setProgressComponent(on ? progressBar : null);
     }
 
-    void showRetrievingProgress(boolean on, JComponent progressBar, String text, boolean searchPanelVisible) {
+    void showRetrievingProgress(boolean on, String text, boolean searchPanelVisible) {
         noContentContainer.setVisible(on);
-//        tableSummaryLabel.setVisible(!on);
         if(searchPanelVisible) {
             searchPanel.setVisible(!on);
         }
         if(on && text != null) {
             noContentPanel.setText(text);
         }
-        noContentPanel.setProgressComponent(on ? progressBar : null);
     }
 
     void showNoContentPanel(boolean on) {
-        showSearchingProgress(on, null, null);
+        showSearchingProgress(on, null);
     }
 
     void setModifyVisible(boolean b) {

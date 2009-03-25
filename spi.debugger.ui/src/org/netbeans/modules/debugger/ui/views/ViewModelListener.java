@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
@@ -255,7 +254,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             Set tableModelFiltersSet = new HashSet(tableModelFilters);
             Set nodeActionsProviderFiltersSet = new HashSet(nodeActionsProviderFilters);
 
-            if (preferences.getBoolean(VariablesViewButtons.SHOW_EVALUTOR_RESULT, false)) {
+            if (VariablesViewButtons.isResultsViewNested()) {
                 TreeModelFilter showResultFilter = createNestedViewCompoundModel(cp, treeModelFiltersSet,
                         nodeModelFiltersSet, tableModelFiltersSet, nodeActionsProviderFiltersSet,
                         View.RESULTS_VIEW_NAME, true);
@@ -264,7 +263,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 tableModelFilters.add(showResultFilter);
                 nodeActionsProviderFilters.add(showResultFilter);
             }
-            if (preferences.getBoolean(VariablesViewButtons.SHOW_WATCHES, false)) {
+            if (VariablesViewButtons.isWatchesViewNested()) {
                 TreeModelFilter showResultFilter = createNestedViewCompoundModel(cp, treeModelFiltersSet,
                         nodeModelFiltersSet, tableModelFiltersSet, nodeActionsProviderFiltersSet,
                         View.WATCHES_VIEW_NAME, false);
@@ -656,7 +655,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
-            return Integer.MAX_VALUE; // [TODO]
+            try {
+                int origCount = original.getChildrenCount(node);
+                int count = treeModel.getChildrenCount(node);
+                if (origCount == Integer.MAX_VALUE || count == Integer.MAX_VALUE) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return origCount + count;
+                }
+            } catch (UnknownTypeException e) {
+                return treeModel.getChildrenCount(node);
+            }
         }
 
         public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {

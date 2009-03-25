@@ -70,7 +70,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             return;
         }
         if ("BUILD SUCCESSFUL".equals(line)) { //NOI18N
-            visitor.setColor(Color.GREEN);
+            visitor.setColor(Color.GREEN.darker().darker());
             return;
         }
         if (LOW_MVN.matcher(line).matches()) {

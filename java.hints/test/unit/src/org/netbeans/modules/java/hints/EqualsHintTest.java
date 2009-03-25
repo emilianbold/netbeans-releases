@@ -101,7 +101,7 @@ public class EqualsHintTest extends TreeRuleTestBase {
                        "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(|a);}}",
                        "0:83-0:89:verifier:AE",
                        "Arrays.equals",
-                       "package test; import java.util.Arrays; public class Test{ public void test() {int[] a = null; boolean b = Arrays.equals(a,a);}}");
+                       "package test; import java.util.Arrays; public class Test{ public void test() {int[] a = null; boolean b = Arrays.equals(a, a);}}");
     }
     
     public void testFix2() throws Exception {

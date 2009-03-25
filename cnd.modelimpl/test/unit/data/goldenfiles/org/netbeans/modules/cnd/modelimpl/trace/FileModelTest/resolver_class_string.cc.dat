@@ -106,6 +106,12 @@ NAMESPACE DEFINITIONS for std_1 (std_1)
     resolver_class_string.h  [11:1/168-26:2/518]
     resolver_class_string.h  [28:1/520-32:2/609]
 NAMESPACE std_1 (std_1) 
+    CLASS allocator<typename _Alloc> (std_1::allocator ) [12:5/190-13:21/236] lcurly=235 SCOPE: std_1 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT char_traits<class _CharT> (std_1::char_traits ) [15:5/246-16:24/292] lcurly=291 SCOPE: std_1 
+        BASE CLASSES:
+        MEMBERS:
     CLASS basic_string<typename _CharT,typename _Traits=char_traits<_CharT>,typename _Alloc=allocator<_CharT>> (std_1::basic_string ) [18:5/302-21:6/440] lcurly=433 SCOPE: std_1 
         BASE CLASSES:
         MEMBERS:

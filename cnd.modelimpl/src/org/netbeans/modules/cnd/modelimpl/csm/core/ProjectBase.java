@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -97,6 +99,8 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Base class for CsmProject implementation
@@ -256,8 +260,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmNamespace findNamespace(CharSequence qualifiedName, boolean findInLibraries) {
         CsmNamespace result = findNamespace(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findNamespace(qualifiedName);
                 if (result != null) {
                     break;
@@ -309,8 +313,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
         CsmClassifier result = findClassifier(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findClassifier(qualifiedName);
                 if (result != null) {
                     break;
@@ -435,7 +439,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public final void unregisterDeclaration(CsmDeclaration decl) {
+    public final void unregisterDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
             traceRegistration("unregistered " + decl + " UID " + UIDs.get(decl)); //NOI18N
         }
@@ -1101,7 +1105,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final void debugInvalidateFiles() {
         getFileContainer().debugClearState();
-        for (Iterator it = getLibraries().iterator(); it.hasNext();) {
+        for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.debugInvalidateFiles();
         }
@@ -1401,7 +1405,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 if (keep) {
                     if (!pair.state.isCleaned()) {
-                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), null);
+                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
                 } else {
@@ -1461,7 +1465,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
                 if (!old.state.isCleaned()) {
-                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                 }
                 statesToKeep.add(old);
             } else {
@@ -1469,7 +1473,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (!old.pcState.isSubset(pcState)) {
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
-                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                     }
                     statesToKeep.add(old);
                 }
@@ -1958,13 +1962,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             disposeLock.readLock().lock();
 
             if (!disposing) {
-                for (Iterator it = getAllFiles().iterator(); it.hasNext();) {
-                    FileImpl file = (FileImpl) it.next();
-                    file.fixFakeRegistrations();
-                    if (libsAlreadyParsed) {
-                        file.clearFakeRegistrations();
-                    }
-                }
+                fixFakeRegistration(libsAlreadyParsed);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
@@ -1985,6 +1983,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    private int getNumberThreads(){
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
+                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
+        threadCount = Math.min(threadCount, 4);
+        return Math.max(threadCount, 1);
+    }
+
+    public void fixFakeRegistration(boolean libsAlreadyParsed){
+        final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
+        CountDownLatch countDownLatch = new CountDownLatch(files.size());
+        RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
+        for (CsmUID<CsmFile> file : files) {
+            MyRunnable r = new MyRunnable(countDownLatch, file, libsAlreadyParsed);
+            rp.post(r);
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException ex) {
+        }
+    }
+
+
     public final void onLibParseFinish() {
         onParseFinish(true);
     }
@@ -1994,6 +2014,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final Collection<CsmFile> getAllFiles() {
         return getFileContainer().getFiles();
+    }
+
+    /**
+     * CsmProject implementation
+     */
+    public final Collection<CsmUID<CsmFile>> getAllFilesUID() {
+        return getFileContainer().getFilesUID();
     }
 
     /**
@@ -2503,7 +2530,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * for tests only
      */
-    public static List testGetRestoredFiles() {
+    public static List<String> testGetRestoredFiles() {
         return testRestoredFiles;
     }
     private static List<String> testRestoredFiles = null;
@@ -2600,4 +2627,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
+    private class MyRunnable implements Runnable {
+        private final CountDownLatch countDownLatch;
+        private final CsmUID<CsmFile> file;
+        private final boolean libsAlreadyParsed;
+
+        private MyRunnable(CountDownLatch countDownLatch, CsmUID<CsmFile> file, boolean libsAlreadyParsed){
+            this.countDownLatch = countDownLatch;
+            this.file = file;
+            this.libsAlreadyParsed = libsAlreadyParsed;
+        }
+        public void run() {
+            try {
+                if (file == null){
+                    return;
+                }
+                FileImpl impl = (FileImpl) file.getObject();
+                Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                impl.fixFakeRegistrations();
+                if (libsAlreadyParsed) {
+                    impl.clearFakeRegistrations();
+                }
+            } finally {
+                countDownLatch.countDown();
+            }
+        }
+    }
 }

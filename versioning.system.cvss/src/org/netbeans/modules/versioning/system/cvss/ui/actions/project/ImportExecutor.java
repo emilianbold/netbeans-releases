@@ -56,6 +56,7 @@ import org.openide.ErrorManager;
 import java.io.*;
 import java.util.Iterator;
 import java.util.Date;
+import java.util.logging.Level;
 
 /**
  * Simple import command ExecutorSupport subclass.
@@ -112,7 +113,17 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
     public void run() {
         CvsVersioningSystem.getInstance().versionedFilesChanged();
         if (checkoutExecutor.isSuccessful()) {
-            copyMetadata();
+            /**
+             * #127755: if import fails, checkout does not even start and checkoutExecutor.isSuccessful() returns true.
+             * Later after issue verification: Maybe group.isFailed() == false should be added into isSuccessful implementation,
+             * but for the time being it remains here.
+             */
+            if (group.isFailed()) {
+                CvsVersioningSystem.LOG.log(Level.INFO, ImportExecutor.class.getName() +
+                        "Import into repository failed, metadata cannot be copied.");
+            } else {
+                copyMetadata();
+            }
         }
         Kit.deleteRecursively(checkoutDir);
         CvsVersioningSystem.getInstance().versionedFilesChanged();

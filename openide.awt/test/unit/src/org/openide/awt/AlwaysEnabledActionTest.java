@@ -45,8 +45,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,6 +121,24 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("No icon in menu", Boolean.TRUE, a.getValue("noIconInMenu"));
 
         assertContextAware(a);
+    }
+
+    public void testURLIconIsCorrect() throws Exception {
+        myListenerCounter = 0;
+        myIconResourceCounter = 0;
+        Action a = readAction("testURLIcon.instance");
+
+        assertNotNull("Action created", a);
+        Object smallIcon = a.getValue(a.SMALL_ICON);
+
+        if (smallIcon instanceof Icon) {
+            return;
+        }
+        fail("Icon shall be instance of Icon: " + smallIcon);
+    }
+
+    public static URL myURL() {
+        return AlwaysEnabledActionTest.class.getResource("TestIcon.png");
     }
 
     private void assertContextAware(Action a) {

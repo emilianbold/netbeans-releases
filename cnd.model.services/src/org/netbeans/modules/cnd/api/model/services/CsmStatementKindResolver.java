@@ -59,7 +59,7 @@ public abstract class CsmStatementKindResolver {
      * Static method to obtain the CsmStatementKindResolver implementation.
      * @return the resolver
      */
-    public static synchronized CsmStatementKindResolver getDefault() {
+    public static CsmStatementKindResolver getDefault() {
         return DEFAULT;
     }
     

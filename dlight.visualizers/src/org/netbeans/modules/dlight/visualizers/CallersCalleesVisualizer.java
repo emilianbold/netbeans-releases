@@ -42,6 +42,9 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -54,7 +57,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTable
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
@@ -66,9 +69,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
 
@@ -82,6 +83,8 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     private StackDataProvider dataProvider;
     private DefaultMutableTreeNode focusedTreeNode = null;
     private CallersCalleesVisualizerConfiguration configuration;
+    private Future<List<FunctionCall>> syncFillDataTask;
+    private final Object syncFillInLock = new Object();
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
         super(configuration, dataProvider);
@@ -89,7 +92,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
         isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
-        setEmptyContent();
+
     }
 
     public TreeTableVisualizerConfiguration getConfiguration() {
@@ -298,20 +301,32 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
 
     @Override
     protected void syncFillModel(final List<Column> columns) {
-        final List<FunctionCall> list =
-                dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
-        final boolean isEmptyConent = list == null || list.isEmpty();
-        UIThread.invoke(new Runnable() {
+        synchronized (syncFillInLock) {
+            syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
-            public void run() {
-                setContent(isEmptyConent);
-                if (isEmptyConent) {
-                    return;
+                public List<FunctionCall> call() {
+                    return dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
                 }
+            }, "Sync CallersCallesVisualizer");//NOI18N
+            try {
+                final List<FunctionCall> list = syncFillDataTask.get();
 
-                update(list);
+                final boolean isEmptyConent = list == null || list.isEmpty();
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        setContent(isEmptyConent);
+                        if (isEmptyConent) {
+                            return;
+                        }
+                        update(list);
+                    }
+                });
+            } catch (ExecutionException ex) {
+            } catch (InterruptedException e) {
             }
-        });
+
+        }
     }
 
     private void update(List<FunctionCall> list) {
@@ -344,6 +359,18 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     public void addNotify() {
         super.addNotify();
         updateButtons();
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                if (!syncFillDataTask.isDone()) {
+                    syncFillDataTask.cancel(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -382,21 +409,29 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return null;
             }
-            final String functionName = ((FunctionCallTreeTableNode) nodeObject).getValue() + "";
-            //final TableVisualizerEvent event = (TableVisualizerEvent)node;
-            AbstractAction goToSourceAction = new AbstractAction(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName") + " " + functionName) {
-
-                public void actionPerformed(ActionEvent e) {
-                    OpenFunctionInEditorActionProvider.getInstance().openFunction(functionName);
-                }
-
-                @Override
-                public boolean isEnabled() {
-                    return Lookup.getDefault().lookup(SourceSupportProvider.class) != null &&
-                            Lookup.getDefault().lookup(SourceFileInfoProvider.class) != null;
-                }
-            };
-            return new Action[]{goToSourceAction};
+            return new Action[]{new GoToSourceAction(((FunctionCallTreeTableNode) nodeObject).getDeligator())};
         }
     }
+
+    private class GoToSourceAction extends AbstractAction {
+
+        private final FunctionCall functionCall;
+
+        public GoToSourceAction(FunctionCall functionCall) {
+            super("Go To Source");//NOI18N
+            this.functionCall = functionCall;
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                return;
+            }
+            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+            sourceSupportProvider.showSource(sourceFileInfo);
+        //System.out.println(sourceFileInfo == null ? " NO SOURCE FILE INFO FOUND" : sourceFileInfo.getFileName() + ":" + sourceFileInfo.getOffset() + ":" + sourceFileInfo.getLine());//NOI18N
+        }
+    }
+
 }

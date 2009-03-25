@@ -74,7 +74,7 @@
     <Container class="javax.swing.JPanel" name="rightPanel">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[64, 209]"/>
+          <Dimension value="[48, 0]"/>
         </Property>
       </Properties>
       <Constraints>
@@ -97,6 +97,9 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/Bundle.properties" key="HINT_Evaluate_Button" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[40, 20]"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="evaluateButtonActionPerformed"/>

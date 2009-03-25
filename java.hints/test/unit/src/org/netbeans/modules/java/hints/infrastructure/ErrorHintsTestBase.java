@@ -114,6 +114,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
 
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere

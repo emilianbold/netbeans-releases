@@ -109,7 +109,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
 
     // The logger
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.gsfret.hints.infrastructure"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(GsfHintsManager.class.getName()); // NOI18N
 
     // Extensions of files
     private static final String INSTANCE_EXT = ".instance";

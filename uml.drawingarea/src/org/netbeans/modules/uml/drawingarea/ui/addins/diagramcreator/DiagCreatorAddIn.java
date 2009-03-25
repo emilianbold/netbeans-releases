@@ -1035,7 +1035,6 @@ catch (IOException ex) {
                         if(pe.getFirstSubject() instanceof ILifeline)
                         {
                             ILifeline ll=(ILifeline) pe.getFirstSubject();
-                            System.out.println("REP CL:"+ll.getRepresentingClassifier().getName());
                             Widget w=scene.findWidget(pe);
                             if(lifelinePoint==null)
                             {
@@ -1045,7 +1044,6 @@ catch (IOException ex) {
                             {
                                 w.setPreferredLocation(new Point(lifelinePoint.x-w.getBounds().x,lifelinePoint.y));
                             }
-                            System.out.println("POINT:"+lifelinePoint);
                             lifelinePoint.x=w.getPreferredLocation().x+w.getBounds().x+w.getBounds().width+30;//right side+30
                         }
                     }

@@ -43,8 +43,8 @@ made subject to such option by the copyright holder.
        <!DOCTYPE type PUBLIC
                  "-//NetBeans//DTD annotation type 1.0//EN"
                  "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-       <type name="org-netbeans-modules-editor-gsfret-overrides"
+       <type name="org-netbeans-modules-editor-csl-overrides"
              description_key="LAB_IsOverridenAnnotation"
-             localizing_bundle="org.netbeans.modules.java.Bundle"
+             localizing_bundle="org.netbeans.modules.csl.editor.resources.Bundle"
              visible="true"
-             glyph="nbresloc:/org/netbeans/modules/gsfret/editor/resources/overrides.png"/>
+             glyph="nbresloc:/org/netbeans/modules/csl/editor/resources/overrides.png"/>

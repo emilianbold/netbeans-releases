@@ -45,6 +45,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -66,12 +67,21 @@ public abstract class LayerTestBase extends NbTestCase {
             // XXX replace with MockServices
             System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
             Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+            Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+            p.lookupAll(AntBasedProjectType.class);
+            projects = p;
+            setLookup(new Object[0]);
         }
         private static Lkp DEFAULT;
+        private static final Lookup projects;
         public Lkp() {
             Assert.assertNull(DEFAULT);
             DEFAULT = this;
-            setLookup(new Object[0]);
+            ClassLoader l = Lkp.class.getClassLoader();
+            setLookups(new Lookup[] {
+                        Lookups.metaInfServices(l),
+                        Lookups.singleton(l)
+                    });
         }
         public static void setLookup(Object[] instances) {
             ClassLoader l = Lkp.class.getClassLoader();
@@ -79,6 +89,7 @@ public abstract class LayerTestBase extends NbTestCase {
                 Lookups.fixed(instances),
                 Lookups.metaInfServices(l),
                 Lookups.singleton(l),
+                projects
             });
         }
     }

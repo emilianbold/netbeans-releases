@@ -112,7 +112,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
 
     public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
-        if (!projectDescriptorProvider.gotDescriptor()) {
+        if (!projectDescriptorProvider.gotDescriptor() || projectDescriptorProvider.getConfigurationDescriptor().getConfs().size() == 0) {
             //TODO: show warning dialog
             return;
         }

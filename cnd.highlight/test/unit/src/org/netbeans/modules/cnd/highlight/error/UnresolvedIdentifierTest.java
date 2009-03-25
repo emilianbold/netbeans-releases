@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
@@ -126,15 +128,19 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     }
 
     public void testIZ158873() throws Exception {
+        Level oldLevel = Logger.getLogger("cnd.logger").getLevel();
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
         // IZ#158873 : recursion in Instantiation.Type.isInstantiation()
         performStaticTest("iz158873.cpp");
+        Logger.getLogger("cnd.logger").setLevel(oldLevel);
     }
 
     public void testIZ159615() throws Exception {
+        Level oldLevel = Logger.getLogger("cnd.logger").getLevel();
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
         // IZ#159615 : recursion in CsmCompletionQuery.getClassifier()
         performStaticTest("iz159615.cpp");
+        Logger.getLogger("cnd.logger").setLevel(oldLevel);
     }
 
     public void testIZ143044() throws Exception {
@@ -145,6 +151,40 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testIZ151909() throws Exception {
         // IZ#151909 : Template friend classes (parser problem)
         performStaticTest("iz151909.cpp");
+    }
+
+    public void testIZ148236() throws Exception {
+        // IZ#148236 : IDE highlights some operator's definitions as wrong code
+        performStaticTest("iz148236.cpp");
+    }
+
+    public void testIZ155459() throws Exception {
+        // IZ#155459 : unresolved forward template declaration
+        performStaticTest("iz155459.cpp");
+    }
+
+    public void testIZ160542() throws Exception {
+        Handler h = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                assert(false);
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger.getLogger("cnd.logger").addHandler(h);
+        // IZ#160542 : Assertions on template instantiations
+        performStaticTest("iz160542.cpp");
+        Logger.getLogger("cnd.logger").removeHandler(h);
+    }
+
+    public void testIZ151054() throws Exception {
+        // IZ#151054 : False recognition of operator ->
+        performStaticTest("iz151054.cpp");
     }
 
     /////////////////////////////////////////////////////////////////////

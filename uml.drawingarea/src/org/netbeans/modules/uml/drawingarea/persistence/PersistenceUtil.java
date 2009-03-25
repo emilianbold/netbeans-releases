@@ -242,7 +242,6 @@ public class PersistenceUtil {
                     //don't do anything yet.. we'll deal with this in anchorage section..
                 }
                 else { //assuming only movablelabelwidgets here...
-//                    System.out.println(" obj is " + obj);
                     if (obj instanceof DiagramNodeWriter) {
                         ((DiagramNodeWriter)obj).save(nodeWriter);
                     }
