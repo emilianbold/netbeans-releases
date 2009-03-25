@@ -47,6 +47,8 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
@@ -64,11 +66,13 @@ import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
 import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 public class JspIndenterTest extends TestBase2 {
@@ -82,19 +86,29 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
+    private Lookup projectsLookup;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+        assert p.lookupAll(AntBasedProjectType.class) != null;
+        projectsLookup = p;
+
+        ClassLoader l = MockLookup.class.getClassLoader();
+        MockLookup.setLookup(
+                Lookups.fixed(testLanguageProvider),
+                Lookups.metaInfServices(l),
+                Lookups.singleton(l), projectsLookup);
+
         initParserJARs();
         copyWebProjectJarsTo(new File(getDataDir(), "FormattingProject/lib"));
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-        MockLookup.init();
-        MockLookup.setInstances(testLanguageProvider);
-
         // init TestLanguageProvider
-        Lookup.getDefault().lookup(TestLanguageProvider.class);
+        assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
 
         TestLanguageProvider.register(CSSTokenId.language());
         TestLanguageProvider.register(HTMLTokenId.language());
@@ -111,6 +125,11 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
+
+        FileObject fo = getTestFile("FormattingProject");
+        Project webProject = ProjectManager.getDefault().findProject(fo);
+        assert webProject != null : "cannot load project for "+fo.getPath();
+
     }
 
     @Override
