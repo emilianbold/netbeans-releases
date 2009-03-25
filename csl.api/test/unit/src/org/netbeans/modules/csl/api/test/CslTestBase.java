@@ -317,7 +317,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertTrue(caretDelta != -1);
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
         int lineOffset = text.indexOf(caretLine);
-        assertTrue("No occurrence of caretLine " + caretLine + " in text " + text, lineOffset != -1);
+        assertTrue("No occurrence of caretLine " + caretLine + " in text '" + text + "'", lineOffset != -1);
 
         int caretOffset = lineOffset + caretDelta;
 
@@ -3664,20 +3664,7 @@ public abstract class CslTestBase extends NbTestCase {
             fileObject = getTestFile(relFilePath);
         }
         
-        final FileObject testSourceFileObject = fileObject;
-        Source testSource;
-
-//        if (changeOffsetType == ChangeOffsetType.NONE) {
-//            testSource = getTestSource(fileObject);
-//        } else {
-            // We are going to remove the documents content, so make sure that we
-            // we do this on a new document instance in a new Source instance.
-            Document doc = getDocument(fileObject);
-            Object streamDescriptor = doc.getProperty(Document.StreamDescriptionProperty);
-            doc.putProperty(Document.StreamDescriptionProperty, null);
-            testSource = Source.create(doc);
-            doc.putProperty(Document.StreamDescriptionProperty, streamDescriptor);
-//        }
+        Source testSource = getTestSource(fileObject);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -3693,104 +3680,117 @@ public abstract class CslTestBase extends NbTestCase {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
+                
+                Document document = pr.getSnapshot().getSource().getDocument(false);
+                assert document != null;
 
+                // remember the original document content, we are going to destroy it
+                // and then restore
+                String originalDocumentContent = null;
                 if (changeOffsetType != ChangeOffsetType.NONE) {
                     customizeHintInfo(pr, changeOffsetType);
 
                     // Also: Delete te contents from the document!!!
                     // This ensures that the node offsets will be out of date by the time the rules run
-//                    Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
-                    Document doc = pr.getSnapshot().getSource().getDocument(true);
-                    doc.remove(0, doc.getLength());
+                    originalDocumentContent = document.getText(0, document.getLength());
+                    document.remove(0, document.getLength());
                 }
 
-                if (!(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
-                    if (parseErrorsOk) {
-                        int caretOffset = 0;
-                        result[0] = new ComputedHints(pr, new ArrayList<Hint>(), caretOffset);
-                        return;
-                    } else {
-                        boolean errors = false;
-                        for(Error e : pr.getDiagnostics()) {
-                            if (e.getSeverity() == Severity.ERROR) {
-                                errors = true;
-                                break;
+                try {
+                    if (!(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
+                        if (parseErrorsOk) {
+                            int caretOffset = 0;
+                            result[0] = new ComputedHints(pr, new ArrayList<Hint>(), caretOffset);
+                            return;
+                        } else {
+                            boolean errors = false;
+                            for(Error e : pr.getDiagnostics()) {
+                                if (e.getSeverity() == Severity.ERROR) {
+                                    errors = true;
+                                    break;
+                                }
+                            }
+                            assertTrue("Unexpected parse error in test case " +
+                                    FileUtil.getFileDisplayName(pr.getSnapshot().getSource().getFileObject()) + "\nErrors = " +
+                                    pr.getDiagnostics(), !errors);
+                        }
+                    }
+
+                    String text = pr.getSnapshot().getText().toString();
+
+                    org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+                    HintsProvider provider = getHintsProvider();
+                    GsfHintsManager manager = getHintsManager(language);
+
+                    UserConfigurableRule ucr = null;
+                    if (hint instanceof UserConfigurableRule) {
+                        ucr = (UserConfigurableRule)hint;
+                    }
+
+                    // Make sure the hint is enabled
+                    if (ucr != null && !HintsSettings.isEnabled(manager, ucr)) {
+                        Preferences p = HintsSettings.getPreferences(manager, ucr, HintsSettings.getCurrentProfileId());
+                        HintsSettings.setEnabled(p, true);
+                    }
+
+                    List<Hint> hints = new ArrayList<Hint>();
+                    if (hint instanceof ErrorRule) {
+                        RuleContext context = manager.createRuleContext(pr, language, -1, -1, -1);
+                        // It's an error!
+                        // Create a hint registry which contains ONLY our hint (so other registered
+                        // hints don't interfere with the test)
+                        Map<Object, List<? extends ErrorRule>> testHints = new HashMap<Object, List<? extends ErrorRule>>();
+                        if (hint.appliesTo(context)) {
+                            ErrorRule ErrorRule = (ErrorRule)hint;
+                            for (Object key : ErrorRule.getCodes()) {
+                                testHints.put(key, Collections.singletonList(ErrorRule));
                             }
                         }
-                        assertTrue("Unexpected parse error in test case " +
-                                FileUtil.getFileDisplayName(testSourceFileObject) + "\nErrors = " +
-                                pr.getDiagnostics(), !errors);
-                    }
-                }
+                        manager.setTestingRules(testHints, null, null, null);
+                        provider.computeErrors(manager, context, hints, new ArrayList<Error>());
+                    } else if (hint instanceof SelectionRule) {
+                        SelectionRule rule = (SelectionRule)hint;
+                        List<SelectionRule> testHints = new ArrayList<SelectionRule>();
+                        testHints.add(rule);
 
-                String text = pr.getSnapshot().getText().toString();
+                        manager.setTestingRules(null, null, null, testHints);
 
-                org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
-                HintsProvider provider = getHintsProvider();
-                GsfHintsManager manager = getHintsManager(language);
-
-                UserConfigurableRule ucr = null;
-                if (hint instanceof UserConfigurableRule) {
-                    ucr = (UserConfigurableRule)hint;
-                }
-                
-                // Make sure the hint is enabled
-                if (ucr != null && !HintsSettings.isEnabled(manager, ucr)) {
-                    Preferences p = HintsSettings.getPreferences(manager, ucr, HintsSettings.getCurrentProfileId());
-                    HintsSettings.setEnabled(p, true);
-                }
-                
-                List<Hint> hints = new ArrayList<Hint>();
-                if (hint instanceof ErrorRule) {
-                    RuleContext context = manager.createRuleContext(pr, language, -1, -1, -1);
-                    // It's an error!
-                    // Create a hint registry which contains ONLY our hint (so other registered
-                    // hints don't interfere with the test)
-                    Map<Object, List<? extends ErrorRule>> testHints = new HashMap<Object, List<? extends ErrorRule>>();
-                    if (hint.appliesTo(context)) {
-                        ErrorRule ErrorRule = (ErrorRule)hint;
-                        for (Object key : ErrorRule.getCodes()) {
-                            testHints.put(key, Collections.singletonList(ErrorRule));
+                        if (caretLine != null) {
+                            int start = text.indexOf(caretLine);
+                            int end = start+caretLine.length();
+                            RuleContext context = manager.createRuleContext(pr, language, -1, start, end);
+                            provider.computeSelectionHints(manager, context, hints, start, end);
                         }
-                    }
-                    manager.setTestingRules(testHints, null, null, null);
-                    provider.computeErrors(manager, context, hints, new ArrayList<Error>());
-                } else if (hint instanceof SelectionRule) {
-                    SelectionRule rule = (SelectionRule)hint;
-                    List<SelectionRule> testHints = new ArrayList<SelectionRule>();
-                    testHints.add(rule);
-
-                    manager.setTestingRules(null, null, null, testHints);
-
-                    if (caretLine != null) {
-                        int start = text.indexOf(caretLine);
-                        int end = start+caretLine.length();
-                        RuleContext context = manager.createRuleContext(pr, language, -1, start, end);
-                        provider.computeSelectionHints(manager, context, hints, start, end);
-                    }
-                } else {
-                    assertTrue(hint instanceof AstRule && ucr != null);
-                    AstRule AstRule = (AstRule)hint;
-                    // Create a hint registry which contains ONLY our hint (so other registered
-                    // hints don't interfere with the test)
-                    Map<Object, List<? extends AstRule>> testHints = new HashMap<Object, List<? extends AstRule>>();
-                    RuleContext context = manager.createRuleContext(pr, language, caretOffset, -1, -1);
-                    if (hint.appliesTo(context)) {
-                        for (Object nodeId : AstRule.getKinds()) {
-                            testHints.put(nodeId, Collections.singletonList(AstRule));
-                        }
-                    }
-                    if (HintsSettings.getSeverity(manager, ucr) == HintSeverity.CURRENT_LINE_WARNING) {
-                        manager.setTestingRules(null, Collections.EMPTY_MAP, testHints, null);
-                        provider.computeSuggestions(manager, context, hints, caretOffset);
                     } else {
-                        manager.setTestingRules(null, testHints, null, null);
-                        context.caretOffset = -1;
-                        provider.computeHints(manager, context, hints);
+                        assertTrue(hint instanceof AstRule && ucr != null);
+                        AstRule AstRule = (AstRule)hint;
+                        // Create a hint registry which contains ONLY our hint (so other registered
+                        // hints don't interfere with the test)
+                        Map<Object, List<? extends AstRule>> testHints = new HashMap<Object, List<? extends AstRule>>();
+                        RuleContext context = manager.createRuleContext(pr, language, caretOffset, -1, -1);
+                        if (hint.appliesTo(context)) {
+                            for (Object nodeId : AstRule.getKinds()) {
+                                testHints.put(nodeId, Collections.singletonList(AstRule));
+                            }
+                        }
+                        if (HintsSettings.getSeverity(manager, ucr) == HintSeverity.CURRENT_LINE_WARNING) {
+                            manager.setTestingRules(null, Collections.EMPTY_MAP, testHints, null);
+                            provider.computeSuggestions(manager, context, hints, caretOffset);
+                        } else {
+                            manager.setTestingRules(null, testHints, null, null);
+                            context.caretOffset = -1;
+                            provider.computeHints(manager, context, hints);
+                        }
+                    }
+
+                    result[0] = new ComputedHints(pr, hints, caretOffset);
+                } finally {
+                    if (originalDocumentContent != null) {
+                        assert document != null;
+                        document.remove(0, document.getLength());
+                        document.insertString(0, originalDocumentContent, null);
                     }
                 }
-
-                result[0] = new ComputedHints(pr, hints, caretOffset);
             }
         });
 
@@ -3896,17 +3896,24 @@ public abstract class CslTestBase extends NbTestCase {
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
 
+        String fixed = null;
         Document doc = info.getSnapshot().getSource().getDocument(true);
-        if (fix.isInteractive() && fix instanceof PreviewableFix) {
-            PreviewableFix preview = (PreviewableFix)fix;
-            assertTrue(preview.canPreview());
-            EditList editList = preview.getEditList();
-            editList.applyToDocument((BaseDocument) doc);
-        } else {
-            fix.implement();
+        String originalDocumentContent = doc.getText(0, doc.getLength());
+        try {
+            if (fix.isInteractive() && fix instanceof PreviewableFix) {
+                PreviewableFix preview = (PreviewableFix)fix;
+                assertTrue(preview.canPreview());
+                EditList editList = preview.getEditList();
+                editList.applyToDocument((BaseDocument) doc);
+            } else {
+                fix.implement();
+            }
+
+            fixed = doc.getText(0, doc.getLength());
+        } finally {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, originalDocumentContent, null);
         }
-        
-        String fixed = doc.getText(0, doc.getLength());
 
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
