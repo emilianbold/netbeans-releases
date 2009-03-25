@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -21,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -257,6 +259,10 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
     private static class RegisterTableCellEditor extends AbstractCellEditor implements TableCellEditor {
         // This is the component that will handle the editing of the cell value
         JComponent component = new JTextField();
+
+        public RegisterTableCellEditor() {
+            component.setBorder(new LineBorder(Color.black, 0));
+        }
 
         // This method is called when a cell value is edited by the user.
         public Component getTableCellEditorComponent(JTable table, Object value,
