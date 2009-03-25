@@ -313,7 +313,7 @@ public final class HostInfoUtils {
         ChannelExec echannel = null;
         StringBuilder command = new StringBuilder();
 
-        command.append("U=`/bin/uname 2>/dev/null || /usr/bin/uname 2>/dev/null` &&"); // NOI18N
+        command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
         command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
         command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
         command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
