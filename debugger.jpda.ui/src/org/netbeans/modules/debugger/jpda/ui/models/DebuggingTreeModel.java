@@ -374,12 +374,14 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         
         private RequestProcessor.Task createTask() {
-            RequestProcessor rp;
+            RequestProcessor rp = null;
             try {
                 Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
                 rp = s.lookupFirst(null, RequestProcessor.class);
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
+            }
+            if (rp == null) {
                 rp = RequestProcessor.getDefault();
             }
             RequestProcessor.Task task = rp.create(new RefreshTree());
