@@ -86,8 +86,13 @@ public final class IndexResult {
         if (cachedUrl == null) {
             URL url = null;
             try {
-                File rootFile = new File(root.toURI());
-                url = new File(rootFile, spi.getSourceName()).toURI().toURL();
+                String protocol = root.getProtocol();
+                if ("file".equals(protocol)) {//NOI18N
+                    File rootFile = new File(root.toURI());
+                    url = new File(rootFile, spi.getSourceName()).toURI().toURL();
+                } else {
+                     url = new URL(root, spi.getSourceName());
+                }
             } catch (URISyntaxException ex) {
                 LOG.log(Level.WARNING, null, ex);
             } catch (MalformedURLException ex) {
