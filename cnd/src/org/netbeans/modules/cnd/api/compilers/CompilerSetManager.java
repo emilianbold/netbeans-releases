@@ -232,7 +232,7 @@ public class CompilerSetManager {
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                if (cygwinBase != null) {
+                if (cygwinBin != null) {
                     cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
                 }
             }

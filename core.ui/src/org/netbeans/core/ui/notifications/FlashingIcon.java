@@ -103,7 +103,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         currentNotification = displayer.getTopNotification();
         if( null != currentNotification ) {
             setIcon(currentNotification.getIcon());
-            setToolTipText(currentNotification.getTitle());
+            setToolTipText("<html>" + currentNotification.getTitle());//NOI18N
         }
         setVisible( displayer.size() > 0 );
         displayer.addPropertyChangeListener(this);
@@ -277,7 +277,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         currentNotification = n;
         if( null != currentNotification ) {
             setIcon(currentNotification.getIcon());
-            setToolTipText(currentNotification.getTitle());
+            setToolTipText("<html>" + currentNotification.getTitle());//NOI18N
             if( showBalloon ) {
                 if( canShowBalloon() ) {
                     SwingUtilities.invokeLater( new Runnable() {

@@ -51,9 +51,9 @@ import org.openide.util.HelpCtx;
  * @see Issue 160712
  * @author Jiri Rechtacek
  */
-public class WizardDescriptorWhenClosedWindow extends NbTestCase {
+public class WizardDescriptorWhenClosedWindowTest extends NbTestCase {
 
-    public WizardDescriptorWhenClosedWindow (String name) {
+    public WizardDescriptorWhenClosedWindowTest (String name) {
         super (name);
     }
     private Iterator iterator;
