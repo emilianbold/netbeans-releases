@@ -72,6 +72,7 @@ public final class Configurations {
     }
 
     public Configurations init(Configuration[] confs, int defaultConf) {
+        List<Runnable> toRun = new ArrayList<Runnable>();
         configurationsLock.writeLock().lock();
         try {
             configurations.clear();
@@ -85,16 +86,15 @@ public final class Configurations {
                 }
                 if (defaultConf >= 0 && configurations.size() > 0) {
                     setActive(defaultConf);
-                    if (tasks.size() > 0) {
-                        for (Runnable task : tasks) {
-                            runOnCodeModelReadiness(task, false);
-                        }
-                        tasks.clear();
-                    }
+                    toRun.addAll(tasks);
+                    tasks.clear();
                 }
             }
         } finally {
             configurationsLock.writeLock().unlock();
+        }
+        for (Runnable task : toRun) {
+            runOnCodeModelReadiness(task, false);
         }
         return this;
     }
@@ -104,19 +104,21 @@ public final class Configurations {
     }
 
     private void runOnCodeModelReadiness(Runnable task, boolean postpone) {
+        MakeConfiguration active = null;
         configurationsLock.writeLock().lock();
         try {
-            MakeConfiguration active = (MakeConfiguration) getActive();
-            if (active != null) {
-                DevelopmentHostConfiguration host = active.getDevelopmentHost();
-                CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runOnCodeModelReadiness(task);
-            } else {
+            active = (MakeConfiguration) getActive();
+            if (active == null) {
                 if (postpone) {
                     tasks.add(task);
                 }
             }
         } finally {
             configurationsLock.writeLock().unlock();
+        }
+        if (active != null) {
+            DevelopmentHostConfiguration host = active.getDevelopmentHost();
+            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runOnCodeModelReadiness(task);
         }
     }
 
