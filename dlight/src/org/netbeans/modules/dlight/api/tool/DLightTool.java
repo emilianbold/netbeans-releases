@@ -220,7 +220,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         }
     }
 
-    public final List<Indicator> getIndicators() {
+    final List<Indicator> getIndicators() {
         return indicators;
     }
 

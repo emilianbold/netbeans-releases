@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.cnd.gizmo;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.openide.util.lookup.ServiceProvider;
@@ -60,16 +58,8 @@ public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorCom
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         if (gizmoConfiguration == null){
             return null;
-        }
-        List<DLightTool> tools = gizmoConfiguration.getToolsSet();
-        if (tools == null || tools.size() == 0){
-            return null;
-        }
-        List<Indicator> result = new ArrayList<Indicator>();
-        for (DLightTool tool : tools){
-            result.addAll(tool.getIndicators());
-        }
-        return result;
+        }        
+        return gizmoConfiguration.getIndicators();
     }
 
 }
