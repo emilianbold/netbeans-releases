@@ -365,6 +365,35 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * between saveFromKitToStream and saveDocument
      */
     private static Map<DataObject,Charset> charsets = Collections.synchronizedMap(new HashMap<DataObject,Charset>());
+    /** Holds counter of charsets cache. Cached value mustn't be removed until couter is zero. */
+    private static final Map<DataObject,Integer> cacheCounter = Collections.synchronizedMap(new HashMap<DataObject,Integer>());
+
+    private static int incrementCacheCounter(DataObject tmpObj) {
+        synchronized (cacheCounter) {
+            Integer count = cacheCounter.get(tmpObj);
+            if (count == null) {
+                count = 0;
+            }
+            count++;
+            cacheCounter.put(tmpObj, count);
+            return count;
+        }
+    }
+
+    private static synchronized int decrementCacheCounter(DataObject tmpObj) {
+        synchronized (cacheCounter) {
+            Integer count = cacheCounter.get(tmpObj);
+            assert count != null;
+            count--;
+            if (count == 0) {
+                cacheCounter.remove(tmpObj);
+            } else {
+                cacheCounter.put(tmpObj, count);
+            }
+            return count;
+        }
+    }
+
     /**
      * @inheritDoc
      */
@@ -397,13 +426,20 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     @Override
     public StyledDocument openDocument() throws IOException {
-        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         DataObject tmpObj = getDataObject();
+        Charset c = charsets.get(tmpObj);
+        if (c == null) {
+            c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+        }
         try {
             charsets.put(tmpObj, c);
+            incrementCacheCounter(tmpObj);
             return super.openDocument();
         } finally {
-            charsets.remove(tmpObj);
+            if (decrementCacheCounter(tmpObj) == 0) {
+                charsets.remove(tmpObj);
+            }
+            ERR.finest("openDocument - charset removed");
         }
     }
 
@@ -1055,12 +1091,19 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 throw e;
             }
             DataObject tmpObj = des.getDataObject();
-            Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+            Charset c = charsets.get(tmpObj);
+            if (c == null) {
+                c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+            }
             try {
                 charsets.put(tmpObj, c);
+                incrementCacheCounter(tmpObj);
+                ERR.finest("SaveImpl - charset put");
                 des.superSaveDoc();
             } finally {
-                charsets.remove(tmpObj);
+                if (decrementCacheCounter(tmpObj) == 0) {
+                    charsets.remove(tmpObj);
+                }
             }
         }
 
