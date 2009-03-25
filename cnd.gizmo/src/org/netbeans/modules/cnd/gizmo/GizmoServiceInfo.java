@@ -37,38 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.impl;
-
-import java.util.List;
-import org.netbeans.modules.dlight.api.impl.DefaultTreeTableNode;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
+package org.netbeans.modules.cnd.gizmo;
 
 /**
  *
  * @author mt154047
  */
-public final class SQLDefaultTreeTableDataProvider implements TreeTableDataProvider<DefaultTreeTableNode>{
-
-    public List<DefaultTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public List<DefaultTreeTableNode> getChildren(List<DefaultTreeTableNode> path) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public DefaultTreeTableNode getValueAt(int row) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getTableValueAt(Column column, int row) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void attachTo(DataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+public interface GizmoServiceInfo {
+    String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
+    String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
+    String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
 }
