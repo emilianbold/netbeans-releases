@@ -101,9 +101,8 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
         LinkedList annotationActions = new LinkedList();
 
         for (int i = 0; i < cookies.length; i++) {
-            Object o = cookies[i].instanceCreate();
-            if (o instanceof Action) {
-                Action action = (Action)o;
+            if (isAction(cookies[i])) {
+                Action action = (Action) cookies[i].instanceCreate();
                 annotationActions.add(action);
             }
         }
@@ -114,4 +113,11 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
         return null;
     }
 
+    private static boolean isAction(InstanceCookie ic) {
+        if (ic instanceof InstanceCookie.Of) {
+            return ((InstanceCookie.Of) ic).instanceOf(Action.class);
+        } else {
+            return Action.class.isAssignableFrom(ic.getClass());
+        }
+    }
 }
