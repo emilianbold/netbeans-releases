@@ -184,7 +184,6 @@ class OutputPane extends AbstractOutputPane {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
                 if (line >= 0) {
                     if (linePressed(line, e.getPoint())) {
-                        e.consume();
                         return;
                     }
                 }
