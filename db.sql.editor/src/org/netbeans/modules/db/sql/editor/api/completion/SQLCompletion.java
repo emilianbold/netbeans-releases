@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,15 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.editor.api.completion;
 
-import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
-import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionQuery;
+import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
 
 /**
  *
@@ -65,10 +65,10 @@ public class SQLCompletion {
         }
         SQLCompletionEnv env = SQLCompletionEnv.forStatement(statement, 0, null);
         // SELECT command
-        if (SelectStatementAnalyzer.detectKind(env.getTokenSequence()) != null) {
+        if (SQLStatementKind.SELECT.equals (SQLStatementAnalyzer.analyzeKind(env.getTokenSequence()))) {
             return true;
         // INSERT command
-        } else if (InsertStatementAnalyzer.detectKind(env.getTokenSequence()) != null) {
+        } else if (SQLStatementKind.INSERT.equals (SQLStatementAnalyzer.analyzeKind(env.getTokenSequence()))) {
             return true;
         }
         return false;

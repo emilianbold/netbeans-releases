@@ -41,19 +41,13 @@
 
 package org.netbeans.core.startup.preferences;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -223,6 +217,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         assertEquals("value1",pref.get("key1", null));
     }
 
+    /*
     @RandomlyFails // timeout in NB-Core-Build #1651; three of the waits actually time out; test is probably broken
     public void testPut2()  throws Exception {
         final Object sync = getEventQueueSync();
@@ -290,8 +285,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         }
         return null;
     }
-    
-    
+     */
     
     public void testRemove() {
         testPut();
