@@ -160,13 +160,12 @@ public final class ProjectPropertiesSupport {
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
         FileObject sources = project.getSourcesDirectory();
         if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
-            FileObject fo = sources.getFileObject(subdirectoryPath);
-            if (fo != null) {
-                return fo;
-            }
             // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
             File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
-            return FileUtil.toFileObject(resolved);
+            if (resolved.exists()) {
+                return FileUtil.toFileObject(resolved);
+            }
+            return sources.getFileObject(subdirectoryPath);
         }
         return sources;
     }
@@ -306,7 +305,7 @@ public final class ProjectPropertiesSupport {
             String remotePath = remotes.get(i);
             if (PhpProjectUtils.hasText(remotePath)) {
                 // if user has only 1 path and local == sources => property is not stored at all!
-                String l = null;
+                String l = ""; // NOI18N
                 if (i < localsSize) {
                     l = locals.get(i);
                 }
