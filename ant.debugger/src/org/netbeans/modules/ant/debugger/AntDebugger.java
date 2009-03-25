@@ -70,7 +70,7 @@ import org.netbeans.modules.ant.debugger.breakpoints.BreakpointModel;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
-import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -805,9 +805,9 @@ public class AntDebugger extends ActionsProviderSupport {
         synchronized(this) {
             if (breakpointModel == null) {
                 Iterator it = DebuggerManager.getDebuggerManager ().lookup 
-                        ("BreakpointsView", TableModel.class).iterator ();
+                        ("BreakpointsView", NodeModel.class).iterator ();
                 while (it.hasNext ()) {
-                    TableModel model = (TableModel) it.next ();
+                    NodeModel model = (NodeModel) it.next ();
                     if (model instanceof BreakpointModel) {
                         breakpointModel = (BreakpointModel) model;
                         break;
