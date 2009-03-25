@@ -101,21 +101,11 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     }
 
     public TargetModuleID[] getResultTargetModuleIDs() {
-        synchronized (moduleId) {
-            TargetModuleID[] retVal = new TargetModuleID[]{moduleId};
-            if (!isEar) {
-                return retVal;
-            } else {
-                try {
-                    retVal = createModuleIdTree(moduleId);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-                } catch (ExecutionException ex) {
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-                } catch (TimeoutException ex) {
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
-                }
-                return retVal;
+        if (null == moduleId) {
+            return computeResultTMID();
+        } else {
+            synchronized (moduleId) {
+                return computeResultTMID();
             }
         }
     }
@@ -152,6 +142,32 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                 translateState(newState), ActionType.EXECUTE, message));
     }
 
+    private TargetModuleID[] computeResultTMID() {
+        TargetModuleID[] retVal = new TargetModuleID[]{moduleId};
+        if (!isEar) {
+            return retVal;
+        } else {
+            try {
+                retVal = createModuleIdTree(moduleId);
+            } catch (InterruptedException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+            } catch (TimeoutException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+            }
+            return retVal;
+        }
+    }
+
+    private void loopThroughListeners(DeploymentStatus status) {
+        operationStatus = status;
+        ProgressEvent event = new ProgressEvent(dm, moduleId, status);
+        for (ProgressListener target : listeners) {
+            target.handleProgressEvent(event);
+        }
+    }
+
     private StateType translateState(OperationState commonState) {
         if(commonState == OperationState.RUNNING) {
             return StateType.RUNNING;
@@ -177,11 +193,11 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     }  
 
     public void fireHandleProgressEvent(DeploymentStatus status) {
-        synchronized(moduleId) {
-            operationStatus = status;
-            ProgressEvent event = new ProgressEvent(dm, moduleId, status);
-            for(ProgressListener target: listeners) {
-                target.handleProgressEvent(event);
+        if (null == moduleId) {
+            loopThroughListeners(status);
+        } else {
+            synchronized(moduleId) {
+                loopThroughListeners(status);
             }
         }
     }

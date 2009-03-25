@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -116,11 +115,6 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         Runnable run = new Runnable() {
 
             public void run() {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    //RequestProcessor.getDefault().post(this);
-                    CsmModelAccessor.getModel().enqueue(this, taskName);
-                    return;
-                }
                 if (target != null && (target.getDocument() instanceof BaseDocument)) {
                     BaseDocument doc = (BaseDocument) target.getDocument();
                     int offset = target.getSelectionStart();

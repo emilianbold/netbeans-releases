@@ -59,8 +59,10 @@ import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.project.Project;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
 
 
 /**
@@ -88,7 +90,8 @@ public class I18nManager {
     /** Found hard coded string. */
     private HardCodedString hcString;
     
-    
+    private int replaceCount = 0;
+
     /** Private constructor. To ge instance use <code>getI18nMananger</code> method instead. */
     private I18nManager() {
     }
@@ -239,6 +242,7 @@ public class I18nManager {
         // Try to add key to bundle.
         support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
+        replaceCount++;
         // Provide additional changes if they are available.
         if (support.hasAdditionalCustomizer()) {
             support.performAdditionalChanges();
@@ -285,6 +289,16 @@ public class I18nManager {
     
     /** Cancels current internationalizing session and re-layout top component to original layout. */
     public void cancel() {
+        if (replaceCount>0) {
+            //Need to save resource
+            SaveCookie save = support.getResourceHolder().getResource().getCookie(SaveCookie.class);
+            try {
+                save.save();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        replaceCount = 0;
         // No memory leaks.
         support = null;
         

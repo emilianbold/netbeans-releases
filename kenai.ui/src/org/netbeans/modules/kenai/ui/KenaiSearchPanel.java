@@ -364,7 +364,7 @@ public class KenaiSearchPanel extends JPanel {
         // cancel running tasks
         KenaiProjectsListModel model = getListModel();
         if (model != null) {
-            model.cancel();
+            model.stopLoading();
         }
     }
 
@@ -375,18 +375,22 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
 
-        private RequestProcessor.Task task;
+        private boolean stopLoading;
 
         public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
             this.projects = projects;
             this.pattern = pattern;
-            task = RequestProcessor.getDefault().post(this);
+            RequestProcessor.getDefault().post(this);
         }
 
         public void run() {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
+                    //TODO: remove me as soon as projects.json?full=true is 
+                    //implemented on kenai.com
+                    project.getDescription();
+                    //end of TODO
                     if (PanelType.OPEN.equals(panelType)) {
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
@@ -397,15 +401,15 @@ public class KenaiSearchPanel extends JPanel {
                             }
                         }
                     }
-                    if (Thread.interrupted()) {
+                    if (stopLoading) {
                         return;
                     }
                 }
             }
         }
 
-        public void cancel() {
-            task.cancel();
+        public synchronized void stopLoading() {
+            stopLoading = true;
         }
 
     }

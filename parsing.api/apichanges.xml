@@ -110,7 +110,7 @@ is the proper place.
   <change id="IndexingManager-refreshIndexAndWait">
       <api name="ParsingAPI"/>
       <summary>Adding IndexingManager.refreshIndexAndWait()</summary>
-      <version major="1" minor="5"/>
+      <version major="1" minor="6"/>
       <date day="2" month="3" year="2009"/>
       <author login="vstejskal"/>
       <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
@@ -142,7 +142,7 @@ is the proper place.
   <change id="Explicit-index-refresh">
       <api name="ParsingAPI"/>
       <summary>Support for explicit index refreshing</summary>
-      <version major="1" minor="3"/>
+      <version major="1" minor="6"/>
       <date day="26" month="2" year="2009"/>
       <author login="vstejskal"/>
       <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="yes" addition="yes" modification="no"/>

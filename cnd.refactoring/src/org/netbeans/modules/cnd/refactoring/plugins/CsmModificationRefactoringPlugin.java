@@ -147,7 +147,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
                 problem = createProblem(problem, true, getCannotRename(fo));
             }
             // check that object is in opened project
-            if (!CsmRefactoringUtils.isElementInOpenProject(fo)) {
+            if (problem ==null && !CsmRefactoringUtils.isElementInOpenProject(fo)) {
                 problem = new Problem(true, NbBundle.getMessage(CsmModificationRefactoringPlugin.class, "ERR_ProjectNotOpened"));
                 return problem;
             }

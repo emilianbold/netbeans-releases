@@ -47,7 +47,7 @@ import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 /**
  *
  * @author Vita Stejskal
- * @since 1.3
+ * @since 1.6
  */
 public final class IndexingManager {
 
@@ -104,7 +104,6 @@ public final class IndexingManager {
      * @param files The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
-     * @since 1.5
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
         RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
