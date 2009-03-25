@@ -118,7 +118,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     private HelpSet master = null;
     /** map from help sets to (soft refs to) components showing them */
-    private Map<HelpSet,Reference<JHelp>> availableJHelps = new HashMap<HelpSet,Reference<JHelp>>();
+    private final Map<HelpSet,Reference<JHelp>> availableJHelps = new HashMap<HelpSet,Reference<JHelp>>();
     /** viewer (may be invisible) showing help normally; null until first used; if invisible, is empty */
     private JFrame frameViewer = null;
     /** viewer showing help parented to current modal dialog; initially null */
@@ -222,7 +222,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      * need to have different contents (or a different
      * order of contents) when next viewed.
      */    
-    protected void helpSetsChanged() {
+    protected @Override void helpSetsChanged() {
         synchronized (this) {
             // XXX might be better to incrementally add/remove helpsets?
             // Unfortunately the JavaHelp API does not provide a way to
@@ -782,7 +782,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Dimension me = getSize();
             setLocation((screen.width - me.width) / 2, (screen.height - me.height) / 2);
         }
-        public void setVisible(boolean show) {
+        public @Override void setVisible(boolean show) {
             if (show && run != null) {
                 Installer.log.fine("posting request from progress dialog...");
                 getHelpLoader().post(run).addTaskListener(this);

@@ -123,7 +123,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     Set<ModuleEntry> extraBinaryModules = new HashSet<ModuleEntry>();
     static boolean TEST = false;
     private LibrariesChildren libChildren;
-    private boolean cpLoaded;
+    private boolean extClustersLoaded;
 
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -235,37 +235,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return;
     }
 
-    // XXX support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path? not needed
-    // meaning "all platform clusters", recognized in harness and in UI;
-    // it would allow easy switch among platforms with different clusters;
-    // update also code of SuiteProjectGenerator#createPlatformProperties
-    private void loadClusterPath() {
-        assert platformModules != null : "Must create platform nodes first";
-        assert libChildren != null;
-        if (cpLoaded)
-            return;
-        Set<ClusterInfo> clusterPath = getProperties().getClusterPath();
-        if (clusterPath.size() > 0) {
-            // cluster.path exists, we enable/disabled platform nodes according to
-            // cluster.path, not enabled.clusterPath & disabled.clusterPath
-            for (ClusterNode node : libChildren.platformNodes) {
-                if (! clusterPath.contains(node.getClusterInfo()))
-                    // must not call setEnabled(true), disabled modules would be enabled
-                    node.setEnabled(false);
-            }
-            for (ClusterInfo ci : clusterPath) {
-                if (! ci.isPlatformCluster()) {
-                    if (ci.getProject() != null) {
-                        addProjectCluster(ci, false);
-                    } else {
-                        addExtCluster(ci);
-                    }
-                }
-            }
-        }
-        cpLoaded = true;
-    }
-
     private boolean isExternalCluster(Enabled en) {
         return !en.isLeaf() && en.getProject() == null && !en.isPlatformNode();
     }
@@ -285,21 +254,24 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         removeButton.setEnabled(canRemove);
         editButton.setEnabled(canEdit);
     }
-    
+
+    private RequestProcessor.Task refreshTask;
+
     void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
-        Runnable r = new Runnable() {
-            public void run() {
-                refreshModules();
-                loadClusterPath();
-                updateDependencyWarnings(true);
-            }
-        };
+        if (refreshTask == null) {
+            refreshTask = RP.create(new Runnable() {
+                public void run() {
+                    refreshModules();
+                    updateDependencyWarnings(true);
+                }
+            });
+        }
         if (TEST) {
-            r.run();
+            refreshTask.run();
         } else {
-            RequestProcessor.getDefault().post(r);
+            refreshTask.schedule(0);
         }
         updateJavaPlatformEnabled();
     }
@@ -345,11 +317,65 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void refreshModules() {
+        // create platform modules children first
         platformModules = getProperties().getActivePlatform().getSortedModules();
-        createPlatformModulesChildren();
-//       XXX  synchronized (this) {
-//            universe = null;
-//        }
+        initNodes();
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
+        Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
+
+        Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
+        libChildren.platformNodes.clear();
+
+        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_67;
+
+        for (ModuleEntry platformModule : platformModules) {
+            File clusterDirectory = platformModule.getClusterDirectory();
+            ClusterNode cluster = clusterToNode.get(clusterDirectory);
+            if (cluster == null) {
+                Children.SortedArray modules = new Children.SortedArray();
+                modules.setComparator(MODULES_COMPARATOR);
+                // enablement for pre-6.7 modules, for cluster path it gets resolved in load cluster.path section below
+                boolean enabled = newPlaf || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
+                ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
+                cluster = new ClusterNode(ci, modules);
+                clusterToNode.put(clusterDirectory, cluster);
+                libChildren.platformNodes.add(cluster);
+            }
+
+            AbstractNode module = new BinaryModuleNode(platformModule,
+                    ! disabledModuleCNB.contains(platformModule.getCodeNameBase()) && cluster.isEnabled());
+            cluster.getChildren().add(new Node[] { module });
+        }
+
+        // next, load cluster.path
+        // XXX support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path?
+        // meaning "all platform clusters", recognized in harness and in UI;
+        // it would allow easy switch among platforms with different clusters; probably not needed
+        // update also code of SuiteProjectGenerator#createPlatformProperties
+        Set<ClusterInfo> clusterPath = getProperties().getClusterPath();
+        if (clusterPath.size() > 0) {
+            // cluster.path exists, we enable/disabled platform nodes according to
+            // cluster.path, not enabled.clusterPath & disabled.clusterPath
+            for (ClusterNode node : libChildren.platformNodes) {
+                if (!clusterPath.contains(node.getClusterInfo())) // must not call setEnabled(true), disabled modules would be enabled
+                {
+                    node.setEnabled(false);
+                }
+            }
+            if (!extClustersLoaded) {
+                for (ClusterInfo ci : clusterPath) {
+                    if (!ci.isPlatformCluster()) {
+                        if (ci.getProject() != null) {
+                            addProjectCluster(ci, false);
+                        } else {
+                            addExtCluster(ci);
+                        }
+                    }
+                }
+                extClustersLoaded = true;
+            }
+        }
+        libChildren.setMergedKeys();
     }
     
     private void refreshJavaPlatforms() {
@@ -617,8 +643,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }//GEN-LAST:event_javaPlatformComboItemStateChanged
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
-        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
-        updateJavaPlatformEnabled();
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            store();    // restore the same enablement of clusters for new platform
+            getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+            updateJavaPlatformEnabled();
+        }
     }//GEN-LAST:event_platformValueItemStateChanged
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
@@ -711,35 +740,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     // End of variables declaration//GEN-END:variables
     
     
-    private void createPlatformModulesChildren() {
-        initNodes();
-        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
-        Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
-        
-        Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
-        libChildren.platformNodes.clear();
-
-        for (ModuleEntry platformModule : platformModules) {
-            File clusterDirectory = platformModule.getClusterDirectory();
-            ClusterNode cluster = clusterToNode.get(clusterDirectory);
-            if (cluster == null) {
-                Children.SortedArray modules = new Children.SortedArray();
-                modules.setComparator(MODULES_COMPARATOR);
-                boolean enabled = SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
-                ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
-                cluster = new ClusterNode(ci, modules);
-                clusterToNode.put(clusterDirectory, cluster);
-                libChildren.platformNodes.add(cluster);
-            }
-            
-            AbstractNode module = new BinaryModuleNode(platformModule,
-                    ! disabledModuleCNB.contains(platformModule.getCodeNameBase()) && cluster.isEnabled());
-            cluster.getChildren().add(new Node[] { module });
-        }
-        
-        libChildren.setMergedKeys();
-    }
-
     private static final Comparator<Node> MODULES_COMPARATOR = new Comparator<Node>() {
         Collator COLL = Collator.getInstance();
         public int compare(Node n1, Node n2) {
@@ -854,7 +854,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         Enabled(Children ch, boolean enabled) {
             super(ch);
-            setEnabled(enabled);
+            setState(enabled ? EnabledState.FULL_ENABLED : EnabledState.DISABLED, false);
             
             Sheet s = Sheet.createDefault();
             Sheet.Set ss = s.get(Sheet.PROPERTIES);
@@ -1398,10 +1398,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private RequestProcessor.Task updateDependencyWarningsTask;
-    private RequestProcessor RP = new RequestProcessor(SuiteCustomizerLibraries.class.getName());
+    private RequestProcessor RP = new RequestProcessor(SuiteCustomizerLibraries.class.getName(), 1);
 
     private void updateDependencyWarnings(final boolean refreshUniverse) {
-        if (TEST || ! cpLoaded) {
+        if (TEST || ! extClustersLoaded) {
             return;
         }
         // XXX avoid running unless and until we become visible, perhaps
@@ -1570,7 +1570,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         private static void putUnfixable(FixInfo fi, String[] warning) {
             fi.fixable = false;
-            fi.warning = warning;
+            // chain of original warnings ended up in unfixable problem,
+            // but we have to show root cause (otherwise it can complain about unsatisifed
+            // dep. of excluded module; just disable "Resolve" button; 
+            // fi.warning = warning;
         }
 
         String[] warning;
@@ -1693,10 +1696,19 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             if (!found) {
                 if (wouldBeProvider != null) {
-                    // XXX may display dialog for choosing appropriate provider, turning this into fixable error
-                    FixInfo.putUnfixable(fi, new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
-                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()});
-                    return true;
+                    String[] msg = new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
+                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()};
+                    if (possibleProviders.size() == 1) {
+                        // exactly one (disabled) provider, can be fixed automatically
+                        excluded.remove(wouldBeProvider);
+                        FixInfo.putFixable(fi, wouldBeProvider.getCodeNameBase(), msg);
+                        ret = true;
+                        continue;
+                    } else {
+                        // XXX may display dialog for choosing appropriate provider, turning this into fixable error
+                        FixInfo.putUnfixable(fi, msg);
+                        return true;
+                    }
                 } else {
                     FixInfo.putUnfixable(fi, new String[] {"ERR_no_providers", tok, mdn, mc}); // NOI18N
                     return true;
