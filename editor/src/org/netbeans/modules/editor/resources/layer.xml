@@ -379,15 +379,4 @@ made subject to such option by the copyright holder.
     <folder name="WarmUp">
       <file name="org-netbeans-modules-editor-EditorWarmUpTask.instance"/>
     </folder>
-
-    <folder name="OptionsExport">
-        <folder name="Editor">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.editor.Bundle#Editor.Export.Category.displayName"/>
-            <attr name="position" intvalue="200"/>
-            <file name="IndentEngine">
-                <attr name="include" stringvalue="config/Services/IndentEngine/.*"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.editor.Bundle#IndentEngine.Options.Export.displayName"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>
