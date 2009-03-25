@@ -160,6 +160,11 @@ public final class ProjectPropertiesSupport {
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
         FileObject sources = project.getSourcesDirectory();
         if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
+            FileObject fo = sources.getFileObject(subdirectoryPath);
+            if (fo != null) {
+                return fo;
+            }
+            // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
             File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
             return FileUtil.toFileObject(resolved);
         }
@@ -294,18 +299,32 @@ public final class ProjectPropertiesSupport {
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         List<String> locals = PhpProjectUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        int size = remotes.size();
-        if (size != locals.size()) {
-            // something is wrong...
-            return Collections.emptyList();
-        }
-        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(size);
-        for (int i = 0; i < size; ++i) {
+        int remotesSize = remotes.size();
+        int localsSize = locals.size();
+        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
+        for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
             if (PhpProjectUtils.hasText(remotePath)) {
-                FileObject subDir = getSourceSubdirectory(project, locals.get(i));
-                if (subDir != null && subDir.isValid()) {
-                    paths.add(Pair.of(remotePath, FileUtil.toFile(subDir).getAbsolutePath()));
+                // if user has only 1 path and local == sources => property is not stored at all!
+                String l = null;
+                if (i < localsSize) {
+                    l = locals.get(i);
+                }
+                String localPath = null;
+                File local = new File(l);
+                if (local.isAbsolute()) {
+                    if (local.isDirectory()) {
+                        localPath = local.getAbsolutePath();
+                    }
+                } else {
+                    FileObject subDir = getSourceSubdirectory(project, l);
+                    if (subDir != null && subDir.isValid()) {
+                        localPath = FileUtil.toFile(subDir).getAbsolutePath();
+                    }
+                }
+
+                if (localPath != null) {
+                    paths.add(Pair.of(remotePath, localPath));
                 }
             }
         }
