@@ -101,7 +101,7 @@ public class HudsonJobNode extends AbstractNode {
                     return new HudsonJobBuildNode((HudsonJobBuild) key);
                 }
             }
-        }, false);
+        }, true);
     }
 
     @Override
