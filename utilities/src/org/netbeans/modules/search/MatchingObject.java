@@ -579,7 +579,11 @@ final class MatchingObject implements PropertyChangeListener {
         List<TextDetail> textMatches = resultModel.basicCriteria.getTextDetails(object);
 
         int offsetShift = 0;
-        for (TextDetail textDetail : textMatches) {
+        for (int i=0; i < textMatches.size(); i++) {
+            if (!matchesSelection[i]){
+                continue;
+            }
+            TextDetail textDetail = textMatches.get(i);
             String matchedSubstring = content.substring(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift);
             if (!matchedSubstring.equals(textDetail.getMatchedText())) {
                 log(SEVERE, "file match part differs from the expected match");  //NOI18N
