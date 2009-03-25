@@ -39,15 +39,20 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
-import java.util.Collection;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,33 +61,70 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, File executable) throws SourceFileInfoCannotBeProvided {
-        //get project current name
-        Project prj = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
-        if (prj.getLookup().lookup(NativeProject.class) == null) {
-            throw new SourceFileInfoCannotBeProvided();
-        }
-        CsmProject csmProject = CsmModelAccessor.getModel().getProject(prj);
-        if (csmProject == null) {
-            throw new SourceFileInfoCannotBeProvided();
-        }
-        CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
-        if (csmDeclaration == null) {
-            Collection<CsmProject> libraries = csmProject.getLibraries();
-            for (CsmProject library : libraries) {
-                csmDeclaration = library.findDeclaration(functionName);
-                if (csmDeclaration != null) {
-                    break;
-                }
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+        try {
+            //get project current name
+            String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
+            if (projectFolderName == null) {
+                throw new SourceFileInfoCannotBeProvided();
             }
-        }
-        if (csmDeclaration == null) {
+            Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
+            if (prj.getLookup().lookup(NativeProject.class) == null) {
+                throw new SourceFileInfoCannotBeProvided();
+            }
+            CsmProject csmProject = CsmModelAccessor.getModel().getProject(prj);
+            if (csmProject == null) {
+                throw new SourceFileInfoCannotBeProvided();
+            }
+            String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
+            CsmFunctionDefinition csmFunctionDefinition = getFirstDefinition(csmProject, name);
+            if (csmFunctionDefinition == null){
+                throw new SourceFileInfoCannotBeProvided();
+            }
+            String sourceFile =    csmFunctionDefinition.getContainingFile().getAbsolutePath().toString();
+            int startOffset = csmFunctionDefinition.getStartOffset();
+            return new SourceFileInfo(sourceFile, startOffset);//) + offset);
+//            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
+//            if (csmDeclaration == null) {
+//                Collection<CsmProject> libraries = csmProject.getLibraries();
+//                for (CsmProject library : libraries) {
+//                    csmDeclaration = library.findDeclaration(functionName);
+//                    if (csmDeclaration != null) {
+//                        break;
+//                    }
+//                }
+//            }
+//            if (csmDeclaration == null) {
+//                throw new SourceFileInfoCannotBeProvided();
+////            }
+//            if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)) {
+//                //do not know how to deal with this
+//                throw new SourceFileInfoCannotBeProvided();
+//            }
+//            return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
+        } catch (IOException ex) {
+            throw new SourceFileInfoCannotBeProvided();
+        } catch (IllegalArgumentException ex) {
             throw new SourceFileInfoCannotBeProvided();
         }
-        if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)) {
-            //do not know how to deal with this
-            throw new SourceFileInfoCannotBeProvided();
-        }
-        return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
     }
+
+
+    static CsmFunctionDefinition getFirstDefinition(CsmProject project, CharSequence qualifiedName) {
+
+       Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
+       while (iter.hasNext()) {
+           CsmFunction foo = iter.next();
+           if (CsmKindUtilities.isFunctionDefinition(foo)) {
+               return (CsmFunctionDefinition) foo;
+           } else {
+               CsmFunctionDefinition def = foo.getDefinition();
+               if (def != null) {
+                   return def;
+               }
+           }
+       }
+       return null;
+   }
+
 }

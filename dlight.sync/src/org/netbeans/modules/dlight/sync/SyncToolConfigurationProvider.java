@@ -52,6 +52,7 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
@@ -61,7 +62,7 @@ import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -159,10 +160,13 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             SunStudioDCConfiguration.c_name,
             SunStudioDCConfiguration.c_iSync,
             SunStudioDCConfiguration.c_iSyncn);
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
+//        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
+//            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
-        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
-            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
-
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_iSync, SunStudioDCConfiguration.c_iSyncn));
+        indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         return indicatorConfiguration;
     }
@@ -232,27 +236,26 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
+        Column syncTimeColumn = new Column("time", Long.class, "Time, ms", null);//NOI18N
+        Column syncCountColumn = new Column("count", Long.class, "Count", null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
             new Column("func_name", MangledNameType.class, "Function", null),// NOI18N
-            new Column("time", Long.class, "Time, ms", null),// NOI18N
-            new Column("count", Long.class, "Count", null));// NOI18N
-        String sql = "SELECT func.func_id as id, func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
+            syncTimeColumn,
+            syncCountColumn);
+        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
             " FROM sync, node AS node, func" +// NOI18N
             " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +// NOI18N
-            " GROUP BY node.func_id, func.func_id, func.func_name"; // NOI18N
+            " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
         viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));// NOI18N
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id");// NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");
+//        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+//            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id");// NOI18N
 
-        tableVisualizerConfiguration.setEmptyAnalyzeMessage(
-            loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(syncCountColumn, syncTimeColumn));
 
-        tableVisualizerConfiguration.setEmptyRunningMessage(
-            loc("DetailedView.EmptyRunningMessage")); // NOI18N
-
-        tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
     }
