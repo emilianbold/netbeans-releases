@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,25 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.csl.source.util;
+package org.netbeans.editor.ext.html;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
- * This file is originally from Retouche, the Java Support
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
  *
- *
- * @author tom
+ * @author marekfukala
  */
-public interface LowMemoryNotifierMBean {
+public class HTMLSyntaxSupportTest extends TestBase {
 
-    public static final String OBJECT_NAME = "org.netbeans.modules.csl.source:type=LowMemoryNotifier";     //NOI18N
+    public HTMLSyntaxSupportTest() {
+        super(HTMLSyntaxSupportTest.class.getName());
+    }
 
-    public float getMemoryTresholdLimit ();
+    public void testCheckOpenCompletion() throws BadLocationException {
+        Document doc = createDocument();
+        
+        doc.insertString(0, "<", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 1, "<"));
 
-    public void setMemoryTresholdLimit (float value);
+        doc.insertString(1, "div", null);
+        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 4, "div"));
 
+        doc.insertString(4, " ", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 5, " "));
+
+        doc.insertString(5, "/>", null);
+        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 7, "/>"));
+
+        doc.insertString(7, "</", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 9, "</"));
+
+        doc.insertString(9, "div> &", null);
+        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 15, "div> &"));
+
+    }
+
+    
 }
