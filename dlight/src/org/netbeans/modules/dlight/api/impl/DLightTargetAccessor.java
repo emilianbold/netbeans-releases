@@ -72,4 +72,5 @@ public abstract class DLightTargetAccessor {
     }
 
     public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
+    public abstract DLightTarget.Info getDLightTargetInfo(DLightTarget target);
 }

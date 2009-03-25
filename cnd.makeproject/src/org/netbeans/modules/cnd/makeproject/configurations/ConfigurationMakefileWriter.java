@@ -632,13 +632,6 @@ public class ConfigurationMakefileWriter {
                         break;
                 }
                 break;
-            case Platform.PLATFORM_MACOSX:
-                switch (conf.getConfigurationType().getValue()) {
-                    case MakeConfiguration.TYPE_QT_APPLICATION:
-                        output = mangleAppnameMac(output);
-                        break;
-                }
-                break;
         }
         return conf.expandMacros(output);
     }
@@ -649,10 +642,6 @@ public class ConfigurationMakefileWriter {
         } else {
             return original + ".exe"; // NOI18N
         }
-    }
-
-    private String mangleAppnameMac(String original) {
-        return original + ".app/Contents/MacOS/" + IpeUtils.getBaseName(original); // NOI18N
     }
 
     public static String getObjectDir(MakeConfiguration conf) {

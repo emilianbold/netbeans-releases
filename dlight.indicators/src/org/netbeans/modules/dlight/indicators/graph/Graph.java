@@ -43,9 +43,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.ToolTipManager;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 
 /**
  * Displays a percentage graph
@@ -53,21 +50,26 @@ import javax.swing.event.AncestorListener;
  */
 public class Graph extends JComponent {
 
+    public interface LabelRenderer {
+        String render(int value);
+    }
+
     private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
     private final GraphPainter graph;
     private Axis hAxis;
     private Axis vAxis;
 
-    public Graph(int scale, GraphDescriptor ... descriptors) {
-        graph = new GraphPainter(scale, descriptors);
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                graph.setSize(getWidth(), getHeight());
-            }
-            public void ancestorRemoved(AncestorEvent event) {}
-            public void ancestorMoved(AncestorEvent event) {}
-        });
+    public Graph(int scale, LabelRenderer renderer, GraphDescriptor ... descriptors) {
+        setOpaque(true);
+        graph = new GraphPainter(scale, renderer, descriptors);
+//        ToolTipManager.sharedInstance().registerComponent(this);
+//        addAncestorListener(new AncestorListener() {
+//            public void ancestorAdded(AncestorEvent event) {
+//                graph.setSize(getWidth(), getHeight());
+//            }
+//            public void ancestorRemoved(AncestorEvent event) {}
+//            public void ancestorMoved(AncestorEvent event) {}
+//        });
     }
 
     public synchronized JComponent getVerticalAxis() {
@@ -138,11 +140,6 @@ public class Graph extends JComponent {
         }
     }
 
-    @Override
-    public boolean isOpaque() {
-        return true;
-    }
-
     private static int paintCount = 0;
 
     @Override
@@ -194,7 +191,7 @@ public class Graph extends JComponent {
         return String.format("%d", value);
     }
 
-    /*package*/ static enum AxisOrientation {
+    private static enum AxisOrientation {
         HORIZONTAL,
         VERTICAL
     }
@@ -216,11 +213,13 @@ public class Graph extends JComponent {
 
         public void setUpperLimit(int limit) {
             this.max = limit;
+            repaint();
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            graph.drawAxis(g, orientation, getSize());
+            super.paintComponent(g);
+            graph.drawVerticalAxis(g, getWidth(), getHeight());
         }
 
     }

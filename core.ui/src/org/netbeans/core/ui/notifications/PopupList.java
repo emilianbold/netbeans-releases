@@ -157,7 +157,8 @@ public class PopupList {
         }
         if( rowCount <= MAX_VISIBLE_ROWS )
             prefSize = panel.getPreferredSize();
-        scroll.setPreferredSize(prefSize);
+        scroll.getViewport().setPreferredSize(prefSize);
+        scroll.getViewport().setMinimumSize(prefSize);
         res.add( scroll );
         return res;
     }

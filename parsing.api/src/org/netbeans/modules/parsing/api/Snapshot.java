@@ -130,11 +130,11 @@ public final class Snapshot {
             });
             if (currentToOriginal [i] [1] >= 0)
                 newOriginalToCurrent.add (new int[] {
-                    originalToCurrent [i] [0], originalToCurrent [i] [1] - offset
+                    currentToOriginal [i] [1], currentToOriginal [i] [0] - offset
                 });
             else
                 newOriginalToCurrent.add (new int[] {
-                    originalToCurrent [i] [0], -1
+                    currentToOriginal [i - 1] [1] + currentToOriginal [i] [0] - currentToOriginal [i - 1] [0], -1
                 });
         }
         if (newOriginalToCurrent.size () > 0 &&
