@@ -52,6 +52,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -68,6 +70,7 @@ import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,6 +82,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Michal Mocnak
  */
 public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
+
+    private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
     
     private HudsonInstanceProperties properties;
     private final HudsonConnector connector;
@@ -271,13 +276,27 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
+            final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final ProgressHandle handle = ProgressHandleFactory.createHandle(
-                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
+                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()),
+                    new Cancellable() {
+                public boolean cancel() {
+                    Thread t = synchThread.get();
+                    if (t != null) {
+                        LOG.fine("Cancelling synchronization of " + getUrl());
+                        t.interrupt();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
             
             handle.start();
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
+                    synchThread.set(Thread.currentThread());
                     try {
                         // Get actual views
                         Collection<HudsonView> oldViews = getViews();

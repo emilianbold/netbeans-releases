@@ -121,6 +121,9 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             headers.clear();
         }
         for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
+            if (Thread.interrupted()) {
+                return;
+            }
             LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {baseURL, f.getPath()});
             f.refresh();
         }
