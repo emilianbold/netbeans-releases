@@ -70,8 +70,8 @@ public class DelegatingChooserUI extends ComponentUI {
         // it's terribly slow on Windows due to JDK bug
         if (Utilities.isWindows()) {
             String jv = System.getProperty("java.version");
-            if ("1.6.0_u2".compareToIgnoreCase(jv) >= 0 &&
-                    "1.6.0_u10".compareToIgnoreCase(jv) < 0) {
+            if ("1.6.0_02".compareToIgnoreCase(jv) >= 0 &&
+                    "1.6.0_10".compareToIgnoreCase(jv) <= 0) {
                 if (!Boolean.TRUE.equals(fc.getClientProperty(USE_SHELL_FOLDER))) {
                     fc.putClientProperty(USE_SHELL_FOLDER, Boolean.FALSE);
                 }
