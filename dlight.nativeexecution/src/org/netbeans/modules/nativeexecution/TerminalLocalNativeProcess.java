@@ -62,6 +62,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static String dorunScript;
     private final static boolean isWindows;
+    private final static boolean isMacOS;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -71,6 +72,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     static {
         isWindows = Utilities.isWindows();
+        isMacOS = Utilities.isMac();
 
         String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
@@ -204,7 +206,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        if (isWindows) {
+        if (isWindows || isMacOS) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-0", "" + getPID()); // NOI18N
             while (true) {
                 try {
@@ -230,7 +232,24 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         try {
             File resFile = new File(pidFileName + ".res"); // NOI18N
             resFile.deleteOnExit();
-            exitCode = Integer.parseInt(new BufferedReader(new FileReader(resFile)).readLine().trim());
+            int attempts = 10;
+
+            while (attempts-- > 0) {
+                if (resFile.exists() && resFile.length() > 0) {
+                    BufferedReader statusReader = new BufferedReader(new FileReader(resFile));
+                    String exitCodeString = statusReader.readLine();
+                    if (exitCodeString != null) {
+                        exitCode = Integer.parseInt(exitCodeString.trim());
+                    }
+                    break;
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    // Ignore...
+                }
+            }
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {
         }

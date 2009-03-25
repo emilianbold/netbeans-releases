@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Graph createGraph() {
-        Graph graph = new Graph(100, DESCRIPTOR);
+        Graph graph = new Graph(100, null, DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
