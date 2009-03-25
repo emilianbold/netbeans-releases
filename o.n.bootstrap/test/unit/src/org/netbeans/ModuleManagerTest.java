@@ -2396,29 +2396,33 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    public static void assertOverrides(Module m, String clazz) throws Exception {
+    public static void assertOverrides(ClassLoader l, String name, String clazz) throws Exception {
         try {
-            assertFalse("module " + m.getCodeNameBase() + " did not override " + clazz,
-                    Class.forName(clazz) == m.getClassLoader().loadClass(clazz));
+            assertFalse(name + " did not override " + clazz, Class.forName(clazz) == l.loadClass(clazz));
         } catch (LinkageError e) {
             // right: we don't provide legal class bodies here, so it would fail to even load
         }
         String rsrc = clazz.replace('.', '/') + ".class";
         URL cpResource = ModuleManagerTest.class.getResource("/" + rsrc);
         assertNotNull("found " + rsrc, cpResource);
-        URL modResource = m.getClassLoader().getResource(rsrc);
+        URL modResource = l.getResource(rsrc);
         assertNotNull("found " + rsrc, modResource);
-        assertFalse("module " + m.getCodeNameBase() + " did not override " + rsrc,
-                cpResource.equals(modResource));
+        assertFalse(name + " did not override " + rsrc, cpResource.equals(modResource));
     }
-    public static void assertDoesNotOverride(Module m, String clazz) throws Exception {
-        assertEquals(Class.forName(clazz), m.getClassLoader().loadClass(clazz));
+    public static void assertOverrides(Module m, String clazz) throws Exception {
+        assertOverrides(m.getClassLoader(), "module " + m.getCodeNameBase(), clazz);
+    }
+    public static void assertDoesNotOverride(ClassLoader l, String clazz) throws Exception {
+        assertEquals(Class.forName(clazz), l.loadClass(clazz));
         String rsrc = clazz.replace('.', '/') + ".class";
         URL cpResource = ModuleManagerTest.class.getResource("/" + rsrc);
         assertNotNull("found " + rsrc, cpResource);
-        URL modResource = m.getClassLoader().getResource(rsrc);
+        URL modResource = l.getResource(rsrc);
         assertNotNull("found " + rsrc, modResource);
         assertEquals(cpResource, modResource);
+    }
+    public static void assertDoesNotOverride(Module m, String clazz) throws Exception {
+        assertDoesNotOverride(m.getClassLoader(), clazz);
     }
 
     public void testDisableWithAutoloadMajorRange() throws Exception { // #127720
