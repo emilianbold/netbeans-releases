@@ -161,6 +161,7 @@ public abstract class RubyTestCase extends JellyTestCase {
                 LOGGER.info("Using project in: " + projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
                     project = createProject(projectName);
+                    org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
                 } else {
                     ProjectSupport.openProject(projectRoot);
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));

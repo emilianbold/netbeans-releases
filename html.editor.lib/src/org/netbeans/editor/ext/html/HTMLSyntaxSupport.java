@@ -134,7 +134,47 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
     }
     
-    
+    public static boolean checkOpenCompletion(Document document, int dotPos, String typedText) {
+        BaseDocument doc = (BaseDocument)document;
+        switch( typedText.charAt( typedText.length()-1 ) ) {
+            case '/':
+                if (dotPos >= 2) { // last char before inserted slash
+                    try {
+                        String txtBeforeSpace = doc.getText(dotPos-2, 2);
+                        if( txtBeforeSpace.equals("</") )  // NOI18N
+                            return true;
+                    } catch (BadLocationException e) {}
+                }
+                break;
+            case ' ':
+                doc.readLock();
+                try {
+                    TokenSequence ts = getJoinedHtmlSequence(doc);
+                    if(ts == null) {
+                        //no suitable token sequence found
+                        return false;
+                    }
+
+                    ts.move(dotPos-1);
+                    if(ts.moveNext() || ts.movePrevious()) {
+                        if(ts.token().id() == HTMLTokenId.WS) {
+                            return true;
+                        }
+                    }
+                }finally {
+                    doc.readUnlock();
+                }
+                break;
+            case '<':
+            case '&':
+                return true;
+//            case ';':
+//                return COMPLETION_HIDE;
+
+        }
+        return false;
+
+    }
     
     /** The way how to get previous SyntaxElement in document. It is not intended
      * for direct usage, and thus is not public. Usually, it is called from
