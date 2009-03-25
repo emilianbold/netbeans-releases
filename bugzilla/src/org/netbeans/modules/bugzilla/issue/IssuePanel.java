@@ -193,6 +193,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        submitButton.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
