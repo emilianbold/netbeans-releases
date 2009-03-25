@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
@@ -73,6 +74,8 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 
@@ -91,12 +94,21 @@ public class JavaCustomIndexer extends CustomIndexer {
     
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
-        JavaIndex.LOG.log(Level.INFO, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
+        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
-            String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+            final FileObject root = context.getRoot();
+            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change");
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
+                return;
+            }
+            final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            if (sourcePath == null || bootPath == null || compilePath == null) {
+                String rootName = FileUtil.getFileDisplayName(root);
+                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
                 return;
             }
             final ClassIndexManager cim = ClassIndexManager.getDefault();
@@ -107,7 +119,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath);
                             ClassIndexImpl uq = cim.getUsagesQuery(context.getRootURI());
                             uq.setDirty(null);
                             for (Indexable i : files) {
@@ -178,7 +190,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         public Void run() throws Exception {
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            JavaParsingContext javaContext = new JavaParsingContext(context.getRoot());
                             for (Indexable i : files) {
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
