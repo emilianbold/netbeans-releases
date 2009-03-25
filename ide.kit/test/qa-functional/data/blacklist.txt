@@ -48,8 +48,6 @@ org.netbeans.lib.profiler.results.cpu.MethodInfoMapper
 org.netbeans.lib.profiler.results.cpu.ThreadInfos
 org.netbeans.lib.profiler.results.cpu.TimingAdjusterOld
 org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory
-org.netbeans.lib.profiler.utils.Bundle_en
-org.netbeans.lib.profiler.utils.Bundle_en_US
 
 # issue 136587:
  org.netbeans.modules.cnd.loaders.CndAbstractDataLoader
