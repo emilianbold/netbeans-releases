@@ -73,25 +73,37 @@ public final class Configurations {
 
     public Configurations init(Configuration[] confs, int defaultConf) {
         List<Runnable> toRun = new ArrayList<Runnable>();
+        Configuration def = null;
         configurationsLock.writeLock().lock();
         try {
             configurations.clear();
             if (confs != null) {
+                int current = 0;
                 for (int i = 0; i < confs.length; i++) {
                     if (confs[i] != null) {
                         configurations.add(confs[i]);
+                        if (current == defaultConf) {
+                            confs[i].setDefault(true);
+                            def = confs[i];
+                        } else {
+                            confs[i].setDefault(false);
+                        }
+                        current++;
                     } else {
                         new Exception("Configuration["+i+"]==null").printStackTrace(); // NOI18N
                     }
                 }
-                if (defaultConf >= 0 && configurations.size() > 0) {
-                    setActive(defaultConf);
+                if (def != null) {
                     toRun.addAll(tasks);
                     tasks.clear();
                 }
             }
         } finally {
             configurationsLock.writeLock().unlock();
+        }
+        if (def != null) {
+            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
+            pcs.firePropertyChange(PROP_DEFAULT, null, null);
         }
         for (Runnable task : toRun) {
             runOnCodeModelReadiness(task, false);
