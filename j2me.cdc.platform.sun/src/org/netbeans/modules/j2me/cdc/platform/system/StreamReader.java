@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,67 +37,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.screen.display;
+ 
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+package org.netbeans.modules.j2me.cdc.platform.system;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
- * @author akorostelev
+ * Reads an @see java.io.InputStream and fills output to a StringBuffer
+ * @author suchys
  */
-public class SVGSpinnerDisplayPresenter extends SVGComponentDisplayPresenter {
+class StreamReader extends Thread {
 
-    // fix issue with incorrect BBox returned by persejus for spinner.
-    // move bbox to the left and increase width by SELECTION_SHAPE_EXTENSION
-    private static final int SELECTION_SHAPE_EXTENSION = 3;
+    static private final Logger logger = Logger.getLogger(StreamReader.class.getName());
+    private final BufferedInputStream bis;
+    private final StringBuffer sb;
 
-    private Rectangle mySelectionRect = null;
-    private Point myLocationPoint = null;
-
-    @Override
-    public void reload(ScreenDeviceInfo deviceInfo) {
-        super.reload(deviceInfo);
-        mySelectionRect = null;
-        myLocationPoint = null;
+    public StreamReader(final InputStream is, final StringBuffer sb) {
+        super();
+        bis = new BufferedInputStream(is, 2048);
+        this.sb = sb;
+        start();
     }
 
     @Override
-    public Point getLocation() {
-        if (myLocationPoint == null){
-            Point location = super.getLocation();
-            if (location != null){
-                myLocationPoint = location;
-                myLocationPoint.setLocation(
-                        location.getX() - SELECTION_SHAPE_EXTENSION,
-                        location.getY());
+    public void run() {
+        try {
+            int i;
+            while ((i = bis.read()) != 1) {
+                if (i == -1) {
+                    break;
+                } else {
+                    if (sb != null) {
+                        sb.append((char) i);
+                    }
+                }
+            }
+        } catch (IOException ioEx) {
+            logger.log(Level.WARNING, ioEx.getLocalizedMessage(), ioEx);
+        } finally {
+            try {
+                bis.close();
+            } catch (IOException ioEx) {
+                logger.log(Level.WARNING, ioEx.getLocalizedMessage(), ioEx);
             }
         }
-        return myLocationPoint;
     }
-
-    @Override
-    public Shape getSelectionShape() {
-
-        if (mySelectionRect == null) {
-            Shape shape = super.getSelectionShape();
-            if (shape != null) {
-                mySelectionRect = shape.getBounds();
-                mySelectionRect.setSize(
-                        (int) mySelectionRect.getWidth() + SELECTION_SHAPE_EXTENSION,
-                        (int) mySelectionRect.getHeight());
-            }
-        }
-        return mySelectionRect;
-    }
-
-
-
 }

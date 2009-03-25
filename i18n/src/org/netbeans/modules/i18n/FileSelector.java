@@ -221,9 +221,20 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
                         selectedDataObject = FileSelector.this.template.createFromTemplate(selectedFolder, fileName);
                         // select created
                         Node[] selected = manager.getSelectedNodes();
+                        //case when folder was selected
                         if (selected != null && selected.length == 1
                                 && selected[0].getCookie(DataObject.class) == selectedFolder) {
                             Node[] sub = selected[0].getChildren().getNodes(true);
+                            for (int i=0; i < sub.length; i++) {
+                                if (sub[i].getCookie(DataObject.class) == selectedDataObject) {
+                                    manager.setSelectedNodes(new Node[] { sub[i] });
+                                    break;
+                                }
+                            }
+                        //case when another properties file was selected
+                        } else if (selected != null && selected.length == 1
+                                && selected[0].getCookie(DataObject.class).getFolder() == selectedFolder) {
+                            Node[] sub = selected[0].getParentNode().getChildren().getNodes(true);
                             for (int i=0; i < sub.length; i++) {
                                 if (sub[i].getCookie(DataObject.class) == selectedDataObject) {
                                     manager.setSelectedNodes(new Node[] { sub[i] });

@@ -271,14 +271,14 @@ public final class Session implements ContextProvider {
     
     /**
      * Kills all registerred engines / languages. This utility method calls
-     * <pre>doAction (DebuggerEngine.ACTION_KILL)</pre> method on all
+     * <pre>postAction (DebuggerEngine.ACTION_KILL)</pre> method on all
      * registerred DebuggerEngines.
      */
     public void kill () {
         DebuggerEngine[] enginesToKill = engines;
         for (DebuggerEngine e : enginesToKill) {
             e.getActionsManager ().
-                doAction (ActionsManager.ACTION_KILL);
+                postAction (ActionsManager.ACTION_KILL);
         }
     }
 
