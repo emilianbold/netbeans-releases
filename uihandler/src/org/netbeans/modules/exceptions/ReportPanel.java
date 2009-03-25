@@ -292,7 +292,7 @@ public class ReportPanel extends javax.swing.JPanel {
         }
 
         public String getUserName(){
-            return loginField.getText();
+            return loginField.getText().trim();
         }
 
         public String getPasswd(){

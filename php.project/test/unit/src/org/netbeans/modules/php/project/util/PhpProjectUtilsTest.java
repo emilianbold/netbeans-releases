@@ -67,5 +67,9 @@ public class PhpProjectUtilsTest extends NbTestCase {
         assertArrayEquals(items, PhpProjectUtils.explode(string, "??NB??").toArray(new String[0]));
         string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
         assertArrayEquals(items, PhpProjectUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+
+        // test for empty string (relative path ".")
+        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
+        assertArrayEquals(new String[] {"one", "", "two"}, PhpProjectUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
     }
 }
