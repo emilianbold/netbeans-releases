@@ -39,6 +39,8 @@
 package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
@@ -46,7 +48,11 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.openide.util.Lookup;
 
 
 /**
@@ -58,10 +64,12 @@ final class StackDataProviderImpl implements StackDataProvider {
           FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
 
   private StackDataStorage storage;
+  private ServiceInfoDataStorage serviceInfoDataStorage;
 
 
   public void attachTo(DataStorage storage) {
     this.storage = (StackDataStorage) storage;
+    attachTo((ServiceInfoDataStorage)storage);
   }
   
 
@@ -97,4 +105,32 @@ final class StackDataProviderImpl implements StackDataProvider {
   public String getTableValueAt(Column column, int row) {
     return null;
   }
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        this.serviceInfoDataStorage = serviceInfoDataStorage;
+     //   throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+        //we should get here SourceFileInfoProvider
+        Collection<? extends SourceFileInfoProvider> sourceInforFileProviders =
+                Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
+
+        if (sourceInforFileProviders.isEmpty()) {
+            return null;
+        }
+        Iterator<? extends SourceFileInfoProvider> iterator = sourceInforFileProviders.iterator();
+        while (iterator.hasNext()) {
+            SourceFileInfoProvider provider = iterator.next();
+            try {
+                // TODO: pass meaningful values for offset and executable
+                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+                if (lineInfo != null && lineInfo.isSourceKnown()) {
+                    return lineInfo;
+                }
+            } catch (SourceFileInfoProvider.SourceFileInfoCannotBeProvided e) {
+            }
+        }
+        return null;
+    }
 }

@@ -87,7 +87,7 @@ public class MeasureJ2SEActionsTest {
 //  needs to be fixed      .addTest(SwitchViewTest.class)
         .addTest(TypingInEditorTest.class)
         // needs tb moved to scenarios .addTest(RefactorFindUsagesTest.class)
-        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters("websvccommon[0-9]|apisupport[0-9]|profiler[0-9]").reuseUserDir(true)));
  
         return suite;
     }

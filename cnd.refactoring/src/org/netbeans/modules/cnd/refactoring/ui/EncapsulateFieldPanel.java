@@ -439,7 +439,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .add(layout.createSequentialGroup()
                 .add(jLblTitle)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jButtonSelectAll)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -473,7 +473,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 .add(jInlineMethods)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckAccess)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {jComboAccess, jComboField, jComboInsertPoint, jComboJavadoc, jComboSort}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -640,10 +640,21 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                 // this item contains info about fields
                 @SuppressWarnings("unchecked")
                 MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
+                // getter
+                CsmMethod defaultGetter = null;
+                if (((AccessorInfo) row.get(2)).defaultAccessor != null) {
+                    defaultGetter = (CsmMethod) ((AccessorInfo) row.get(2)).defaultAccessor.getElementHandle();
+                }
+                // setter
+                CsmMethod defaultSetter = null;
+                if (((AccessorInfo) row.get(4)).defaultAccessor != null) {
+                    defaultSetter = (CsmMethod) ((AccessorInfo) row.get(4)).defaultAccessor.getElementHandle();
+                }
                 result.add(new EncapsulateFieldInfo(
                         mi.getElementHandle(),
                         "".equals(getterName)?null:getterName, // NOI18N
-                        "".equals(setterName)?null:setterName)); // NOI18N
+                        "".equals(setterName)?null:setterName,  // NOI18N
+                        defaultGetter, defaultSetter));
             }
         }
 

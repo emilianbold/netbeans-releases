@@ -37,23 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai;
+package org.netbeans.modules.cnd.gizmo;
 
 /**
- * Response to the "/api/projects" and "/api/projects?page=N" calls.
  *
- * @author Maros Sandor
+ * @author mt154047
  */
-public class JsonListProjects {
-
-    public String prev;
-    public String next;
-    public JsonProjectBriefInfo [] projects;
-
-    public static class JsonProjectBriefInfo {
-        public String href;
-	public String name;
-	public String display_name;
-	public String image;
-    }
+public interface GizmoServiceInfo {
+    String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
+    String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
+    String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
 }

@@ -40,15 +40,12 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JButton;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,28 +76,37 @@ public abstract class RemoteConnectionSupport {
                     if (passwd == null) {
                         ConnectionManager.getInstance().connectTo(env);
                     } else {
-                        ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), false);
+//                        try {
+                            ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), false);
+//                        } catch (ConnectException ex) {
+//                            if ((ex instanceof  ConnectException) &&  ex.getMessage().equals("Auth fail")) { // NOI18N
+//                                ConnectionManager.getInstance().connectTo(env);
+//                            } else {
+//                                throw ex;
+//                            }
+//                        }
                     }
                 } catch (IOException ex) {
                     log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
-                    String msg = ex.getMessage();
-                    if ((ex instanceof  ConnectException) &&  msg.equals("Auth fail")) { // NOI18N
-                        JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
-                        NotifyDescriptor d = new NotifyDescriptor(
-                                NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
-                                NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
-                                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
-                                new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
-                        if (DialogDisplayer.getDefault().notify(d) == btRetry) {
-                             retry = true;
-                        } else {
-                            failed = true;
-                            failureReason = getMessage(ex);
-                        }
-                    } else {
+                    log.log(Level.FINE, "Caused by:", ex);
+//                    String msg = ex.getMessage();
+//                    if ((ex instanceof  ConnectException) &&  msg.equals("Auth fail")) { // NOI18N
+//                        JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
+//                        NotifyDescriptor d = new NotifyDescriptor(
+//                                NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
+//                                NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
+//                                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+//                                new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
+//                        if (DialogDisplayer.getDefault().notify(d) == btRetry) {
+//                             retry = true;
+//                        } else {
+//                            failed = true;
+//                            failureReason = getMessage(ex);
+//                        }
+//                    } else {
                         failed = true;
                         failureReason = getMessage(ex);
-                    }
+//                    }
 
                 } catch (CancellationException ex) {
                     cancelled = true;

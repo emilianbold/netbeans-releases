@@ -11,7 +11,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 
 public interface SourceSupportProvider {
-    public void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
-    public void showSource(SourceFileInfo lineInfo);
+    void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
+    void showSource(SourceFileInfo lineInfo);
 
 }

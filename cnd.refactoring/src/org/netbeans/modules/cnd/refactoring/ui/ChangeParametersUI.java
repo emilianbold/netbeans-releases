@@ -123,6 +123,7 @@ public class ChangeParametersUI implements RefactoringUI {
         CsmVisibility visibility = panel.getModifier();
         refactoring.setParameterInfo(paramList);
         refactoring.setVisibility(visibility);
+        refactoring.setUseDefaultValueOnlyInFunctionDefinition(panel.isUseDefaultValueOnlyInFunctionDefinition());
         if (checkOnly) {
             problem = refactoring.fastCheckParameters();
         } else {

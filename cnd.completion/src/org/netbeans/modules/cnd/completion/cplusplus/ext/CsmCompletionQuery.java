@@ -644,10 +644,12 @@ abstract public class CsmCompletionQuery {
                 CsmType opType = op.getReturnType();
                 if ((opType != type) && (level != 0)) {
                     if (operator == CsmFunction.OperatorKind.ARROW) {
-                        // recursion only for ->
-                        CsmClassifier opCls = getClassifier(opType, contextFile, operator, level - 1);
-                        if (opCls != null) {
-                            cls = opCls;
+                        if (!type.isPointer()) {
+                            // recursion only for ->
+                            CsmClassifier opCls = getClassifier(opType, contextFile, operator, level - 1);
+                            if (opCls != null) {
+                                cls = opCls;
+                            }
                         }
                     } else {
                         CsmClassifier opCls = getClassifier(opType, contextFile);

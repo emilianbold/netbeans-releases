@@ -126,6 +126,7 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
 
     @Override
     public void close() {
+        editorOperator.txtEditorPane().pushKey(KeyEvent.VK_ESCAPE);
     }
 
     @Override
@@ -133,7 +134,7 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         repaintManager().resetRegionFilters();
         editorOperator.closeDiscard();
     }
-    
+
     public void testCC_InRubyEditor() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
@@ -141,11 +142,19 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         lineNumber = 5;
         doMeasurement();
     }
-
+/* TB fixed
     public void testCC_InRHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Unit Tests";
+        nodePath = "Test Files|unit";
+        lineNumber = 2;
+        doMeasurement();
+    }
+*/
+    public void testCC_InYMLEditor() {
+        testProject = Projects.RAILS_PROJECT;
+        fileName = "yaml20kb.yml";
+        nodePath = "Test Files|unit";
         lineNumber = 39;
         doMeasurement();
     }
@@ -154,7 +163,7 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";
-        lineNumber = 39;
+        lineNumber = 41;
         doMeasurement();
     }
 
@@ -173,6 +182,15 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         lineNumber = 39;
         doMeasurement();
     }
+
+    public void testCC_InJSONEditor() {
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "json20kB.json";
+        nodePath = "Web Pages";
+        lineNumber = 39;
+        doMeasurement();
+    }
+
     
     private static final RegionFilter COMPLETION_FILTER =
             new RegionFilter() {

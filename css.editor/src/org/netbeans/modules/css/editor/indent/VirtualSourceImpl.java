@@ -37,38 +37,65 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.impl;
+package org.netbeans.modules.css.editor.indent;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.impl.DefaultTreeTableNode;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.css.formatting.api.embedding.*;
+import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Source;
 
-/**
- *
- * @author mt154047
- */
-public final class SQLDefaultTreeTableDataProvider implements TreeTableDataProvider<DefaultTreeTableNode>{
+// not yet finished: depends on adding new API method to parsing.api.Source: getAllEmbeddings()
 
-    public List<DefaultTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
-        throw new UnsupportedOperationException("Not supported yet.");
+public class VirtualSourceImpl implements VirtualSource {
+
+    private Iterable<Embedding> embeddings;
+
+    public VirtualSourceImpl(Iterable<Embedding> embedding) {
+        this.embeddings = embedding;
     }
 
-    public List<DefaultTreeTableNode> getChildren(List<DefaultTreeTableNode> path) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public String getSource(int startOffset, int endOffset) {
+        for (Embedding e : embeddings) {
+            int start = e.getSnapshot().getEmbeddedOffset(startOffset);
+            int end = e.getSnapshot().getEmbeddedOffset(endOffset);
+            if (start != -1 && end != -1) {
+                return e.getSnapshot().getText().subSequence(start, end).toString();
+            }
+        }
+        return null;
     }
 
-    public DefaultTreeTableNode getValueAt(int row) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("VirtualSourceImpl[\n");
+        for (Embedding e : embeddings) {
+            sb.append("Embedding:"+e+"\n");
+            sb.append("Content:\n");
+            sb.append(e.getSnapshot().getText()+"\n");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
-    public String getTableValueAt(Column column, int row) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
-    public void attachTo(DataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public static class Factory implements VirtualSource.Factory {
+
+        public VirtualSource createVirtualSource(Document doc, String mimeOfInterest) {
+            Source s = Source.create(doc);
+//            Iterable<Embedding> embeddings = s.getAllEmbeddings();
+//            List<Embedding> l = new ArrayList<Embedding>();
+//            for (Embedding e : embeddings) {
+//                if (e.getMimeType().equals(mimeOfInterest)) {
+//                    l.add(e);
+//                }
+//            }
+//            if (l.size() > 0) {
+//                return new VirtualSourceImpl(l);
+//            }
+            return null;
+        }
+
     }
 
 }

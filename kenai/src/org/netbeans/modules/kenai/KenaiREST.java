@@ -126,7 +126,7 @@ public class KenaiREST extends KenaiImpl {
     @Override
     public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
         try {
-            ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + URLEncoder.encode(pattern, "UTF-8"), ProjectsListData.class);
+            ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?full=true&q=" + URLEncoder.encode(pattern, "UTF-8"), ProjectsListData.class);
             return new LazyList(pld, ProjectsListData.class);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
@@ -136,7 +136,7 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Collection<ProjectData> getMyProjects() throws KenaiException {
-        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json", ProjectsListData.class);
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json?full=true", ProjectsListData.class);
         return new LazyList(pld, ProjectsListData.class);
     }
 
@@ -247,11 +247,7 @@ public class KenaiREST extends KenaiImpl {
 
         private ITEM colToItem(int index) {
             if (col instanceof ProjectsListData) {
-                try {
-                    return (ITEM) getProject(((ProjectsListData) col).projects[index].name);
-                } catch (KenaiException ex) {
-                    throw new RuntimeException("Error loading project " + ((ProjectsListData) col).projects[index].name, ex);
-                }
+                return (ITEM) ((ProjectsListData) col).projects[index];
             } else if (col instanceof ServicesListData) {
                 return (ITEM) ((ServicesListData) col).services[index];
             } else if (col instanceof LicensesListData) {

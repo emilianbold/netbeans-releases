@@ -88,10 +88,12 @@ public class MavenWsitProvider extends WsitProvider {
     public boolean isWsitSupported() {
         // check if the FI or TX class exists - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
-        if ((txFO != null)) {
-            return true;
+        if ((sgs != null) && (sgs.length > 0)) {
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
+            if ((txFO != null)) {
+                return true;
+            }
         }
         return false;
     }

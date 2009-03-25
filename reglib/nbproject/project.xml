@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio.registration</friend>
+                <friend>org.netbeans.modules.openesbregistration</friend>
                 <friend>org.netbeans.modules.registration</friend>
                 <package>org.netbeans.modules.reglib</package>
                 <package>org.netbeans.modules.servicetag</package>

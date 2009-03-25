@@ -3,12 +3,13 @@ package org.netbeans.modules.dlight.memory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphColors;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.GraphDetail;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.openide.util.NbBundle;
 
@@ -17,16 +18,20 @@ import org.openide.util.NbBundle;
     private static final Color GRAPH_COLOR = GraphColors.COLOR_2;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(
             GRAPH_COLOR, NbBundle.getMessage(MemoryIndicatorPanel.class, "graph.description")); // NOI18N
-    private static final int ORDER = 1024;
-    private static final String[] SIFFIXES = {"b", "Kb", "Mb", "Gb", "Tb"};
+    private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
+    private static final int BINARY_ORDER = 1024;
+    private static final int DECIMAL_ORDER = 1000;
+    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};
 
     private final Graph graph;
+    private final Legend legend;
     private final GraphPanel<Graph, Legend> panel;
     private long max;
 
     /*package*/ MemoryIndicatorPanel() {
         graph = createGraph();
-        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+        legend = createLegend();
+        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis());
         max = 0;
     }
 
@@ -39,7 +44,11 @@ import org.openide.util.NbBundle;
     }
 
     private static Graph createGraph() {
-        Graph graph = new Graph(100, DESCRIPTOR);
+        Graph graph = new Graph(BINARY_ORDER, new LabelRenderer() {
+            public String render(int value) {
+                return formatValue(value);
+            }
+        }, DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
@@ -48,38 +57,34 @@ import org.openide.util.NbBundle;
         return graph;
     }
 
-    private Legend createLegend() {
-        return new Legend(Arrays.asList(DESCRIPTOR), Arrays.<GraphDetail>asList(new MaxHeapDetail()));
+    private static Legend createLegend() {
+        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.singletonMap(MAX_HEAP_DETAIL_ID, "Max:"));
+        legend.updateDetail(MAX_HEAP_DETAIL_ID, formatValue(0));
+        return legend;
     }
 
-    public void setValue(long longValue) {
-        int value = (int) (longValue / 1000 + (longValue % 1000 >= 500 ? 1 : 0));
+    public void setValue(long value) {
+        if (graph.getUpperLimit() < value) {
+            graph.setUpperLimit((int)value * 3 / 2);
+        }
+        graph.addData((int)value);
         if (value > max) {
             max = value;
+            legend.updateDetail(MAX_HEAP_DETAIL_ID, formatValue(max));
         }
-        if (graph.getUpperLimit() < value) {
-            graph.setUpperLimit(value * 3 / 2);
-        }
-        graph.addData(value);
     }
 
     private static String formatValue(long value) {
         int i = 0;
-        while (ORDER <= value && i + 1 < SIFFIXES.length) {
-            value /= ORDER;
+        while (BINARY_ORDER <= value && i + 1 < SIFFIXES.length) {
+            value /= BINARY_ORDER;
             ++i;
         }
-        return Long.toString(value) + " " + SIFFIXES[i];
+        if (DECIMAL_ORDER <= value && i + 1 < SIFFIXES.length) {
+            value /= DECIMAL_ORDER;
+            ++i;
+        }
+        return Long.toString(value) + SIFFIXES[i];
     }
 
-    private class MaxHeapDetail extends GraphDetail {
-
-        public MaxHeapDetail() {
-            super("Max:");
-        }
-
-        public String getValue() {
-            return formatValue(max);
-        }
-    }
 }

@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -163,7 +164,7 @@ public class RubyValidation extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished
-        //WatchProjects.waitScanFinished();
+        ProjectSupport.waitScanFinished();
     }
     
     /** Test run Ruby file

@@ -23,25 +23,25 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      * all project related info.
      * The property value is undefined.
      */
-    public static final String PROP_CONTENT = "content";
+    public static final String PROP_CONTENT = "content"; // NOI18N
     /**
      * The name of property which is fired when the list of builds for this project
      * has changed (builds added/removed/renamed).
      * The property value should ideally be the new list of BuildHandles.
      */
-    public static final String PROP_BUILD_LIST = "buildList";
+    public static final String PROP_BUILD_LIST = "buildList"; // NOI18N
     /**
      * The name of property which is fired when the list of source repositories
      * for this project has changed (repos added/removed/renamed).
      * The property value should ideally be the new list of SourceHandles.
      */
-    public static final String PROP_SOURCE_LIST = "sourceList";
+    public static final String PROP_SOURCE_LIST = "sourceList"; // NOI18N
     /**
      * The name of property which is fired when the list of queries
      * for this project has changed (queries added/removed/renamed).
      * The property value should ideally be the new list of QueryHandles.
      */
-    public static final String PROP_QUERY_LIST = "queryList";
+    public static final String PROP_QUERY_LIST = "queryList"; // NOI18N
 
     /**
      * The name of property which is fired when the nonmember project is removed
@@ -50,7 +50,7 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      * Value is undefined (null)
      * @see Kenai#PROP_LOGIN
      */
-    public static final String PROP_CLOSE = "close";
+    public static final String PROP_CLOSE = "close"; // NOI18N
 
 
     

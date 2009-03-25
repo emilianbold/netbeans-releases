@@ -121,6 +121,7 @@ public class SourceAccessorImpl extends SourceAccessor {
                 Project project = ((NbProjectHandleImpl) prj).getProject();
                 if (project!=null)
                     OpenProjects.getDefault().open(new Project[]{project}, false);
+                WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
             }
         };
     }
@@ -164,6 +165,7 @@ public class SourceAccessorImpl extends SourceAccessor {
                     OpenProjects.getDefault().open(
                             projectsArray, // Put the project into OpenProjectList
                             false);
+                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
                 }
             }
         };

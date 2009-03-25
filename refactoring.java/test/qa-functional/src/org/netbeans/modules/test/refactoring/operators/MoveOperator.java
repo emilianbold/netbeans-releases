@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,28 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+
+package org.netbeans.modules.test.refactoring.operators;
+
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public abstract class GraphDetail {
+public class MoveOperator extends ParametersPanelOperator{
+    private JComboBoxOperator projects;
+    private JComboBoxOperator location;
+    private JComboBoxOperator toPackage;
+    private JLabelOperator title;
+    private JLabelOperator error;
 
-    private final String name;
 
-    public GraphDetail(String name) {
-        this.name = name;
+    public MoveOperator() {
+        super("Move Class");
     }
 
-    public String getName() {
-        return name;
+    public JComboBoxOperator getProjectsCombo() {
+        if(projects==null) {
+            projects = new JComboBoxOperator(this, 0);
+        }
+        return projects;
     }
 
-    public abstract String getValue();
+
+    public JComboBoxOperator getLocationCombo() {
+        if(location==null) {
+            location = new JComboBoxOperator(this, 1);
+        }
+        return location;
+    }
+
+    public JComboBoxOperator getPackageCombo() {
+        if(toPackage==null) {
+            toPackage = new JComboBoxOperator(this, 2);
+        }
+        return toPackage;
+    }
+
+    public JLabelOperator getTitleLabel() {
+        if(title==null) {
+            title = new JLabelOperator(this,0);
+        }
+        return title;
+    }
+
+    public JLabelOperator getError() {
+        if(error==null) {
+            error = new JLabelOperator(this,1);
+        }
+        return error;
+    }
 }

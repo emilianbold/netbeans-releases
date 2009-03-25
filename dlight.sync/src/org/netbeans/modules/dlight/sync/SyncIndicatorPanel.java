@@ -9,7 +9,6 @@ import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
 import org.netbeans.modules.dlight.indicators.graph.GraphColors;
-import org.netbeans.modules.dlight.indicators.graph.GraphDetail;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.openide.util.NbBundle;
 
@@ -35,7 +34,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Graph createGraph() {
-        Graph graph = new Graph(100, DESCRIPTOR);
+        Graph graph = new Graph(100, null, DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
@@ -45,7 +44,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Legend createLegend() {
-        return new Legend(Arrays.asList(DESCRIPTOR), Collections.<GraphDetail>emptyList());
+        return new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>emptyMap());
     }
 
     public void updated(int[][] values) {

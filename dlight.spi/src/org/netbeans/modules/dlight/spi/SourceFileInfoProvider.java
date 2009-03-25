@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.dlight.spi;
 
-import java.io.File;
+import java.util.Map;
 
 /**
  *
  */
 public interface SourceFileInfoProvider {
-  SourceFileInfo fileName(String functionName, long offset, File executable) throws SourceFileInfoCannotBeProvided;
+  SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided;
 
 
   public final class SourceFileInfoCannotBeProvided extends Exception{
@@ -56,7 +56,7 @@ public interface SourceFileInfoProvider {
 
     private final String fileName;
     private final int lineNumber;
-    private final int offset;
+    private final long offset;
     private final int column;
 
     /** Creates a new instance of SourceFileInfo
@@ -73,7 +73,7 @@ public interface SourceFileInfoProvider {
      * @param lineNumber
      * @param offset
      */
-    private SourceFileInfo(String fileName, int lineNumber, int column, int offset) {
+    private SourceFileInfo(String fileName, int lineNumber, int column, long offset) {
         this.fileName = fileName;
         this.lineNumber = lineNumber;
         this.offset = offset;
@@ -85,8 +85,8 @@ public interface SourceFileInfoProvider {
      * @param fileName
      * @param offset
      */
-    public SourceFileInfo(String fileName, int offset) {
-        this(fileName, -1, offset);
+    public SourceFileInfo(String fileName, long offset) {
+        this(fileName, -1, -1, offset);
     }
 
 
@@ -110,7 +110,7 @@ public interface SourceFileInfoProvider {
         return column;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
