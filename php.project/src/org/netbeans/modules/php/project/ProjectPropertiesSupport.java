@@ -305,7 +305,7 @@ public final class ProjectPropertiesSupport {
             String remotePath = remotes.get(i);
             if (PhpProjectUtils.hasText(remotePath)) {
                 // if user has only 1 path and local == sources => property is not stored at all!
-                String l = null;
+                String l = ""; // NOI18N
                 if (i < localsSize) {
                     l = locals.get(i);
                 }
