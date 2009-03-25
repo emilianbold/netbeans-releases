@@ -116,4 +116,15 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151619.cpp", 6, 14, "iz151619.cpp", 3, 5);
         performTest("iz151619.cpp", 7, 14, "iz151619.cpp", 3, 5);
     }
+
+    public void test147518() throws Exception {
+        // IZ#147518 : Code completion issue with template specialisation
+        performTest("iz147518.cpp", 61, 21, "iz147518.cpp", 41, 5);
+        performTest("iz147518.cpp", 49, 17, "iz147518.cpp", 7, 5);
+        performTest("iz147518.cpp", 50, 17, "iz147518.cpp", 7, 5);
+        performTest("iz147518.cpp", 53, 17, "iz147518.cpp", 25, 5);
+        performTest("iz147518.cpp", 54, 17, "iz147518.cpp", 25, 5);
+        performTest("iz147518.cpp", 57, 17, "iz147518.cpp", 16, 5);
+        performTest("iz147518.cpp", 58, 17, "iz147518.cpp", 16, 5);
+    }
 }
