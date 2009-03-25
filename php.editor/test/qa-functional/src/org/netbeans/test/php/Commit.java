@@ -311,6 +311,8 @@ public class Commit extends GeneralPHP
       fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
     }
 
+    Sleep( 2000 );
+
     // Brackets
     // Predefined
     String[] asCheckers =
@@ -340,7 +342,11 @@ public class Commit extends GeneralPHP
     String sCharset = "abc123[[[[[((((((\"";
     for( int i = 0; i < 50; i++ )
       sRandom = sRandom + sCharset.charAt( ( int )( Math.random( ) * sCharset.length( ) ) );
+
+    // Okey, this is hack and should be removed later
+    bRandomCheck = true;
     CompletePairCheck( eoPHP, sRandom, CreatePair( sRandom ) );
+    bRandomCheck = false;
 
     // Formatting
     /*
