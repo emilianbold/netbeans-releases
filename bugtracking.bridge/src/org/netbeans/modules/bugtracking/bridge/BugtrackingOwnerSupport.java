@@ -217,23 +217,24 @@ public class BugtrackingOwnerSupport {
             return null;
         }
 
-        String repositoryName;
+        String repositoryUrl;
         if (firstChar == '!') {
-            repositoryName = repoString.substring(1);
-            if (repositoryName.length() == 0) {
+            repositoryUrl = repoString.substring(1);
+            if (repositoryUrl.length() == 0) {
                 return null;
             }
         } else {
-            repositoryName = repoString;
+            repositoryUrl = repoString;
         }
 
-        return getRepositoryByName(repositoryName);
+        return getRepositoryByUrl(repositoryUrl);
     }
 
-    private Repository getRepositoryByName(String requestedName) {
+    private Repository getRepositoryByUrl(String requestedUrl) {
         Repository[] repositories = BugtrackingUtil.getKnownRepositories();
         for (Repository repository : repositories) {
-            if (repository.getDisplayName().equals(requestedName)) {
+            String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+            if (repositoryUrl.equals(requestedUrl)) {
                 return repository;
             }
         }
@@ -272,13 +273,23 @@ public class BugtrackingOwnerSupport {
             return;
         }
 
-        String repositoryName = repository.getDisplayName();
-        value = new StringBuilder(1 + repositoryName.length())
+        String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+        value = new StringBuilder(1 + repositoryUrl.length())
                 .append(strong ? '!' : '?')
-                .append(repositoryName)
+                .append(repositoryUrl)
                 .toString();
 
         getPreferences().put(REPOSITORY_FOR_FILE_PREFIX + key, value);
+    }
+
+    private static String cutTrailingSlashes(String url) {
+        int endIndex = url.length();
+        while ((endIndex > 1) && url.charAt(endIndex - 1) == '/') {
+            endIndex--;
+        }
+
+        return (endIndex == url.length()) ? url
+                                          : url.substring(0, endIndex);
     }
 
     private Repository askUserToSpecifyRepository(FileObject file, String issueId) {
