@@ -64,8 +64,9 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
@@ -280,7 +281,11 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                         rs.close();
                     }
                 } catch (SQLException exc) {
-                    Exceptions.printStackTrace(exc);
+                    LOGGER.info (exc.getLocalizedMessage ());
+                    DialogDisplayer.getDefault ().notifyLater (
+                            new NotifyDescriptor.Message (
+                            NbBundle.getMessage (DBSchemaTablesPanel.class, "DBSchemaTablesPanel_SQLException", exc.getLocalizedMessage ()),
+                            NotifyDescriptor.WARNING_MESSAGE));
                 }
 
                 ((SortedListModel) jListAvailableTables.getModel()).clear();
