@@ -448,7 +448,7 @@ public class ElementNode extends AbstractNode {
         
     private static class WaitNode extends AbstractNode {
         
-        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/wait.gif"); // NOI18N
+        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/wait.gif"); // NOI18N
         
         WaitNode( ) {
             super( Children.LEAF );

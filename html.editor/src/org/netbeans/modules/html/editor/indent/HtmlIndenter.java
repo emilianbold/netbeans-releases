@@ -150,7 +150,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         return elem.isEmpty();
     }
 
-    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
+    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "textarea"}; //NOI18N
     
     @Override
     protected boolean isTagContentUnformattable(String tagName) {

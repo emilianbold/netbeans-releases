@@ -46,7 +46,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 public class PercentageGraph extends Graph {
 
     public PercentageGraph(GraphDescriptor... descriptors) {
-        super(100, descriptors);
+        super(100, null, descriptors);
     }
 
     @Override

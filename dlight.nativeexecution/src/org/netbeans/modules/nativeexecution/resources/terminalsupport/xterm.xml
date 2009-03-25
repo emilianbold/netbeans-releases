@@ -44,6 +44,9 @@ made subject to such option by the copyright holder.
     <terminal id="xterm" platforms="solaris,linux"/>
     <searchpaths>
         <path>/usr/openwin/bin</path>
+        <path>/usr/X11R6/bin</path>
+        <path>/usr/X11/bin</path>
+        <path>/usr/bin</path>
     </searchpaths>
     <command stringvalue="xterm"/>
     <arguments>
