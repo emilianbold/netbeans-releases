@@ -252,6 +252,7 @@ public final class IOWindow implements IOContainer.Provider {
 
             String name = NbBundle.getMessage(IOWindow.class, "LBL_IO_WINDOW");
             setDisplayName(name); //NOI18N
+            setToolTipText(name);
             // setting name to satisfy the accesible name requirement for window.
             setName(name); //NOI18N
 
@@ -313,7 +314,6 @@ public final class IOWindow implements IOContainer.Provider {
                 pane.add(comp);
                 add(pane);
                 updateWindowName(null);
-                updateWindowToolTip(null);
             } else if (pane.getTabCount() > 0) {
                 // already several tabs
                 assert pane.getParent() != null;
@@ -326,7 +326,6 @@ public final class IOWindow implements IOContainer.Provider {
                 singleTab = comp;
                 add(comp);
                 updateWindowName(singleTab.getName());
-                updateWindowToolTip(singleTab.getToolTipText());
                 checkTabSelChange();
             }
             revalidate();
@@ -338,7 +337,6 @@ public final class IOWindow implements IOContainer.Provider {
                 remove(singleTab);
                 singleTab = null;
                 updateWindowName(null);
-                updateWindowToolTip(null);
                 checkTabSelChange();
                 setFocusable(true);
                 revalidate();
@@ -352,7 +350,6 @@ public final class IOWindow implements IOContainer.Provider {
                     remove(pane);
                     add(singleTab);
                     updateWindowName(singleTab.getName());
-                    updateWindowToolTip(singleTab.getToolTipText());
                 }
                 revalidate();
             }
@@ -396,7 +393,6 @@ public final class IOWindow implements IOContainer.Provider {
             comp.setToolTipText(text);
             if (singleTab != null) {
                 assert singleTab == comp;
-                updateWindowToolTip(text);
             } else {
                 assert pane.getParent() == this;
                 int idx = pane.indexOfComponent(comp);
@@ -442,11 +438,6 @@ public final class IOWindow implements IOContainer.Provider {
         }
 
         @Override
-        public String getToolTipText() {
-            return getDisplayName();
-        }
-
-        @Override
         public void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
             if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
@@ -482,21 +473,20 @@ public final class IOWindow implements IOContainer.Provider {
             if (name != null) {
                 String newName = NbBundle.getMessage(IOWindowImpl.class, "FMT_IO_WINDOW", new Object[]{winName, name}); //NOI18N
                 if (newName.indexOf("<html>") != -1) {
-                    newName = Utilities.replaceString(newName, "<html>", ""); //NOI18N
-                    setHtmlDisplayName("<html>" + newName); //NOI18N
+                    newName = "<html>" + Utilities.replaceString(newName, "<html>", ""); //NOI18N
+                    setHtmlDisplayName(newName); //NOI18N
+                    setToolTipText(newName);
                 } else {
                     setDisplayName(newName);
                     setHtmlDisplayName(null);
+                    setToolTipText(newName);
                 }
             } else {
                 setDisplayName(winName);
+                setToolTipText(winName);
                 setHtmlDisplayName(null);
             }
 
-        }
-
-        void updateWindowToolTip(String toolTipText) {
-            setToolTipText(toolTipText == null ? NbBundle.getMessage(IOWindowImpl.class, "LBL_IO_WINDOW") : toolTipText);
         }
 
         private void updateToolbar(JComponent comp) {

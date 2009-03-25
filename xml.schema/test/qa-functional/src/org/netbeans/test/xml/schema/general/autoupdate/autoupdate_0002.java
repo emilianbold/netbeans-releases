@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,67 +37,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+package org.netbeans.test.xml.schema.general.autoupdate;
+
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
  *
- * @author akorostelev
+ * @author michaelnazarov@netbeans.org
  */
-public class SVGSpinnerDisplayPresenter extends SVGComponentDisplayPresenter {
 
-    // fix issue with incorrect BBox returned by persejus for spinner.
-    // move bbox to the left and increase width by SELECTION_SHAPE_EXTENSION
-    private static final int SELECTION_SHAPE_EXTENSION = 3;
-
-    private Rectangle mySelectionRect = null;
-    private Point myLocationPoint = null;
-
-    @Override
-    public void reload(ScreenDeviceInfo deviceInfo) {
-        super.reload(deviceInfo);
-        mySelectionRect = null;
-        myLocationPoint = null;
+public class autoupdate_0002 extends autoupdate {
+    
+    public autoupdate_0002(String arg0) {
+        super(arg0);
     }
 
-    @Override
-    public Point getLocation() {
-        if (myLocationPoint == null){
-            Point location = super.getLocation();
-            if (location != null){
-                myLocationPoint = location;
-                myLocationPoint.setLocation(
-                        location.getX() - SELECTION_SHAPE_EXTENSION,
-                        location.getY());
-            }
-        }
-        return myLocationPoint;
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( autoupdate_0002.class ).addTest(
+              "UninstallSOA"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
-    @Override
-    public Shape getSelectionShape() {
+    public void UninstallSOA( )
+    {
+      startTest( );
 
-        if (mySelectionRect == null) {
-            Shape shape = super.getSelectionShape();
-            if (shape != null) {
-                mySelectionRect = shape.getBounds();
-                mySelectionRect.setSize(
-                        (int) mySelectionRect.getWidth() + SELECTION_SHAPE_EXTENSION,
-                        (int) mySelectionRect.getHeight());
-            }
-        }
-        return mySelectionRect;
+      UninstallSOAInternal( );
+
+      endTest( );
     }
-
-
-
 }
