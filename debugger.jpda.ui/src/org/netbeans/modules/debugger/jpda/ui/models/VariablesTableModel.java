@@ -181,6 +181,9 @@ public class VariablesTableModel implements TableModel, Constants {
 
             return ""; // NOI18N
         }
+        if (row == "noDebugInfoWarning") { // NOI18N
+            return ""; // NOI18N
+        }
         throw new UnknownTypeException (row);
     }
     
@@ -237,6 +240,9 @@ public class VariablesTableModel implements TableModel, Constants {
             return true;
         }
         if (row instanceof Operation) {
+            return true;
+        }
+        if (row == "noDebugInfoWarning") {
             return true;
         }
         throw new UnknownTypeException (row);
