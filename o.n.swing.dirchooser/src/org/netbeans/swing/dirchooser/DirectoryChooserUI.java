@@ -1109,7 +1109,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
             long elapsed = System.currentTimeMillis() - startTime.longValue();
             long timeOut = NbPreferences.forModule(DirectoryChooserUI.class).
-                    getLong(TIMEOUT_KEY, 1000);
+                    getLong(TIMEOUT_KEY, 10000);
             if (timeOut > 0 && elapsed > timeOut && slownessPanel == null) {
                 JLabel slownessNote = new JLabel(
                         NbBundle.getMessage(DirectoryChooserUI.class, "MSG_SlownessNote"));
