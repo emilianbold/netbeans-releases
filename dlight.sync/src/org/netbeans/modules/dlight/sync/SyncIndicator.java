@@ -38,14 +38,21 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  * Thread usage indicator
@@ -53,6 +60,8 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
  */
 public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
+    private final JButton b = new JButton("Repair...");//NOI18N
+    private final JLabel label = new JLabel(getRepairActionProvider().getReason());
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
     private int lastValue;
@@ -90,5 +99,42 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     protected void tick() {
         panel.addData(lastValue);
+    }
+
+    @Override
+    protected void repairNeeded(boolean needed) {
+        if (needed) {
+            b.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            b.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            label.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    DLightExecutorService.submit(new Callable<Boolean>() {
+
+                        public Boolean call() throws Exception {
+                            Boolean status = result.get();
+                            UIThread.invoke(new Runnable() {
+
+                                public void run() {
+                                    panel.getPanel().remove(b);
+                                    panel.getPanel().remove(label);
+                                }
+                            });
+                            return status.booleanValue();
+                        }
+                    }, "Click On Repair in Sync Indicator task");//NOI18N
+                }
+            });
+            panel.getPanel().add(b);
+            panel.getPanel().add(label);
+        } else {
+            //Remove here Button REpair
+            panel.getPanel().remove(b);
+            panel.getPanel().remove(label);
+            panel.getPanel().add(new JLabel(getRepairActionProvider().isValid() ? "Will show data on the next run" : "Invalid"));//NOI18N
+        }
     }
 }

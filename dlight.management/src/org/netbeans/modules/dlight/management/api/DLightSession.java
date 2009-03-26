@@ -44,6 +44,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -56,6 +57,8 @@ import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -125,6 +128,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
     public DLightSessionContext getSessionContext() {
         return sessionContext;
+    }
+
+    List<ExecutionContext> getExecutionContexts() {
+        return contexts;
     }
 
     void addExecutionContext(ExecutionContext context) {
@@ -305,11 +312,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
 
+        
         //if we have IDP which are collectors add them into the list of collectors
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
+            List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
             List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
@@ -327,9 +336,12 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         }
                         List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
-                           target.addTargetListener(i);
+                            target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
+                                if (!subscribedIndicators.contains(i)){
+                                    subscribedIndicators.add(i);
+                                }
                                 target.addTargetListener(idp);
                                 log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
                             }
@@ -337,7 +349,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
                 }
             }
+            List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+            for (Indicator i : indicators){
+                if (!subscribedIndicators.contains(i)){
+                    IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
+                }
+            }
         }
+
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
@@ -351,7 +370,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 //init storage with the target values
                 DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
                 Map<String, String> info = targetInfo.getInfo();
-                for (String key : info.keySet()){
+                for (String key : info.keySet()) {
                     storage.put(key, info.get(key));
                 }
                 toolCollector.init(storage, target);

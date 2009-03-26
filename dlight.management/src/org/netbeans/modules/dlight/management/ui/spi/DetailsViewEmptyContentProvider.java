@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.visualizer;
+
+package org.netbeans.modules.dlight.management.ui.spi;
 
 import javax.swing.JComponent;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
- * Container to put Visualizer in
+ *
+ * @author mt154047
  */
-public interface VisualizerContainer {
-
-    /**
-     * Adds new visualizer to container for tool with the name <code>toolName</code>
-     * @param toolName toolname
-     * @param v visualizer
-     */
-    void addVisualizer(String toolName, Visualizer v);
-
-    /**
-     * Sets new content for wool with the name <code>toolName</code>
-     * @param toolName
-     * @param component
-     */
-    void setContent(String toolName, JComponent component);
-
-    /**
-     * Adds new content for wool with the name <code>toolName</code>
-     * @param toolName
-     * @param component
-     */
-    void addContent(String toolName, JComponent component);
-
-    /**
-     * Removed visualizer from the container
-     * @param v visualizer to remove
-     */
-    void removeVisualizer(Visualizer v);
-
-    /**
-     * Show container
-     */
-    void showup();
+public interface DetailsViewEmptyContentProvider {   
+    JComponent getEmptyView(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToValidateWith);
 }
