@@ -148,7 +148,7 @@ public class JavaI18nSupport extends I18nSupport {
         final ResourceHolder resourceHolder
                 = i18nString.getSupport().getResourceHolder();
         if (resourceHolder.getResource() == null) {
-            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+            DataObject lastResource = I18nUtil.getOptions().getLastResource2(sourceDataObject);
             if (lastResource != null) {
                 FileObject sourceFile = sourceDataObject.getPrimaryFile();
                 FileObject bundleFile = lastResource.getPrimaryFile();

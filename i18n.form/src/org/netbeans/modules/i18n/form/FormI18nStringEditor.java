@@ -222,7 +222,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             formI18nString = createFormI18nString();
             if (value instanceof String)
                 formI18nString.setValue((String)value);
-            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+            DataObject lastResource = I18nUtil.getOptions().getLastResource2(sourceDataObject);
             if (lastResource != null) {
                 FileObject sourceFile = sourceDataObject.getPrimaryFile();
                 FileObject bundleFile = lastResource.getPrimaryFile();
