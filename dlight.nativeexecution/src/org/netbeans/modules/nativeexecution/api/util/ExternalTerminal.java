@@ -191,7 +191,7 @@ public final class ExternalTerminal {
             cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
         }
 
-        cmd.append("'");
+        cmd.append("'"); // NOI18N
 
         NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
         StringWriter result = new StringWriter();

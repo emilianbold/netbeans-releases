@@ -89,23 +89,23 @@ public class MacroExpanderFactoryTest {
      */
 //    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
-        System.out.println("getExpander");
+        System.out.println("getExpander"); // NOI18N
 //        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
         ExecutionEnvironment execEnv = new ExecutionEnvironment();
 //        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
-        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio");
+        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio"); // NOI18N
 
         Map<String, String> myenv = new HashMap<String, String>();
         try {
-            myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv));
-            myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv));
+            myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
+            myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 
         System.out.println(myenv.toString());
         try {
-            System.out.println("$osname-${platform}$_isa -> " + expander.expandPredefinedMacros("$osname-$platform$_isa"));
+            System.out.println("$osname-${platform}$_isa -> " + expander.expandPredefinedMacros("$osname-$platform$_isa")); // NOI18N
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -113,10 +113,10 @@ public class MacroExpanderFactoryTest {
 
     @Test
     public void testPath() {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("test", "localhost");
+        ExecutionEnvironment execEnv = new ExecutionEnvironment("test", "localhost"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(
-                execEnv, "/bin/env").addEnvironmentVariable(
-                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath").addEnvironmentVariable("XXX", "It WORKS!");
+                execEnv, "/bin/env").addEnvironmentVariable( // NOI18N
+                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath").addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
 
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
@@ -133,7 +133,7 @@ public class MacroExpanderFactoryTest {
             Exceptions.printStackTrace(ex);
         }
 
-        System.out.println("Output is " + result.toString());
+        System.out.println("Output is " + result.toString()); // NOI18N
 
     }
 }

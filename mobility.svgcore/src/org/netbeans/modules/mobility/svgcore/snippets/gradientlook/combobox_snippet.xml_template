@@ -53,7 +53,7 @@
                 </g>
                 <g>			<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=bound</text>
-                    <rect transform="matrix(1.0165975,0.0,0.0,1.0,0.8810551,0.33333588)"  id="%%COMPONENT_ID%%_list_bound" rx="5" ry="5" x="5.0" y="0" width="80" height="60" fill="white" stroke="black" stroke-width="2" />
+                    <rect transform="matrix(1.0165975,0.0,0.0,1.0,-0.118946075,2.3333359)"  id="%%COMPONENT_ID%%_list_bound" rx="5" ry="5" x="5.0" y="0" width="80" height="50" fill="white" stroke="rgb(73,46,55)" stroke-width="1.5" />
                 </g>
                 <g>			<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=selection</text>

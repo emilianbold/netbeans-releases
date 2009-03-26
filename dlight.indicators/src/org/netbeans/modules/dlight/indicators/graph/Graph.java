@@ -219,7 +219,7 @@ public class Graph extends JComponent {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            graph.drawVerticalAxis(g, getWidth(), getHeight());
+            graph.drawVerticalAxis(g, getWidth(), getHeight(), getBackground());
         }
 
     }

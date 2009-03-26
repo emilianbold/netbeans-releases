@@ -79,23 +79,23 @@ public class ObservableActionTest {
     @Test
     public void doTest() {
         try {
-            System.out.println("invokeAndWait");
-            ObservableAction<Integer> action = new ObservableAction<Integer>("My Action") {
+            System.out.println("invokeAndWait"); // NOI18N
+            ObservableAction<Integer> action = new ObservableAction<Integer>("My Action") { // NOI18N
 
                 @Override
                 protected Integer performAction() {
-                    System.out.println("Performed!");
+                    System.out.println("Performed!"); // NOI18N
                     return 10;
                 }
             };
             action.addObservableActionListener(new ObservableActionListener<Integer>() {
 
                 public void actionStarted(Action source) {
-                    System.out.println("Started!");
+                    System.out.println("Started!"); // NOI18N
                 }
 
                 public void actionCompleted(Action source, Integer result) {
-                    System.out.println("Finished ! " + result);
+                    System.out.println("Finished ! " + result); // NOI18N
                 }
             });
 

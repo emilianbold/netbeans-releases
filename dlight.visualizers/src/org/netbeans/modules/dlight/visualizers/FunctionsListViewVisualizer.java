@@ -39,10 +39,13 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,9 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -114,6 +119,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         addComponentListener(this);
         outlineView = new OutlineView(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
+        outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         List<Property> result = new ArrayList();
         for (Column c : metrics) {
             result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
@@ -196,8 +202,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private void updateList(List<FunctionCall> list) {
         synchronized (uiLock) {
-            setNonEmptyContent();
             this.explorerManager.setRootContext(new AbstractNode(new FunctionCallChildren(list)));
+            setNonEmptyContent();            
         }
     }
 
@@ -412,8 +418,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public Image getIcon(int type) {
-            return super.getIcon(type);
+            return null;
         }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return null;
+        }
+
+
 
         @Override
         public Action[] getActions(boolean context) {
@@ -451,6 +464,24 @@ public class FunctionsListViewVisualizer extends JPanel implements
             SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
             sourceSupportProvider.showSource(sourceFileInfo);
         //System.out.println(sourceFileInfo == null ? " NO SOURCE FILE INFO FOUND" : sourceFileInfo.getFileName() + ":" + sourceFileInfo.getOffset() + ":" + sourceFileInfo.getLine());//NOI18N
+        }
+    }
+
+    private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (column != 0) {//we have
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+
+            PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
+            if (editor != null && value!= null && !(value + "").trim().equals("")) {
+                editor.setValue(value);
+                return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
+            }
+
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 
