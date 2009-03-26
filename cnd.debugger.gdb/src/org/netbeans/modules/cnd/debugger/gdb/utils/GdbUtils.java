@@ -381,19 +381,17 @@ public class GdbUtils {
     }
     
     /**
-     *  Parse the input string for key/value pairs. The keys are not guaranteed
-     *  to be unique and order may be important, so each key/value pair is stored
-     *  in an ArrayList.
+     *  Parse the input string for key/value pairs.
      *
-     *  @param info A string of key/value pairs where each key/value
-     *  @return An ArrayList with each entry of the form key=value
+     *  @param info A string of key/value pairs
+     *  @return An ArrayList with each entry as a value (keys are thrown away, use createMapFromString if you need them)
      */
     public static List<String> createListFromString(String info) {
         final List<String> list = new ArrayList<String>();
         processString(info, new PairProcessor() {
             @Override
             public void onPair(String key, String value) {
-                list.add(key + "=" + value); // NOI18N
+                list.add(value);
             }
         });
         return list;

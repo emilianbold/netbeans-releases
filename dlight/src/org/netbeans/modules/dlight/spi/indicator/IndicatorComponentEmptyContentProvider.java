@@ -36,45 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+package org.netbeans.modules.dlight.spi.indicator;
+
+import java.util.List;
 
 /**
  *
- * @author ak119685
+ * @author mt154047
  */
-public class SolarisPrivilegesSupportTest {
+public interface IndicatorComponentEmptyContentProvider {
+    List<Indicator> getEmptyContent();
 
-    public SolarisPrivilegesSupportTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs); // NOI18N
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
-     */
-    @Test
-    public void test() {
-    }
 }
