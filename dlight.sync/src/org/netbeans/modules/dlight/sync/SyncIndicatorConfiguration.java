@@ -51,8 +51,8 @@ public class SyncIndicatorConfiguration extends IndicatorConfiguration {
     static final String ID = "SyncIndicatorConfigurationID";
 //  private final String colName;
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata) {
-        super(metadata);
+    public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {
+        super(metadata, position);
     }
 
     @Override

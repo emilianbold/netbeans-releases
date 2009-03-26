@@ -71,6 +71,7 @@ import org.openide.util.NbBundle;
  */
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final int INDICATOR_POSITION = 300;
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N    
     private static final Column timestampColumn =
         new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
@@ -149,7 +150,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         SyncIndicatorConfiguration indicatorConfiguration =
-            new SyncIndicatorConfiguration(indicatorMetadata);
+            new SyncIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 

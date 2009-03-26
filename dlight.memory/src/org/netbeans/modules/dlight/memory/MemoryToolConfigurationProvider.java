@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final int INDICATOR_POSITION = 200;
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
@@ -185,7 +186,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
         MemoryIndicatorConfiguration indicatorConfiguration =
-                new MemoryIndicatorConfiguration(indicatorMetadata); // NOI18N
+                new MemoryIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION); // NOI18N
 
         DataTableMetadata detailedViewTableMetadata =
             SunStudioDCConfiguration.getMemTableMetadata(
