@@ -197,7 +197,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
     }
     
-    public void fixFakeRegistration() {
+    public final boolean fixFakeRegistration() {
+        boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);
             if (CsmKindUtilities.isClass(owner)) {
@@ -208,7 +209,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
                         ((FileImpl) getContainingFile()).addDeclaration(var);
                         fixFakeRegistrationAst = null;
-                        return;
+                        return true;
                     }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
@@ -223,7 +224,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
                         ((FileImpl) getContainingFile()).addDeclaration(var);
                         fixFakeRegistrationAst = null;
-                        return;
+                        return true;
                     }
                 }
             }                        
@@ -231,6 +232,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                 fixFakeRegistrationAst = null;
                 ((FileImpl) getContainingFile()).addDeclaration(fi);
+                fixed = true;
                 if (NamespaceImpl.isNamespaceScope(fi)) {
                     if (CsmKindUtilities.isNamespace(this.getScope())) {
                         ((NamespaceImpl) this.getScope()).addDeclaration(fi);
@@ -247,8 +249,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 this.cleanUID();
                 qualifiedName = newQname;
                 aProject.registerDeclaration(this);
+                fixed = true;
             }
         }
+        return fixed;
     }
     
     private CsmNamespaceDefinition findNamespaceDefinition() {
