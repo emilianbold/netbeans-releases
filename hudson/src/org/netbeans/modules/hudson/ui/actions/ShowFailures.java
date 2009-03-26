@@ -81,6 +81,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 InputOutput io;
                 StringBuilder buf;
                 Hyperlinker hyperlinker = new Hyperlinker(build.getJob());
+                int insideCase;
                 private void prepareOutput() {
                     if (io == null) {
                         String title = build.getJob().getDisplayName() + " #" + build.getNumber() + " Test Failures"; // XXX I18N
@@ -92,6 +93,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 public @Override void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     if (qName.matches("errorStackTrace|stdout|stderr")) { // NOI18N
                         buf = new StringBuilder();
+                    } else if (qName.equals("case")) { // NOI18N
+                        insideCase++;
                     }
                 }
                 public @Override void characters(char[] ch, int start, int length) throws SAXException {
@@ -100,13 +103,15 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     }
                 }
                 public @Override void endElement(String uri, String localName, String qName) throws SAXException {
-                    if (qName.matches("errorStackTrace|stdout|stderr")) { // NOI18N
+                    if (qName.equals("errorStackTrace") || (insideCase == 0 && qName.matches("stdout|stderr"))) { // NOI18N
                         prepareOutput();
                         OutputWriter w = qName.equals("stdout") ? io.getOut() : io.getErr();
                         for (String line : buf.toString().split("\r\n?|\n")) {
                             hyperlinker.handleLine(line, w);
                         }
                         buf = null;
+                    } else if (qName.equals("case")) { // NOI18N
+                        insideCase--;
                     }
                 }
                 public @Override void endDocument() throws SAXException {

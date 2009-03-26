@@ -104,7 +104,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (!"hg".equals(Helper.xpath("kind", changeSet))) {
             return null;
         }
-        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"));
+        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job);
         if (repo == null) {
             LOG.log(Level.FINE, "No known repo location for {0}", job);
             return null;
