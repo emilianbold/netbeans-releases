@@ -51,7 +51,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 
 /**
  *
