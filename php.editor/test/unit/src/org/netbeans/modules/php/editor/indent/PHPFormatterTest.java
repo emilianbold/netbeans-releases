@@ -76,6 +76,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/hello_world.php");
     }
 
+    public void test161049() throws Exception{
+        reformatFileContents("testfiles/formatting/issue161049.php");
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2,2));
     }

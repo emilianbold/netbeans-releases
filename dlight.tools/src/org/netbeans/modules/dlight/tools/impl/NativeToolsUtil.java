@@ -64,15 +64,15 @@ class NativeToolsUtil {
     }
 
     public static String getExecutable(String name) {
-        return getPlatformBinary(name);
+        return getPlatformBinary(name, ""); // NOI18N
     }
 
     public static String getSharedLibrary(String name) {
-        return getPlatformBinary(name + ".${soext}"); //NOI18N
+        return getPlatformBinary(name, ".${soext}"); //NOI18N
     }
 
-    private static String getPlatformBinary(String nameWithSuffix) {
-        return "bin" + File.separator + "${osname}-${platform}${_isa}" + File.separator + nameWithSuffix; //NOI18N
+    private static String getPlatformBinary(String name, String suffix) {
+        return "bin" + File.separator + name + "-${osname}-${platform}${_isa}" + suffix; //NOI18N
     }
 
     public static File locateFile(ExecutionEnvironment env, String relativePathWithMacros) {
