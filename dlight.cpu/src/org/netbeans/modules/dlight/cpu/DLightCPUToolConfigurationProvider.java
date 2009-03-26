@@ -233,8 +233,7 @@ public final class DLightCPUToolConfigurationProvider
                 return null;
             }
 
-            return new DataRow(colnames, Arrays.asList(
-                new Float[]{utime, stime, wtime}));
+            return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
         }
     }
 
