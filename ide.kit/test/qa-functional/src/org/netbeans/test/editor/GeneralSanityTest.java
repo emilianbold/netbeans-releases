@@ -63,7 +63,7 @@ public class GeneralSanityTest extends NbTestCase {
         s.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(
                 GeneralSanityTest.class
-            ).gui(false).clusters(".*").enableModules(".*").
+            ).gui(true).clusters(".*").enableModules(".*").
             honorAutoloadEager(true).
             addTest(
                 "testBlacklistedClassesHandler",
