@@ -302,6 +302,9 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     @Override
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+            }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
                 public List<FunctionCall> call() {
@@ -366,9 +369,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         super.removeNotify();
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                if (!syncFillDataTask.isDone()) {
-                    syncFillDataTask.cancel(true);
-                }
+                syncFillDataTask.cancel(true);
             }
         }
     }

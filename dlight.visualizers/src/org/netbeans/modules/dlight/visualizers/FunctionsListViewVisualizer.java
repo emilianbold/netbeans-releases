@@ -158,9 +158,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private void asyncFillModel() {
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
@@ -314,9 +312,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
             }
         }
         removeComponentListener(this);

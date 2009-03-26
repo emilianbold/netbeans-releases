@@ -55,9 +55,9 @@ import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -209,7 +209,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         Column metricColumn = new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null); // NOI18N
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", MangledNameType.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                new Column("func_name", FunctionName.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
                 metricColumn);
 
         String sql =
