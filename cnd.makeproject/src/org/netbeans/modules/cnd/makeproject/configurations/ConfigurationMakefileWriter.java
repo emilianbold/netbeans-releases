@@ -188,14 +188,11 @@ public class ConfigurationMakefileWriter {
             try {
                 Class makefileWriterClass;
                 ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
-                if (c != null) {
+                if (c == null) {
                     makefileWriterClass = Class.forName(makefileWriterClassName);
                 }
                 else {
                     makefileWriterClass = Class.forName(makefileWriterClassName, true, c);
-                }
-                if (makefileWriterClass != null) {
-
                 }
                 Object o = makefileWriterClass.newInstance();
                 if (o instanceof MakefileWriter) {
@@ -207,6 +204,9 @@ public class ConfigurationMakefileWriter {
             catch (InstantiationException nie) {
             }
             catch (IllegalAccessException iae) {
+            }
+            if (makefileWriter == null) {
+                System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
             }
         }
         if (makefileWriter == null) {
