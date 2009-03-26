@@ -279,6 +279,8 @@ public class GdbDebugger implements PropertyChangeListener {
             // we should not continue until gdb version is initialized
             initGdbVersion();
 
+            checkGdbVersion();
+
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
@@ -474,6 +476,17 @@ public class GdbDebugger implements PropertyChangeListener {
             }
         } else {
             throw new GdbErrorException("gdb version check failed, exiting"); //NOI18N
+        }
+    }
+
+    private final void checkGdbVersion() {
+        if (!versionPeculiarity.isSupported()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                                "ERR_UnsupportedVersion", gdbVersion))); // NOI18N
+                }
+            });
         }
     }
 
