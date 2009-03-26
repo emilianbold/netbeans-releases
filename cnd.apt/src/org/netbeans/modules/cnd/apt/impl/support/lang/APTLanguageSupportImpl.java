@@ -85,7 +85,7 @@ public class APTLanguageSupportImpl {
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
             filter = new APTGnuCppFilter();
         } else {
-            APTUtils.LOG.warning("unsupported language " + lang);
+            APTUtils.LOG.warning("unsupported language " + lang); // NOI18N
         }
         return filter;
     }
