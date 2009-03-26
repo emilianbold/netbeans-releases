@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
@@ -97,9 +98,9 @@ public class CreateJob extends AbstractAction {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
-                        dialog.get().dispose();
                     }
                 });
+                dialog.get().dispose();
             }
         });
         dd.addPropertyChangeListener(new PropertyChangeListener() {
@@ -130,8 +131,9 @@ public class CreateJob extends AbstractAction {
             ((HudsonInstanceImpl) instance).synchronize();
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
+            OpenProjects.getDefault().open(new Project[] {project}, false);
         } catch (IOException x) {
-            // XXX too harsh, should report at a low level and show message
+            // XXX too harsh, should report at a low level and show message (unless this already has a localized message)
             Exceptions.printStackTrace(x);
         }
     }
