@@ -99,6 +99,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
      * and this should persist across refreshes.
      */
     private final Map<String,RemoteFileSystem> workspaces = new HashMap<String,RemoteFileSystem>();
+    private final Map<String,RemoteFileSystem> artifacts = new HashMap<String,RemoteFileSystem>();
     
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
@@ -396,17 +397,17 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
 
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(HudsonJobBuild build) {
-        synchronized (workspaces) {
+        synchronized (artifacts) {
             String name = build.getJob().getName() + "/" + build.getNumber();
-            if (!workspaces.containsKey(name)) {
+            if (!artifacts.containsKey(name)) {
                 try {
-                    workspaces.put(name, new RemoteFileSystem(build));
+                    artifacts.put(name, new RemoteFileSystem(build));
                 } catch (MalformedURLException ex) {
                     Exceptions.printStackTrace(ex);
                     return FileUtil.createMemoryFileSystem();
                 }
             }
-            return workspaces.get(name);
+            return artifacts.get(name);
         }
     }
 

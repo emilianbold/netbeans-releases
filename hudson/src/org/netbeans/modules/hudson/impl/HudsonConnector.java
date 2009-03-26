@@ -350,7 +350,6 @@ public class HudsonConnector {
     }
     
     Document getDocument(String url) {
-        LOG.log(Level.FINER, "Loading: {0}", url);
         Document doc = null;
         
         try {
@@ -401,4 +400,5 @@ public class HudsonConnector {
         
         return doc;
     }
+
 }

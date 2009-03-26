@@ -197,10 +197,7 @@ public class Mercurial {
                 version = HgCommand.getHgVersion();
                 LOG.log(Level.FINE, "version: {0}", version); // NOI18N
                 if (version != null) {
-                    goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
-                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
-                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
-                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
+                    goodVersion = isGoodVersion(version);
                     if (!goodVersion){
                         Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                         runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
@@ -215,6 +212,21 @@ public class Mercurial {
             }
         };
         rp.post(doCheck);
+    }
+
+    private boolean isGoodVersion(String version) {
+        if(version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
+           version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
+           version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
+           version.startsWith(MERCURIAL_SUPPORTED_VERSION_100))
+        {
+            return true;
+        }
+        if(version.startsWith("0.")) {
+            // seems to be older then 0.93
+            return false;
+        }
+        return true;
     }
 
     public void checkVersionNotify() {
