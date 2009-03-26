@@ -484,6 +484,8 @@ class GroovyParser extends Parser {
                 throw ex;
             }
         } catch (Throwable e) {
+            LOG.log(Level.FINE, null, e);
+            
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
