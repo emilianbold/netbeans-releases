@@ -45,20 +45,34 @@ import java.awt.Color;
  *
  * @author Alexey Vladykin
  */
-public final class GraphColors {
+public final class GraphConfig {
+
+    public static final float FONT_SIZE = 10.0f;
+    public static final float LINE_WIDTH = 2.0f;
+    public static final int GRID_SIZE = 10;
+    public static final int BALL_SIZE = 5;
+    public static final int STEP_SIZE = 5;
+
+    public static final int GRAPH_WIDTH = 80;
+    public static final int GRAPH_HEIGHT = 60;
+
+    public static final int LEGEND_WIDTH = 80;
+    public static final int LEGEND_HEIGHT = 60;
+
+    public static final int VERTICAL_AXIS_WIDTH = 20;
+    public static final int VERTICAL_AXIS_HEIGHT = 80;
 
     public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
     public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
     public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
     public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
 
-    public static final Color BORDER_COLOR = new Color(114, 138, 132);
+    public static final Color BORDER_COLOR = new Color(0x72, 0x8A, 0x84);
     public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);
     public static final Color GRADIENT_TOP_COLOR = Color.WHITE;
-    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3, 0x80);
+    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3);
     public static final Color LEGEND_COLOR = Color.WHITE;
-    public static final Color TEXT_COLOR = new Color(49, 78, 114);
+    public static final Color TEXT_COLOR = new Color(0x31, 0x4E, 0x72);
 
-    private GraphColors() {
-    }
+    private GraphConfig() {}
 }

@@ -8,13 +8,13 @@ import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
-import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.openide.util.NbBundle;
 
 /*package*/ class SyncIndicatorPanel {
 
-    private static final Color GRAPH_COLOR = GraphColors.COLOR_4;
+    private static final Color GRAPH_COLOR = GraphConfig.COLOR_4;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
 
     private final Graph graph;
@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
 
     private static Graph createGraph() {
         Graph graph = new Graph(100, null, DESCRIPTOR);
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
         graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));

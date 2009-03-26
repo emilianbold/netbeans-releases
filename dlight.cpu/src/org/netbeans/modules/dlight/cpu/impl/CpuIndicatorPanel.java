@@ -44,7 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
-import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
@@ -55,8 +55,8 @@ import org.openide.util.NbBundle;
  */
 public class CpuIndicatorPanel {
 
-    private static final Color COLOR_SYS = GraphColors.COLOR_1;
-    private static final Color COLOR_USR = GraphColors.COLOR_3;
+    private static final Color COLOR_SYS = GraphConfig.COLOR_1;
+    private static final Color COLOR_USR = GraphConfig.COLOR_3;
     private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
     private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
 
@@ -78,7 +78,7 @@ public class CpuIndicatorPanel {
 
     private static PercentageGraph createGraph() {
         PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
         graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
