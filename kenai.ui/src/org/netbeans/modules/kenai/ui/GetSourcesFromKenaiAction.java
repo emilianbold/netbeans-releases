@@ -112,7 +112,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         }
                     }
                 });
-            } else if (Utilities.HG_REPO.equals(sourcesInfo.feature.getService())) { // XXX service or name
+            } else if (Utilities.HG_REPO.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
