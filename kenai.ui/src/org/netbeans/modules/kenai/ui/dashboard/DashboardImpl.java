@@ -336,7 +336,7 @@ public final class DashboardImpl extends Dashboard {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
             }
-            if( model.getSize() > 0 )
+            if( model.getSize() > 1 )
                 return;
             addProjectsToModel(-1, allProjects);
         }
@@ -363,6 +363,7 @@ public final class DashboardImpl extends Dashboard {
                 } else {
                     fillModel();
                     treeList.setModel(model);
+                    switchMemberProjects();
                     if( !isTreeListShowing ) {
                         dashboardComponent.removeAll();
                         dashboardComponent.add(treeList, BorderLayout.CENTER);

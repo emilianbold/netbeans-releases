@@ -105,6 +105,9 @@ public class LoginPanel extends javax.swing.JPanel {
 
         errorProgress.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         errorProgress.setLayout(new java.awt.CardLayout());
+
+        error.setForeground(java.awt.Color.red);
+        error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
         errorProgress.add(error, "card3");
         errorProgress.add(progressBar, "card3");
 
@@ -170,8 +173,8 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .add(register))
                             .add(forgotPassword)
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))))
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
