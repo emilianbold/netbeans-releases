@@ -63,9 +63,7 @@ include org-netbeans-api-project-libraries/Libraries/.*\.xml
 include Services/Browsers/.*
 include Services/DiffProviders/.*
 include Services/formsettings.settings
-include Services/IndentEngine/.*
-exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
-exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
+exclude Services/IndentEngine/.*
 include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
 include Services/org-netbeans-modules-debugger-Settings\.properties
 include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml

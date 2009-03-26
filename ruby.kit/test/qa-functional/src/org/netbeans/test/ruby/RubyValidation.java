@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.test.ide.WatchProjects;
 
@@ -173,6 +174,7 @@ public class RubyValidation extends JellyTestCase {
      * - wait for main.rb output tab
      * - check "Hello World" is printed out
      */
+    @RandomlyFails
     public void testRunRubyFile() {
         // wait main.rb is opened in editor
         EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
