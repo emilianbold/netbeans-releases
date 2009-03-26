@@ -10,14 +10,14 @@ import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
-import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.openide.util.NbBundle;
 
 /*package*/ class MemoryIndicatorPanel {
 
-    private static final Color GRAPH_COLOR = GraphColors.COLOR_2;
+    private static final Color GRAPH_COLOR = GraphConfig.COLOR_2;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(
             GRAPH_COLOR, NbBundle.getMessage(MemoryIndicatorPanel.class, "graph.description")); // NOI18N
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
                 return formatValue(value);
             }
         }, DESCRIPTOR);
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
         graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
