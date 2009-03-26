@@ -140,9 +140,6 @@ public class Graph extends JComponent {
         public Axis(AxisOrientation orientation) {
             this.orientation = orientation;
             setOpaque(true);
-            Dimension size = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
-            setMinimumSize(size);
-            setPreferredSize(size);
         }
 
         @Override
