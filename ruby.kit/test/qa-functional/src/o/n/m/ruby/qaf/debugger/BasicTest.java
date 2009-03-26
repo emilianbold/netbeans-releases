@@ -44,6 +44,8 @@ import java.awt.Component;
 import javax.swing.JButton;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -95,6 +97,18 @@ public class BasicTest extends JellyTestCase {
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        Session[] sesions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sesions) {
+            System.out.println("Warning: Killing dbg session: " + session);
+            session.kill();
+        }
+    }
+
+
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
 
