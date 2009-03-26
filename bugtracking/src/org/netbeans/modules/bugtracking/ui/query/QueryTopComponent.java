@@ -154,8 +154,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
+                    Repository repo = (Repository) e.getItem();
                     if(e.getStateChange() == ItemEvent.SELECTED) {
                         onRepoSelected();
+                    } else if(e.getStateChange() == ItemEvent.DESELECTED) {
+                        repo.removePropertyChangeListener(QueryTopComponent.this);
                     }
                 }
             });
@@ -421,9 +424,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                         close();
                     }
                 });
-            } else {
-                updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
             }
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+            updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
         }
     }
 
@@ -455,7 +458,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 if (repo == null) {
                     return;
                 }
-
+                repo.addPropertyChangeListener(QueryTopComponent.this);
+                
                 final BugtrackingController removeController = query != null ? query.getController() : null;
                 if(query != null) {
                     query.removePropertyChangeListener(QueryTopComponent.this);

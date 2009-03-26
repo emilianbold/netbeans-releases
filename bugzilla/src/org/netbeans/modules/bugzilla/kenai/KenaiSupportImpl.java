@@ -41,7 +41,6 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
@@ -111,6 +110,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+
+            // get all kenai repositories
             KenaiRepository[] repos;
             synchronized(repositories) {
                 if(repositories.size() == 0) {
@@ -118,6 +119,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 }
                 repos = repositories.toArray(new KenaiRepository[repositories.size()]);
             }
+
+            // get kenai credentials
             String user;
             String psswd;
             if(KenaiUtil.isLoggedIn()) {
@@ -127,8 +130,14 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 user = "";
                 psswd = "";
             }
+
             for (KenaiRepository kr : repos) {
+                // refresh their taskdata with the relevant username/password
                 kr.setCredentials(user, psswd);
+
+                // the myIssues query was either added or
+                // removed from the repository
+                kr.fireQueryListChanged();
             }
         }
     }
