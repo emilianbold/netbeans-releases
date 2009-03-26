@@ -37,39 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.dlight.spi.indicator;
 
-import java.util.Arrays;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import static org.junit.Assert.*;
 
-public class PhpProjectUtilsTest extends NbTestCase {
+/**
+ *
+ * @author mt154047
+ */
+public interface IndicatorComponentEmptyContentProvider {
+    List<Indicator> getEmptyContent();
 
-    public PhpProjectUtilsTest(String name) {
-        super(name);
-    }
-
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one*two", PhpProjectUtils.implode(items, "*"));
-        assertEquals("oneonetwo", PhpProjectUtils.implode(items, "one"));
-        assertEquals("one??NB??two", PhpProjectUtils.implode(items, "??NB??"));
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", PhpProjectUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
-    }
-
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one*two";
-        assertArrayEquals(items, PhpProjectUtils.explode(string, "*").toArray(new String[0]));
-        string = "one??NB??two";
-        assertArrayEquals(items, PhpProjectUtils.explode(string, "??NB??").toArray(new String[0]));
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, PhpProjectUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
-
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, PhpProjectUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
-    }
 }

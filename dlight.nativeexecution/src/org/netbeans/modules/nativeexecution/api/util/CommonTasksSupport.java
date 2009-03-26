@@ -208,10 +208,10 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> rmDir(final ExecutionEnvironment execEnv,
             String dirname, boolean recursively, final Writer error) {
-        String cmd = recursively ? "/bin/rm" : "/bin/rmdir";
+        String cmd = recursively ? "/bin/rm" : "/bin/rmdir"; // NOI18N
 
         String[] args = recursively
-                ? new String[]{"-rf", dirname} : new String[]{"-f", dirname};
+                ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N
 
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(execEnv, cmd); // NOI18N
