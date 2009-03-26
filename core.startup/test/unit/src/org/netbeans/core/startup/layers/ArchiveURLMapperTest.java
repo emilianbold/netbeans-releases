@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -59,15 +60,20 @@ import org.openide.filesystems.JarFileSystem;
  */
 public class ArchiveURLMapperTest extends NbTestCase {
     
-    private static final String RESOURCE = "test.txt"; //NOI18N
-    private static final String JAR_FILE = "test.jar";          //NOI18N
+    private static final String RESOURCE = "test.txt";
+    private static final String JAR_FILE = "test.jar";
     
     public ArchiveURLMapperTest(String testName) {
         super(testName);
     }
+
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
     
     private URL createJarFile () throws IOException {
-	File workDir = FileUtil.normalizeFile(this.getWorkDir());
+        File workDir = FileUtil.normalizeFile(this.getWorkDir());
         File jarFile = new File(workDir,JAR_FILE);
         JarOutputStream out = new JarOutputStream ( new FileOutputStream (jarFile));
         ZipEntry entry = new ZipEntry (RESOURCE);        
@@ -77,57 +83,68 @@ public class ArchiveURLMapperTest extends NbTestCase {
         return jarFile.toURI().toURL();
     }
     
-    private boolean removeJarFile () {
-        try {
-            File workDir = FileUtil.normalizeFile(this.getWorkDir());
-            File tmp = new File (workDir,JAR_FILE);
-            tmp.delete();
-            return true;
-        } catch (IOException ioe) {
-            return false;
-        }
-    }
-    
     public void testURLMapper () throws Exception {
         URL jarFileURL = createJarFile ();
         assertTrue (jarFileURL != null);
-        URL url = new URL (MessageFormat.format("jar:{0}!/{1}", new Object[] {jarFileURL.toExternalForm(),  //NOI18N
-            RESOURCE}));
+        URL url = new URL (MessageFormat.format("jar:{0}!/{1}", jarFileURL.toExternalForm(), RESOURCE));
         FileObject fo = URLMapper.findFileObject(url);
         assertNotNull("There is one found file object", fo);
         assertTrue(fo.getPath().equals(RESOURCE));
         URL newUrl = URLMapper.findURL(fo, URLMapper.EXTERNAL);
         assertEquals(url, newUrl);
-        removeJarFile ();
     }
 
 	public void testArchiveToRootURL () throws Exception {
 		URL jarFileURL = createJarFile ();
 		assertTrue (jarFileURL != null);
-                assertTrue (FileUtil.isArchiveFile(jarFileURL));
-                URL jarRootURL = FileUtil.getArchiveRoot(jarFileURL);
-                assertTrue ("jar".equals(jarRootURL.getProtocol()));        //NOI18N
-                String path = jarRootURL.getPath();
-                int index = path.lastIndexOf ("!/");                        //NOI18N
-                assertTrue (index==path.length()-2);
-                URL innerURL = new URL(path.substring(0,index));
-                assertTrue (innerURL.equals(jarFileURL));
-		removeJarFile ();
+        assertTrue (FileUtil.isArchiveFile(jarFileURL));
+        URL jarRootURL = FileUtil.getArchiveRoot(jarFileURL);
+        assertTrue ("jar".equals(jarRootURL.getProtocol()));
+        String path = jarRootURL.getPath();
+        int index = path.lastIndexOf ("!/");
+        assertTrue (index==path.length()-2);
+        URL innerURL = new URL(path.substring(0,index));
+        assertTrue (innerURL.equals(jarFileURL));
 	}
         
-        
-        public void testArchiveToRootFileObject () throws Exception {
-            URL jarFileURL = createJarFile ();
-            FileObject fo = URLMapper.findFileObject(jarFileURL);
-            assertTrue (fo != null);   
-            assertTrue (FileUtil.isArchiveFile(fo));
-            FileObject rootFo = FileUtil.getArchiveRoot (fo);
-            assertTrue (rootFo!=null);
-            assertTrue ("".equals(rootFo.getPath()));   //NOI18N
-            assertTrue (rootFo.getFileSystem() instanceof JarFileSystem);
-            File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
-            assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
-            removeJarFile ();
-        }
-    
+    public void testArchiveToRootFileObject () throws Exception {
+        URL jarFileURL = createJarFile ();
+        FileObject fo = URLMapper.findFileObject(jarFileURL);
+        assertTrue (fo != null);
+        assertTrue (FileUtil.isArchiveFile(fo));
+        FileObject rootFo = FileUtil.getArchiveRoot (fo);
+        assertTrue (rootFo!=null);
+        assertTrue ("".equals(rootFo.getPath()));
+        assertTrue (rootFo.getFileSystem() instanceof JarFileSystem);
+        File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
+        assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
+    }
+
+    public void testNestedJars() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JarOutputStream jos = new JarOutputStream(baos);
+        ZipEntry entry = new ZipEntry("text");
+        jos.putNextEntry(entry);
+        jos.write("content".getBytes());
+        jos.close();
+        File metaJar = new File(getWorkDir(), "meta.jar");
+        jos = new JarOutputStream(new FileOutputStream(metaJar));
+        entry = new ZipEntry("nested.jar");
+        jos.putNextEntry(entry);
+        jos.write(baos.toByteArray());
+        jos.close();
+        FileObject metaJarFO = URLMapper.findFileObject(metaJar.toURI().toURL());
+        assertNotNull(metaJarFO);
+        assertTrue(FileUtil.isArchiveFile(metaJarFO));
+        FileObject metaRoot = FileUtil.getArchiveRoot(metaJarFO);
+        assertNotNull(metaRoot);
+        FileObject nestedJarFO = metaRoot.getFileObject("nested.jar");
+        assertNotNull(nestedJarFO);
+        assertTrue(FileUtil.isArchiveFile(nestedJarFO));
+        FileObject nestedRoot = FileUtil.getArchiveRoot(nestedJarFO);
+        assertNotNull(nestedRoot);
+        FileObject textFO = nestedRoot.getFileObject("text");
+        assertEquals("content", textFO.asText());
+    }
+
 }

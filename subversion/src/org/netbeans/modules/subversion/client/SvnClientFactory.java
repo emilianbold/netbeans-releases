@@ -241,6 +241,7 @@ public class SvnClientFactory {
         try {
             if(!initFile.exists()) initFile.createNewFile();
         } catch (IOException ex) {
+            // should not happen
             LOG.log(Level.INFO, null, ex);
         }
 
@@ -249,6 +250,10 @@ public class SvnClientFactory {
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                return false;
+            }
+            if(!checkJavaHlVersion()) {
+                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
+                return false;
             }
         } catch (SVNClientException e) {
             LOG.log(Level.WARNING, null, e); // should not happen
@@ -529,6 +534,22 @@ public class SvnClientFactory {
             LOG.log(Level.FINE, "checking version", e);
             throw e;
         }
+    }
+
+    private boolean checkJavaHlVersion() throws SVNClientException {
+        CommandlineClient cc = new CommandlineClient();
+        try {
+            cc.checkSupportedJavaHlVersion();
+        } catch (SVNClientException e) {
+            LOG.log(Level.FINE, "checking version", e);
+            if(SvnClientExceptionHandler.isUnsupportedJavaHl(e.getMessage())) {
+                return false;
+            }
+            // Lets be optimistic at this place. Might be
+            // that it is just cli which is not istalled...
+            return true; 
+        }
+        return true;
     }
 
     private abstract class ClientAdapterFactory {

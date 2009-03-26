@@ -163,9 +163,8 @@ public class InstallSupportImpl {
                 
                 try {
                     for (OperationInfo info : infos) {
-                        synchronized(this) {
-                            if (currentStep == STEP.CANCEL) return false;
-                        }
+                        if (cancelled()) return false;
+                        
                         int increment = doDownload(info, progress, aggregateDownload, size);
                         if (increment == -1) {
                             return false;
@@ -225,9 +224,7 @@ public class InstallSupportImpl {
                 
                 try {
                     for (OperationInfo info : infos) {
-                        synchronized(this) {
-                            if (currentStep == STEP.CANCEL) return false;
-                        }
+                        if (cancelled()) return false;
                         UpdateElementImpl toUpdateImpl = Trampoline.API.impl(info.getUpdateElement());
                         boolean hasCustom = toUpdateImpl.getInstallInfo().getCustomInstaller() != null;
                         if (hasCustom) {
@@ -648,11 +645,10 @@ public class InstallSupportImpl {
     }
     
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
-        synchronized(this) {
-            if (currentStep == STEP.CANCEL) {
+        if (cancelled()) {
                 return -1;
-            }
         }
+        
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
@@ -765,7 +761,12 @@ public class InstallSupportImpl {
     private static File getDestination (File targetCluster, String codeName) {
         return getDestination (targetCluster, codeName, true);
     }
-    
+
+    private boolean cancelled() {
+        synchronized (this) {
+            return STEP.CANCEL == currentStep;
+        }
+    }
     private int copy (URL source, File dest, 
             ProgressHandle progress, final int estimatedSize, final int aggregateDownload, final int totalSize,
             String label) throws MalformedURLException, IOException {
@@ -788,7 +789,7 @@ public class InstallSupportImpl {
             byte [] bytes = new byte [1024];
             int size;
             int c = 0;
-            while (STEP.CANCEL != currentStep && (size = bsrc.read (bytes)) != -1) {
+            while (!cancelled() && (size = bsrc.read (bytes)) != -1) {
                 bdest.write (bytes, 0, size);
                 increment += size;
                 c += size;
