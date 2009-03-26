@@ -134,6 +134,7 @@ public class EarDataObject extends DD2beansDataObject
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
+            sources.removeChangeListener (this);
             sources.addChangeListener (this);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int i = 0; i < groups.length; i++) {

@@ -56,12 +56,13 @@ import org.openide.util.NbPreferences;
 public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
-    private static final String LAST_CHANGE_FROM = "bugzilla.last_change_from"; // XXX
-    private static final String REPO_NAME        = "bugzilla.repository_";
-    private static final String QUERY_NAME       = "bugzilla.query_";
-    private static final String QUERY_REFRESH    = "bugzilla.query_refresh";
-    private static final String ISSUE_REFRESH    = "bugzilla.issue_refresh";
-    private static final String DELIMITER        = "<=>";
+    private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from"; // XXX
+    private static final String REPO_NAME           = "bugzilla.repository_";
+    private static final String QUERY_NAME          = "bugzilla.query_";
+    private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";
+    private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";
+    private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";
+    private static final String DELIMITER           = "<=>";
 
     private BugzillaConfig() { }
 
@@ -76,20 +77,28 @@ public class BugzillaConfig {
         return NbPreferences.forModule(BugzillaConfig.class);
     }
 
-    public void setQueryRefresh(int i) {
-        getPreferences().putInt(QUERY_REFRESH, i);
+    public void setQueryRefreshInterval(int i) {
+        getPreferences().putInt(QUERY_REFRESH_INT, i);
     }
 
-    public void setIssueRefresh(int i) {
-        getPreferences().putInt(ISSUE_REFRESH, i);
+    public void setIssueRefreshInterval(int i) {
+        getPreferences().putInt(ISSUE_REFRESH_INT, i);
     }
 
-    public int getQueryRefresh() {
-        return getPreferences().getInt(QUERY_REFRESH, 30);
+    public void setQueryAutoRefresh(String queryName, boolean refresh) {
+        getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
-    public int getIssueRefresh() {
-        return getPreferences().getInt(ISSUE_REFRESH, 15);
+    public int getQueryRefreshInterval() {
+        return getPreferences().getInt(QUERY_REFRESH_INT, 30);
+    }
+
+    public int getIssueRefreshInterval() {
+        return getPreferences().getInt(ISSUE_REFRESH_INT, 15);
+    }
+
+    public boolean getQueryAutoRefresh(String queryName) {
+        return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {

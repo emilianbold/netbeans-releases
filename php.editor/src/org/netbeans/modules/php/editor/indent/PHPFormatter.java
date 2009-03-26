@@ -679,10 +679,10 @@ public class PHPFormatter implements Formatter {
                         if (ind != null) {
                             initialIndent = ind.intValue();
                         } else {
-                            initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                            initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
                         }
                     } else {
-                        initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                        initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
                     }
                 }
 

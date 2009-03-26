@@ -135,6 +135,15 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
                         SemanticAnalyzer task = language.getSemanticAnalyzer();
                         if (manager != null && task != null) {
                             Parser.Result r = resultIterator.getParserResult();
+                            String rmime = r.getSnapshot().getMimeType();
+                            //#161033 debug
+                            if(!rmime.equals(mimeType)) {
+                                throw new IllegalStateException("resultIterator.getSnapshot().getMimeType() [" +
+                                        mimeType + "] != resultIterator.getParserResult().getSnapshot().getMimeType() ["
+                                        + rmime + "; mimepath = " + r.getSnapshot().getMimePath() + "]");
+                            }
+                            //eof debug
+
                             if (r instanceof ParserResult) {
                                 process(language, (ParserResult) r, newColoring);
                             }
@@ -305,7 +314,11 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
         try {
             task.run(result, null);
         } catch (Exception ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, "SemanticAnalyzer = " + 
+                    task + "; Language = " + language +
+                    " (mimetype = " + language.getMimeType() +
+                    "; ParserResult = " + result +
+                    "(mimepath = " + result.getSnapshot().getMimePath() + ")", ex);
         }
 
         if (isCancelled()) {

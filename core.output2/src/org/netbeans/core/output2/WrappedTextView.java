@@ -286,7 +286,6 @@ public class WrappedTextView extends View {
                         int lenToDraw = Math.min(charsPerLine, length - charpos);
                         if (lenToDraw > 0) {
                             drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
-                            //if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
                             if (lines.isHyperlink(i)) {
                                 underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
                             }
@@ -346,7 +345,7 @@ public class WrappedTextView extends View {
         if (currLogicalLine == 0) {
             //#47263 - start hyperlink underline at first
             //non-whitespace character
-            for (int k = 1; k < lenToDraw; k++) {
+            for (int k = 0; k < lenToDraw; k++) {
                 if (Character.isWhitespace(seg.array[charpos + k])) {
                     underlineStart += charWidth;
                 } else {

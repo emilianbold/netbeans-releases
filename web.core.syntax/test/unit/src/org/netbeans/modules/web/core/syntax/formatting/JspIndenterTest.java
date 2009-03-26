@@ -61,6 +61,8 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
+import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
@@ -102,11 +104,13 @@ public class JspIndenterTest extends TestBase2 {
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), new JspEmbeddingProvider.Factory());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
+        ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
     }
 
     @Override
@@ -165,6 +169,10 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingCase007() throws Exception {
         reformatFileContents("FormattingProject/web/case007.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase008() throws Exception {
+        reformatFileContents("FormattingProject/web/case008.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {
@@ -228,6 +236,22 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline(
             "<html> <!--\n             ^comment",
             "<html> <!--\n             \n       ^comment", null);
+
+        // expression indentation:
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"}^",
+            "<html>\n    ${\"expression+\n           exp2\"}\n    ^", null);
+        insertNewline(
+            "<html>\n    some text ${\"expression+\n                         exp2\"^}",
+            "<html>\n    some text ${\"expression+\n                         exp2\"\n    ^}", null);
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"\n                }^",
+            "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
+
+// #128034
+//        insertNewline(
+//            "<a href=\"${path}\">^</a>",
+//            "<a href=\"${path}\">\n    ^\n</a>", null);
 
     }
 

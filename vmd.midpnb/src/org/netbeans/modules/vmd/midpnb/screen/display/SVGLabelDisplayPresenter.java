@@ -57,7 +57,7 @@ public class SVGLabelDisplayPresenter extends UpdatableSVGComponentDisplayPresen
 
     // fix issue with null BBox returned by persejus for label.
     // increase bbox height by SELECTION_SHAPE_EXTENSION
-    private static final int SELECTION_SHAPE_EXTENSION = 4;
+    private static final int SELECTION_SHAPE_EXTENSION = 3;
 
     private Rectangle mySelectionRect = null;
 
@@ -80,21 +80,6 @@ public class SVGLabelDisplayPresenter extends UpdatableSVGComponentDisplayPresen
         }
         return mySelectionRect;
     }
-
-    /*
-    @Override
-    public Shape getSelectionShape() {
-
-        Shape shape = super.getSelectionShape();
-        if (shape != null) {
-            Rectangle mySelectionRect = shape.getBounds();
-            mySelectionRect.setSize((int) mySelectionRect.getWidth(),
-                    (int) mySelectionRect.getHeight() + SELECTION_SHAPE_EXTENSION);
-            return mySelectionRect;
-        }
-        return null;
-    }
-    */
 
     @Override
     protected void reloadSVGComponent(SVGImage svgImage,
