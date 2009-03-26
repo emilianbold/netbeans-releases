@@ -87,7 +87,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             String args = pae.getProfile().getArgsFlat();
             String[] env = pae.getProfile().getEnvironment().getenv();
             boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
-            MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+            MakeConfiguration conf = pae.getConfiguration();
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
             String runDirectory = pae.getProfile().getRunDirectory();
@@ -150,7 +150,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             args2 = "";
                         }
                         if (pae.getType() == ProjectActionEvent.Type.RUN &&
-                                ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
+                                pae.getConfiguration().isApplicationConfiguration() &&
                                 HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
@@ -248,7 +248,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             return true;
         } else {
             if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().isLocalhost()) {
+                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
                     return true;
                 }
             }
