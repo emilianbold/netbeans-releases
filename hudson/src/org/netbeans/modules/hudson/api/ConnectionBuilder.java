@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -232,7 +233,9 @@ public final class ConnectionBuilder {
                         }
                     }
                 }
-                throw new IOException("Must log in to access " + url);
+                IOException x = new IOException("403 on " + url);
+                Exceptions.attachLocalizedMessage(x, "Must log in to access " + url); // XXX I18N
+                throw x;
             case HttpURLConnection.HTTP_NOT_FOUND:
                 throw new FileNotFoundException(curr.toString());
             case HttpURLConnection.HTTP_OK:
