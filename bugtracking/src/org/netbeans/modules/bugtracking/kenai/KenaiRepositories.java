@@ -81,7 +81,7 @@ public class KenaiRepositories {
         List<Repository> ret = new ArrayList<Repository>();
         for (ProjectHandle projectHandle : phs) {
             if(projectHandle == null) continue;
-            Repository repo = getRepository(projectHandle, null);
+            Repository repo = getRepository(projectHandle);
             if(repo != null) {
                 ret.add(repo);
             }
@@ -109,7 +109,7 @@ public class KenaiRepositories {
         return null;
     }
 
-    Repository getRepository(ProjectHandle ph, QueryAccessorImpl qaImpl) {
+    Repository getRepository(ProjectHandle ph) {
         KenaiProject kp = getKenaiProject(ph);
         if(kp == null) {
             // XXX log!

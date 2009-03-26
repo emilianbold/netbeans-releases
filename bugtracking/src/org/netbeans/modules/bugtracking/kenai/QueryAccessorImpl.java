@@ -82,7 +82,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX log this inconvenience
             return Collections.emptyList();
@@ -142,7 +142,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.create(project);
@@ -164,7 +164,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public ActionListener getCreateIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.create(project);
