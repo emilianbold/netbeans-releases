@@ -38,42 +38,27 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
- *
- * @author ak119685
+ * Case insensitive variant of <tt>MacroMap</tt>.
+ * ... it stores keys in upper case
  */
-public final class EnvWriter {
 
-    private final OutputStream os;
+public final class CaseInsensitiveMacroMap extends MacroMap {
 
-    public EnvWriter(OutputStream os) {
-        this.os = os;
+    public CaseInsensitiveMacroMap(MacroExpander macroExpander) {
+        super(macroExpander);
     }
 
-    public void write(final MacroMap env) throws IOException {
-        if (!env.isEmpty()) {
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    // TODO: is it safe to replace all '\' with '/'?
-                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
-                    os.flush();
-                }
-            }
-        }
+    @Override
+    public String put(String key, String value) {
+        return super.put(key.toUpperCase(), value);
     }
+
+    @Override
+    public String get(String key) {
+        return super.get(key.toUpperCase());
+    }
+
 }
