@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -89,7 +90,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
     /** Set of opened {@code QueryTopComponent}s. */
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
-
+    private Query[] savedQueries = null;
+    
     private static final String PREFERRED_ID = "QueryTopComponent";
     private Query query; // XXX synchronized
 
@@ -158,8 +160,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
+                    Repository repo = (Repository) e.getItem();
                     if(e.getStateChange() == ItemEvent.SELECTED) {
                         onRepoSelected();
+                    } else if(e.getStateChange() == ItemEvent.DESELECTED) {
+                        repo.removePropertyChangeListener(QueryTopComponent.this);
                     }
                 }
             });
@@ -394,6 +399,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     @Override
     public void componentOpened() {
         openQueries.add(this);
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -401,7 +407,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
-        }        
+        }
+        Kenai.getDefault().removePropertyChangeListener(this);
     }
 
     /** replaces this in object stream */
@@ -425,9 +432,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                         close();
                     }
                 });
-            } else {
-                updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
             }
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
+                  evt.getPropertyName().equals(Kenai.PROP_LOGIN))
+        {
+            updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
         }
     }
 
@@ -459,7 +468,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 if (repo == null) {
                     return;
                 }
-
+                repo.addPropertyChangeListener(QueryTopComponent.this);
+                
                 final BugtrackingController removeController = query != null ? query.getController() : null;
                 if(query != null) {
                     query.removePropertyChangeListener(QueryTopComponent.this);
@@ -507,9 +517,14 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         setNameAndTooltip();
     }
 
-    private void updateSavedQueries(Repository repo) {        
-        Query[] queries = repo.getQueries();
-        if(queries == null || queries.length == 0) {
+    private synchronized void updateSavedQueries(Repository repo) {
+        if(savedQueries != null) {
+            for (Query q : savedQueries) {
+                q.removePropertyChangeListener(this);
+            }
+        }
+        savedQueries = repo.getQueries();
+        if(savedQueries == null || savedQueries.length == 0) {
             queriesPanel.setVisible(false);
             return;
         }
@@ -522,14 +537,14 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         }
         queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
         QueryButton ql = null;
-        Arrays.sort(queries);
-        for (int i = 0; i < queries.length; i++) {
-            Query q = queries[i];
+        Arrays.sort(savedQueries);
+        for (int i = 0; i < savedQueries.length; i++) {
+            Query q = savedQueries[i];
             q.addPropertyChangeListener(this);
             ql = new QueryButton(repo, q);
             ql.setText(q.getDisplayName());
             queriesPanel.add(ql);
-            if(i < queries.length - 1) {
+            if(i < savedQueries.length - 1) {
                 JSeparator s = new JSeparator();
                 s.setOrientation(javax.swing.SwingConstants.VERTICAL);
                 s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
