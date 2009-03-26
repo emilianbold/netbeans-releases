@@ -132,8 +132,11 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
             TestSession.SessionType type = TestSession.SessionType.TEST;
-            if (config.getActionName().contains("debug")) { //NOI81N
-                 type = TestSession.SessionType.DEBUG;
+            String action = config.getActionName();
+            if (action != null) { //custom
+                if (action.contains("debug")) { //NOI81N
+                     type = TestSession.SessionType.DEBUG;
+                }
             }
             final TestSession.SessionType fType = type;
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
