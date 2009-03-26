@@ -79,10 +79,12 @@ public class CpuIndicatorPanel {
     private static PercentageGraph createGraph() {
         PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(80, 60));
-        graph.setPreferredSize(new Dimension(80, 60));
-        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
-        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
+        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setMinimumSize(graphSize);
+        graph.setPreferredSize(graphSize);
+        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(axisSize);
+        graph.getVerticalAxis().setPreferredSize(axisSize);
         return graph;
     }
 
