@@ -59,9 +59,9 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
-import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -240,7 +240,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         Column syncCountColumn = new Column("count", Long.class, "Count", null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
-            new Column("func_name", MangledNameType.class, "Function", null),// NOI18N
+            new Column("func_name", FunctionName.class, "Function", null),// NOI18N
             syncTimeColumn,
             syncCountColumn);
         String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
