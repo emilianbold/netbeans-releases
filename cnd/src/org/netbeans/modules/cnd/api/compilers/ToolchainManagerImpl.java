@@ -575,6 +575,12 @@ import org.xml.sax.helpers.DefaultHandler;
                             root.appendChild(element);
                         }
 
+                        if (descriptor.getMakefileWriter() != null) {
+                            element = doc.createElement("makefileWriter"); // NOI18N
+                            element.setAttribute("stringvalue", descriptor.getMakefileWriter()); // NOI18N
+                            root.appendChild(element);
+                        }
+
                         if (descriptor.getBaseFolderKey() != null ||
                                 descriptor.getBaseFolderPattern() != null ||
                                 descriptor.getBaseFolderPathPattern() != null ||
@@ -1170,6 +1176,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String commandFolderSuffix;
         String commandFolderPathPattern;
         String qmakespec;
+        String makefileWriter;
         Compiler c = new Compiler();
         Compiler cpp = new Compiler();
         Compiler fortran = new Compiler();
@@ -1685,6 +1692,9 @@ import org.xml.sax.helpers.DefaultHandler;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
                 return;
+            } else if (path.endsWith(".makefile_writer")) { // NOI18N
+                v.makefileWriter = getValue(attributes, "class"); // NOI18N
+                return;
             } else if (path.endsWith(".base_folder")) { // NOI18N
                 v.baseFolderKey = getValue(attributes, "regestry"); // NOI18N
                 v.baseFolderPattern = getValue(attributes, "pattern"); // NOI18N
@@ -2118,6 +2128,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
+        }
+
+        public String getMakefileWriter() {
+            return v.makefileWriter;
         }
 
         public CompilerDescriptor getC() {
