@@ -411,7 +411,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-//        assert !taskData.isPartial(); XXX doesn't work with simple search
+        assert !taskData.isPartial(); 
         data = taskData;
         attributes = null; // reset
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
