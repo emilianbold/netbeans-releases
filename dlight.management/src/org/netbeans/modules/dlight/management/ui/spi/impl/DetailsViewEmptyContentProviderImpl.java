@@ -37,11 +37,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api.impl;
+package org.netbeans.modules.dlight.management.ui.spi.impl;
 
-import org.netbeans.modules.dlight.management.api.*;
+import org.netbeans.modules.dlight.management.ui.spi.DetailsViewEmptyContentProvider;
 import javax.swing.JComponent;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -51,8 +53,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = DetailsViewEmptyContentProvider.class)
 public class DetailsViewEmptyContentProviderImpl  implements DetailsViewEmptyContentProvider{
     
-    public JComponent getEmptyView(DLightConfiguration configuration, String toolName) {
-        return new EmptyDetailsViewPanel(configuration, toolName);
+    public JComponent getEmptyView(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToValidateWith) {
+        return new EmptyDetailsViewPanel(configuration, tool, targetToValidateWith);
     }
 
 }

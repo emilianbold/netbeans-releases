@@ -37,15 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.visualizers;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mt154047
  */
-public interface DetailsViewEmptyContentProvider {   
-    JComponent getEmptyView(DLightConfiguration configuration, String toolName);
+@ServiceProvider(service=EmptyVisualizerContainerProvider.class)
+public final  class EmptyVisualizerContainerProviderImpl implements EmptyVisualizerContainerProvider{
+
+    public VisualizerContainer getEmptyVisualizerContainer() {
+        return VisualizerTopComponentTopComponent.getDefault();
+    }
+
 }
