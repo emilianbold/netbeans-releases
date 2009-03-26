@@ -100,11 +100,15 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     QueryTopComponent(Query query) {
         this(query, null);
     }
+
     QueryTopComponent(Query query, Repository toSelect) {
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        int unitIncrement = (int)(s*1.5);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
         
         this.query = query;
 
