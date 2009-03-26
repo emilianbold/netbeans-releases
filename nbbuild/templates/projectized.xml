@@ -173,7 +173,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <include name="*javac*.jar"/>
             </fileset>
         </pathconvert>
-        <condition property="bootclasspath.mac" value="${retouche.javac}" else="">
+        <condition property="bootclasspath.mac" value="${retouche.javac}">
             <and>
                 <os family="mac"/>
                 <istrue value="${requires.nb.javac}"/>

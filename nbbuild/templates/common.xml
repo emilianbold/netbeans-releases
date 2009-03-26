@@ -103,6 +103,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-javac-init" depends="build-init">
+        <property name="bootclasspath.mac" value=""/>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
