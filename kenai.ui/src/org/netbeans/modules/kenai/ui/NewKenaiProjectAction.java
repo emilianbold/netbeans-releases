@@ -68,8 +68,6 @@ public final class NewKenaiProjectAction implements ActionListener {
         if (!cancelled) {
             Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
             // everything should be created, show summary
-            // XXX check the project is really created
-            // returning the repo will be needed as well
             showLandingPage(createdProjects);
         }
 
