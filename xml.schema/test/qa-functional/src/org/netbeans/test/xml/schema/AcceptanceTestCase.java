@@ -373,9 +373,10 @@ public class AcceptanceTestCase extends JellyTestCase {
         // Remove all spaces, tabs and newlines to avoid platform and
         // configuration related problems due to different indentations,
         // newline characters, empty lines etc.
-        strText = strText.replaceAll("[ \t\f\r]", "");
-        // Show result in log for manula checking in case of troubles
+        strText = strText.replaceAll("[ \t\f\r\n]", "");
+        // Show result in log for manual checking in case of troubles
         Helpers.writeJemmyLog("{" + strText + "}");
+        System.out.println( "{" + strText + "}" );
         // Creating new instance for CRC32 calculations
         CRC32 crc32 = new CRC32();
         // Get bytes of source code text
