@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.debugger.gdb.utils.WinPath;
 import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -510,13 +511,12 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private String win2UnixPath(String path) {
-        String res = path;
         if (isCygwin()) {
-            res = "/cygdrive/" + path.charAt(0) + path.substring(2); // NOI18N
+            return WinPath.win2cyg(path);
         } else if (isMinGW()) {
-            res = "/" + path.charAt(0) + "/" + path.substring(2); // NOI18N
+            return WinPath.win2ming(path);
         }
-        return res.replace('\\', '/');
+        return path.replace('\\', '/');
     }
 
     public ExecutionEnvironment getHostExecutionEnvironment() {
@@ -705,16 +705,14 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private boolean symbolsRead(String results, String exepath) {
-        int pos = -1;
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
-                if (platform == PlatformTypes.PLATFORM_WINDOWS && (pos = line.indexOf("/cygdrive/")) != -1) { // NOI18N
-                    line = line.substring(0, pos) +
-                            line.substring(pos + 10, pos + 11).toUpperCase() + ':' + line.substring(pos + 11);
+                line = line.substring(21, line.length() - 8);
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
+                    line = WinPath.cyg2win(line); // TODO: what about mingw?
                 }
-                String ep = line.substring(21, line.length() - 8);
-                if (ep.equals(exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && ep.equals(exepath + ".exe"))) { // NOI18N
+                if (equivalentPaths(line, exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && equivalentPaths(line, exepath + ".exe"))) { // NOI18N
                     return true;
                 }
             } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) { // NOI18N
@@ -726,14 +724,14 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private boolean equivalentPaths(String path1, String path2) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            return winpath(path1).equals(winpath(path2));
+            return winpath(path1).toLowerCase().equals(winpath(path2).toLowerCase());
         }
         return path1.equals(path2);
     }
 
     private String winpath(String path) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) { // NOI18N
-            return path.substring(10, 11).toUpperCase() + ':' + path.substring(11);
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            return WinPath.cyg2win(path);
         } else {
             return path;
         }
@@ -1872,16 +1870,13 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private String getOSPath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            if (isCygwin() && path.startsWith("/cygdrive/")) { // NOI18N
-                return path.charAt(10) + ":" + path.substring(11); // NOI18N
+            if (isCygwin()) { // NOI18N
+                return WinPath.cyg2win(path);
             } else if (isMinGW() && path.charAt(0) == '/' && path.charAt(2) == '/') {
                 return path.charAt(1) + ":" + path.substring(2); // NOI18N
-            } else {
-                return path;
             }
-        } else {
-            return path;
-        }
+        } 
+        return path;
     }
 
     private void threadsViewInit() {
