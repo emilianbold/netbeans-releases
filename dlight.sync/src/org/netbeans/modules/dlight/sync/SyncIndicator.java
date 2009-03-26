@@ -64,7 +64,8 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     private final JLabel label = new JLabel(getRepairActionProvider().getReason());
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
-    private int lastValue;
+    private int lastLocks;
+    private int lastThreads;
 
     public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
@@ -87,18 +88,18 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     public void updated(List<DataRow> rows) {
         for (DataRow row : rows) {
-            for (String column : row.getColumnNames()) {
-                if (acceptedColumnNames.contains(column)) {
-                    String value = row.getStringValue(column); //TODO: change to Long
-                    lastValue = (int) Float.parseFloat(value);
-                }
+            String locks = row.getStringValue("locks"); // NOI18N
+            String threads = row.getStringValue("threads"); // NOI18N
+            if (locks != null && threads != null) {
+                lastLocks = (int) Float.parseFloat(locks);
+                lastThreads = Integer.parseInt(threads);
             }
         }
     }
 
     @Override
     protected void tick() {
-        panel.addData(lastValue);
+        panel.addData(lastLocks, lastThreads);
     }
 
     @Override

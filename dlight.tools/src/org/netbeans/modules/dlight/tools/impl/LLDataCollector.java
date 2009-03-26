@@ -235,14 +235,14 @@ public class LLDataCollector
             DataRow row = null;
             if (line.startsWith("cpu:")) { // NOI18N
                 String[] times = line.substring(5).split("\t"); // NOI18N
-                row = new DataRow(Arrays.asList("utime", "stime"), Arrays.asList(Float.valueOf(times[0]), Float.valueOf(times[1]))); // NOI18N
+                row = new DataRow(LLDataCollectorConfiguration.CPU_TABLE.getColumnNames(), Arrays.asList(Float.valueOf(times[0]), Float.valueOf(times[1])));
             } else if (line.startsWith("mem:")) { // NOI18N
-                row = new DataRow(Arrays.asList("total"), Arrays.asList(line.substring(5))); // NOI18N
+                row = new DataRow(LLDataCollectorConfiguration.MEM_TABLE.getColumnNames(), Arrays.asList(line.substring(5)));
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);
                 int threads = Integer.parseInt(fields[1]);
-                row = new DataRow(Arrays.asList("sync"), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads))); // NOI18N
+                row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
                 syncPrev = syncCurr;
             }
             if (row != null) {

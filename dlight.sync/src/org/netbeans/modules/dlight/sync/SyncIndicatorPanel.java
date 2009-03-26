@@ -16,13 +16,16 @@ import org.openide.util.NbBundle;
 
     private static final Color GRAPH_COLOR = GraphConfig.COLOR_4;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
+    private static final String THREADS_DETAIL_ID = "thread-count";
 
     private final Graph graph;
+    private final Legend legend;
     private final GraphPanel<Graph, Legend> panel;
 
     /*package*/ SyncIndicatorPanel() {
         graph = createGraph();
-        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+        legend = createLegend();
+        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis());
     }
 
     public GraphPanel getPanel() {
@@ -36,18 +39,23 @@ import org.openide.util.NbBundle;
     private static Graph createGraph() {
         Graph graph = new Graph(100, null, DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(80, 60));
-        graph.setPreferredSize(new Dimension(80, 60));
-        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
-        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
+        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setMinimumSize(graphSize);
+        graph.setPreferredSize(graphSize);
+        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(axisSize);
+        graph.getVerticalAxis().setPreferredSize(axisSize);
         return graph;
     }
 
     private static Legend createLegend() {
-        return new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>emptyMap());
+        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>singletonMap(THREADS_DETAIL_ID, "Threads:"));
+        legend.updateDetail(THREADS_DETAIL_ID, Integer.toString(0));
+        return legend;
     }
 
-    public void addData(int value) {
-        graph.addData(value);
+    public void addData(int locks, int threads) {
+        graph.addData(locks);
+        legend.updateDetail(THREADS_DETAIL_ID, Integer.toString(threads));
     }
 }
