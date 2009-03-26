@@ -115,15 +115,21 @@ public class KenaiRepositories {
             // XXX log!
             return null;
         }
-        Repository repo = getRepository(kp);
-        if(repo == null) {
+
+        Repository repository = map.get(kp.getName());
+        if(repository != null) {
+            return repository;
+        }
+
+        repository = getRepository(kp);
+        if(repository == null) {
             BugtrackingManager.LOG.info("No bugtracking repository available for project " + kp.getName());
             return null;
         }
-        if((qaImpl != null) && (ph != null)) {
-            repo.addPropertyChangeListener(new RepositoryListener(repo, ph, qaImpl));
+        if(qaImpl != null) {
+            repository.addPropertyChangeListener(new RepositoryListener(repository, ph, qaImpl));
         }
-        return repo;
+        return repository;
     }
 
     private class RepositoryListener implements PropertyChangeListener {
@@ -144,7 +150,7 @@ public class KenaiRepositories {
         }
     }
 
-    private KenaiProject getKenaiProject(ProjectHandle ph) {
+    static KenaiProject getKenaiProject(ProjectHandle ph) {
         // XXX cache ???
         try {
             return Kenai.getDefault().getProject(ph.getId());

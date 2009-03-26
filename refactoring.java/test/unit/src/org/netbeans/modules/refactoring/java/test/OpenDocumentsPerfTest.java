@@ -87,9 +87,6 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         timer.setLevel(Level.FINE);
         timer.addHandler(getHandler());
 
-        ClassIndexManager.getDefault();
-        Thread.sleep(29000);
-        System.err.println("Starting...");
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
         FileObject testFile = getProjectDir().getFileObject("/src/bsh/This.java");
@@ -111,16 +108,16 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
-        Problem p = wuq[0].preCheck();
-        if (p != null) {
-            System.err.println(p.getMessage());
-        }
-        p = wuq[0].checkParameters();
-        if (p != null) {
-            System.err.println(p.getMessage());
-        }
+//        Problem p = wuq[0].preCheck();
+//        if (p != null) {
+//            System.err.println(p.getMessage());
+//        }
+//        p = wuq[0].checkParameters();
+//        if (p != null) {
+//            System.err.println(p.getMessage());
+//        }
         wuq[0].prepare(rs);
-        rs.doRefactoring(false);
+        rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
         StringBuilder sb = new StringBuilder();
                 sb.append("Symbol: '").append("java.lang.Runnable").append("'");

@@ -167,6 +167,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * @param fo is FileObject. It`s reference yourequire to get.
      * @return Reference to FileObject
      */
+    @Override
     protected <T extends FileObject> Reference<T> createReference(T fo) {
         aliveCount++;
 
@@ -303,38 +304,42 @@ public class JarFileSystem extends AbstractFileSystem {
 
         if ((foRoot != null) && (fcl == null)) {
             fcl = new FileChangeAdapter() {
-                        public void fileChanged(FileEvent fe) {
-                            if (watcherTask == null) {
-                                parse(true);
-                            }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    if (watcherTask == null) {
+                        parse(true);
+                    }
+                }
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    File f = FileUtil.toFile(fe.getFile());
+
+                    if ((f != null) && !f.equals(aRoot)) {
+                        try {
+                            setJarFile(f, false);
+                        } catch (IOException iex) {
+                            ExternalUtil.exception(iex);
+                        } catch (PropertyVetoException pvex) {
+                            ExternalUtil.exception(pvex);
                         }
+                    }
+                }
 
-                        public void fileRenamed(FileRenameEvent fe) {
-                            File f = FileUtil.toFile(fe.getFile());
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
 
-                            if ((f != null) && !f.equals(aRoot)) {
-                                try {
-                                    setJarFile(f, false);
-                                } catch (IOException iex) {
-                                    ExternalUtil.exception(iex);
-                                } catch (PropertyVetoException pvex) {
-                                    ExternalUtil.exception(pvex);
-                                }
-                            }
-                        }
+                    while (en.hasMoreElements()) {
+                        AbstractFolder fo = (AbstractFolder) en.nextElement();
+                        fo.validFlag = false;
+                        fo.fileDeleted0(new FileEvent(fo));
+                    }
 
-                        public void fileDeleted(FileEvent fe) {
-                            Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
-
-                            while (en.hasMoreElements()) {
-                                AbstractFolder fo = (AbstractFolder) en.nextElement();
-                                fo.validFlag = false;
-                                fo.fileDeleted0(new FileEvent(fo));
-                            }
-
-                            refreshRoot();
-                        }
-                    };
+                    refreshRoot();
+                }
+            };
 
             if (refreshRoot) {
                 foRoot.addFileChangeListener(FileUtil.weakFileChangeListener(fcl, foRoot));
@@ -365,6 +370,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     /* Closes associated JAR file on cleanup, if possible. */
+    @Override
     public void removeNotify() {
         closeCurrentRoot(true);
     }
@@ -381,6 +387,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * @deprecated Useless.
     */
     @Deprecated
+    @Override
     public void prepareEnvironment(Environment env) {
         if (root != null) {
             env.addClassPath(root.getAbsolutePath());
@@ -596,10 +603,10 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Object readAttribute(String name, String attrName) {
-        Attributes attr = getManifest().getAttributes(name);
+        Attributes attr1 = getManifest().getAttributes(name);
 
         try {
-            return (attr == null) ? null : attr.getValue(attrName);
+            return (attr1 == null) ? null : attr1.getValue(attrName);
         } catch (IllegalArgumentException iax) {
             return null;
         }
@@ -611,16 +618,16 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Enumeration<String>  attributes(String name) {
-        Attributes attr = getManifest().getAttributes(name);
+        Attributes attr1 = getManifest().getAttributes(name);
 
-        if (attr != null) {
+        if (attr1 != null) {
             class ToString implements org.openide.util.Enumerations.Processor<Object, String> {
                 public String process(Object obj, Collection<Object> ignore) {
                     return obj.toString();
                 }
             }
 
-            return org.openide.util.Enumerations.convert(Collections.enumeration(attr.keySet()), new ToString());
+            return org.openide.util.Enumerations.convert(Collections.enumeration(attr1.keySet()), new ToString());
         } else {
             return org.openide.util.Enumerations.empty();
         }
@@ -633,6 +640,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     /** Close the jar file when we go away...*/
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         closeCurrentRoot(false);
@@ -790,22 +798,26 @@ public class JarFileSystem extends AbstractFileSystem {
 
                 try {
                     Enumeration<JarEntry> en = j.entries();
-                    // #144166 - If duplicate entries found in jar, it is
-                    // immediately reported to the user. It can happen because
+                    // #144166 - If duplicate entries found in jar, it is logged
+                    // and only unique entries are show. It can happen because
                     // Ant's jar task can produce such jars.
                     Set<String> duplicateCheck = new HashSet<String>();
+                    Set<JarEntry> uniqueEntries = new HashSet<JarEntry>();
+                    boolean duplicateReported = false;
                     while (en.hasMoreElements()) {
-                        String name = en.nextElement().getName();
-                        if (!duplicateCheck.add(name)) {
-                            String message = getString("EXC_DuplicateEntries", getJarFile(), name);  //NOI18N
-                            IllegalArgumentException iae = new IllegalArgumentException(message);
-                            Exceptions.attachLocalizedMessage(iae, message);
-                            Exceptions.printStackTrace(iae);
-                            return Cache.INVALID;
+                        JarEntry entry = en.nextElement();
+                        String name = entry.getName();
+                        if (duplicateCheck.add(name)) {
+                            uniqueEntries.add(entry);
+                        } else {
+                            if (!duplicateReported) {
+                                LOGGER.warning(getString("EXC_DuplicateEntries", getJarFile(), name));  //NOI18N
+                                // report just once
+                                duplicateReported = true;
+                            }
                         }
                     }
-                    en = j.entries();
-                    Cache newCache = new Cache(en);
+                    Cache newCache = new Cache(uniqueEntries);
                     lastModification = root.lastModified();
                     strongCache = newCache;
                     softCache = new SoftReference<Cache>(newCache);
@@ -1120,14 +1132,15 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     private static class Cache {
-        static Cache INVALID = new Cache(Enumerations.<JarEntry>empty());
+        private static final Set<JarEntry> EMPTY_SET = Collections.emptySet();
+        static final Cache INVALID = new Cache(EMPTY_SET);
         byte[] names = new byte[1000];
         private int nameOffset = 0;
         int[] EMPTY = new int[0];
         private Map<String, Folder> folders = new HashMap<String, Folder>();
 
-        public Cache(Enumeration<JarEntry> en) {
-            parse(en);
+        public Cache(Set<JarEntry> entries) {
+            parse(entries);
             trunc();
         }
 
@@ -1145,12 +1158,11 @@ public class JarFileSystem extends AbstractFileSystem {
             return new String[] {  };
         }
 
-        private void parse(Enumeration<JarEntry> en) {
+        private void parse(Set<JarEntry> entries) {
             folders.put("", new Folder()); // root folder
 
-            while (en.hasMoreElements()) {
-                JarEntry je = en.nextElement();
-                String name = je.getName();
+            for (JarEntry entry : entries) {
+                String name = entry.getName();
                 boolean isFolder = false;
 
                 // work only with slashes

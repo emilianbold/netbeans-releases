@@ -2119,9 +2119,12 @@ function_direct_declarator [boolean definition]
 		(
 		function_direct_declarator_2[definition]		
 		)
-
-		(options{warnWhenFollowAmbig = false;}:
-		 tq = cv_qualifier)*                
+        // IZ#134182 : missed const in function parameter
+        // we should add "const" to function only if it's not K&R style function
+        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute))
+            =>
+            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
+        )?
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
 		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0

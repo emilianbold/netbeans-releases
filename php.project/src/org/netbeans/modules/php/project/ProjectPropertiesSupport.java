@@ -45,6 +45,9 @@ import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
@@ -157,8 +160,12 @@ public final class ProjectPropertiesSupport {
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
         FileObject sources = project.getSourcesDirectory();
         if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
+            // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
             File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
-            return FileUtil.toFileObject(resolved);
+            if (resolved.exists()) {
+                return FileUtil.toFileObject(resolved);
+            }
+            return sources.getFileObject(subdirectoryPath);
         }
         return sources;
     }
@@ -283,43 +290,76 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
-     * @return pair of remote path (as a String) and local path (absolute path, as a String)
+     * @return list of pairs of remote path (as a String) and local path (absolute path, as a String); empty remote paths are skipped
+     *         as well as invalid local paths
      */
-    public static Pair<String, String> getDebugPathMapping(PhpProject project) {
-        String remotePath = getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, ""); // NOI18N
-        String localPath = ""; // NOI18N
-        if (PhpProjectUtils.hasText(remotePath)) {
-            FileObject subDir = getSourceSubdirectory(project, getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null));
-            if (subDir == null || !subDir.isValid()) {
-                localPath = FileUtil.toFile(getSourcesDirectory(project)).getAbsolutePath();
-            } else {
-                localPath = FileUtil.toFile(subDir).getAbsolutePath();
-            }
-        }
-        return Pair.of(remotePath, localPath);
-    }
+    public static List<Pair<String, String>> getDebugPathMapping(PhpProject project) {
+        List<String> remotes = PhpProjectUtils.explode(
+                getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
+        List<String> locals = PhpProjectUtils.explode(
+                getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
+        int remotesSize = remotes.size();
+        int localsSize = locals.size();
+        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
+        for (int i = 0; i < remotesSize; ++i) {
+            String remotePath = remotes.get(i);
+            if (PhpProjectUtils.hasText(remotePath)) {
+                // if user has only 1 path and local == sources => property is not stored at all!
+                String l = ""; // NOI18N
+                if (i < localsSize) {
+                    l = locals.get(i);
+                }
+                String localPath = null;
+                File local = new File(l);
+                if (local.isAbsolute()) {
+                    if (local.isDirectory()) {
+                        localPath = local.getAbsolutePath();
+                    }
+                } else {
+                    FileObject subDir = getSourceSubdirectory(project, l);
+                    if (subDir != null && subDir.isValid()) {
+                        localPath = FileUtil.toFile(subDir).getAbsolutePath();
+                    }
+                }
 
-    public static Pair<String, String> getEncodedDebugPathMapping(PhpProject project) {
-        Pair<String, String> pathMapping = getDebugPathMapping(project);
-                        final StringBuilder sb = new StringBuilder ();
-        try {
-            String resName = pathMapping.first;
-            final String[] elements = resName.split("/");                 //NOI18N
-            for (int i = 0; i < elements.length; i++) {
-                String element = elements[i];
-                element = URLEncoder.encode(element, "UTF-8");       //NOI18N
-                element = element.replace("+", "%20");               //NOI18N
-                sb.append(element);
-                if (i < elements.length - 1) {
-                    sb.append('/');
+                if (localPath != null) {
+                    paths.add(Pair.of(remotePath, localPath));
                 }
             }
+        }
+        return paths;
+    }
 
-            return Pair.of(sb.toString(), pathMapping.second);//NOI18N
+    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
+        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
+        if (originalPathMapping.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Pair<String, String>> encodedPathMapping = new ArrayList<Pair<String, String>>(originalPathMapping.size());
+        try {
+            for (Pair<String, String> pathMapping : originalPathMapping) {
+                encodedPathMapping.add(getEncodedDebugPathPair(pathMapping));
+            }
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return pathMapping;
+        return encodedPathMapping;
+    }
+
+    private static Pair<String, String> getEncodedDebugPathPair(Pair<String, String> pathMapping) throws UnsupportedEncodingException {
+        String resName = pathMapping.first;
+        final String[] elements = resName.split("/"); // NOI18N
+        final StringBuilder sb = new StringBuilder(200);
+        for (int i = 0; i < elements.length; i++) {
+            String element = elements[i];
+            element = URLEncoder.encode(element, "UTF-8"); // NOI18N
+            element = element.replace("+", "%20"); // NOI18N
+            sb.append(element);
+            if (i < elements.length - 1) {
+                sb.append('/');
+            }
+        }
+        return Pair.of(sb.toString(), pathMapping.second);//NOI18N
     }
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {

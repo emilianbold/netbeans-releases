@@ -44,13 +44,27 @@ package org.netbeans.modules.dlight.core.stack.api;
  */
 public abstract class FunctionCall{
   private final Function function;
+  private final long offset;
 
   protected FunctionCall(Function function) {
+    this(function, -1);
+  }
+
+  protected FunctionCall(Function function, long offset) {
     this.function = function;
+    this.offset = offset;
   }
 
   public final Function getFunction() {
     return function;
+  }
+
+  public final long getOffset(){
+      return offset;
+  }
+
+  public final boolean hasOffset(){
+      return offset >= 0;
   }
 
   public abstract Object getMetricValue(FunctionMetric metric);

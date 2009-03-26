@@ -45,10 +45,13 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  * IDE-side representation of a Kenai project.
@@ -67,18 +70,9 @@ public final class KenaiProject {
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
-    private String    name;
-
-    private URL       web_url;
-
     private ProjectData     data;
     
-    private KenaiProjectFeature[] features;
-
-    /**
-     * When detailed properties of this project has been fetched.
-     */
-    private long        detailsTimestamp;
+    private KenaiFeature[] features;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -128,7 +122,7 @@ public final class KenaiProject {
      * @return
      */
     public synchronized String getName() {
-        return name;
+        return data.name;
     }
 
     /**
@@ -136,7 +130,11 @@ public final class KenaiProject {
      * @return
      */
     public synchronized URL getWebLocation() {
-        return web_url;
+        try {
+            return new URL(data.web_url);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     /**
@@ -161,6 +159,7 @@ public final class KenaiProject {
      *
      */
     public synchronized String getTags() {
+        fetchDetailsIfNotAvailable();
         return data.tags;
     }
 
@@ -183,14 +182,15 @@ public final class KenaiProject {
 
     /**
      * @return features of given project
-     * @see KenaiProjectFeature
+     * @see KenaiFeature
      */
-    public synchronized KenaiProjectFeature[] getFeatures() {
+    public synchronized KenaiFeature[] getFeatures() {
+        fetchDetailsIfNotAvailable();
         if (features==null) {
-            features=new KenaiProjectFeature[data.features.length];
+            features=new KenaiFeature[data.features.length];
             int i=0;
             for (FeatureData feature:data.features) {
-                features[i++] = new KenaiProjectFeature(feature);
+                features[i++] = new KenaiFeature(feature);
             }
         }
         return features;
@@ -203,23 +203,23 @@ public final class KenaiProject {
      * @param type
      * @return
      */
-    public synchronized KenaiProjectFeature[] getFeatures(KenaiFeature type) {
-        ArrayList<KenaiProjectFeature> fs= new ArrayList();
-        for (KenaiProjectFeature f:getFeatures()) {
+    public synchronized KenaiFeature[] getFeatures(Type type) {
+        ArrayList<KenaiFeature> fs= new ArrayList();
+        for (KenaiFeature f:getFeatures()) {
             if (f.getType().equals(type)) {
                 fs.add(f);
             }
         }
 
         //TODO: remove me as soon as xmpp server will work on kenai
-        if (type==KenaiFeature.CHAT && Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+        if (type==Type.CHAT && Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
             FeatureData chat = new FeatureData();
             chat.name = getName() + CHAT_ROOM;
             chat.display_name = getDisplayName() + " chat room"; //NOI18N
-            KenaiProjectFeature f = new KenaiProjectFeature(chat);
+            KenaiFeature f = new KenaiFeature(chat);
             fs.add(f);
         }
-        return fs.toArray(new KenaiProjectFeature[fs.size()]);
+        return fs.toArray(new KenaiFeature[fs.size()]);
     }
 
     /**
@@ -234,7 +234,7 @@ public final class KenaiProject {
      * @return
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public KenaiProjectFeature createProjectFeature(
+    public KenaiFeature createProjectFeature(
             String name,
             String display_name,
             String description,
@@ -243,7 +243,7 @@ public final class KenaiProject {
             String repository_url,
             String browse_url
             ) throws KenaiException {
-        KenaiProjectFeature feature = Kenai.getDefault().createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
+        KenaiFeature feature = Kenai.getDefault().createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
         refresh();
         return feature;
     }
@@ -260,15 +260,10 @@ public final class KenaiProject {
 
     void fillInfo(ProjectData prj) {
         synchronized (this) {
-            detailsTimestamp = System.currentTimeMillis();
-            this.data = prj;
-
-            this.name = data.name;
-            try {
-                this.web_url = new URL(data.web_url);
-            } catch (MalformedURLException ex) {
-                throw new IllegalArgumentException(ex);
+            if (prj.updated_at==null && this.data!=null && this.data.updated_at!=null) {
+                return;
             }
+            this.data = prj;
             features = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
@@ -279,14 +274,15 @@ public final class KenaiProject {
     }
 
     private void fetchDetailsIfNotAvailable() {
-        if (detailsTimestamp > 0) return;
+        if (this.data.updated_at != null) {
+            return;
+        }
 
-//        try {
-//            ProjectData prj = kenai.getDetails(name);
-//            fillInfo(prj);
-//        } catch (KenaiException kenaiException) {
-//            Utils.logError(this, kenaiException);
-//        }
+        try {
+            refresh();
+        } catch (KenaiException kenaiException) {
+            Logger.getLogger(KenaiProject.class.getName()).log(Level.SEVERE, null, kenaiException);
+        }
     }
 
     /**
@@ -306,7 +302,7 @@ public final class KenaiProject {
             return false;
         }
         final KenaiProject other = (KenaiProject) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+        if ((this.data.name == null) ? (other.data.name != null) : !this.data.name.equals(other.data.name)) {
             return false;
         }
         return true;
@@ -315,7 +311,7 @@ public final class KenaiProject {
     @Override
     public synchronized int hashCode() {
         int hash = 5;
-        hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 13 * hash + (this.data.name != null ? this.data.name.hashCode() : 0);
         return hash;
     }
 

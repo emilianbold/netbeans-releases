@@ -38,28 +38,26 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.text.ParseException;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private final static Map<String, String> userEnv;
+    private final static java.util.logging.Logger log = Logger.getInstance();
     private final static String shell;
+    private final static boolean isWindows;
+    private final static boolean isMacOS;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -67,116 +65,81 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
 
     static {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment();
         String sh = null;
 
         try {
-            sh = HostInfoUtils.getShell(execEnv);
+            sh = HostInfoUtils.getShell(new ExecutionEnvironment());
         } catch (ConnectException ex) {
         }
 
         shell = sh;
 
-        Map<String, String> env = new HashMap<String, String>();
-        ProcessBuilder pb = new ProcessBuilder(shell); // NOI18N
-
-        if (Utilities.isWindows()) {
-            if (shell == null) {
-                env = new TreeMap<String, String>(new Comparator<String>() {
-
-                    public int compare(String o1, String o2) {
-                        return o1.compareToIgnoreCase(o2);
-                    }
-                });
-                env.putAll(pb.environment());
-            } else {
-                try {
-                    Process p = new ProcessBuilder(shell, "-c", "/bin/env").start(); // NOI18N
-                    BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    String s;
-                    while (true) {
-                        s = br.readLine();
-                        if (s == null) {
-                            break;
-                        }
-                        int eidx = s.indexOf('=');
-                        env.put(s.substring(0, eidx), s.substring(eidx + 1));
-                    }
-                    try {
-                        p.waitFor();
-                    } catch (InterruptedException ex) {
-                    }
-                } catch (IOException ex) {
-                }
-            }
-        } else {
-            env.putAll(pb.environment());
-        }
-
-        userEnv = env;
+        isWindows = Utilities.isWindows();
+        isMacOS = Utilities.isMac();
     }
 
+    // TODO: For now cygwin is the ONLY tested environment on Windows!
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
+
+        if (Utilities.isWindows() && shell == null) {
+            throw new IOException("CYGWIN currently is the ONLY supported env on Windows."); // NOI18N
+        }
 
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
         final ProcessBuilder pb;
-        final Map<String, String> env = info.getEnvVariables(userEnv);
+        final Map<String, String> env = info.getEnvVariables();
 
-        if (Utilities.isWindows()) {
-            if (shell != null) {
-                String commandLine = info.getCommandLine().replaceAll("\\\\", "/"); //NOI18N
-                pb = new ProcessBuilder(shell, "-c", // NOI18N
-                        "/bin/echo $$ && PATH=${PATH_} exec " + commandLine); // NOI18N
-                env.put("PATH_", env.get("PATH")); //NOI18N
-            } else {
-                String[] cmd = info.getCommand();
-                if (wdir != null) {
-                    cmd[0] = wdir.getAbsolutePath() + File.separator + cmd[0];
-                }
-                pb = new ProcessBuilder(cmd);
+        pb = new ProcessBuilder(shell, "-s"); // NOI18N
+
+        if (info.isUnbuffer()) {
+            String unbufferPath = null; // NOI18N
+            String unbufferLib = null; // NOI18N
+
+            try {
+                unbufferPath = info.macroExpander.expandPredefinedMacros(
+                        "bin/nativeexecution/$osname-$platform"); // NOI18N
+                unbufferLib = info.macroExpander.expandPredefinedMacros(
+                        "unbuffer.$soext"); // NOI18N
+            } catch (ParseException ex) {
             }
-        } else {
-            pb = new ProcessBuilder(shell, "-c", // NOI18N
-                    "/bin/echo $$ && exec " + info.getCommandLine()); // NOI18N
 
-            if (info.isUnbuffer()) {
-                String unbufferPath = null; // NOI18N
-                String unbufferLib = null; // NOI18N
+            if (unbufferLib != null && unbufferPath != null) {
+                InstalledFileLocator fl = InstalledFileLocator.getDefault();
+                File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
+                String ldPreloadEnv = isMacOS ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
+                String ldLibraryPathEnv = isMacOS ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
 
-                try {
-                    unbufferPath = info.macroExpander.expandPredefinedMacros(
-                            "bin/nativeexecution/$osname-$platform"); // NOI18N
-                    unbufferLib = info.macroExpander.expandPredefinedMacros(
-                            "unbuffer.$soext"); // NOI18N
-                } catch (ParseException ex) {
-                }
+                if (file != null && file.exists()) {
+                    unbufferPath = file.getParentFile().getAbsolutePath();
+                    String ldPreload = env.get(ldPreloadEnv);
 
-                if (unbufferLib != null && unbufferPath != null) {
-                    InstalledFileLocator fl = InstalledFileLocator.getDefault();
-                    File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
-                    
-                    if (file != null && file.exists()) {
-                        unbufferPath = file.getParentFile().getAbsolutePath();
-                        String ldPreload = env.get("LD_PRELOAD"); // NOI18N
+                    if (isMacOS) {
                         ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
-                                unbufferLib; // NOI18N
-                        env.put("LD_PRELOAD", ldPreload); // NOI18N
+                                unbufferPath + "/" + unbufferLib; // NOI18N
+                    } else {
+                        ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
+                                unbufferLib;
+                    }
 
-                        String ldLibPath = env.get("LD_LIBRARY_PATH"); // NOI18N
+                    env.put(ldPreloadEnv, ldPreload);
+
+                    if (!isMacOS) {
+                        String ldLibPath = env.get(ldLibraryPathEnv);
                         ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
                                 unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
-                        env.put("LD_LIBRARY_PATH", ldLibPath); // NOI18N
+                        env.put(ldLibraryPathEnv, ldLibPath); // NOI18N
                     }
                 }
             }
         }
 
-        pb.environment().putAll(env);
-        pb.directory(wdir);
+        if (isWindows) {
+            pb.directory(wdir);
+        }
 
         Process pr = null;
 
@@ -193,9 +156,26 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processError = process.getErrorStream();
         processInput = process.getOutputStream();
 
-        if (shell != null) {
-            readPID(processOutput);
+        processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
+        processInput.flush();
+
+        EnvWriter ew = new EnvWriter(processInput);
+        ew.write(env);
+
+        if (!isWindows && wdir != null) {
+            processInput.write(("cd \"" + wdir + "\"\n").getBytes()); // NOI18N
         }
+
+        String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+
+        if (isWindows) {
+            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+        }
+
+        processInput.write(cmd.getBytes());
+        processInput.flush();
+
+        readPID(processOutput);
     }
 
     @Override

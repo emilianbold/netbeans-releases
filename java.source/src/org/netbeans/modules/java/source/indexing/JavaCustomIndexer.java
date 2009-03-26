@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
@@ -73,6 +74,8 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 
@@ -93,10 +96,19 @@ public class JavaCustomIndexer extends CustomIndexer {
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
-            String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+            final FileObject root = context.getRoot();
+            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change");
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
+                return;
+            }
+            final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            if (sourcePath == null || bootPath == null || compilePath == null) {
+                String rootName = FileUtil.getFileDisplayName(root);
+                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
                 return;
             }
             final ClassIndexManager cim = ClassIndexManager.getDefault();
@@ -104,9 +116,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
+                            final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath);
                             ClassIndexImpl uq = cim.getUsagesQuery(context.getRootURI());
                             uq.setDirty(null);
                             for (Indexable i : files) {
@@ -122,11 +135,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             assert compileResult != null && compileResult.success;
 
-                            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added
-                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed
+                            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
+                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+                            Set<File> _af = new HashSet<File> (compileResult.createdFiles); //Added files
                             _at.removeAll(removedTypes);
                             _rt.removeAll(compileResult.addedTypes);
-                            compileResult.addedTypes.retainAll(removedTypes); //Changed
+                            _af.removeAll(removedFiles);
+                            compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
                             if (!context.isSupplementaryFilesIndexing()) {
                                 for (Map.Entry<URL, Collection<URL>> entry : RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), _rt).entrySet()) {
@@ -136,21 +151,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     }
                                     urls.addAll(entry.getValue());
                                 }
+                                if (!errUrls.isEmpty() && !_af.isEmpty()) {
+                                    //new type creation may cause/fix some errors
+                                    //not 100% correct (consider eg. a file that has two .* imports
+                                    //new file creation may cause new error in this case
+                                    Set<URL> urls = compileResult.root2Rebuild.get(context.getRootURI());
+                                    if (urls == null) {
+                                        compileResult.root2Rebuild.put(context.getRootURI(), urls = new HashSet<URL>());
+                                    }
+                                    urls.addAll(errUrls);
+                                }
                             }
                             javaContext.sa.store();
                             uq.typesEvent(_at, _rt, compileResult.addedTypes);
                             BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
-
-                            compileResult.createdFiles.removeAll(removedFiles);
-                            if (!compileResult.createdFiles.isEmpty()) {
-                                //new type creation may cause/fix some errors
-                                //not 100% correct (consider eg. a file that has two .* imports
-                                //new file creation may cause new error in this case
-                                List<URL> urls = TaskCache.getDefault().getAllFilesInError(context.getRootURI());
-                                if (!urls.isEmpty()) {
-                                    IndexingManager.getDefault().refreshIndex(context.getRootURI(), urls);
-                                }
-                            }
 
                             for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
@@ -176,7 +190,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         public Void run() throws Exception {
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            JavaParsingContext javaContext = new JavaParsingContext(context.getRoot());
                             for (Indexable i : files) {
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
@@ -274,7 +288,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     public static Collection<? extends ElementHandle<TypeElement>> getRelatedTypes (final File source, final File root) throws IOException {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
         final File classFolder = JavaIndex.getClassFolder(root);
-        String path = FileObjects.getRelativePath(root, source);
+        String path = FileObjects.stripExtension(FileObjects.getRelativePath(root, source));
         File file = new File (classFolder, path + '.' + FileObjects.RS); //NOI18N
         boolean cont = true;
         if (file.exists()) {

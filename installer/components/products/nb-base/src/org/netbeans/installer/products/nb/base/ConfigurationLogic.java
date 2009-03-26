@@ -536,6 +536,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         product.setProperty("uninstallation.timestamp",
                 new Long(System.currentTimeMillis()).toString());
 
+        if (Boolean.getBoolean("remove.netbeans.userdir")) {
+            try {
+                progress.setDetail(getString("CL.uninstall.remove.userdir")); // NOI18N
+                LogManager.logIndent("Removing NetBeans userdir... ");
+                File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
+                LogManager.log("... NetBeans userdir location : " + userDir);
+                if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {
+                    FileUtils.deleteFile(userDir, true);
+                }
+                LogManager.log("... NetBeans userdir totally removed");
+            } catch (IOException e) {
+                LogManager.log("Can`t remove NetBeans userdir", e);
+            } finally {
+                LogManager.unindent();
+            }
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         //remove cluster/update files
         try {
@@ -720,6 +737,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String SHORTCUT_FILENAME =
             "netbeans-{display-version}.desktop"; // NOI18N
     public static final String[] SHORTCUT_CATEGORIES = new String[] {
+        "Application",
         "Development", // NOI18N
         "Java",// NOI18N
         "IDE"// NOI18N

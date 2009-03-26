@@ -40,8 +40,10 @@ package org.netbeans.modules.dlight.api.execution;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -59,6 +61,7 @@ public abstract class DLightTarget {
 
     //@GuardedBy("this")
     private final List<DLightTargetListener> listeners;
+    private final Info info;
     private final DLightTargetExecutionService executionService;
 
 
@@ -74,6 +77,7 @@ public abstract class DLightTarget {
     protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
         this.executionService = executionService;
         this.listeners = new ArrayList<DLightTargetListener>();
+        this.info = new Info();
     }
 
     private final DLightTargetExecutionService getExecutionService() {
@@ -142,6 +146,10 @@ public abstract class DLightTarget {
         } catch (InterruptedException ex) {
         }
 
+    }
+
+    protected final String putToInfo(String name, String value){
+        return info.put(name, value);
     }
 
     /**
@@ -239,5 +247,30 @@ public abstract class DLightTarget {
         public DLightTargetExecutionService getDLightTargetExecution(DLightTarget target) {
             return target.getExecutionService();
         }
+
+        @Override
+        public Info getDLightTargetInfo(DLightTarget target) {
+            return target.info;
+        }
+    }
+
+    public final class Info{
+        private Map<String, String> map;
+
+        Info(){
+            map = new ConcurrentHashMap<String, String>();
+        }
+
+        public Map<String, String> getInfo(){
+            return map;
+        }
+
+        String put(String name, String value){
+            return map.put(name, value);
+        }
+
+
+
+
     }
 }

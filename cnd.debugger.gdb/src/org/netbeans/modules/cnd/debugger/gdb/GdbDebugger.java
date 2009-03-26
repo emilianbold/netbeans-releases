@@ -273,7 +273,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 mingw = true;
             }
             String cspath = getCompilerSetPath(pae);
-            gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
+            // see IZ 158224, gdb should be run with the default environment
+            gdb = new GdbProxy(this, gdbCommand, /*pae.getProfile().getEnvironment().getenv()*/new String[]{},
                     runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
             initGdbVersion();
@@ -352,14 +353,24 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.data_list_register_names("");
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
+
+                String[] env = pae.getProfile().getEnvironment().getenv();
+                Map<String, String> mapEnv = new HashMap<String, String>(env.length);
+                EnvUtils.appendEnv(mapEnv, env);
+                
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, pae.getExecutable())) {
-                        gdb.gdb_set("environment", envEntry); // NOI18N
+                        EnvUtils.appendPath(mapEnv, EnvUtils.getKey(envEntry), EnvUtils.getValue(envEntry));
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
                         ioProxy = IOProxy.create(execEnv, iotab);
                     }
+                }
+
+                // set project environment
+                for (Map.Entry<String, String> entry : mapEnv.entrySet()) {
+                    gdb.gdb_set("environment", entry.getKey() + '=' + entry.getValue()); // NOI18N
                 }
 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
@@ -445,19 +456,24 @@ public class GdbDebugger implements PropertyChangeListener {
         });
     }
 
-    private final void initGdbVersion() {
-        String message = gdb.gdb_version().getResponse();
+    private final void initGdbVersion() throws GdbErrorException {
+        CommandBuffer res = gdb.gdb_version();
+        if (res.isOK()) {
+            String message = res.getResponse();
 
-        if (startupTimer != null) {
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
-        }
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
-        gdbVersion = parseGdbVersionString(message.substring(8));
-        versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
-        if (message.contains("cygwin")) { // NOI18N
-            cygwin = true;
+            gdbVersion = parseGdbVersionString(message.substring(8));
+            versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
+            if (message.contains("cygwin")) { // NOI18N
+                cygwin = true;
+            }
+        } else {
+            throw new GdbErrorException("gdb version check failed, exiting"); //NOI18N
         }
     }
 
@@ -465,7 +481,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return gdbVersion;
     }
 
-    public void testSuiteInit(GdbProxy gdb) {
+    public void testSuiteInit(GdbProxy gdb) throws GdbErrorException {
         if (!isUnitTest()) {
             throw new IllegalStateException(NbBundle.getMessage(GdbDebugger.class, "Cannot call testSuiteInit outside of a testsuite!"));
         }

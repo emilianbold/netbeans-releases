@@ -598,23 +598,23 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     // Update ASI.xml which could be corrupted due to the 
                     // broken reference.
                     project.getProjectProperties().saveAssemblyInfo();
+
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
                 }
                 
                 updateSubprojectListeners();
                 
-                // How to easily update JbiModuleNode?
-//                Children children = jRoot.getChildren();
-//                Node[] childrenNodes = children.getNodes();
-//                for (int i = 0; i < childrenNodes.length; i++) {
-//                    if (childrenNodes[i] instanceof JbiModuleViewNode) {
-//                        JbiModuleViewNode moduleViewNode = (JbiModuleViewNode) childrenNodes[i];
-//                        JbiModuleViewChildren moduleViewChildren = 
-//                                (JbiModuleViewChildren) moduleViewNode.getChildren();
-//                        moduleViewChildren.removeNotify();
-//                        moduleViewChildren.addNotify();
-//                        break;
-//                    }
-//                }
+                // #135031: Update JbiModuleNode's children after resolving broken references
+                for (Node childNode : jRoot.getChildren().getNodes()) {
+                    if (childNode instanceof JbiModuleViewNode) {
+                        JbiModuleViewChildren moduleViewChildren = 
+                                (JbiModuleViewChildren) childNode.getChildren();
+                        moduleViewChildren.modelChanged(null); // force update
+                        break;
+                    }
+                }
             }
             
             /**
@@ -624,7 +624,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
              */
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!broken) {
-                    disable();                    
+                    disable();
                     return;
                 }
                 
@@ -639,9 +639,9 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 broken = false;
                 setEnabled(false);
                 evaluator.removePropertyChangeListener(this);
-                fireIconChange();
-                fireOpenedIconChange();
-                fireDisplayNameChange(null, null);
+//                fireIconChange();
+//                fireOpenedIconChange();
+//                fireDisplayNameChange(null, null);
             }
         }       
         

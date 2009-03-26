@@ -52,6 +52,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for BinaryForSourceQueryImpl
@@ -87,6 +88,7 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
     private void prepareProject () throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");        
+        MockLookup.setLayersAndInstances();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
@@ -94,7 +96,7 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         pp = pm.findProject(projdir);
         sources = projdir.getFileObject("src");
         FileObject fo = projdir.createFolder("build");
-        buildClasses = fo.createFolder("classes");        
+        buildClasses = fo.createFolder("classes");
     }
     
     public void testBinaryForSourceQuery() throws Exception {

@@ -38,13 +38,11 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
-import java.util.*;
-
 /**
  *
  * @author mkleint
  */
-public interface PluginManagement extends POMComponent {
+public interface PluginManagement extends PluginContainer {
 
 //  <!--xs:complexType name="PluginManagement">
 //    <xs:all>
@@ -53,8 +51,5 @@ public interface PluginManagement extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
-    public List<Plugin> getPlugins();
-    public void addPlugin(Plugin plugin);
-    public void removePlugin(Plugin plugin);
 
 }

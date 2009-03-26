@@ -112,14 +112,14 @@ public class APIIsSelfContainedTest extends NbTestCase {
         }
     }
     
-    private static final List<String> API_PACKAGES = Arrays.asList(new String[] {
-        "java",
-        "org.netbeans.api",
-        "org.openide",
-        "com.sun.source.tree",
-        "com.sun.source.util",
-        "com.sun.javadoc",
-    });
+    private static final List<String> API_PACKAGES = Arrays.asList("java",
+            "org.netbeans.api",
+            "org.netbeans.modules.parsing.spi",
+            "org.netbeans.modules.parsing.api",
+            "org.openide",
+            "com.sun.source.tree",
+            "com.sun.source.util",
+            "com.sun.javadoc");
     
     private boolean isAPIClass(TypeElement clazz) {
         String nameS = /*!!!!*/clazz.toString();

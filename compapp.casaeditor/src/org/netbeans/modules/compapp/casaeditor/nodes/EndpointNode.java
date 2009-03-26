@@ -60,7 +60,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author jqian
  */
-public class EndpointNode extends CasaNode {
+public abstract class EndpointNode extends CasaNode {
 
     public EndpointNode(CasaEndpointRef component, CasaNodeFactory factory) {
         super(component, Children.LEAF, factory);
@@ -146,16 +146,24 @@ public class EndpointNode extends CasaNode {
         String compName = model.getComponentName(endpointRef);
         if (compName != null) {
             ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                    endpointRef, sheet, "endpoint", compName); // NOI18N
+                    endpointRef, sheet, "endpoint", getConfigExtensionSubType(), compName); // NOI18N
         }
     }
+
+    /**
+     * Gets the config extension subtype for "endpoint" extension type,
+     * that is, "consume" or "provide".
+     *
+     * @return config extension subtype
+     */
+    protected abstract String getConfigExtensionSubType();
 
     @Override
     public String getName() {
         CasaEndpointRef endpoint = (CasaEndpointRef) getData();
         if (endpoint != null) {
             try {
-                return endpoint.getEndpointName(); // getDisplayName?
+                return endpoint.getDisplayName();
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();
@@ -188,7 +196,10 @@ public class EndpointNode extends CasaNode {
 
     @Override
     protected void addCustomActions(List<Action> actions) {
-        actions.add(SystemAction.get(AddConnectionAction.class));
+        AddConnectionAction addConnectionAction =
+                SystemAction.get(AddConnectionAction.class);
+        updateAddConnectionActionState(addConnectionAction); // #131853
+        actions.add(addConnectionAction);
 
         CasaEndpointRef endpointRef = (CasaEndpointRef) getData();
         if (endpointRef != null) {
@@ -197,5 +208,10 @@ public class EndpointNode extends CasaNode {
                 actions.add(SystemAction.get(GoToSourceAction.class));
             }
         }
+    }
+
+    protected void updateAddConnectionActionState(AddConnectionAction action) {
+        // do nothing
+        // subclass might want to overwrite this to disable the action (see ConsumesNode)
     }
 }

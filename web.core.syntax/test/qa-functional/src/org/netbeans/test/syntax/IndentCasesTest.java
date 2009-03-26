@@ -84,6 +84,7 @@ public class IndentCasesTest extends J2eeTestCase {
             projectsOpened = true;
             openFile("indentationTest.jsp");
             openFile("indentationTest.html");
+            openFile("WEB-INF/tags/indentationTest.tag");
             Thread.sleep(10000);
         }
     }
@@ -102,19 +103,18 @@ public class IndentCasesTest extends J2eeTestCase {
     public void testJSPFirstLineIndent() throws Exception {
         testJSP(5, 1, 6, 1);
     }
-    
+
     public void testJSPTagEndLine() throws Exception {
         testJSP(5, 7, 6, 3);
     }
 
-//issue 120136
-//    public void testJSPAttribute() throws Exception {
-//        testJSP(8, 15, 9, 13);
-//    }
-//
-//    public void testJSPAttribute2() throws Exception {
-//        testJSP(8, 41, 9, 15);
-//    }
+    public void testJSPAttribute() throws Exception {
+        testJSP(8, 15, 9, 11);
+    }
+
+    public void testJSPAttribute2() throws Exception {
+        testJSP(8, 41, 9, 15);
+    }
 
     public void testJSPSmartEnter() throws Exception {
         testJSP(22, 21, 23, 19);
@@ -143,7 +143,7 @@ public class IndentCasesTest extends J2eeTestCase {
     public void testJSPScriptletForBlock() throws Exception {
         testJSP(31, 44, 32, 15);
     }
-    
+
     public void testJSPScriptletClosingBracket() throws Exception {
         testJSP(33, 14, 34, 13);
     }
@@ -151,28 +151,27 @@ public class IndentCasesTest extends J2eeTestCase {
     public void testHTMLFirstLineIndent() throws Exception {
         testHTML(1, 1, 2, 1);
     }
-    
+
     public void testHTMLTagEndLine() throws Exception {
         testHTML(1, 7, 2, 3);
     }
-    
-//issue 120136
-//    public void testHTMLAttribute() throws Exception {
-//        testHTML(4, 15, 5, 13);
-//    }
-//
-//    public void testHTMLAttribute2() throws Exception {
-//        testHTML(4, 41, 5, 13);
-//    }
+
+    public void testHTMLAttribute() throws Exception {
+        testHTML(4, 15, 5, 11);
+    }
+
+    public void testHTMLAttribute2() throws Exception {
+        testHTML(4, 41, 5, 15);
+    }
 
     public void testHTMLSmartEnter() throws Exception {
         testHTML(14, 21, 15, 19);
     }
-    
+
     public void testHTMLOpenTagIndent() throws Exception {
         testHTML(19, 21, 20, 19);
     }
-    
+
     public void testHTMLEmbeddedCSS1() throws Exception {
         testHTML(6, 16, 7, 15);
     }
@@ -181,8 +180,16 @@ public class IndentCasesTest extends J2eeTestCase {
         testHTML(7, 30, 8, 17);
     }
 
+    public void testIssue120813() throws Exception {
+        testTag(8, 15, 9, 5);
+    }
+
     private void testJSP(int lineNum, int offset, int endLineNum, int endOffset) throws Exception {
         test("indentationTest.jsp", lineNum, offset, endLineNum, endOffset);
+    }
+
+    private void testTag(int lineNum, int offset, int endLineNum, int endOffset) throws Exception {
+        test("WEB-INF/tags/indentationTest.tag", lineNum, offset, endLineNum, endOffset);
     }
 
     private void testHTML(int lineNum, int offset, int endLineNum, int endOffset) throws Exception {
@@ -215,7 +222,7 @@ public class IndentCasesTest extends J2eeTestCase {
         EditorCookie ed = dataObj.getCookie(EditorCookie.class);
         doc = (BaseDocument) ed.openDocument();
         ed.open();
-        EditorOperator operator = new EditorOperator(fileName);
+        EditorOperator operator = new EditorOperator(file.getName());
         return operator;
     }
 

@@ -45,8 +45,9 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.xml.validation.ValidateAction;
-import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
+//import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -75,6 +76,11 @@ public class CasaValidateAction extends ValidateAction {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                if (CasaFactory.getCasaCustomizer().getBOOLEAN_DISABLE_VALIDATION()) {
+                    return; // skip validation...
+                }
+long t1 = System.currentTimeMillis();
+System.out.println("Validation Start: "+t1);
                 RunAction runAction = new RunAction();
                 runAction.run();
 
@@ -93,6 +99,8 @@ public class CasaValidateAction extends ValidateAction {
                 if (controller != null) {
                     controller.notifyCompleteValidationResults(validationResults);
                 }
+long t2 = System.currentTimeMillis();
+System.out.println("Validation EndAt: "+ t2 + ", "+ (t2 -t1));
             }
         });
     }

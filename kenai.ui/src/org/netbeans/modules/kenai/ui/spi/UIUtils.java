@@ -53,15 +53,18 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.LoginPanel;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -70,8 +73,8 @@ import org.openide.util.RequestProcessor;
  * @author Jan Becicka
  */
 public final class UIUtils {
-    private static final String encMethod = "AES";
-    private static SecretKeySpec key = new SecretKeySpec("netbeansnetbeans".getBytes(), encMethod);
+    private static final String encMethod = "AES"; // NOI18N
+    private static SecretKeySpec key = new SecretKeySpec("netbeansnetbeans".getBytes(), encMethod); // NOI18N
     private static Cipher cipher;
     static {
         try {
@@ -95,18 +98,18 @@ public final class UIUtils {
     @Deprecated
     public static final JTextPane createHTMLPane() {
         JTextPane textPane = new JTextPane();
-        textPane.setContentType("text/html");
-        Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+        textPane.setContentType("text/html"); // NOI18N
+        Font font = UIManager.getFont("Label.font"); // NOI18N
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " + // NOI18N
+                "font-size: " + font.getSize() + "pt; }"; // NOI18N
 
         final StyleSheet styleSheet = ((HTMLDocument) textPane.getDocument()).getStyleSheet();
 
         styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".green {color: green;}");
-        styleSheet.addRule(".red {color: red;");
+        styleSheet.addRule(".green {color: green;}"); // NOI18N
+        styleSheet.addRule(".red {color: red;"); // NOI18N
         textPane.setEditable(false);
-        textPane.setBackground(UIManager.getColor("TextPane.background"));
+        textPane.setBackground(UIManager.getColor("TextPane.background")); // NOI18N
         return textPane;
     }
 
@@ -119,7 +122,7 @@ public final class UIUtils {
      */
     @Deprecated
     public static final JButton createFocusableHyperlink(String text) {
-        final JButton hyperlink=new JButton("<html><body><a href=\"foo\">"+text+"</a>");
+        final JButton hyperlink=new JButton("<html><body><a href=\"foo\">"+text+"</a>"); // NOI18N
         hyperlink.setBorderPainted(false);
         hyperlink.setContentAreaFilled(false);
         hyperlink.setOpaque(false);
@@ -152,11 +155,11 @@ public final class UIUtils {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        String uname=preferences.get("kenai.username", null);
+        String uname=preferences.get("kenai.username", null); // NOI18N
         if (uname==null) {
             return false;
         }
-        byte[] password=preferences.getByteArray("kenai.password", null);
+        byte[] password=preferences.getByteArray("kenai.password", null); // NOI18N
         try {
             Kenai.getDefault().login(uname, new String(decode(password)).toCharArray());
         } catch (KenaiException ex) {
@@ -172,47 +175,62 @@ public final class UIUtils {
     public static boolean showLogin() {
         final LoginPanel loginPanel = new LoginPanel();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"}, "Login", DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+        final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
+        final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
+        DialogDescriptor login = new DialogDescriptor(
+                loginPanel,
+                NbBundle.getMessage(Utilities.class, "CTL_LoginToKenai"),
+                true,
+                new Object[]{ctlLogin,ctlCancel},ctlLogin,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null, new ActionListener() {
 
-            public void actionPerformed(ActionEvent event) {
-                if (event.getSource().equals("Login")) {
-                    loginPanel.showProgress();
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    public void actionPerformed(ActionEvent event) {
+                        if (event.getSource().equals(ctlLogin)) {
+                        loginPanel.showProgress();
+                        RequestProcessor.getDefault().post(new Runnable() {
 
-                        public void run() {
-                            try {
-                                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
-                                loginPanel.getRootPane().getParent().setVisible(false);
-                            } catch (KenaiException ex) {
-                                loginPanel.showError(ex);
+                            public void run() {
+                                try {
+                                    Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
+                                    loginPanel.getRootPane().getParent().setVisible(false);
+                                } catch (final KenaiException ex) {
+                                    SwingUtilities.invokeLater(new Runnable() {
+
+                                        public void run() {
+                                            loginPanel.showError(ex);
+                                        }
+                                    });
+                                }
                             }
+                        });
+                        if (loginPanel.isStorePassword()) {
+                            preferences.put("kenai.username", loginPanel.getUsername()); // NOI18N
+                            preferences.putByteArray("kenai.password", encode(new String(loginPanel.getPassword()).getBytes())); // NOI18N
+                        } else {
+                            preferences.remove("kenai.username"); // NOI18N
+                            preferences.remove("kenai.password"); // NOI18N
                         }
-                    });
-                    if (loginPanel.isStorePassword()) {
-                        preferences.put("kenai.username", loginPanel.getUsername());
-                        preferences.putByteArray("kenai.password", encode(new String(loginPanel.getPassword()).getBytes()));
                     } else {
-                        preferences.remove("kenai.username");
-                        preferences.remove("kenai.password");
+                        loginPanel.putClientProperty("cancel", "true"); // NOI18N
+                        loginPanel.getRootPane().getParent().setVisible(false);
                     }
-                } else {
-                    loginPanel.putClientProperty("cancel", "true");
-                    loginPanel.getRootPane().getParent().setVisible(false);
                 }
-            }
         });
-        login.setClosingOptions(new Object[]{"Cancel"}); 
+        login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get("kenai.username", null);
-        byte[] password=preferences.getByteArray("kenai.password", null);
+        String uname=preferences.get("kenai.username", null); // NOI18N
+        byte[] password=preferences.getByteArray("kenai.password", null); // NOI18N
         if (uname!=null && password!=null) {
             loginPanel.setUsername(uname);
             loginPanel.setPassword(new String(decode(password)).toCharArray());
         }
+        d.pack();
+        loginPanel.clearStatus();
         d.setVisible(true);
 
-        return loginPanel.getClientProperty("cancel")==null;
+        return loginPanel.getClientProperty("cancel")==null; // NOI18N
     }
 
 

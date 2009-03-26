@@ -62,12 +62,12 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
-        panel = new CpuIndicatorPanel(this);
+        panel = new CpuIndicatorPanel();
     }
 
     @Override
     public JComponent getComponent() {
-        return panel;
+        return panel.getPanel();
     }
 
     public void reset() {

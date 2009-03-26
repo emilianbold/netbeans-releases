@@ -87,9 +87,9 @@ public class CustomizerPane extends JPanel
     private static final int MAX_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height * 3 / 4;
     private static final int MAX_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width * 3 / 4;
 
-    private static Dimension previousDimension = null;
+    /*private static Dimension previousDimension = null;
     private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerPane.dialog.width";
-    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerPane.dialog.height";
+    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerPane.dialog.height";*/
     
     //private DialogDescriptor dialogDescriptor;
     
@@ -123,12 +123,12 @@ public class CustomizerPane extends JPanel
         errMessConstraints.fill = GridBagConstraints.HORIZONTAL;
         customizerPanel.add(errorMessageValue, errMessConstraints);
 
-        Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerPane.class);
+        /*Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerPane.class);
         int paneWidth = prefs.getInt(CUSTOMIZER_DIALOG_WIDTH, 0);
         int paneHeight = prefs.getInt(CUSTOMIZER_DIALOG_HEIGHT, 0);
         if (paneWidth != 0 && paneHeight != 0) {
             previousDimension = new Dimension(paneWidth, paneHeight);
-        }
+        }*/
 
         setCategory( categoryModel.getCurrentCategory() );
     }
@@ -261,7 +261,7 @@ public class CustomizerPane extends JPanel
             Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(this);
             currentCustomizer = newCustomizer;            
             currentHelpCtx = HelpCtx.findHelp( currentCustomizer );
-            if (previousDimension == null) {
+            /*if (previousDimension == null) {
                 previousDimension = currentCustomizer.getSize();
             }
             int newWidth = 0;
@@ -287,23 +287,23 @@ public class CustomizerPane extends JPanel
 
             Dimension newDim = new Dimension(newWidth, newHeight);
             currentCustomizer.setPreferredSize(newDim);
-            previousDimension = newDim;
+            previousDimension = newDim;*/
 
-            Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerPane.class);
+            /*Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerPane.class);
             prefs.put(CUSTOMIZER_DIALOG_WIDTH, Integer.toString(newDim.width));
-            prefs.put(CUSTOMIZER_DIALOG_HEIGHT, Integer.toString(newDim.height));
+            prefs.put(CUSTOMIZER_DIALOG_HEIGHT, Integer.toString(newDim.height));*/
 
             customizerPanel.add( currentCustomizer, fillConstraints );
             customizerPanel.validate();
             customizerPanel.repaint();
 
-            if (customizerPanel != null) {
+            /*if (customizerPanel != null) {
                 Window window = SwingUtilities.getWindowAncestor(customizerPanel);
                 if (window != null) {
                     window.pack();
                     window.setBounds(org.openide.util.Utilities.findCenterBounds(window.getSize()));
                 }
-            }
+            }*/
             
             setErrorMessage(newCategory.getErrorMessage());
             firePropertyChange( HELP_CTX_PROPERTY, null, getHelpCtx() );

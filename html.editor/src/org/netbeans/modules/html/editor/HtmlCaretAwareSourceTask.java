@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -100,12 +101,15 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        //xxx: how come I can get null event here? parsing api bug?
         if(event == null) {
+            Logger.global.warning("HtmlCaretAwareSourceTask.run() called with null SchedulerEvent argument.");
             return ;
         }
 
-        forDocument(result.getSnapshot().getSource().getDocument(true)).parsed(result, event);
+        Document doc = result.getSnapshot().getSource().getDocument(false);
+        if(doc != null) {
+            forDocument(doc).parsed(result, event);
+        }
     }
 
     public static class Source {

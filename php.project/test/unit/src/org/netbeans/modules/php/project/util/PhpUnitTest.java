@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.util;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
@@ -52,7 +53,7 @@ public class PhpUnitTest extends NbTestCase {
         super(name);
     }
 
-    public void testPhpUnitVersion() {
+    public void testVersion() {
         int[] version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3 by Sebastian Bergmann.");
         assertNull(version);
 
@@ -76,5 +77,20 @@ public class PhpUnitTest extends NbTestCase {
         version = PhpUnit.OutputProcessorFactory.match("PHPUnit 323324.3877987.165456 by Sebastian Bergmann.");
         assertNotNull(version);
         assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
+    }
+
+    public void testLinePatternTestRunner() {
+        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "/home/gapon/test/Calculator.php:635");
+        assertTrue(matcher.matches());
+        assertEquals("/home/gapon/test/Calculator.php", matcher.group(1));
+        assertEquals("635", matcher.group(2));
+        assertTrue(PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "/h o m e/gapon/test/Calculator.php:635").matches());
+        assertTrue(PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "C:\\home\\gapon\\test\\Calculator.php:635").matches());
+
+        assertFalse(PhpUnit.LINE_PATTERN.matcher("").matches());
+    }
+
+    public void testLinePatternOutput() {
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635").matches());
     }
 }

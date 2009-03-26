@@ -30,7 +30,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
 End cursor position = 803
-[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str) %>, 933]
+[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str); %>, 934]
 Comparator <String> CASE_INSENSITIVE_ORDER
 char charAt (int index )
 int codePointAt (int index )
@@ -103,4 +103,100 @@ String valueOf (char[] data , int offset , int
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 964
+End cursor position = 965
+[<% Li|, LinkedList <E>, <% LinkedList, 1063]
+LinkageError
+LinkedList <E>
+End cursor position = 1077
+[<% C|, Card, <% Card, 1175]
+ServletConfig config
+Object clone ()
+char
+class
+Card
+CharSequence
+Character
+Class <T>
+ClassCastException
+ClassCircularityError
+ClassFormatError
+ClassLoader
+ClassNotFoundException
+CloneNotSupportedException
+Cloneable
+Comparable <T>
+Compiler
+Cookie
+End cursor position = 1183
+[<% LinkedList l = new LinkedList();l.| %>, void clear (), <% LinkedList l = new LinkedList();l.clear(); %>, 1400]
+boolean add (Object e )
+void add (int index , Object element )
+boolean addAll (Collection c )
+boolean addAll (int index , Collection c )
+void addFirst (Object e )
+void addLast (Object e )
+void clear ()
+Object clone ()
+boolean contains (Object o )
+boolean containsAll (Collection c )
+Iterator descendingIterator ()
+Object element ()
+boolean equals (Object o )
+Object get (int index )
+Class <?> getClass ()
+Object getFirst ()
+Object getLast ()
+int hashCode ()
+int indexOf (Object o )
+boolean isEmpty ()
+Iterator iterator ()
+int lastIndexOf (Object o )
+ListIterator listIterator ()
+ListIterator listIterator (int index )
+void notify ()
+void notifyAll ()
+boolean offer (Object e )
+boolean offerFirst (Object e )
+boolean offerLast (Object e )
+Object peek ()
+Object peekFirst ()
+Object peekLast ()
+Object poll ()
+Object pollFirst ()
+Object pollLast ()
+Object pop ()
+void push (Object e )
+Object remove ()
+boolean remove (Object o )
+Object remove (int index )
+boolean removeAll (Collection c )
+Object removeFirst ()
+boolean removeFirstOccurrence (Object o )
+Object removeLast ()
+boolean removeLastOccurrence (Object o )
+boolean retainAll (Collection c )
+Object set (int index , Object element )
+int size ()
+List subList (int fromIndex , int toIndex )
+Object[] toArray ()
+Object[] toArray (Object[] a )
+String toString ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1446
+[<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName (String name ), <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1675]
+boolean equals (Object obj )
+Class <?> getClass ()
+Integer getId ()
+String getName ()
+int hashCode ()
+void notify ()
+void notifyAll ()
+void setId (Integer id )
+void setName (String name )
+String toString ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1740

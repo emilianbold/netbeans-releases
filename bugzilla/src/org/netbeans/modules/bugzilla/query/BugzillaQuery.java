@@ -74,9 +74,7 @@ public class BugzillaQuery extends Query {
     private boolean firstRun = true;
 
     public BugzillaQuery(BugzillaRepository repository) {
-        super();
-        this.repository = repository;
-        controller = createControler(repository, this, urlParameters);
+        this(null, repository, null, false, -1);
     }
 
     protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
@@ -89,13 +87,18 @@ public class BugzillaQuery extends Query {
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {
-        this(repository);
+        this(name, repository, urlParameters, true, lastRefresh);
+    }
+
+    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh) {
+        this.repository = repository;
+        this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
         this.setLastRefresh(lastRefresh);
-        this.saved = true;
+        controller = createControler(repository, this, urlParameters);
     }
-    
+
     @Override
     public String getDisplayName() {
         return name;
@@ -146,14 +149,15 @@ public class BugzillaQuery extends Query {
                                 Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues.");
                                 assert false;
                             }
+                            // read the stored state if query wasn't run yet ...
                             queryIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
+                            obsoleteIssues.addAll(queryIssues);
                         } else {
-                            // store all you got
-                            issues.addAll(obsoleteIssues);
-                            obsoleteIssues.clear();
-                            repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
-                            queryIssues.addAll(issues);
+                            obsoleteIssues.addAll(issues);
+                            queryIssues.addAll(obsoleteIssues);
                         }
+                        // ... and store all you got
+                        repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), queryIssues.toArray(new String[queryIssues.size()]));
                     }
                     issues.clear();
                     firstRun = false;
@@ -162,8 +166,6 @@ public class BugzillaQuery extends Query {
                     StringBuffer url = new StringBuffer();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
-                    // IssuesIdCollector will populate the issues set
-                    // XXX encode url?
                     // IssuesIdCollector will populate the issues set
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
                     repository.getExecutor().execute(queryCmd);
@@ -176,7 +178,7 @@ public class BugzillaQuery extends Query {
                     if(!isSaved()) {
                         queryIssues.addAll(issues);
                     }
-                    GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, issues, new IssuesCollector());
+                    GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
                     repository.getExecutor().execute(dataCmd);
                     ret[0] = dataCmd.hasFailed();
                 } finally {
@@ -191,6 +193,12 @@ public class BugzillaQuery extends Query {
         assert urlParameters != null;
         this.urlParameters = urlParameters;
         refresh();
+    }
+
+    void remove() {
+        repository.removeQuery(this);
+        repository.getIssueCache().removeQuery(name);
+        fireQueryRemoved();
     }
 
     @Override

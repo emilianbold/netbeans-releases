@@ -55,7 +55,6 @@ public class LoginPanel extends javax.swing.JPanel {
         /** Creates new form LoginPanel */
     public LoginPanel() {
         initComponents();
-        errorProgress.setVisible(false);
     }
 
     public boolean isStorePassword() {
@@ -71,8 +70,13 @@ public class LoginPanel extends javax.swing.JPanel {
 
     public void showProgress() {
         errorProgress.setVisible(true);
+        error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+    }
+
+    public void clearStatus() {
+        errorProgress.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -85,8 +89,8 @@ public class LoginPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         errorProgress = new javax.swing.JPanel();
-        progressBar = new javax.swing.JProgressBar();
         error = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
         lblKenaiLogo = new javax.swing.JLabel();
         lblUserName = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
@@ -97,10 +101,12 @@ public class LoginPanel extends javax.swing.JPanel {
         register = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         errorProgress.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         errorProgress.setLayout(new java.awt.CardLayout());
-        errorProgress.add(progressBar, "card2");
         errorProgress.add(error, "card3");
+        errorProgress.add(progressBar, "card3");
 
         lblKenaiLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblKenaiLogo, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblKenaiLogo.text")); // NOI18N
@@ -147,13 +153,12 @@ public class LoginPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUserName)
                             .add(lblPassword))
@@ -165,10 +170,9 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .add(register))
                             .add(forgotPassword)
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))))
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))))
                 .addContainerGap())
-            .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -190,9 +194,9 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblNoAccount)
                     .add(register))
-                .add(26, 26, 26)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(errorProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 

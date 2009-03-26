@@ -51,6 +51,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -66,7 +67,7 @@ public class TestUtilitiesTest extends NbTestCase {
     private static ClassPath compile;
     private static ClassPath source;
     
-    public void testWaitScanFinished () throws Exception {
+    public void testWaitScanFinished () throws Exception {        
         final File wf = getWorkDir();
         final File cache = FileUtil.normalizeFile(new File (wf,"cache"));
         cache.mkdirs();

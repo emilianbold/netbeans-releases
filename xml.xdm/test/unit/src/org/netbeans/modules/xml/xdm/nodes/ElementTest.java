@@ -233,7 +233,7 @@ public class ElementTest extends TestCase {
         String result = elem.getAttribute(name);
         assertEquals(expResult, result);
         // try for non-existent attribute
-        assertNull(elem.getAttribute("ssn1"));
+        assertNull(elem.getAttributeNode("ssn1"));
     }
 
     public void testGetAttributeNode() {
@@ -322,8 +322,8 @@ public class ElementTest extends TestCase {
         Element pasted = Util.getChildElementByTag(middle, "a1:A");
         assertEquals("namespaceB", receiverRoot.lookupNamespaceURI(""));
         assertEquals("namespaceA", receiverRoot.lookupNamespaceURI("a1"));
-        assertNull(pasted.getAttribute("xmlns:a1"));
-        assertNull(pasted.getAttribute("xmlns"));
+        assertNull(pasted.getAttributeNode("xmlns:a1"));
+        assertNull(pasted.getAttributeNode("xmlns"));
     }
     
     public void testInsertWithFullConsolidation() throws Exception {
@@ -348,12 +348,12 @@ public class ElementTest extends TestCase {
         Element pasted = Util.getChildElementByTag(middle, "a2:A");
         assertNull(receiverRoot.lookupNamespaceURI(""));
         assertNull(receiverRoot.lookupNamespaceURI("a1"));
-        assertNull(pasted.getAttribute("xmlns:a1"));
-        assertNull(pasted.getAttribute("xmlns:b1"));
-        assertNull(pasted.getAttribute("xmlns"));
+        assertNull(pasted.getAttributeNode("xmlns:a1"));
+        assertNull(pasted.getAttributeNode("xmlns:b1"));
+        assertNull(pasted.getAttributeNode("xmlns"));
         Element pastedChild = Util.getChildElementByTag(pasted, "b1:B");
         assertEquals("value1", pastedChild.getAttributeNS("namespaceB","attrB"));
-        assertNull(pastedChild.getAttribute("xmlns:b1"));
+        assertNull(pastedChild.getAttributeNode("xmlns:b1"));
     }
     
     public void testInsertWithLimitedConsolidationDueToPrefixedAttribute() throws Exception {
@@ -379,9 +379,9 @@ public class ElementTest extends TestCase {
         Element pasted = Util.getChildElementByTag(middle, "a2:A");
         assertNull(receiverRoot.lookupNamespaceURI(""));
         assertNull(receiverRoot.lookupNamespaceURI("a1"));
-        assertNull(pasted.getAttribute("xmlns:a1"));
-        assertNull(pasted.getAttribute("xmlns:b1"));
-        assertNull(pasted.getAttribute("xmlns"));
+        assertNull(pasted.getAttributeNode("xmlns:a1"));
+        assertNull(pasted.getAttributeNode("xmlns:b1"));
+        assertNull(pasted.getAttributeNode("xmlns"));
         Element pastedChild = Util.getChildElementByTag(pasted, "B");
         assertEquals("value1", pastedChild.getAttributeNS("namespaceB","attrB"));
         assertEquals("namespaceB", pastedChild.getAttribute("xmlns:b1"));
@@ -422,10 +422,10 @@ public class ElementTest extends TestCase {
 
         Element a2 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a2");
         a1.appendChild(a2);
-        assertNull(a2.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(a2.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         
         model.append(root, a1);
-        assertNull(a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNull(a1.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
     }
     
     public void testConsolidateDefaultToDeclaredPrefix() throws Exception {
@@ -456,8 +456,8 @@ public class ElementTest extends TestCase {
         assertTrue(middle == Util.getChildElementByTag(receiverRoot, "m:middle"));
         Element pasted = Util.getChildElementByTag(middle, "a1:A");
         assertEquals("namespaceA", receiverRoot.lookupNamespaceURI("a1"));
-        assertNull(pasted.getAttribute("xmlns:a1"));
-        assertNull(pasted.getAttribute("xmlns"));
+        assertNull(pasted.getAttributeNode("xmlns:a1"));
+        assertNull(pasted.getAttributeNode("xmlns"));
     }
 
     public void testSetAttributeWithXmlEscape() throws Exception {

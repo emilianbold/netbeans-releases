@@ -82,6 +82,7 @@ import org.openide.util.Utilities;
 public class AnalyzeModel implements DiscoveryProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
+    public static final String PREFER_LOCAL_FILES = "prefer-local"; // NOI18N
     protected boolean isStoped = false;
     
     
@@ -109,6 +110,26 @@ public class AnalyzeModel implements DiscoveryProvider {
             }
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.Folder;
+            }
+        });
+        myProperties.put(PREFER_LOCAL_FILES, new ProviderProperty(){
+            private Boolean myValue = Boolean.FALSE;
+            public String getName() {
+                return i18n("Prefer_Local_Files"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("Prefer_Local_Files_Description"); // NOI18N
+            }
+            public Object getValue() {
+                return myValue;
+            }
+            public void setValue(Object value) {
+                if (value instanceof Boolean){
+                    myValue = (Boolean)value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.Boolean;
             }
         });
     }
@@ -265,6 +286,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             Map<String,List<String>> searchBase = search(root);
             PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
+            boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
             Item[] items = makeConfigurationDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++){
                 if (isStoped) {
@@ -275,7 +297,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     Language lang = item.getLanguage();
                     if (lang == Language.C || lang == Language.CPP){
                         CsmFile langFile = langProject.findFile(item);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig);
+                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig, preferLocal);
                         res.add(source);
                     }
                 }

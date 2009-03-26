@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -47,6 +48,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -84,10 +86,16 @@ public final class IndexResult {
         if (cachedUrl == null) {
             URL url = null;
             try {
-                url = root.toURI().resolve(spi.getSourceName()).toURL();
-            } catch (MalformedURLException ex) {
-                LOG.log(Level.WARNING, null, ex);
+                String protocol = root.getProtocol();
+                if ("file".equals(protocol)) {//NOI18N
+                    File rootFile = new File(root.toURI());
+                    url = new File(rootFile, spi.getSourceName()).toURI().toURL();
+                } else {
+                     url = new URL(root, spi.getSourceName());
+                }
             } catch (URISyntaxException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            } catch (MalformedURLException ex) {
                 LOG.log(Level.WARNING, null, ex);
             }
 

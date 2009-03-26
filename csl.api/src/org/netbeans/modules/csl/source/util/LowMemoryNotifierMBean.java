@@ -52,7 +52,7 @@ package org.netbeans.modules.csl.source.util;
  */
 public interface LowMemoryNotifierMBean {
 
-    public static final String OBJECT_NAME = "org.netbeans.modules.gsfret.source:type=LowMemoryNotifier";     //NOI18N
+    public static final String OBJECT_NAME = "org.netbeans.modules.csl.source:type=LowMemoryNotifier";     //NOI18N
 
     public float getMemoryTresholdLimit ();
 

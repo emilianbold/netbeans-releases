@@ -60,11 +60,16 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -85,6 +90,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
+    private boolean submitting;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -116,11 +122,18 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                reloadForm(force);
-            }
-        });
+        if (submitting) {
+            return;
+        }
+        if (EventQueue.isDispatchThread()) {
+            reloadForm(force);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    reloadForm(force);
+                }
+            });
+        }
     }
 
     public void setIssue(BugzillaIssue issue) {
@@ -128,25 +141,23 @@ public class IssuePanel extends javax.swing.JPanel {
             issue.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                        reloadForm(false);
+                        reloadFormInAWT(false);
                     } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
                         updateFieldStatuses();
                     }
                 }
             });
-            if (issue.getTaskData().isNew()) {
-                summaryField.getDocument().addDocumentListener(new DocumentListener() {
-                    public void insertUpdate(DocumentEvent e) {
-                        changedUpdate(e);
-                    }
-                    public void removeUpdate(DocumentEvent e) {
-                        changedUpdate(e);
-                    }
-                    public void changedUpdate(DocumentEvent e) {
-                        updateMessagePanel();
-                    }
-                });
-            }
+            summaryField.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    updateMessagePanel();
+                }
+            });
         }
         this.issue = issue;
         initCombos();
@@ -167,8 +178,6 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
         headerLabel.setVisible(!isNew);
-        summaryLabel.setVisible(isNew);
-        summaryField.setVisible(isNew);
         statusCombo.setEnabled(!isNew);
         addCommentLabel.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
@@ -181,7 +190,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
-        if (isNew) {
+        if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
             initStatusCombo("NEW"); // NOI18N
@@ -189,6 +198,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
             headerLabel.setText(headerTxt);
+            reloadField(force, summaryField, BugzillaIssue.IssueField.SUMMARY);
             reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
             reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
             reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
@@ -239,6 +249,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
         String currentValue = null;
+        if (issue.getTaskData().isNew()) {
+            force = true;
+        }
         if (!force) {
             if (component instanceof JComboBox) {
                 currentValue  = ((JComboBox)component).getSelectedItem().toString();
@@ -403,16 +416,18 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private boolean noSummary = false;
     private void updateMessagePanel() {
-        if (issue.getTaskData().isNew() && (summaryField.getText().trim().length() == 0)) {
+        if (summaryField.getText().trim().length() == 0) {
             if (!noSummary) {
                 noSummary = true;
                 messagePanel.removeAll();
                 submitButton.setEnabled(false);
                 JLabel noSummaryLabel = new JLabel();
                 noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/info.png"))); // NOI18N
+                String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
                 messagePanel.add(noSummaryLabel);
                 messagePanel.setVisible(true);
+                messagePanel.revalidate();
             }
         } else {
             if (noSummary) {
@@ -422,7 +437,27 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (issue != null) {
+            // Hack - reset any previous modifications when the issue window is reopened
+            // XXX any chance to get rid of the hack?
+            reloadForm(true);
+
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -926,6 +961,17 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
         targetMilestoneCombo.setVisible(usingTargetMilestones);
+        TaskData data = issue.getTaskData();
+        if (data.isNew()) {
+            issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
+            BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
+            try {
+                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                reloadForm(false);
+            } catch (CoreException cex) {
+                cex.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_productComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
@@ -968,9 +1014,9 @@ public class IssuePanel extends javax.swing.JPanel {
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         boolean isNew = issue.getTaskData().isNew();
         if (isNew) {
-            storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
             storeFieldValue(BugzillaIssue.IssueField.DESCRIPTION, addCommentArea);
         }
+        storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
         storeFieldValue(BugzillaIssue.IssueField.PRODUCT, productCombo);
         storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
         storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
@@ -1013,6 +1059,8 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    submitting = true;
+                    issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1023,8 +1071,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             // PENDING notify user
                         }
                     }
-                    issue.submitAndRefresh();
                 } finally {
+                    submitting = false;
                     handle.finish();
                     reloadFormInAWT(true);
                 }

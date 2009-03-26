@@ -207,13 +207,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         if (desc == UNKNOWN) {
             shortDescription = desc = node.getShortDescription();
         }
-        if (icon instanceof Image) {
-            String toolTip = ImageUtilities.getImageToolTip((Image) icon);
-            if (toolTip.length() > 0) {
-                StringBuilder str = new StringBuilder(128);
-                str.append("<html>").append(desc).append("<br>").append(toolTip).append("</html>");
-                desc = str.toString();
-            }
+        String toolTip = ImageUtilities.getImageToolTip(ImageUtilities.icon2Image(icon != null ? icon : getIcon(false, false)));
+        if (toolTip.length() > 0) {
+            StringBuilder str = new StringBuilder(128);
+            str.append("<html>").append(desc).append("<br>").append(toolTip).append("</html>");
+            desc = str.toString();
         }
         return desc;
     }

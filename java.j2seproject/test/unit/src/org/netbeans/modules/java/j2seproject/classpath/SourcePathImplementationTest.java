@@ -68,6 +68,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
 import org.openide.util.Mutex;
+import org.openide.util.test.MockLookup;
 
 public class SourcePathImplementationTest extends NbTestCase {
 
@@ -87,6 +88,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        MockLookup.setLayersAndInstances();
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
@@ -127,50 +129,8 @@ public class SourcePathImplementationTest extends NbTestCase {
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();
         assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 3 src entries",3, entries.size());
+        assertEquals ("There must be 3 src entries",1, entries.size());
         assertEquals("There must be src root", entries.get(0).getRoot(), sources);
-        String buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
-        assertNotNull ("There is no build.dir property", buildDir);
-        File f = new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsclient");
-        URL url = f.toURI().toURL();
-        if (!f.exists()) {
-            url = new URL (url.toExternalForm() + "/");
-        }
-        assertEquals("There must be WSClient entry", entries.get(1).getURL(), url);        
-        f = new File (new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsimport"),"client");
-        url = f.toURI().toURL();
-        if (!f.exists()) {
-            url = new URL (url.toExternalForm() + "/");
-        }
-        assertEquals("There must be WSimport/Client entry", entries.get(2).getURL(), url);
-        
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
-                EditableProperties ep = pp.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                ep.put("build.dir","build2");   //NOI18N
-                pp.getAntProjectHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                ProjectManager.getDefault().saveProject(pp);
-                return null;
-            }
-        });                
-        entries = cp.entries();
-        assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 3 src entries",3, entries.size());
-        assertEquals("There must be src root", entries.get(0).getRoot(), sources);
-        buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
-        assertNotNull ("There is no build.dir property", buildDir);
-        f = new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsclient");
-        url = f.toURI().toURL();
-        if (!f.exists()) {
-            url = new URL (url.toExternalForm() + "/");
-        }
-        assertEquals("There must be WSClient entry", entries.get(1).getURL(), url);
-        f = new File (new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsimport"),"client");
-        url = f.toURI().toURL();
-        if (!f.exists()) {
-            url = new URL (url.toExternalForm() + "/");
-        }
-        assertEquals("There must be WSimport/Client entry", entries.get(2).getURL(), url);
     }
 
     public void testIncludesExcludes() throws Exception {

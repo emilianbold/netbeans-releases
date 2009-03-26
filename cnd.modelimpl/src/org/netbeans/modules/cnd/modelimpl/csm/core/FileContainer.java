@@ -256,6 +256,12 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	getFiles2(uids);
 	return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
+
+    public Collection<CsmUID<CsmFile>> getFilesUID() {
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+        getFiles2(uids);
+        return uids;
+    }
     
     public Collection<FileImpl> getFileImpls() {
 	List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
@@ -712,7 +718,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             if( state != null && ! state.isCleaned() ) {
                 state = APTHandlersSupport.createCleanPreprocState(state);
             }
-            if ((data instanceof Collection)) {
+            if ((data instanceof Collection<?>)) {
                 @SuppressWarnings("unchecked")
                 Collection<StatePair> states = (Collection<StatePair>) data;
                 // check how many good old states are there

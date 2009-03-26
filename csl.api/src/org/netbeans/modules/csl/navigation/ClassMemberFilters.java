@@ -56,7 +56,6 @@ import org.netbeans.modules.csl.navigation.base.FiltersDescription;
 import org.netbeans.modules.csl.navigation.base.FiltersManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -164,28 +163,28 @@ public final class ClassMemberFilters {
 //                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
 //                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
 //                false,
-//                new ImageIcon (Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideInherited.png")), //NOI18N
+//                new ImageIcon (Utilities.loadImage("org/netbeans/modules/csl/navigation/resources/filterHideInherited.png")), //NOI18N
 //                null
 //        );
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
                 true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideFields.gif")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/filterHideFields.gif")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
                 true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideStatic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/filterHideStatic.png")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublicTip"),     //NOI18N
                 true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideNonPublic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/filterHideNonPublic.png")), //NOI18N
                 null
         );
         

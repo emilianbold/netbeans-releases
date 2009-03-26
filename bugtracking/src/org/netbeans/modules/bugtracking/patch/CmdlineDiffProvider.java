@@ -283,7 +283,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             if (t1.length() == 0) t1 = null;
             String t2 = secondText.toString();
             if (t2.length() == 0) t2 = null;
-            Difference d = (Difference) differences.remove(differences.size() - 1);
+            Difference d = differences.remove(differences.size() - 1);
             differences.add(new Difference(d.getType(), d.getFirstStart(), d.getFirstEnd(),
             d.getSecondStart(), d.getSecondEnd(), t1, t2));
             firstText.delete(0, firstText.length());

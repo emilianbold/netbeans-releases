@@ -52,6 +52,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
+            <file name="TestProjectAllReferencesPerformanceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesPerformanceAction"/>
+                <attr name="position" intvalue="1200"/>
+            </file>
             <file name="TestProjectAllReferencesAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesAction"/>
                 <attr name="position" intvalue="1300"/>

@@ -49,15 +49,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
-import javax.security.auth.login.LoginException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.DialogDescriptor;
@@ -77,10 +73,6 @@ public class BugtrackingOwnerSupport {
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
 
     private static final String REPOSITORY_FOR_FILE_PREFIX = "repository for "; //NOI18N
-
-    private static final String KENAI_PROJECT_URI_REGEXP
-       = "(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)"; //NOI18N
-    private static Pattern repositoryPattern = Pattern.compile(KENAI_PROJECT_URI_REGEXP);
 
     private Map<File, Repository> fileToRepo = new HashMap<File, Repository>(10);
     private static BugtrackingOwnerSupport instance;
@@ -117,7 +109,7 @@ public class BugtrackingOwnerSupport {
 
         if(repo == null && askIfUnknown) {
             repo = getBugtrackingOwner(file, issueId);
-            LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
+            LOG.log(Level.FINER, " caching repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
             fileToRepo.put(file, repo);
         }
 
@@ -136,12 +128,23 @@ public class BugtrackingOwnerSupport {
             Repository repository;
             try {
                 repository = getKenaiBugtrackingRepository((String) attValue);
-            } catch (LoginException ex) {
-                return null;
-            }
+                if (repository != null) {
+                    return repository;
+                }
+            } catch (KenaiException ex) {
+                /* the remote location (URL) denotes a Kenai project */
+                if ("Not Found".equals(ex.getMessage())) {              //NOI18N
+                    LOG.log(Level.INFO,
+                            "Kenai project corresponding to URL "       //NOI18N
+                                    + attValue
+                                    + " does not exist.");              //NOI18N
+                    return null;
+                }
 
-            if (repository != null) {
-                return repository;
+                LOG.throwing(getClass().getName(),                    //class name
+                             "getKenaiBugtrackingRepository(String)", //method name //NOI18N
+                             ex);
+                return null;
             }
         }
 
@@ -183,56 +186,24 @@ public class BugtrackingOwnerSupport {
     }
 
     /**
+     * Find a Kenai bug-tracking repository for the given URL.
      *
-     * @throws  javax.security.auth.login.LoginException
-     *          if the user failed to log into Kenai
+     * @param  string containing information about bug-tracking repository
+     *         or versioning repository
+     * @return  instance of an existing Kenai bug-tracking repository, if the
+     *          given string denotes such a repository;
+     *          {@code null} if the string format does not denote a Kenai
+     *          bug-tracking repository (in other cases, an exception is thrown)
+     * @throws  org.netbeans.modules.kenai.api.KenaiException
+     *          if the URI denotes a Kenai project's repository but there was
+     *          some problem getting the project's repository, e.g. because
+     *          the given project does not exist on Kenai
      */
-    private Repository getKenaiBugtrackingRepository(String remoteLocation) throws LoginException {
-
-        if (!isKenaiProjectLocation(remoteLocation)) {
-            return null;
-        }
-
-        boolean loggedToKenai = checkUserIsLoggedToKenai();
-        if (!loggedToKenai) {
-            throw new LoginException();
-        }
-
-        try {
-            KenaiProject project = KenaiProject.forRepository(remoteLocation);
-            Repository repository = (project != null) ? getKenaiBugtrackingRepository(project)
-                                                      : null;
-            return repository;
-        } catch (KenaiException ex) {
-            LOG.throwing(getClass().getName(),                    //class name
-                         "getKenaiBugtrackingRepository(String)", //method name //NOI18N
-                         ex);
-            return null;
-        }
-    }
-
-    private boolean isKenaiProjectLocation(String remoteLocation) {
-        return repositoryPattern.matcher(remoteLocation).matches();
-    }
-
-    /**
-     * Checks whether the user is logged to Kenai. If he/she is not logged in,
-     * displays the login dialog and allows the user is logged in.
-     *
-     * @return  {@code true} if the user has already been logged in
-     *          or if he/she has successfuly logged in with the dialog;
-     *          {@code false} otherwise
-     */
-    private boolean checkUserIsLoggedToKenai() {
-        if (Kenai.getDefault().getPasswordAuthentication() != null) {
-            return true;
-        } else {
-            return UIUtils.showLogin();
-        }
-    }
-
-    private Repository getKenaiBugtrackingRepository(KenaiProject project) {
-        return BugtrackingUtil.getKenaiBugtrackingRepository(project);
+    private Repository getKenaiBugtrackingRepository(String remoteLocation) throws KenaiException {
+        KenaiProject project = KenaiProject.forRepository(remoteLocation);//throws KenaiException
+        return (project != null)
+               ? BugtrackingUtil.getKenaiBugtrackingRepository(project)
+               : null;        //not a Kenai project repository
     }
 
     private Repository getRepositoryFromPrefs(File file) {

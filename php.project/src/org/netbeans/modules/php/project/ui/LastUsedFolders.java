@@ -59,6 +59,7 @@ public final class LastUsedFolders {
     private static final String PROJECT = "project"; // NOI18N
     private static final String PRIVATE_KEY = "privateKey"; // NOI18N
     private static final String KNOWN_HOSTS = "knownHosts"; // NOI18N
+    private static final String PATH_MAPPING = "pathMapping"; // NOI18N
 
     private LastUsedFolders() {
     }
@@ -151,5 +152,13 @@ public final class LastUsedFolders {
 
     public static void setKnownHosts(File knownHosts) {
         setFile(KNOWN_HOSTS, knownHosts);
+    }
+
+    public static File getPathMapping() {
+        return getFile(PATH_MAPPING);
+    }
+
+    public static void setPathMapping(File pathMapping) {
+        setFile(PATH_MAPPING, pathMapping);
     }
 }

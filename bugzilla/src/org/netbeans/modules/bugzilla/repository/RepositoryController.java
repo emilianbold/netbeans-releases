@@ -71,13 +71,14 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class RepositoryController extends BugtrackingController implements DocumentListener, ActionListener {
     private BugzillaRepository repository;
-    private RepositoryPanel panel = new RepositoryPanel();
+    private RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
     private boolean populating;
 
     RepositoryController(BugzillaRepository repository) {
         this.repository = repository;
+        panel = new RepositoryPanel(this);
         panel.nameField.getDocument().addDocumentListener(this);
         panel.userField.getDocument().addDocumentListener(this);
         panel.urlField.getDocument().addDocumentListener(this);
@@ -106,6 +107,11 @@ public class RepositoryController extends BugtrackingController implements Docum
         return validate();
     }
 
+    private String getUrl() {
+        String url = panel.urlField.getText().trim();
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
     private boolean validate() {
         if(validateError) {
             return false;
@@ -131,7 +137,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
         }
 
-        String url = panel.urlField.getText().trim();
+        String url = getUrl();
         if(url.equals("")) {
             errorMessage = "Missing URL"; // XXX bundle me
             return false;
@@ -169,7 +175,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
         repository.setName(newName);
-        repository.setTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
+        repository.setTaskRepository(panel.nameField.getText(), getUrl(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
         BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         fireDataApplied();
         repository.resetRepository(); // only on url, user or passwd change
@@ -243,7 +249,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     repository.resetRepository(); // reset mylyns caching
                     TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
                             panel.nameField.getText(),
-                            panel.urlField.getText(),
+                            getUrl(),
                             panel.userField.getText(),
                             new String(panel.psswdField.getPassword()));
 

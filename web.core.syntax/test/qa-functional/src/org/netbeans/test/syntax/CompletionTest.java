@@ -219,7 +219,7 @@ public class CompletionTest extends J2eeTestCase {
         return doc;
     }
 
-    protected void waitTypingFinished(BaseDocument doc) {
+    public static void waitTypingFinished(BaseDocument doc) {
         final int delay = 2000;
         final int repeat = 20;
         final Object lock = new Object();

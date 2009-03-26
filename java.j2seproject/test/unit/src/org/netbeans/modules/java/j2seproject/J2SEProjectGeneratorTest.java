@@ -88,6 +88,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "build.classes.excludes",
         "build.dir",
         "build.generated.dir",
+        "build.generated.sources.dir",
         "build.sysclasspath",
         "build.test.classes.dir",
         "build.test.results.dir",
@@ -131,6 +132,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "build.classes.excludes",
         "build.dir",
         "build.generated.dir",
+        "build.generated.sources.dir",
         "build.sysclasspath",
         "build.test.classes.dir",
         "build.test.results.dir",
@@ -170,7 +172,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     };
 
     public void testCreateProject() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         File proj = getWorkDir();
         clearWorkDir();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N

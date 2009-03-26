@@ -40,10 +40,7 @@
  */
 package org.netbeans.modules.css.test;
 
-import java.util.Random;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.modules.css.test.operator.StyleBuilderOperator;
 import static org.netbeans.modules.css.test.operator.StyleBuilderOperator.Panes.*;
 import org.netbeans.modules.css.test.operator.StyleBuilderOperator.BackgroundPaneOperator;
@@ -98,7 +95,7 @@ public class TestBackgroundSettings extends CSSTest {
         EditorOperator eop = openFile(newFileName);
         eop.setVisible(true);
         eop.setCaretPositionToLine(rootRuleLineNumber);
-        StyleBuilderOperator styleOper= new StyleBuilderOperator().invokeBuilder();
+        StyleBuilderOperator styleOper= new StyleBuilderOperator("root").invokeBuilder();
         return (BackgroundPaneOperator) styleOper.setPane(BACKGROUND);
     }
     

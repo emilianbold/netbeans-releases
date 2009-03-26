@@ -39,14 +39,10 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.ToolTipManager;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 
 /**
  * Displays a percentage graph
@@ -54,19 +50,33 @@ import javax.swing.event.AncestorListener;
  */
 public class Graph extends JComponent {
 
+    public interface LabelRenderer {
+        String render(int value);
+    }
+
     private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
     private final GraphPainter graph;
+    private Axis hAxis;
+    private Axis vAxis;
 
-    public Graph(int scale, GraphDescriptor ... descriptors) {
-        graph = new GraphPainter(scale, descriptors);
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                graph.setSize(getWidth(), getHeight());
-            }
-            public void ancestorRemoved(AncestorEvent event) {}
-            public void ancestorMoved(AncestorEvent event) {}
-        });
+    public Graph(int scale, LabelRenderer renderer, GraphDescriptor ... descriptors) {
+        setOpaque(true);
+        graph = new GraphPainter(scale, renderer, descriptors);
+//        ToolTipManager.sharedInstance().registerComponent(this);
+//        addAncestorListener(new AncestorListener() {
+//            public void ancestorAdded(AncestorEvent event) {
+//                graph.setSize(getWidth(), getHeight());
+//            }
+//            public void ancestorRemoved(AncestorEvent event) {}
+//            public void ancestorMoved(AncestorEvent event) {}
+//        });
+    }
+
+    public synchronized JComponent getVerticalAxis() {
+        if (vAxis == null) {
+            vAxis = new Axis(AxisOrientation.VERTICAL, 0, graph.getUpperLimit());
+        }
+        return vAxis;
     }
 
     @Override
@@ -92,6 +102,9 @@ public class Graph extends JComponent {
 
     public void setUpperLimit(int newScale) {
         if (newScale != graph.getUpperLimit()) {
+            if (vAxis != null) {
+                vAxis.setUpperLimit(newScale);
+            }
             graph.setUpperLimit(newScale);
             repaint();
         }
@@ -127,11 +140,6 @@ public class Graph extends JComponent {
         }
     }
 
-    @Override
-    public boolean isOpaque() {
-        return true;
-    }
-
     private static int paintCount = 0;
 
     @Override
@@ -161,25 +169,59 @@ public class Graph extends JComponent {
         }
      }
 
-    @Override
-    public String getToolTipText() {
-        int[] last = graph.getLastData();
-        GraphDescriptor[] descriptors = graph.getDescriptors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>");
-        for (int i = 0; i < descriptors.length; i++) {
-            Color color = descriptors[i].color;
-            String strColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
-            String font = String.format("<font color=\"%s\"/>", strColor);
-            String strValue = formatValue(last[i]);
-            sb.append(String.format("<tr><td>%s%s</td><td>%s %s</td></tr>\n", font, descriptors[i].description, font, strValue));
-        }
-        sb.append("</html>");
-        System.err.printf("TOOLTIP:\n%s\n", sb.toString());
-        return sb.toString();
-    }
+//    @Override
+//    public String getToolTipText() {
+//        int[] last = graph.getLastData();
+//        GraphDescriptor[] descriptors = graph.getDescriptors();
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("<html>");
+//        for (int i = 0; i < descriptors.length; i++) {
+//            Color color = descriptors[i].color;
+//            String strColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
+//            String font = String.format("<font color=\"%s\"/>", strColor);
+//            String strValue = formatValue(last[i]);
+//            sb.append(String.format("<tr><td>%s%s</td><td>%s %s</td></tr>\n", font, descriptors[i].description, font, strValue));
+//        }
+//        sb.append("</html>");
+//        System.err.printf("TOOLTIP:\n%s\n", sb.toString());
+//        return sb.toString();
+//    }
 
     protected String formatValue(int value) {
         return String.format("%d", value);
     }
+
+    private static enum AxisOrientation {
+        HORIZONTAL,
+        VERTICAL
+    }
+
+    private class Axis extends JComponent {
+
+        private final AxisOrientation orientation;
+        private int min;
+        private int max;
+
+        public Axis(AxisOrientation orientation, int min, int max) {
+            this.orientation = orientation;
+            this.min = min;
+            this.max = max;
+            setOpaque(true);
+            setMinimumSize(new Dimension(20, 80));
+            setPreferredSize(new Dimension(20, 80));
+        }
+
+        public void setUpperLimit(int limit) {
+            this.max = limit;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            graph.drawVerticalAxis(g, getWidth(), getHeight());
+        }
+
+    }
+
 }

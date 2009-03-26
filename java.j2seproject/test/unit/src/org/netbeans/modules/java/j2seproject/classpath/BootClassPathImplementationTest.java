@@ -92,7 +92,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.getURL()});
         ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.getURL()});
         tp = new TestPlatformProvider (defBCP, expBCP);
-        MockLookup.setInstances(
+        MockLookup.setLayersAndInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             tp

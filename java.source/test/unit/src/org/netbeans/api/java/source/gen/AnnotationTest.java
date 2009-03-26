@@ -385,7 +385,7 @@ public class AnnotationTest extends GeneratorTest {
             "\n" +
             "import hierbas.del.litoral.Test.A;\n" +
             "\n" +
-            "@A(test={\"first\",\"something\"})" +
+            "@A(test={\"first\", \"something\"})" +
             "public class Test {\n" +
             "    @interface A {\n" +
             "        public String[] test();\n" +

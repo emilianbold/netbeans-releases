@@ -176,7 +176,12 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
     }
     
     private Node findNodeInDocBase(Node root, FileObject fo) {
-        FileObject rootfo = helper.getAntProjectHelper().resolveFileObject(evaluator.getProperty (WebProjectProperties.WEB_DOCBASE_DIR));
+        String prop = evaluator.getProperty (WebProjectProperties.WEB_DOCBASE_DIR);
+        if (prop == null) {
+            // if project does not have web document root:
+            return null;
+        }
+        FileObject rootfo = helper.getAntProjectHelper().resolveFileObject(prop);
         String relPath = FileUtil.getRelativePath(rootfo, fo);
         if (relPath == null) {
             return null;

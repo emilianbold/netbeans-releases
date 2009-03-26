@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -245,4 +246,56 @@ public class RepositoryUpdater2Test extends NbTestCase {
             return Collections.singleton("text/plain");
         }
     } // End of testAddIndexingJob_PathRecognizer class
+
+    public void testShuttdown() throws InterruptedException {
+        testShuttdown_TimedWork work1 = new testShuttdown_TimedWork();
+        testShuttdown_TimedWork work2 = new testShuttdown_TimedWork();
+        testShuttdown_TimedWork work3 = new testShuttdown_TimedWork();
+        testShuttdown_TimedWork work4 = new testShuttdown_TimedWork();
+        testShuttdown_TimedWork work5 = new testShuttdown_TimedWork();
+        RepositoryUpdater.getDefault().scheduleWork(work1, false);
+        RepositoryUpdater.getDefault().scheduleWork(work2, false);
+        RepositoryUpdater.getDefault().scheduleWork(work3, false);
+        RepositoryUpdater.getDefault().scheduleWork(work4, false);
+        RepositoryUpdater.getDefault().scheduleWork(work5, false);
+
+        boolean successfullyStopped = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                RepositoryUpdater.getDefault().stop();
+            }
+        }).waitFinished(5000);
+
+        assertTrue("RepositoryUpdate.stop() timed out", successfullyStopped);
+        assertTrue("work1's getDone method not called", work1.getDoneCalled);
+        assertTrue("work1 was not cancelled", work1.workCancelled);
+        assertFalse("work2's getDone method should not be called", work2.getDoneCalled);
+        assertFalse("work2 was should not be cancelled", work2.workCancelled);
+        assertFalse("work3's getDone method should not be called", work3.getDoneCalled);
+        assertFalse("work3 was should not be cancelled", work3.workCancelled);
+        assertFalse("work4's getDone method should not be called", work4.getDoneCalled);
+        assertFalse("work4 was should not be cancelled", work4.workCancelled);
+        assertFalse("work5's getDone method should not be called", work5.getDoneCalled);
+        assertFalse("work5 was should not be cancelled", work5.workCancelled);
+    }
+
+    private static final class testShuttdown_TimedWork extends RepositoryUpdater.Work {
+        public boolean getDoneCalled = false;
+        public boolean workCancelled = false;
+        
+        public testShuttdown_TimedWork() {
+            super(false);
+        }
+
+        protected @Override void getDone() {
+            getDoneCalled = true;
+            while(!isCancelled()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    //ignore
+                }
+            }
+            workCancelled = isCancelled();
+        }
+    } // End of testShuttdown_TimedWork class
 }

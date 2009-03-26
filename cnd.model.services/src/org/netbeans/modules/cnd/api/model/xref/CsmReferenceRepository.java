@@ -68,7 +68,8 @@ public abstract class CsmReferenceRepository {
     /** Static method to obtain the Repository.
      * @return the Repository
      */
-    public static synchronized CsmReferenceRepository getDefault() {
+    public static CsmReferenceRepository getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultRepository != null) {
             return defaultRepository;
         }

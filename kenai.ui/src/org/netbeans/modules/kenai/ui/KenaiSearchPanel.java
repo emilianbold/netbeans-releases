@@ -72,10 +72,11 @@ import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -88,9 +89,11 @@ public class KenaiSearchPanel extends JPanel {
 
     private final JLabel noSearchResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoSearchResults.label.text"));
     private final JLabel noMatchingResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoResultsMatching.label.text"));
+    private final JLabel badRequest = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "BadRequest.label.text"));
 
     private JPanel noSearchLabelPanel;
     private JPanel noMatchingLabelPanel;
+    private JPanel badRequestPanel;
 
     public enum PanelType { OPEN, BROWSE }
 
@@ -109,6 +112,7 @@ public class KenaiSearchPanel extends JPanel {
 
         noSearchLabelPanel = createLabelPanel(noSearchResultsLabel);
         noMatchingLabelPanel = createLabelPanel(noMatchingResultsLabel);
+        badRequestPanel = createLabelPanel(badRequest);
 
         // initially show <No Search Results>
         remove(scrollPane);
@@ -274,7 +278,11 @@ public class KenaiSearchPanel extends JPanel {
         } else if (noMatchingLabelPanel != null && noMatchingLabelPanel.isShowing()) {
             remove(noMatchingLabelPanel);
             showProgressAndRepaint = true;
+        } else if (badRequestPanel != null && badRequestPanel.isShowing()) {
+            remove(badRequestPanel);
+            showProgressAndRepaint = true;
         }
+
 
         if (showProgressAndRepaint) {
             add(BorderLayout.CENTER, progressPanel);
@@ -289,7 +297,24 @@ public class KenaiSearchPanel extends JPanel {
                 String searchPattern = searchTextField.getText();
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiException ex) {
+                } catch (KenaiErrorMessage em) {
+                    if ("400 Bad Request".equals(em.getStatus())) {//NOI18N
+                        EventQueue.invokeLater(new Runnable() {
+
+                            public void run() {
+                                progressHandle.finish();
+                                remove(progressPanel);
+                                add(BorderLayout.CENTER, badRequestPanel);
+                                revalidate();
+                                repaint();
+                            }
+                        });
+                        return;
+                    } else {
+                        Exceptions.printStackTrace(em);
+                    }
+
+                }catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                     // XXX show some error to user
                 }
@@ -339,7 +364,7 @@ public class KenaiSearchPanel extends JPanel {
         // cancel running tasks
         KenaiProjectsListModel model = getListModel();
         if (model != null) {
-            model.cancel();
+            model.stopLoading();
         }
     }
 
@@ -350,37 +375,41 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
 
-        private RequestProcessor.Task task;
+        private boolean stopLoading;
 
         public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
             this.projects = projects;
             this.pattern = pattern;
-            task = RequestProcessor.getDefault().post(this);
+            RequestProcessor.getDefault().post(this);
         }
 
         public void run() {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
+                    //TODO: remove me as soon as projects.json?full=true is 
+                    //implemented on kenai.com
+                    project.getDescription();
+                    //end of TODO
                     if (PanelType.OPEN.equals(panelType)) {
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
-                        KenaiProjectFeature[] repos = project.getFeatures(KenaiFeature.SOURCE);
-                        for (KenaiProjectFeature repo : repos) {
+                        KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
+                        for (KenaiFeature repo : repos) {
                             if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
                                 addElement(new KenaiProjectSearchInfo(project, repo, pattern));
                             }
                         }
                     }
-                    if (Thread.interrupted()) {
+                    if (stopLoading) {
                         return;
                     }
                 }
             }
         }
 
-        public void cancel() {
-            task.cancel();
+        public synchronized void stopLoading() {
+            stopLoading = true;
         }
 
     }
@@ -408,7 +437,7 @@ public class KenaiSearchPanel extends JPanel {
     public static class KenaiProjectSearchInfo {
 
         public KenaiProject kenaiProject;
-        public KenaiProjectFeature kenaiFeature;
+        public KenaiFeature kenaiFeature;
         public String searchPattern;
 
         public KenaiProjectSearchInfo(KenaiProject kprj, String ptrn) {
@@ -417,7 +446,7 @@ public class KenaiSearchPanel extends JPanel {
             kenaiFeature = null;
         }
 
-        public KenaiProjectSearchInfo(KenaiProject kprj, KenaiProjectFeature ftr, String ptrn) {
+        public KenaiProjectSearchInfo(KenaiProject kprj, KenaiFeature ftr, String ptrn) {
             kenaiProject = kprj;
             kenaiFeature = ftr;
             searchPattern = ptrn;

@@ -78,6 +78,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 /** Test finding services from manifest.
  * @author Jesse Glick
@@ -223,7 +224,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         Lookup l = getTestedLookup(c2);
         Class xface = c1.loadClass("org.foo.Interface");
         List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
-        assertEquals(2, results.size());
+        assertEquals("Two items in result: " + results, 2, results.size());
         // Note that they have to be in order:
         assertEquals("org.foo.impl.Implementation1", results.get(0).getClass().getName());
         assertEquals("org.bar.Implementation2", results.get(1).getClass().getName());
@@ -385,6 +386,8 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         no = null;
         l = null;
         lookups.clear();
+        MockLookup.setInstances();
+        Thread.currentThread().setContextClassLoader(null);
         assertGC("Class can be garbage collected", ref);
     }
 

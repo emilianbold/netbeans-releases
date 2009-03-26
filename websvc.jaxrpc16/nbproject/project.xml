@@ -48,18 +48,19 @@ made subject to such option by the copyright holder.
             <module-dependencies>
             </module-dependencies>
             <public-packages>
-                <package>com.sun.xml.rpc.spi</package>
-                <package>com.sun.xml.rpc.spi.model</package>
-                <package>com.sun.xml.rpc.processor.model</package>
-                <package>com.sun.xml.rpc.soap</package>
-                <package>com.sun.xml.rpc.processor.modeler</package>
-                <package>com.sun.xml.rpc.processor.config</package>
-                <package>com.sun.xml.rpc.processor.model.java</package>
                 <package>com.sun.xml.rpc.processor</package>
+                <package>com.sun.xml.rpc.processor.config</package>
+                <package>com.sun.xml.rpc.processor.generator</package>
+                <package>com.sun.xml.rpc.processor.model</package>
+                <package>com.sun.xml.rpc.processor.model.java</package>
+                <package>com.sun.xml.rpc.processor.modeler</package>
                 <package>com.sun.xml.rpc.processor.modeler.wsdl</package>
                 <package>com.sun.xml.rpc.processor.util</package>
-                <package>com.sun.xml.rpc.util</package>               
+                <package>com.sun.xml.rpc.soap</package>
+                <package>com.sun.xml.rpc.spi</package>
+                <package>com.sun.xml.rpc.spi.model</package>
                 <package>com.sun.xml.rpc.spi.tools</package>
+                <package>com.sun.xml.rpc.util</package>               
                 <package>com.sun.xml.rpc.wsdl.document.soap</package>
             </public-packages>
             <class-path-extension>

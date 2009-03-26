@@ -106,7 +106,11 @@ final class InspectorFolderNode extends AbstractNode {
                 componentTypeName[0] = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
             }
         });
-        return componentTypeName[0] != null ? getName() + " <font color=\"#808080\">[" + componentTypeName[0] + "]" : getName(); //NOI18N
+        String name = getName();
+        if (getName() != null && getName().contains("<")) { //NOI18N
+            name = getName().replace("<", "&lt;").replace(">", "&gt;"); //NOI18N
+        }
+        return componentTypeName[0] != null ? name + " <font color=\"#808080\">[" + componentTypeName[0] + "]" : name; //NOI18N
         
     }
     

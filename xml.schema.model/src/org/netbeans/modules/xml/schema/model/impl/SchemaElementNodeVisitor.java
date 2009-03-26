@@ -460,7 +460,7 @@ class SchemaElementNodeVisitor implements SchemaVisitor {
     }
     
     private boolean isAttributeDefined(SchemaAttributes attribute) {
-	return e.getAttribute(attribute.getName()) != null;
+        return e.getAttributeNode(attribute.getName()) != null;
     }
     
     private void createLocalElement() {
