@@ -92,6 +92,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             krl = kenaiRepoListeners.get(repo.getDisplayName());
             if(krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
+                repo.addPropertyChangeListener(krl);
                 kenaiRepoListeners.put(repo.getDisplayName(), krl);
             } 
         }
@@ -110,7 +111,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         synchronized(projectListeners) {
             projectListeners.put(project.getId(), pl);
         }
-        repo.addPropertyChangeListener(krl);
         
         return Collections.unmodifiableList(queries);
     }
@@ -161,7 +161,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             }
         };
     }
-
 
     @Override
     public ActionListener getCreateIssueAction(ProjectHandle project) {
@@ -236,6 +235,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
             }
             synchronized (projectListeners) {
+                ph.removePropertyChangeListener(this);
                 projectListeners.remove(ph.getId());
             }
         }

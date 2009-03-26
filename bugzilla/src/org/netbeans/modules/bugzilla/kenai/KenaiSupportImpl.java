@@ -127,17 +127,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 user = KenaiUtil.getKenaiUser();
                 psswd = KenaiUtil.getKenaiPassword();
             } else {
-                user = "";
+                user = "";                                                      
                 psswd = "";
             }
 
             for (KenaiRepository kr : repos) {
                 // refresh their taskdata with the relevant username/password
                 kr.setCredentials(user, psswd);
-
-                // the myIssues query was either added or
-                // removed from the repository
-                kr.fireQueryListChanged();
             }
         }
     }
