@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -393,6 +394,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     @Override
     public void componentOpened() {
         openQueries.add(this);
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -400,7 +402,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
-        }        
+        }
+        Kenai.getDefault().removePropertyChangeListener(this);
     }
 
     /** replaces this in object stream */
@@ -425,7 +428,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                     }
                 });
             }
-        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
+                  evt.getPropertyName().equals(Kenai.PROP_LOGIN))
+        {
             updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
         }
     }
@@ -507,7 +512,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         setNameAndTooltip();
     }
 
-    private void updateSavedQueries(Repository repo) {        
+    private void updateSavedQueries(Repository repo) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             queriesPanel.setVisible(false);
