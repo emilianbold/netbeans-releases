@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -212,6 +213,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         //if (TraceFlags.TRACE_XREF_REPOSITORY) {
         //    time = System.currentTimeMillis();
         //}
+        if (!fastDetect(targetDecl, targetDef, file, name)){
+            return Collections.<CsmReference>emptyList();
+        }
         Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             //time = System.currentTimeMillis() - time;
@@ -242,7 +246,37 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         CsmFileReferences.getDefault().visit(refs, visitor);
         return out;
     }
-    
+
+    private static final boolean checkFileAttainability = false;
+    private boolean fastDetect(final CsmObject targetDecl, final CsmObject targetDef, FileImpl file, CharSequence name){
+        // in prototype use just unexpanded identifier tokens in file
+        if (name.length() == 0 || !hasName(file, name)){
+            return false;
+        }
+        if (checkFileAttainability) {
+            // in prototype try to check just attainability target declaration/definition from file
+            // it does not work if refereced object point to external declaration
+            if (CsmKindUtilities.isOffsetableDeclaration(targetDecl)){
+                CsmFile targetFile = ((CsmOffsetableDeclaration)targetDecl).getContainingFile();
+                boolean included = ((ProjectBase)file.getProject()).getGraphStorage().isFileIncluded(file, targetFile);
+                if (!included) {
+                    if (targetDef != null) {
+                        if (CsmKindUtilities.isOffsetableDeclaration(targetDef)) {
+                            targetFile = ((CsmOffsetableDeclaration)targetDef).getContainingFile();
+                            included = ((ProjectBase)file.getProject()).getGraphStorage().isFileIncluded(file, targetFile);
+                            if (!included){
+                                return false;
+                            }
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     // Fast check of name.
     private boolean hasName(FileImpl file, CharSequence name){
         try {
@@ -268,10 +302,6 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
     
     private Collection<APTToken> getTokensToResolve(FileImpl file, CharSequence name, int startOffset, int endOffset) {
-        // in prototype use just unexpanded identifier tokens in file
-        if (name.length() == 0 || !hasName(file, name)){
-            return Collections.<APTToken>emptyList();
-        }
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
         boolean destructor = false;

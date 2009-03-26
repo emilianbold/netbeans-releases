@@ -134,10 +134,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         }
     }
 
-    protected  void tick(){
-        
-        
-    }
+    protected abstract void tick();
 
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {

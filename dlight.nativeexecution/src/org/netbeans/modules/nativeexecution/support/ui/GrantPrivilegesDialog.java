@@ -78,7 +78,7 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
         suLoginField = new javax.swing.JTextField();
         suPasswordField = new javax.swing.JPasswordField();
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
+        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background")); // NOI18N
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
