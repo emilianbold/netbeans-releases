@@ -342,7 +342,7 @@ public class AttachmentsPanel extends JPanel {
                         if ("image/png".equals(contentType) // NOI18N
                                 || "image/gif".equals(contentType) // NOI18N
                                 || "image/jpeg".equals(contentType)) { // NOI18N
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURL());
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
                         } else {
                             FileObject fob = FileUtil.toFileObject(file);
                             DataObject dob = DataObject.find(fob);
