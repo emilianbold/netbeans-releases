@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -70,8 +72,9 @@ class SubversionHyperlink implements OutputListener {
 
     private final String module;
     private final String path;
-    private int startRev;
-    private int endRev;
+    private final int startRev;
+    private final int endRev;
+    private final HudsonJob job;
 
     /**
      * Creates a new potential hyperlink
@@ -80,11 +83,12 @@ class SubversionHyperlink implements OutputListener {
      * @param startRev the starting revision to display, or 0 for nothing
      * @param endRev the ending revision to display, or 0 for nothing
      */
-    SubversionHyperlink(String module, String path, int startRev, int endRev) {
+    SubversionHyperlink(String module, String path, int startRev, int endRev, HudsonJob job) {
         this.module = module;
         this.path = path;
         this.startRev = startRev;
         this.endRev = endRev;
+        this.job = job;
     }
 
     public void outputLineAction(OutputEvent ev) {
@@ -92,6 +96,9 @@ class SubversionHyperlink implements OutputListener {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 String repo = findRepo(module);
+                if (repo == null) {
+                    return;
+                }
                 try {
                     final StreamSource before = makeSource(repo, path, startRev);
                     final StreamSource after = makeSource(repo, path, endRev);
@@ -115,15 +122,16 @@ class SubversionHyperlink implements OutputListener {
      * @param module {@code http://whatever/svnroot/somerepo/trunk/subdir}
      * @return {@code http://whatever/svnroot/somerepo} or null
      */
-    private static synchronized String findRepo(String module) {
+    private synchronized String findRepo(String module) {
         for (String r : knownRepos) {
             if (module.startsWith(r)) {
                 return r;
             }
         }
+        LOG.log(Level.FINER, "looking for repo from {0}", module);
         STRIP: while (true) {
             try {
-                InputStream is = new URL(module).openStream();
+                InputStream is = new ConnectionBuilder().job(job).url(module).connection().getInputStream();
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader(is));
                     String line;
@@ -136,6 +144,7 @@ class SubversionHyperlink implements OutputListener {
                 } finally {
                     is.close();
                 }
+                LOG.log(Level.FINER, "  => {0}", module);
                 knownRepos.add(module);
                 return module;
             } catch (IOException x) {

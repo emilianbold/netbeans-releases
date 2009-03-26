@@ -114,6 +114,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
      * For {@link HudsonInstanceImpl} to refresh after the workspace has been synchronized.
      */
     void refreshAll() {
+        LOG.log(Level.FINE, "refreshing files in {0}", baseURL);
         synchronized (nonDirs) {
             nonDirs.clear();
             lastModified.clear();
@@ -121,7 +122,10 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             headers.clear();
         }
         for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
-            LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {baseURL, f.getPath()});
+            if (Thread.interrupted()) {
+                return;
+            }
+            LOG.log(Level.FINER, "  refreshing {0}", f.getPath());
             f.refresh();
         }
     }

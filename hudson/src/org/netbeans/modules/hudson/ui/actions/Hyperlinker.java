@@ -42,6 +42,8 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +56,7 @@ import org.netbeans.modules.hudson.spi.HudsonLogger;
 import org.netbeans.modules.hudson.spi.HudsonLogger.HudsonLogSession;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,6 +95,7 @@ class Hyperlinker {
 
     @ServiceProvider(service=HudsonLogger.class)
     public static final class PlainLogger implements HudsonLogger {
+        private static final Pattern REMOTE_URL = Pattern.compile("\\b(https?://[^\\s)>]+)");
         public HudsonLogSession createSession(final HudsonJob job) {
             return new HudsonLogSession() {
                 // XXX support Windows build servers (using backslashes)
@@ -99,21 +103,27 @@ class Hyperlinker {
                 private final Pattern hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
                         "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
                 public boolean handle(String line, OutputWriter stream) {
-                    Matcher m = hyperlinkable.matcher(line);
-                    if (m.matches()) {
-                        final String path = m.group(1);
-                        final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
-                        final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
-                        final String message = m.group(4);
-                        try {
+                    try {
+                        Matcher m = hyperlinkable.matcher(line);
+                        if (m.matches()) {
+                            final String path = m.group(1);
+                            final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
+                            final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
+                            final String message = m.group(4);
                             stream.println(line, new Hyperlink(job, path, message, row, col));
-                        } catch (IOException x) {
-                            LOG.log(Level.INFO, null, x);
-                            stream.println(line);
+                            return true;
                         }
-                    } else {
-                        stream.println(line);
+                        m = REMOTE_URL.matcher(line);
+                        if (m.find()) {
+                            stream.println(line, new URLHyperlink(new URL(m.group())));
+                            return true;
+                        }
+                    } catch (MalformedURLException x) {
+                        LOG.log(Level.FINE, null, x);
+                    } catch (IOException x) {
+                        LOG.log(Level.INFO, null, x);
                     }
+                    stream.println(line);
                     return true;
                 }
             };
@@ -191,6 +201,24 @@ class Hyperlinker {
 
         public void outputLineCleared(OutputEvent ev) {}
         
+    }
+
+    private static class URLHyperlink implements OutputListener {
+
+        private final URL u;
+
+        URLHyperlink(URL u) {
+            this.u = u;
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+            URLDisplayer.getDefault().showURL(u);
+        }
+
+        public void outputLineSelected(OutputEvent ev) {}
+
+        public void outputLineCleared(OutputEvent ev) {}
+
     }
 
 }
