@@ -146,7 +146,7 @@ class HostsListTableModel extends AbstractTableModel {
 
         @Override
         public String toString() {
-            return name + " [" + ip + "] " + (ssh ? "ssh" : "nossh"); //NI18N
+            return name + " [" + ip + "] " + (ssh ? "ssh" : "nossh"); //NOI18N
         }
         //platform
     }
