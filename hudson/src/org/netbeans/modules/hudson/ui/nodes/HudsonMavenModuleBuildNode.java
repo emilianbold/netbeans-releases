@@ -41,15 +41,11 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
-import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -59,40 +55,25 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
-class HudsonJobBuildNode extends AbstractNode {
+/**
+ * Represents one Maven module in a build.
+ */
+class HudsonMavenModuleBuildNode extends AbstractNode {
 
-    private final HudsonJobBuild build;
+    private final HudsonMavenModuleBuild module;
     private String htmlDisplayName;
 
-    public HudsonJobBuildNode(HudsonJobBuild build) {
-        super(makeChildren(build), Lookups.singleton(build));
-        setName(Integer.toString(build.getNumber()));
-        setDisplayName("#" + build.getNumber());
-        Color effectiveColor;
-        if (build.isBuilding()) {
-            effectiveColor = build.getJob().getColor();
-        } else {
-            switch (build.getResult()) {
-            case SUCCESS:
-                effectiveColor = Color.blue;
-                break;
-            case UNSTABLE:
-                effectiveColor = Color.yellow;
-                break;
-            case FAILURE:
-                effectiveColor = Color.red;
-                break;
-            default:
-                effectiveColor = Color.grey;
-            }
-        }
+    public HudsonMavenModuleBuildNode(HudsonMavenModuleBuild module) {
+        super(makeChildren(module), Lookups.singleton(module));
+        this.module = module;
+        setName(module.getName());
+        setDisplayName(module.getDisplayName());
         try {
-            htmlDisplayName = effectiveColor.colorizeDisplayName(XMLUtil.toElementContent(getDisplayName()));
+            htmlDisplayName = module.getColor().colorizeDisplayName(XMLUtil.toElementContent(getDisplayName()));
         } catch (CharConversionException x) {
             htmlDisplayName = null;
         }
-        setIconBaseWithExtension(effectiveColor.iconBase());
-        this.build = build;
+        setIconBaseWithExtension(module.getColor().iconBase());
     }
 
     public @Override String getHtmlDisplayName() {
@@ -101,36 +82,28 @@ class HudsonJobBuildNode extends AbstractNode {
 
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new ShowChanges(build));
-        actions.add(new ShowBuildConsole(build));
-        if (build.getResult() == HudsonJobBuild.Result.UNSTABLE && build.getMavenModules().isEmpty()) {
-            actions.add(new ShowFailures(build));
+        actions.add(new ShowBuildConsole(module));
+        switch (module.getColor()) {
+        case yellow:
+        case yellow_anime:
+            actions.add(new ShowFailures(module));
         }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
 
-    private static Children makeChildren(final HudsonJobBuild build) {
+    private static Children makeChildren(final HudsonMavenModuleBuild module) {
         return Children.create(new ChildFactory<Object>() {
             final Object ARTIFACTS = new Object();
             protected boolean createKeys(List<Object> toPopulate) {
-                Collection<? extends HudsonMavenModuleBuild> modules = build.getMavenModules();
-                if (modules.isEmpty()) {
-                    // XXX is it possible to cheaply check in advance if the build has any artifacts?
-                    toPopulate.add(ARTIFACTS);
-                } else {
-                    toPopulate.addAll(modules);
-                }
+                // XXX is it possible to cheaply check in advance if the build has any artifacts?
+                toPopulate.add(ARTIFACTS);
                 return true;
             }
             protected @Override Node createNodeForKey(Object key) {
-                if (key instanceof HudsonMavenModuleBuild) {
-                    return new HudsonMavenModuleBuildNode((HudsonMavenModuleBuild) key);
-                } else {
-                    assert key == ARTIFACTS : key;
-                    return new HudsonArtifactsNode(build);
-                }
+                assert key == ARTIFACTS : key;
+                return new HudsonArtifactsNode(module);
             }
         }, false);
     }

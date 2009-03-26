@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -108,6 +109,10 @@ final class RemoteFileSystem extends AbstractFileSystem implements
 
     RemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
         this(new URL(build.getUrl() + "artifact/"), /*XXX I18N*/build.getJob().getDisplayName() + " #" + build.getNumber(), build.getJob());
+    }
+
+    RemoteFileSystem(HudsonMavenModuleBuild module) throws MalformedURLException {
+        this(new URL(module.getUrl() + "artifact/"), /*XXX I18N*/module.getDisplayName() + " #" + module.getBuild().getNumber(), module.getBuild().getJob());
     }
 
     /**
