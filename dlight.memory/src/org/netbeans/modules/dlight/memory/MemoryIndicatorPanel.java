@@ -2,8 +2,10 @@ package org.netbeans.modules.dlight.memory;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
@@ -22,6 +24,12 @@ import org.openide.util.NbBundle;
     private static final int BINARY_ORDER = 1024;
     private static final int DECIMAL_ORDER = 1000;
     private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};
+
+    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
+    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+    static {
+        FRAC_FORMAT.setMaximumFractionDigits(1);
+    }
 
     private final Graph graph;
     private final Legend legend;
@@ -75,16 +83,18 @@ import org.openide.util.NbBundle;
     }
 
     private static String formatValue(long value) {
+        double dbl = value;
         int i = 0;
-        while (BINARY_ORDER <= value && i + 1 < SIFFIXES.length) {
-            value /= BINARY_ORDER;
+        while (BINARY_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+            dbl /= BINARY_ORDER;
             ++i;
         }
-        if (DECIMAL_ORDER <= value && i + 1 < SIFFIXES.length) {
-            value /= DECIMAL_ORDER;
+        if (DECIMAL_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+            dbl /= BINARY_ORDER;
             ++i;
         }
-        return Long.toString(value) + SIFFIXES[i];
+        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
+        return nf.format(dbl) + SIFFIXES[i];
     }
 
 }

@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -255,19 +254,42 @@ class GraphPainter {
         int gridSize = getGridSize();
         g.setColor(gridColor);
         int scrolled = PIXELS_PER_SAMPLE * scrolled();
-        int dx = (scrolled > 0) ? gridSize - scrolled%gridSize : 0;
+        int dx = (scrolled > 0) ? gridSize - scrolled % gridSize : 0;
         for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
             g.drawLine(gridX, y, gridX, y+h-1);
-        }
-        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
-            g.drawLine(x, gridY, x+w-1, gridY);
         }
         g.setColor(GraphColors.BORDER_COLOR);
         for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
             g.drawLine(gridX, y+h-1, gridX, y+h-5);
         }
-        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
-            g.drawLine(x, gridY, x+4, gridY);
+        paintHLine(g, x, x + w - 1, y + 5, 255);
+        paintHLine(g, x, x + w - 1, y + h - 1, 255);
+        paintHGrid(g, x, y + 5, x + w - 1, y + h - 1);
+    }
+
+    private void paintHGrid(Graphics g, int x1, int y1, int x2, int y2) {
+        int my = (y1 + y2) / 2;
+        paintHLine(g, x1, x2, my, getAlpha(y2 - y1));
+        if (20 < y2 - y1) {
+            paintHGrid(g, x1, y1, x2, my);
+            paintHGrid(g, x1, my, x2, y2);
+        }
+    }
+
+    private void paintHLine(Graphics g, int x1, int x2, int y, int alpha) {
+        g.setColor(new Color(gridColor.getRed(), gridColor.getGreen(), gridColor.getBlue(), alpha));
+        g.drawLine(x1, y, x2, y);
+        g.setColor(new Color(GraphColors.BORDER_COLOR.getRed(), GraphColors.BORDER_COLOR.getGreen(), GraphColors.BORDER_COLOR.getBlue(), alpha));
+        g.drawLine(x1, y, x1 + 5, y);
+    }
+
+    private int getAlpha(int h) {
+        if (h < 15) {
+            return 0;
+        } else if (h < 20) {
+            return (h - 15) * 256 / 5;
+        } else {
+            return 255;
         }
     }
 
@@ -314,42 +336,59 @@ class GraphPainter {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(bg);
         g2.fillRect(0, 0, w, h);
+
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setFont(g2.getFont().deriveFont(10f));
-        g2.setColor(GraphColors.TEXT_COLOR);
 
         FontMetrics fm = g2.getFontMetrics();
-        int fontHeight = fm.getHeight();
+        drawVLabel(g, scale, fm, w - 5, 10, 255);
+        drawLabels(g, w, 5, h - 1, scale, 0, fm);
+    }
 
-        // Step 1.
-        // Will calculate tmod - the "precision" of the axis.
-        // tmod = pow(10, (int)log10(x))
-        // but use simple 'while' here because it's faster
-        double delta = scale;
-        int tmod = 1;
-
-        while (delta > 10) {
-            delta /= 10.0;
-            tmod *= 10;
+    /**
+     * Recursive method drawing labels on vertical axis.
+     *
+     * @param g graphics
+     * @param w drawing area width
+     * @param y1 upper
+     * @param y2
+     * @param s1
+     * @param s2
+     * @param fm
+     */
+    private void drawLabels(Graphics g, int w, int y1, int y2, int s1, int s2, FontMetrics fm) {
+        int my = (y2 + y1) / 2;
+        int ms = (s1 + s2) / 2;
+        drawVLabel(g, ms, fm, w - 5, my + 5, getAlpha2(y2 - y1));
+        if (30 < y2 - y1) {
+            drawLabels(g, w, y1, my, s1, ms, fm);
+            drawLabels(g, w, my, y2, ms, s2, fm);
         }
+    }
 
-        // Step 2. Draw labels
-        int labelValue = 0;
-        int labelPosition = -1;
-        int nextLabelPosition = -1;
+    /**
+     * Draw label on vertical axis.
+     *
+     * @param g graphics
+     * @param value label value
+     * @param fm font metrics (used to calculate label width)
+     * @param x coordinate of right label edge
+     * @param y coordinate of label middle line
+     */
+    private void drawVLabel(Graphics g, int value, FontMetrics fm, int x, int y, int alpha) {
+        String text = renderer == null? Integer.toString(value) : renderer.render(value);
+        int length = fm.stringWidth(text);
+        g.setColor(new Color(GraphColors.TEXT_COLOR.getRed(), GraphColors.TEXT_COLOR.getGreen(), GraphColors.TEXT_COLOR.getBlue(), alpha));
+        g.drawString(text, x - length, y);
+    }
 
-        while (labelValue <= scale + tmod / 2) {
-            labelPosition = h - (labelValue * height / scale) + fontHeight;
-            // if 'previous' label overlaps the current one, we will just skip it (current)
-            if (nextLabelPosition == -1 || labelPosition < nextLabelPosition) {
-                if (labelPosition <= h && labelValue <= scale) {
-                    String label = renderer == null? Integer.toString(labelValue) : renderer.render(labelValue);
-                    int labelLen = fm.stringWidth(label);
-                    g2.drawString(label, w - 5 - labelLen, labelPosition);
-                    nextLabelPosition = labelPosition - fontHeight - 4;
-                }
-            }
-            labelValue += tmod / 2;
+    private int getAlpha2(int h) {
+        if (h < 25) {
+            return 0;
+        } else if (h < 30) {
+            return (h - 25) * 256 / 5;
+        } else {
+            return 255;
         }
     }
 
