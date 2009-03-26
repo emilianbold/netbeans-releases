@@ -758,7 +758,8 @@ public class HgCommand {
             if (isErrorNoView(list.get(list.size() -1))) {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
              }
-            else if (isErrorHgkNotFound(list.get(0))) {
+            else if (isErrorHgkNotFound(list.get(0)) || isErrorNoSuchFile(list.get(0))) {
+                OutputLogger.getLogger(repository.getAbsolutePath()).outputInRed(list.toString());
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
             } else if (isErrorAbort(list.get(list.size() -1))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
