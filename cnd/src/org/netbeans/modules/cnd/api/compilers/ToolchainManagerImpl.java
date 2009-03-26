@@ -576,8 +576,8 @@ import org.xml.sax.helpers.DefaultHandler;
                         }
 
                         if (descriptor.getMakefileWriter() != null) {
-                            element = doc.createElement("makefileWriter"); // NOI18N
-                            element.setAttribute("stringvalue", descriptor.getMakefileWriter()); // NOI18N
+                            element = doc.createElement("makefile_writer"); // NOI18N
+                            element.setAttribute("class", descriptor.getMakefileWriter()); // NOI18N
                             root.appendChild(element);
                         }
 
