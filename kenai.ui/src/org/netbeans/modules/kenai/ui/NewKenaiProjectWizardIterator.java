@@ -128,6 +128,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         }
 
         // Create feature - SCM repository
+        boolean repoCreated = false;
         if (!NO_REPO.equals(newPrjScmType)) {
             try {
                 handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -141,6 +142,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
                 Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjScmName,
                         displayName, description, newPrjScmType, /*ext issues URL*/ null, extScmUrl, /*browse repo URL*/ null);
+
+                repoCreated = Utilities.SVN_REPO.equals(newPrjScmType) || Utilities.HG_REPO.equals(newPrjScmType);
 
             } catch (KenaiException kex) {
                 throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -174,41 +177,43 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         }
 
         // After the repository is created it must be checked out
-        try {
-            KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
-            URI scmLoc = null;
-            String featureService = null;
-            for (KenaiFeature feature : features) {
-                if (newPrjScmName.equals(feature.getName())) {
-                    scmLoc = feature.getLocation();
-                    featureService = feature.getService();
-                    continue;
-                }
-            }
-            if (scmLoc != null) {
-                handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                        "NewKenaiProject.progress.repositoryCheckout"));
-                logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() + 
-                        ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
-                PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
-                if (passwdAuth != null) {
-                    if (Utilities.SVN_REPO.equals(featureService)) {
-
-                        Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[] {"."}, new File(newPrjScmLocal),
-                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
-
-                    } else if (Utilities.HG_REPO.equals(featureService)) {
-
-                        Mercurial.cloneRepository(scmLoc.toASCIIString(), new File(newPrjScmLocal), "", "", "",
-                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-                        
+        if (repoCreated) {
+            try {
+                KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
+                URI scmLoc = null;
+                String featureService = null;
+                for (KenaiFeature feature : features) {
+                    if (newPrjScmName.equals(feature.getName())) {
+                        scmLoc = feature.getLocation();
+                        featureService = feature.getService();
+                        continue;
                     }
-                } else {
-                    // user not logged in, do nothing
                 }
+                if (scmLoc != null) {
+                    handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                            "NewKenaiProject.progress.repositoryCheckout"));
+                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() +
+                            ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
+                    PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+                    if (passwdAuth != null) {
+                        if (Utilities.SVN_REPO.equals(featureService)) {
+
+                            Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[] {"."}, new File(newPrjScmLocal),
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+
+                        } else if (Utilities.HG_REPO.equals(featureService)) {
+
+                            Mercurial.cloneRepository(scmLoc.toASCIIString(), new File(newPrjScmLocal), "", "", "",
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+
+                        }
+                    } else {
+                        // user not logged in, do nothing
+                    }
+                }
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
         // Open the project in Dashboard
