@@ -39,46 +39,43 @@
 
 package org.netbeans.modules.hudson.api;
 
-import java.util.Collection;
-import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.openide.filesystems.FileSystem;
 
 /**
- * Information about one build of a job.
+ * Represents a build of one Maven module built as part of a Maven moduleset job.
  */
-public interface HudsonJobBuild {
-
-    public enum Result {
-        SUCCESS, FAILURE, UNSTABLE, NOT_BUILT, ABORTED
-    }
-
-    HudsonJob getJob();
-
-    int getNumber();
-
-    Result getResult();
-
-    String getUrl();
-
-    boolean isBuilding();
+public interface HudsonMavenModuleBuild {
 
     /**
-     * Gets a changelog for the build.
-     * This requires SCM-specific parsing using {@link HudsonSCM#parseChangeSet}.
-     * @return a list of changes, possibly empty (including if it could not be parsed)
+     * Maven name in the format {@code group.id:modulename}.
      */
-    Collection<? extends HudsonJobChangeItem> getChanges();
+    String getName();
+
+    /**
+     * Display name.
+     */
+    String getDisplayName();
+
+    /**
+     * Status of this one module.
+     * (Tests can fail in some modules but not others.)
+     */
+    Color getColor();
+
+    /**
+     * URL to this module.
+     */
+    String getUrl();
+
+    /**
+     * The moduleset build in which this module can be found.
+     */
+    HudsonJobBuild getBuild();
 
     /**
      * Obtains a filesystem representing the build artifacts as accessed by Hudson web services.
      */
     FileSystem getArtifacts();
-
-    /**
-     * Gets modules contained in a Maven-type job.
-     * Will be empty for non-Maven jobs.
-     */
-    Collection<? extends HudsonMavenModuleBuild> getMavenModules();
 
 }
