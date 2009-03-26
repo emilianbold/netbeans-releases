@@ -33,6 +33,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.EditProvider;
@@ -108,6 +109,20 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             public void run() {
                 sceneLayout.invokeLayout();
                 validate();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
+    }
+
+    public void hideNode(final Function element) {
+        Runnable run = new Runnable() {
+            public void run() {
+                removeNodeWithEdges(element);
+                doLayout();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -436,6 +451,8 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 menu.add(new GoToReferenceAction(f,0).getPopupPresenter());
                 menu.add(new ExpandCallees(f).getPopupPresenter());
                 menu.add(new ExpandCallers(f).getPopupPresenter());
+                menu.add(new JSeparator());
+                menu.add(new RemoveNode(f).getPopupPresenter());
             } else if (widget instanceof CallGraphScene) {
                 menu = new JPopupMenu();
                 menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
@@ -489,6 +506,29 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                     for(Call call : callModel.getCallers(function)){
                         addCallToScene(call);
                     }
+                }
+            });
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class RemoveNode extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        private Function function;
+        public RemoveNode(Function function) {
+            this.function = function;
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "RemoveNode"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    hideNode(function);
                 }
             });
         }

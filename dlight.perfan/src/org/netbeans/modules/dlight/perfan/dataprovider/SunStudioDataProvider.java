@@ -95,8 +95,8 @@ final class SunStudioDataProvider extends SSStackDataProvider
         if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)){
             List<Column> oldMetrics =  metricsColumn;
             metricsColumn = new ArrayList<Column>();
+            metricsColumn.addAll(oldMetrics);
             metricsColumn.add(SunStudioDCConfiguration.c_name);
-            metricsColumn.addAll(oldMetrics);            
         }
         List<FunctionCallTreeTableNode> nodes =
             super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
