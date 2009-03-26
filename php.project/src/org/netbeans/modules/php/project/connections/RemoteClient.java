@@ -123,14 +123,14 @@ public class RemoteClient implements Cancellable {
         }
         String baseDir = baseDirBuffer.toString();
         // #150646 - should not happen now, likely older nb project metadata
-        if (baseDir.endsWith(TransferFile.SEPARATOR)) {
+        if (baseDir.length() > 1
+                && baseDir.endsWith(TransferFile.SEPARATOR)) {
             baseDir = baseDir.substring(0, baseDir.length() - 1);
         }
 
         baseRemoteDirectory = baseDir.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
 
         assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
-        assert !baseRemoteDirectory.endsWith(TransferFile.SEPARATOR) : "base directory cannot end with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("Remote client created with configuration: %s, base remote directory: %s, preserve permissions: %b",
