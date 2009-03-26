@@ -280,7 +280,7 @@ public class RemotePathMap implements PathMap {
                         out.close();
                         String cmd = "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine; // NOI18N
                         if (!Boolean.getBoolean("emulate.remote.cmd.hangup")) { // VK: a safe way to test error recovery - no risk of pushing bad changes :)
-                            cmd = String.format("bash -c \"%s\"", cmd);
+                            cmd = String.format("bash -c \"%s\"", cmd); //NOI18N
                         }
                         RemoteCommandSupport rcs = new RemoteCommandSupport(exexEnv, cmd); // NOI18N
                         if (rcs.run() == 0) {
