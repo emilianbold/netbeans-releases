@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,68 +34,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.cnd.gizmo;
 
-import java.awt.BorderLayout;
 import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
+import org.openide.util.lookup.ServiceProvider;
 
-public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
-  private static final int SECOND_IN_MILLISECONDS = 1000;
-  private ClockPanel panel;
-  private long currentTime;
+/**
+ *
+ * @author mt154047
+ */
 
-  public ClockIndicator(ClockIndicatorConfiguration configuration) {
-    super(configuration);
-    panel = new ClockPanel();
-  }
-  
-  @Override
-  public JComponent getComponent() {
-    return panel;
-  }
+@ServiceProvider(service = IndicatorComponentEmptyContentProvider.class)
+public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider{
 
-  public void updated(List<DataRow> data) {
-    if (data.isEmpty()) {
-      return;
+    public List<Indicator> getEmptyContent() {
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        if (gizmoConfiguration == null){
+            return null;
+        }        
+        return gizmoConfiguration.getIndicators();
     }
 
-    DataRow lastRow = data.get(data.size() - 1);
-    currentTime = lastRow.getLongValue(getMetadataColumnName(0));
-    panel.update();
-  }
-
-  protected void tick() {}
-
-  public void reset() {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
-  
-  private class ClockPanel extends JPanel {
-    private JLabel timeLabel = new JLabel("00:00:00");
-
-    public ClockPanel() {
-      setLayout(new BorderLayout(10, 10));
-      add(timeLabel, BorderLayout.CENTER);
-    }
-    
-    private void update() {
-      int seconds = (int) currentTime / SECOND_IN_MILLISECONDS;
-      int hours = seconds / (60 * 60);
-      int minutes = (seconds - hours * 60 * 60) / 60;
-      int real_seconds = (seconds - hours * 60 * 60 - minutes * 60);
-      String timerStr = (hours < 10 ? "0" : "") + hours +
-          ":" + (minutes < 10 ? "0" : "") + minutes +
-          ":" + (real_seconds < 10 ? "0" : "") + real_seconds;
-      timeLabel.setText(timerStr);
-    }
-  }
 }

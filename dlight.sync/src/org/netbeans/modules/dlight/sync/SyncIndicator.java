@@ -55,6 +55,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private int lastValue;
 
     public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
@@ -76,15 +77,18 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> rows) {
-        int[][] values = new int[1][1];
         for (DataRow row : rows) {
             for (String column : row.getColumnNames()) {
                 if (acceptedColumnNames.contains(column)) {
                     String value = row.getStringValue(column); //TODO: change to Long
-                    values[0][0] = (int) Float.parseFloat(value);
-                    panel.updated(values);
+                    lastValue = (int) Float.parseFloat(value);
                 }
             }
         }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastValue);
     }
 }

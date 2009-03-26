@@ -163,7 +163,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
-    private final List<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
+    private final List<CallStackFrame> callstack = Collections.synchronizedList(new ArrayList<CallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
@@ -944,7 +944,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }
             gdb.stack_select_frame(frame);
-            gdb.stack_list_arguments(1, frame, frame);
+            gdb.stack_list_arguments(1);
             gdb.stack_list_locals("--all-values"); // NOI18N
         }
     }
@@ -1255,20 +1255,20 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void addArgsToLocalVariables(String info) {
-        int pos;
-        if (info.startsWith("[frame={level=") && (pos = info.indexOf(",args=[")) > 0 && info.endsWith("]}]")) { // NOI18N
-            info = info.substring(pos + 7, info.length() - 3);
-        } else if (platform == PlatformTypes.PLATFORM_MACOSX &&
-                info.startsWith("{frame={level=") && (pos = info.indexOf(",args={")) > 0 && info.endsWith("}}}")) { // NOI18N
-            info = info.substring(pos + 7, info.length() - 3);
-        }
-        Collection<GdbVariable> v = GdbUtils.createArgumentList(info);
-        if (!v.isEmpty()) {
-            log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
-            synchronized (localVariables) {
-                localVariables.addAll(v);
+        List<String> frames = GdbUtils.createListFromString(info);
+        for (String frame : frames) {
+            Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
+            int level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            String args = frameMap.get("args"); // NOI18N
+            Collection<GdbVariable> vars = GdbUtils.createLocalsList(args);
+            callstack.get(level).setArguments(vars);
+            if (level == 0 && !vars.isEmpty()) {
+                log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
+                synchronized (localVariables) {
+                    localVariables.addAll(vars);
+                }
+                log.finest("GD.addArgsToLocalVariables: Added " + vars.size() + " args");
             }
-            log.finest("GD.addArgsToLocalVariables: Added " + v.size() + " args");
         }
     }
 
@@ -1806,7 +1806,7 @@ public class GdbDebugger implements PropertyChangeListener {
         boolean checkNextFrame = false;
 
         for (String frame : GdbUtils.createListFromString(msg)) {
-            Map<String, String> map = GdbUtils.createMapFromString(frame.substring(6, frame.length()));
+            Map<String, String> map = GdbUtils.createMapFromString(frame);
             String func = map.get("func"); // NOI18N
             if (func != null && func.equals("dlopen") && !checkNextFrame) { // NOI18N
                 if (platform == PlatformTypes.PLATFORM_MACOSX) {
@@ -2058,7 +2058,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             for (int i = 0; i < stack.size(); i++) {
                 String line = stack.get(i);
-                Map<String, String> map = GdbUtils.createMapFromString(line.substring(6));
+                Map<String, String> map = GdbUtils.createMapFromString(line);
 
                 String func = map.get("func"); // NOI18N
                 String file = map.get("file"); // NOI18N

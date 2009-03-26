@@ -55,4 +55,5 @@ public interface AbstractRoot {
 
     String getName();
     
+    String getFolder();
 }

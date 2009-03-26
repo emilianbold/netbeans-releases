@@ -117,6 +117,8 @@ public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
     panel.update();
   }
 
+  protected void tick() {}
+
   public void reset() {
     //reset indicator
     //throw new UnsupportedOperationException("Not supported yet.");

@@ -310,8 +310,10 @@ class GraphPainter {
         g2.setStroke(oldStroke);
     }
 
-    public void drawVerticalAxis(Graphics g, int w, int h) {
+    public void drawVerticalAxis(Graphics g, int w, int h, Color bg) {
         Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(bg);
+        g2.fillRect(0, 0, w, h);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setFont(g2.getFont().deriveFont(10f));
         g2.setColor(GraphColors.TEXT_COLOR);

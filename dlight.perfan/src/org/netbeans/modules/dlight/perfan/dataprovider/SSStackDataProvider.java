@@ -314,17 +314,30 @@ class SSStackDataProvider implements StackDataProvider {
                     String colName = col.getColumnName();
                     Class colClass = col.getColumnClass();
                     FunctionMetric metric = getMetricInstance(colName);
-
+                    boolean isPrimaryColumn = col.equals(primarySortColumn);
                     Object value = info[midx];
                     try {
                         Number nvalue = df.parse(info[midx]);
-
                         if (Integer.class == colClass) {
+                            if (isPrimaryColumn && nvalue.intValue() == 0){
+                                skipFunction = true;
+                            }
                             value = new Integer(nvalue.intValue());
                         } else if (Double.class == colClass) {
+                            if (isPrimaryColumn && nvalue.doubleValue() == 0){
+                                skipFunction = true;
+                            }
                             value = new Double(nvalue.doubleValue());
                         } else if (Float.class == colClass) {
+                            if (isPrimaryColumn && nvalue.floatValue() == 0){
+                                skipFunction = true;
+                            }
                             value = new Float(nvalue.floatValue());
+                        } else if (Long.class == colClass) {
+                            if (isPrimaryColumn && nvalue.longValue() == 0){
+                                skipFunction = true;
+                            }
+                            value = new Long(nvalue.longValue());
                         }
 
                     } catch (ParseException ex) {
