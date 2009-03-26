@@ -137,9 +137,10 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     
     @SuppressWarnings("unchecked")
     private void checkRealUpdates () {
+        final Collection<String> problems=new ArrayList<String>();
         checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, forceReload);
+                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType,problems, forceReload);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
@@ -183,11 +184,24 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
             public void taskFinished (Task task) {
                 task.removeTaskListener (this);
                 if (! hasUpdates) {
-                    final JPanel body = new OperationDescriptionPanel (
+                    JPanel bodyTmp = null;
+                    if(problems==null || problems.isEmpty())
+                    {
+                        bodyTmp = new OperationDescriptionPanel (
                             getBundle ("LazyOperationDescriptionStep_NoUpdates_Title"), // NOI18N
                             getBundle ("LazyOperationDescriptionStep_NoUpdates"), // NOI18N
                             "", "",
                             false);
+                    }
+                    else
+                    {
+                        bodyTmp = new OperationDescriptionPanel (
+                            getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems_Title"), // NOI18N
+                            getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems"), // NOI18N
+                            "", "",
+                            false);
+                    }
+                    final JPanel body = bodyTmp;
                     installModel = Collections.EMPTY_SET;
                     new InstallUnitWizardModel (null, null).modifyOptionsForDoClose (wd);
                     canClose = true;
