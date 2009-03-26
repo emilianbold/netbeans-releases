@@ -206,6 +206,7 @@ public class Utils {
             StyledDocument doc = editor.openDocument ();
             InputSource in = createInputSource 
                 (fileObject, editor, doc);
+            if (in == null) return null;
             SAXParserFactory factory = SAXParserFactory.newInstance ();
             SAXParser parser = factory.newSAXParser ();
             final int[] line = new int [4];
@@ -281,6 +282,7 @@ public class Utils {
             StyledDocument doc = editor.openDocument ();
             InputSource in = createInputSource 
                 (fileObject, editor, doc);
+            if (in == null) return null;
             SAXParserFactory factory = SAXParserFactory.newInstance ();
             SAXParser parser = factory.newSAXParser ();
             final int[] line = new int [4];
@@ -377,6 +379,7 @@ public class Utils {
     ) throws IOException, BadLocationException {
         final StringWriter w = new StringWriter (document.getLength ());
         final EditorKit kit = findKit (editor);
+        if (kit == null) return null;
         final IOException[] ioe = new IOException [1];
         final BadLocationException[] ble = new BadLocationException [1];
         document.render(new Runnable () {
@@ -425,7 +428,7 @@ public class Utils {
             } catch (InvocationTargetException ex) {
                 ErrorManager.getDefault().notify(ex.getTargetException());
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Thread.currentThread().interrupt();
             }
             return ek[0];
         }

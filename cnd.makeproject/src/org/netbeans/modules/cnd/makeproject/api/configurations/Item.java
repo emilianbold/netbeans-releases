@@ -188,7 +188,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public void setFolder(Folder folder) {
         if (folder == null && file == null) {
             // store file in field. method getFile() will works after removing item
-            file = new File(getAbsPath());
+            getCanonicalFile();
         }
         this.folder = folder;
         if (folder == null) { // Item is removed, let's clean up.

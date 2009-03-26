@@ -43,8 +43,6 @@ package org.netbeans.modules.ant.debugger;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.StringBuffer;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.HashSet;
@@ -52,17 +50,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.AntEvent;
-import org.apache.tools.ant.module.spi.AntLogger;
-import org.apache.tools.ant.module.spi.AntSession;
-import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.ant.debugger.breakpoints.AntBreakpoint;
@@ -78,8 +71,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
-import org.openide.text.Line;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.w3c.dom.Element;
@@ -99,8 +90,8 @@ public class AntDebugger extends ActionsProviderSupport {
     private AntDebuggerEngineProvider   engineProvider;
     private ContextProvider             contextProvider;
     private ExecutorTask                execTask;
-    private Object                      LOCK = new Object ();
-    private Object                      LOCK_ACTIONS = new Object();
+    private final Object                LOCK = new Object ();
+    private final Object                LOCK_ACTIONS = new Object();
     private boolean                     actionRunning = false;
     private IOManager                   ioManager;
     private Object                      currentLine;
@@ -192,6 +183,7 @@ public class AntDebugger extends ActionsProviderSupport {
         }
     }
     
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         for (Iterator it = actions.iterator(); it.hasNext(); ) {
             setEnabled (it.next(), false);

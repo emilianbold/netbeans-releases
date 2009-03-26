@@ -290,6 +290,7 @@ public class JPDASupport implements DebuggerManagerListener {
                 sourceUrl
             });
             map.put ("sourcepath", cp);
+            map.put ("baseDir", new File(sourceRoot).getParentFile());
             return new Object[] { map };
         } catch (MalformedURLException ex) {
             //System.err.println("MalformedURLException: sourceRoot = '"+sourceRoot+"'.");

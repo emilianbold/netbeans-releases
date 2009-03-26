@@ -586,6 +586,10 @@ public class GdbProxy {
         engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
     }
 
+    public void stack_list_arguments(int showValues) {
+        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
+    }
+
     /**
      * Send "-stack-select-frame frameNumber" to the debugger
      * This command tells gdb to change the current frame.
