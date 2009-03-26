@@ -59,7 +59,9 @@ import org.openide.util.Utilities;
  */
 public class DelegatingChooserUI extends ComponentUI {
     
-    private static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";
+    static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";
+    static final String NB_USE_SHELL_FOLDER = "nb.FileChooser.useShellFolder";
+    static final String START_TIME = "start.time";
     
     private static boolean firstTime = true;
 
@@ -69,14 +71,24 @@ public class DelegatingChooserUI extends ComponentUI {
         // #109703 - don't use shell folder on JDK versions interval <1.6.0_02, 1.6.0_10>,
         // it's terribly slow on Windows due to JDK bug
         if (Utilities.isWindows()) {
-            String jv = System.getProperty("java.version");
-            jv = jv.split("-", 2)[0];
-            if ("1.6.0_02".compareToIgnoreCase(jv) <= 0 &&
-                    "1.6.0_10".compareToIgnoreCase(jv) >= 0) {
-                if (!Boolean.TRUE.equals(fc.getClientProperty(USE_SHELL_FOLDER))) {
-                    fc.putClientProperty(USE_SHELL_FOLDER, Boolean.FALSE);
+            if (System.getProperty(NB_USE_SHELL_FOLDER) != null) {
+                fc.putClientProperty(USE_SHELL_FOLDER, Boolean.getBoolean(NB_USE_SHELL_FOLDER));
+            } else {
+                String jv = System.getProperty("java.version");
+                jv = jv.split("-", 2)[0];
+                if ("1.6.0_02".compareToIgnoreCase(jv) <= 0 &&
+                        "1.6.0_10".compareToIgnoreCase(jv) >= 0) {
+                    if (!Boolean.TRUE.equals(fc.getClientProperty(USE_SHELL_FOLDER))) {
+                        fc.putClientProperty(USE_SHELL_FOLDER, Boolean.FALSE);
+                    }
                 }
             }
+        }
+
+        // mark start time, just once during init (code can be run multiple times
+        // because of property listenign below)
+        if (fc.getClientProperty(START_TIME) == null) {
+            fc.putClientProperty(START_TIME, Long.valueOf(System.currentTimeMillis()));
         }
         
         Class<? extends FileChooserUI> chooser = getCurChooser(fc);

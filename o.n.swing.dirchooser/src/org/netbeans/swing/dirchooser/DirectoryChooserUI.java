@@ -93,6 +93,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -112,10 +113,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
-    private static final long SLOWNESS_TIMEOUT = 10000;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
-    
+
+    private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
+
     private JPanel centerPanel;
     
     private JLabel lookInComboBoxLabel;
@@ -192,11 +194,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private JButton newFolderButton;
     
     private JComponent topCombo, topComboWrapper, topToolbar;
-    
+    private JPanel slownessPanel;
+
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
     }
-    
+
     public DirectoryChooserUI(JFileChooser filechooser) {
         super(filechooser);
     }
@@ -246,7 +249,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // panel and combobox.
         
         Boolean prop =
-                (Boolean)fileChooser.getClientProperty("FileChooser.useShellFolder");
+                (Boolean)fileChooser.getClientProperty(DelegatingChooserUI.USE_SHELL_FOLDER);
         if (prop != null) {
             useShellFolder = prop.booleanValue();
         } else {
@@ -1067,8 +1070,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             long startTime;
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
-                    startTime = markUpdateStart();
                     // first pass, out of EQ thread
+                    markStartTime();
                     setCursor(fileChooser, Cursor.WAIT_CURSOR);
                     node = new DirectoryNode(file);
                     node.loadChildren(fileChooser, true);
@@ -1080,7 +1083,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     tree.setModel(model);
                     tree.repaint();
                     setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
-                    checkUpdate(startTime);
+                    checkUpdate();
                 }
             }
 
@@ -1088,25 +1091,47 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
     }
 
-    private long markUpdateStart() {
-        if (Utilities.isWindows() && useShellFolder) {
-            return System.currentTimeMillis();
+    private void markStartTime () {
+        if (fileChooser.getClientProperty(DelegatingChooserUI.START_TIME) == null) {
+            fileChooser.putClientProperty(DelegatingChooserUI.START_TIME,
+                    Long.valueOf(System.currentTimeMillis()));
         }
-        return 0;
     }
 
-    private void checkUpdate(long startTime) {
+    private void checkUpdate() {
         if (Utilities.isWindows() && useShellFolder) {
-            long elapsed = System.currentTimeMillis() - startTime;
-            if (elapsed > SLOWNESS_TIMEOUT) {
+            Long startTime = (Long) fileChooser.getClientProperty(DelegatingChooserUI.START_TIME);
+            if (startTime == null) {
+                return;
+            }
+            // clean for future marking
+            fileChooser.putClientProperty(DelegatingChooserUI.START_TIME, null);
+
+            long elapsed = System.currentTimeMillis() - startTime.longValue();
+            long timeOut = NbPreferences.forModule(DirectoryChooserUI.class).
+                    getLong(TIMEOUT_KEY, 1000);
+            if (timeOut > 0 && elapsed > timeOut && slownessPanel == null) {
                 JLabel slownessNote = new JLabel(
                         NbBundle.getMessage(DirectoryChooserUI.class, "MSG_SlownessNote"));
                 slownessNote.setForeground(Color.RED);
-                JPanel slownessP = new JPanel();
-                slownessP.setLayout(new BorderLayout());
-                slownessP.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-                slownessP.add(BorderLayout.CENTER, slownessNote);
-                centerPanel.add(BorderLayout.NORTH, slownessP);
+                slownessPanel = new JPanel();
+                JButton notShow = new JButton(
+                        NbBundle.getMessage(DirectoryChooserUI.class, "BTN_NotShow"));
+                notShow.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        NbPreferences.forModule(DirectoryChooserUI.class).putLong(TIMEOUT_KEY, 0);
+                        centerPanel.remove(slownessPanel);
+                        centerPanel.revalidate();
+                    }
+                });
+                JPanel notShowP = new JPanel();
+                notShowP.add(notShow);
+                slownessPanel.setLayout(new BorderLayout());
+                slownessPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+                slownessPanel.add(BorderLayout.CENTER, slownessNote);
+                slownessPanel.add(BorderLayout.SOUTH, notShowP);
+                centerPanel.add(BorderLayout.NORTH, slownessPanel);
+                centerPanel.revalidate();
             }
         }
     }
@@ -1435,7 +1460,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     fireApproveButtonMnemonicChanged(e);
                 } else if(s.equals(JFileChooser.CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY)) {
                     fireControlButtonsChanged(e);
-                } else if (s.equals("FileChooser.useShellFolder")) {
+                } else if (s.equals(DelegatingChooserUI.USE_SHELL_FOLDER)) {
                     updateUseShellFolder();
                     fireDirectoryChanged(e);
                 } else if (s.equals("componentOrientation")) {
@@ -1581,6 +1606,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
                     // first pass, out of EQ thread, loads data
+                    markStartTime();
                     setCursor(fileChooser, Cursor.WAIT_CURSOR);
                     node = (DirectoryNode) path.getLastPathComponent();
                     node.loadChildren(fileChooser, true);
@@ -1600,6 +1626,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         addNewDirectory = false;
                     }
                     setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+                    checkUpdate();
                 }
             }
         });
