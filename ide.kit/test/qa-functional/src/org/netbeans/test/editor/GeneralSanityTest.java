@@ -41,9 +41,18 @@
 
 package org.netbeans.test.editor;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 import junit.framework.Test;
+import org.netbeans.Module;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.test.permanentUI.utils.Utilities;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -70,4 +79,77 @@ public class GeneralSanityTest extends NbTestCase {
         }
         fail("No org.openide.options module found, it should be present, but disabled");
     }
+	
+    public void testInstalledPlugins() {
+        TreeSet<ModuleInfo> idePlugins = new TreeSet<ModuleInfo>(new Comparator<ModuleInfo>() {
+
+            public int compare(ModuleInfo m1, ModuleInfo m2) {
+                String s = m1.getLocalizedAttribute("OpenIDE-Module-Display-Category") + " " + m1.getDisplayName();
+                return s.compareToIgnoreCase(m2.getLocalizedAttribute("OpenIDE-Module-Display-Category") + " " + m2.getDisplayName());
+            }
+            
+        });
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            assertTrue(m instanceof Module);
+            Module mm = (Module)m;
+            if ("false".equals(m.getAttribute("AutoUpdate-Show-In-Client"))) {
+                continue;
+            }
+            if (mm.isAutoload() || mm.isEager() || mm.isFixed()) {
+                continue;
+            }
+            idePlugins.add(m);
+        }
+
+        //load plugins order from golden file
+        final String idePluginsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
+        PrintStream ideFile = null;
+        //final String permuiPluginsLogsFile = getWorkDirPath() + File.separator + getName() + "_golden.txt";
+        final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
+
+
+        try {
+            ideFile = new PrintStream(idePluginsLogFile);
+            
+            //make a diff
+            printPlugins(ideFile, idePlugins);
+            Manager.getSystemDiff().diff(idePluginsLogFile, getPluginsGoldenFile()/*permuiPluginsLogsFile*/, diffFile);
+            //assert
+            String message = Utilities.readFileToString(diffFile);
+
+            assertFile(message, getPluginsGoldenFile() , idePluginsLogFile, diffFile);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static void printPlugins(PrintStream out, Set<ModuleInfo> plugins) {
+
+        String output = "||Codebase||Display name||Category";
+        out.println(output);
+
+        for (ModuleInfo m : plugins) {
+            output = "";
+            output += "|" + m.getCodeNameBase();
+            output += "|" + m.getDisplayName();
+            output += "|" + m.getLocalizedAttribute("OpenIDE-Module-Display-Category");
+            out.println(output);
+
+        }
+    }
+
+    /**
+     * constructs the relative path to the golden file to Installed Plugins permanent UI spec
+     * @return
+     */
+    private String getPluginsGoldenFile() {
+        String dataDir = "";
+        try {
+            dataDir = getDataDir().getCanonicalPath();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return dataDir + File.separator + "permanentUI" + File.separator + "plugins" + File.separator + "installed-plugins.txt";
+    }
+
 }
