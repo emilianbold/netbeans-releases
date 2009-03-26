@@ -181,6 +181,14 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    void opened() {
+        repository.scheduleForRefresh(getID());
+    }
+
+    void closed() {
+        repository.stopRefreshing(getID());
+    }
+
     @Override
     public String getDisplayName() {
         return data.isNew() ?
@@ -403,7 +411,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-//        assert !taskData.isPartial(); XXX doesn't work with simple search
+        assert !taskData.isPartial(); 
         data = taskData;
         attributes = null; // reset
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {

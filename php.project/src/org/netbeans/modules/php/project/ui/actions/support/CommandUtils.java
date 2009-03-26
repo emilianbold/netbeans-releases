@@ -450,22 +450,13 @@ public final class CommandUtils {
         assert !queryWithoutQMark.startsWith("&");
         assert !queryWithoutQMark.startsWith("?");
 
-        String query = originalURL.getQuery();
-        if (PhpProjectUtils.hasText(query)) {
-            queryWithoutQMark = query + "&" + queryWithoutQMark; // NOI18N
-        }
-        URI retval;
-        try {
-            //TODO: check the conversion becaus eof #159928
-            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
-                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(),
-                    queryWithoutQMark, originalURL.getRef());
-        } catch (URISyntaxException ex) {
-            MalformedURLException mex = new MalformedURLException(ex.getLocalizedMessage());
-            mex.initCause(ex);
-            throw mex;
-        }
-        return retval.toURL();
+        String urlExternalForm = originalURL.toExternalForm();
+        if (PhpProjectUtils.hasText(originalURL.getQuery())) {
+            urlExternalForm += "&" + queryWithoutQMark; // NOI18N
+        } else {
+            urlExternalForm += "?" + queryWithoutQMark; // NOI18N
+        }        
+        return new URL(urlExternalForm);
     }
 
     private static String getDebugArguments() {

@@ -41,7 +41,7 @@ fi
 
 ant clean-untracked-files
 
-sh nbbuild/hudson/sigtests || exit 1
+sh -x nbbuild/hudson/sigtests || exit 1
 
 for r in . contrib
 do

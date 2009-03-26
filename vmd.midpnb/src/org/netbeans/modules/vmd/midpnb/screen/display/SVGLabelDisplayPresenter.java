@@ -38,8 +38,12 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 
 /**
  *
@@ -50,6 +54,32 @@ public class SVGLabelDisplayPresenter extends UpdatableSVGComponentDisplayPresen
     private static final String TITLE           = "text";            // NOI18N
     
     private static final String TITLE_SUFFIX    = DASH + TITLE;
+
+    // fix issue with null BBox returned by persejus for label.
+    // increase bbox height by SELECTION_SHAPE_EXTENSION
+    private static final int SELECTION_SHAPE_EXTENSION = 3;
+
+    private Rectangle mySelectionRect = null;
+
+    @Override
+    public void reload(ScreenDeviceInfo deviceInfo) {
+        super.reload(deviceInfo);
+        mySelectionRect = null;
+    }
+
+    @Override
+    public Shape getSelectionShape() {
+
+        if (mySelectionRect == null) {
+            Shape shape = super.getSelectionShape();
+            if (shape != null) {
+                mySelectionRect = shape.getBounds();
+                mySelectionRect.setSize((int) mySelectionRect.getWidth(),
+                        (int) mySelectionRect.getHeight() + SELECTION_SHAPE_EXTENSION);
+            }
+        }
+        return mySelectionRect;
+    }
 
     @Override
     protected void reloadSVGComponent(SVGImage svgImage,

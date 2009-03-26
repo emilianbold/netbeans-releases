@@ -49,7 +49,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 
 
@@ -361,7 +364,76 @@ public class DataEditorSupportTest extends NbTestCase {
         assertNotNull(env.fileLock);
         env.fileLock.releaseLock();
     }
-    
+
+    /** Tests that charset of saving document is not removed from cache by
+     * concurrent openDocument() call (see #160784). */
+    public void testSaveOpenConcurrent() throws Exception {
+        obj = DataObject.find(fileObject);
+        DES sup = support();
+        assertFalse("It is closed now", sup.isDocumentLoaded());
+        assertNotNull("DataObject found", obj);
+
+        Document doc = sup.openDocument();
+        assertTrue("It is open now", support().isDocumentLoaded());
+        doc.insertString(0, "Ahoj", null);
+        EditorCookie s = (EditorCookie) sup;
+        assertNotNull("Modified, so it has cookie", s);
+        assertEquals(sup, s);
+
+        Logger.getLogger(DataEditorSupport.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(DataEditorSupport.class.getName()).addHandler(new OpeningHandler(sup));
+        s.saveDocument();
+        
+        assertLockFree(obj.getPrimaryFile());
+        s.close();
+        CloseCookie c = (CloseCookie) sup;
+        assertNotNull("Has close", c);
+        assertTrue("Close ok", c.close());
+        assertLockFree(obj.getPrimaryFile());
+    }
+
+    class OpeningHandler extends Handler {
+
+        private DES des;
+
+        public OpeningHandler(DES des) {
+            super();
+            this.des = des;
+        }
+
+        public synchronized void publish(LogRecord rec) {
+            if ("SaveImpl - charset put".equals(rec.getMessage())) {
+                Thread openingThread = new Thread(new Runnable() {
+
+                    public void run() {
+                        try {
+                            des.openDocument();
+                        } catch (IOException ex) {
+                            fail(ex.getMessage());
+                        }
+                    }
+                }, "Opening");
+                openingThread.start();
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    fail(ex.getMessage());
+                }
+            }
+            if ("openDocument - charset removed".equals(rec.getMessage())) {
+                notify();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() {
+        }
+    }
+
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.
      */

@@ -106,7 +106,16 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                client.remove(new File [] { file }, true); // delete all files recursively
+                ISVNStatus status = getStatus(client, file);
+                /**
+                 * Copy a folder, it becames svn added/copied.
+                 * Revert its parent and check 'Delete new files', the folder becomes unversioned.
+                 * 'Delete new files' deletes the folder and invokes this method.
+                 * But client.remove cannot be called since the folder is unversioned and we do not want to propagate an exception
+                 */
+                if (hasMetadata(file.getParentFile())) {
+                    client.remove(new File [] { file }, true); // delete all files recursively
+                }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
@@ -159,6 +168,33 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         });
+    }
+
+    /**
+     * Moves folder's content between different repositories.
+     * Does not move folders, only files inside them.
+     * The created tree in the target working copy is created without subversion metadata.
+     * @param from folder being moved. MUST be a folder.
+     * @param to a folder from's content shall be moved into
+     * @throws java.io.IOException if error occurs
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException if error occurs
+     */
+    private void moveFolderToDifferentRepository(File from, File to) throws IOException, SVNClientException {
+        assert from.isDirectory();
+        assert to.getParentFile().exists();
+        if (!to.exists()) {
+            if (to.mkdir()) {
+                cache.refreshAsync(to);
+            } else {
+                Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName() + ": Cannot create folder " + to);
+            }
+        }
+        File[] files = from.listFiles();
+        for (File file : files) {
+            if (!SvnUtils.isAdministrative(file)) {
+                svnMoveImplementation(file, new File(to, file.getName()));
+            }
+        }
     }
 
     /**
@@ -415,6 +451,7 @@ class FilesystemHandler extends VCSInterceptor {
                 client.revert(file, false);
                 // our goal was ony to fix the metadata ->
                 //  -> get rid of the reverted file
+                internalyDeletedFiles.add(file); // prevents later removal in afterDelete if the file is recreated
                 file.delete();
             }
         } catch (SVNClientException ex) {
@@ -469,7 +506,24 @@ class FilesystemHandler extends VCSInterceptor {
                             } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                                 from.renameTo(to);
                             } else {
-                                client.move(from, to, force);
+                                SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
+                                SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
+                                if (repositorySource.equals(repositoryTarget)) {
+                                    // use client.move only for a single repository
+                                    client.move(from, to, force);
+                                } else {
+                                    if (from.isDirectory()) {
+                                        // tree should be moved separately, otherwise the metadata from the source WC will be copied too
+                                        moveFolderToDifferentRepository(from, to);
+                                    } else if (from.renameTo(to)) {
+                                        client.remove(new File[] {from}, force);
+                                        Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    } else {
+                                        Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
+                                                + ": cannot rename {0} to {1}", new Object[] {from, to});
+                                    }
+                                }
                             }
                         } finally {
                             // we moved the files so schedule them a for a refresh
