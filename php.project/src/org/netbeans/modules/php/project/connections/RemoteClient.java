@@ -84,7 +84,6 @@ public class RemoteClient implements Cancellable {
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
     private final RemoteConfiguration configuration;
-    private final InputOutput io;
     private final String baseRemoteDirectory;
     private final boolean preservePermissions;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
@@ -112,7 +111,6 @@ public class RemoteClient implements Cancellable {
         assert configuration != null;
 
         this.configuration = configuration;
-        this.io = io;
         this.preservePermissions = preservePermissions;
 
         // base remote directory
