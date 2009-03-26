@@ -115,8 +115,9 @@ public class JavaI18nSupport extends I18nSupport {
     
     /** Init string format. */
     protected String initFormat;
-    
 
+    private JavaReplacePanel additionalCustomizer;
+    
     /** Constructor. 
      * @see I18nSupport */
     public JavaI18nSupport(DataObject sourceDataObject) {
@@ -430,7 +431,9 @@ public class JavaI18nSupport extends I18nSupport {
      * source values (in our case for creating bundle field) */
     @Override
     public JPanel getAdditionalCustomizer() {
-        return new JavaReplacePanel(this);
+        if (additionalCustomizer == null) 
+            additionalCustomizer = new JavaReplacePanel(this);
+        return additionalCustomizer;
     }
 
     /** Overrides superclass method. 
