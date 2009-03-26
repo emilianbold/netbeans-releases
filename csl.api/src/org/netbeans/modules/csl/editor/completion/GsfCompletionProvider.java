@@ -699,7 +699,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 if (completer != null) {
                     prefix = completer.getPrefix(controller, offset, upToOffset);
                 }
-                if (prefix == null) {
+                if (prefix == null && doc != null) {
                     int[] blk =
                         org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)doc,
                             offset);
