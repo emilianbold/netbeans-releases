@@ -38,42 +38,50 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.regex.Pattern;
+public final class PathConverter {
 
-/**
- *
- * @author ak119685
- */
-public final class EnvWriter {
+    private boolean isCygwin = true;
 
-    private final OutputStream os;
-
-    public EnvWriter(OutputStream os) {
-        this.os = os;
+    public PathConverter() {
     }
 
-    public void write(final MacroMap env) throws IOException {
-        if (!env.isEmpty()) {
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    // TODO: is it safe to replace all '\' with '/'?
-                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
-                    os.flush();
-                }
-            }
+    public String normalize(final String path) {
+        if (path == null) {
+            return ""; // NOI18N
         }
+
+        if (path.length() < 2) {
+            return path;
+        }
+
+        if (path.charAt(1) != ':') {
+            return path;
+        }
+
+        char driveLetter = path.charAt(0);
+        String p = path.substring(2);
+        String result;
+
+        if (isCygwin) {
+            result = "/cygdrive/" + driveLetter + p; // NOI18N
+            result = result.replaceAll("\\\\", "/"); // NOI18N
+        } else {
+            result = path;
+        }
+
+        return result;
+
+    }
+
+    public String normalizeAll(String paths) {
+        String[] ps = paths.split(";"); // NOI18N
+        StringBuilder sb = new StringBuilder();
+
+        for (String path : ps) {
+            sb.append(normalize(path));
+            sb.append(':');
+        }
+        
+        return sb.toString();
     }
 }
