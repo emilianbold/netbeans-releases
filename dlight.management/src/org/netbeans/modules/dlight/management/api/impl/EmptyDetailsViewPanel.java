@@ -37,15 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.management.api.impl;
 
-import javax.swing.JComponent;
+import java.util.List;
+import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
  *
  * @author mt154047
  */
-public interface DetailsViewEmptyContentProvider {   
-    JComponent getEmptyView(DLightConfiguration configuration, String toolName);
+class EmptyDetailsViewPanel extends JPanel{
+    private final DLightConfiguration configuration;
+    private final DLightTool currentTool;
+
+    public EmptyDetailsViewPanel(DLightConfiguration dlightConfiguration, String toolName) {
+        //find the proper tool
+        this.configuration = dlightConfiguration;
+        DLightTool selectedTool = null;
+        List<DLightTool> toolsSet = this.configuration.getToolsSet();
+        for (DLightTool tool: toolsSet){
+            if (toolName.equals(tool.getName())){
+                selectedTool = tool;
+                break;
+            }
+        }
+        this.currentTool = selectedTool;
+        
+    }
+
+
 }
