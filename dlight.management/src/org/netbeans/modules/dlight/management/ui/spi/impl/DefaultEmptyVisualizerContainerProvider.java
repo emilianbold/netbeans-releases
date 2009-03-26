@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.visualizer;
 
-import javax.swing.JComponent;
+package org.netbeans.modules.dlight.management.ui.spi.impl;
+
+import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 
 /**
- * Container to put Visualizer in
+ *
+ * @author mt154047
  */
-public interface VisualizerContainer {
+public final class DefaultEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
 
-    /**
-     * Adds new visualizer to container for tool with the name <code>toolName</code>
-     * @param toolName toolname
-     * @param v visualizer
-     */
-    void addVisualizer(String toolName, Visualizer v);
+    public VisualizerContainer getEmptyVisualizerContainer() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    /**
-     * Sets new content for wool with the name <code>toolName</code>
-     * @param toolName
-     * @param component
-     */
-    void setContent(String toolName, JComponent component);
-
-    /**
-     * Adds new content for wool with the name <code>toolName</code>
-     * @param toolName
-     * @param component
-     */
-    void addContent(String toolName, JComponent component);
-
-    /**
-     * Removed visualizer from the container
-     * @param v visualizer to remove
-     */
-    void removeVisualizer(Visualizer v);
-
-    /**
-     * Show container
-     */
-    void showup();
 }

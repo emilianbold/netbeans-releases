@@ -36,36 +36,43 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.impl;
 
-package org.netbeans.modules.dlight.management.api.impl;
-
-import java.util.List;
-import javax.swing.JPanel;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorRepairActionProvider;
 
 /**
  *
  * @author mt154047
  */
-class EmptyDetailsViewPanel extends JPanel{
-    private final DLightConfiguration configuration;
-    private final DLightTool currentTool;
+public abstract class IndicatorRepairActionProviderAccessor {
 
-    public EmptyDetailsViewPanel(DLightConfiguration dlightConfiguration, String toolName) {
-        //find the proper tool
-        this.configuration = dlightConfiguration;
-        DLightTool selectedTool = null;
-        List<DLightTool> toolsSet = this.configuration.getToolsSet();
-        for (DLightTool tool: toolsSet){
-            if (toolName.equals(tool.getName())){
-                selectedTool = tool;
-                break;
-            }
+    private static volatile IndicatorRepairActionProviderAccessor DEFAULT;
+
+    public static IndicatorRepairActionProviderAccessor getDefault() {
+        IndicatorRepairActionProviderAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
-        this.currentTool = selectedTool;
-        
+
+        try {
+            Class.forName(IndicatorRepairActionProvider.class.getName(), true, IndicatorRepairActionProvider.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
+    public static void setDefault(IndicatorRepairActionProviderAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
 
+    public IndicatorRepairActionProviderAccessor() {
+    }
+
+    public abstract IndicatorRepairActionProvider createNew(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToRepairFor);
 }
