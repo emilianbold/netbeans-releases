@@ -47,10 +47,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
+import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.support.PathConverter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -63,6 +67,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static String dorunScript;
     private final static boolean isWindows;
     private final static boolean isMacOS;
+    private final static PathConverter pathConverter;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -92,6 +97,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
             }
         }
+        
+        pathConverter = new PathConverter();
 
         dorunScript = runScript;
     }
@@ -160,9 +167,18 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             pb.directory(new File(wDir));
         }
 
-        Map<String, String> env = info.getEnvVariables();
+        MacroMap env = info.getEnvVariables();
 
         if (!env.isEmpty()) {
+            // TODO: FIXME (?)
+            // Do PATH normalization on Windows....
+            // Problem here is that this is done for PATH env. variable only!
+
+            if (isWindows) {
+                String path = env.get("PATH"); // NOI18N
+                env.put("PATH", pathConverter.normalizeAll(path)); // NOI18N
+            }
+
             File envFile = new File(envFileName);
             OutputStream fos = new FileOutputStream(envFile);
             EnvWriter ew = new EnvWriter(fos);
@@ -181,16 +197,37 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public void cancel() {
+        sendSignal(9);
+    };
+
+    private synchronized int sendSignal(int signal) {
+        int result = 1;
+        
         try {
-            String cmd = isWindows ? "kill" : "/bin/kill"; // NOI18N
-            ProcessBuilder pb =
-                    new ProcessBuilder(cmd, "-9", "" + getPID()); // NOI18N
-            pb.start().waitFor();
+            ProcessBuilder pb;
+            List<String> command = new ArrayList<String>();
+            
+            if (isWindows) {
+                String shell = HostInfoUtils.getShell(new ExecutionEnvironment());
+                command.add(shell);
+                command.add("-c"); // NOI18N
+                command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N
+            } else {
+                command.add("/bin/kill"); // NOI18N
+                command.add("-" + signal); // NOI18N
+                command.add("" + getPID()); // NOI18N
+            }
+            
+            pb = new ProcessBuilder(command);
+            Process killProcess = pb.start();
+            result = killProcess.waitFor();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+
+        return result;
     }
 
     @Override
@@ -207,17 +244,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
 
         if (isWindows || isMacOS) {
-            ProcessBuilder pb = new ProcessBuilder("kill", "-0", "" + getPID()); // NOI18N
-            while (true) {
-                try {
-                    int status = pb.start().waitFor();
-                    if (status != 0) {
-                        break;
-                    } else {
-                        Thread.sleep(500);
-                    }
-                } catch (IOException ex) {
-                }
+            while (sendSignal(0) == 0) {
+                Thread.sleep(300);
             }
         } else {
             File f = new File("/proc/" + getPID()); // NOI18N
@@ -244,11 +272,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     break;
                 }
 
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    // Ignore...
-                }
+                Thread.sleep(500);
             }
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {

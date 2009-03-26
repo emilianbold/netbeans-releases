@@ -36,44 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.regex.Pattern;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
-/**
- *
- * @author ak119685
- */
-public final class EnvWriter {
+public final class FutureException<T> {
+    private final Exception e;
 
-    private final OutputStream os;
-
-    public EnvWriter(OutputStream os) {
-        this.os = os;
+    public FutureException(final Exception e) {
+        this.e = e;
     }
 
-    public void write(final MacroMap env) throws IOException {
-        if (!env.isEmpty()) {
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
+    public Future<T> get() {
+        FutureTask<T> task = new FutureTask<T>(new Callable<T>() {
 
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    // TODO: is it safe to replace all '\' with '/'?
-                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
-                    os.flush();
-                }
+            public T call() throws Exception {
+                throw e;
             }
-        }
+        });
+
+        task.run();
+        
+        return task;
     }
 }
