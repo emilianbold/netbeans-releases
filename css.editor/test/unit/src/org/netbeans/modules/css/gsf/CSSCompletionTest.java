@@ -111,7 +111,7 @@ public class CSSCompletionTest extends TestBase {
     public void testAtRules() throws ParseException {
         checkCC("|", AT_RULES);
         checkCC("@|", AT_RULES);
-//        checkCC("@pa|", new String[]{"@page"}); //fails - issue #161128
+        checkCC("@pa|", new String[]{"@page"}, Match.CONTAINS);
     }
 
     public void testPropertyNames() throws ParseException {

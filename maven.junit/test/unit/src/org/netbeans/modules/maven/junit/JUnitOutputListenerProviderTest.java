@@ -70,7 +70,7 @@ public class JUnitOutputListenerProviderTest {
         Trouble t = JUnitOutputListenerProvider.constructTrouble("junit.framework.AssertionFailedError", "message",
                 "junit.framework.AssertionFailedError: failed\n" +
                 "	at junit.framework.Assert.fail(Assert.java:47)\n" +
-                "	at com.mycompany.mavenproject30.AppTest.testApp(AppTest.java:39)");
+                "	at com.mycompany.mavenproject30.AppTest.testApp(AppTest.java:39)", true);
         assertNull(t.getComparisonFailure());
         String[] stack = t.getStackTrace();
         assertNotNull(stack);
@@ -89,7 +89,7 @@ public class JUnitOutputListenerProviderTest {
 "	at junit.framework.Assert.failNotEquals(Assert.java:282)\n" +
 "	at junit.framework.Assert.assertEquals(Assert.java:64)\n" +
 "	at junit.framework.Assert.assertEquals(Assert.java:201)\n" +
-"	at com.mycompany.mavenproject30.AppTest.testApp2(AppTest.java:44)\n");
+"	at com.mycompany.mavenproject30.AppTest.testApp2(AppTest.java:44)\n", true);
 
         assertNotNull(t.getComparisonFailure());
         stack = t.getStackTrace();
