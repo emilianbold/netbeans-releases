@@ -151,8 +151,11 @@ public class KenaiRepository extends BugzillaRepository {
     @Override
     protected BugzillaConfiguration createConfiguration() {
         KenaiConfiguration c = BugzillaConfiguration.create(this, KenaiConfiguration.class);
-        c.setProducts(product);
-        return c;
+        if(c != null) {
+            c.setProducts(product);
+            return c;
+        }
+        return null;
     }
 
     protected void setCredentials(String user, String password) {
