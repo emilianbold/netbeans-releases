@@ -138,9 +138,17 @@ public class BugzillaConfig {
     public void putRepository(String repoName, BugzillaRepository repository) {
         String user = repository.getUsername();
         String password = BugtrackingUtil.scramble(repository.getPassword());
-        // XXX AuthenticationType.HTTP, AuthenticationType.PROXY
+
+        String httpUser = repository.getHttpUsername();
+        String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
         String url = repository.getUrl();
-        getPreferences().put(REPO_NAME + repoName, url + DELIMITER + user + DELIMITER + password);
+        getPreferences().put(
+                REPO_NAME + repoName,
+                url + DELIMITER +
+                user + DELIMITER +
+                password + DELIMITER +
+                httpUser + DELIMITER +
+                httpPassword);
     }
 
     public BugzillaRepository getRepository(String repoName) {
@@ -149,13 +157,14 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3;
+        assert values.length == 3 || values.length == 5;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);
-        // XXX AuthenticationType.HTTP, AuthenticationType.PROXY
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
 
-        return new BugzillaRepository(repoName, url, user, password);
+        return new BugzillaRepository(repoName, url, user, password, httpUser, httpPassword);
     }
 
     public String[] getRepositories() {
