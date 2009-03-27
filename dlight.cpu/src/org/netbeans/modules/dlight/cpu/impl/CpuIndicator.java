@@ -60,7 +60,7 @@ import org.netbeans.modules.dlight.util.UIThread;
  */
 class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
     private final JButton b = new JButton("Repair...");//NOI18N
-    private final JLabel label = new JLabel(getRepairActionProvider().getReason());
+    private final JLabel label = new JLabel(/*getRepairActionProvider().getReason()*/);
 
     private CpuIndicatorPanel panel;
     private Collection<ActionListener> listeners;

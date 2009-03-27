@@ -61,7 +61,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     private final JButton b = new JButton("Repair...");//NOI18N
-    private final JLabel label = new JLabel(getRepairActionProvider().getReason());
+    private final JLabel label = new JLabel(/*getRepairActionProvider().getReason()*/);
     private final MemoryIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
     private long lastValue;
