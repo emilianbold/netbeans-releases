@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.derby.support;
 
+import java.sql.SQLException;
 import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 
@@ -48,7 +49,12 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 public class DerbyStackStorageTest extends CommonStackDataStorageTests {
 
     protected StackDataStorage createStorage() {
-        return new DerbyDataStorage();
+        try {
+            return new DerbyDataStorage();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     protected void flush(StackDataStorage db) {

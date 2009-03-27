@@ -167,7 +167,7 @@ public abstract class SQLDataStorage extends DataStorage {
     insertPreparedStatments = new HashMap<String, PreparedStatement>();
   }
 
-  protected SQLDataStorage(String dburl) {
+  protected SQLDataStorage(String dburl) throws SQLException {
     this();
     connect(dburl);
     if (!enabled) {
@@ -194,7 +194,7 @@ public abstract class SQLDataStorage extends DataStorage {
     asyncThread = null;
   }
 
-  protected abstract void connect(String dburl);
+  protected abstract void connect(String dburl) throws SQLException;
 
   protected String classToType(Class clazz) {
     return classToType.get(clazz);

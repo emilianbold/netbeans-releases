@@ -87,11 +87,11 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
-    H2DataStorage() {
+    H2DataStorage() throws SQLException {
         this(url + dbIndex.incrementAndGet());
     }
 
-    private H2DataStorage(String url) {
+    private H2DataStorage(String url) throws SQLException {
         super(url);
         try {
             initStorageTypes();
@@ -148,13 +148,8 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     }
 
     @Override
-    protected void connect(String dburl) {
-        try {
-            connection = DriverManager.getConnection(dburl, "admin", "");
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-
+    protected void connect(String dburl) throws SQLException {
+        connection = DriverManager.getConnection(dburl, "admin", "");
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
