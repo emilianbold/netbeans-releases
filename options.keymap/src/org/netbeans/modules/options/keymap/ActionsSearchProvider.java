@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -262,6 +263,8 @@ public class ActionsSearchProvider implements SearchProvider {
     }
     
     private static class ActionResult implements Runnable {
+        /** UI logger to notify about invocation of an action */
+        private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
         private Action command;
 
         public ActionResult(Action command) {
@@ -273,6 +276,7 @@ public class ActionsSearchProvider implements SearchProvider {
             // are not written to be invoked directly
             try {
                 command.actionPerformed(createActionEvent(command));
+                uiLog();
             } catch (Throwable thr) {
                 if (thr instanceof ThreadDeath) {
                     throw (ThreadDeath)thr;
@@ -288,6 +292,15 @@ public class ActionsSearchProvider implements SearchProvider {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                         getClass(), "MSG_ActionFailure", displayName));
             }
+        }
+
+        private void uiLog() {
+            LogRecord rec = new LogRecord(Level.FINER, "LOG_QUICKSEARCH_ACTION"); // NOI18N
+            rec.setParameters(new Object[] { command.getClass().getName(), command.getValue(Action.NAME) });
+            rec.setResourceBundle(NbBundle.getBundle(ActionsSearchProvider.class));
+            rec.setResourceBundleName(ActionsSearchProvider.class.getPackage().getName() + ".Bundle"); // NOI18N
+            rec.setLoggerName(UILOG.getName());
+            UILOG.log(rec);
         }
     }
 
