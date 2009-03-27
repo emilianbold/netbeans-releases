@@ -154,7 +154,6 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
 
     public Action getAction(KeyStroke key) {
         LOG.log(Level.FINE, "getAction {0}", key);
-        ShortcutsFolder.initKeyStroke(key);
         
         Action a;
 
