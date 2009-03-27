@@ -59,12 +59,23 @@ import org.netbeans.api.progress.ProgressHandleFactory;
  */
 class HostsListTableModel extends AbstractTableModel {
 
-    private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private final ProgressHandle phandle;
 
+    /** current 4-th component of the IP to ping */
+    private short curr4;
+
+    /** iset this to false to stop the thread */
+    private boolean proceed;
+
+    private boolean first;
+
+    private Thread loaderThread;
+
     public HostsListTableModel() {
         this.phandle = ProgressHandleFactory.createHandle("Gathering hosts information"); //NOI18N
+        first = true;
     }
 
     public ProgressHandle getProgressHandle() {
@@ -73,10 +84,25 @@ class HostsListTableModel extends AbstractTableModel {
 
     private Runnable runOnFinish;
 
+    /** NB: should be called from EDT thread only! (otherwise you should add sync here) */
     public void start(Runnable runOnFinish) {
+        // It's always called from EDT - why bother about sync?
+        assert SwingUtilities.isEventDispatchThread() : "should be called from EDT thread only";
         this.runOnFinish = runOnFinish;
-        phandle.start(255);
-        new Thread(new HostsLoader()).start();
+        if (first) {
+            first = false;
+            phandle.start(255);
+        }
+        proceed = true;
+        loaderThread = new Thread(new HostsLoader());
+        loaderThread.start();
+    }
+
+    public void stop() {
+        proceed = false;
+        if (loaderThread != null) {
+            loaderThread.interrupt();
+        }
     }
 
     public int getRowCount() {
@@ -154,6 +180,7 @@ class HostsListTableModel extends AbstractTableModel {
     private class HostsLoader implements Runnable {
 
         public void run() {
+            log.fine("Hosts Lookup thread started");
             try {
                 byte[] ip = InetAddress.getLocalHost().getAddress();
                 if (ip.length == 0) {
@@ -162,19 +189,18 @@ class HostsListTableModel extends AbstractTableModel {
                 }
                 int idxLast = ip.length - 1; // FF.FF.FF.0
                 byte localLastOne = ip[idxLast];
-                long n = System.currentTimeMillis();
-                int count = 0;
-                for (short i = 0; i <= 255; i++) {
-                    phandle.progress(i);
-                    if (i == localLastOne) {
+                int hostCount = 0;
+                for (; proceed && curr4 <= 255; curr4++) {
+                    phandle.progress(curr4);
+                    if (curr4 == localLastOne) {
                         // localhost will never be offline again
                         continue;
                     }
-                    ip[idxLast] = (byte) i;
+                    ip[idxLast] = (byte) curr4;
                     InetAddress host = InetAddress.getByAddress(ip);
                     try {
                         if (host.isReachable(1000)) {
-                            count++;
+                            hostCount++;
                             HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), doPing(host, 22));
                         }
                     } catch (IOException ex) {
@@ -183,36 +209,23 @@ class HostsListTableModel extends AbstractTableModel {
                         // LOG.log(Level.INFO, null, ex);
                     }
                 }
-                LOG.info("Finding " + count + " host(s) took " + ((System.currentTimeMillis() - n) / 1000) + "s");
 
             } catch (UnknownHostException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, "Exception when filling hosts table", ex); //NOI18N
             } finally {
-                phandle.finish();
-                if (runOnFinish != null) {
-                    SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
+                if (proceed) {
+                    // thay means we exited by counter => we are done
+                    phandle.finish();
+                    if (runOnFinish != null) {
+                        SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
+                    }
+                    log.fine("Hosts Lookup thread done " + HostsListTableModel.this.getRowCount() + " host(s) found");
+                } else {
+                    log.fine("Hosts Lookup thread interrupted; " + HostsListTableModel.this.getRowCount() + " host(s) found so far");
                 }
-            }
-
+            }            
         }
     }
-
-//    private class SshValidator implements Runnable {
-//
-//        public void run() {
-//            while(true) {
-//                if (queueForCheck.isEmpty()) {
-//                    try {
-//                        Thread.sleep(999);
-//                    } catch (InterruptedException ex) {
-//                    }
-//                } else {
-//                    queueForCheck.get(0);
-//                }
-//            }
-//        }
-//
-//    }
 
     private static boolean doPing(InetAddress addr, int port) {
         try {

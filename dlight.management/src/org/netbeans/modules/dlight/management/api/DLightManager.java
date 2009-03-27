@@ -102,22 +102,38 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public DLightSession createNewSession(DLightTarget target, String configurationName) {
-        return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName));
+        return createNewSession(target, configurationName, null);
+    }
+
+    public DLightSession createNewSession(DLightTarget target, String configurationName, String sessionName) {
+        return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName), sessionName);
     }
 
     public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration) {
+        return createNewSession(target, configuration, null);
+    }
+
+    public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
         // TODO: For now just create new session every time we set a target...
-        DLightSession session = newSession(target, configuration);
+        DLightSession session = newSession(target, configuration, sessionName);
         setActiveSession(session);
         return session;
     }
 
     public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName));
+        return createSession(target, configurationName, null);
+    }
+
+    public DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName, sessionName));
     }
 
     public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration));
+        return createSession(target, configuration, null);
+    }
+
+    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration, sessionName));
     }
 
     public void closeSession(DLightSession session) {
@@ -225,8 +241,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
-        DLightSession session = new DLightSession();
+    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+        DLightSession session = new DLightSession(sessionName);
         //DLightSessionContext sessionContext = session.getSessionContext();
 //        try {
 //            DLightSessionContextAccessor.getDefault().put(sessionContext, "os", HostInfoUtils.getOS(target.getExecEnv()));
