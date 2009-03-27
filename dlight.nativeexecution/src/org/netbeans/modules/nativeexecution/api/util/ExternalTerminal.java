@@ -194,15 +194,24 @@ public final class ExternalTerminal {
             return command;
         }
 
-        StringBuilder cmd = new StringBuilder("sh -c 'which " + command); // NOI18N
+        StringBuilder cmd = new StringBuilder();
 
         for (String s : searchPaths) {
-            cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
+            cmd.append("/bin/ls " + s + "/" + command + " || "); // NOI18N
         }
 
-        cmd.append("'"); // NOI18N
+        cmd.append("which " + command); // NOI18N
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
+        String shell = "/bin/sh"; // NOI18N
+
+        try {
+            shell = HostInfoUtils.getShell(execEnv);
+        } catch (ConnectException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, shell);
+        npb = npb.setArguments("-c", cmd.toString()); // NOI18N
         StringWriter result = new StringWriter();
 
         ExecutionDescriptor descriptor =
