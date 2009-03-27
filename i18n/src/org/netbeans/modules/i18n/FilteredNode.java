@@ -72,6 +72,10 @@ public class FilteredNode extends FilterNode {
       this(original, filter, null);
   }
 
+    @Override
+    public boolean canRename() {
+        return false;
+    }
 
 
   public FilteredNode(Node original, NodeFilter filter, String newName) {
