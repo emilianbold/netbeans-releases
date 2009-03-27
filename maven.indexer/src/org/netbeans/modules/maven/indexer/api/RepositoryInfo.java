@@ -68,12 +68,17 @@ public final class RepositoryInfo {
         this.repositoryPath = repositoryPath;
         this.repositoryUrl = repositoryUrl;
         this.indexUpdateUrl = indexUpdateUrl;
-        assert (isLocal() == true && isRemoteDownloadable() == true) != true : "XXXCannot have both local and remote index fields filled in."; //NOI18N
+        assert (isLocal() == true && isRemoteDownloadable() == true) != true : "Cannot have both local and remote index fields filled in. Repository: " + id + " Path=" + repositoryPath + " Remote URL:" + indexUpdateUrl; //NOI18N
     }
 
     public static RepositoryInfo createRepositoryInfo(FileObject fo) {
         String type = (String) fo.getAttribute(RepositoryPreferences.KEY_TYPE);
-        assert type != null;
+//it seems the type can somehow turn null
+//        assert type != null : "No type defined for repository at " + fo.getPath();
+// for now we can handle the data corruption in the following way
+        if (type ==  null) {
+            type = RepositoryPreferences.TYPE_NEXUS;
+        }
         String id = fo.getName();
         String name = id;
         String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
