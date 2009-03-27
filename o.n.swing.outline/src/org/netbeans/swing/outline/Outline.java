@@ -821,8 +821,7 @@ public class Outline extends ETable {
 
         public void actionPerformed(ActionEvent e) {
             if( getSelectedRowCount() == 1 && isTreeColumnIndex (getSelectedColumn()) ) {
-                int selRow = getSelectedRow();
-                TreePath selPath = getLayoutCache().getPathForRow(selRow);
+                TreePath selPath = getLayoutCache().getPathForRow(convertRowIndexToModel (getSelectedRow ()));
                 if( null != selPath 
                         && !getOutlineModel().isLeaf(selPath.getLastPathComponent()) ) {
                     boolean expanded = getLayoutCache().isExpanded(selPath);

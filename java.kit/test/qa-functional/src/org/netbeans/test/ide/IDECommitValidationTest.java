@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -63,32 +62,12 @@ import org.netbeans.test.ide.CountingSecurityManager.Mode;
  */
 public class IDECommitValidationTest extends JellyTestCase {
 
-    private static boolean initBlacklistedClassesHandler() {        
-        String configFN = new IDECommitValidationTest("Dummy").getDataDir()
-                + File.separator + "BlacklistedClassesHandlerConfig.xml";
-        configFN = configFN.replace("java.kit", "ide.kit"); //temporary hack
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
-        
-        System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
-        if (bcHandler.initSingleton(configFN)) {
-            bcHandler.register();
-            System.out.println("BlacklistedClassesHandler handler added");
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    
     /** Need to be defined because of JUnit */
     public IDECommitValidationTest(String name) {
         super(name);
     }
     
     public static Test suite() throws IOException {
-        
-        boolean blacklistEnabled = initBlacklistedClassesHandler();
-        
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
@@ -113,9 +92,6 @@ public class IDECommitValidationTest extends JellyTestCase {
 
         CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
         
-        if (blacklistEnabled) {
-            conf = conf.addTest("testBlacklistedClassesHandler");
-        }
         /* too easy to break:
         conf = conf.addTest("testReflectionUsage");
         conf = conf.addTest("testWriteAccess");

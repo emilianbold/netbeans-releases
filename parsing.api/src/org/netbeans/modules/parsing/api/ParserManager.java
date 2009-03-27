@@ -40,12 +40,15 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
@@ -149,14 +152,14 @@ public final class ParserManager {
             //tzezula: Wrong - doesn't work for multiple files!
             LMListener lMListener = new LMListener ();
             Parser parser = null;
+            final Collection<Snapshot> snapShots = new LazySnapshots(sources);
             for (Source source : sources) {
                 SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
                 if (parser == null) {
                     Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
                     ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
                     if (parserFactory != null) {
-                        final Collection<Snapshot> _tmp = Collections.singleton (sourceCache.getSnapshot ());
-                        parser = parserFactory.createParser (_tmp);
+                        parser = parserFactory.createParser (snapShots);
                     }
                 }
                 final ResultIterator resultIterator = new ResultIterator (sourceCache, parser, userTask);
@@ -170,6 +173,117 @@ public final class ParserManager {
             }
             return null;
         }
+    }
+
+    //where
+    private static class LazySnapshots implements Collection<Snapshot> {
+
+        private final Collection<? extends Source> sources;
+
+        public LazySnapshots (final Collection<? extends Source> sources) {
+            assert sources != null;
+            this.sources  = sources;
+        }
+
+        public int size() {
+            return this.sources.size();
+        }
+
+        public boolean isEmpty() {
+            return this.sources.isEmpty();
+        }
+
+        public boolean contains(final Object o) {
+            if (!(o instanceof Snapshot)) {
+                return false;
+            }
+            final Snapshot snap =(Snapshot) o;
+            return this.sources.contains(snap.getSource());
+        }
+
+        public Iterator<Snapshot> iterator() {
+            return new LazySnapshotsIt (this.sources.iterator());
+        }
+
+        public Object[] toArray() {
+            final Object[] result = new Object[this.sources.size()];
+            fill (result);
+            return result;
+        }
+
+        public <T> T[] toArray(T[] a) {
+            final int size = this.sources.size();
+            if (a.length < size)
+                a = (T[])java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+            fill (a);
+            return a;
+        }
+
+        private void fill (Object[] array) {
+            final Iterator<? extends Source> it = this.sources.iterator();
+            for (int i=0; it.hasNext(); i++) {
+                SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (it.next());
+                array[i] = sourceCache.getSnapshot();
+            }
+        }
+
+        public boolean add(Snapshot o) {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        public boolean containsAll(final Collection<?> c) {
+            for (Object e : c) {
+                if (!contains(e)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public boolean addAll(Collection<? extends Snapshot> c) {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        public void clear() {
+            throw new UnsupportedOperationException("Read only collection.");
+        }
+
+        private static class LazySnapshotsIt implements Iterator<Snapshot> {
+
+            private final Iterator<? extends Source> sourcesIt;
+
+            public LazySnapshotsIt (final Iterator<? extends Source> sourcesIt) {
+                assert sourcesIt != null;
+                this.sourcesIt = sourcesIt;
+            }
+
+            public boolean hasNext() {
+                return sourcesIt.hasNext();
+            }
+
+            public Snapshot next() {
+                final SourceCache cache = SourceAccessor.getINSTANCE().getCache(sourcesIt.next());
+                return cache.getSnapshot();
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException("Read only collection.");
+            }
+
+        }
+
     }
     
     /**

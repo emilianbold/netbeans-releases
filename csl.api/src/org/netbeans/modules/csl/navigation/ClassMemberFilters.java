@@ -163,7 +163,7 @@ public final class ClassMemberFilters {
 //                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
 //                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
 //                false,
-//                new ImageIcon (Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideInherited.png")), //NOI18N
+//                new ImageIcon (Utilities.loadImage("org/netbeans/modules/csl/navigation/resources/filterHideInherited.png")), //NOI18N
 //                null
 //        );
         desc.addFilter(SHOW_FIELDS,

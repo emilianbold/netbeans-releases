@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Graph createGraph() {
-        Graph graph = new Graph(100, DESCRIPTOR);
+        Graph graph = new Graph(100, null, DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
         graph.setMinimumSize(new Dimension(80, 60));
         graph.setPreferredSize(new Dimension(80, 60));
@@ -47,11 +47,7 @@ import org.openide.util.NbBundle;
         return new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>emptyMap());
     }
 
-    public void updated(int[][] values) {
-        for (int i = 0; i < values.length; i++) {
-            int lck = values[i][0];
-            graph.addData(new int[]{lck});
-            //getLegend().setLocksValue(String.format("%02d%%", lck)); // NOI18N
-        }
+    public void addData(int value) {
+        graph.addData(value);
     }
 }

@@ -59,10 +59,12 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     private CpuIndicatorPanel panel;
     private Collection<ActionListener> listeners;
+    private int lastSysValue;
+    private int lastUsrValue;
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
-        panel = new CpuIndicatorPanel(this);
+        panel = new CpuIndicatorPanel();
     }
 
     @Override
@@ -76,22 +78,22 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     @Override
     public void updated(List<DataRow> data) {
-        DataRow lastRow = null;
         for (DataRow row : data) {
             if (DLightLogger.instance.isLoggable(Level.FINE)) { DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1)); }
             Float usr = (Float) row.getData("utime"); // NOI18N
             Float sys = (Float) row.getData("stime"); // NOI18N
             if (usr != null && sys != null) {
-                panel.addData(sys.intValue(), usr.intValue());
-                lastRow = row;
+                lastSysValue = sys.intValue();
+                lastUsrValue = usr.intValue();
             }
         }
-        if (lastRow != null) {
-            Float usr = (Float) lastRow.getData("utime"); // NOI18N
-            Float sys = (Float) lastRow.getData("stime"); // NOI18N
-            panel.setSysValue(sys.intValue());
-            panel.setUsrValue(usr.intValue());
-        }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastSysValue, lastUsrValue);
+        panel.setSysValue(lastSysValue);
+        panel.setUsrValue(lastUsrValue);
     }
 
     /*package*/ void fireActionPerformed() {

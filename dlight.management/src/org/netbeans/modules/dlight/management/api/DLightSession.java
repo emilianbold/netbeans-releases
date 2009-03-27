@@ -45,6 +45,7 @@ import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -305,7 +306,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
 
         //if we have IDP which are collectors add them into the list of collectors
-for (DLightTool tool : validTools) {
+        for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
@@ -317,8 +318,8 @@ for (DLightTool tool : validTools) {
                             context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                         }
                         if (idp instanceof DataCollector) {
-                            if (!collectors.contains(idp)){
-                                collectors.add((DataCollector)idp);
+                            if (!collectors.contains(idp)) {
+                                collectors.add((DataCollector) idp);
                             }
                             if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
                                 notAttachableDataCollector = ((DataCollector) idp);
@@ -326,6 +327,7 @@ for (DLightTool tool : validTools) {
                         }
                         List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
+                           target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
                                 target.addTargetListener(idp);
@@ -346,6 +348,12 @@ for (DLightTool tool : validTools) {
                 if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                     notAttachableDataCollector = toolCollector;
                 }
+                //init storage with the target values
+                DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+                Map<String, String> info = targetInfo.getInfo();
+                for (String key : info.keySet()){
+                    storage.put(key, info.get(key));
+                }
                 toolCollector.init(storage, target);
                 if (storages == null) {
                     storages = new ArrayList<DataStorage>();
@@ -361,7 +369,7 @@ for (DLightTool tool : validTools) {
             target.addTargetListener(toolCollector);
         }
 
-        
+
 
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget

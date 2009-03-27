@@ -75,11 +75,11 @@ public class RemoveTaskTest {
      */
     @Test
     public void testRemoveDirectory() {
-        System.out.println("removeDirectory");
+        System.out.println("removeDirectory"); // NOI18N
 
         StringBuilder rmTaskError = new StringBuilder();
         boolean forceRemoveReadOnlyFile = false;
-        String fileToRemove = "/path/to/the/file/to/remove";
+        String fileToRemove = "/path/to/the/file/to/remove"; // NOI18N
         ExecutionEnvironment env = new ExecutionEnvironment();
 //
 //        NativeTask rmTask = CommonTasksSupport.getRemoveFileTask(

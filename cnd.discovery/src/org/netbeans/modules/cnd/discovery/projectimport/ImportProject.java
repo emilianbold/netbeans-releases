@@ -319,6 +319,14 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
+    boolean isProjectOpened(){
+        for (Project p : OpenProjects.getDefault().getOpenProjects()){
+            if (p == makeProject) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void doWork(){
         //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
@@ -374,6 +382,9 @@ public class ImportProject implements PropertyChangeListener {
 
     private void postConfigure() {
         try {
+            if (!isProjectOpened()){
+                return;
+            }
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
@@ -420,6 +431,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void makeProject(boolean doClean){
+        if (!isProjectOpened()){
+            return;
+        }
         if (makefileFile != null && makefileFile.exists()) {
             FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
             DataObject dObj;
@@ -450,6 +464,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void postClean(final Node node){
+        if (!isProjectOpened()){
+            return;
+        }
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {
             }
@@ -467,6 +484,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void postMake(Node node){
+        if (!isProjectOpened()){
+            return;
+        }
         final File makeLog = createTempFile("make"); // NOI18N
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {
@@ -512,6 +532,9 @@ public class ImportProject implements PropertyChangeListener {
 
 
     private void discovery(int rc, File makeLog) {
+        if (!isProjectOpened()){
+            return;
+        }
         waitConfigurationDescriptor();
         boolean done = false;
         if (!manualCA) {
@@ -564,6 +587,9 @@ public class ImportProject implements PropertyChangeListener {
                     }
                 }
             } else if (done && makeLog != null){
+                if (!isProjectOpened()){
+                    return;
+                }
                 if (extension != null) {
                     final Map<String, Object> map = new HashMap<String, Object>();
                     map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
@@ -620,6 +646,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void postModelDiscovery(final boolean isFull) {
+        if (!isProjectOpened()){
+            return;
+        }
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl && makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
@@ -657,18 +686,26 @@ public class ImportProject implements PropertyChangeListener {
         });
     }
 
+    Project getMakeProject(){
+        return makeProject;
+    }
+
     Map<Step,State> getImportResult(){
         return importResult;
     }
 
     // remove wrong "exclude from project" flags
     private void fixExcludedHeaderFiles(){
+        if (!isProjectOpened()){
+            return;
+        }
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             final CsmProject p = model.getProject(np);
             if (p != null && np != null) {
                 if (TRACE) {logger.log(Level.INFO, "#start fixing excluded header files by model");} // NOI18N
+                Set<String> needCheck = new HashSet<String>();
                 for(CsmFile file : p.getAllFiles()){
                     if (file instanceof FileImpl){
                         FileImpl impl = (FileImpl)file;
@@ -680,8 +717,17 @@ public class ImportProject implements PropertyChangeListener {
                             if (item instanceof Item){
                                 if (TRACE) {logger.log(Level.FINE, "#fix excluded header for file "+impl.getAbsolutePath());} // NOI18N
                                 ProjectBridge.setExclude((Item)item, false);
+                                if (file.isHeaderFile()) {
+                                    needCheck.add(item.getFile().getAbsolutePath());
+                                }
                             }
                         }
+                    }
+                }
+                if (needCheck.size()>0){
+                    ProjectBridge bridge = new ProjectBridge(makeProject);
+                    if (bridge.isValid()){
+                        bridge.checkForNewExtensions(needCheck);
                     }
                 }
                 saveMakeConfigurationDescriptor();
@@ -691,6 +737,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void modelDiscovery() {
+        if (!isProjectOpened()){
+            return;
+        }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);

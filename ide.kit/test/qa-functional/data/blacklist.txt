@@ -38,6 +38,17 @@ org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider
 org.netbeans.modules.profiler.utilities.Visitable
 org.netbeans.modules.profiler.utilities.Visitor
 
+org.netbeans.lib.profiler.results.BaseCallGraphBuilder
+org.netbeans.lib.profiler.results.CCTProvider
+org.netbeans.lib.profiler.results.cpu.CPUCCTProvider
+org.netbeans.lib.profiler.results.cpu.CPUCallGraphBuilder
+org.netbeans.lib.profiler.results.cpu.CPUProfilingResultListener
+org.netbeans.lib.profiler.results.cpu.InstrTimingData
+org.netbeans.lib.profiler.results.cpu.MethodInfoMapper
+org.netbeans.lib.profiler.results.cpu.ThreadInfos
+org.netbeans.lib.profiler.results.cpu.TimingAdjusterOld
+org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory
+
 # issue 136587:
  org.netbeans.modules.cnd.loaders.CndAbstractDataLoader
  org.netbeans.modules.cnd.loaders.ShellDataLoader
@@ -296,3 +307,7 @@ org.netbeans.modules.favorites.Actions$View
 org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader
 org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader
 org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader
+
+# IZ 152984
+org.netbeans.modules.profiler.categories.Categorization
+org.netbeans.modules.profiler.categories.CategoryBuilder

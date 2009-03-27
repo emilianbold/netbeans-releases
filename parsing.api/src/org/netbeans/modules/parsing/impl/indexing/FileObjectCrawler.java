@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
@@ -87,6 +88,10 @@ public class FileObjectCrawler extends Crawler {
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes) {
         for (FileObject fo : fos) {
+            //keep the same logic like in RepositoryUpdater
+            if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
+                continue;
+            }
             if (fo.isFolder()) {
                 collect(fo.getChildren(), root, cache, supportedMimeTypes);
             } else {

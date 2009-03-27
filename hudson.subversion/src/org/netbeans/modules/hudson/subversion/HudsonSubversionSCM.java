@@ -140,7 +140,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, final Element changeSet) {
+    public List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
         if (!"svn".equals(Helper.xpath("kind", changeSet))) {
             // Either a different SCM, or old Hudson.
             if (changeSet.getElementsByTagName("revision").getLength() == 0) {
@@ -196,7 +196,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         default:
                             throw new AssertionError();
                         }
-                        return new SubversionHyperlink(module, path, startRev, endRev);
+                        return new SubversionHyperlink(module, path, startRev, endRev, job);
                     }
                 }
                 List<SubversionFile> files = new ArrayList<SubversionFile>();

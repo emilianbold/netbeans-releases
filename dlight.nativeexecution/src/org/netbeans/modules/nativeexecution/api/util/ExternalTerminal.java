@@ -65,8 +65,8 @@ import org.openide.windows.InputOutput;
  */
 public final class ExternalTerminal {
 
-    private final static ConcurrentHashMap<ExecutionEnvironment, String> execCache =
-            new ConcurrentHashMap<ExecutionEnvironment, String>();
+    private final static ConcurrentHashMap<TermEnvPair, String> execCache =
+            new ConcurrentHashMap<TermEnvPair, String>();
     private final TerminalProfile profile;
     private String title = null;
     private String prompt = "Press [Enter] to close the terminal ..."; // NOI18N
@@ -184,14 +184,14 @@ public final class ExternalTerminal {
         if (execEnv.isLocal() && Utilities.isWindows()) {
             return command;
         }
-        
+
         StringBuilder cmd = new StringBuilder("sh -c 'which " + command); // NOI18N
 
         for (String s : searchPaths) {
             cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
         }
 
-        cmd.append("'");
+        cmd.append("'"); // NOI18N
 
         NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
         StringWriter result = new StringWriter();
@@ -216,7 +216,9 @@ public final class ExternalTerminal {
     }
 
     private String getExec(ExecutionEnvironment execEnv) {
-        String exec = execCache.get(execEnv);
+        TermEnvPair key = new TermEnvPair(execEnv, profile.getCommand());
+
+        String exec = execCache.get(key);
 
         if (exec == null) {
             exec = findPath(execEnv,
@@ -224,7 +226,7 @@ public final class ExternalTerminal {
                     profile.getCommand());
 
             if (exec != null) {
-                String execPath = execCache.putIfAbsent(execEnv, exec);
+                String execPath = execCache.putIfAbsent(key, exec);
 
                 if (execPath != null) {
                     exec = execPath;
@@ -233,5 +235,34 @@ public final class ExternalTerminal {
         }
 
         return exec;
+    }
+
+    private static class TermEnvPair {
+
+        public final ExecutionEnvironment env;
+        public final String termexec;
+
+        public TermEnvPair(ExecutionEnvironment env, String termexec) {
+            this.env = env;
+            this.termexec = termexec;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof TermEnvPair)) {
+                throw new IllegalArgumentException();
+            }
+            TermEnvPair that = (TermEnvPair) obj;
+
+            return env.equals(that.env) && termexec.equals(that.termexec);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + (this.env != null ? this.env.hashCode() : 0);
+            hash = 79 * hash + (this.termexec != null ? this.termexec.hashCode() : 0);
+            return hash;
+        }
     }
 }

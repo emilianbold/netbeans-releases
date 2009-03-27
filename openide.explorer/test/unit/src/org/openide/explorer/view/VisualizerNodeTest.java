@@ -50,6 +50,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 
 /** VisualizerNode tests, mostly based on reported bugs.
  */
@@ -203,6 +204,21 @@ public class VisualizerNodeTest extends NbTestCase {
 
         child = null;
         assertGC("VisualizerChildren should be GCed", ref);
+    }
+
+    public void testNodeToolTip() {
+        AbstractNode n = new AbstractNode(Children.LEAF) {
+
+
+
+            @Override
+            public Image getIcon(int type) {
+                return ImageUtilities.assignToolTipToImage(super.getIcon(type), "test");
+            }
+
+        };
+        VisualizerNode vn = (VisualizerNode) Visualizer.findVisualizer(n);
+        assertEquals(vn.getShortDescription(), "<html><br>test</html>");
     }
 
     final boolean isDummyNode(TreeNode visNode) {
