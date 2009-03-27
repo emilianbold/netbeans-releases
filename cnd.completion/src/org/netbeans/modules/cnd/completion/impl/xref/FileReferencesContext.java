@@ -59,11 +59,14 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
+import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 
 /**
  *
@@ -145,7 +148,6 @@ public final class FileReferencesContext {
             return null;
         }
         if (fileLocalVars == null) {
-            fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
             fillFileLocalIncludeVariables();
         }
         List<CsmUID<CsmVariable>> vars = fileLocalVars.get(name);
@@ -223,44 +225,29 @@ public final class FileReferencesContext {
         return null;
     }
 
-    private void fillFileLocalIncludeVariables() {
+    private synchronized void fillFileLocalIncludeVariables() {
+        if (fileLocalVars != null) {
+            return;
+        }
+        fileLocalVars = new HashMap<String, List<CsmUID<CsmVariable>>>();
         CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[] {
                         CsmDeclaration.Kind.VARIABLE,
                         CsmDeclaration.Kind.VARIABLE_DEFINITION};
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                            null, true, true, false);
-        fillFileLocalIncludeVariables(filter, csmFile, new HashSet<CsmFile>(), true);
+        List<CsmVariable> allVars = new ArrayList<CsmVariable>(10);
+        CsmProjectContentResolver.fillFileLocalVariablesByFilter(filter, csmFile, allVars);
+        for (CsmVariable var : allVars) {
+            String name = var.getName().toString();
+            List<CsmUID<CsmVariable>> list = fileLocalVars.get(name);
+            if (list == null) {
+                list = new ArrayList<CsmUID<CsmVariable>>();
+                fileLocalVars.put(name, list);
+            }
+            list.add(UIDs.get(var));
+        }
     }
     
-    @SuppressWarnings("unchecked")
-    private void fillFileLocalIncludeVariables(CsmFilter filter, CsmFile file, Set<CsmFile> antiLoop, boolean first) {
-        if (antiLoop.contains(file)) {
-            return;
-        }
-        antiLoop.add(file);
-        for(CsmInclude incl : file.getIncludes()){
-            CsmFile f = incl.getIncludeFile();
-            if (f != null) {
-                fillFileLocalIncludeVariables(filter, f, antiLoop, false);
-            }
-        }
-        if (!first) {
-            Iterator<CsmVariable> it = CsmSelect.getStaticVariables(file, filter);
-            while(it.hasNext()) {
-                CsmOffsetableDeclaration decl = it.next();
-                 if (CsmKindUtilities.isFileLocalVariable(decl)) {
-                     CsmVariable var = (CsmVariable) decl;
-                     String name = var.getName().toString();
-                     List<CsmUID<CsmVariable>> list = fileLocalVars.get(name);
-                     if (list == null) {
-                         list = new ArrayList<CsmUID<CsmVariable>>();
-                     }
-                     list.add(UIDs.get(var));
-                }
-            }
-        }
-    }
-
     private void fillFileOffsets(){
         for(CsmOffsetableDeclaration declaration : csmFile.getDeclarations()){
             fileDeclarationsOffsets.add(new Offsets(declaration));

@@ -41,8 +41,6 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.JScrollPane;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -121,9 +119,7 @@ final class KenaiTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         removeAll();
-        JScrollPane scroll = new JScrollPane( DashboardImpl.getInstance().getComponent() );
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        add( scroll, BorderLayout.CENTER );
+        add( DashboardImpl.getInstance().getComponent(), BorderLayout.CENTER );
     }
 
     @Override

@@ -90,7 +90,10 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class CsmDisplayUtilities {
-    
+
+    private CsmDisplayUtilities() {
+    }
+
     public static String getContextLineHtml(CsmFile csmFile, final int stToken, final int endToken, boolean tokenInBold) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
         StyledDocument stDoc = null;
@@ -113,6 +116,29 @@ public class CsmDisplayUtilities {
                     endOffset = -1;
                 }
                 displayText = getLineHtml(startLine, endLine, stOffset, endOffset, doc);
+            } catch (BadLocationException ex) {
+                // skip
+            }
+        }
+        return displayText;
+    }
+
+    public static String getContextLine(CsmFile csmFile, final int stToken, final int endToken) {
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        StyledDocument stDoc = null;
+        try {
+            stDoc = ces.openDocument();
+        } catch (IOException iOException) {
+            // skip
+        }
+
+        String displayText = null;
+        if (stDoc instanceof BaseDocument) {
+            BaseDocument doc = (BaseDocument) stDoc;
+            try {
+                int startLine = Utilities.getRowFirstNonWhite(doc, stToken);
+                int endLine = Utilities.getRowLastNonWhite(doc, endToken) + 1;
+                displayText = doc.getText(startLine, endLine - startLine);
             } catch (BadLocationException ex) {
                 // skip
             }

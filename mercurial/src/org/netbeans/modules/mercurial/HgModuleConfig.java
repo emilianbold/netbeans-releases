@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.prefs.Preferences;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.logging.Level;
+import org.ini4j.InvalidIniFormatException;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 //import org.netbeans.modules.mercurial.options.AnnotationExpression;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
@@ -231,11 +233,21 @@ public class HgModuleConfig {
     }
 
     public void addHgkExtension() {
-        HgConfigFiles.getSysInstance().setProperty("hgext.hgk", "");
+        HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+        if (hcf.getException() == null) {
+            hcf.setProperty("hgext.hgk", "");
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
     
     public void setUserName(String name) {
-        HgConfigFiles.getSysInstance().setUserName(name);
+        HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+        if (hcf.getException() == null) {
+            hcf.setUserName(name);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     public Boolean isUserNameValid(String name) {
@@ -256,7 +268,10 @@ public class HgModuleConfig {
 
     public Properties getProperties(File file) {
         Properties props = new Properties();
-        HgConfigFiles hgconfig = new HgConfigFiles(file); 
+        HgConfigFiles hgconfig = new HgConfigFiles(file);
+        if (hgconfig.getException() != null) {
+            Mercurial.LOG.log(Level.WARNING, null, hgconfig.getException());
+        }
         String name = hgconfig.getUserName(false);
         if (name.length() == 0) 
             name = getSysUserName();
@@ -285,23 +300,48 @@ public class HgModuleConfig {
     }
 
     public void clearProperties(File file, String section) {
-        getHgConfigFiles(file).clearProperties(section);
+        HgConfigFiles hcf = getHgConfigFiles(file);
+        if (hcf.getException() == null) {
+            hcf.clearProperties(section);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     public void removeProperty(File file, String section, String name) {
-        getHgConfigFiles(file).removeProperty(section, name);
+        HgConfigFiles hcf = getHgConfigFiles(file);
+        if (hcf.getException() == null) {
+            hcf.removeProperty(section, name);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     public void setProperty(File file, String name, String value) {
-        getHgConfigFiles(file).setProperty(name, value);
+        HgConfigFiles hcf = getHgConfigFiles(file);
+        if (hcf.getException() == null) {
+            hcf.setProperty(name, value);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     public void setProperty(File file, String section, String name, String value, boolean allowEmpty) {
-        getHgConfigFiles(file).setProperty(section, name, value, allowEmpty);
+        HgConfigFiles hcf = getHgConfigFiles(file);
+        if (hcf.getException() == null) {
+            hcf.setProperty(section, name, value, allowEmpty);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     public void setProperty(File file, String section, String name, String value) {
-        getHgConfigFiles(file).setProperty(section, name, value);
+        HgConfigFiles hcf = getHgConfigFiles(file);
+        if (hcf.getException() == null) {
+            hcf.setProperty(section, name, value);
+        } else {
+            Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+        }
     }
 
     /*

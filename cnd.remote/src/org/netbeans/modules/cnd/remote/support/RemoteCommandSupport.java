@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.logging.Level;
@@ -63,6 +64,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     private final String cmd;
     private final Map<String, String> env;
 
+    private boolean interrupted = false;
+
     public static int run(ExecutionEnvironment execEnv, String cmd) {
         RemoteCommandSupport support = new RemoteCommandSupport(execEnv, cmd);
         return support.run();
@@ -72,6 +75,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         super(execEnv);
         this.cmd = cmd;
         this.env = env;
+    }
+
+    public boolean isInterrupted() {
+        return interrupted;
     }
 
     public int run() {
@@ -119,7 +126,11 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 }
                 setExitStatus(rc);
             } catch (InterruptedException ie) {
-                log.log(Level.WARNING, ie.getMessage(), ie);
+                interrupted = true;
+                // don't log it, it's quite normal
+            } catch (InterruptedIOException ie) {
+                interrupted = true;
+                // don't log it, it's quite normal
             } catch (IOException ex) {
                 log.warning("IO failure during running " + cmd);
 //            } finally {

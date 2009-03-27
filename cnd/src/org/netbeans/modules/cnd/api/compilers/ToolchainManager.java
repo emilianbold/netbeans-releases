@@ -123,6 +123,8 @@ public abstract class ToolchainManager {
         Map<String, String> getDefaultLocations();
 
         DebuggerDescriptor getDebugger();
+
+        String getMakefileWriter();
     }
 
     public interface ToolDescriptor {

@@ -158,13 +158,29 @@ public class AttachmentsPanel extends JPanel {
                     .add(dateLabel)
                     .add(authorLabel)));
             for (BugzillaIssue.Attachment attachment : attachments) {
-                JPopupMenu menu = menuFor(attachment);
+                boolean isPatch = "1".equals(attachment.getIsPatch()); // NOI18N
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
                 String author = attachment.getAuthor();
                 descriptionLabel = new JLabel(description);
                 LinkButton filenameButton = new LinkButton();
+                LinkButton patchButton = null;
+                JLabel lBrace = null;
+                JLabel rBrace = null;
+                GroupLayout.SequentialGroup hPatchGroup = null;
+                if (isPatch) {
+                    patchButton = new LinkButton();
+                    lBrace = new JLabel("("); // NOI18N
+                    rBrace = new JLabel(")"); // NOI18N
+                    hPatchGroup = layout.createSequentialGroup()
+                            .add(filenameButton)
+                            .addPreferredGap(LayoutStyle.RELATED)
+                            .add(lBrace)
+                            .add(patchButton)
+                            .add(rBrace);
+                }
+                JPopupMenu menu = menuFor(attachment, patchButton);
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
                 dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
@@ -174,22 +190,35 @@ public class AttachmentsPanel extends JPanel {
                 dateLabel.setComponentPopupMenu(menu);
                 authorLabel.setComponentPopupMenu(menu);
                 descriptionGroup.add(descriptionLabel);
-                filenameGroup.add(filenameButton);
+                if (isPatch) {
+                    lBrace.setComponentPopupMenu(menu);
+                    patchButton.setComponentPopupMenu(menu);
+                    rBrace.setComponentPopupMenu(menu);
+                    filenameGroup.add(hPatchGroup);
+                } else {
+                    filenameGroup.add(filenameButton);
+                }
                 dateGroup.add(dateLabel);
                 authorGroup.add(authorLabel);
                 panel = createHighlightPanel();
                 panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
                 panel.setComponentPopupMenu(menu);
                 horizontalSubgroup.add(panel, 0, 0, Short.MAX_VALUE);
+                GroupLayout.ParallelGroup pGroup = layout.createParallelGroup(GroupLayout.BASELINE);
+                pGroup.add(descriptionLabel);
+                pGroup.add(filenameButton);
+                if (isPatch) {
+                    pGroup.add(lBrace);
+                    pGroup.add(patchButton);
+                    pGroup.add(rBrace);
+                }
+                pGroup.add(dateLabel);
+                pGroup.add(authorLabel);
                 verticalGroup
                     .addPreferredGap(LayoutStyle.RELATED)
                     .add(layout.createParallelGroup(GroupLayout.LEADING, false)
                         .add(panel, 0, 0, Short.MAX_VALUE)
-                        .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                            .add(descriptionLabel)
-                            .add(filenameButton)
-                            .add(dateLabel)
-                            .add(authorLabel)));
+                        .add(pGroup));
             }
             verticalGroup.add(newVerticalGroup);
         }
@@ -205,12 +234,17 @@ public class AttachmentsPanel extends JPanel {
         setLayout(layout);
     }
 
-    private JPopupMenu menuFor(Attachment attachment) {
+    private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();
         menu.add(new DefaultAttachmentAction(attachment));
         menu.add(new SaveAttachmentAction(attachment));
         if ("1".equals(attachment.getIsPatch())) { // NOI18N
-            menu.add(new ApplyPatchAction(attachment));
+            AbstractAction action = new ApplyPatchAction(attachment);
+            menu.add(action);
+            patchButton.setAction(action);
+            // Lower the first letter
+            String label = patchButton.getText();
+            patchButton.setText(label.substring(0,1).toLowerCase()+label.substring(1));
         }
         return menu;
     }
@@ -342,7 +376,7 @@ public class AttachmentsPanel extends JPanel {
                         if ("image/png".equals(contentType) // NOI18N
                                 || "image/gif".equals(contentType) // NOI18N
                                 || "image/jpeg".equals(contentType)) { // NOI18N
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURL());
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
                         } else {
                             FileObject fob = FileUtil.toFileObject(file);
                             DataObject dob = DataObject.find(fob);
