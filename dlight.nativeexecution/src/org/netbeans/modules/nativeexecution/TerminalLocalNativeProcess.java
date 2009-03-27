@@ -54,7 +54,7 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.PathConverter;
+import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -67,7 +67,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static String dorunScript;
     private final static boolean isWindows;
     private final static boolean isMacOS;
-    private final static PathConverter pathConverter;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -98,8 +97,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
         }
         
-        pathConverter = new PathConverter();
-
         dorunScript = runScript;
     }
 
@@ -176,7 +173,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             if (isWindows) {
                 String path = env.get("PATH"); // NOI18N
-                env.put("PATH", pathConverter.normalizeAll(path)); // NOI18N
+                env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
             }
 
             File envFile = new File(envFileName);
