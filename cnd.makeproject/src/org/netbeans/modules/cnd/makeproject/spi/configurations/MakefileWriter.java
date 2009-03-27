@@ -38,16 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 
-public class DefaultMakefileWriter implements MakefileWriter {
-
+public interface MakefileWriter {
     /**
      * Writes first section of generated makefile
      *
@@ -55,9 +53,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writePrelude(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writePrelude(confDescriptor, conf, bw);
-    }
+    void writePrelude(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes main build target
@@ -66,9 +62,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeBuildTarget(confDescriptor, conf, bw);
-    }
+    void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes all compile targets (only for managed projects)
@@ -77,9 +71,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeCompileTargets(confDescriptor, conf, bw);
-    }
+    void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes link target (only for linked projects)
@@ -88,9 +80,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeLinkTarget(confDescriptor, conf, bw);
-    }
+    void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes writes archive target (only for archive projects)
@@ -99,9 +89,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeArchiveTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeArchiveTarget(confDescriptor, conf, bw);
-    }
+    void writeArchiveTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes target for unmanaged projects
@@ -110,9 +98,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeMakefileTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeMakefileTarget(confDescriptor, conf, bw);
-    }
+    void writeMakefileTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes target for QT projects
@@ -121,9 +107,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeQTTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeQTTarget(confDescriptor, conf, bw);
-    }
+    void writeQTTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes clan target
@@ -132,9 +116,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeCleanTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeCleanTarget(confDescriptor, conf, bw);
-    }
+    void writeCleanTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes targets for sub projects
@@ -143,9 +125,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeSubProjectBuildTargets(confDescriptor, conf, bw);
-    }
+    void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 
     /**
      * Writes dependency checking target
@@ -154,7 +134,5 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    public void writeDependencyChecking(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ConfigurationMakefileWriter.writeDependencyChecking(confDescriptor, conf, bw);
-    }
+    void writeDependencyChecking(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
 }
