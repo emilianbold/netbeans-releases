@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 
 public final class CreateHostVisualPanel1 extends JPanel {
 
@@ -53,6 +54,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
 
     public CreateHostVisualPanel1(final ChangeListener listener) {
         initComponents();
+        textPort.setText(Integer.toString(ExecutionEnvironmentFactory.DEFAULT_PORT));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
@@ -87,6 +89,12 @@ public final class CreateHostVisualPanel1 extends JPanel {
         });
     }
 
+    void init(Integer port) {
+        if (port != null) {
+            textPort.setText(port.toString());
+        }
+    }
+
     @Override
     public String getName() {
         return CreateHostWizardIterator.getString("CreateHostVisualPanel1.Title");
@@ -94,6 +102,15 @@ public final class CreateHostVisualPanel1 extends JPanel {
 
     public String getHostname() {
         return textHostname.getText();
+    }
+
+    public Integer getPort() {
+        try {
+            return Integer.valueOf(Integer.parseInt(textPort.getText()));
+        } catch(NumberFormatException e) {
+            //return Integer.valueOf(ExecutionEnvironmentFactory.DEFAULT_PORT);
+            return null;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -110,6 +127,8 @@ public final class CreateHostVisualPanel1 extends JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         tableHostsList = new javax.swing.JTable();
         pbarStatusPanel = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        textPort = new javax.swing.JTextField();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
@@ -134,20 +153,28 @@ public final class CreateHostVisualPanel1 extends JPanel {
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
         pbarStatusPanel.setLayout(new java.awt.BorderLayout());
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel3.text")); // NOI18N
+
+        textPort.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textPort.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+                    .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+                    .add(jLabel2)
+                    .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2))
+                        .add(textHostname, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 320, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
+                        .add(jLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -156,11 +183,13 @@ public final class CreateHostVisualPanel1 extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(textHostname, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
+                    .add(jLabel1)
+                    .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
                 .add(18, 18, 18)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -177,10 +206,12 @@ public final class CreateHostVisualPanel1 extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTable tableHostsList;
     private javax.swing.JTextField textHostname;
+    private javax.swing.JTextField textPort;
     // End of variables declaration//GEN-END:variables
     }
 
