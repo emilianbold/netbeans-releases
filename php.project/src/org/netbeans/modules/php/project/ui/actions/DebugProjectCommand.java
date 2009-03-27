@@ -62,7 +62,7 @@ public class DebugProjectCommand extends Command implements Displayable {
     @Override
     public void invokeAction(final Lookup context) {
         ConfigAction configAction = getConfigAction();
-        if (!configAction.isValid(true)) {
+        if (!configAction.isValid(isScriptSelected())) {
             // property not set yet
             return;
         }
