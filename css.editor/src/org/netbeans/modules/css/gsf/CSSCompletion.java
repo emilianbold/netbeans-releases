@@ -731,6 +731,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             return ElementKind.OTHER;
         }
 
+        @Override
         public ImageIcon getIcon() {
             if (kind == CompletionItemKind.PROPERTY) {
                 if (propertyIcon == null) {
@@ -746,6 +747,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             return null;
         }
 
+        @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             return formatter.getText();
