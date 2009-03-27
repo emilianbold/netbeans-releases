@@ -22,11 +22,14 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.netbeans.modules.xml.xam.Component;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -169,7 +172,7 @@ public abstract class ChooserHelper<T extends Component> {
     }
 
     
-    protected File[] recursiveListFiles(File file, FileFilter filter) {
+    protected List<File> recursiveListFiles(File file, FileFilter filter) {
         List<File> files = new ArrayList<File>();
         if (file != null && file.isDirectory()) {
             File[] filesArr = file.listFiles(filter);
@@ -179,15 +182,30 @@ public abstract class ChooserHelper<T extends Component> {
             File[] dirs = file.listFiles(new DirFileFilter());
             if (dirs != null) {
                 for (File dir : dirs) {
-                    File[] fs = recursiveListFiles(dir, filter);
-                    if (fs != null && fs.length > 0) {
-                        files.addAll(Arrays.asList(fs));
+                    List<File> fs = recursiveListFiles(dir, filter);
+                    if (fs != null && fs.size() > 0) {
+                        files.addAll(fs);
                     }
                 }
             }
         }
         
-        return files.toArray(new File[files.size()]);
+        return files;
     }
-    
+
+
+    protected List<File> getFilesFromNonBuildFolders(FileObject rootFolder, FileFilter filter) {
+        List<File> result = new ArrayList<File>();
+        Enumeration<? extends FileObject> folders = rootFolder.getFolders(false);
+        while (folders.hasMoreElements()) {
+            FileObject fo = folders.nextElement();
+            //IZ 161095: Need to hard code for now, as I could not find a way to get the name of build folder for a project is.
+            if (fo.getName().equals("build")) {
+                continue;
+            }
+            List<File> files = recursiveListFiles(FileUtil.toFile(fo), filter);
+            result.addAll(files);
+        }
+        return result;
+    }
 }

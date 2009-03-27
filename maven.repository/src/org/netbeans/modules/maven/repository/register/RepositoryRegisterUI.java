@@ -57,6 +57,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
 
     private static File lastFolder = new File(System.getProperty("user.home")); //NOI18N
     private boolean modify = false;
+    private boolean singleType = false;
 
     /** Creates new form RepositoryRegisterUI */
     public RepositoryRegisterUI() {
@@ -66,6 +67,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         if (types.length == 1) {
             lblType.setVisible(false);
             comType.setVisible(false);
+            singleType = true;
         } 
         comType.setModel(new DefaultComboBoxModel(types));
         comType.setSelectedItem(RepositoryPreferences.TYPE_NEXUS);
@@ -338,7 +340,9 @@ private void txtIndexUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:ev
         txtRepoId.setEditable(false);
         txtRepoId.setText(info.getId());
         txtRepoName.setText(info.getName());
-        comType.setSelectedItem(info.getType());
+        if (singleType && info.getType() != null) {
+            comType.setSelectedItem(info.getType());
+        }
         if (info.isLocal()) {
             jraLocal.setSelected(true);
             txtRepoPath.setText(info.getRepositoryPath());

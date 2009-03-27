@@ -16,13 +16,13 @@ public final class Trouble {
         this.error = error;
     }
 
-    /** */
+    /** returns true if error, false if failure */
     public boolean isError() {
         return error;
     }
 
     /**
-     * @param error the error to set
+     * @param error - true if error, false if failure
      */
     public void setError(boolean error) {
         this.error = error;
