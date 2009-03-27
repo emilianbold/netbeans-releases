@@ -67,6 +67,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -86,6 +87,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -128,6 +130,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             browse.setVisible(false);
             folderToShareLabel.setVisible(false);
             folderTosShareTextField.setVisible(false);
+            additionalDescription.setVisible(false);
+            jCheckBox1.setVisible(false);
+            specifyLabel.setVisible(false);
         }
         refreshUsername();
 
@@ -161,6 +166,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectNameTextField.getDocument().addDocumentListener(firingDocListener);
         projectTitleTextField.getDocument().addDocumentListener(firingDocListener);
         projectDescTextField.getDocument().addDocumentListener(firingDocListener);
+        folderTosShareTextField.getDocument().addDocumentListener(firingDocListener);
 
         setupLicensesListModel();
 
@@ -236,7 +242,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     @Override
     public String getName() {
         return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                "NameAndLicenseWizardPanelGUI.panelName");
+                panel.isFinishPanel() ?
+                    "NameAndLicenseWizardPanelGUI.shareLocalName":
+                    "NameAndLicenseWizardPanelGUI.panelName");
     }
 
     /** This method is called from within the constructor to
@@ -267,22 +275,29 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         folderToShareLabel = new JLabel();
         folderTosShareTextField = new JTextField();
         browse = new JButton();
+        specifyLabel = new JLabel();
+        additionalDescription = new JLabel();
+        jCheckBox1 = new JCheckBox();
 
         setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
 
         loggedInLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loggedInLabel, gridBagConstraints);
 
         usernameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.4;
-        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 5, 0);
         add(usernameLabel, gridBagConstraints);
 
         loginButton.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.text")); // NOI18N
@@ -293,15 +308,15 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loginButton, gridBagConstraints);
 
         projectNameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(projectNameLabel, gridBagConstraints);
@@ -314,7 +329,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         add(projectNameTextField, gridBagConstraints);
@@ -322,8 +337,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         kenaiURLPreviewLabel.setText(PRJ_NAME_PREVIEW_PREFIX + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 6, 16, 0);
@@ -332,7 +347,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectTitleLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 5);
         add(projectTitleLabel, gridBagConstraints);
@@ -340,7 +355,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectTitleTextField.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -349,7 +364,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectDescLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 4);
         add(projectDescLabel, gridBagConstraints);
@@ -357,7 +372,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectDescTextField.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -367,7 +382,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectLicenseLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 4);
         add(projectLicenseLabel, gridBagConstraints);
@@ -389,7 +404,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -399,7 +414,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         multiLicensesLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
@@ -414,7 +429,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -423,22 +438,24 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         lowercaseLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(lowercaseLabel, gridBagConstraints);
 
         folderToShareLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderToShareLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 0, 20, 0);
         add(folderToShareLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 20, 0);
         add(folderTosShareTextField, gridBagConstraints);
 
         browse.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "GetSourcesFromKenaiPanel.browseLocalButton.text")); // NOI18N
@@ -449,10 +466,44 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new Insets(0, 5, 20, 0);
         add(browse, gridBagConstraints);
+
+        specifyLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.specifyLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 0, 10, 0);
+        add(specifyLabel, gridBagConstraints);
+
+        additionalDescription.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.additionalDescription.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(20, 0, 10, 0);
+        add(additionalDescription, gridBagConstraints);
+
+        jCheckBox1.setSelected(true);
+        jCheckBox1.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.jCheckBox1.text")); // NOI18N
+        jCheckBox1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
+        add(jCheckBox1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
@@ -501,7 +552,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }//GEN-LAST:event_projectNameTextFieldFocusLost
 
     private void browseActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = ProjectChooser.projectChooser();
         File uFile = new File(getFolderToShare());
         if (uFile.exists()) {
             chooser.setCurrentDirectory(FileUtil.normalizeFile(uFile));
@@ -516,10 +567,16 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel.fireChangeEvent();
     }//GEN-LAST:event_browseActionPerformed
 
+    private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_jCheckBox1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel additionalDescription;
     private JButton browse;
     private JLabel folderToShareLabel;
     private JTextField folderTosShareTextField;
+    private JCheckBox jCheckBox1;
     private JLabel kenaiURLPreviewLabel;
     private JLabel loggedInLabel;
     private JButton loginButton;
@@ -534,6 +591,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private JLabel projectTitleLabel;
     private JTextField projectTitleTextField;
     private JButton proxyConfigButton;
+    private JLabel specifyLabel;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -603,7 +661,26 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     private String checkForInfos() {
-        if (!Utilities.isUserLoggedIn()) {
+        if (panel.isFinishPanel()) {
+            if (getFolderToShare()==null || "".equals(getFolderToShare().trim())) {
+                return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.selectFolder");
+            }
+            Project p = null;
+            try {
+                p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(new File(getFolderToShare()))));
+            } catch (IOException ex) {
+            } catch (IllegalArgumentException ex) {
+            }
+            if (p==null) {
+                return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.needLocalProject");
+            }
+            if (!ShareAction.isSupported(p.getProjectDirectory())) {
+                return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.versioningNotSupported");
+            }
+        } else if (!Utilities.isUserLoggedIn()) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin");
         } else if (getProjectName().trim().equals("")) {
@@ -619,6 +696,21 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                    projectLicenseComboBox.getSelectedItem().equals(EMPTY_ELEMENT)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.prjLicenseRequired");
+        } else if (panel.isFinishPanel()) {
+            Project p = null;
+            try {
+                p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(getFolderToShare())));
+            } catch (IOException ex) {
+            } catch (IllegalArgumentException ex) {
+            }
+            if (p==null) {
+                return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.needLocalProject");
+            }
+            if (!ShareAction.isSupported(p.getProjectDirectory())) {
+                return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.versioningNotSupported");
+            }
         }
         return null;
     }
@@ -627,18 +719,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         this.settings = settings;
         final FileObject localFolder = panel.getLocalFolder();
         if (localFolder != null) {
-            Project p;
-            try {
-                p = ProjectManager.getDefault().findProject(localFolder);
-                ProjectInformation pi = ProjectUtils.getInformation(p);
-                setProjectName(pi.getName().toLowerCase());
-                setProjectTitle(pi.getDisplayName());
-                setFolderToShare(localFolder);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            setFolderToShare(localFolder);
         } else {
             String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
             if (prjName == null || "".equals(prjName.trim())) {
@@ -740,6 +821,17 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private void setFolderToShare(FileObject fo) {
         folderTosShareTextField.setText(FileUtil.getFileDisplayName(fo));
+        Project p;
+        try {
+            p = ProjectManager.getDefault().findProject(fo);
+            ProjectInformation pi = ProjectUtils.getInformation(p);
+            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9_-]", "_"));//NOI18N
+            setProjectTitle(pi.getDisplayName());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private String getFolderToShare() {
