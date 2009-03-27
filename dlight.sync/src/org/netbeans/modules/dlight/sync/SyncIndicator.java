@@ -61,7 +61,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private final JButton b = new JButton("Repair...");//NOI18N
-    private final JLabel label = new JLabel(/*getRepairActionProvider().getReason()*/);
+    private JLabel label;
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
     private int lastLocks;
@@ -107,6 +107,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         if (needed) {
             b.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             b.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            label =  new JLabel(getRepairActionProvider().getReason());
             label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             label.setAlignmentY(JComponent.CENTER_ALIGNMENT);
             b.addActionListener(new ActionListener() {

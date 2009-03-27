@@ -59,9 +59,9 @@ import org.netbeans.modules.dlight.util.UIThread;
  * @author Vladimir Kvashin
  */
 class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
-    private final JButton b = new JButton("Repair...");//NOI18N
-    private final JLabel label = new JLabel(/*getRepairActionProvider().getReason()*/);
 
+    private final JButton b = new JButton("Repair...");//NOI18N
+    private JLabel label;
     private CpuIndicatorPanel panel;
     private Collection<ActionListener> listeners;
     private int lastSysValue;
@@ -135,9 +135,10 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     @Override
     protected void repairNeeded(boolean needed) {
-            if (needed) {
+        if (needed) {
             b.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             b.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            label = new JLabel(getRepairActionProvider().getReason());
             label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             label.setAlignmentY(JComponent.CENTER_ALIGNMENT);
             b.addActionListener(new ActionListener() {
