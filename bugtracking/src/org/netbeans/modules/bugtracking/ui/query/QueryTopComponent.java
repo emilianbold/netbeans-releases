@@ -105,6 +105,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     }
 
     QueryTopComponent(Query query, Repository toSelect) {
+
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
+
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
@@ -145,15 +148,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            DefaultComboBoxModel repoModel;
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
+            setupRepositoryModel();
             if(toSelect != null) {
                 repositoryComboBox.setSelectedItem(toSelect);
                 onRepoSelected();
             } else {
-                repositoryComboBox.setModel(repoModel);
                 if(repositoryComboBox.getModel().getSize() > 0) {
                     repositoryComboBox.setSelectedIndex(0);
                     onRepoSelected();
@@ -438,6 +437,16 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                   evt.getPropertyName().equals(Kenai.PROP_LOGIN))
         {
             updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
         }
     }
 
@@ -516,6 +525,23 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     private void setSaved() {
         repoPanel.setVisible(false);
         setNameAndTooltip();
+    }
+
+    private void setupRepositoryModel() {
+        Object lastSelection = repositoryComboBox.getSelectedItem();
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+        
+        for (int i = 0; i < repoModel.getSize(); i++) {
+            Repository r = (Repository) repoModel.getElementAt(i);
+            if(r == lastSelection) {
+                repoModel.setSelectedItem(r);
+                break;
+            }
+        }
     }
 
     private void updateSavedQueries(Repository repo) {

@@ -138,12 +138,12 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public void remove() {
-        BugzillaConfig.getInstance().removeRepository(this.getDisplayName());
         Query[] qs = getQueries();
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
         resetRepository();
+        Bugzilla.getInstance().removeRepository(this);
     }
 
     synchronized void resetRepository() {
@@ -181,22 +181,22 @@ public class BugzillaRepository extends Repository {
 
     public String getUsername() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c.getUserName();
+        return c != null ? c.getUserName() : "";
     }
 
     public String getPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c.getPassword();
+        return c != null ? c.getPassword() : "";
     }
 
     public String getHttpUsername() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
-        return c.getUserName();
+        return c != null ? c.getUserName() : "";
     }
 
     public String getHttpPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
-        return c.getPassword();
+        return c != null ? c.getPassword() : "";
     }
 
     public Issue getIssue(final String id) {
@@ -313,7 +313,7 @@ public class BugzillaRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        BugzillaConfig.getInstance().putRepository(getDisplayName(), this);
+        Bugzilla.getInstance().addRepository(this);
         resetRepository(); // only on url, user or passwd change        
     }
 

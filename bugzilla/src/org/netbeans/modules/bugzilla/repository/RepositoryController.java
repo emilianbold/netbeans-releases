@@ -202,7 +202,8 @@ public class RepositoryController extends BugtrackingController implements Docum
             getPassword(),
             getHttpUser(),
             getHttpPassword());
-        fireDataApplied();        
+        Bugzilla.getInstance().addRepository(repository);
+        fireDataApplied();
     }
 
     void populate() {
