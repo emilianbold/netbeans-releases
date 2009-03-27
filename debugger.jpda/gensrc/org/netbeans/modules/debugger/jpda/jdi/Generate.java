@@ -958,6 +958,19 @@ public class Generate {
                                         "            }\n";
             return catchJDWPException;
         }
+        if (com.sun.jdi.ThreadReference.class.getName().equals(className) && methodName.equals("currentContendedMonitor")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED\n"+
+                                        "                    // "+com.sun.jdi.IncompatibleThreadStateException.class.getSimpleName()+" should be thrown here!\n"+
+                                        "                    throw new "+com.sun.jdi.IncompatibleThreadStateException.class.getName()+"(iex.getMessage());\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
         if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {
             String catchNPE = "            try {\n"+
                               "    "+exec+

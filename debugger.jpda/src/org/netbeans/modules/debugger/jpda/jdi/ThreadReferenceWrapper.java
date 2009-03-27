@@ -59,7 +59,16 @@ public final class ThreadReferenceWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ObjectReference currentContendedMonitor(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
         try {
-            return a.currentContendedMonitor();
+            try {
+                return a.currentContendedMonitor();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED
+                    // IncompatibleThreadStateException should be thrown here!
+                    throw new com.sun.jdi.IncompatibleThreadStateException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
