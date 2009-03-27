@@ -37,41 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.impl;
+package org.netbeans.modules.hudson.util;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.junit.NbTestCase;
 
-/**
- * Tracks job to project association based on NetBeans-specific metadata.
- */
-@ServiceProvider(service=ProjectHudsonProvider.class, position=1000)
-public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
+public class UtilitiesTest extends NbTestCase {
 
-    private static final String KEY = "builder"; // NOI18N
-
-    public Association findAssociation(Project project) {
-        // XXX is using shared metadata appropriate? server may or may not be public...
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        String url = prefs.get(KEY, null);
-        if (url != null) {
-            return Association.fromString(url);
-        } else {
-            return null;
-        }
+    public UtilitiesTest(String n) {
+        super(n);
     }
 
-    public boolean recordAssociation(Project project, Association assoc) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        if (assoc != null) {
-            prefs.put(KEY, assoc.toString());
-        } else {
-            prefs.remove(KEY);
-        }
-        return true;
+    public void testUriEncode() throws Exception {
+        assertEquals("foo", Utilities.uriEncode("foo"));
+        assertEquals("foo%20bar", Utilities.uriEncode("foo bar"));
+        assertEquals("%C4%8Dau", Utilities.uriEncode("čau"));
+        try {
+            Utilities.uriEncode("foo/bar");
+            fail();
+        } catch (IllegalArgumentException x) {}
+        try {
+            Utilities.uriEncode(null);
+            fail();
+        } catch (Exception x) {}
+    }
+
+    public void testUriDecode() throws Exception {
+        assertEquals("foo", Utilities.uriDecode("foo"));
+        assertEquals("foo bar", Utilities.uriDecode("foo%20bar"));
+        assertEquals("čau", Utilities.uriDecode("%C4%8Dau"));
+        try {
+            Utilities.uriDecode("foo%2Fbar");
+            fail();
+        } catch (IllegalArgumentException x) {}
+        try {
+            Utilities.uriDecode(null);
+            fail();
+        } catch (Exception x) {}
     }
 
 }

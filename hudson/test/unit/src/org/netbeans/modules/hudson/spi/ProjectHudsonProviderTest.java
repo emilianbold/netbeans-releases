@@ -37,41 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.impl;
+package org.netbeans.modules.hudson.spi;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.hudson.spi.ProjectHudsonProvider.Association;
 
-/**
- * Tracks job to project association based on NetBeans-specific metadata.
- */
-@ServiceProvider(service=ProjectHudsonProvider.class, position=1000)
-public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
+public class ProjectHudsonProviderTest extends NbTestCase {
 
-    private static final String KEY = "builder"; // NOI18N
-
-    public Association findAssociation(Project project) {
-        // XXX is using shared metadata appropriate? server may or may not be public...
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        String url = prefs.get(KEY, null);
-        if (url != null) {
-            return Association.fromString(url);
-        } else {
-            return null;
-        }
+    public ProjectHudsonProviderTest(String n) {
+        super(n);
     }
 
-    public boolean recordAssociation(Project project, Association assoc) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        if (assoc != null) {
-            prefs.put(KEY, assoc.toString());
-        } else {
-            prefs.remove(KEY);
-        }
-        return true;
+    public void testAssociation() throws Exception {
+        assertEquals("http://nowhere.net/", new Association("http://nowhere.net/", null).toString());
+        assertEquals("http://nowhere.net/job/foo%20bar/", new Association("http://nowhere.net/", "foo bar").toString());
+        try {
+            new Association("http://nowhere.net", null);
+            fail();
+        } catch (IllegalArgumentException x) {}
+        try {
+            new Association("http://nowhere.net/", "");
+            fail();
+        } catch (IllegalArgumentException x) {}
+        try {
+            new Association("http://nowhere.net/", " foo ");
+            fail();
+        } catch (IllegalArgumentException x) {}
+        assertEquals("http://nowhere.net/", Association.fromString("http://nowhere.net/").getServerUrl());
+        assertNull("http://nowhere.net/", Association.fromString("http://nowhere.net/").getJobName());
+        assertEquals("http://nowhere.net/", Association.fromString("http://nowhere.net/job/foo%20bar/").getServerUrl());
+        assertEquals("foo bar", Association.fromString("http://nowhere.net/job/foo%20bar/").getJobName());
     }
 
 }

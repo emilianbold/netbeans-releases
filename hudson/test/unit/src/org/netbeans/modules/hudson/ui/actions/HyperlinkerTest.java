@@ -37,41 +37,27 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.impl;
+package org.netbeans.modules.hudson.ui.actions;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.hudson.ui.actions.Hyperlinker.PlainLoggerLogic;
 
-/**
- * Tracks job to project association based on NetBeans-specific metadata.
- */
-@ServiceProvider(service=ProjectHudsonProvider.class, position=1000)
-public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
+public class HyperlinkerTest extends NbTestCase {
 
-    private static final String KEY = "builder"; // NOI18N
-
-    public Association findAssociation(Project project) {
-        // XXX is using shared metadata appropriate? server may or may not be public...
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        String url = prefs.get(KEY, null);
-        if (url != null) {
-            return Association.fromString(url);
-        } else {
-            return null;
-        }
+    public HyperlinkerTest(String n) {
+        super(n);
     }
 
-    public boolean recordAssociation(Project project, Association assoc) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        if (assoc != null) {
-            prefs.put(KEY, assoc.toString());
-        } else {
-            prefs.remove(KEY);
-        }
-        return true;
+    public void testPlainLogger() throws Exception {
+        PlainLoggerLogic logger = new PlainLoggerLogic(null, "myprj");
+        assertEquals("null", String.valueOf(logger.findHyperlink("some random text...")));
+        assertEquals("pom.xml:4:-1:stupid error", String.valueOf(logger.findHyperlink("/hudson/work/jobs/myprj/workspace/pom.xml:5: stupid error")));
+        assertEquals("src/X.java:-1:-1:uncompilable", String.valueOf(logger.findHyperlink("[javac] /w/jobs/myprj/workspace/src/X.java: warning: uncompilable")));
+        assertEquals("src/main/java/p/C.java:17:19:[deprecation] toURL() in java.io.File has been deprecated",
+                String.valueOf(logger.findHyperlink("[WARNING] /w/jobs/myprj/workspace/src/main/java/p/C.java:[18,20] " +
+                "[deprecation] toURL() in java.io.File has been deprecated")));
+        assertEquals("http://nowhere.net/", String.valueOf(logger.findHyperlink("http://nowhere.net/")));
+        assertEquals("null", String.valueOf(logger.findHyperlink("see http://nowhere.net/ for more")));
     }
 
 }
