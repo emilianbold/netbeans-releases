@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -201,6 +202,38 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             scheduleWork(flw, wait);
+        }
+    }
+
+    /**
+     * Schedules new job for refreshing all indexes created by the given indexer.
+     *
+     * @param indexerName The name of the indexer, which indexes should be refreshed.
+     */
+    public void addIndexingJob(String indexerName) {
+        CustomIndexerFactory factory = null;
+        Set<String> indexerMimeTypes = new HashSet<String>();
+        
+        for(String mimeType : Util.getAllMimeTypes()) {
+            Collection<? extends CustomIndexerFactory> mimeTypeFactories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+            for(CustomIndexerFactory f : mimeTypeFactories) {
+                if (f.getIndexerName().equals(indexerName)) {
+                    if (factory != null && factory.getClass() != f.getClass()) {
+                        LOGGER.warning("Different CustomIndexerFactory implementations using the same name: " //NOI18N
+                            + factory.getClass().getName() + ", " + f.getClass().getName()); //NOI18N
+                    } else {
+                        factory = f;
+                        indexerMimeTypes.add(mimeType);
+                    }
+                }
+            }
+        }
+
+        if (factory == null) {
+            throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+        } else {
+            Work w = new RefreshIndicies(indexerMimeTypes, factory, scannedRoots2Dependencies);
+            scheduleWork(w, false);
         }
     }
 
@@ -758,8 +791,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (rootFo != null) {
                 try {
                     final Crawler crawler = files == null ?
-                        new FileObjectCrawler(rootFo, false) : // rescan the whole root (no timestamp check)
-                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), false); // rescan selected files (no timestamp check)
+                        new FileObjectCrawler(rootFo, false, null) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), false, null); // rescan selected files (no timestamp check)
 
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     index (resources, Collections.<Indexable>emptyList(), root);
@@ -804,7 +837,76 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-    } // End of FileListWork
+    } // End of DeleteWork class
+
+
+    private static class RefreshIndicies extends Work {
+
+        private final Set<String> indexerMimeTypes;
+        private final CustomIndexerFactory indexerFactory;
+        private final Map<URL, List<URL>> scannedRoots2Dependencies;
+
+        public RefreshIndicies(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
+            super(false);
+            this.indexerMimeTypes = indexerMimeTypes;
+            this.indexerFactory = indexerFactory;
+            this.scannedRoots2Dependencies = scannedRoots2Depencencies;
+        }
+
+        @Override
+        protected void getDone() {
+            for(URL root : scannedRoots2Dependencies.keySet()) {
+                try {
+                    final FileObject rootFo = URLMapper.findFileObject(root);
+                    if (rootFo != null) {
+                        Crawler crawler = new FileObjectCrawler(rootFo, false, indexerMimeTypes);
+                        final Map<String, Collection<Indexable>> resources = crawler.getResources();
+                        final Collection<Indexable> deleted = crawler.getDeletedResources();
+
+                        if (deleted.size() > 0) {
+                            index(resources, deleted, root);
+                        } else {
+                            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                            LinkedList<Context> transactionContexts = new LinkedList<Context>();
+                            try {
+                                for(String mimeType : resources.keySet()) {
+                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false);
+                                    transactionContexts.add(ctx);
+
+                                    // some CustomIndexers (eg. java) need to know about roots even when there
+                                    // are no modified Inexables at the moment (eg. java checks source level in
+                                    // the associated project, etc)
+                                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                                    if (indexables != null) {
+                                        final CustomIndexer indexer = indexerFactory.createIndexer();
+                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                            LOGGER.fine("Reindexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                                        }
+                                        try {
+                                            SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                                        } catch (ThreadDeath td) {
+                                            throw td;
+                                        } catch (Throwable t) {
+                                            LOGGER.log(Level.WARNING, null, t);
+                                        }
+                                    }
+                                }
+                            } finally {
+                                for(Context ctx : transactionContexts) {
+                                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                                    if (support != null) {
+                                        SupportAccessor.getInstance().store(support);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                }
+            }
+        }
+    } // End of RefreshIndicies class
 
     private static class RootsWork extends Work {
 
@@ -813,7 +915,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public RootsWork (Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries) {
             super(false);
-            
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
         }
@@ -1038,7 +1139,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
-                final Crawler crawler = new FileObjectCrawler(rootFo, true);
+                final Crawler crawler = new FileObjectCrawler(rootFo, true, null);
                 final Map<String,Collection<Indexable>> resources = crawler.getResources();
                 final Collection<Indexable> deleted = crawler.getDeletedResources();
                 index (resources, deleted, root);
