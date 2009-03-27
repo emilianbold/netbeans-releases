@@ -50,8 +50,8 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 public final class CpuIndicatorConfiguration extends IndicatorConfiguration{
   static final String ID = "CpuIndicatorConfiguration_ID";
 
-  public CpuIndicatorConfiguration(IndicatorMetadata metadata) {
-    super(metadata);
+  public CpuIndicatorConfiguration(IndicatorMetadata metadata, int position) {
+    super(metadata, position);
   }
 
   @Override

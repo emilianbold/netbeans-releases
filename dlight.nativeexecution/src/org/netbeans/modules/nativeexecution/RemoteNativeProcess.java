@@ -11,11 +11,11 @@ import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -68,7 +68,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 cs.in.flush();
             }
 
-            final Map<String, String> envVars = info.getEnvVariables();
+            final MacroMap envVars = info.getEnvVariables();
 
             EnvWriter ew = new EnvWriter(cs.in);
             ew.write(envVars);

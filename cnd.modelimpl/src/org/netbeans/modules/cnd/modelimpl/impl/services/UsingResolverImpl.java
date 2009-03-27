@@ -309,6 +309,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     }
     
     public void projectParsingFinished(CsmProject project) {
+        cleanCache();
     }
     
     public void projectParsingCancelled(CsmProject project) {

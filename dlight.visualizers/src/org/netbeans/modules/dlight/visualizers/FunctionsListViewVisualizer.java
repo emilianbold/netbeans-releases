@@ -93,6 +93,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
     Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
     private Future task;
+    private Future<List<FunctionCall>> queryDataTask;
+    private final Object dpQueryLock = new Object();
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
     private JToolBar buttonsToolbar;
@@ -158,19 +160,22 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private void asyncFillModel() {
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    Future<List<FunctionCall>> queryDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
-
-                        public List<FunctionCall> call() throws Exception {
-                            return dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
+                    synchronized (dpQueryLock) {
+                        if (queryDataTask != null) {
+                            queryDataTask.cancel(true);
                         }
-                    }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+                        queryDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
+
+                            public List<FunctionCall> call() throws Exception {
+                                return dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
+                            }
+                        }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+                    }
                     try {
                         final List<FunctionCall> list = queryDataTask.get();
                         final boolean isEmptyConent = list == null || list.isEmpty();
@@ -203,7 +208,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private void updateList(List<FunctionCall> list) {
         synchronized (uiLock) {
             this.explorerManager.setRootContext(new AbstractNode(new FunctionCallChildren(list)));
-            setNonEmptyContent();            
+            setNonEmptyContent();
         }
     }
 
@@ -314,11 +319,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
             }
         }
+        synchronized (dpQueryLock) {
+            if (queryDataTask != null) {
+                queryDataTask.cancel(true);
+            }
+        }
+
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
@@ -379,11 +388,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private final FunctionCall functionCall;
         private PropertySet propertySet;
         private final Action[] actions;
+        private final Action goToSourceAction;
 
         FunctionCallNode(FunctionCall row) {
             super(Children.LEAF);
             functionCall = row;
-            actions = new Action[]{new GoToSourceAction(this)};
+            goToSourceAction = new GoToSourceAction(this);
+            actions = new Action[]{goToSourceAction};
             propertySet = new PropertySet() {
 
                 @Override
@@ -426,7 +437,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return null;
         }
 
-
+        @Override
+        public Action getPreferredAction() {
+            return goToSourceAction;
+        }
 
         @Override
         public Action[] getActions(boolean context) {
@@ -476,7 +490,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
 
             PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
-            if (editor != null && value!= null && !(value + "").trim().equals("")) {
+            if (editor != null && value != null && !(value + "").trim().equals("")) {
                 editor.setValue(value);
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
             }

@@ -77,4 +77,8 @@ public class LoadingNode extends AbstractNode implements Call {
     public int compareTo(Call o) {
         return -1;
     }
+
+    public String getDescription() {
+        return getName();
+    }
 }

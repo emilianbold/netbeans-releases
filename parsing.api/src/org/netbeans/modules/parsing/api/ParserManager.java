@@ -40,12 +40,10 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -212,9 +210,18 @@ public final class ParserManager {
         }
 
         public <T> T[] toArray(T[] a) {
+            Class<?> arrayElementClass = a.getClass().getComponentType();
+            if (!arrayElementClass.isAssignableFrom(Snapshot.class)) {
+                throw new ArrayStoreException("Can't store Snapshot instances to an array of " + arrayElementClass.getName()); //NOI18N
+            }
+
             final int size = this.sources.size();
-            if (a.length < size)
-                a = (T[])java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+            if (a.length < size) {
+                @SuppressWarnings("unchecked") //NOI18N
+                T[] arr = (T[])java.lang.reflect.Array.newInstance(arrayElementClass, size);
+                a = arr;
+            }
+
             fill (a);
             return a;
         }
@@ -228,11 +235,11 @@ public final class ParserManager {
         }
 
         public boolean add(Snapshot o) {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         public boolean remove(Object o) {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         public boolean containsAll(final Collection<?> c) {
@@ -245,19 +252,19 @@ public final class ParserManager {
         }
 
         public boolean addAll(Collection<? extends Snapshot> c) {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         public void clear() {
-            throw new UnsupportedOperationException("Read only collection.");
+            throw new UnsupportedOperationException("Read only collection."); //NOI18N
         }
 
         private static class LazySnapshotsIt implements Iterator<Snapshot> {
@@ -279,7 +286,7 @@ public final class ParserManager {
             }
 
             public void remove() {
-                throw new UnsupportedOperationException("Read only collection.");
+                throw new UnsupportedOperationException("Read only collection."); //NOI18N
             }
 
         }

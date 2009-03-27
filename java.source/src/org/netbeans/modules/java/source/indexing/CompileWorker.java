@@ -68,7 +68,7 @@ abstract class CompileWorker {
 
     CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
-        return new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable);
+        return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;
     }
 
     public void computeFQNs(final Map<URI, List<String>> file2FQNs, CompilationUnitTree cut, JavaFileObject file) {

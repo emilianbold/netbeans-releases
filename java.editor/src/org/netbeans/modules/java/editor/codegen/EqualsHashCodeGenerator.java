@@ -567,6 +567,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
         HASH_CODE_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
 
+        HASH_CODE_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR}.hashCode()");
         HASH_CODE_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.hashCode(this.{VAR}");
         HASH_CODE_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepHashCode(this.{VAR}");
         HASH_CODE_PATTERNS.put(KindOfType.STRING, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");

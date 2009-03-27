@@ -68,9 +68,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -392,7 +392,7 @@ public class RetoucheUtils {
     public static Set<FileObject> getRubyFilesInProject(FileObject fileInProject) {
         Set<FileObject> files = new HashSet<FileObject>(100);
         // XXX: user ruby specific classpath IDs
-        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject, 
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(fileInProject, 
                 null, Collections.<String>emptySet(), Collections.<String>emptySet());
         for (FileObject root : sourceRoots) {
             String name = root.getName();

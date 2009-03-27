@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -119,8 +120,13 @@ public final class ReferencesSupport {
         progressListener = new CsmProgressAdapter() {
 
             @Override
-            public void fileParsingStarted(CsmFile file) {
+            public void fileParsingFinished(CsmFile file) {
                 clearFileReferences(file);
+            }
+
+            @Override
+            public void projectParsingFinished(CsmProject project) {
+                clearFileReferences(null);
             }
         };
         CsmListeners.getDefault().addProgressListener(progressListener);
@@ -602,6 +608,12 @@ public final class ReferencesSupport {
     private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
     private static CsmObject FAKE = new CsmObject() {
+
+        @Override
+        public String toString() {
+            return "FAKE REFERENCE"; // NOI18N
+        }
+
     };
 
     private CsmObject getReferencedObject(CsmFile file, int offset) {
@@ -637,7 +649,11 @@ public final class ReferencesSupport {
     private void clearFileReferences(CsmFile file) {
         try {
             cacheLock.writeLock().lock();
-            cache.remove(file);
+            if (file == null) {
+                cache.clear();
+            } else {
+                cache.remove(file);
+            }
         } finally {
             cacheLock.writeLock().unlock();
         }

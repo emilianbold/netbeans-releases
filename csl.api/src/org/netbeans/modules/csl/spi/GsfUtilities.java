@@ -45,13 +45,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,11 +58,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -77,20 +67,17 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -636,211 +623,4 @@ public final class GsfUtilities {
 
     private static final Map<Source, Integer> enforcedCaretOffsets = new WeakHashMap<Source, Integer>();
 
-    /**
-     * Gets classpath roots relevant for a file. This method tries to find
-     * classpath roots for a given files. It looks at classpaths specified by
-     * <code>sourcePathIds</code>, <code>libraryPathIds</code> and
-     * <code>binaryLibraryPathIds</code> parameters.
-     *
-     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
-     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
-     * The roots collected from <code>libraryPathIds</code> are expected to be
-     * libraries in their sources form (ie. no translation).
-     *
-     * @param f The file to find roots for.
-     * @param sourcePathIds The IDs of source classpath to look at.
-     * @param libraryPathIds The IDs of library classpath to look at.
-     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
-     * 
-     * @return The collection of roots for a given file. It may be empty, but never <code>null</code>.
-     */
-    public static Collection<FileObject> getRoots(
-            FileObject f,
-            Collection<String> sourcePathIds,
-            Collection<String> libraryPathIds,
-            Collection<String> binaryLibraryPathIds)
-    {
-        Collection<FileObject> roots = new HashSet<FileObject>();
-        Set<String> [] knownPathIds = null;
-
-        if (sourcePathIds == null) {
-            knownPathIds = getKnownPathIds();
-            sourcePathIds = knownPathIds[0];
-        }
-
-        if (libraryPathIds == null) {
-            if (knownPathIds == null) {
-                knownPathIds = getKnownPathIds();
-            }
-            libraryPathIds = knownPathIds[1];
-        }
-
-        if (binaryLibraryPathIds == null) {
-            if (knownPathIds == null) {
-                knownPathIds = getKnownPathIds();
-            }
-            binaryLibraryPathIds = knownPathIds[2];
-        }
-
-        collectClasspathRoots(f, sourcePathIds, false, roots);
-        collectClasspathRoots(f, libraryPathIds, false, roots);
-        collectClasspathRoots(f, binaryLibraryPathIds, true, roots);
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for file " + f //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": " + roots); //NOI18N
-        }
-
-        return roots != null ? roots : Collections.<FileObject>emptySet();
-    }
-
-    /**
-     * Gets classpath roots relevant for a project. This method tries to find
-     * classpath with <code>sourcePathIds</code>, <code>libraryPathIds</code> and
-     * <code>binaryPathIds</code> supplied by the <code>project</code>.
-     *
-     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
-     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
-     * The roots collected from <code>libraryPathIds</code> are expected to be
-     * libraries in their sources form (ie. no translation).
-     *
-     * @param project The project to find the roots for. Can be <code>null</code> in
-     *   which case the method searches in all registered classpaths.
-     * @param sourcePathIds The IDs of source classpath to look at.
-     * @param libraryPathIds The IDs of library classpath to look at.
-     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
-     *
-     * @return The collection of roots for a given project. It may be empty, but never <code>null</code>.
-     */
-    public static Collection<FileObject> getRoots(
-            Project project,
-            Collection<String> sourcePathIds,
-            Collection<String> libraryPathIds,
-            Collection<String> binaryLibraryPathIds)
-    {
-        Set<FileObject> roots = new HashSet<FileObject>();
-        Set<String> [] knownPathIds = null;
-
-        if (sourcePathIds == null) {
-            knownPathIds = getKnownPathIds();
-            sourcePathIds = knownPathIds[0];
-        }
-
-        if (libraryPathIds == null) {
-            if (knownPathIds == null) {
-                knownPathIds = getKnownPathIds();
-            }
-            libraryPathIds = knownPathIds[1];
-        }
-
-        if (binaryLibraryPathIds == null) {
-            if (knownPathIds == null) {
-                knownPathIds = getKnownPathIds();
-            }
-            binaryLibraryPathIds = knownPathIds[2];
-        }
-
-        collectClasspathRoots(null, sourcePathIds, false, roots);
-        collectClasspathRoots(null, libraryPathIds, false, roots);
-        collectClasspathRoots(null, binaryLibraryPathIds, true, roots);
-
-        if (project != null) {
-            Set<FileObject> rootsInProject = new HashSet<FileObject>();
-            for(FileObject root : roots) {
-                if (FileOwnerQuery.getOwner(root) == project) {
-                    rootsInProject.add(root);
-                }
-            }
-            roots = rootsInProject;
-        }
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for project " + project //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": " + roots); //NOI18N
-        }
-
-        return roots;
-    }
-
-    private static void collectClasspathRoots(FileObject file, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
-        for(String id : pathIds) {
-            Collection<FileObject> classpathRoots = getClasspathRoots(file, id);
-            if (binaryPaths) {
-                // Filter out roots that do not have source files available
-                for(FileObject f : classpathRoots) {
-                    SourceForBinaryQuery.Result2 result;
-                    try {
-                        result = SourceForBinaryQuery.findSourceRoots2(f.getURL());
-                    } catch (FileStateInvalidException fsie) {
-                        LOG.warning("Ignoring invalid binary Path root: " + f.getPath()); //NOI18N
-                        LOG.log(Level.FINE, null, fsie);
-                        continue;
-                    }
-
-                    if (result.preferSources() && result.getRoots().length > 0) {
-                        roots.addAll(Arrays.asList(result.getRoots()));
-                    } else {
-                        roots.add(f);
-                    }
-                }
-            } else {
-                roots.addAll(classpathRoots);
-            }
-        }
-    }
-
-    private static Collection<FileObject> getClasspathRoots(FileObject file, String classpathId) {
-        Collection<FileObject> roots = Collections.<FileObject>emptySet();
-
-        if (file != null) {
-            ClassPath classpath = ClassPath.getClassPath(file, classpathId);
-            if (classpath != null) {
-                roots = Arrays.asList(classpath.getRoots());
-            }
-        } else {
-            roots = new HashSet<FileObject>();
-            Set<ClassPath> classpaths = GlobalPathRegistry.getDefault().getPaths(classpathId);
-            for(ClassPath classpath : classpaths) {
-                roots.addAll(Arrays.asList(classpath.getRoots()));
-            }
-        }
-
-        return roots;
-    }
-
-    private static Set<String> [] getKnownPathIds() {
-        Set<String> sids = new HashSet<String>();
-        Set<String> lids = new HashSet<String>();
-        Set<String> blids = new HashSet<String>();
-
-        Collection<? extends PathRecognizer> recognizers = Lookup.getDefault().lookupAll(PathRecognizer.class);
-        for(PathRecognizer r : recognizers) {
-            Set<String> ids = r.getSourcePathIds();
-            if (ids != null) {
-                sids.addAll(ids);
-            }
-
-            ids = r.getLibraryPathIds();
-            if (ids != null) {
-                lids.addAll(ids);
-            }
-
-            ids = r.getBinaryLibraryPathIds();
-            if (ids != null) {
-                blids.addAll(ids);
-            }
-        }
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Known Path Ids: source=" + sids + ", library=" + lids + ", binary-library=" + blids); //NOI18N
-        }
-
-        return new Set [] { sids, lids, blids };
-    }
 }

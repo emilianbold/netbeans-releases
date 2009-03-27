@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -217,7 +218,7 @@ public class ProjectActionSupport {
             }
             name.append(")"); // NOI18N
             if (paes.length > 0) {
-                MakeConfiguration conf = (MakeConfiguration) paes[0].getConfiguration();
+                MakeConfiguration conf = paes[0].getConfiguration();
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     String hkey = conf.getDevelopmentHost().getName();
                     name.append(" - ").append(hkey); //NOI18N
@@ -324,7 +325,10 @@ public class ProjectActionSupport {
                 initHandler(customHandler, pae);
                 customHandler.execute(ioTab);
             } else {
-
+                if (!checkRemotePath(pae)) {
+                    progressHandle.finish();
+                    return;
+                }
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
                     if (factory.canHandle(pae.getType())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
@@ -336,6 +340,32 @@ public class ProjectActionSupport {
 
             }
 
+        }
+
+        // moved from DefaultProjectActionHandler.execute
+        private boolean checkRemotePath(ProjectActionEvent pae) {
+            MakeConfiguration conf = pae.getConfiguration();
+            if (!conf.getDevelopmentHost().isLocalhost()) {
+                // Make sure the project root is visible remotely
+                String basedir = pae.getProfile().getBaseDir();
+                if (MakeActionProvider.useRsync) {
+//                        ProjectInformation info = pae.getProject().getLookup().lookup(ProjectInformation.class);
+//                        final String projectName = info.getDisplayName();
+//                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
+                } else {
+                    PathMap mapper = HostInfoProvider.getDefault().getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
+                    if (!mapper.isRemote(basedir, true)) {
+//                        mapper.showUI();
+//                        if (!mapper.isRemote(basedir)) {
+//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                        return false;
+//                        }
+                    }
+                }
+            //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
+            }
+            return true;
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae) {
@@ -407,43 +437,36 @@ public class ProjectActionSupport {
             // Check if something is specified
             String executable = pae.getExecutable();
             if (executable.length() == 0) {
-                String errormsg;
-                if (((MakeConfiguration) pae.getConfiguration()).isMakefileConfiguration()) {
-                    SelectExecutablePanel panel = new SelectExecutablePanel((MakeConfiguration) pae.getConfiguration());
-                    DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
-                    panel.setDialogDescriptor(descriptor);
-                    DialogDisplayer.getDefault().notify(descriptor);
-                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        // Set executable in configuration
-                        MakeConfiguration makeConfiguration = (MakeConfiguration) pae.getConfiguration();
-                        executable = panel.getExecutable();
+                SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
+                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
+                panel.setDialogDescriptor(descriptor);
+                DialogDisplayer.getDefault().notify(descriptor);
+                if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                    // Set executable in configuration
+                    MakeConfiguration makeConfiguration = pae.getConfiguration();
+                    executable = panel.getExecutable();
+                    executable = FilePathAdaptor.naturalize(executable);
+                    executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = FilePathAdaptor.normalize(executable);
+                    makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                    // Mark the project 'modified'
+                    ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (pdp != null) {
+                        pdp.getConfigurationDescriptor().setModified();
+                    }
+                    // Set executable in pae
+                    if (pae.getType() == ProjectActionEvent.Type.RUN) {
+                        // Next block is commented out due to IZ120794
+                        /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+                        if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
+                        // IZ 120352
                         executable = FilePathAdaptor.naturalize(executable);
-                        executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                        executable = FilePathAdaptor.normalize(executable);
-                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
-                        // Mark the project 'modified'
-                        ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        if (pdp != null) {
-                            pdp.getConfigurationDescriptor().setModified();
-                        }
-                        // Set executable in pae
-                        if (pae.getType() == ProjectActionEvent.Type.RUN) {
-                            // Next block is commented out due to IZ120794
-                            /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-                            if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
-                            // IZ 120352
-                            executable = FilePathAdaptor.naturalize(executable);
-                            }*/
-                            pae.setExecutable(executable);
-                        } else {
-                            pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
-                        }
+                        }*/
+                        pae.setExecutable(executable);
                     } else {
-                        return false;
+                        pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
                     }
                 } else {
-                    errormsg = getString("NO_BUILD_RESULT"); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
                 }
             }

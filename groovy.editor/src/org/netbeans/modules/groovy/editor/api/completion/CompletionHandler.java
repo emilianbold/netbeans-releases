@@ -111,7 +111,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -1913,7 +1912,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             GroovyIndex index = null;
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
-                index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null, null));
             }
 

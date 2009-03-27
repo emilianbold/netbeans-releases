@@ -101,6 +101,12 @@ public class BugzillaRepository extends Repository {
     public BugzillaRepository(String repoName, String url, String user, String password) {
         this();
         name = repoName;
+        if(user == null) {
+            user = "";
+        }
+        if(password == null) {
+            password = "";
+        }
         taskRepository = createTaskRepository(name, url, user, password);
     }
 
@@ -295,8 +301,10 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
-    void setTaskRepository(String name, String url, String user, String password) {
+    protected void setTaskRepository(String name, String url, String user, String password) {
         taskRepository = createTaskRepository(name, url, user, password);
+        BugzillaConfig.getInstance().putRepository(getDisplayName(), this);
+        resetRepository(); // only on url, user or passwd change        
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password) {
