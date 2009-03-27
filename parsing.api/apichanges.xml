@@ -107,6 +107,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="QuerySupport-findRoots">
+      <api name="ParsingAPI"/>
+      <summary>Adding QuerySupport.findRoots(...) methods</summary>
+      <version major="1" minor="7"/>
+      <date day="27" month="3" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding two <code>QuerySupport.findRoots(...)</code> methods that can be used
+              for finding classpath roots from classpaths marked with specific IDs
+              and supplied by specific project.
+          </p>
+      </description>
+  </change>
+
   <change id="IndexingManager-refreshIndexAndWait">
       <api name="ParsingAPI"/>
       <summary>Adding IndexingManager.refreshIndexAndWait()</summary>

@@ -94,7 +94,6 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -179,7 +178,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             ASTNode root = AstUtilities.getRoot(info);
 
             // FIXME parsing API - source & binary IDs
-            GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(),
+            GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(),
                     Collections.singleton(ClassPath.SOURCE), null, null));
 
             if (root == null) {
