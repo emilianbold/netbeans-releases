@@ -167,7 +167,7 @@ public abstract class SQLDataStorage extends DataStorage {
     insertPreparedStatments = new HashMap<String, PreparedStatement>();
   }
 
-  protected SQLDataStorage(String dburl) {
+  protected SQLDataStorage(String dburl) throws SQLException {
     this();
     connect(dburl);
     if (!enabled) {
@@ -194,7 +194,7 @@ public abstract class SQLDataStorage extends DataStorage {
     asyncThread = null;
   }
 
-  protected abstract void connect(String dburl);
+  protected abstract void connect(String dburl) throws SQLException;
 
   protected String classToType(Class clazz) {
     return classToType.get(clazz);
@@ -432,9 +432,9 @@ public abstract class SQLDataStorage extends DataStorage {
 
   private static class EnumStringConstructor<T> {
 
-    public String constructEnumString(Collection<T> collection, Convertor<T> conv) {
+    public String constructEnumString(Collection<? extends T> collection, Convertor<T> conv) {
       StringBuilder sb = new StringBuilder();
-      Iterator<T> i = collection.iterator();
+      Iterator<? extends T> i = collection.iterator();
       T item;
 
       while (i.hasNext()) {
