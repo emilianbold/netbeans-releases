@@ -61,6 +61,8 @@ public class ROUtil {
     /**
      * make sure that pom files from repository are opened as read only,
      * sort of hack but works.
+     * Warn: assumes a local repository layout for the files passed and recognized as read-only.
+     *
      * @param fo
      * @param file
      * @return
