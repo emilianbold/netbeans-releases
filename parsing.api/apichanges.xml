@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexingManager-refreshAllIndicies">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexingManager.refreshAllIndicies()</summary>
+      <version major="1" minor="8"/>
+      <date day="27" month="3" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexingManager.refreshAllIndicies(String)</code> method
+              for refreshing all indicies created by a given indexer.
+          </p>
+      </description>
+  </change>
+
   <change id="QuerySupport-findRoots">
       <api name="ParsingAPI"/>
       <summary>Adding QuerySupport.findRoots(...) methods</summary>
