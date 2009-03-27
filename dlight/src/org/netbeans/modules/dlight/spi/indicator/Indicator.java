@@ -264,47 +264,47 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private static class IndicatorAccessorImpl extends IndicatorAccessor {
 
         @Override
-        public void setToolName(Indicator ind, String toolName) {
+        public void setToolName(Indicator<?> ind, String toolName) {
             ind.setToolName(toolName);
         }
 
         @Override
-        public List<Column> getMetadataColumns(Indicator indicator) {
+        public List<Column> getMetadataColumns(Indicator<?> indicator) {
             return indicator.getMetadataColumns();
         }
 
         @Override
-        public String getMetadataColumnName(Indicator indicator, int idx) {
+        public String getMetadataColumnName(Indicator<?> indicator, int idx) {
             return indicator.getMetadataColumnName(idx);
         }
 
         @Override
-        public List<VisualizerConfiguration> getVisualizerConfigurations(Indicator indicator) {
+        public List<VisualizerConfiguration> getVisualizerConfigurations(Indicator<?> indicator) {
             return indicator.getVisualizerConfigurations();
         }
 
         @Override
-        public void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+        public void addIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l) {
             indicator.addIndicatorActionListener(l);
         }
 
         @Override
-        public void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+        public void removeIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l) {
             indicator.removeIndicatorActionListener(l);
         }
 
         @Override
-        public String getToolName(Indicator ind) {
+        public String getToolName(Indicator<?> ind) {
             return ind.toolName;
         }
 
         @Override
-        public void initMouseListener(Indicator indicator) {
+        public void initMouseListener(Indicator<?> indicator) {
             indicator.initMouseListener();
         }
 
         @Override
-        public void setRepairActionProviderFor(Indicator indicator, IndicatorRepairActionProvider repairActionProvider) {
+        public void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider) {
             indicator.setRepairActionProviderFor(repairActionProvider);
         }
     }
