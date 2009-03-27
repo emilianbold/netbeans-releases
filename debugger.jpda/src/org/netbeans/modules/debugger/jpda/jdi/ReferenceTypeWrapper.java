@@ -220,7 +220,17 @@ public final class ReferenceTypeWrapper {
     /** Wrapper for method constantPool from JDK 1.6. */
     public static byte[] constantPool(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (byte[]) com.sun.jdi.ReferenceType.class.getMethod("constantPool").invoke(a);
+            try {
+                return (byte[]) com.sun.jdi.ReferenceType.class.getMethod("constantPool").invoke(a);
+            } catch (java.lang.reflect.InvocationTargetException ex) {
+                Throwable t = ex.getTargetException();
+                if (t instanceof NullPointerException) {
+                    // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627
+                    return null;
+                } else {
+                    throw ex;
+                }
+            }
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException(ex);
         } catch (SecurityException ex) {

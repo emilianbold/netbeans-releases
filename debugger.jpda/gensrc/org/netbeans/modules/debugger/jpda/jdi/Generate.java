@@ -769,13 +769,15 @@ public class Generate {
             higherVersionClass = null;
         }
         w.write("        try {\n");
+
+        StringBuffer exec = new StringBuffer();
         if (!"void".equals(rType)) {
             if ("boolean".equals(rType)) rType = "Boolean";
             if ("int".equals(rType)) rType = "Integer";
             if ("long".equals(rType)) rType = "Long";
-            w.write("            return ("+rType+") ");
+            exec.append("            return ("+rType+") ");
         } else {
-            w.write("            ");
+            exec.append("            ");
         }
         // Use reflection to invoke method from higher JDK version
         /* instead of:
@@ -789,23 +791,24 @@ public class Generate {
         w.write(");\n");
          use reflection: */
         if (higherVersionClass != null) {
-            w.write(higherVersionClass+".getMethod(\""+mName+"\"");
+            exec.append(higherVersionClass+".getMethod(\""+mName+"\"");
         } else {
-            w.write(className+".class.getMethod(\""+mName+"\"");
+            exec.append(className+".class.getMethod(\""+mName+"\"");
         }
         for (int i = 0; i < paramNames.length; i++) {
-            w.write(", ");
+            exec.append(", ");
             String type = paramTypes.get(i);
             if (type.indexOf('<') > 0) type = type.substring(0, type.indexOf('<'));
-            w.write(type);
-            w.write(".class");
+            exec.append(type);
+            exec.append(".class");
         }
-        w.write(").invoke(a");
+        exec.append(").invoke(a");
         for (int i = 0; i < paramNames.length; i++) {
-            w.write(", ");
-            w.write(paramNames[i]);
+            exec.append(", ");
+            exec.append(paramNames[i]);
         }
-        w.write(");\n");
+        exec.append(");\n");
+        w.write(methodImpl(className, mName, exec.toString()));
 
 
         w.write("        } catch (NoSuchMethodException ex) {\n");
@@ -954,6 +957,20 @@ public class Generate {
                                         "                }\n"+
                                         "            }\n";
             return catchJDWPException;
+        }
+        if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {
+            String catchNPE = "            try {\n"+
+                              "    "+exec+
+                              "            } catch (java.lang.reflect.InvocationTargetException ex) {\n"+
+                              "                Throwable t = ex.getTargetException();\n"+
+                              "                if (t instanceof NullPointerException) {\n"+
+                              "                    // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627\n"+
+                              "                    return null;\n"+
+                              "                } else {\n" +
+                              "                    throw ex;\n"+
+                              "                }\n"+
+                              "            }\n";
+            return catchNPE;
         }
         return exec;
     }
