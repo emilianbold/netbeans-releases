@@ -303,7 +303,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : validTools) {
-                List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     if (!collectors.contains(c)) {
@@ -324,7 +324,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
             List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
-            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp.getValidationStatus().isValid()) {
@@ -339,7 +339,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                 notAttachableDataCollector = ((DataCollector) idp);
                             }
                         }
-                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
@@ -354,7 +354,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
                 }
             }
-            List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+            List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
             for (Indicator i : indicators){
                 if (!subscribedIndicators.contains(i)){
                     IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
