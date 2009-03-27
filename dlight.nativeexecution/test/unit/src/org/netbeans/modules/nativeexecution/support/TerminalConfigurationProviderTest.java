@@ -74,7 +74,7 @@ public class TerminalConfigurationProviderTest {
 
     @Test
     public void testProvider() throws InterruptedException {
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal");
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal"); // NOI18N
 
         System.out.println(term.toString());
     }

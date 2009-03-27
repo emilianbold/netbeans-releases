@@ -55,6 +55,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     private final MemoryIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private long lastValue;
 
     public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
         super(configuration);
@@ -78,9 +79,14 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
             for (String column : row.getColumnNames()) {
                 if (acceptedColumnNames.contains(column)) {
                     String value = row.getStringValue(column); //TODO: change to Long
-                    panel.setValue(Long.parseLong(value));
+                    lastValue = Long.parseLong(value);
                 }
             }
         }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastValue);
     }
 }

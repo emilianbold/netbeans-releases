@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
         return legend;
     }
 
-    public void setValue(long value) {
+    public void addData(long value) {
         if (graph.getUpperLimit() < value) {
             graph.setUpperLimit((int)value * 3 / 2);
         }

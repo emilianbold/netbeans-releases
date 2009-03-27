@@ -163,7 +163,7 @@ public final class NativeProcessInfo {
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
-                sb.append(" '").append(arg).append('\'');
+                sb.append(" '").append(arg).append('\''); // NOI18N
             }
         }
 

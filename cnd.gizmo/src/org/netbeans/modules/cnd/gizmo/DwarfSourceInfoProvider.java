@@ -50,6 +50,9 @@ import org.openide.util.lookup.ServiceProvider;
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 
     public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+        if (serviceInfo == null){
+            throw new SourceFileInfoCannotBeProvided();
+        }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
             Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
