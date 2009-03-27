@@ -109,13 +109,7 @@ class ProblemNotification implements ActionListener {
     }
 
     private Icon getIcon() {
-        Color color;
-        if (failed) {
-            color = running ? Color.red_anime : Color.red;
-        } else {
-            color = running ? Color.yellow_anime : Color.yellow;
-        }
-        return ImageUtilities.loadImageIcon(color.iconBase(), true);
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true);
     }
 
     void add() {
