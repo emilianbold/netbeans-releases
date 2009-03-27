@@ -120,9 +120,9 @@ final class OnePassCompileWorker extends CompileWorker {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        final String message = String.format("OnePassCompileWorker caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                    FileUtil.getFileDisplayName(context.getRoot()),
+                        final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                     i.getURL().toString(),
+                                    FileUtil.getFileDisplayName(context.getRoot()),
                                     bootPath == null   ? null : bootPath.toString(),
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
@@ -195,9 +195,9 @@ final class OnePassCompileWorker extends CompileWorker {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                    final String message = String.format("OnePassCompileWorker caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
+                    final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                 active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
                                 bootPath == null   ? null : bootPath.toString(),
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
