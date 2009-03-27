@@ -75,7 +75,7 @@ public class GeneralSanityTest extends NbTestCase {
             honorAutoloadEager(true).
             addTest(
                 "testBlacklistedClassesHandler",
-                "testOrgOpenideOptionsIsDisabledAutoload", 
+                "testOrgOpenideOptionsIsDisabledAutoload",
                 "testInstalledPlugins"
             )
         ));
@@ -148,21 +148,24 @@ public class GeneralSanityTest extends NbTestCase {
             idePlugins.add(m);
         }
 
-        //load plugins order from golden file
-        final String idePluginsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
-        PrintStream ideFile = null;
-        //final String permuiPluginsLogsFile = getWorkDirPath() + File.separator + getName() + "_golden.txt";
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
+        final String idePluginsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
 
 
         try {
-            ideFile = new PrintStream(idePluginsLogFile);
+            PrintStream ideFile = getLog(getName() + "_ide.txt");
             
             //make a diff
             printPlugins(ideFile, idePlugins);
-            Manager.getSystemDiff().diff(idePluginsLogFile, getPluginsGoldenFile()/*permuiPluginsLogsFile*/, diffFile);
+            Manager.getSystemDiff().diff(idePluginsLogFile, getPluginsGoldenFile(), diffFile);
             //assert
-            String message = Utilities.readFileToString(diffFile);
+            String message = 
+                    "The list of visible plugins under Tools -> Plugins -> Installed has changed. \n" +
+                    "Please make sure that your plugins correctly declare AutoUpdate-Show-In-Client \n" +
+                    "property in their manifest file. If your change to the list of plugins is intentional, \n" +
+                    "please follow the UI review process: http://wiki.netbeans.org/UIReviewProcess and change \n" +
+                    "the golden file in ide.kit/qa-functional/data/permanentUI/plugins/installed-plugins.txt.\n" +
+                    Utilities.readFileToString(diffFile);
 
             assertFile(message, getPluginsGoldenFile() , idePluginsLogFile, diffFile);
         } catch (IOException ex) {

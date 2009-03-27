@@ -28,7 +28,6 @@
 |org.netbeans.modules.bugtracking|Bugtracking|null
 |org.netbeans.modules.bugtracking.bridge|Bugtracking Bridge Module|null
 |org.netbeans.modules.bugzilla|Bugzilla|null
-|org.netbeans.modules.hudson.j2seproject|Hudson Java SE Project Support|null
 |org.netbeans.modules.maven.search|Maven Quick Search Bridge|null
 |org.netbeans.modules.kenai.collab|Realtime Collaboration|null
 |org.netbeans.modules.php.kit|PHP|PHP
