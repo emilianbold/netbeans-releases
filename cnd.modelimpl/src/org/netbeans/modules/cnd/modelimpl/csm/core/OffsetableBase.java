@@ -106,7 +106,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return 0;
     }
 
-    protected static int getEndOffset(AST node) {
+    public static int getEndOffset(AST node) {
         if( node != null ) {
             AST lastChild = AstUtil.getLastChildRecursively(node);
             if( lastChild instanceof CsmAST ) {
@@ -145,7 +145,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return file;
     }
 
-    protected void write(DataOutput output) throws IOException {
+    public void write(DataOutput output) throws IOException {
         output.writeInt(startPosition);
         output.writeInt(endPosition);
         // not null UID
