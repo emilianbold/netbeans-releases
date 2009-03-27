@@ -93,7 +93,7 @@ class HostsListTableModel extends AbstractTableModel {
             case 0:
                 return record.name;
             case 1:
-                return CreateHostWizardIterator.getString(record.ssh.booleanValue() ? "HostAvailable" : "HostUnavailable"); //NOI18N
+                return CreateHostWizardIterator.getString(record.ssh ? "HostAvailable" : "HostUnavailable"); //NOI18N
             case 2:
                 return null;
             default:
@@ -107,14 +107,19 @@ class HostsListTableModel extends AbstractTableModel {
 
     private final static Comparator<HostRecord> hrc = new Comparator<HostRecord>() {
         public int compare(HostRecord o1, HostRecord o2) {
-            return o1.name.compareTo(o2.name);
+            if (o1.ssh && !o2.ssh) {
+                return -1;
+            } else if (!o1.ssh && o2.ssh) {
+                return 1;
+            } else {
+                return o1.name.compareTo(o2.name);
+            }
         }
     };
 
-    private void addHost(String ip, String name, Boolean ssh) {
-        HostRecord record;
+    private void addHost(String ip, String name, boolean ssh) {
         synchronized (rows) {
-            record = new HostRecord(ip, name, ssh);
+            HostRecord record = new HostRecord(ip, name, ssh);
             rows.add(record);
             Collections.sort(rows, hrc);
             fireTableDataChanged();
@@ -129,14 +134,19 @@ class HostsListTableModel extends AbstractTableModel {
 
     private static class HostRecord {
 
-        public String name;
-        public String ip;
-        public Boolean ssh;
+        public final String name;
+        public final String ip;
+        public final boolean ssh;
 
-        public HostRecord(String ip, String name, Boolean ssh) {
+        public HostRecord(String ip, String name, boolean ssh) {
             this.name = name;
             this.ip = ip;
             this.ssh = ssh;
+        }
+
+        @Override
+        public String toString() {
+            return name + " [" + ip + "] " + (ssh ? "ssh" : "nossh"); //NOI18N
         }
         //platform
     }
@@ -165,7 +175,7 @@ class HostsListTableModel extends AbstractTableModel {
                     try {
                         if (host.isReachable(1000)) {
                             count++;
-                            HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), Boolean.valueOf(doPing(host, 22)));
+                            HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), doPing(host, 22));
                         }
                     } catch (IOException ex) {
                         // it's quite normal if host denies to respond (firewall, etc)

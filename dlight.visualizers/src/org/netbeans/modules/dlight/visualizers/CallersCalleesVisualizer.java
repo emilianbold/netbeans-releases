@@ -302,6 +302,9 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     @Override
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+            }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
                 public List<FunctionCall> call() {
@@ -366,9 +369,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         super.removeNotify();
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                if (!syncFillDataTask.isDone()) {
-                    syncFillDataTask.cancel(true);
-                }
+                syncFillDataTask.cancel(true);
             }
         }
     }
@@ -394,10 +395,13 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return;
             }
-            //find function name
-            OpenFunctionInEditorActionProvider.getInstance().openFunction(((FunctionCallTreeTableNode) nodeObject).getValue() + "");
-//                return (nodeObject instanceof FunctionCallTreeTableNode) ? ((TreeTableNode) nodeObject).getValue() + " " : nodeObject.toString();
-
+            FunctionCall functionCall = ((FunctionCallTreeTableNode)nodeObject).getDeligator();
+            SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                return;
+            }
+            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+            sourceSupportProvider.showSource(sourceFileInfo);
         }
 
         public Action[] getActions(Object node) throws UnknownTypeException {

@@ -8,6 +8,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorRepairActionProvider;
 
 /**
  *
@@ -53,4 +54,5 @@ public abstract class IndicatorAccessor {
   public abstract void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l);
 
   public abstract void initMouseListener(Indicator indicator);
+  public abstract void setRepairActionProviderFor(Indicator indicator, IndicatorRepairActionProvider repairActionProvider);
 }

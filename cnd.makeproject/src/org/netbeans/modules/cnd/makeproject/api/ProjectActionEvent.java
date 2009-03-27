@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
 
@@ -75,11 +76,11 @@ public class ProjectActionEvent {
     private Type type;
     private String tabName;
     private String executable;
-    private Configuration configuration;
+    private MakeConfiguration configuration;
     private RunProfile profile;
     private boolean wait;
 
-    public ProjectActionEvent(Project project, Type type, String tabName, String executable, Configuration configuration, RunProfile profile, boolean wait) {
+    public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
         this.project = project;
         this.type = type;
 	this.tabName = tabName;
@@ -113,7 +114,7 @@ public class ProjectActionEvent {
         this.executable = executable;
     }
 
-    public Configuration getConfiguration() {
+    public MakeConfiguration getConfiguration() {
 	return configuration;
     }
 
