@@ -64,9 +64,10 @@ public final class OpenKenaiProjectAction implements ActionListener {
                 for (KenaiProject prj : selProjects) {
                     Dashboard.getDefault().addProject(new ProjectHandleImpl(prj));
                 }
+                KenaiTopComponent.findInstance().open();
+                KenaiTopComponent.findInstance().requestActive();
             }
         }
 
     }
-    
 }

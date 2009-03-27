@@ -153,7 +153,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = "Repository with the same url alreay exists"; // XXX bundle me
+                    errorMessage = "Repository with the same url already exists"; // XXX bundle me
                     return false;
                 }
             }
@@ -175,10 +175,8 @@ public class RepositoryController extends BugtrackingController implements Docum
             BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
         repository.setName(newName);
-        repository.setTaskRepository(panel.nameField.getText(), getUrl(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
-        BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
-        fireDataApplied();
-        repository.resetRepository(); // only on url, user or passwd change
+        repository.setTaskRepository(panel.nameField.getText(), getUrl(), panel.userField.getText(), new String(panel.psswdField.getPassword()));        
+        fireDataApplied();        
     }
 
     void populate() {

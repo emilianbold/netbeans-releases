@@ -661,5 +661,5 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //private double fatalThreshold = 0.99;
     private final Set<Object> disabledProjects = new HashSet<Object>();
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
-    private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4, true); // NOI18N
+    private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
 }

@@ -44,7 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
-import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
@@ -55,8 +55,8 @@ import org.openide.util.NbBundle;
  */
 public class CpuIndicatorPanel {
 
-    private static final Color COLOR_SYS = GraphColors.COLOR_1;
-    private static final Color COLOR_USR = GraphColors.COLOR_3;
+    private static final Color COLOR_SYS = GraphConfig.COLOR_1;
+    private static final Color COLOR_USR = GraphConfig.COLOR_3;
     private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
     private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
 
@@ -78,11 +78,13 @@ public class CpuIndicatorPanel {
 
     private static PercentageGraph createGraph() {
         PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(80, 60));
-        graph.setPreferredSize(new Dimension(80, 60));
-        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
-        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
+        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setMinimumSize(graphSize);
+        graph.setPreferredSize(graphSize);
+        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(axisSize);
+        graph.getVerticalAxis().setPreferredSize(axisSize);
         return graph;
     }
 

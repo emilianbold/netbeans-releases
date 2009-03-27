@@ -588,6 +588,15 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
             public Action getPreferredAction() {
                 return null;
             }
+
+            @Override
+            public String getShortDescription() {
+                String ret = call.getDescription();
+                if (ret != null){
+                    return ret;
+                }
+                return super.getShortDescription();
+            }
     
             @Override
             public Action[] getActions(boolean context) {

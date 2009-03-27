@@ -194,6 +194,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         isFriend = node.isFriend;
         needInitHTML = node.needInitHTML;
         htmlDisplayName = node.htmlDisplayName;
+        fireDisplayNameChange(null, null);
         fireIconChange();
     }
     

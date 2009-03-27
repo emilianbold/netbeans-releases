@@ -1,5 +1,5 @@
 #!/bin/sh
-
+PATH=/bin:/usr/bin:${PATH}
 PROG=`basename $0`
 USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
 PROMPT=NO

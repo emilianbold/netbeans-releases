@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
-import java.awt.Color;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
@@ -49,8 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -74,14 +73,16 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  *
  * @param <T> configuration indicator can be built on the base of
  */
-public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener {
+public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener, ChangeListener {
 
     private static final int PADDING = 2;
     private final Object lock = new Object();
     private final IndicatorMetadata metadata;
+    private final int position;
     private String toolName;
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
+    private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
 
 
     static {
@@ -99,14 +100,43 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
         this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
+        this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
         tickerListener = new TickerListener() {
             public void tick() {
                 Indicator.this.tick();
             }
         };
 
-
     }
+
+    protected abstract void repairNeeded(boolean needed);
+
+    private void setRepairActionProviderFor(IndicatorRepairActionProvider repairActionProvider){
+        this.indicatorRepairActionProvider = repairActionProvider;
+        indicatorRepairActionProvider.addChangeListener(this);
+        repairNeeded(true);
+    }
+
+    public final int getPosition() {
+        return position;
+    }
+
+    protected final IndicatorRepairActionProvider getRepairActionProvider(){
+        return indicatorRepairActionProvider;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider){
+            return;
+        }
+        boolean needRepair = indicatorRepairActionProvider.needRepair();
+        if (!needRepair){
+            indicatorRepairActionProvider.removeChangeListener(this);
+        }
+        repairNeeded(indicatorRepairActionProvider.needRepair());
+    }
+
+
 
     public void targetStateChanged(DLightTarget source, State oldState, State newState) {
         switch (newState) {
@@ -271,6 +301,11 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         @Override
         public void initMouseListener(Indicator indicator) {
             indicator.initMouseListener();
+        }
+
+        @Override
+        public void setRepairActionProviderFor(Indicator indicator, IndicatorRepairActionProvider repairActionProvider) {
+            indicator.setRepairActionProviderFor(repairActionProvider);
         }
     }
 

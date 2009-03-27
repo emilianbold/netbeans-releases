@@ -51,7 +51,9 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -64,22 +66,33 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowBuildConsole.class.getName());
 
-    private final HudsonJobBuild build;
+    private final HudsonJob job;
+    private final String url;
+    private final String displayName;
 
     public ShowBuildConsole(HudsonJobBuild build) {
-        this.build = build;
+        this(build.getJob(), build.getUrl(), build.getJob().getDisplayName() + " #" + build.getNumber()); // XXX I18N
+    }
+
+    public ShowBuildConsole(HudsonMavenModuleBuild module) {
+        this(module.getBuild().getJob(), module.getUrl(), module.getDisplayName() + " #" + module.getBuild().getNumber()); // XXX I18N
+    }
+
+    private ShowBuildConsole(HudsonJob job, String url, String displayName) {
+        this.job = job;
+        this.url = url;
+        this.displayName = displayName;
         putValue(NAME, "Show Console"); // XXX I18N
     }
 
     public void actionPerformed(ActionEvent e) {
-        new RequestProcessor(build + "console").post(this); // NOI18N
+        new RequestProcessor(url + "console").post(this); // NOI18N
     }
 
     public void run() {
-        Hyperlinker hyperlinker = new Hyperlinker(build.getJob());
-        String name = build.getJob().getDisplayName() + " #" + build.getNumber();
-        LOG.log(Level.FINE, "{0} started", name);
-        InputOutput io = IOProvider.getDefault().getIO(name, new Action[] {/* XXX abort build button? */});
+        Hyperlinker hyperlinker = new Hyperlinker(job);
+        LOG.log(Level.FINE, "{0} started", url);
+        InputOutput io = IOProvider.getDefault().getIO(displayName, new Action[] {/* XXX abort build button? */});
         io.select();
         /* If any metadata is needed, e.g. whether it is running, could use:
         HudsonJobBuild build = instance.getConnector().getJobBuild(job, buildNumber);
@@ -88,27 +101,27 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
         }
          */
         int start = 0;
-        String url = build.getUrl() + "progressiveLog?start="; // NOI18N
+        String urlPrefix = url + "progressiveLog?start="; // NOI18N
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
         try {
             while (true) {
-                LOG.log(Level.FINE, "{0} polling", name);
+                LOG.log(Level.FINE, "{0} polling", url);
                 if (out.checkError() || err.checkError() || io.isClosed()) {
-                    LOG.log(Level.FINE, "{0} stopped", name);
+                    LOG.log(Level.FINE, "{0} stopped", url);
                     break;
                 }
-                URLConnection conn = new ConnectionBuilder().job(build.getJob()).url(url + start).
+                URLConnection conn = new ConnectionBuilder().job(job).url(urlPrefix + start).
                         header("Accept-Encoding", "gzip"). // NOI18N
                         connection();
                 boolean moreData = Boolean.parseBoolean(conn.getHeaderField("X-More-Data"));
-                LOG.log(Level.FINE, "{0} retrieving text from {1}", new Object[] {name, start});
+                LOG.log(Level.FINE, "{0} retrieving text from {1}", new Object[] {url, start});
                 start = conn.getHeaderFieldInt("X-Text-Size", start);
                 InputStream is = conn.getInputStream();
                 try {
                     InputStream isToUse = is;
                     if ("gzip".equals(conn.getContentEncoding())) {
-                        LOG.log(Level.FINE, "{0} using GZIP", name);
+                        LOG.log(Level.FINE, "{0} using GZIP", url);
                         isToUse = new GZIPInputStream(is);
                     }
                     // XXX safer to check content type on connection, but in fact Stapler sets it to UTF-8
@@ -122,13 +135,13 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                     is.close();
                 }
                 if (!moreData) {
-                    LOG.log(Level.FINE, "{0} EOF", name);
+                    LOG.log(Level.FINE, "{0} EOF", url);
                     break;
                 }
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException x) {
-                    LOG.log(Level.FINE, "{0} interrupted", name);
+                    LOG.log(Level.FINE, "{0} interrupted", url);
                     break;
                 }
             }

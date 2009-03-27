@@ -315,7 +315,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentClosed() {
         openIssues.remove(this);
-        issue.removePropertyChangeListener(this);
+        if(issue != null) {
+            issue.removePropertyChangeListener(this);
+        }
     }
 
     /**
