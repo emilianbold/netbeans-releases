@@ -426,7 +426,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void postParse() {
-        fixFakeRegistrations();
+        fixFakeRegistrations(false);
         if (isValid()) {   // FIXUP: use a special lock here
             RepositoryUtils.put(this);
         }
@@ -443,7 +443,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /*package*/ void onProjectParseFinished(boolean prjLibsAlreadyParsed) {
-        if (fixFakeRegistrations()) {
+        if (fixFakeRegistrations(true)) {
             if (isValid()) {   // FIXUP: use a special lock here
                 RepositoryUtils.put(this);
             }
@@ -1521,7 +1521,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      *
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
-    private boolean fixFakeRegistrations() {
+    private boolean fixFakeRegistrations(boolean projectParsedMode) {
         boolean wereFakes = false;
         synchronized (fakeRegistrationUIDs) {
             if (!alreadyInFixFakeRegistrations) {
@@ -1537,9 +1537,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             if (curElem instanceof FunctionImplEx) {
                                 wereFakes = true;
                                 parseCount++;
-                                ((FunctionImplEx) curElem).fixFakeRegistration();
+                                ((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode);
                             } else {
-                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass() + " for fake UID:" + fakeUid)); // NOI18N
                             }
                         }
                     }
