@@ -125,6 +125,10 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         StreamSource ss2 = new DiffStreamSource(modified, type, true);
         controller = DiffController.create(ss1, ss2);
         controller.addPropertyChangeListener(this);
+        if (controller.getDifferenceCount() > 0) {
+            // automatically jump to the first difference
+            controller.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, 0);
+        }
         
         controllerPanel.removeAll();
         JComponent innerPanel = controller.getJComponent();

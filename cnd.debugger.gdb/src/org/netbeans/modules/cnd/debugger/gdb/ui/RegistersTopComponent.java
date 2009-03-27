@@ -223,13 +223,17 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
             // gdb returns value in decimal format
             try {
                 gdbValue = "0x" + Integer.toHexString(Integer.parseInt(gdbValue)); // NOI18N
+                RegisterValue val = new RegisterValue(oldVal.getName(), gdbValue, false);
+                @SuppressWarnings("unchecked")
+                List<RegisterValue> cur =
+                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+                cur.set(rowIndex, val);
             } catch (Exception e) {
                 // do nothing
             }
 
             RegisterValue val = new RegisterValue(oldVal.getName(), gdbValue, false);
             values.set(rowIndex, val);
-            GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, new ArrayList<RegisterValue>(values));
         }
 
         @Override
@@ -240,8 +244,8 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         @SuppressWarnings("unchecked")
         private void refresh() {
             values.clear();
-            Collection<RegisterValue> res = 
-                    (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+            List<RegisterValue> res =
+                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
             if (res != null) {
                 values.addAll(res);
             }

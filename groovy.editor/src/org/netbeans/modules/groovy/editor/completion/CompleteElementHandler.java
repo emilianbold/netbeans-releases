@@ -206,7 +206,7 @@ public final class CompleteElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {

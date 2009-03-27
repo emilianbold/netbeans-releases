@@ -681,7 +681,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     if (progressHandle == null) {
                         return;
                     }
-                    progressHandle.progress(isIndeterminate ? -2 : event.getCount());
+
+                    if (isIndeterminate && event.getCount() > 0) {
+                        progressHandle.switchToDeterminate(event.getCount());
+                        isIndeterminate = false;
+                    } else {
+                        progressHandle.progress(isIndeterminate ? -2 : event.getCount());
+                    }
                 } catch (Throwable e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }

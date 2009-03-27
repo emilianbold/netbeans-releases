@@ -38,37 +38,45 @@
  */
 package org.netbeans.modules.dlight.derby.support;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position=100)
-public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage>{
-  static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby";
-  private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 100)
+public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage> {
 
-  public DerbyDataStorageFactory() {
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DERBY_DATA_STORAGE_TYPE));
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-    supportedStorageTypes.addAll(super.getStorageTypes());
+    static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby";
+    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
-  }
+    public DerbyDataStorageFactory() {
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DERBY_DATA_STORAGE_TYPE));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        supportedStorageTypes.addAll(super.getStorageTypes());
+    }
 
-  @Override
-  public Collection<DataStorageType> getStorageTypes() {
-    return supportedStorageTypes;
-  }
+    @Override
+    public Collection<DataStorageType> getStorageTypes() {
+        return supportedStorageTypes;
+    }
 
-  @Override
-  public DerbyDataStorage createStorage() {
-    return new DerbyDataStorage();
-  }
+    @Override
+    public DerbyDataStorage createStorage() {
+        try {
+            return new DerbyDataStorage();
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
 }

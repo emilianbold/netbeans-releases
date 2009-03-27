@@ -44,11 +44,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.text.ParseException;
-import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.support.PathConverter;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
@@ -58,6 +59,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     private final static String shell;
     private final static boolean isWindows;
     private final static boolean isMacOS;
+    private final static PathConverter pathConverter;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -76,6 +78,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         isWindows = Utilities.isWindows();
         isMacOS = Utilities.isMac();
+        pathConverter = new PathConverter();
     }
 
     // TODO: For now cygwin is the ONLY tested environment on Windows!
@@ -91,7 +94,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 workingDirectory == null ? null : new File(workingDirectory);
 
         final ProcessBuilder pb;
-        final Map<String, String> env = info.getEnvVariables();
+
+        final MacroMap env = info.getEnvVariables();
 
         pb = new ProcessBuilder(shell, "-s"); // NOI18N
 
@@ -110,16 +114,37 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             if (unbufferLib != null && unbufferPath != null) {
                 InstalledFileLocator fl = InstalledFileLocator.getDefault();
                 File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
-                String ldPreloadEnv = isMacOS ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
-                String ldLibraryPathEnv = isMacOS ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
+
 
                 if (file != null && file.exists()) {
                     unbufferPath = file.getParentFile().getAbsolutePath();
+
+                    String ldPreloadEnv;
+                    String ldLibraryPathEnv;
+                    
+                    if (isWindows) {
+                        ldLibraryPathEnv = "PATH"; // NOI18N
+                        ldPreloadEnv = "LD_PRELOAD"; // NOI18N
+                    } else if (isMacOS) {
+                        ldLibraryPathEnv = "DYLD_LIBRARY_PATH"; // NOI18N
+                        ldPreloadEnv = "DYLD_INSERT_LIBRARIES"; // NOI18N
+                    } else {
+                        ldLibraryPathEnv = "LD_LIBRARY_PATH"; // NOI18N
+                        ldPreloadEnv = "LD_PRELOAD"; // NOI18N
+                    }
+
                     String ldPreload = env.get(ldPreloadEnv);
 
-                    if (isMacOS) {
+                    if (isMacOS || isWindows) {
+                        // TODO: FIXME (?) For Mac and Windows just put unbuffer 
+                        // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
+                        // Reason: no luck to make it work using PATH ;(
                         ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                                 unbufferPath + "/" + unbufferLib; // NOI18N
+                        
+                        if (isWindows) {
+                            ldPreload = pathConverter.normalize(ldPreload);
+                        }
                     } else {
                         ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                                 unbufferLib;
@@ -127,8 +152,13 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
                     env.put(ldPreloadEnv, ldPreload);
 
-                    if (!isMacOS) {
+                    if (isMacOS) {
+                        env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // NOI18N
+                    } else {
                         String ldLibPath = env.get(ldLibraryPathEnv);
+                        if (isWindows) {
+                            ldLibPath = pathConverter.normalizeAll(ldLibPath);
+                        }
                         ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
                                 unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
                         env.put(ldLibraryPathEnv, ldLibPath); // NOI18N
@@ -138,7 +168,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 
         if (isWindows) {
-            pb.directory(wdir);
+            env.put("PATH", "/bin:$PATH"); // NOI18N
         }
 
         Process pr = null;
@@ -162,8 +192,15 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         EnvWriter ew = new EnvWriter(processInput);
         ew.write(env);
 
-        if (!isWindows && wdir != null) {
-            processInput.write(("cd \"" + wdir + "\"\n").getBytes()); // NOI18N
+
+        if (wdir != null) {
+            String dir = wdir.toString();
+            
+            if (isWindows) {
+                dir = pathConverter.normalize(dir);
+            }
+            
+            processInput.write(("cd \"" + dir + "\"\n").getBytes()); // NOI18N
         }
 
         String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N

@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import java.net.PasswordAuthentication;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -53,7 +56,13 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
  *
  * @author Tomas Stupka
  */
-public class KenaiSupportImpl extends KenaiSupport {
+public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeListener {
+
+    private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
+
+    public KenaiSupportImpl() {
+        Kenai.getDefault().addPropertyChangeListener(this);
+    }
 
     @Override
     public Repository createRepository(KenaiProject project) {
@@ -87,16 +96,46 @@ public class KenaiSupportImpl extends KenaiSupport {
             } else {
                 productParamUrl = location.substring(idx);
                 product = location.substring(idx + productAttribute.length());
+            }            
+            
+            KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
+            synchronized(repositories) {
+                repositories.add(repo);
             }
-            String user = "";
-            String psswd = "";
-            PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
-            if(passwordAuthentication != null) {
-                user = passwordAuthentication.getUserName();
-                psswd = new String(passwordAuthentication.getPassword());
-            }
-            return new KenaiRepository(project.getDisplayName(), url, user, psswd, host, productParamUrl, product);
+
+            return repo;
         }
         return null;
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+
+            // get all kenai repositories
+            KenaiRepository[] repos;
+            synchronized(repositories) {
+                if(repositories.size() == 0) {
+                    return;
+                }
+                repos = repositories.toArray(new KenaiRepository[repositories.size()]);
+            }
+
+            // get kenai credentials
+            String user;
+            String psswd;
+            if(KenaiUtil.isLoggedIn()) {
+                user = KenaiUtil.getKenaiUser();
+                psswd = KenaiUtil.getKenaiPassword();
+            } else {
+                user = "";                                                      
+                psswd = "";
+            }
+
+            for (KenaiRepository kr : repos) {
+                // refresh their taskdata with the relevant username/password
+                kr.setCredentials(user, psswd);
+            }
+        }
+    }
 }
+
