@@ -132,7 +132,7 @@ public class RubyTypeSearcher implements IndexSearcher {
             textForQuery = textForQuery.substring(0, textForQuery.length()-1);
         }
         
-        RubyIndex index = RubyIndex.get(GsfUtilities.getRoots(project, 
+        RubyIndex index = RubyIndex.get(QuerySupport.findRoots(project,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));
@@ -223,7 +223,7 @@ public class RubyTypeSearcher implements IndexSearcher {
             return getTypes(project, textForQuery, kind, helper);
         }
 
-        RubyIndex index = RubyIndex.get(GsfUtilities.getRoots(project, 
+        RubyIndex index = RubyIndex.get(QuerySupport.findRoots(project,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));

@@ -36,6 +36,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -92,11 +93,15 @@ public class IllegalInstanceOfTest extends TreeRuleTestBase {
 
     @Override
     protected FileObject[] extraClassPath() {
-        FileObject api = URLMapper.findFileObject(Tree.class.getProtectionDomain().getCodeSource().getLocation());
-        
-        assertNotNull(api);
-        
-        return new FileObject[] {FileUtil.getArchiveRoot(api)};
+        if (!Utilities.isMac()) {
+            FileObject api = URLMapper.findFileObject(Tree.class.getProtectionDomain().getCodeSource().getLocation());
+
+            assertNotNull(api);
+
+            return new FileObject[]{FileUtil.getArchiveRoot(api)};
+        } else {
+            return super.extraClassPath();
+        }
     }
 
 }

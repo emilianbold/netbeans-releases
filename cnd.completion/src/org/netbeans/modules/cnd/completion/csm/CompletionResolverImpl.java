@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.Quer
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -842,7 +841,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (clazz != null) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
-            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains(clazz)) {
+            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains((CsmTemplate)clazz)) {
                 analyzeTemplates.add((CsmTemplate) clazz);
             }
             CsmScope scope = clazz.getScope();

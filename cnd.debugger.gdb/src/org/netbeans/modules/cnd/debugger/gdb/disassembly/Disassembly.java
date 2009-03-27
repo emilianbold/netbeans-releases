@@ -266,8 +266,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Collection<RegisterValue> getRegisterValues() {
-        Collection<RegisterValue> res = new ArrayList<RegisterValue>();
+    public List<RegisterValue> getRegisterValues() {
+        List<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
             String name = regNames.get(idx);
             if (name == null) {
