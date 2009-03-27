@@ -91,14 +91,13 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     public void execute(InputOutput io) {
-        // TODO: use given InputOutput
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
                 createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, pae.getProfile().getRunDirectory() + File.separator + pae.getExecutable());
-        MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+        MakeConfiguration conf = pae.getConfiguration();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
@@ -134,7 +133,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (options instanceof GizmoConfigurationOptions){
             ((GizmoConfigurationOptions)options).configure(pae.getProject());
         }
-        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, configuration); // NOI18N
+        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
+                target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
 
         DLightExecutorService.submit(new Runnable() {
             public void run() {

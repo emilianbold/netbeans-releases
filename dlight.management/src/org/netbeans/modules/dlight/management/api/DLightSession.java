@@ -44,7 +44,6 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -85,8 +84,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
     private final DLightSessionContext sessionContext;
+    private final String name;
 
-    public enum SessionState {
+    public static enum SessionState {
 
         CONFIGURATION,
         STARTING,
@@ -120,8 +120,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * Instead DLightManager.newSession() should be used.
      *
      */
-    DLightSession() {
+    DLightSession(String name) {
         this.state = SessionState.CONFIGURATION;
+        this.name = name;
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
@@ -189,6 +190,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             description = "Session #" + sessionID + " (" + targets + ")"; // NOI18N
         }
         return description;
+    }
+
+    public String getDisplayName() {
+        return name == null? getDescription() : name;
     }
 
     boolean isRunning() {
