@@ -45,7 +45,10 @@ import groovy.lang.GroovyClassLoader;
 import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -65,55 +68,89 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-public final class NbCompilationUnit extends CompilationUnit {
+final class NbCompilationUnit extends CompilationUnit {
 
-    public NbCompilationUnit(CompilerConfiguration configuration, CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
+    public NbCompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
+            CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
+
         super(configuration, security, loader);
-        this.ast = new NbCompileUnit(this.classLoader, security, this.configuration, javaSource, waitScanFinished);
+        this.ast = new NbCompileUnit(parser, this.classLoader, security, this.configuration, javaSource, waitScanFinished);
     }
 
-    private static final class NbCompileUnit extends CompileUnit {
+    private static class NbCompileUnit extends CompileUnit {
+
+        private final GroovyParser parser;
 
         private final JavaSource javaSource;
+
         private final boolean waitScanFinished;
 
-        public NbCompileUnit(GroovyClassLoader classLoader, CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
+        private final Map<String, ClassNode> cache = new HashMap<String, ClassNode>();
+
+        public NbCompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
+                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
             super(classLoader, codeSource, config);
+            this.parser = parser;
             this.javaSource = javaSource;
             this.waitScanFinished = waitScanFinished;
         }
 
+
         @Override
         public ClassNode getClass(final String name) {
-            final ClassNode[] classNodes = new ClassNode[] { super.getClass(name) };
-            if (classNodes[0] == null) {
-                try {
-                    Task<CompilationController> task = new Task<CompilationController>() {
-                        public void run(CompilationController controller) throws Exception {
-                            TypeElement typeElement = controller.getElements().getTypeElement(name);
+            if (parser.isCancelled()) {
+                throw new CancellationException();
+            }
+
+            ClassNode classNode;
+            // check the cache for non-null value
+            synchronized (cache) {
+                classNode = cache.get(name);
+                if (classNode != null) {
+                    return cache.get(name);
+                }
+            }
+
+            // if null or not present in cache
+            classNode = super.getClass(name);
+            if (classNode != null) {
+                return classNode;
+            }
+
+            // if present in cache but null
+            synchronized (cache) {
+                if (cache.containsKey(name)) {
+                    return null;
+                }
+            }
+
+            try {
+                Task<CompilationController> task = new Task<CompilationController>() {
+                    public void run(CompilationController controller) throws Exception {
+                        TypeElement typeElement = controller.getElements().getTypeElement(name);
+                        synchronized (cache) {
                             if (typeElement != null) {
-                                classNodes[0] = createClassNode(name, typeElement);
+                                cache.put(name, createClassNode(name, typeElement));
+                            } else {
+                                if (!cache.containsKey(name)) {
+                                    cache.put(name, null);
+                                }
                             }
                         }
-                    };
-//                    if (waitScanFinished) {
-//                        javaSource.runWhenScanFinished(task, true).get();
-//                    } else {
-                        javaSource.runUserActionTask(task, true);
-//                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-//                catch (InterruptedException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                } catch (ExecutionException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
+                    }
+                };
+
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            return classNodes[0];
+
+            synchronized (cache) {
+                return cache.get(name);
+            }
         }
 
-        private static ClassNode createClassNode(String name, TypeElement typeElement) {
+        private ClassNode createClassNode(String name, TypeElement typeElement) {
             int modifiers = 0;
             ClassNode superClass = null;
 

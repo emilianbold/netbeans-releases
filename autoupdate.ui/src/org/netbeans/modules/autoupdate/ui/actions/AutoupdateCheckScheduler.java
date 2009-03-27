@@ -179,12 +179,17 @@ public class AutoupdateCheckScheduler {
     public static void runCheckAvailableUpdates (int delay) {
         RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
     }
-    
+
     public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
+        return checkUpdateElements(type,null,forceReload);
+    }
+    
+    public static Collection<UpdateElement> checkUpdateElements (OperationType type,Collection<String> problems, boolean forceReload) {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
-            refreshUpdateCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+            Collection <String> updateProblems=refreshUpdateCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+            if(problems!=null && updateProblems!=null)problems.addAll(updateProblems);
         }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;
@@ -297,7 +302,11 @@ public class AutoupdateCheckScheduler {
         err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
         return updates;
     }
-    
+
+    /**
+     * @param progress
+     * @return collection of strings with description of problems in update process
+     */
     private static Collection<String> refreshUpdateCenters (ProgressHandle progress) {
         final long startTime = System.currentTimeMillis ();
         Collection<String> problems = new HashSet<String> ();

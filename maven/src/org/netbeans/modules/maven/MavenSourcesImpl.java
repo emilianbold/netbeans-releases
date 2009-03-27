@@ -46,11 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +72,6 @@ import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -118,13 +115,13 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges(true);
+                    checkChanges(true, true);
                 }
             }
         });
     }
     
-    private void checkChanges(boolean synchronous) {
+    private void checkChanges(boolean fireChanges, boolean checkAlsoResources) {
         boolean changed = false;
         synchronized (lock) {
             MavenProject mp = project.getOriginalMavenProject();
@@ -134,26 +131,24 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
                 changed = changed | checkJavaGroupCache(folder, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
                 changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
-                changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
-                changed = changed | checkOtherGroupsCache(project.getOtherRoots(true), true);
+                if (checkAlsoResources) {
+                    changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
+                    changed = changed | checkOtherGroupsCache(project.getOtherRoots(true), true);
+                }
             } else {
                 changed = true;
                 checkJavaGroupCache(null, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
                 checkJavaGroupCache(null, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
                 checkGeneratedGroupsCache(null);
-                checkOtherGroupsCache(null, true);
-                checkOtherGroupsCache(null, false);
+                if (checkAlsoResources) {
+                    checkOtherGroupsCache(null, true);
+                    checkOtherGroupsCache(null, false);
+                }
             }
         }
         if (changed) {
-            if (synchronous) {
+            if (fireChanges) {
                 fireChange();
-            } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        fireChange();
-                    }
-                });
             }
         }
     }
@@ -189,8 +184,8 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(str)) {
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
             synchronized (lock) {
-                // don't fire event synchronously..
-                checkChanges(false);
+                // don't fire event at all..
+                checkChanges(false, false);
                 toReturn.addAll(javaGroup.values());
             }
             SourceGroup[] grp = new SourceGroup[toReturn.size()];
@@ -410,7 +405,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         if (folder != null) {
             folder.mkdirs();
             FileUtil.refreshFor(folder);
-            checkChanges(false);
+            checkChanges(false, true);
             FileObject fo = FileUtil.toFileObject(folder);
             assert fo != null;
             SourceGroup[] grps = getSourceGroups(type);

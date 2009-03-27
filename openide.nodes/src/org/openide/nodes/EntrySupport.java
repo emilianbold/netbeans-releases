@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
 abstract class EntrySupport {
 
     /** children we are attached to */
-    public Children children;
+    public final Children children;
 
     /** collection of all entries */
     protected List<Entry> entries = Collections.emptyList();
@@ -241,12 +241,7 @@ abstract class EntrySupport {
             List<Node> l = new LinkedList<Node>();
             for (Entry entry : entries) {
                 Info info = findInfo(entry);
-
-                try {
-                    l.addAll(info.nodes());
-                } catch (RuntimeException ex) {
-                    NodeOp.warning(ex);
-                }
+                l.addAll(info.nodes());
             }
 
             Node[] arr = l.toArray(new Node[l.size()]);
@@ -292,6 +287,11 @@ abstract class EntrySupport {
             mustNotifySetEnties = true;
         }
 
+        private void checkConsistency() {
+            assert map.size() == this.entries.size() : "map.size()=" + map.size()
+                    + " entries.size()=" + this.entries.size();
+        }
+
         protected void setEntries(Collection<? extends Entry> entries) {
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             // current list of nodes
@@ -315,14 +315,12 @@ abstract class EntrySupport {
             } else if (holder == null || current == null) {
                 this.entries = new ArrayList<Entry>(entries);
                 if (map != null) {
-                    map.keySet().retainAll(new HashSet<Entry>(entries));
+                    map.keySet().retainAll(new HashSet<Entry>(this.entries));
                 }
                 return;
             }
 
-            // if there are old items in the map, remove them to
-            // reflect current state
-            map.keySet().retainAll(new HashSet<Entry>(this.entries));
+            checkConsistency();
 
             // what should be removed
             Set<Entry> toRemove = new LinkedHashSet<Entry>(this.entries);
@@ -368,7 +366,8 @@ abstract class EntrySupport {
             }
 
             // modify the current set of entries
-            this.entries.removeAll(toRemove);
+            entries.removeAll(toRemove);
+            checkConsistency();
 
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.finer("Current : " + this.entries);
@@ -401,12 +400,6 @@ abstract class EntrySupport {
                     previousPos += info.length();
                 }
             }
-
-            // because map can contain some additional items,
-            // that has not been garbage collected yet,
-            // retain only those that are in current list of
-            // entries
-            map.keySet().retainAll(new HashSet<Entry>(entries));
 
             int[] perm = new int[current.length];
             int currentPos = 0;
@@ -482,6 +475,7 @@ abstract class EntrySupport {
 
                 // reorderedEntries are not null
                 entries = reorderedEntries;
+                checkConsistency();
 
                 // notify the permutation to the parent
                 clearNodes();
@@ -511,6 +505,7 @@ abstract class EntrySupport {
                 LOGGER.finer("Entries after updateAdd(): " + entries);
             }
             this.entries = entries;
+            checkConsistency();
 
             clearNodes();
             notifyAdd(nodes);
@@ -537,12 +532,7 @@ abstract class EntrySupport {
                 return;
             }
 
-            // because map can contain some additional items,
-            // that has not been garbage collected yet,
-            // retain only those that are in current list of
-            // entries
-            map.keySet().retainAll(new HashSet<Entry>(this.entries));
-
+            checkConsistency();
             Info info = map.get(entry);
 
             if (info == null) {
@@ -922,7 +912,12 @@ abstract class EntrySupport {
             public Collection<Node> nodes() {
                 // forces creation of the array
                 ChildrenArray arr = getArray(null);
-                return arr.nodesFor(this);
+                try {
+                    return arr.nodesFor(this);
+                } catch (RuntimeException ex) {
+                    NodeOp.warning(ex);
+                    return Collections.<Node>emptyList();
+                }
             }
 
             public void useNodes(Collection<Node> nodes) {
@@ -1108,7 +1103,7 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            if (children != null && children.entrySupport == this) {
+                            if (children.entrySupport == this) {
                                 if (LOGGER.isLoggable(Level.FINER)) {
                                     LOGGER.finer("callRemoveNotify() " + this); // NOI18N
                                 }
