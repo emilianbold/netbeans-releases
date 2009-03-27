@@ -176,7 +176,8 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public boolean validateToolsRequiredUserInteraction() {
-        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-        return options.getUserInteractionRequiredActionsEnabled();
+//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
+//        return options.getUserInteractionRequiredActionsEnabled();
+        return false;
     }
 }

@@ -50,10 +50,8 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -89,33 +87,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             String args = pae.getProfile().getArgsFlat();
             String[] env = pae.getProfile().getEnvironment().getenv();
             boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
-            MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+            MakeConfiguration conf = pae.getConfiguration();
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
             String runDirectory = pae.getProfile().getRunDirectory();
-
-            if (!conf.getDevelopmentHost().isLocalhost()) {
-                // Make sure the project root is visible remotely
-                String basedir = pae.getProfile().getBaseDir();
-                if (MakeActionProvider.useRsync) {
-//                        ProjectInformation info = pae.getProject().getLookup().lookup(ProjectInformation.class);
-//                        final String projectName = info.getDisplayName();
-//                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
-
-
-                } else {
-                    PathMap mapper = HostInfoProvider.getDefault().getMapper(execEnv);
-                    if (!mapper.isRemote(basedir, true)) {
-//                        mapper.showUI();
-//                        if (!mapper.isRemote(basedir)) {
-//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        return;
-//                        }
-                    }
-                }
-            //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
-            }
 
             PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getExecutionEnvironment());
 
@@ -175,7 +150,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             args2 = "";
                         }
                         if (pae.getType() == ProjectActionEvent.Type.RUN &&
-                                ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
+                                pae.getConfiguration().isApplicationConfiguration() &&
                                 HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
@@ -273,7 +248,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             return true;
         } else {
             if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().isLocalhost()) {
+                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
                     return true;
                 }
             }

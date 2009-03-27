@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.core.ui.components;
 
 import java.awt.CardLayout;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -118,6 +120,17 @@ final class DLightIndicatorsTopComponent extends TopComponent {
             }
 
         }
+        Collections.sort(indicators, new Comparator<Indicator>() {
+            public int compare(Indicator o1, Indicator o2) {
+                if (o1.getPosition() < o2.getPosition()) {
+                    return -1;
+                } else if (o2.getPosition() < o1.getPosition()) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
         setContent(indicators);
     }
 

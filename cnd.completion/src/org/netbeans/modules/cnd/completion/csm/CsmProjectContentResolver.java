@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -680,13 +681,36 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.VARIABLE_DEFINITION};
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, false);
+        fillFileLocalVariablesByFilter(filter, file, out);
+    }
+
+    public static void fillFileLocalVariablesByFilter(CsmFilter filter, CsmFile file, Collection<CsmVariable> out) {
         fillFileLocalIncludeVariables(filter, file, out, new HashSet<CsmFile>(), true);
     }
 
-    private void fillFileLocalIncludeVariables(CsmFilter filter, CsmFile file,
+    private static void fillFileLocalIncludeVariables(CsmFilter filter, CsmFile file,
             Collection<CsmVariable> out, Set<CsmFile> antiLoop, boolean first) {
         if (antiLoop.contains(file)) {
             return;
+        }
+        if (first) {
+            // check #inlcude stack at first
+            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+            for (CsmInclude include : includeStack) {
+                CsmFile srcFile = include.getContainingFile();
+                int endOffset = include.getStartOffset();
+                Iterator<CsmVariable> it = CsmSelect.getStaticVariables(srcFile, filter);
+                while (it.hasNext()) {
+                    CsmOffsetableDeclaration decl = it.next();
+                    if (CsmOffsetUtilities.isAfterObject(decl, endOffset)) {
+                        if (CsmKindUtilities.isFileLocalVariable(decl)) {
+                            out.add((CsmVariable) decl);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
         }
         antiLoop.add(file);
         for (CsmInclude incl : file.getIncludes()) {

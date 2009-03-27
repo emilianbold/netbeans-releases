@@ -36,29 +36,52 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.nativeexecution.support;
 
-import java.awt.Color;
+public final class PathConverter {
 
-/**
- * Provides common colors for graph painting.
- *
- * @author Alexey Vladykin
- */
-public final class GraphColors {
+    private boolean isCygwin = true;
 
-    public static final Color COLOR_1 = new Color(0xE7, 0x6F, 0x00);
-    public static final Color COLOR_2 = new Color(0x53, 0x82, 0xA1);
-    public static final Color COLOR_3 = new Color(0xFF, 0xC7, 0x26);
-    public static final Color COLOR_4 = new Color(0xB2, 0xBC, 0x00);
+    public PathConverter() {
+    }
 
-    public static final Color BORDER_COLOR = new Color(114, 138, 132);
-    public static final Color GRADIENT_BOTTOM_COLOR = new Color(0xD6, 0xE3, 0xF3);
-    public static final Color GRADIENT_TOP_COLOR = Color.WHITE;
-    public static final Color GRID_COLOR = new Color(0xD7, 0xE0, 0xE3, 0x80);
-    public static final Color LEGEND_COLOR = Color.WHITE;
-    public static final Color TEXT_COLOR = new Color(49, 78, 114);
+    public String normalize(final String path) {
+        if (path == null) {
+            return ""; // NOI18N
+        }
 
-    private GraphColors() {
+        if (path.length() < 2) {
+            return path;
+        }
+
+        if (path.charAt(1) != ':') {
+            return path;
+        }
+
+        char driveLetter = path.charAt(0);
+        String p = path.substring(2);
+        String result;
+
+        if (isCygwin) {
+            result = "/cygdrive/" + driveLetter + p; // NOI18N
+            result = result.replaceAll("\\\\", "/"); // NOI18N
+        } else {
+            result = path;
+        }
+
+        return result;
+
+    }
+
+    public String normalizeAll(String paths) {
+        String[] ps = paths.split(";"); // NOI18N
+        StringBuilder sb = new StringBuilder();
+
+        for (String path : ps) {
+            sb.append(normalize(path));
+            sb.append(':');
+        }
+        
+        return sb.toString();
     }
 }
