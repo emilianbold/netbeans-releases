@@ -109,6 +109,23 @@ public final class IndexingManager {
         RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
     }
 
+    /**
+     * Schedules a new job for refreshing all indicies created by the given indexer.
+     * This method only works for <code>CustomIndexer</code>s. It is not possible to
+     * refresh indicies created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param indexerName The name of the indexer, which indicies should be refreshed
+     *
+     * @since 1.8
+     */
+    public void refreshAllIndicies(String indexerName) {
+        RepositoryUpdater.getDefault().addIndexingJob(indexerName);
+    }
+
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------

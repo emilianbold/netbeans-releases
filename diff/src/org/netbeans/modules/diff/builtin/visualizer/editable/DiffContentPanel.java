@@ -274,11 +274,11 @@ class DiffContentPanel extends JPanel implements HighlightsContainer {
         }
 
         public int getStartOffset() {
-            return hilites[currentHiliteIndex].getStartOffset();
+            return Math.max(hilites[currentHiliteIndex].getStartOffset(), this.startOffset);
         }
 
         public int getEndOffset() {
-            return hilites[currentHiliteIndex].getEndOffset();
+            return Math.min(hilites[currentHiliteIndex].getEndOffset(), this.endOffset);
         }
 
         public AttributeSet getAttributes() {

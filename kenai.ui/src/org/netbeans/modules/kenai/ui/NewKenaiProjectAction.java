@@ -40,12 +40,16 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -68,8 +72,6 @@ public final class NewKenaiProjectAction implements ActionListener {
         if (!cancelled) {
             Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
             // everything should be created, show summary
-            // XXX check the project is really created
-            // returning the repo will be needed as well
             showLandingPage(createdProjects);
         }
 
@@ -96,8 +98,12 @@ public final class NewKenaiProjectAction implements ActionListener {
             URL projectUrl = kenaiPrj.getWebLocation();
             URLDisplayer.getDefault().showURL(projectUrl);
         } else if (options[1].equals(option)) { // create NB project
-            System.out.println("Opening new project wizard in created repository");
-
+            Action newProjectAction = CommonProjectActions.newProjectAction();
+            if (newProjectAction != null) {
+                ProjectChooser.setProjectsFolder(new File(localPath));
+                newProjectAction.actionPerformed(new ActionEvent(NewKenaiProjectAction.class,
+                        ActionEvent.ACTION_PERFORMED, "command"));
+            }
         }
 
     }

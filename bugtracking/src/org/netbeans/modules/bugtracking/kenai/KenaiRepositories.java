@@ -81,7 +81,7 @@ public class KenaiRepositories {
         List<Repository> ret = new ArrayList<Repository>();
         for (ProjectHandle projectHandle : phs) {
             if(projectHandle == null) continue;
-            Repository repo = getRepository(projectHandle, null);
+            Repository repo = getRepository(projectHandle);
             if(repo != null) {
                 ret.add(repo);
             }
@@ -109,7 +109,7 @@ public class KenaiRepositories {
         return null;
     }
 
-    Repository getRepository(ProjectHandle ph, QueryAccessorImpl qaImpl) {
+    Repository getRepository(ProjectHandle ph) {
         KenaiProject kp = getKenaiProject(ph);
         if(kp == null) {
             // XXX log!
@@ -125,29 +125,8 @@ public class KenaiRepositories {
         if(repository == null) {
             BugtrackingManager.LOG.info("No bugtracking repository available for project " + kp.getName());
             return null;
-        }
-        if(qaImpl != null) {
-            repository.addPropertyChangeListener(new RepositoryListener(repository, ph, qaImpl));
-        }
+        }        
         return repository;
-    }
-
-    private class RepositoryListener implements PropertyChangeListener {
-        private final ProjectHandle ph;
-        private Repository repo;
-        private QueryAccessorImpl qaImpl;
-
-        public RepositoryListener(Repository repo, ProjectHandle ph, final QueryAccessorImpl qaImpl) {
-            this.ph = ph;
-            this.repo = repo;
-            this.qaImpl = qaImpl;
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                qaImpl.fireQueriesChanged(ph, qaImpl.getQueryHandles(repo));
-            }
-        }
     }
 
     static KenaiProject getKenaiProject(ProjectHandle ph) {
