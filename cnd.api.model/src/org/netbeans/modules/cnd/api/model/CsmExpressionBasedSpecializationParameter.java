@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,17 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
@@ -38,63 +49,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.model;
 
 /**
- * Common ancestor for all declarations
- * @author Vladimir Kvashin
+ * Template specialization parameter based on expression.
+ *
+ * @author Nick Krasilnikov
  */
-
-public interface CsmDeclaration extends CsmQualifiedNamedElement, 
-        CsmScopeElement, CsmValidable {
-
-    //TODO: fill in accordance to C++ standard
-
-    public enum Kind {
-
-        BUILT_IN,
-
-        CLASS,
-        UNION,
-        STRUCT,
-        
-        ENUM,
-        ENUMERATOR,
-        MACRO,
-        
-        VARIABLE,
-        VARIABLE_DEFINITION,
-        
-        FUNCTION,
-        FUNCTION_DEFINITION,
-        
-        TEMPLATE_SPECIALIZATION,
-        TYPEDEF,
-        ASM,
-        TEMPLATE_DECLARATION,
-        NAMESPACE_DEFINITION,
-        TEMPLATE_PARAMETER,
-        SPECIALIZATION_PARAMETER,
-        
-        NAMESPACE_ALIAS,
-        USING_DIRECTIVE,
-        USING_DECLARATION,
-        
-        CLASS_FORWARD_DECLARATION,
-
-        CLASS_FRIEND_DECLARATION
-    }
-    
-    Kind getKind();
-    
-    /**
-     * Gets the name, which unequely identifies the given declaration
-     * within a project.
-     * For classes, enums and variables such names equals to their qualified name;
-     * for functions the signature should be added
-     * @see CsmProject#findDeclaration
-     * @see CsmProject#findDeclarations
-     */
-    CharSequence getUniqueName();
+public interface CsmExpressionBasedSpecializationParameter extends CsmSpecializationParameter {
 }

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -68,6 +69,24 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
     }
 
+    // package-local - for facory only
+    TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+        super(type, pointerDepth, reference, arrayDepth, _const);
+        if(type.functionParameters != null) {
+            functionParameters = new ArrayList<CsmUID<CsmParameter>>(type.functionParameters);
+        }
+        functionPointerDepth = type.functionPointerDepth;
+    }
+
+    // package-local - for facory only
+    TypeFunPtrImpl(TypeFunPtrImpl type, List<CsmType> instantiationParams) {
+        super(type, instantiationParams);
+        if(type.functionParameters != null) {
+            functionParameters = new ArrayList<CsmUID<CsmParameter>>(type.functionParameters);
+        }
+        functionPointerDepth = type.functionPointerDepth;
+    }
+    
     void init(AST ast, boolean inFunctionParameters) {
         initFunctionPointerParamList(ast, this, inFunctionParameters);
     }
