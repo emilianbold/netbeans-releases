@@ -165,7 +165,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 }
                 Throwable c = t.getCause();
                 if(c != null) {
-                    if(c instanceof InterruptedException || SvnClientExceptionHandler.isOperationCancelled(c.getMessage())) {
+                    // c.getMessage() could return null here, it is a general Throwable object => isOperationCancelled throws a NPE
+                    String exMessage = c.getMessage();
+                    if(c instanceof InterruptedException || (exMessage != null && SvnClientExceptionHandler.isOperationCancelled(exMessage))) {
                         throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);
                     }
                 }

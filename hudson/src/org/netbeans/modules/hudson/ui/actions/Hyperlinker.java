@@ -93,35 +93,52 @@ class Hyperlinker {
         // PlainLogger is last and always handles it
     }
 
+    static class PlainLoggerLogic {
+        private static final Pattern REMOTE_URL = Pattern.compile("\\b(https?://[^\\s)>]+)");
+        private final HudsonJob job;
+        /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
+        private final Pattern hyperlinkable;
+        PlainLoggerLogic(HudsonJob job, String jobName) {
+            this.job = job;
+            // XXX support Windows build servers (using backslashes)
+            hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + jobName +
+                "\\E/workspace/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)");
+        }
+        OutputListener findHyperlink(String line) {
+            try {
+                Matcher m = hyperlinkable.matcher(line);
+                if (m.matches()) {
+                    final String path = m.group(1);
+                    final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
+                    final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
+                    final String message = m.group(4);
+                    return new Hyperlink(job, path, message, row, col);
+                }
+                m = REMOTE_URL.matcher(line);
+                if (m.matches()) {
+                    return new URLHyperlink(new URL(m.group()));
+                }
+            } catch (MalformedURLException x) {
+                LOG.log(Level.FINE, null, x);
+            }
+            return null;
+        }
+    }
+
     @ServiceProvider(service=HudsonLogger.class)
     public static final class PlainLogger implements HudsonLogger {
-        private static final Pattern REMOTE_URL = Pattern.compile("\\b(https?://[^\\s)>]+)");
         public HudsonLogSession createSession(final HudsonJob job) {
             return new HudsonLogSession() {
-                // XXX support Windows build servers (using backslashes)
-                /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
-                private final Pattern hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
-                        "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
+                final PlainLoggerLogic logic = new PlainLoggerLogic(job, job.getName());
                 public boolean handle(String line, OutputWriter stream) {
-                    try {
-                        Matcher m = hyperlinkable.matcher(line);
-                        if (m.matches()) {
-                            final String path = m.group(1);
-                            final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
-                            final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
-                            final String message = m.group(4);
-                            stream.println(line, new Hyperlink(job, path, message, row, col));
+                    OutputListener link = logic.findHyperlink(line);
+                    if (link != null) {
+                        try {
+                            stream.println(line, link);
                             return true;
+                        } catch (IOException x) {
+                            LOG.log(Level.INFO, null, x);
                         }
-                        m = REMOTE_URL.matcher(line);
-                        if (m.find()) {
-                            stream.println(line, new URLHyperlink(new URL(m.group())));
-                            return true;
-                        }
-                    } catch (MalformedURLException x) {
-                        LOG.log(Level.FINE, null, x);
-                    } catch (IOException x) {
-                        LOG.log(Level.INFO, null, x);
                     }
                     stream.println(line);
                     return true;
@@ -200,6 +217,10 @@ class Hyperlinker {
         }
 
         public void outputLineCleared(OutputEvent ev) {}
+
+        public @Override String toString() {
+            return path + ":" + row + ":" + col + ":" + message; // NOI18N
+        }
         
     }
 
@@ -218,6 +239,10 @@ class Hyperlinker {
         public void outputLineSelected(OutputEvent ev) {}
 
         public void outputLineCleared(OutputEvent ev) {}
+
+        public @Override String toString() {
+            return u.toString();
+        }
 
     }
 

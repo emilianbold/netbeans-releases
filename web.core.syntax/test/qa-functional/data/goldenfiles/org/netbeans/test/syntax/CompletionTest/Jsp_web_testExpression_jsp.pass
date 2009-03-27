@@ -66,6 +66,7 @@ Locale[] availableLocales
 Class class
 int firstDayOfWeek
 Calendar instance
+boolean lenient
 int minimalDaysInFirstWeek
 Date time
 long timeInMillis
@@ -77,6 +78,7 @@ Locale[] availableLocales
 Class class
 int firstDayOfWeek
 Calendar instance
+boolean lenient
 int minimalDaysInFirstWeek
 Date time
 long timeInMillis

@@ -370,8 +370,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
             String repoUrl = featureItem.feature.getLocation().toASCIIString();
             try {
-                svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
+                if (passwdAuth != null) {
+                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+                } else {
+                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl);
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

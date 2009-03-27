@@ -212,8 +212,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         if(formI18nMnemonic == null) {
             formI18nMnemonic = createFormI18nMnemonic();
 
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nMnemonic.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            if(I18nUtil.getOptions().getLastResource2(sourceDataObject) != null)
+                formI18nMnemonic.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2(sourceDataObject));
         }
         
         return formI18nMnemonic;
@@ -228,8 +228,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         else {
             formI18nMnemonic = createFormI18nMnemonic();
         
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nMnemonic.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            if(I18nUtil.getOptions().getLastResource2(sourceDataObject) != null)
+                formI18nMnemonic.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2(sourceDataObject));
         }
     }
 
