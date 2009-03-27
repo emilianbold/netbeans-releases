@@ -57,6 +57,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -69,6 +70,9 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
+    private Node activeNode;
+    private boolean isShareExistingFolder;
+
 
     public static final String PROP_PRJ_NAME = "projectName";
     public static final String PROP_PRJ_TITLE = "projectTitle";
@@ -86,6 +90,15 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String NO_ISSUES = "none";
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai");
+
+    NewKenaiProjectWizardIterator(Node activatedNode) {
+        this.activeNode = activatedNode;
+        isShareExistingFolder = true;
+    }
+
+    NewKenaiProjectWizardIterator() {
+        isShareExistingFolder = false;
+    }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
@@ -105,20 +118,20 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
 
         // Create project
-        try {
-            handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                "NewKenaiProject.progress.creatingProject"));
-
-            logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName +
-                    ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense);
-
-            Kenai.getDefault().createProject(newPrjName, newPrjTitle,
-                    newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
-
-        } catch (KenaiException kex) {
-            throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                    "NewKenaiProject.progress.projectCreationFailed")));
-        }
+//        try {
+//            handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+//                "NewKenaiProject.progress.creatingProject"));
+//
+//            logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName +
+//                    ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense);
+//
+//            Kenai.getDefault().createProject(newPrjName, newPrjTitle,
+//                    newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
+//
+//        } catch (KenaiException kex) {
+//            throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+//                    "NewKenaiProject.progress.projectCreationFailed")));
+//        }
 
         // Create feature - SCM repository
         if (!NO_REPO.equals(newPrjScmType)) {
@@ -351,10 +364,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[]{
-            new NameAndLicenseWizardPanel(),
-            new SourceAndIssuesWizardPanel()
-        };
+        if (isShareExistingFolder) {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(activeNode)
+                    };
+
+        } else {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(),
+                        new SourceAndIssuesWizardPanel()
+                    };
+        }
     }
 
 }
