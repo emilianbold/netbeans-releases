@@ -80,6 +80,9 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         this.configuration = configuration;
         this.currentTool = tool;
         this.targetToRepairFor = targetToRepairFor;
+        // TODO: FIXME.
+        // hotfix to avoid NPE ...
+        this.currentStatus = ValidationStatus.initialStatus();
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
