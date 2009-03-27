@@ -50,7 +50,7 @@ dobuild() {
     ant build $ANT_PARAM || exit 2
     ant commit-validation $ANT_PARAM || exit 3
     ant check-sigtests-release $ANT_PARAM || exit 35
-    ant build-test-dist $ANT_PARAM || exit 4
+#    ant build-test-dist $ANT_PARAM || exit 4
 
     testmodule openide.awt || exit 5
 
