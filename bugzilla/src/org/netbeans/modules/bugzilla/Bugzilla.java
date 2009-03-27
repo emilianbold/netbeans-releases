@@ -49,6 +49,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -115,6 +116,10 @@ public class Bugzilla {
     }
 
     public void addRepository(BugzillaRepository repository) {
+        if(repository instanceof KenaiRepository) {
+            // we don't store kenai repositories - XXX  shouldn't be even called
+            return;
+        }
         BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
             repositories.add(repository);
