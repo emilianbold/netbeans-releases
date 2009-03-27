@@ -184,17 +184,19 @@ public class ConfigurationMakefileWriter {
         // Find MakefileWriter in toolchain.
         MakefileWriter makefileWriter = null;
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
-        if (makefileWriterClassName != null) {
-            Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
-            for(MakefileWriter instance: mwc){
-               if (makefileWriterClassName.equals(instance.getClass().getName())){
-                   makefileWriter = instance;
-                   break;
-               }
-            }
-            if (makefileWriter == null) {
-                System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
+        if (compilerSet != null) {
+            String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
+            if (makefileWriterClassName != null) {
+                Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
+                for(MakefileWriter instance: mwc){
+                   if (makefileWriterClassName.equals(instance.getClass().getName())){
+                       makefileWriter = instance;
+                       break;
+                   }
+                }
+                if (makefileWriter == null) {
+                    System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
+                }
             }
         }
         // Use default MakefileWriter if none is found.
