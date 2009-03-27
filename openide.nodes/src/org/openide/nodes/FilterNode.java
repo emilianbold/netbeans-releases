@@ -1723,7 +1723,7 @@ public class FilterNode extends Node {
 
                 public FilterLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
                     super(entries, e2i);
-                    origSnapshot = (LazySnapshot) origSupport.createSnapshot();
+                    origSnapshot = origSupport.createSnapshot();
                 }
 
                 @Override

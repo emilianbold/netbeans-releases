@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -101,6 +103,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 public class AstUtilities {
 
+    private static final Logger LOGGER = Logger.getLogger(AstUtilities.class.getName());
 
     public static int getAstOffset(Parser.Result info, int lexOffset) {
         GroovyParserResult result = getParseResult(info);
@@ -164,6 +167,10 @@ public class AstUtilities {
         int lineNumber = node.getLineNumber();
         int columnNumber = node.getColumnNumber();
         if (lineNumber < 1 || columnNumber < 1) {
+            return OffsetRange.NONE;
+        }
+        if (doc == null) {
+            LOGGER.log(Level.INFO, "Null document in getRange()");
             return OffsetRange.NONE;
         }
 
