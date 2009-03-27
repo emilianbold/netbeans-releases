@@ -40,6 +40,8 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -68,12 +70,21 @@ public final class CreateHostVisualPanel1 extends JPanel {
         pbarStatusPanel.removeAll();
         pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(tableModel.getProgressHandle()), BorderLayout.CENTER);
         pbarStatusPanel.validate();
-        tableModel.start(new Runnable() {
-            public void run() {
-                pbarStatusPanel.setVisible(false);
+
+        addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                tableModel.start(new Runnable() {
+                    public void run() {
+                        pbarStatusPanel.setVisible(false);
+                    }
+                });
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                tableModel.stop();
+            }
+            public void ancestorMoved(AncestorEvent event) {
             }
         });
-
     }
 
     @Override
