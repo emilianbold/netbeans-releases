@@ -95,7 +95,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -205,6 +204,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (dobj == null) {
                     return;
                 }
+                dobj = ROUtil.checkPOMFileObjectReadOnly(dobj);
                 EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
                     return;
@@ -227,14 +227,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
                             component.setCaretPosition(pos);
-                            if ("pom".equals(dobj.getPrimaryFile().getExt())) {
-                                //make temporarily non-editable??
-//                                component.setEditable(false);
-//                                TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
-//                                String dn = tc.getDisplayName();
-//                                tc.setDisplayName(dn + " r/o");
-
-                            }
                         }
                     } catch (IOException ioe) {
                     }

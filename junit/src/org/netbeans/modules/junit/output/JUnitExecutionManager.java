@@ -40,13 +40,16 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.File;
+import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.spi.AntSession;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.spi.project.SingleMethod;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -57,16 +60,72 @@ import org.openide.util.lookup.Lookups;
 public class JUnitExecutionManager implements RerunHandler{
     private File scriptFile = null;
     private String[] targets = null;
+    private Properties properties;
+    private TestSession testSession;
+    private Lookup lookup = Lookup.EMPTY;
 
-    public JUnitExecutionManager(AntSession session) {
+    public JUnitExecutionManager(AntSession session, TestSession testSession, Properties props) {
+        this.testSession = testSession;
+        this.properties = props;
         try{
             scriptFile = session.getOriginatingScript();
             targets = session.getOriginatingTargets();
+            //transform known ant targets to the action names
+            for(int i=0;i < targets.length; i++){
+                if (targets[i].equals("test-single")){                      //NOI18N
+                    targets[i] = ActionProvider.COMMAND_TEST_SINGLE;      
+                } else if (targets[i].equals("debug-test")){                //NOI18N
+                    targets[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+                }
+            }
+            
+            String javacIncludes = properties.getProperty("javac.includes");//NOI18N
+            if (javacIncludes != null){
+                FileObject testFO = testSession.getFileLocator().find(javacIncludes);
+                lookup = Lookups.fixed(DataObject.find(testFO));
+            }
+
+            if (targets.length == 0 ){
+                String className = properties.getProperty("classname");     //NOI18N
+                String methodName = properties.getProperty("methodname");     //NOI18N
+                if (className != null){
+                    FileObject testFO = testSession.getFileLocator().find(className.replace('.', '/') + ".java"); //NOI18N
+                    if (methodName != null){
+                        SingleMethod methodSpec = new SingleMethod(testFO, methodName);
+                        lookup = Lookups.singleton(methodSpec);
+                    }else{
+                        lookup = Lookups.fixed(DataObject.find(testFO));
+                    }
+                }
+                if (scriptFile.getName().equals("junit.xml")){              //NOI18N
+                    if (methodName != null){
+                        targets = new String[]{SingleMethod.COMMAND_RUN_SINGLE_METHOD};
+                    }else{
+                        targets = new String[]{ActionProvider.COMMAND_TEST_SINGLE};
+                    }
+                }else if (scriptFile.getName().equals("junit-debug.xml")){  //NOI18N
+                    if (methodName != null){
+                        targets = new String[]{SingleMethod.COMMAND_DEBUG_SINGLE_METHOD};
+                    }else{
+                        targets = new String[]{ActionProvider.COMMAND_DEBUG_TEST_SINGLE};
+                    }
+                }
+            }
         }catch(Exception e){}
     }
 
     public void rerun() {
-        Project project = FileOwnerQuery.getOwner(FileUtil.toFileObject(scriptFile));
+        Project project = testSession.getProject();
+        ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
+        actionProvider.invokeAction(targets[0], lookup);
+    }
+
+    public boolean enabled() {
+        if ((scriptFile == null) || (targets == null) || (targets.length == 0)){
+            return false;
+        }
+
+        Project project = testSession.getProject();
         ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
         if (actionProvider != null){
             boolean runSupported = false;
@@ -76,16 +135,12 @@ public class JUnitExecutionManager implements RerunHandler{
                     break;
                 }
             }
-            
-            if (runSupported && actionProvider.isActionEnabled(targets[0], Lookup.EMPTY)) {
-                actionProvider.invokeAction(targets[0], Lookup.EMPTY);
+            if (runSupported && actionProvider.isActionEnabled(targets[0], lookup)) {
+                return true;
             }
         }
 
-    }
-
-    public boolean enabled() {
-        return (scriptFile != null) && (targets != null) && (targets.length != 0);
+        return false;
     }
 
     public void addChangeListener(ChangeListener listener) {

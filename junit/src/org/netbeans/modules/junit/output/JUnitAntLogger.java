@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -376,10 +377,15 @@ public final class JUnitAntLogger extends AntLogger {
                     project = FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(projectDir))); //NOI18N
                 }
             }catch(Exception e){}
+            Properties props = new Properties();
+            for(String propName: event.getPropertyNames()){
+                props.setProperty(propName, event.getProperty(propName));
+            }
             outputReader = new JUnitOutputReader(
                                         session,
                                         sessionInfo,
-                                        project);
+                                        project,
+                                        props);
             sessionInfo.outputReader = outputReader;
         }
         return outputReader;
