@@ -41,6 +41,8 @@ package org.netbeans.modules.maven.navigator;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -54,6 +56,8 @@ import org.openide.util.Exceptions;
  */
 public class ROUtil {
 
+    private static final HashMap<File, WeakReference<LocalFileSystem>> cache =
+            new HashMap<File, WeakReference<LocalFileSystem>>();
     /**
      * make sure that pom files from repository are opened as read only,
      * sort of hack but works.
@@ -64,16 +68,8 @@ public class ROUtil {
     static FileObject checkPOMFileObjectReadOnly(FileObject fo, File file) {
         FileObject toRet = fo;
         if ("pom".equals(fo.getExt())) { //NOI18N
-            LocalFileSystem lfs = new LocalFileSystem();
-            lfs.setReadOnly(true);
-            try {
-                lfs.setRootDirectory(file.getParentFile());
-                toRet = lfs.findResource(file.getName());
-            } catch (PropertyVetoException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            LocalFileSystem lfs = checkFSCache(file);
+            toRet = lfs.findResource(getPath(file));
         }
         return toRet;
     }
@@ -91,5 +87,42 @@ public class ROUtil {
             }
         }
         return toRet;
+    }
+
+    private static String getPath(File file) {
+        File versionFolder = file.getParentFile();
+        assert versionFolder != null : "wrong parent for " + file;
+        File artifactFolder = versionFolder.getParentFile();
+        assert artifactFolder != null : "wrong parent for " + versionFolder;
+        return artifactFolder.getName() + "/" + versionFolder.getName() + "/" + file.getName();
+    }
+
+    private static LocalFileSystem checkFSCache(File file) {
+        File versionFolder = file.getParentFile();
+        assert versionFolder != null : "wrong parent for " + file;
+        File artifactFolder = versionFolder.getParentFile();
+        assert artifactFolder != null : "wrong parent for " + versionFolder;
+        File groupFolder = artifactFolder.getParentFile();
+        assert groupFolder != null : "wrong parent for " + artifactFolder;
+        LocalFileSystem fs = null;
+        synchronized (cache) {
+            WeakReference<LocalFileSystem> ref = cache.get(groupFolder);
+            if (ref != null) {
+                fs = ref.get();
+            }
+            if (fs == null) {
+                fs = new LocalFileSystem();
+                fs.setReadOnly(true);
+                try {
+                    fs.setRootDirectory(groupFolder);
+                    cache.put(groupFolder, new WeakReference<LocalFileSystem>(fs));
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return fs;
     }
 }
