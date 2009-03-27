@@ -709,20 +709,17 @@ public class GdbDebugger implements PropertyChangeListener {
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
                 line = line.substring(21, line.length() - 8);
-                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
-                    line = WinPath.cyg2win(line); // TODO: what about mingw?
-                }
-                if (equivalentPaths(line, exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && equivalentPaths(line, exepath + ".exe"))) { // NOI18N
+                if (compareExePaths(line, exepath)) {
                     return true;
                 }
-            } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) { // NOI18N
+            } else if (line.contains("Loaded symbols for ") && comparePaths(exepath, line.substring(19))) { // NOI18N
                 return true;
             }
         }
         return false;
     }
 
-    private boolean equivalentPaths(String path1, String path2) {
+    private boolean comparePaths(String path1, String path2) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             return winpath(path1).toLowerCase().equals(winpath(path2).toLowerCase());
         }
@@ -731,7 +728,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private String winpath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            return WinPath.cyg2win(path);
+            return WinPath.cyg2win(path).replace("\\\\", "/").replace("\\", "/");
         } else {
             return path;
         }
@@ -759,7 +756,7 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     private boolean compareExePaths(String exe1, String exe2) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            return normalizeWindowsExe(exe1).equals(normalizeWindowsExe(exe2));
+            return comparePaths(normalizeWindowsExe(exe1), normalizeWindowsExe(exe2));
         } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
             return exe1.toLowerCase().equals(exe2.toLowerCase());
         } else {
@@ -767,13 +764,11 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private String normalizeWindowsExe(String exe) {
-        String n_exe = winpath(exe).replace("\\\\", "/").replace("\\", "/"); // NOI18N
-        if (n_exe.endsWith(".exe")) { // NOI18N
-            return n_exe.substring(0, n_exe.length() - 4);
-        } else {
-            return n_exe;
+    private static String normalizeWindowsExe(String exe) {
+        if (exe.endsWith(".exe")) { // NOI18N
+            return exe.substring(0, exe.length() - 4);
         }
+        return exe;
     }
 
     /**
@@ -1872,8 +1867,8 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
                 return WinPath.cyg2win(path);
-            } else if (isMinGW() && path.charAt(0) == '/' && path.charAt(2) == '/') {
-                return path.charAt(1) + ":" + path.substring(2); // NOI18N
+            } else if (isMinGW()) {
+                return WinPath.ming2win(path); // NOI18N
             }
         } 
         return path;
