@@ -142,8 +142,10 @@ public final class CompleteElementHandler {
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
                 .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
 
-        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+        if (source != null) {
+            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                    .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+        }
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
@@ -181,8 +183,10 @@ public final class CompleteElementHandler {
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
                 .getFields(typeNode.getName(), prefix, anchor), result);
 
-        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
+        if (source != null) {
+            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                    .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
+        }
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getFieldsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1), result);
