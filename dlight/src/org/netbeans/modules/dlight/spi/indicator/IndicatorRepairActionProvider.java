@@ -67,7 +67,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private final DLightTool currentTool;
     private final DLightTarget targetToRepairFor;
     private ValidationStatus currentStatus;
-    private final List<IndicatorDataProvider> toReValidate;
+    private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
     private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners");
 
@@ -80,8 +80,11 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         this.configuration = configuration;
         this.currentTool = tool;
         this.targetToRepairFor = targetToRepairFor;
-        List<IndicatorDataProvider> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
-        toReValidate = new ArrayList<IndicatorDataProvider>();
+        // TODO: FIXME.
+        // hotfix to avoid NPE ...
+        this.currentStatus = ValidationStatus.initialStatus();
+        List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
+        toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
             if (!idp.getValidationStatus().isKnown()) {
                 idp.addValidationListener(this);
@@ -132,8 +135,8 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         Future<Boolean> task = DLightExecutorService.submit(new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
-                for (IndicatorDataProvider idp : toReValidate) {
-                    final ValidateableSupport support = new ValidateableSupport(idp);
+                for (IndicatorDataProvider<?> idp : toReValidate) {
+                    final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(idp);
                     final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToRepairFor, true);
                     Future<Boolean> result = DLightExecutorService.submit(new Callable<Boolean>() {
 

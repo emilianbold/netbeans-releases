@@ -83,7 +83,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.configuration = dlightConfiguration;
         this.targetToValidateWith = targetToValidateWith;
         this.currentTool = tool;
-        List<DataCollector> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
+        List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
         panelsList = new ArrayList<JPanel>();
         //get the first one
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -140,8 +140,8 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.add(repairPanel);
     }
 
-    private void repair(final DataCollector c) {
-        final ValidateableSupport support = new ValidateableSupport(c);
+    private void repair(final DataCollector<?> c) {
+        final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
         final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToValidateWith, true);
         DLightExecutorService.submit(new Callable<Boolean>() {
 

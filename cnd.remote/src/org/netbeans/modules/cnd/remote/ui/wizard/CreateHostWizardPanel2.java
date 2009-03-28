@@ -93,6 +93,7 @@ public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDesc
     public void readSettings(WizardDescriptor settings) {
         getComponent().init(
             (String)settings.getProperty(CreateHostWizardPanel1.PROP_HOSTNAME),
+            (Integer)settings.getProperty(CreateHostWizardPanel1.PROP_PORT),
             (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
         );
     }

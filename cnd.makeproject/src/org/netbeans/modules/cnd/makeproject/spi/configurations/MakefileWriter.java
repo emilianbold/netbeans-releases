@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 
@@ -51,54 +51,54 @@ public interface MakefileWriter {
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writePrelude(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writePrelude(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes main build target
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes all compile targets (only for managed projects)
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes link target (only for linked projects)
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes writes archive target (only for archive projects)
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeArchiveTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeArchiveTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes target for unmanaged projects
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeMakefileTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeMakefileTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes target for QT projects
@@ -107,32 +107,32 @@ public interface MakefileWriter {
      * @param conf  current project configuration
      * @param bw  output stream to generated makefile
      */
-    void writeQTTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeQTTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes clan target
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeCleanTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeCleanTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes targets for sub projects
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes dependency checking target
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
-     * @param bw  output stream to generated makefile
+     * @param writer  output stream to generated makefile
      */
-    void writeDependencyChecking(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException;
+    void writeDependencyChecking(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 }

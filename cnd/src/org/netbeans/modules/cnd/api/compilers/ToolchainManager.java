@@ -78,10 +78,6 @@ public abstract class ToolchainManager {
 
         String getDisplayName();
 
-        String getReleaseFile();
-
-        String getReleasePattern();
-
         String[] getFamily();
 
         String[] getPlatforms();
