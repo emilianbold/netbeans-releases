@@ -93,12 +93,12 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -2642,6 +2642,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return;
                 }
                 FileImpl impl = (FileImpl) file.getObject();
+                CndUtils.assertTrue(impl != null, "");
+                if (impl == null) {
+                    return;
+                }
                 Thread.currentThread().setName("Fix registration "+file); // NOI18N
                 impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {

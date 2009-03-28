@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
@@ -489,6 +490,23 @@ public class PersistentUtils {
         }
     }
 
+    public static SpecializationDescriptor readSpecializationDescriptor(DataInput input) throws IOException {
+        int handler = input.readInt();
+        if (handler == AbstractObjectFactory.NULL_POINTER) {
+            return null;
+        }
+        assert handler == TEMPLATE_DESCRIPTOR_IMPL;
+        return new SpecializationDescriptor(input);
+    }
+
+    public static void writeSpecializationDescriptor(SpecializationDescriptor specializationDescriptor, DataOutput output) throws IOException {
+        if (specializationDescriptor == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else {
+            output.writeInt(TEMPLATE_DESCRIPTOR_IMPL);
+            specializationDescriptor.write(output);
+        }
+    }
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
     public static void writeVisibility(CsmVisibility visibility, DataOutput output) throws IOException {
@@ -640,8 +658,10 @@ public class PersistentUtils {
 
     // tempalte descriptor
     private static final int TEMPLATE_DESCRIPTOR_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+    // specialization descriptor
+    private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
 
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = TEMPLATE_DESCRIPTOR_IMPL;
+    public static final int LAST_INDEX = SPECIALIZATION_DESCRIPTOR_IMPL;
 }
