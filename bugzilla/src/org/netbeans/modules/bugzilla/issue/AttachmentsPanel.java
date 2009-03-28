@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +62,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -368,6 +371,11 @@ public class AttachmentsPanel extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+            String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
@@ -391,6 +399,8 @@ public class AttachmentsPanel extends JPanel {
                         dnfex.printStackTrace();
                     } catch (IOException ioex) {
                         ioex.printStackTrace();
+                    } finally {
+                        handle.finish();
                     }
                 }
             });
@@ -409,13 +419,20 @@ public class AttachmentsPanel extends JPanel {
             final File file = new FileChooserBuilder(AttachmentsPanel.class)
                     .setFilesOnly(true).showSaveDialog();
             if (file != null) {
+                String progressFormat = NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.progress"); // NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
                             attachment.getAttachementData(new FileOutputStream(file));
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
-                        } 
+                        } finally {
+                            handle.finish();
+                        }
                     }
                 });
             }
@@ -433,6 +450,11 @@ public class AttachmentsPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             final File context = BugtrackingUtil.selectPatchContext();
             if (context != null) {
+                String progressFormat = NbBundle.getMessage(ApplyPatchAction.class, "AttachmentsPanel.ApplyPatchAction.progress"); // NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
@@ -440,6 +462,8 @@ public class AttachmentsPanel extends JPanel {
                             BugtrackingUtil.applyPatch(file, context);
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
                         }
                     }
                 });
