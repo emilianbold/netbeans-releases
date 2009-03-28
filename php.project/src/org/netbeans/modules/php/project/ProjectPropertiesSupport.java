@@ -330,15 +330,34 @@ public final class ProjectPropertiesSupport {
         return paths;
     }
 
-    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
-        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
-        if (originalPathMapping.isEmpty()) {
-            return Collections.emptyList();
+    /**
+     * @return instance of Pair<String, String> or null
+     */
+    private static Pair<String, String> getCopySupportPair(PhpProject project) {
+        Pair<String, String> copySupportPair = null;
+        if (ProjectPropertiesSupport.isCopySourcesEnabled(project)) {
+            File copyTarget = ProjectPropertiesSupport.getCopySourcesTarget(project);
+            if (copyTarget != null && copyTarget.exists()) {
+                FileObject copySourceFo = ProjectPropertiesSupport.getSourcesDirectory(project);
+                File copySource = FileUtil.toFile(copySourceFo);
+                if (copySource != null && copySource.exists()) {
+                    copySupportPair = Pair.of(copyTarget.getAbsolutePath(), copySource.getAbsolutePath());
+                }
+            }
         }
+        return copySupportPair;
+    }
+
+    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
+        Pair<String, String> copySupportPair = getCopySupportPair(project);
+        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
         List<Pair<String, String>> encodedPathMapping = new ArrayList<Pair<String, String>>(originalPathMapping.size());
         try {
             for (Pair<String, String> pathMapping : originalPathMapping) {
                 encodedPathMapping.add(getEncodedDebugPathPair(pathMapping));
+            }
+            if (copySupportPair != null) {
+                encodedPathMapping.add(getEncodedDebugPathPair(copySupportPair));
             }
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
