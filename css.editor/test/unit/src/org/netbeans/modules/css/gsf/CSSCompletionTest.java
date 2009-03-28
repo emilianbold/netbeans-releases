@@ -155,6 +155,10 @@ public class CSSCompletionTest extends TestBase {
 //        checkCC("h1 { color: ble| }", arr(), Match.EMPTY); //fails - issue #161129
     }
 
+    public void testIssue160870() throws ParseException {
+        checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
+    }
+
     //--- utility methods ---
 
     private String[] arr(String... args) {
