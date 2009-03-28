@@ -69,6 +69,7 @@ CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
 CLASS      URLStreamHandlerFactory                    null
 CLASS      Writable                                   null
+FIELD      class                                      Class
 FIELD      metaClass                                  MetaClass
 KEYWORD    boolean                                    null
 KEYWORD    byte                                       null
