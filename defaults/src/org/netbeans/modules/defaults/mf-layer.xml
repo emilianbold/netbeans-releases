@@ -238,7 +238,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
             </file>
             <file name="D-5.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-ide-ServicesTabAction.instance"/>
             </file>
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
@@ -575,7 +575,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
             </file>
             <file name="D-5.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-ide-ServicesTabAction.instance"/>
             </file>
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
@@ -841,7 +841,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
             </file>
             <file name="D-5.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-ide-ServicesTabAction.instance"/>
             </file>
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
@@ -907,7 +907,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
             </file>
             <file name="D-5.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-ide-ServicesTabAction.instance"/>
             </file>
             <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>

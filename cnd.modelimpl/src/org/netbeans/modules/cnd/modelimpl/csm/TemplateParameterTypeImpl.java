@@ -68,6 +68,16 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
         this.parameter = UIDCsmConverter.objectToUID(parameter);
     }
 
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+        this.type = TypeFactory.createType(type.type, pointerDepth, reference, arrayDepth, _const);
+        this.parameter = type.parameter;
+    }
+
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, List<CsmType> instantiationParams) {
+        this.type = TypeFactory.createType(type.type, instantiationParams);
+        this.parameter = type.parameter;
+    }
+
     public CsmTemplateParameter getParameter() {
         return UIDCsmConverter.UIDtoCsmObject(this.parameter);
     }

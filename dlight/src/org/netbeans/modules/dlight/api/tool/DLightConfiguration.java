@@ -223,11 +223,11 @@ public final class DLightConfiguration {
             return DLightConfiguration.this.toolsConfiguration.getToolsSet();
         }
 
-        public List<DataCollector> getCollectors(DLightTool tool) {
+        public List<DataCollector<?>> getCollectors(DLightTool tool) {
             return tool.getCollectors();
         }
 
-        public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
+        public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
             return tool.getIndicatorDataProviders();
         }
 
