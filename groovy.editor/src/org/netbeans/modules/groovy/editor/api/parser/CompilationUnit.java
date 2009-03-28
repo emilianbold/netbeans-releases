@@ -54,9 +54,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
-import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -68,16 +68,16 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-final class NbCompilationUnit extends CompilationUnit {
+final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
-    public NbCompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
+    public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
             CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
 
         super(configuration, security, loader);
-        this.ast = new NbCompileUnit(parser, this.classLoader, security, this.configuration, javaSource, waitScanFinished);
+        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource, waitScanFinished);
     }
 
-    private static class NbCompileUnit extends CompileUnit {
+    private static class CompileUnit extends org.codehaus.groovy.ast.CompileUnit {
 
         private final GroovyParser parser;
 
@@ -87,7 +87,7 @@ final class NbCompilationUnit extends CompilationUnit {
 
         private final Map<String, ClassNode> cache = new HashMap<String, ClassNode>();
 
-        public NbCompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
+        public CompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
                 CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
             super(classLoader, codeSource, config);
             this.parser = parser;
@@ -160,8 +160,11 @@ final class NbCompilationUnit extends CompilationUnit {
                 // initialize supertypes
                 // super class is required for try {} catch block exception type
                 Stack<DeclaredType> supers = new Stack<DeclaredType>();
-                while (typeElement != null && (typeElement.getSuperclass().getKind() != TypeKind.NONE)
-                        && (typeElement.getSuperclass().getKind() == TypeKind.DECLARED)) {
+                while (typeElement != null && typeElement.asType().getKind() != TypeKind.NONE) {
+                    TypeMirror type = typeElement.getSuperclass();
+                    if (type.getKind() != TypeKind.DECLARED) {
+                        break;
+                    }
 
                     DeclaredType superType = (DeclaredType) typeElement.getSuperclass();
                     supers.push(superType);
@@ -177,15 +180,20 @@ final class NbCompilationUnit extends CompilationUnit {
                     typeElement = null;
                 }
 
-                for (DeclaredType type : supers) {
-                    // FIXME modifiers
-                    superClass = new ClassNode(Utilities.getClassName(type).toString(),
+                while (!supers.empty()) {
+                    superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(),
                             0, superClass);
                 }
+            }
+            return createClassNode(name, modifiers, superClass);
+        }
+
+        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass) {
+            if ("java.lang.Object".equals(name) && superClass == null) { // NOI18N
+                return ClassHelper.OBJECT_TYPE;
             }
             return new ClassNode(name, modifiers, superClass);
         }
 
     }
-
 }

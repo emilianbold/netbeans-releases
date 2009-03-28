@@ -10,4 +10,6 @@ METHOD     compareTo(File)                 [PUBLIC]   int
 METHOD     createNewFile()                 [PUBLIC]   boolean
 METHOD     createTempFile(String, String)  [STATIC,   File
 METHOD     createTempFile(String, String,  [STATIC,   File
-FIELD      counter                                    int
+FIELD      canonicalFile                              File
+FIELD      canonicalPath                              String
+FIELD      class                                      Class
