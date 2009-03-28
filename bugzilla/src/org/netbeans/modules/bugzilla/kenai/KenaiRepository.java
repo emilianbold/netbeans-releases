@@ -66,7 +66,7 @@ public class KenaiRepository extends BugzillaRepository {
     private String host;
 
     public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
-        super(repoName, url, KenaiUtil.getKenaiUser(), KenaiUtil.getKenaiPassword());
+        super(repoName, url, KenaiUtil.getKenaiUser(), KenaiUtil.getKenaiPassword(), null, null);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -151,12 +151,15 @@ public class KenaiRepository extends BugzillaRepository {
     @Override
     protected BugzillaConfiguration createConfiguration() {
         KenaiConfiguration c = BugzillaConfiguration.create(this, KenaiConfiguration.class);
-        c.setProducts(product);
-        return c;
+        if(c != null) {
+            c.setProducts(product);
+            return c;
+        }
+        return null;
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password);
+        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
     }
 
 }
