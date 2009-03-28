@@ -115,7 +115,7 @@ class GroovyParser extends Parser {
     private GroovyParserResult lastResult;
 
     private AtomicBoolean cancelled = new AtomicBoolean();
-    
+
     public GroovyParser() {
         super();
     }
@@ -174,7 +174,7 @@ class GroovyParser extends Parser {
         GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootElement, errorCollector);
         return parserResult;
     }
-    
+
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
 
         if (sanitizing == Sanitize.MISSING_END) {
@@ -298,7 +298,7 @@ class GroovyParser extends Parser {
                         if (line.endsWith("?.") || line.endsWith(".&")) { // NOI18N
                             removeChars = 2;
                         } else if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
-                            removeChars = 1; 
+                            removeChars = 1;
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
                         } else if (line.endsWith(", ")) { // NOI18N
@@ -346,7 +346,7 @@ class GroovyParser extends Parser {
 
         return false;
     }
-    
+
     @SuppressWarnings("fallthrough")
     private GroovyParserResult sanitize(final Context context,
         final Sanitize sanitizing) {
@@ -427,27 +427,27 @@ class GroovyParser extends Parser {
                 return sanitize(context, sanitizing);
             }
         }
-        
+
         final boolean ignoreErrors = sanitizedSource;
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = -1;
         }
-        
+
         String fileName = "";
         if (context.snapshot.getSource().getFileObject() != null) {
             fileName = context.snapshot.getSource().getFileObject().getNameExt();
         }
-        
+
         FileObject fo = context.snapshot.getSource().getFileObject();
         ClassPath bootPath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.BOOT);
         ClassPath compilePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath sourcePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
-        
+
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
-        
+
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
                 // but for now it is faster to use javac only for sources
@@ -470,13 +470,13 @@ class GroovyParser extends Parser {
         if (isCancelled()) {
             return null;
         }
-        
+
         long start = 0;
         if (LOG.isLoggable(Level.FINEST)) {
             PARSING_COUNT.incrementAndGet();
             start = System.currentTimeMillis();
         }
-        
+
         try {
             try {
                 compilationUnit.compile(Phases.CLASS_GENERATION);
@@ -487,29 +487,29 @@ class GroovyParser extends Parser {
                 }
                 throw ex;
             }
-        } catch (Throwable e) {           
+        } catch (Throwable e) {
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
-            
+
             ErrorCollector errorCollector = compilationUnit.getErrorCollector();
             if (errorCollector.hasErrors()) {
                 Message message = errorCollector.getLastError();
                 if (message instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage)message).getCause();
-                    
+
                     // if you have a single line starting with: "$
                     // SyntaxException.getStartLine() returns 0 instead of 1
-                    // we have to fix this here, before ending our life  
+                    // we have to fix this here, before ending our life
                     // in an Assertion in AstUtilities.getOffset().
-                    
+
                     int line = se.getStartLine();
-                    
+
                     if(line < 1 )
                         line = 1;
-                    
+
                     int col = se.getStartColumn();
-                    
+
                     if(col < 1 )
                         col = 1;
 
@@ -529,7 +529,7 @@ class GroovyParser extends Parser {
 //                    System.out.println("getStartLine(): " + line);
 //                    System.out.println("getLine(): " + se.getLine());
 //                    System.out.println("getStartColumn(): " + col);
-                    
+
                     // FIXME parsing API
                     if (context.document != null) {
                         offset = AstUtilities.getOffset(context.document, line, col);
@@ -538,9 +538,13 @@ class GroovyParser extends Parser {
                     localizedMessage = se.getLocalizedMessage();
                 }
             } else {
-                LOG.log(Level.FINE, null, e);
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (e instanceof CancellationException) {
+                        LOG.log(Level.FINE, null, e);
+                    }
+                }
             }
-            
+
             // XXX should this be >, and = length?
             if (offset >= source.length()) {
                 offset = source.length() - 1;
@@ -551,27 +555,27 @@ class GroovyParser extends Parser {
             }
 
             /*
-             
-            This used to be a direct call to notifyError(). Now all calls to 
+
+            This used to be a direct call to notifyError(). Now all calls to
             notifyError() should be done via handleErrorCollector() below
             to make sure to eliminate duplicates and the like.
-            
+
             I've added the two logging calls only for debugging purposes
-            
+
              */
-            
+
              // if (!ignoreErrors) {
              //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
              // }
-            
+
             LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
             LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
-            
+
         } finally {
             if (LOG.isLoggable(Level.FINEST)) {
                 logParsingTime(context, start, isCancelled());
             }
-            
+
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -587,7 +591,7 @@ class GroovyParser extends Parser {
         }
 
         handleErrorCollector(compilationUnit.getErrorCollector(), context, module, ignoreErrors, sanitizing);
-        
+
         if (module != null) {
             context.sanitized = sanitizing;
             // FIXME parsing API
@@ -628,12 +632,12 @@ class GroovyParser extends Parser {
         }
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String details, 
+    private static void notifyError(Context context, String key, Severity severity, String description, String details,
             int offset, Sanitize sanitizing) {
         notifyError(context, key, severity, description, details, offset, offset, sanitizing);
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String displayName, 
+    private static void notifyError(Context context, String key, Severity severity, String description, String displayName,
             int startOffset, int endOffset, Sanitize sanitizing) {
 
         LOG.log(Level.FINEST, "---------------------------------------------------");
@@ -642,14 +646,14 @@ class GroovyParser extends Parser {
         LOG.log(Level.FINEST, "displayName : {0}\n", displayName);
         LOG.log(Level.FINEST, "startOffset : {0}\n", startOffset);
         LOG.log(Level.FINEST, "endOffset   : {0}\n", endOffset);
-        
+
         // FIXME: we silently drop errors which have no description here.
         // There might be still a way to recover.
         if(description == null) {
             LOG.log(Level.FINEST, "dropping error");
             return;
         }
-        
+
         // TODO: we might need a smarter way to provide a key in the long run.
         if (key == null) {
             key = description;
@@ -659,7 +663,7 @@ class GroovyParser extends Parser {
         if (displayName == null) {
             displayName = description;
         }
-        
+
         Error error =
             new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));
@@ -693,7 +697,7 @@ class GroovyParser extends Parser {
                     LOG.log(Level.FINEST, "Error found in collector: {0}", object);
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        
+
                         String sourceLocator = ex.getSourceLocator();
                         String name = null;
                         if (moduleNode != null) {
@@ -701,7 +705,7 @@ class GroovyParser extends Parser {
                         } else if (context.snapshot.getSource().getFileObject() != null) {
                             name = context.snapshot.getSource().getFileObject().getNameExt();
                         }
-                        
+
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startLine = ex.getStartLine();
                             int startColumn = ex.getStartColumn();
@@ -726,20 +730,20 @@ class GroovyParser extends Parser {
             }
         }
     }
-    
+
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
-        NEVER, 
+        NEVER,
         /** Perform no sanitization */
-        NONE, 
+        NONE,
         /** Try to remove the trailing . or :: at the caret line */
-        EDITED_DOT, 
+        EDITED_DOT,
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
-        ERROR_DOT, 
+        ERROR_DOT,
         /** Try to cut out the error line */
-        ERROR_LINE, 
+        ERROR_LINE,
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
         /** Attempt to add an "end" to the end of the buffer to make it compile */
@@ -761,7 +765,7 @@ class GroovyParser extends Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        
+
         public Context(Snapshot snapshot, SourceModificationEvent event) {
             this.snapshot = snapshot;
             this.event = event;
@@ -770,12 +774,12 @@ class GroovyParser extends Parser {
             // FIXME parsing API
             this.document = LexUtilities.getDocument(snapshot.getSource(), true);
         }
-        
+
         @Override
         public String toString() {
             return "GroovyParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
-        
+
         public OffsetRange getSanitizedRange() {
             return sanitizedRange;
         }
@@ -783,11 +787,11 @@ class GroovyParser extends Parser {
         Sanitize getSanitized() {
             return sanitized;
         }
-        
+
         public String getSanitizedSource() {
             return sanitizedSource;
         }
-        
+
         public int getErrorOffset() {
             return errorOffset;
         }
