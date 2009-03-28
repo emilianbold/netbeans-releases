@@ -84,13 +84,6 @@ public final class NbPlaces extends Object {
         cs.fireChange();
     }
 
-    /** Environment node. Place for all transient information about
-    * the IDE.
-    */
-    public Node environment () {
-        return EnvironmentNode.find(EnvironmentNode.TYPE_ENVIRONMENT);
-    }
-
 
     /** Session node */
     public Node session () {

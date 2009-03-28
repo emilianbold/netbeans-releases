@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.actions;
+package org.netbeans.core.ide;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -48,32 +48,24 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.core.NbMainExplorer;
-
 /**
- * Action which opens <code>CurrentProjectNode.ProjectsTab</code> default (runtime tab) component.
- *
- * @author  Peter Zavadsky
+ * Action which opens Services tab.
  */
-public class ViewRuntimeTabAction extends AbstractAction
-implements HelpCtx.Provider {
+public class ServicesTabAction extends AbstractAction implements HelpCtx.Provider {
     
-
-    public ViewRuntimeTabAction() {
-        putValue(NAME, NbBundle.getMessage(ViewRuntimeTabAction.class,
-                "CTL_ViewRuntimeTabAction"));
-        putValue ("iconBase", "org/netbeans/core/resources/environment.gif"); // NOI18N
+    public ServicesTabAction() {
+        putValue(NAME, NbBundle.getMessage(ServicesTabAction.class, "CTL_ServicesTabAction"));
+        putValue ("iconBase", "org/netbeans/core/ide/resources/services.gif"); // NOI18N
     }
     
-    
     public void actionPerformed(ActionEvent evt) {
-        final TopComponent runtimeTab = NbMainExplorer.MainTab.findEnvironmentTab();
+        final TopComponent runtimeTab = ServicesTab.findDefault();
         runtimeTab.open();
         runtimeTab.requestActive();
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ViewRuntimeTabAction.class);
+        return new HelpCtx("org.netbeans.core.actions.ViewRuntimeTabAction"); // NOI18N
     }
 
 }

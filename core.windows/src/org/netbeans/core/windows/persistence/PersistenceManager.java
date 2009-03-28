@@ -546,11 +546,11 @@ public final class PersistenceManager implements PropertyChangeListener {
                     String excAnnotation = NbBundle.getMessage(
                             PersistenceManager.class, "EXC_BrokenTCSetting", 
                             stringId);
-                    resultExc = new SafeException(new IOException(excAnnotation));
+                    //resultExc = new SafeException(new IOException(excAnnotation));
                     LOG.log(warningLevelForDeserTC(stringId),
                         "[PersistenceManager.getTopComponentForID]" // NOI18N
                         + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                        + excAnnotation, resultExc);
+                        + excAnnotation/*, resultExc*/);
                 }
             }
             else {
