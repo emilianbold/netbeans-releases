@@ -98,7 +98,7 @@ public class BugzillaRepository extends Repository {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public BugzillaRepository(String repoName, String url, String user, String password) {
+    public BugzillaRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
         this();
         name = repoName;
         if(user == null) {
@@ -107,7 +107,7 @@ public class BugzillaRepository extends Repository {
         if(password == null) {
             password = "";
         }
-        taskRepository = createTaskRepository(name, url, user, password);
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
     public TaskRepository getTaskRepository() {
@@ -138,12 +138,12 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public void remove() {
-        BugzillaConfig.getInstance().removeRepository(this.getDisplayName());
         Query[] qs = getQueries();
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
         resetRepository();
+        Bugzilla.getInstance().removeRepository(this);
     }
 
     synchronized void resetRepository() {
@@ -181,12 +181,22 @@ public class BugzillaRepository extends Repository {
 
     public String getUsername() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c.getUserName();
+        return c != null ? c.getUserName() : "";
     }
 
     public String getPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c.getPassword();
+        return c != null ? c.getPassword() : "";
+    }
+
+    public String getHttpUsername() {
+        AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
+        return c != null ? c.getUserName() : "";
+    }
+
+    public String getHttpPassword() {
+        AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
+        return c != null ? c.getPassword() : "";
     }
 
     public Issue getIssue(final String id) {
@@ -301,17 +311,26 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
-    protected void setTaskRepository(String name, String url, String user, String password) {
-        taskRepository = createTaskRepository(name, url, user, password);
-        BugzillaConfig.getInstance().putRepository(getDisplayName(), this);
+    protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        Bugzilla.getInstance().addRepository(this);
         resetRepository(); // only on url, user or passwd change        
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password) {
+    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         TaskRepository repository = new TaskRepository(name, url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
-
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
+        
+        if(httpUser != null || httpPassword != null) {
+            httpUser = httpUser != null ? httpUser : "";                        // NOI18N
+            httpPassword = httpPassword != null ? httpPassword : "";            // NOI18N
+            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
+            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+        }
+
+        // XXX need proxy settings from the IDE
+        
         return repository;
     }
 
@@ -321,7 +340,7 @@ public class BugzillaRepository extends Repository {
     }
 
     private boolean isNumber(String str) {
-        for (int i = 0; i < str.length() -1; i++) {
+        for (int i = 0; i < str.length(); i++) {
             if(!Character.isDigit(str.charAt(i))) return false;
         }
         return true;

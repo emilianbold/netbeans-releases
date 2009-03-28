@@ -81,6 +81,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
     }
 
     /**
@@ -119,9 +120,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
 
-        DefaultComboBoxModel repoModel;
         if(toSelect != null) {
-            repoModel = new DefaultComboBoxModel();
+            DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
             repoModel.addElement(toSelect);
             repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setSelectedItem(toSelect);
@@ -129,9 +129,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             newButton.setEnabled(false);
             onRepoSelected();
         } else {
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
+            setupRepositoryModel();
             if(repositoryComboBox.getModel().getSize() > 0) {
                 repositoryComboBox.setSelectedIndex(0);
                 onRepoSelected();
@@ -355,7 +353,34 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } 
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
+        }
+    }
+
+    private void setupRepositoryModel() {
+        Object lastSelection = repositoryComboBox.getSelectedItem();
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+
+        for (int i = 0; i < repoModel.getSize(); i++) {
+            Repository r = (Repository) repoModel.getElementAt(i);
+            if(r == lastSelection) {
+                repoModel.setSelectedItem(r);
+                break;
+            }
+        }
     }
 
 }
