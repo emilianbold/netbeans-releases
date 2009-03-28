@@ -71,9 +71,20 @@ public class PHPFormatterTest extends PHPTestBase {
         }
     }
 
+    public void testContinuedExpression() throws Exception{
+        reformatFileContents("testfiles/formatting/continued_expression.php");
+    }
 
-    public void testHelloWorld() throws Exception{
-        reformatFileContents("testfiles/formatting/hello_world.php");
+    public void testIfelseNobrackets() throws Exception{
+        reformatFileContents("testfiles/formatting/ifelse_nobrackets.php");
+    }
+    
+    public void testMultilineFunctionHeader() throws Exception{
+        reformatFileContents("testfiles/formatting/multiline_function_header.php");
+    }
+
+    public void testSimpleClassDef() throws Exception{
+        reformatFileContents("testfiles/formatting/simple_class_def.php");
     }
 
     public void test161049() throws Exception{

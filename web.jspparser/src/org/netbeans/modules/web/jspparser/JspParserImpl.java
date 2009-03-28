@@ -51,6 +51,8 @@ import java.net.URLClassLoader;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -91,16 +93,39 @@ public class JspParserImpl implements JspParserAPI {
 
     private static URL[] urls;
 
-    private static void initURLs() throws MalformedURLException {
+    private static final String[] JAR_FILE_NAMES = new String[]{
+        "ant/lib/ant.jar",  //NOI18N
+        "modules/ext/glassfish-jspparser-2.0.jar", //NOI18N
+//        "modules/ext/glassfish-logging.jar" //NOI18N
+        "modules/ext/jsp-parser-ext.jar", //NOI18N
+        "modules/ext/servlet2.5-jsp2.1-api.jar", //NOI18N
+        "ant/lib/ant-launcher.jar" //Glassfish V2 //NOI18N
+    };
+
+    private static void initURLs() throws MalformedURLException, IOException {
         if (urls == null) {
-            File[] files = new File[5];
-            files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false); // NOI18N
-            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser-2.0.jar", null, false); // NOI18N
-            //files[2] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false); // NOI18N
-            files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false); // NOI18N
-            files[3] = InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false); // NOI18N
-            //Glassfish V2
-            files[4] = InstalledFileLocator.getDefault().locate("ant/lib/ant-launcher.jar", null, false); // NOI18N
+            File[] files = new File[JAR_FILE_NAMES.length];
+            List<String> missing = new ArrayList<String>();
+            for(int i = 0; i < JAR_FILE_NAMES.length; i++) {
+                files[i] = InstalledFileLocator.getDefault().locate(JAR_FILE_NAMES[i], null, false);
+                if(files[i] == null) {
+                    missing.add(JAR_FILE_NAMES[i]);
+                }
+            }
+
+            if(!missing.isEmpty()) {
+                //something wasn't found, report error and cancel the initialization
+                StringBuffer msg = new StringBuffer();
+                msg.append("Cannot initialize JSP parser, following JAR files couldn't be localted: "); //NOI18N
+                for(String fname : missing) {
+                    msg.append(fname);
+                    msg.append(','); //NOI18N
+                }
+                msg.setCharAt(msg.length() - 1, '.'); //replace last comma
+
+                throw new IOException(msg.toString());
+            }
+
             URL[] urls2 = new URL[files.length];
             for (int i = 0; i < files.length; i++) {
                 urls2[i] = files[i].toURI().toURL();
@@ -117,7 +142,7 @@ public class JspParserImpl implements JspParserAPI {
         JspParserImpl.urls = urls;
     }
 
-    private static void initReflection() {
+    private static void initReflection() throws IOException {
         if (webAppParserImplFactoryMethod == null) {
             try {
                 initURLs();
@@ -207,6 +232,8 @@ public class JspParserImpl implements JspParserAPI {
         try {
             initReflection();
             return (WebAppParseProxy) webAppParserImplFactoryMethod.invoke(null, this, wm);
+        } catch (IOException ise) {
+            LOGGER.log(Level.WARNING, null, ise);
         } catch (IllegalAccessException e) {
             LOGGER.log(Level.INFO, null, e);
         } catch (InvocationTargetException e) {
