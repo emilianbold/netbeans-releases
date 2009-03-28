@@ -447,7 +447,6 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * with their searching work
      */
     public void taskFinished(Task task) {
-        System.out.println("task finnished " + task);
         evalTask = null;
         // update UI in ED thread
         if (SwingUtilities.isEventDispatchThread()) {
