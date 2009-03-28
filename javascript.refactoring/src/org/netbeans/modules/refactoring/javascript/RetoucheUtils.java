@@ -249,7 +249,7 @@ public class RetoucheUtils {
         Project p = FileOwnerQuery.getOwner(file);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 return true;
             }
         }
@@ -263,7 +263,7 @@ public class RetoucheUtils {
         }
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 //SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js);
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
                 for (int j = 0; j < gr.length; j++) {
