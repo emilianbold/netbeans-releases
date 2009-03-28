@@ -39,7 +39,10 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,8 +56,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.mercurial.api.Mercurial;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Exceptions;
@@ -110,7 +117,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 "NewKenaiProject.progress.creatingProject"));
 
             logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName +
-                    ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense);
+                    ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense); // NOI18N
 
             Kenai.getDefault().createProject(newPrjName, newPrjTitle,
                     newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
@@ -121,6 +128,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         }
 
         // Create feature - SCM repository
+        boolean repoCreated = false;
         if (!NO_REPO.equals(newPrjScmType)) {
             try {
                 handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -130,17 +138,19 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 String extScmUrl = (Utilities.EXT_REPO.equals(newPrjScmType) ? newPrjScmUrl : null);
 
                 logger.log(Level.FINE, "Creating SCM Repository - Name: " + newPrjScmName +
-                        ", Type: " + newPrjScmType + ", Ext. URL: " + newPrjScmUrl + ", Local Folder: " + newPrjScmLocal);
+                        ", Type: " + newPrjScmType + ", Ext. URL: " + newPrjScmUrl + ", Local Folder: " + newPrjScmLocal); // NOI18N
 
                 Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjScmName,
                         displayName, description, newPrjScmType, /*ext issues URL*/ null, extScmUrl, /*browse repo URL*/ null);
+
+                repoCreated = Utilities.SVN_REPO.equals(newPrjScmType) || Utilities.HG_REPO.equals(newPrjScmType);
 
             } catch (KenaiException kex) {
                 throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                         "NewKenaiProject.progress.repoCreationFailed")));
             }
         } else {
-            logger.log(Level.FINE, "SCM Repository creation skipped.");
+            logger.log(Level.FINE, "SCM Repository creation skipped."); // NOI18N
         }
 
         // Create feature - Issue tracking
@@ -152,24 +162,59 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 String description = getIssuesDescription(newPrjIssues);
                 String extIssuesUrl = (Utilities.EXT_ISSUES.equals(newPrjIssues) ? newPrjIssuesUrl : null);
 
-                logger.log(Level.FINE, "Creating Issue Tracking - Name: " + newPrjIssues + ", Ext. URL: " + newPrjIssuesUrl);
+                logger.log(Level.FINE, "Creating Issue Tracking - Name: " + newPrjIssues + ", Ext. URL: " + newPrjIssuesUrl); // NOI18N
 
                 // XXX issue tracking name not clear !!!
                 Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjName + newPrjIssues,
                     displayName, description, newPrjIssues, extIssuesUrl, /*ext repo URL*/ null, /*browse repo URL*/ null);
+
             } catch (KenaiException kex) {
                 throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                         "NewKenaiProject.progress.issuesCreationFailed")));
             }
         } else {
-            logger.log(Level.FINE, "Issue Tracking creation skipped.");
+            logger.log(Level.FINE, "Issue Tracking creation skipped."); // NOI18N
         }
 
         // After the repository is created it must be checked out
-        // local folder to checkout needs to be created if not exists ?
+        if (repoCreated) {
+            try {
+                KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
+                URI scmLoc = null;
+                String featureService = null;
+                for (KenaiFeature feature : features) {
+                    if (newPrjScmName.equals(feature.getName())) {
+                        scmLoc = feature.getLocation();
+                        featureService = feature.getService();
+                        continue;
+                    }
+                }
+                if (scmLoc != null) {
+                    handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                            "NewKenaiProject.progress.repositoryCheckout"));
+                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() +
+                            ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
+                    PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+                    if (passwdAuth != null) {
+                        if (Utilities.SVN_REPO.equals(featureService)) {
 
-        // Show Project creation summary
-        
+                            Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[] {"."}, new File(newPrjScmLocal),
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+
+                        } else if (Utilities.HG_REPO.equals(featureService)) {
+
+                            Mercurial.cloneRepository(scmLoc.toASCIIString(), new File(newPrjScmLocal), "", "", "",
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+
+                        }
+                    } else {
+                        // user not logged in, do nothing
+                    }
+                }
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         // Open the project in Dashboard
         Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();

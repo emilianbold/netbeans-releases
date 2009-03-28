@@ -114,9 +114,11 @@ public final class DataStorageManager {
     for (DataStorageFactory storage : dataStorageFactories) {
       if (storage.getStorageTypes().contains(storageType)) {
         DataStorage newStorage = storage.createStorage();
-        newStorage.createTables(tableMetadatas);
-        activeDataStorages.add(newStorage);
-        return newStorage;
+        if (newStorage != null) {
+          newStorage.createTables(tableMetadatas);
+          activeDataStorages.add(newStorage);
+          return newStorage;
+        }
       }
     }
     return null;

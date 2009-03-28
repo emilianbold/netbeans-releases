@@ -51,6 +51,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
@@ -206,8 +207,12 @@ public class CloneAction extends ContextAction {
                     String defaultPush = hgConfigFiles.getDefaultPush(false);
                     if(pullPath != null && !pullPath.equals("")) defaultPull = pullPath;
                     if(pushPath != null && !pushPath.equals("")) defaultPush = pushPath;
-                    hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    if (hgConfigFiles.getException() == null) {
+                        hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
+                        hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    } else {
+                        Mercurial.LOG.log(Level.WARNING, null, hgConfigFiles.getException());
+                    }
                         
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N

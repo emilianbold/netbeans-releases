@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
@@ -138,7 +137,7 @@ public final class DynamicElementHandler {
         }
 
 
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(f,
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(f,
                 Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         Set<IndexedField> fields = index.getFields(".*", className, QuerySupport.Kind.REGEXP);

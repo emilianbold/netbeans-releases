@@ -521,6 +521,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         FileObject grp = FileUtil.createFolder(root, dep[0].replace('.', '/')); //NOI18N
         FileObject art = FileUtil.createFolder(grp, dep[1]);
         FileObject ver = FileUtil.createFolder(art, dep[2]);
-        FileUtil.copyFile(file, ver, dep[1] + "-" + dep[2], "jar"); //NOI18N
+        String name = dep[1] + "-" + dep[2];//NOI18N
+        if (ver.getFileObject(name, file.getExt()) == null) { //#160803
+            FileUtil.copyFile(file, ver, dep[1] + "-" + dep[2], file.getExt()); //NOI18N
+        }
     }
 }

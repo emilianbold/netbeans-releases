@@ -53,9 +53,15 @@ made subject to such option by the copyright holder.
         </nb-javac>
     </target>
 
-    <target name="generate" depends="gen-compile">
-        <java classname="org.netbeans.modules.debugger.jpda.jdi.Generate" classpathref="cp" classpath="build/genclasses">
-        </java>
+    <target name="generate-intern" depends="gen-compile" unless="genjdk">
+        <echo message="Generating classes with JDK ${java.version}. Use -Dgenjdk=&lt;JDK_HOME&gt; option to specify different JDK."/>
+        <java classname="org.netbeans.modules.debugger.jpda.jdi.Generate" classpathref="cp" classpath="build/genclasses"/>
     </target>
+
+    <target name="generate-ext" depends="gen-compile" if="genjdk">
+        <java classname="org.netbeans.modules.debugger.jpda.jdi.Generate" classpath="build/genclasses:${genjdk}/lib/tools.jar" fork="true" jvm="${genjdk}/bin/java"/>
+    </target>
+
+    <target name="generate" depends="gen-compile,generate-intern,generate-ext"/>
     
 </project>

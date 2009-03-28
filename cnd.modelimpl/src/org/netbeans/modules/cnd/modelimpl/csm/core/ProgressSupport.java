@@ -55,7 +55,6 @@ public class ProgressSupport {
 
     private static ProgressSupport instance = new ProgressSupport();
     private WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
-
     /** Creates a new instance of ProgressSupport */
     private ProgressSupport() {
     }
@@ -78,8 +77,8 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireFileInvalidated(FileImpl file) {
-        if (TraceFlags.TRACE_PARSER_QUEUE) {
-            System.err.println("ParserQueue: fireFileInvalidated " + file.getAbsolutePath());
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireFileInvalidated " + file.getAbsolutePath());
         }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
@@ -91,8 +90,8 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireFileParsingStarted(FileImpl file) {
-        if (TraceFlags.TRACE_PARSER_QUEUE) {
-            System.err.println("ParserQueue: fireFileParsingStarted " + file.getAbsolutePath());
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireFileParsingStarted " + file.getAbsolutePath());
         }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
@@ -104,8 +103,8 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireFileParsingFinished(FileImpl file) {
-        if (TraceFlags.TRACE_PARSER_QUEUE) {
-            System.err.println("ParserQueue: fireFileParsingFinished " + file.getAbsolutePath());
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireFileParsingFinished " + file.getAbsolutePath());
         }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
@@ -117,8 +116,8 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireProjectParsingStarted(ProjectBase project) {
-        if (TraceFlags.TRACE_PARSER_QUEUE) {
-            System.err.println("ParserQueue: fireProjectParsingStarted " + project.getName());
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireProjectParsingStarted " + project.getName());
         }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
@@ -130,6 +129,9 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireProjectParsingFinished(ProjectBase project) {
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireProjectParsingFinished " + project.getName());
+        }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectParsingFinished(project);
@@ -140,6 +142,9 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireProjectLoaded(ProjectBase project) {
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireProjectLoaded " + project.getName());
+        }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectLoaded(project);
@@ -160,8 +165,8 @@ public class ProgressSupport {
     }
 
     /*package-local*/ void fireProjectFilesCounted(ProjectBase project, int cnt) {
-        if (TraceFlags.TRACE_PARSER_QUEUE) {
-            System.err.println("ParserQueue: fireProjectFilesCounted " + project.getName() + ' ' + cnt);
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireProjectFilesCounted " + project.getName() + ' ' + cnt);
         }
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads

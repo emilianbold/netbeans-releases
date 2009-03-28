@@ -169,6 +169,11 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
     }
 
     public boolean valid(WizardDescriptor wizard) {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport == null || restSupport.getAntProjectHelper() == null) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_NotSupportedProjectType");
+            return false;
+        }
         if(isProjectSelection) {
             DefaultListModel model = (DefaultListModel) projectList.getModel();
             if (model.getSize() < 1) {

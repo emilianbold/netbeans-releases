@@ -158,7 +158,11 @@ public class SwitchToAction extends ContextAction {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
                         public void perform() {
                             for (File root : roots) {
-                                RepositoryFile toRepositoryFile = switchTo.getRepositoryFile().replaceLastSegment(root.getName(), 0);
+                                RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
+                                if (root.isFile() && roots.length > 1) {
+                                    // change the filename ONLY for multi-file data objects, not for folders
+                                    toRepositoryFile = toRepositoryFile.replaceLastSegment(root.getName(), 0);
+                                }
                                 performSwitch(toRepositoryFile, root, this);
                             }
                         }

@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -1990,7 +1989,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return Math.max(threadCount, 1);
     }
 
-    public void fixFakeRegistration(boolean libsAlreadyParsed){
+    public final void fixFakeRegistration(boolean libsAlreadyParsed){
         final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         CountDownLatch countDownLatch = new CountDownLatch(files.size());
         RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
@@ -2644,10 +2643,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 FileImpl impl = (FileImpl) file.getObject();
                 Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                impl.fixFakeRegistrations();
-                if (libsAlreadyParsed) {
-                    impl.clearFakeRegistrations();
-                }
+                impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {
                 countDownLatch.countDown();
             }

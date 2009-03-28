@@ -318,12 +318,13 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
+        fireProgressListenerStart(ProgressEvent.START, -1);
         initClasses();
         initPackages();
         
         Set<FileObject> a = getRelevantFiles();
         Problem p = checkProjectDeps(a);
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStep(a.size());
         MoveTransformer t;
         TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
         Problem prob = createAndAddElements(a, task, elements, refactoring);

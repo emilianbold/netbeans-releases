@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.support;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -55,7 +54,7 @@ public final class EnvWriter {
         this.os = os;
     }
 
-    public void write(final Map<String, String> env) throws IOException {
+    public void write(final MacroMap env) throws IOException {
         if (!env.isEmpty()) {
             String val = null;
             // Very simple sanity check of vars...
@@ -69,7 +68,8 @@ public final class EnvWriter {
                 val = env.get(var);
 
                 if (val != null) {
-                    os.write((var + "=\"" + env.get(var) + // NOI18N
+                    // TODO: is it safe to replace all '\' with '/'?
+                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
                             "\" && export " + var + "\n").getBytes()); // NOI18N
                     os.flush();
                 }

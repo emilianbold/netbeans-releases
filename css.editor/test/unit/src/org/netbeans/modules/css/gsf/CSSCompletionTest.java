@@ -111,7 +111,7 @@ public class CSSCompletionTest extends TestBase {
     public void testAtRules() throws ParseException {
         checkCC("|", AT_RULES);
         checkCC("@|", AT_RULES);
-//        checkCC("@pa|", new String[]{"@page"}); //fails - issue #161128
+        checkCC("@pa|", new String[]{"@page"}, Match.CONTAINS);
     }
 
     public void testPropertyNames() throws ParseException {
@@ -153,6 +153,10 @@ public class CSSCompletionTest extends TestBase {
     public void testCorners() throws ParseException {
         checkCC("h1 { bla| }", arr(), Match.EMPTY);
 //        checkCC("h1 { color: ble| }", arr(), Match.EMPTY); //fails - issue #161129
+    }
+
+    public void testIssue160870() throws ParseException {
+        checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
     }
 
     //--- utility methods ---

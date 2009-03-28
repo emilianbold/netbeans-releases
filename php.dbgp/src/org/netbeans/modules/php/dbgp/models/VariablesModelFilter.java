@@ -143,7 +143,7 @@ public class VariablesModelFilter extends ViewModelSupport
         throws UnknownTypeException 
     {
         int size = original.getChildrenCount(node);
-        List<Object> result = new ArrayList<Object>( size );
+        List<Object> result = new ArrayList<Object>();
         Object[] children = original.getChildren( node , 0 , size );
         for (Object object : children) {
             if ( !(object instanceof AbstractModelNode )) {
