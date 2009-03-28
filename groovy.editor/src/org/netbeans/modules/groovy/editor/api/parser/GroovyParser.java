@@ -42,9 +42,13 @@
 package org.netbeans.modules.groovy.editor.api.parser;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyResourceLoader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -55,7 +59,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.Phases;
@@ -89,6 +92,7 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -102,8 +106,10 @@ class GroovyParser extends Parser {
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
 
-    private static long MAX_PARSING_TIME;
-    
+    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
+
+    private static long maximumParsingTime;
+
     private boolean waitJavaScanFinished = true;
 
     private GroovyParserResult lastResult;
@@ -434,15 +440,13 @@ class GroovyParser extends Parser {
         }
         
         FileObject fo = context.snapshot.getSource().getFileObject();
-        ClassPath bootPath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
         
-        ClassLoader parentLoader = cp.getClassLoader(true);
-        
         CompilerConfiguration configuration = new CompilerConfiguration();
-        GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
+        GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
         
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
@@ -453,12 +457,12 @@ class GroovyParser extends Parser {
                 // are found by Java and field completion does not work
                 // this has to evaluated and fixed - due to need of super
                 // ClassNode for exceptions
-                /*bootPath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /* : bootPath*/,
-                /*compilePath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /*: compilePath*/,
+                bootPath == null ? EMPTY_CLASSPATH : bootPath,
+                compilePath == null ? EMPTY_CLASSPATH : compilePath,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
-        CompilationUnit compilationUnit = new NbCompilationUnit(this, configuration,
+        CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
                 null, classLoader, javaSource, waitJavaScanFinished);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
@@ -483,9 +487,7 @@ class GroovyParser extends Parser {
                 }
                 throw ex;
             }
-        } catch (Throwable e) {
-            LOG.log(Level.FINE, null, e);
-            
+        } catch (Throwable e) {           
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
@@ -535,6 +537,8 @@ class GroovyParser extends Parser {
                     errorMessage = se.getMessage();
                     localizedMessage = se.getLocalizedMessage();
                 }
+            } else {
+                LOG.log(Level.FINE, null, e);
             }
             
             // XXX should this be >, and = length?
@@ -608,8 +612,8 @@ class GroovyParser extends Parser {
         }
 
         synchronized (GroovyParser.class) {
-            if (diff > MAX_PARSING_TIME) {
-                MAX_PARSING_TIME = diff;
+            if (diff > maximumParsingTime) {
+                maximumParsingTime = diff;
                 LOG.log(Level.FINEST, "Maximum parsing time has been updated to {0}; file {1}",
                     new Object[] {diff, context.snapshot.getSource().getFileObject()});
             }
@@ -678,9 +682,10 @@ class GroovyParser extends Parser {
 
         return GroovyCompilerErrorID.UNDEFINED;
     }
-     
-    private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
-        LOG.log(Level.FINEST, "handleErrorCollector()");
+
+    private void handleErrorCollector(ErrorCollector errorCollector, Context context,
+            ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
@@ -791,6 +796,59 @@ class GroovyParser extends Parser {
     private static interface ParseErrorHandler {
 
         void error(Error error);
-        
+
+    }
+
+    private static class ParsingClassLoader extends GroovyClassLoader {
+
+        private final CompilerConfiguration config;
+
+        private final ClassPath path;
+
+        private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
+            public URL loadGroovySource(final String filename) throws MalformedURLException {
+                URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
+                    public Object run() {
+                        return getSourceFile(filename);
+                    }
+                });
+                return file;
+            }
+        };
+
+        public ParsingClassLoader(ClassPath path, CompilerConfiguration config) {
+            super(path.getClassLoader(true), config);
+            this.config = config;
+            this.path = path;
+        }
+
+//        @Override
+//        protected Class<?> findClass(String name) throws ClassNotFoundException {
+//            // if it is a class (java or compiled groovy) it is resolved via java infr.
+//            // if it is groovy it is resolved with resource loader with compile unit
+//            throw new ClassNotFoundException();
+//        }
+//
+//        @Override
+//        public Class loadClass(String name, boolean lookupScriptFiles,
+//                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+//            // if it is a class (java or compiled groovy) it is resolved via java infr.
+//            // if it is groovy it is resolved with resource loader with compile unit
+//            throw new ClassNotFoundException();
+//        }
+
+        @Override
+        public GroovyResourceLoader getResourceLoader() {
+            return resourceLoader;
+        }
+
+        private URL getSourceFile(String name) {
+            // this is slightly faster then original implementation
+            FileObject fo = path.findResource(name.replace('.', '/') + config.getDefaultScriptExtension());
+            if (fo == null || fo.isFolder()) {
+                return null;
+            }
+            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        }
     }
 }

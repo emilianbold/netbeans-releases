@@ -2,5 +2,5 @@ Code completion result for source line:
 "User $nom|"
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-FIELD      nomad                                      String
-FIELD      nomos                                      String
+FIELD      nomad                           [PRIVATE]  
+FIELD      nomos                           [PRIVATE]  

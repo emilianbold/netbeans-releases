@@ -174,10 +174,6 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
-FIELD      CASE_INSENSITIVE_ORDER                     Comparator
-FIELD      count                                      int
-FIELD      hash                                       int
-FIELD      offset                                     int
-FIELD      serialPersistentFields                     ObjectStreamField[]
-FIELD      serialVersionUID                           long
-FIELD      value                                      char[]
+FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
+FIELD      bytes                                      byte[]
+FIELD      class                                      Class
