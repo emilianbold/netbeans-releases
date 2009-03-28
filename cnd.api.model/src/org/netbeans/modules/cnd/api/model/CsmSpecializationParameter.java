@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,30 +34,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.dlight.api.impl;
-
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+package org.netbeans.modules.cnd.api.model;
 
 /**
+ * Template specialization parameter.
  *
- * 
+ * @author Nick Krasilnikov
  */
-public interface DLightToolkitManager {
-  DLightSessionHandler createSession(DLightTarget target, String configurationName);
-
-  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
-
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
-
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
-  
-  void startSession(DLightSessionHandler reference);
-
-  void stopSession(DLightSessionHandler reference);
+public interface CsmSpecializationParameter extends CsmOffsetable {
 }
-

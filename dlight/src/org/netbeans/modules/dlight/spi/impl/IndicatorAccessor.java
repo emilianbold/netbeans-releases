@@ -41,18 +41,18 @@ public abstract class IndicatorAccessor {
   public IndicatorAccessor() {
   }
 
-  public abstract void setToolName(Indicator ind, String toolName);
-  public abstract String getToolName(Indicator ind);
-  public abstract List<Column> getMetadataColumns(Indicator indicator);
+  public abstract void setToolName(Indicator<?> ind, String toolName);
+  public abstract String getToolName(Indicator<?> ind);
+  public abstract List<Column> getMetadataColumns(Indicator<?> indicator);
 
-  public abstract String getMetadataColumnName(Indicator indicator, int idx);
+  public abstract String getMetadataColumnName(Indicator<?> indicator, int idx);
 
-  public abstract List<VisualizerConfiguration> getVisualizerConfigurations(Indicator indicator);
+  public abstract List<VisualizerConfiguration> getVisualizerConfigurations(Indicator<?> indicator);
 
-  public abstract void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l);
+  public abstract void addIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
 
-  public abstract void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l);
+  public abstract void removeIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
 
-  public abstract void initMouseListener(Indicator indicator);
-  public abstract void setRepairActionProviderFor(Indicator indicator, IndicatorRepairActionProvider repairActionProvider);
+  public abstract void initMouseListener(Indicator<?> indicator);
+  public abstract void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider);
 }
