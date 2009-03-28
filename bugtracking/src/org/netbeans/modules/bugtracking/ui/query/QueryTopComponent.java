@@ -94,6 +94,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     
     private static final String PREFERRED_ID = "QueryTopComponent";
     private Query query; // XXX synchronized
+    private static final Object LOCK = new Object();
 
     QueryTopComponent() {
         this(null, null);
@@ -104,6 +105,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     }
 
     QueryTopComponent(Query query, Repository toSelect) {
+
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
+
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
@@ -144,15 +148,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            DefaultComboBoxModel repoModel;
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
+            setupRepositoryModel();
             if(toSelect != null) {
                 repositoryComboBox.setSelectedItem(toSelect);
                 onRepoSelected();
             } else {
-                repositoryComboBox.setModel(repoModel);
                 if(repositoryComboBox.getModel().getSize() > 0) {
                     repositoryComboBox.setSelectedIndex(0);
                     onRepoSelected();
@@ -437,6 +437,16 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                   evt.getPropertyName().equals(Kenai.PROP_LOGIN))
         {
             updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
         }
     }
 
@@ -517,42 +527,64 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         setNameAndTooltip();
     }
 
-    private synchronized void updateSavedQueries(Repository repo) {
-        if(savedQueries != null) {
-            for (Query q : savedQueries) {
-                q.removePropertyChangeListener(this);
+    private void setupRepositoryModel() {
+        Object lastSelection = repositoryComboBox.getSelectedItem();
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+        
+        for (int i = 0; i < repoModel.getSize(); i++) {
+            Repository r = (Repository) repoModel.getElementAt(i);
+            if(r == lastSelection) {
+                repoModel.setSelectedItem(r);
+                break;
             }
         }
-        savedQueries = repo.getQueries();
-        if(savedQueries == null || savedQueries.length == 0) {
-            queriesPanel.setVisible(false);
-            return;
-        }
-        queriesPanel.setVisible(true);
-        Component[] componenets = queriesPanel.getComponents();
-        for (Component c : componenets) {
-            if(c instanceof QueryButton || c instanceof JSeparator) {
-                queriesPanel.remove(c);
+    }
+
+    private void updateSavedQueries(Repository repo) {
+        synchronized (LOCK) {
+            if(savedQueries != null) {
+                for (Query q : savedQueries) {
+                    q.removePropertyChangeListener(this);
+                }
             }
         }
-        queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
-        QueryButton ql = null;
-        Arrays.sort(savedQueries);
-        for (int i = 0; i < savedQueries.length; i++) {
-            Query q = savedQueries[i];
-            q.addPropertyChangeListener(this);
-            ql = new QueryButton(repo, q);
-            ql.setText(q.getDisplayName());
-            queriesPanel.add(ql);
-            if(i < savedQueries.length - 1) {
-                JSeparator s = new JSeparator();
-                s.setOrientation(javax.swing.SwingConstants.VERTICAL);
-                s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
-                s.setBorder(new LineBorder(Color.BLACK, 1));
-                queriesPanel.add(s);
+        Query[] queries = repo.getQueries();
+        synchronized (LOCK) {
+            savedQueries = queries;
+            if(savedQueries == null || savedQueries.length == 0) {
+                queriesPanel.setVisible(false);
+                return;
             }
+            queriesPanel.setVisible(true);
+            Component[] componenets = queriesPanel.getComponents();
+            for (Component c : componenets) {
+                if(c instanceof QueryButton || c instanceof JSeparator) {
+                    queriesPanel.remove(c);
+                }
+            }
+            queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
+            QueryButton ql = null;
+            Arrays.sort(savedQueries);
+            for (int i = 0; i < savedQueries.length; i++) {
+                Query q = savedQueries[i];
+                q.addPropertyChangeListener(this);
+                ql = new QueryButton(repo, q);
+                ql.setText(q.getDisplayName());
+                queriesPanel.add(ql);
+                if(i < savedQueries.length - 1) {
+                    JSeparator s = new JSeparator();
+                    s.setOrientation(javax.swing.SwingConstants.VERTICAL);
+                    s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
+                    s.setBorder(new LineBorder(Color.BLACK, 1));
+                    queriesPanel.add(s);
+                }
+            }
+            updateSavedQueriesPanel();
         }
-        updateSavedQueriesPanel();
     }
 
     private void updateSavedQueriesPanel() {

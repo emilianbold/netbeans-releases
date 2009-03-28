@@ -112,6 +112,26 @@ public class RepositoryController extends BugtrackingController implements Docum
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
+    private String getName() {
+        return panel.nameField.getText();
+    }
+
+    private String getUser() {
+        return panel.userField.getText();
+    }
+
+    private String getPassword() {
+        return new String(panel.psswdField.getPassword());
+    }
+
+    private String getHttpUser() {
+        return panel.httpCheckBox.isSelected() ? panel.httpUserField.getText() : null;
+    }
+
+    private String getHttpPassword() {
+        return panel.httpCheckBox.isSelected() ? new String(panel.httpPsswdField.getPassword()) : null;
+    }
+
     private boolean validate() {
         if(validateError) {
             return false;
@@ -175,8 +195,15 @@ public class RepositoryController extends BugtrackingController implements Docum
             BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
         repository.setName(newName);
-        repository.setTaskRepository(panel.nameField.getText(), getUrl(), panel.userField.getText(), new String(panel.psswdField.getPassword()));        
-        fireDataApplied();        
+        repository.setTaskRepository(
+            getName(),
+            getUrl(),
+            getUser(),
+            getPassword(),
+            getHttpUser(),
+            getHttpPassword());
+        Bugzilla.getInstance().addRepository(repository);
+        fireDataApplied();
     }
 
     void populate() {
@@ -187,6 +214,18 @@ public class RepositoryController extends BugtrackingController implements Docum
                     AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
                     panel.userField.setText(c.getUserName());
                     panel.psswdField.setText(c.getPassword());
+                    c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                    if(c != null) {
+                        String httpUser = c.getUserName();
+                        String httpPsswd = c.getPassword();
+                        if(httpUser != null && !httpUser.equals("") &&
+                           httpPsswd != null && !httpPsswd.equals(""))
+                        {
+                            panel.httpCheckBox.setSelected(true);
+                            panel.httpUserField.setText(httpUser);
+                            panel.httpPsswdField.setText(httpPsswd);
+                        }
+                    }
                     panel.urlField.setText(repository.getTaskRepository().getUrl());
                     panel.nameField.setText(repository.getDisplayName());
                     populating = false;
@@ -246,10 +285,12 @@ public class RepositoryController extends BugtrackingController implements Docum
                 try {
                     repository.resetRepository(); // reset mylyns caching
                     TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
-                            panel.nameField.getText(),
+                            getName(),
                             getUrl(),
-                            panel.userField.getText(),
-                            new String(panel.psswdField.getPassword()));
+                            getUser(),
+                            getPassword(),
+                            getHttpUser(),
+                            getHttpPassword());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
                     repository.getExecutor().execute(cmd, false);
