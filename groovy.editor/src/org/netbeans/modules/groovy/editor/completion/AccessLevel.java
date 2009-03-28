@@ -130,7 +130,7 @@ public enum AccessLevel {
     public static Set<AccessLevel> create(ClassNode source, ClassNode type) {
         Set<AccessLevel> levels;
 
-        if (type == null) {
+        if (source == null) {
             // may happen in GSP
             levels = EnumSet.of(AccessLevel.PUBLIC);
         } else if (type.equals(source)) {
