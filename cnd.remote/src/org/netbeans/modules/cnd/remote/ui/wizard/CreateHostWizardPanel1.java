@@ -60,7 +60,10 @@ public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDesc
     }
 
     public boolean isValid() {
-        return getComponent().getHostname().length() > 0;
+        if (getComponent().getHostname().length() > 0) {
+            return getComponent().getPort() != null;
+        }
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -82,12 +85,18 @@ public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDesc
     ////////////////////////////////////////////////////////////////////////////
     // settings
     public void readSettings(WizardDescriptor settings) {
+        Object port = settings.getProperty(PROP_PORT);
+        if (port instanceof Integer) {
+            getComponent().init((Integer) port);
+        }
     }
 
     public void storeSettings(WizardDescriptor settings) {
         settings.putProperty(PROP_HOSTNAME, getComponent().getHostname());
+        settings.putProperty(PROP_PORT, getComponent().getPort());
     }
+    
     static final String PROP_HOSTNAME = "hostname"; // NOI18N
-
+    static final String PROP_PORT = "port"; //NOI18N
 }
 
