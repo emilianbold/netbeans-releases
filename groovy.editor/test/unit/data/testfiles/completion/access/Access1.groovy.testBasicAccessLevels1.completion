@@ -68,4 +68,5 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+FIELD      class                                      Class
 FIELD      metaClass                                  MetaClass
