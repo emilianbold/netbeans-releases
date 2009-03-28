@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Maven2 Implementation of 
@@ -72,6 +73,11 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
         this.locationProvider  = locProvider;
         cpProvider = imp;
         modelHelper = createEntityMappingsHelper();
+
+        FileObject persistenceFo = getPersistenceXml();
+        if (persistenceFo != null) {
+            modelHelper.changePersistenceXml(FileUtil.toFile(persistenceFo));
+        }
     }
     
     /**
