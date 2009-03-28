@@ -105,10 +105,13 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.TrueFalseSupport(false, "tag", "isELIgnored")); // NOI18N
         putSupport(new AttrSupports.FilenameSupport(false, "tag", "small-icon")); // NOI18N
         putSupport(new AttrSupports.FilenameSupport(false, "tag", "large-icon")); // NOI18N
+        putSupport(new AttrSupports.BodyContentSupport(false, "tag", "body-content")); // NOI18N
+
         // @attribute
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "required")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "fragment")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "rtexprvalue")); // NOI18N
+        putSupport(new AttrSupports.PackageListSupport(false, "attribute", "type")); // NOI18N
         // @variable
         putSupport(new AttrSupports.TrueFalseSupport(false, "variable", "declare")); // NOI18N
         putSupport(new AttrSupports.VariableScopeSupport(false, "variable", "scope")); // NOI18N
@@ -137,6 +140,21 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.page", "errorPage")); //NOI18N
         putSupport(new AttrSupports.EncodingSupport(true, "jsp:directive.page", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isELIgnored")); // NOI18N
+
+        //jsp:directive.attribute
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.attribute", "required")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.attribute", "fragment")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.attribute", "rtexprvalue")); // NOI18N
+        putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.attribute", "type")); // NOI18N
+
+        //jsp:directive.page
+        putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.tag", "import")); // NOI18N
+        putSupport(new AttrSupports.EncodingSupport(true, "jsp:directive.tag", "pageEncoding")); // NOI18N
+        putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.tag", "isELIgnored")); // NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.tag", "small-icon")); // NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.tag", "large-icon")); // NOI18N
+        putSupport(new AttrSupports.BodyContentSupport(true, "jsp:directive.tag", "body-content")); // NOI18N
+
 
         putSupport(new AttrSupports.YesNoTrueFalseSupport(true, "jsp:output", "omit-xml-declaration")); // NOI18N
         putSupport(new AttrSupports.RootVersionSupport(true, "jsp:root", "version")); // NOI18N
