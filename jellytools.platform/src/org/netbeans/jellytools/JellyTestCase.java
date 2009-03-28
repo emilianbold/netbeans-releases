@@ -41,12 +41,6 @@
 
 package org.netbeans.jellytools;
 
-/*
- * JellyTestCase.java
- *
- * Created on June 26, 2002, 4:08 PM
- */
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Toolkit;
@@ -58,9 +52,11 @@ import java.awt.event.HierarchyListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.JDialog;
 
@@ -204,6 +200,12 @@ public class JellyTestCase extends NbTestCase {
                 } catch (Exception ex) {
                     ex.printStackTrace(getLog());
                 }
+            }
+            // send thread dump to log
+            PrintWriter w = JemmyProperties.getCurrentOutput().getErrput();
+            if (w != null) {
+                w.println("thread dump just after screen capture:");
+                w.println(threadDump());
             }
             // XML dump is performed when test fails and in dependency on system property
             if (dumpScreen) {
@@ -508,4 +510,43 @@ public class JellyTestCase extends NbTestCase {
             }
         }
     }
+
+    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
+        indent = indent.concat("  ");
+        for (StackTraceElement e : data.get(t)) {
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+        }
+    }
+
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
+        indent = indent.concat("  ");
+
+        int groups = tg.activeGroupCount();
+        ThreadGroup[] chg = new ThreadGroup[groups];
+        tg.enumerate(chg, false);
+        for (ThreadGroup inner : chg) {
+            if (inner != null) appendGroup(sb, indent, inner, data);
+        }
+
+        int threads = tg.activeCount();
+        Thread[] cht= new Thread[threads];
+        tg.enumerate(cht, false);
+        for (Thread t : cht) {
+            if (t != null) appendThread(sb, indent, t, data);
+        }
+    }
+
+    private static String threadDump() {
+        Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        ThreadGroup root = Thread.currentThread().getThreadGroup();
+        while (root.getParent() != null) root = root.getParent();
+
+        StringBuffer sb = new StringBuffer();
+        appendGroup(sb, "", root, all);
+        return sb.toString();
+    }
+
 }
