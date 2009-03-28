@@ -106,7 +106,8 @@ class RepositoryNode extends AbstractNode implements PropertyChangeListener {
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
                         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                             public void run() {
-                                BugtrackingManager.getInstance().removeRepository(repository);
+                                repository.remove();
+                                BugtrackingManager.getInstance().fireRepositoriesChanged();
                             }
                         });
                     }
