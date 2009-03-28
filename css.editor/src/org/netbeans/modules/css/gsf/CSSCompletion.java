@@ -222,7 +222,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
             }
 
-            Property prop = PROPERTIES.getProperty(property.image());
+            Property prop = PROPERTIES.getProperty(property.image().trim());
             if (prop != null) {
 
                 CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
