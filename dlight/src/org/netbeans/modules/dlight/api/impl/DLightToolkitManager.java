@@ -50,7 +50,11 @@ import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 public interface DLightToolkitManager {
   DLightSessionHandler createSession(DLightTarget target, String configurationName);
 
+  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
+
   DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
+
+  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
   
   void startSession(DLightSessionHandler reference);
 

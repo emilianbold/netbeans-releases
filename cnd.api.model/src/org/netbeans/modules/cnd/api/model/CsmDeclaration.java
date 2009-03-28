@@ -75,6 +75,7 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement,
         TEMPLATE_DECLARATION,
         NAMESPACE_DEFINITION,
         TEMPLATE_PARAMETER,
+        SPECIALIZATION_PARAMETER,
         
         NAMESPACE_ALIAS,
         USING_DIRECTIVE,

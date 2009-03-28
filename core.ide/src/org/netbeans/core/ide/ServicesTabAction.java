@@ -39,48 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.ide;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.openide.nodes.Node;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
- *
- * @author S. Aubrecht
+ * Action which opens Services tab.
  */
-public class EnvironmentNodeTest extends NbTestCase {
+public class ServicesTabAction extends AbstractAction implements HelpCtx.Provider {
     
-    public EnvironmentNodeTest(String testName) {
-        super(testName);
+    public ServicesTabAction() {
+        putValue(NAME, NbBundle.getMessage(ServicesTabAction.class, "CTL_ServicesTabAction"));
+        putValue ("iconBase", "org/netbeans/core/ide/resources/services.gif"); // NOI18N
+    }
+    
+    public void actionPerformed(ActionEvent evt) {
+        final TopComponent runtimeTab = ServicesTab.findDefault();
+        runtimeTab.open();
+        runtimeTab.requestActive();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.core.actions.ViewRuntimeTabAction"); // NOI18N
     }
 
-    /**
-     * Issue #118628
-     */
-    public void testNoDragAndDropInServicesEmptyArea() {
-        Node servicesRoot = EnvironmentNode.find( EnvironmentNode.TYPE_ENVIRONMENT );
-        assertNotNull(servicesRoot);
-        
-        Transferable t = new Transferable() {
-
-            public DataFlavor[] getTransferDataFlavors() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean isDataFlavorSupported(DataFlavor flavor) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
-        
-        assertNull( "Drag and drop into empty area of Services window is not allowed", 
-                servicesRoot.getDropType(t, 0, 0));
-    }
 }

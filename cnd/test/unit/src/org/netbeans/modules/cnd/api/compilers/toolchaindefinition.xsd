@@ -10,6 +10,7 @@
             <xs:sequence>
                 <xs:element ref="tns:toolchain" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:platforms" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:makefile_writer" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:default_locations" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:drive_letter_prefix" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:base_folder" minOccurs="0" maxOccurs="1"/>

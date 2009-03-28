@@ -44,7 +44,6 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -85,8 +84,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
     private final DLightSessionContext sessionContext;
+    private final String name;
 
-    public enum SessionState {
+    public static enum SessionState {
 
         CONFIGURATION,
         STARTING,
@@ -120,8 +120,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * Instead DLightManager.newSession() should be used.
      *
      */
-    DLightSession() {
+    DLightSession(String name) {
         this.state = SessionState.CONFIGURATION;
+        this.name = name;
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
@@ -189,6 +190,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             description = "Session #" + sessionID + " (" + targets + ")"; // NOI18N
         }
         return description;
+    }
+
+    public String getDisplayName() {
+        return name == null? getDescription() : name;
     }
 
     boolean isRunning() {
@@ -298,7 +303,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : validTools) {
-                List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     if (!collectors.contains(c)) {
@@ -319,7 +324,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
             List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
-            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp.getValidationStatus().isValid()) {
@@ -334,7 +339,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                 notAttachableDataCollector = ((DataCollector) idp);
                             }
                         }
-                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
@@ -349,7 +354,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
                 }
             }
-            List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+            List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
             for (Indicator i : indicators){
                 if (!subscribedIndicators.contains(i)){
                     IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
