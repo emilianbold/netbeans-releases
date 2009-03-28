@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
+import java.util.Collection;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -67,8 +69,8 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.DefaultMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.api.MakefileWriter;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -179,36 +181,25 @@ public class ConfigurationMakefileWriter {
             // FIXUP
         }
 
-        // See if there is a custom makefile writer in the compiler set
-        // If not, use a default one.
+        // Find MakefileWriter in toolchain.
         MakefileWriter makefileWriter = null;
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
-        if (makefileWriterClassName != null) {
-            try {
-                Class makefileWriterClass;
-                ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
-                if (c == null) {
-                    makefileWriterClass = Class.forName(makefileWriterClassName);
+        if (compilerSet != null) {
+            String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
+            if (makefileWriterClassName != null) {
+                Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
+                for(MakefileWriter instance: mwc){
+                   if (makefileWriterClassName.equals(instance.getClass().getName())){
+                       makefileWriter = instance;
+                       break;
+                   }
                 }
-                else {
-                    makefileWriterClass = Class.forName(makefileWriterClassName, true, c);
+                if (makefileWriter == null) {
+                    System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
                 }
-                Object o = makefileWriterClass.newInstance();
-                if (o instanceof MakefileWriter) {
-                    makefileWriter = (MakefileWriter)o;
-                }
-            }
-            catch (ClassNotFoundException ncd) {
-            }
-            catch (InstantiationException nie) {
-            }
-            catch (IllegalAccessException iae) {
-            }
-            if (makefileWriter == null) {
-                System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
             }
         }
+        // Use default MakefileWriter if none is found.
         if (makefileWriter == null) {
             makefileWriter = new DefaultMakefileWriter();
         }
@@ -259,7 +250,7 @@ public class ConfigurationMakefileWriter {
         return ""; // NOI18N
     }
 
-    public static void writePrelude(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writePrelude(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
             return;
@@ -385,7 +376,7 @@ public class ConfigurationMakefileWriter {
         makefileWriter.writeSubProjectBuildTargets(projectDescriptor, conf, bw);
     }
 
-    public static void writeQTTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeQTTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
@@ -393,7 +384,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + output + "\n"); // NOI18N
     }
 
-    public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
@@ -403,7 +394,7 @@ public class ConfigurationMakefileWriter {
                 + output + "\n\n"); // NOI18N
     }
 
-    public static void writeLinkTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeLinkTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
@@ -442,7 +433,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\t" + command + "\n"); // NOI18N
     }
 
-    public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         ArchiverConfiguration archiverConfiguration = conf.getArchiverConfiguration();
@@ -461,7 +452,7 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    public static void writeCompileTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeCompileTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
@@ -543,7 +534,7 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    public static void writeMakefileTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeMakefileTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         MakefileConfiguration makefileConfiguration = conf.getMakefileConfiguration();
         String target = makefileConfiguration.getOutput().getValue();
         String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
@@ -554,7 +545,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(cwd)) + " && " + command + "\n"); // NOI18N
     }
 
-    public static void writeSubProjectBuildTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeSubProjectBuildTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".build-subprojects:" + "\n"); // NOI18N
@@ -586,7 +577,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
 
-    private static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    private static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N
@@ -617,7 +608,7 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    public static void writeCleanTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeCleanTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("# Clean Targets\n"); // NOI18N
         if (hasSubprojects(conf)) {
             bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}"); // NOI18N
@@ -665,7 +656,7 @@ public class ConfigurationMakefileWriter {
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);
     }
 
-    public static void writeDependencyChecking(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    public static void writeDependencyChecking(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N

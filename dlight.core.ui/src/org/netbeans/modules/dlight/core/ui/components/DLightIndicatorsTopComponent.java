@@ -79,7 +79,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     private DLightIndicatorsTopComponent() {
         initComponents();
         setSession(null);
-        setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
+        setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 //        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
@@ -112,8 +112,10 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         this.session = session;
         List<Indicator> indicators = null;
         if (session != null) {
+            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             indicators = session.getIndicators();
         } else {
+            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
                 indicators = emptyContent.getEmptyContent();
@@ -242,4 +244,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         }
     }
 
+    private static String getMessage(String name, Object... params) {
+        return NbBundle.getMessage(DLightIndicatorsTopComponent.class, name, params);
+    }
 }

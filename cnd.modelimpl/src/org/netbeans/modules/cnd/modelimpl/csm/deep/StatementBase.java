@@ -97,7 +97,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     }
     
     @Override
-    protected void write(DataOutput output) throws IOException {
+    public void write(DataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
