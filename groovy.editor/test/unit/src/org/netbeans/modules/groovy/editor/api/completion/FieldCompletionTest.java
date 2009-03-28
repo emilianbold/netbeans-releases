@@ -43,9 +43,14 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
+import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -68,6 +73,13 @@ public class FieldCompletionTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/field")) }));
+        return map;
+    }
+
     public void testFields1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Fields1.groovy", "\"User $nom^\"", false);
     }
@@ -75,6 +87,5 @@ public class FieldCompletionTest extends GroovyTestBase {
     public void testFields2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Fields1.groovy", "println \"Hi: $ad^\"", false);
     }
-
 
 }
