@@ -42,10 +42,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 import java.beans.PropertyChangeEvent;
 import javax.lang.model.element.ElementKind;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
-import groovy.lang.MetaProperty;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -1036,67 +1033,21 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        LOG.log(Level.FINEST, "requestedClass is : {0}", declaringClass); // NOI18N
+        // If we are dealing with GStrings, the prefix is prefixed ;-)
+        // ... with the dollar sign $ See # 143295
+        int anchorShift = 0;
+        String fieldName = request.prefix;
 
-        List<FieldNode> fields = declaringClass.getFields();
-
-        for (FieldNode field : fields) {
-            LOG.log(Level.FINEST, "-------------------------------------------------------------------------"); // NOI18N
-            LOG.log(Level.FINEST, "Field found       : {0}", field.getName()); // NOI18N
-
-            String fieldTypeAsString = field.getType().getNameWithoutPackage();
-
-            if (request.isBehindDot()) {
-                Class clz = null;
-
-                try {
-                    clz = Class.forName(field.getOwner().getName());
-                } catch (ClassNotFoundException e) {
-                    LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-                // we keep on running here, since we might deal with a class
-                // defined in our very own file.
-                }
-
-                if (clz != null) {
-                    MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
-                    if (metaClz != null) {
-                        MetaProperty metaProp = metaClz.getMetaProperty(field.getName());
-
-                        if (metaProp != null) {
-                            LOG.log(Level.FINEST, "Type from MetaProperty: {0}", metaProp.getType()); // NOI18N
-                            fieldTypeAsString = metaProp.getType().getSimpleName();
-                        }
-                    }
-                }
-
-            }
-
-            // TODO: I take the freedom to filter this out: __timeStamp*
-            if (field.getName().startsWith("__timeStamp")) { // NOI18N
-                continue;
-            }
-
-            // If we are dealing with GStrings, the prefix is prefixed ;-)
-            // ... with the dollar sign $ See # 143295
-
-            int anchorShift = 0;
-            String fieldName = request.prefix;
-
-            if(request.prefix.startsWith("$")) {
-                fieldName = request.prefix.substring(1);
-                anchorShift = 1;
-            }
-
-            if (field.getName().startsWith(fieldName)) {
-                proposals.add(new CompletionItem.FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request.info, fieldTypeAsString));
-            }
+        if (request.prefix.startsWith("$")) {
+            fieldName = request.prefix.substring(1);
+            anchorShift = 1;
         }
 
-        // FIXME just a dirty prototype
-//        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
-//                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor, true, request.info.getFileObject());
-//        proposals.addAll(dynamic.values());
+        Map<FieldSignature, ? extends CompletionItem> result = CompleteElementHandler
+                .forCompilationInfo(request.info)
+                    .getFields(getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
+
+        proposals.addAll(result.values());
 
         return true;
     }
