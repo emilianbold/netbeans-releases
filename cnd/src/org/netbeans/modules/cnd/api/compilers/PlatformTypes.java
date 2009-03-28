@@ -67,18 +67,19 @@ public class PlatformTypes {
     public static int getDefaultPlatform() {
         if (defaultPlatform <= 0) {
             String arch = System.getProperty("os.arch"); // NOI18N
-            if (Utilities.isWindows())
+            if (Utilities.isWindows()) {
                 defaultPlatform = PlatformTypes.PLATFORM_WINDOWS;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX)
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
                 defaultPlatform = PlatformTypes.PLATFORM_LINUX;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && arch.indexOf("86") >= 0) // NOI18N
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && arch.indexOf("86") >= 0) { // NOI18N
                 defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
-            else 
+            } else {
                 defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
+            }
         }
         return defaultPlatform;
     }

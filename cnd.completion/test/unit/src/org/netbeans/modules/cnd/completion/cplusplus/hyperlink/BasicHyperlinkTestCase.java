@@ -187,8 +187,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testStaticVariable() throws Exception {
         // See IZ136481
-        performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
-        performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
+        performTest("static_variable.c", 5, 16, "static_variable.h", 2, 1);
+        performTest("static_variable.c", 6, 15, "static_variable.h", 1, 1);
+        // See IZ151730: Unresolved static variable in header included after its definition
+        performTest("static_variable.h", 2, 40, "static_variable.c", 1, 1);
     }
 
     public void testIZ131555() throws Exception {

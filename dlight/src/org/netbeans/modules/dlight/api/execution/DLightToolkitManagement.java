@@ -143,9 +143,16 @@ public final class DLightToolkitManagement {
   public Future<DLightSessionHandler> createSession(
           final DLightTarget target,
           final String configurationName) {
+      return createSession(target, configurationName, null);
+  }
+
+  public Future<DLightSessionHandler> createSession(
+          final DLightTarget target,
+          final String configurationName,
+          final String sessionName) {
       return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
             public DLightSessionHandler call() throws Exception {
-                return toolkitManager.createSession(target, configurationName);
+                return toolkitManager.createSession(target, configurationName, sessionName);
             }
         }, "DLight [" + configurationName + "] Session Creation for " + target); // NOI18N
   }
@@ -153,9 +160,16 @@ public final class DLightToolkitManagement {
   public Future<DLightSessionHandler> createSession(
           final DLightTarget target,
           final DLightConfiguration configuration) {
+      return createSession(target, configuration, null);
+  }
+
+  public Future<DLightSessionHandler> createSession(
+          final DLightTarget target,
+          final DLightConfiguration configuration,
+          final String sessionName) {
       return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
             public DLightSessionHandler call() throws Exception {
-                return toolkitManager.createSession(target, configuration);
+                return toolkitManager.createSession(target, configuration, sessionName);
             }
         }, "DLight [" + configuration.getConfigurationName() + "] Session Creation for " + target); // NOI18N
   }
