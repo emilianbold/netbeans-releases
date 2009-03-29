@@ -335,9 +335,8 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         @Override
         protected Rectangle calculateClientArea () {
             Graphics2D gr = getGraphics();
-            FontMetrics fontMetrics = gr.getFontMetrics(getFont());
-            Rectangle2D stringBounds1 = fontMetrics.getStringBounds(scope, gr);
-            Rectangle2D stringBounds2 = fontMetrics.getStringBounds(label, gr);
+            Rectangle2D stringBounds1 = gr.getFontMetrics(getFont()).getStringBounds(scope, gr);
+            Rectangle2D stringBounds2 = gr.getFontMetrics(getFont().deriveFont(Font.BOLD)).getStringBounds(label, gr);
             Rectangle2D stringBounds = new Rectangle2D.Double(stringBounds1.getX(), stringBounds1.getY(),
                     Math.max(stringBounds1.getWidth(), stringBounds2.getWidth()), stringBounds1.getHeight()+stringBounds2.getHeight());
             return roundRectangle(stringBounds);
