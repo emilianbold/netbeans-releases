@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.bridge;
+package org.netbeans.modules.bugtracking.util;
 
 import java.awt.CardLayout;
 import java.awt.Color;
