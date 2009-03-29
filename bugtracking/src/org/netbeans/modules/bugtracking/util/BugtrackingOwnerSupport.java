@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.bridge;
+package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -48,20 +48,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -71,8 +66,6 @@ import org.openide.util.NbPreferences;
 public class BugtrackingOwnerSupport {
 
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
-
-    private static final String REPOSITORY_FOR_FILE_PREFIX = "repository for "; //NOI18N
 
     private Map<File, Repository> fileToRepo = new HashMap<File, Repository>(10);
     private static BugtrackingOwnerSupport instance;
@@ -138,47 +131,40 @@ public class BugtrackingOwnerSupport {
                             "Kenai project corresponding to URL "       //NOI18N
                                     + attValue
                                     + " does not exist.");              //NOI18N
-                    return null;
+                } else {
+                    LOG.throwing(
+                            getClass().getName(),                       //class name
+                            "getKenaiBugtrackingRepository(String)",    //method name //NOI18N
+                            ex);
                 }
-
-                LOG.throwing(getClass().getName(),                    //class name
-                             "getKenaiBugtrackingRepository(String)", //method name //NOI18N
-                             ex);
                 return null;
             }
         }
 
-        VersioningSystem owner = VersioningSupport.getOwner(file);
-        if (owner == null) {
+        File context = BugtrackingUtil.getLargerContext(file, fileObject);
+        if (context == null) {
             return null;
         }
 
-        //XXX: should be the nearest managed ancestor (rather than topmost)
-        File topmostManagedAncestor = owner.getTopmostManagedAncestor(file);
-        if (topmostManagedAncestor == null) {
-            assert false;       //this should not happen
-            return null;
-        }
-
-        Repository repo = fileToRepo.get(topmostManagedAncestor);
+        Repository repo = fileToRepo.get(context);
         if (repo != null) {
             LOG.log(Level.FINER, " found cached repository [" + repo    //NOI18N
-                                 + "] for directory " + topmostManagedAncestor); //NOI18N
+                                 + "] for directory " + context); //NOI18N
             return repo;
         }
 
-        repo = getRepositoryFromPrefs(topmostManagedAncestor);
+        repo = getRepositoryFromPrefs(context);
         if (repo != null) {
             LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
-                                 + "] for directory " + topmostManagedAncestor); //NOI18N
-            fileToRepo.put(topmostManagedAncestor, repo);
+                                 + "] for directory " + context); //NOI18N
+            fileToRepo.put(context, repo);
             return repo;
         }
 
         repo = askUserToSpecifyRepository(fileObject, issueId);
         if (repo != null) {
-            fileToRepo.put(topmostManagedAncestor, repo);
-            storeRepositoryMappingToPrefs(topmostManagedAncestor, repo);
+            fileToRepo.put(context, repo);
+            storeRepositoryMappingToPrefs(context, repo);
             return repo;
         }
 
@@ -207,78 +193,11 @@ public class BugtrackingOwnerSupport {
     }
 
     private Repository getRepositoryFromPrefs(File file) {
-        String repoString = getRepositoryStringFromPrefs(file);
-        if ((repoString == null) || (repoString.length() == 0)) {
-            return null;
-        }
-
-        char firstChar = repoString.charAt(0);
-        if (firstChar == '?') {     //information about loose association
-            return null;
-        }
-
-        String repositoryName;
-        if (firstChar == '!') {
-            repositoryName = repoString.substring(1);
-            if (repositoryName.length() == 0) {
-                return null;
-            }
-        } else {
-            repositoryName = repoString;
-        }
-
-        return getRepositoryByName(repositoryName);
-    }
-
-    private Repository getRepositoryByName(String requestedName) {
-        Repository[] repositories = BugtrackingUtil.getKnownRepositories();
-        for (Repository repository : repositories) {
-            if (repository.getDisplayName().equals(requestedName)) {
-                return repository;
-            }
-        }
-
-        return null;
-    }
-
-    private String getRepositoryStringFromPrefs(File file) {
-        String filePath;
-        try {
-            filePath = file.getCanonicalPath();
-        } catch (IOException ex) {
-            LOG.throwing(getClass().getCanonicalName(),
-                         "getRepositoryForFile",                        //NOI18N
-                         ex);
-            filePath = file.getAbsolutePath();
-        }
-
-        String preferencesKey = REPOSITORY_FOR_FILE_PREFIX + filePath;
-        return getPreferences().get(preferencesKey, null);
+        return FileToRepoMappingStorage.getInstance().getFirmlyAssociatedRepository(file);
     }
 
     protected void storeRepositoryMappingToPrefs(File root, Repository repository) {
-        storeRepositoryMappingToPrefs(root, repository, true);
-    }
-
-    protected void storeRepositoryMappingToPrefs(File root, Repository repository, boolean strong) {
-        String key, value;
-
-        try {
-            key = root.getCanonicalPath();
-        } catch (IOException ex) {
-            LOG.throwing(getClass().getCanonicalName(),
-                "storeRepositoryMappingToPrefs",               //NOI18N
-                ex);
-            return;
-        }
-
-        String repositoryName = repository.getDisplayName();
-        value = new StringBuilder(1 + repositoryName.length())
-                .append(strong ? '!' : '?')
-                .append(repositoryName)
-                .toString();
-
-        getPreferences().put(REPOSITORY_FOR_FILE_PREFIX + key, value);
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(root, repository);
     }
 
     private Repository askUserToSpecifyRepository(FileObject file, String issueId) {
@@ -335,10 +254,6 @@ public class BugtrackingOwnerSupport {
         } else {
             return null;
         }
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(BugtrackingOwnerSupport.class);
     }
 
     private String getMessage(String msgKey) {
