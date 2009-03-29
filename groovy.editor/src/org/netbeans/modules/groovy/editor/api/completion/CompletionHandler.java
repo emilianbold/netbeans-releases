@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -1819,6 +1820,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
 
+        Set<String> addedTypes = new HashSet<String>();
         // get the JavaSource for our file.
 
         final JavaSource javaSource = getJavaSourceFromRequest(request);
@@ -1839,6 +1841,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
                 for (TypeHolder singleType : stringTypelist) {
+                    addedTypes.add(singleType.getName());
                     addToProposalUsingFilter(proposals, request, singleType, onlyInterfaces);
                 }
             }
@@ -1879,6 +1882,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
                     List<TypeHolder> typelist = new ArrayList<TypeHolder>();
 
+                    // FIXME all classes in the index - this is performance defect
                     for (IndexedClass indexedClass : classes) {
                         LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getName());
 
@@ -1892,12 +1896,15 @@ public class CompletionHandler implements CodeCompletionHandler {
                             ek = ElementKind.INTERFACE;
                         }
 
-                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getName(), ek));
+                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getFqn(), ek));
                     }
 
                     for (TypeHolder type : typelist) {
-                        // now finally add to proposals
-                        addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
+                        if (!addedTypes.contains(type.getName())) {
+                            // now finally add to proposals
+                            addedTypes.add(type.getName());
+                            addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
+                        }
                     }
 
                 }
@@ -1926,8 +1933,10 @@ public class CompletionHandler implements CodeCompletionHandler {
                         ek = ElementKind.CLASS;
                     }
 
-
-                    addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
+                    if (!addedTypes.contains(importNode.getClassName())) {
+                        addedTypes.add(importNode.getClassName());
+                        addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
+                    }
                 }
             }
 
@@ -1970,15 +1979,21 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             for (TypeHolder element : typeList) {
                 // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
-                addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
+                if (!addedTypes.contains(element.getName())) {
+                    addedTypes.add(element.getName());
+                    addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
+                }
             }
         }
 
         // Adding two single classes per hand
 
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
-
+        if (!addedTypes.contains("java.math.BigDecimal")) {
+            addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
+        }
+        if (!addedTypes.contains("java.math.BigInteger")) {
+            addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
+        }
         return true;
     }
 
@@ -2002,7 +2017,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             // LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
             proposals.add(new CompletionItem.TypeItem(typeName, anchor, type.getKind()));
         }
-
 
         return;
     }
