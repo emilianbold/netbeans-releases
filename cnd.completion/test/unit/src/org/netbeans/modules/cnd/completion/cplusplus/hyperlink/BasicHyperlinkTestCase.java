@@ -193,6 +193,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("static_variable.h", 2, 40, "static_variable.c", 1, 1);
     }
 
+    public void testStaticFunctions() throws Exception {
+        // IZ#151751: Unresolved usage of function name as pointer for static member initialization
+        performTest("static_function.c", 26, 10, "static_function.c", 17, 1);
+        performTest("static_function.c", 11, 30, "static_function.c", 2, 1);
+    }
+
     public void testIZ131555() throws Exception {
         for (int i = 5; i <=13; i++ ) {
             performTest("IZ131555.c", i, 16, "IZ131555.c", 2, 5);
