@@ -51,11 +51,11 @@ import org.w3c.css.sac.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CSSDisplayer extends XMLDisplayer {
+public class CssDisplayer extends XMLDisplayer {
 
-    /** Creates new CSSDisplayer */
-    public CSSDisplayer() {
-        super(NbBundle.getMessage (CSSDisplayer.class, "TITLE_CSS_Check"));
+    /** Creates new CssDisplayer */
+    public CssDisplayer() {
+        super(NbBundle.getMessage (CssDisplayer.class, "TITLE_CSS_Check"));
     }
 
     /** Show using CSS parser error format */

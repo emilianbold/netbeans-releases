@@ -58,29 +58,29 @@ import org.openide.windows.WindowManager;
  *
  * @author Marek Fukala
  */
-public class CSSTCController implements PropertyChangeListener {
+public class CssTCController implements PropertyChangeListener {
 
     //allow GCize the shared class instance if noone needs it anymore
-    public static WeakReference<CSSTCController> instance;
+    public static WeakReference<CssTCController> instance;
     private TopComponent lastCSSTC = null;
     
     /** Clients (CSSPreviewable TopComponent-s) should hold a strong reference to the
      * instance obtained by this method call during its livecycle.
      */
-    public static synchronized CSSTCController getDefault() {
+    public static synchronized CssTCController getDefault() {
         if (instance == null) {
-            instance = new WeakReference<CSSTCController>(new CSSTCController());
+            instance = new WeakReference<CssTCController>(new CssTCController());
         }
-        CSSTCController controllerInstance = instance.get();
+        CssTCController controllerInstance = instance.get();
         if (controllerInstance == null) {
-            controllerInstance = new CSSTCController();
-            instance = new WeakReference<CSSTCController>(controllerInstance);
+            controllerInstance = new CssTCController();
+            instance = new WeakReference<CssTCController>(controllerInstance);
             return controllerInstance;
         }
         return instance.get();
     }
 
-    public CSSTCController() {
+    public CssTCController() {
         //register a weak property change listener to the window manager registry
         Registry reg = WindowManager.getDefault().getRegistry();
         reg.addPropertyChangeListener(
