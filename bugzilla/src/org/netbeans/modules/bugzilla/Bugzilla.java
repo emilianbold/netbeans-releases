@@ -122,6 +122,7 @@ public class Bugzilla {
         }
         BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
+            makeSureRepositoriesCollectionExists();
             repositories.add(repository);
         }
     }
@@ -129,6 +130,7 @@ public class Bugzilla {
     public void removeRepository(BugzillaRepository repository) {
         BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
+            makeSureRepositoriesCollectionExists();
             repositories.remove(repository);
         }
     }
@@ -140,7 +142,7 @@ public class Bugzilla {
                 if(names == null || names.length == 0) {
                     return new BugzillaRepository[] {};
                 }
-                repositories = new HashSet<BugzillaRepository>();
+                repositories = createRepositoriesCollection();
                 for (String name : names) {
                     BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(name);
                     if(repo != null) {
@@ -151,4 +153,16 @@ public class Bugzilla {
             return repositories.toArray(new BugzillaRepository[repositories.size()]);
         }
     }
+
+    private void makeSureRepositoriesCollectionExists() {
+        assert Thread.holdsLock(REPOSITORIES_LOCK);
+        if (repositories == null) {
+            repositories = createRepositoriesCollection();
+        }
+    }
+
+    private Set<BugzillaRepository> createRepositoriesCollection() {
+        return new HashSet<BugzillaRepository>();
+    }
+
 }
