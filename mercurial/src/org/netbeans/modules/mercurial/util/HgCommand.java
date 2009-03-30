@@ -76,6 +76,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -757,7 +758,8 @@ public class HgCommand {
             if (isErrorNoView(list.get(list.size() -1))) {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
              }
-            else if (isErrorHgkNotFound(list.get(0))) {
+            else if (isErrorHgkNotFound(list.get(0)) || isErrorNoSuchFile(list.get(0))) {
+                OutputLogger.getLogger(repository.getAbsolutePath()).outputInRed(list.toString());
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
             } else if (isErrorAbort(list.get(list.size() -1))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
@@ -2271,7 +2273,7 @@ public class HgCommand {
      *
      * @param File repository of the mercurial repository's root directory
      * @param File dir of the subdirectoy of interest.
-     * @return Map of files and status for all files in the specified subdirectory
+     * @return Map of files and status for all files in the specified subdirectory, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getAllStatus(File repository, File dir)  throws HgException{
@@ -2307,7 +2309,7 @@ public class HgCommand {
      *
      * @param File repository of the mercurial repository's root directory
      * @param File dir of the directory of interest
-     * @return Map of files and status for all files of interest in the directory of interest
+     * @return Map of files and status for all files of interest in the directory of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getInterestingStatus(File repository, File dir)  throws HgException{
@@ -2332,7 +2334,7 @@ public class HgCommand {
      *
      * @param File repository of the mercurial repository's root directory
      * @param File dir of the directory of interest
-     * @return Map of files and status for all files of interest in the specified directory
+     * @return Map of files and status for all files of interest in the specified directory, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getRemovedDeletedStatus(File repository, File dir)  throws HgException{
@@ -2344,7 +2346,7 @@ public class HgCommand {
      *
      * @param File of the mercurial repository's root directory
      * @param File of the directory whose files are required
-     * @return Map of files and status for all files under the repository root
+     * @return Map of files and status for all files under the repository root, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
@@ -2563,6 +2565,7 @@ public class HgCommand {
 
     /**
      * Returns Map of mercurial file and status for files in a given repository as specified by the status flags
+     * Returned map contains normalized files as keys
      */
     private static Map<File, FileInformation> getAllStatusWithFlags(File repository, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         return getDirStatusWithFlags(repository, null, statusFlags, bIgnoreUnversioned);
@@ -2611,6 +2614,7 @@ public class HgCommand {
             } else {
                 file = new File(repository, sb.toString());
             }
+            file = FileUtil.normalizeFile(file);
 
             // Handle Conflict Status
             // TODO: remove this if Hg status supports Conflict marker

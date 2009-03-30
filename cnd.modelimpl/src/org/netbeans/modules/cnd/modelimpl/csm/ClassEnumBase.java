@@ -86,7 +86,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
     }
 
-    protected static int getEndOffset(AST node) {
+    public static int getEndOffset(AST node) {
         if (node != null) {
             AST rcurly = AstUtil.findChildOfType(node, CPPTokenTypes.RCURLY);
             if (rcurly instanceof CsmAST) {

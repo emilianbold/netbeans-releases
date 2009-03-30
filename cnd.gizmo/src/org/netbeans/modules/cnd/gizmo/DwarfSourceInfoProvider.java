@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.File;
+import java.util.Map;
 import org.netbeans.modules.cnd.gizmo.addr2line.Dwarf2NameFinder;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.openide.util.lookup.ServiceProvider;
@@ -49,9 +49,13 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, File executable) throws SourceFileInfoCannotBeProvided {
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+        if (serviceInfo == null){
+            throw new SourceFileInfoCannotBeProvided();
+        }
+        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable.getAbsolutePath());
+            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
             finder.lookup(offset);
             String sourceFile = finder.getSourceFile();
             int lineNumber = finder.getLineNumber();

@@ -68,6 +68,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     private ParameterInfo[] paramTable;
     // new vibility
     private CsmVisibility visibility;
+    // where to use default values
+    private boolean useDefaultValueInFunctionDefinition;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -103,7 +105,10 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     public CsmVisibility getVisibility() {
         return visibility;
     }
-    
+
+    public boolean isUseDefaultValueOnlyInFunctionDefinition() {
+        return useDefaultValueInFunctionDefinition;
+    }
     /**
      * Sets new parameters for a method
      * @param paramTable new parameters
@@ -119,7 +124,10 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     public void setVisibility(CsmVisibility visibility) {
         this.visibility = visibility;
     }
-    
+
+    public void setUseDefaultValueOnlyInFunctionDefinition(boolean onlyInDef) {
+        this.useDefaultValueInFunctionDefinition = onlyInDef;
+    }
     ////////////////////////////////////////////////////////////////////////////
     // INNER CLASSES
     ////////////////////////////////////////////////////////////////////////////

@@ -244,6 +244,7 @@ made subject to such option by the copyright holder.
                 <pathelement location="${harness.dir}/tasks.jar"/>
             </classpath>
             <include name="**/*.html"/>
+            <include name="**/*.htm"/>  <!-- Fix for Issue #160276 -->
             <exclude name="${javahelp.search}/"/>
             <exclude name="${javahelp.excludes}"/>
         </jhindexer>

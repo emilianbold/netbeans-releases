@@ -125,7 +125,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setLoadingContent() {
-        isEmptyContent = true;
+        isEmptyContent = false;
         isLoadingContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -158,9 +158,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setContent(final boolean isEmpty) {
-        if (isLoadingContent){
+        if (isLoadingContent && isEmpty) {
             isLoadingContent = false;
-            setContent(isEmpty);
+            setEmptyContent();
+            return;
+        }
+        if (isLoadingContent && !isEmpty) {
+            isLoadingContent = false;
+            setNonEmptyContent();
             return;
         }
         if (isEmptyContent && isEmpty) {
@@ -209,16 +214,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+
+                task.cancel(true);
+
             }
         }
-        synchronized(syncFillInLock){
-            if (syncFillDataTask != null){
-                if (!syncFillDataTask.isDone()){
-                    syncFillDataTask.cancel(true);
-                }
+        synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
             }
         }
         if (timerHandler != null) {
@@ -470,9 +473,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected final void asyncFillModel(final List<Column> columns) {
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
@@ -487,6 +488,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+            }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<T>>() {
 
                 public List<T> call() throws Exception {

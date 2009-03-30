@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -105,6 +106,7 @@ import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -251,9 +253,13 @@ public class MakeActionProvider implements ActionProvider {
 
         final AtomicBoolean cancelled = new AtomicBoolean(false);
         ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
-
+            private Thread thread;
             public void run() {
+                thread = Thread.currentThread();
                 // Add actions to do
+                if (cancelled.get()) {
+                    return;
+                }
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 if (command.equals(COMMAND_BATCH_BUILD)) {
                     BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
@@ -272,12 +278,15 @@ public class MakeActionProvider implements ActionProvider {
                 }
 
                 // Execute actions
-                if (actionEvents.size() > 0) {
+                if (actionEvents.size() > 0 && ! cancelled.get()) {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
             public boolean cancel() {
                 cancelled.set(true);
+                if (thread != null) {
+                    thread.interrupt();
+                }
                 return true;
             }
         };
@@ -299,7 +308,9 @@ public class MakeActionProvider implements ActionProvider {
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         final AtomicBoolean cancelled = new AtomicBoolean(false);
         ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
+            private Thread thread;
             public void run() {
+                thread = Thread.currentThread();
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
@@ -308,6 +319,9 @@ public class MakeActionProvider implements ActionProvider {
             }
             public boolean cancel() {
                 cancelled.set(true);
+                if (thread != null) {
+                    thread.interrupt();
+                }
                 return true;
             }
         };
@@ -343,12 +357,20 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 public void run() {
                     try {
+                        if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
+                            ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
+                        }
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
                         CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
                         csm.initialize(true, true);
+                    } catch (CancellationException ex) {
+                        cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
+                        String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), message, title, JOptionPane.ERROR_MESSAGE);
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
@@ -425,6 +447,11 @@ public class MakeActionProvider implements ActionProvider {
     public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, 
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             AtomicBoolean cancelled) throws IllegalArgumentException {
+
+        if (cancelled.get()) {
+            return;
+        }
+
         String[] targetNames;
         boolean validated = false;
         lastValidation = false;

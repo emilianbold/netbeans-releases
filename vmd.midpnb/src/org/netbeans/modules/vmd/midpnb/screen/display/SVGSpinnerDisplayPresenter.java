@@ -38,10 +38,60 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+
 /**
  *
  * @author akorostelev
  */
 public class SVGSpinnerDisplayPresenter extends SVGComponentDisplayPresenter {
+
+    // fix issue with incorrect BBox returned by persejus for spinner.
+    // move bbox to the left and increase width by SELECTION_SHAPE_EXTENSION
+    private static final int SELECTION_SHAPE_EXTENSION = 3;
+
+    private Rectangle mySelectionRect = null;
+    private Point myLocationPoint = null;
+
+    @Override
+    public void reload(ScreenDeviceInfo deviceInfo) {
+        super.reload(deviceInfo);
+        mySelectionRect = null;
+        myLocationPoint = null;
+    }
+
+    @Override
+    public Point getLocation() {
+        if (myLocationPoint == null){
+            Point location = super.getLocation();
+            if (location != null){
+                myLocationPoint = location;
+                myLocationPoint.setLocation(
+                        location.getX() - SELECTION_SHAPE_EXTENSION,
+                        location.getY());
+            }
+        }
+        return myLocationPoint;
+    }
+
+    @Override
+    public Shape getSelectionShape() {
+
+        if (mySelectionRect == null) {
+            Shape shape = super.getSelectionShape();
+            if (shape != null) {
+                mySelectionRect = shape.getBounds();
+                mySelectionRect.setSize(
+                        (int) mySelectionRect.getWidth() + SELECTION_SHAPE_EXTENSION,
+                        (int) mySelectionRect.getHeight());
+            }
+        }
+        return mySelectionRect;
+    }
+
+
 
 }

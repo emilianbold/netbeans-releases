@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 final class ParsingProgress {
     
-    private ProgressHandle handle;
+    private final ProgressHandle handle;
     private int originalWorkedUnits = 0;
     private int curWorkedUnits = 0;
     private int maxWorkUnits = 0; // for testing only

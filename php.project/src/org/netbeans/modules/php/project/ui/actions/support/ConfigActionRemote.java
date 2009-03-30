@@ -46,6 +46,7 @@ import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Action implementation for REMOTE configuration.
@@ -89,8 +90,8 @@ class ConfigActionRemote extends ConfigActionLocal {
     }
 
     @Override
-    protected void preShowUrl() {
-        eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+    protected void preShowUrl(Lookup context) {
+        eventuallyUploadFiles(CommandUtils.filesForContextOrSelectedNodes(context));
     }
 
     private void eventuallyUploadFiles() {

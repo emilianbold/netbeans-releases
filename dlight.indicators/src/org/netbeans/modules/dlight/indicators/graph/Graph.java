@@ -41,134 +41,68 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.ToolTipManager;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 
 /**
- * Displays a percentage graph
+ * Displays a graph
  * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
 public class Graph extends JComponent {
 
-    private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
+    public interface LabelRenderer {
+        String render(int value);
+    }
+
     private final GraphPainter graph;
+    private int upperLimit;
     private Axis hAxis;
     private Axis vAxis;
 
-    public Graph(int scale, GraphDescriptor ... descriptors) {
-        graph = new GraphPainter(scale, descriptors);
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                graph.setSize(getWidth(), getHeight());
-            }
-            public void ancestorRemoved(AncestorEvent event) {}
-            public void ancestorMoved(AncestorEvent event) {}
-        });
+    public Graph(int scale, LabelRenderer renderer, GraphDescriptor ... descriptors) {
+        upperLimit = scale;
+        graph = new GraphPainter(renderer, descriptors);
+        setOpaque(true);
+//        ToolTipManager.sharedInstance().registerComponent(this);
+//        addAncestorListener(new AncestorListener() {
+//            public void ancestorAdded(AncestorEvent event) {
+//                graph.setSize(getWidth(), getHeight());
+//            }
+//            public void ancestorRemoved(AncestorEvent event) {}
+//            public void ancestorMoved(AncestorEvent event) {}
+//        });
     }
 
     public synchronized JComponent getVerticalAxis() {
         if (vAxis == null) {
-            vAxis = new Axis(AxisOrientation.VERTICAL, 0, graph.getUpperLimit());
+            vAxis = new Axis(AxisOrientation.VERTICAL);
         }
         return vAxis;
     }
 
-    @Override
-    public void setSize(Dimension d) {
-        if (TRACE) System.err.printf("setSize %s\n", d);
-        checkSize(d.width, d.height);
-        super.setSize(d);
-    }
-
-    @Override
-    public void setSize(int width, int height) {
-        if (TRACE) System.err.printf("setSize %d %d\n", width, height);
-        checkSize(width, height);
-        super.setSize(width, height);
-    }
-
-    @Override
-    public void setBounds(Rectangle r) {
-        if (TRACE) System.err.printf("setBounds %s\n", r);
-        checkSize(r.width, r.height);
-        super.setBounds(r);
-    }
-
-    public void setUpperLimit(int newScale) {
-        if (newScale != graph.getUpperLimit()) {
-            if (vAxis != null) {
-                vAxis.setUpperLimit(newScale);
-            }
-            graph.setUpperLimit(newScale);
+    public synchronized void setUpperLimit(int newScale) {
+        if (newScale != upperLimit) {
+            upperLimit = newScale;
             repaint();
+            if (vAxis != null) {
+                vAxis.repaint();
+            }
         }
     }
 
     public int getUpperLimit() {
-        return graph.getUpperLimit();
+        return upperLimit;
     }
-//    @Override
-//    public void invalidate() {
-//        super.invalidate();
-//        graph.invalidate();
-//    }
-
-//    @Override
-//    @SuppressWarnings("deprecation") // should override this deprecated method
-//    public void reshape(int x, int y, int w, int h) {
-//        if (TRACE) System.err.printf("reshape %d %d %d %d\n", x, y, w, h);
-//        checkSize(w, h);
-//        super.reshape(x, y, w, h);
-//    }
-
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        if (TRACE) System.err.printf("setBounds %d %d %d %d\n", x, y, width, height);
-        checkSize(width, height);
-        super.setBounds(x, y, width, height);
-    }
-
-    private void checkSize(int width, int height) {
-        if ((this.getWidth() != width) || (this.getHeight() != height)) {
-            graph.setSize(width, height);
-        }
-    }
-
-    @Override
-    public boolean isOpaque() {
-        return true;
-    }
-
-    private static int paintCount = 0;
 
     @Override
     protected void paintComponent(Graphics g) {
-        graph.draw(g, 0, 0);
+        graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight());
     }
-
-
-//    private Rectangle getUpdateRectangle() {
-//        int left = 0; // getX();
-//        int top = getY();
-//        int width = getWidth();
-//        int height = getHeight();
-//        Rectangle r;
-//        int x = left + Math.min(width, data.size()) - 1;
-//        r = new Rectangle(x, top, 1, height);
-//        return r;
-//    }
-
-
 
     public void addData(int... newData) {
         graph.addData(newData);
         if (isShowing()) {
             repaint();
-//            repaint(getUpdateRectangle());
         }
      }
 
@@ -194,7 +128,7 @@ public class Graph extends JComponent {
         return String.format("%d", value);
     }
 
-    /*package*/ static enum AxisOrientation {
+    private static enum AxisOrientation {
         HORIZONTAL,
         VERTICAL
     }
@@ -202,25 +136,16 @@ public class Graph extends JComponent {
     private class Axis extends JComponent {
 
         private final AxisOrientation orientation;
-        private int min;
-        private int max;
 
-        public Axis(AxisOrientation orientation, int min, int max) {
+        public Axis(AxisOrientation orientation) {
             this.orientation = orientation;
-            this.min = min;
-            this.max = max;
             setOpaque(true);
-            setMinimumSize(new Dimension(20, 80));
-            setPreferredSize(new Dimension(20, 80));
-        }
-
-        public void setUpperLimit(int limit) {
-            this.max = limit;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            graph.drawAxis(g, orientation, getSize());
+            super.paintComponent(g);
+            graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), upperLimit, getBackground());
         }
 
     }

@@ -65,6 +65,11 @@ public class FunctionRootNode extends AbstractNode {
     }
 
     @Override
+    public String getShortDescription() {
+        return object.getDescription();
+    }
+
+    @Override
     public String getHtmlDisplayName() {
         return object.getHtmlDisplayName();
     }

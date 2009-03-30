@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -240,6 +241,10 @@ public final class PatternAnalyser {
 
         // Analyze each method
         for ( ExecutableElement method : methods ) {            
+            if ( !method.getModifiers().contains(Modifier.PUBLIC) ) {
+                continue;
+            }
+
             String name = nameAsString(method);
             int len = name.length();
 

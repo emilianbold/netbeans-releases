@@ -583,6 +583,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 template.append("${php-cc-"); //NOI18N
                 template.append(Integer.toString(i));
                 template.append(" default=\""); // NOI18N
+                if (param.startsWith("&")) {//NOI18N
+                    param = param.substring(1);
+                }
                 template.append(param);
                 template.append("\"}"); //NOI18N
 
@@ -733,7 +736,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 template.append("${cursor};\n");//NOI18N
             } else {
                 String functionSignature = getFunction().getFunctionSignature();
-                template.append("${cursor}parent::"+ functionSignature +";\n");//NOI18N
+                template.append("${cursor}parent::"+ functionSignature.replace("&$", "$") +";\n");//NOI18N
             }
             return template.toString();
         }

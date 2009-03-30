@@ -38,14 +38,21 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  * Thread usage indicator
@@ -53,8 +60,12 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
  */
 public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
+    private final JButton b = new JButton("Repair...");//NOI18N
+    private JLabel label;
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private int lastLocks;
+    private int lastThreads;
 
     public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
@@ -76,15 +87,56 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> rows) {
-        int[][] values = new int[1][1];
         for (DataRow row : rows) {
-            for (String column : row.getColumnNames()) {
-                if (acceptedColumnNames.contains(column)) {
-                    String value = row.getStringValue(column); //TODO: change to Long
-                    values[0][0] = (int) Float.parseFloat(value);
-                    panel.updated(values);
-                }
+            String locks = row.getStringValue("locks"); // NOI18N
+            String threads = row.getStringValue("threads"); // NOI18N
+            if (locks != null && threads != null) {
+                lastLocks = (int) Float.parseFloat(locks);
+                lastThreads = Integer.parseInt(threads);
             }
+        }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastLocks, lastThreads);
+    }
+
+    @Override
+    protected void repairNeeded(boolean needed) {
+        if (needed) {
+            b.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            b.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            label =  new JLabel(getRepairActionProvider().getReason());
+            label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            label.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    DLightExecutorService.submit(new Callable<Boolean>() {
+
+                        public Boolean call() throws Exception {
+                            Boolean status = result.get();
+                            UIThread.invoke(new Runnable() {
+
+                                public void run() {
+                                    panel.getPanel().remove(b);
+                                    panel.getPanel().remove(label);
+                                }
+                            });
+                            return status.booleanValue();
+                        }
+                    }, "Click On Repair in Sync Indicator task");//NOI18N
+                }
+            });
+            panel.getPanel().add(b);
+            panel.getPanel().add(label);
+        } else {
+            //Remove here Button REpair
+            panel.getPanel().remove(b);
+            panel.getPanel().remove(label);
+            panel.getPanel().add(new JLabel(getRepairActionProvider().isValid() ? "Will show data on the next run" : "Invalid"));//NOI18N
         }
     }
 }
