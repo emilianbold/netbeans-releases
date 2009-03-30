@@ -1,7 +1,6 @@
 ||Codebase||Display name||Category
 |org.netbeans.modules.versioning.system.cvss|CVS|Base IDE
 |org.netbeans.modules.db.kit|Database|Base IDE
-|org.netbeans.modules.hudson|Hudson|Base IDE
 |org.netbeans.modules.ide.branding.kit|IDE Branding|Base IDE
 |org.netbeans.modules.ide.kit|IDE Platform|Base IDE
 |org.netbeans.modules.localhistory|Local History|Base IDE
@@ -20,16 +19,10 @@
 |org.netbeans.modules.maven.kit|Maven|Java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java
 |org.netbeans.modules.spring.beans|Spring Beans|Java
-|org.netbeans.modules.kenai.ui|Kenai UI|Kenai
-|org.netbeans.libs.bugzilla|Bugzilla Libraries|Libraries
 |org.netbeans.libs.commons_codec|Commons Codec Integration|Libraries
 |org.netbeans.modules.mobility.kit|Mobility|Mobility
 |org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility
-|org.netbeans.modules.bugtracking|Bugtracking|null
-|org.netbeans.modules.bugtracking.bridge|Bugtracking Bridge Module|null
-|org.netbeans.modules.bugzilla|Bugzilla|null
 |org.netbeans.modules.maven.search|Maven Quick Search Bridge|null
-|org.netbeans.modules.kenai.collab|Realtime Collaboration|null
 |org.netbeans.modules.php.kit|PHP|PHP
 |org.netbeans.modules.dlight.kit|D-Light|Profiling
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform
