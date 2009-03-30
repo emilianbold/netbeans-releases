@@ -605,6 +605,13 @@ public class CsmContextUtilities {
                 }
             }
         }
+        if (CsmKindUtilities.isVariable(context.getLastObject())) {
+            CsmVariable var = (CsmVariable) context.getLastObject();
+            CsmExpression initialValue = var.getInitialValue();
+            if (initialValue != null && CsmOffsetUtilities.isInObject(initialValue, offset)) {
+                return true;
+            }
+        }
         return false;
     }
 
