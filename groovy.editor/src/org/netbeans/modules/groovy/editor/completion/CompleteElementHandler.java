@@ -68,8 +68,19 @@ public final class CompleteElementHandler {
 
     private final ParserResult info;
 
+    private final GroovyIndex index;
+
     private CompleteElementHandler(ParserResult info) {
         this.info = info;
+
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (fo != null) {
+            // FIXME index is broken when invoked on start
+            this.index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                    Collections.singleton(ClassPath.SOURCE), null, null));
+        } else {
+            index = null;
+        }
     }
 
     public static CompleteElementHandler forCompilationInfo(ParserResult info) {
@@ -112,7 +123,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = definition.getNode();
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
+                .getMethods(index, typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
 
         fillSuggestions(groovyItems, result);
 
@@ -172,7 +183,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = definition.getNode();
 
         fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
-                .getFields(typeNode.getName(), prefix, anchor, leaf), result);
+                .getFields(index, typeNode.getName(), prefix, anchor, leaf), result);
 
         fillSuggestions(JavaElementHandler.forCompilationInfo(info)
                 .getFields(typeNode.getName(), prefix, anchor, leaf), result);
@@ -202,16 +213,6 @@ public final class CompleteElementHandler {
     }
 
     private ClassDefinition loadDefinition(ClassNode node) {
-        // FIXME index is broken when invoked on start
-        FileObject fo = info.getSnapshot().getSource().getFileObject();
-        if (fo == null) {
-            return new ClassDefinition(node, null);
-        }
-
-        // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null, null));
-
         if (index == null) {
             return new ClassDefinition(node, null);
         }
