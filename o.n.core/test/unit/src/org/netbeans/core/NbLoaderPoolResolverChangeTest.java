@@ -72,14 +72,14 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jaroslav Tulach
  */
 @RandomlyFails // not for me, but apparently on core builder
-public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements ChangeListener {
+public class NbLoaderPoolResolverChangeTest extends NbTestCase implements ChangeListener {
     private FileObject fo;
     private Lenka loader;
     private ManifestSection.LoaderSection ls;
     private int poolChange;
     private static ErrorManager err;
     
-    public LoaderPoolNodeResolverChangeTest(String testName) {
+    public NbLoaderPoolResolverChangeTest(String testName) {
         super(testName);
     }
 
@@ -101,7 +101,7 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
 
-        LoaderPoolNode.NbLoaderPool.IN_TEST = true; // allow it to fire changes w/o module system
+        NbLoaderPool.IN_TEST = true; // allow it to fire changes w/o module system
         DataLoaderPool.getDefault().addChangeListener(this);
         
         assertEquals("No change in pool during initialization", 0, poolChange);
@@ -115,13 +115,13 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
         at.putValue("OpenIDE-Module-Class", "Loader");
         String name = Lenka.class.getName().replace('.', '/') + ".class";
         ls = (ManifestSection.LoaderSection)ManifestSection.create(name, at, null);
-        LoaderPoolNode.add(ls);
+        NbLoaderPool.add(ls);
         
         loader = Lenka.getLoader(Lenka.class);
     }
     public static class MyLkp extends ProxyLookup {
         public MyLkp() {
-            this(LoaderPoolNodeResolverChangeTest.class.getClassLoader());
+            this(NbLoaderPoolResolverChangeTest.class.getClassLoader());
         }
         private MyLkp(ClassLoader l) {
             super(Lookups.fixed(new Repository(FileUtil.createMemoryFileSystem())), Lookups.metaInfServices(l), Lookups.singleton(l));
@@ -130,7 +130,7 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
 
     @Override
     protected void tearDown() throws Exception {
-        LoaderPoolNode.remove(loader);
+        NbLoaderPool.remove(loader);
     }
 
     public void testNewResolverShallInfluenceExistingDataObjects() throws Exception {
@@ -171,7 +171,7 @@ public class LoaderPoolNodeResolverChangeTest extends NbTestCase implements Chan
         err.log("Let's query the resolvers");
         
         err.log("Waiting till finished");
-        LoaderPoolNode.waitFinished();
+        NbLoaderPool.waitFinished();
         err.log("Waiting done, querying the data object");
         
         err.log("Clear the mime type cache in org.openide.filesystems.MIMESupport: " + fo.getFileSystem().getRoot().getMIMEType());

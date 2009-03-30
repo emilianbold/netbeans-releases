@@ -43,7 +43,6 @@ package org.netbeans.core;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -51,7 +50,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,15 +60,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.core.startup.ManifestSection;
-import org.openide.actions.MoveDownAction;
-import org.openide.actions.MoveUpAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.ReorderAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -79,42 +70,22 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
-import org.openide.loaders.InstanceSupport;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.BeanNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.util.io.NbObjectOutputStream;
+import org.openide.util.lookup.ServiceProvider;
 
-/** Node which represents loader pool and its content - all loaders
-* in the system. LoaderPoolNode also supports subnode reordering.<P>
-* LoaderPoolNode is singleton and that's why it can be obtained
-* only via call to static factory method getLoaderPoolNode().<P>
-* The same situation applies for NbLoaderPool inner class.
-* @author Dafe Simonek et al.
-*/
-public final class LoaderPoolNode extends AbstractNode {
-    /** The only instance of the LoaderPoolNode class in the system.
-    * This value is returned from the getLoaderPoolNode() static method */
-    private static LoaderPoolNode loaderPoolNode;
-    private static final Logger err =
-        Logger.getLogger("org.netbeans.core.LoaderPoolNode"); // NOI18N
-
-    private static LoaderChildren myChildren;
+@ServiceProvider(service=DataLoaderPool.class)
+public final class NbLoaderPool extends DataLoaderPool implements PropertyChangeListener, Runnable, LookupListener {
+    private static final Logger err = Logger.getLogger(NbLoaderPool.class.getName()); // NOI18N
 
     /** Array of DataLoader objects */
     private static List<DataLoader> loaders = new ArrayList<DataLoader> ();
@@ -141,40 +112,6 @@ public final class LoaderPoolNode extends AbstractNode {
     /** see above; true if at least one change */
     private static boolean updatingBatchUsed = false;
 
-    /** Just workaround, need to pass instance of
-    * the LoaderPoolNodeChildren as two params to superclass
-    */
-    private LoaderPoolNode () {
-        super (new LoaderChildren ());
-        
-        myChildren = (LoaderChildren)getChildren ();
-        
-        setName("LoaderPoolNode"); // NOI18N
-        setDisplayName(NbBundle.getMessage(LoaderPoolNode.class, "CTL_LoaderPool"));
-
-        getCookieSet ().add (new Index ());
-        getCookieSet ().add (new InstanceSupport.Instance (getNbLoaderPool ()));
-    }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (LoaderPoolNode.class);
-    }
-
-    /** Getter for set of actions that should be present in the
-    * popup menu of this node.
-    *
-    * @return array of system actions that should be in popup menu
-    */
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-                   SystemAction.get(ReorderAction.class),
-                   null,
-                   SystemAction.get(ToolsAction.class),
-                   SystemAction.get(PropertiesAction.class),
-               };
-
-    }
-    
     public static synchronized void beginUpdates() {
         updatingBatch = true;
         updatingBatchUsed = false;
@@ -351,10 +288,6 @@ public final class LoaderPoolNode extends AbstractNode {
         
         if (!modifiedLoaders.isEmpty()) {
             getNbLoaderPool().superFireChangeEvent();
-        }
-        
-        if (myChildren != null) {
-            myChildren.update ();
         }
     }
     
@@ -723,17 +656,6 @@ public final class LoaderPoolNode extends AbstractNode {
         return false;
     }
 
-    /** Returns the only instance of the loader pool node in our system.
-    * There's no other way to get an instance of this class,
-    * loader pool node is singleton.
-    * @return loader pool node instance
-    */
-    public static synchronized LoaderPoolNode getLoaderPoolNode () {
-        if (loaderPoolNode == null)
-            loaderPoolNode = new LoaderPoolNode();
-        return loaderPoolNode;
-    }
-
     /** Returns the only instance of the loader pool in our system.
     * There's no other way to get an instance of this class,
     * loader pool is singleton too.
@@ -747,134 +669,7 @@ public final class LoaderPoolNode extends AbstractNode {
     }
     private static NbLoaderPool nbLoaderPool = null;
 
-    /***** Inner classes **************/
 
-    /** Node representing one loader in Loader Pool */
-    private static class LoaderPoolItemNode extends BeanNode<DataLoader> {
-
-        /** true if a system loader */
-        boolean isSystem;
-
-        /**
-        * Constructs LoaderPoolItemNode for specified DataLoader.
-        *
-        * @param theBean bean for which we can construct BeanNode
-        * @param parent The parent of this node.
-        */
-        public LoaderPoolItemNode(DataLoader loader) throws IntrospectionException {
-            super(loader);
-            setSynchronizeName (false);
-            String displayName = getDisplayName();
-            setName(loader.getClass().getName());
-            isSystem = ! loaders.contains (loader);
-            if (isSystem) {
-                setDisplayName(NbBundle.getMessage(LoaderPoolNode.class, "LBL_system_data_loader", displayName));
-            } else {
-                setDisplayName(displayName);
-            }
-        }
-
-        /** Getter for set of actions that should be present in the
-        * popup menu of this node.
-        *
-        * @return array of system actions that should be in popup menu
-        */
-        public Action[] getActions(boolean context) {
-            if (isSystem)
-                return new Action[] {
-                           SystemAction.get(ToolsAction.class),
-                           SystemAction.get(PropertiesAction.class),
-                       };
-            else
-                return new Action[] {
-                           SystemAction.get(MoveUpAction.class),
-                           SystemAction.get(MoveDownAction.class),
-                           null,
-                           SystemAction.get(ToolsAction.class),
-                           SystemAction.get(PropertiesAction.class),
-                       };
-        }
-
-        /** @return true
-        */
-        public Action getPreferredAction() {
-            return SystemAction.get (PropertiesAction.class);
-        }
-
-        /** Cannot be deleted.
-         * Any deleted loaders would reappear after refresh anyway.
-        */
-        public boolean canDestroy () {
-            return false;
-        }
-
-        /** Cannot be copied
-        */
-        public boolean canCopy () {
-            return false;
-        }
-
-        /** Cannot be cut
-        */
-        public boolean canCut () {
-            return false;
-        }
-
-        public boolean canRename () {
-            return false;
-        }
-        
-        public HelpCtx getHelpCtx () {
-            HelpCtx help = super.getHelpCtx();
-            if (help == null || help.getHelpID() == null || help.getHelpID().equals(BeanNode.class.getName())) {
-                help = new HelpCtx (LoaderPoolItemNode.class);
-            }
-            return help;
-        }
-    } // end of LoaderPoolItemNode
-
-    /** Implementation of children for LoaderPool node in explorer.
-    * Extends Index.MapChildren implementation to map nodes to loaders and to support
-    * children reordering.
-    */
-    private static final class LoaderChildren extends Children.Keys<DataLoader>
-    implements ChangeListener {
-        public LoaderChildren () {
-            update ();
-            getNbLoaderPool().addChangeListener(this);
-        }
-
-        /** Update the the nodes */
-        public void update () {
-            setKeys(Collections.list(getNbLoaderPool().allLoaders()));
-        }
-
-        /** Creates new node for the loader.
-        */
-        protected Node[] createNodes(DataLoader loader) {
-            try {
-                return new Node[] {new LoaderPoolItemNode(loader)};
-            } catch (IntrospectionException e) {
-                err.log(Level.WARNING, null, e);
-                return new Node[] { };
-            }
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            update();
-        }
-
-    } // end of LoaderPoolChildren
-
-    /** Concrete implementation of and abstract DataLoaderPool
-    * (former CoronaLoaderPool).
-    * Being a singleton, this class is private and the only system instance
-    * can be obtained via LoaderPoolNode.getNbLoaderPool() call.
-    * Delegates its work to the outer class LoaderPoolNode.
-    */
-    @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.DataLoaderPool.class)
-    public static final class NbLoaderPool extends DataLoaderPool
-    implements PropertyChangeListener, Runnable, LookupListener {
         private static final long serialVersionUID =-8488524097175567566L;
         static boolean IN_TEST = false;
 
@@ -907,7 +702,7 @@ public final class LoaderPoolNode extends AbstractNode {
         }
 
         /** Enumerates all loaders. Loaders are taken from children
-        * structure of LoaderPoolNode. */
+        * structure of NbLoaderPool. */
         protected Enumeration<DataLoader> loaders () {
 
             //
@@ -915,7 +710,7 @@ public final class LoaderPoolNode extends AbstractNode {
             //
 
             DataLoader[] arr;
-            synchronized (LoaderPoolNode.class) {
+            synchronized (NbLoaderPool.class) {
                 if (loadersArray == null) {
                     List<DataLoader> ldrs = new ArrayList<DataLoader>(loaders);
                     // Since unit tests frequently add a bare DataLoader to default lookup:
@@ -966,14 +761,14 @@ public final class LoaderPoolNode extends AbstractNode {
         /** Write the object.
         */
         private void writeObject (ObjectOutputStream oos) throws IOException {
-            LoaderPoolNode.writePool (oos);
+            NbLoaderPool.writePool (oos);
         }
 
         /** Reads the object.
         */
         private void readObject (ObjectInputStream ois)
         throws IOException, ClassNotFoundException {
-            LoaderPoolNode.readPool (ois);
+            NbLoaderPool.readPool (ois);
         }
 
         /** Replaces the pool with default instance.
@@ -991,59 +786,5 @@ public final class LoaderPoolNode extends AbstractNode {
                 superFireChangeEvent();
             }
         }
-    } // end of NbLoaderPool
-
-    /** Index support for reordering of file system pool.
-    */
-    private final class Index extends org.openide.nodes.Index.Support {
-        
-        Index() {}
-        
-        /** Get the nodes; should be overridden if needed.
-        * @return the nodes
-        * @throws NotImplementedException always
-        */
-        public Node[] getNodes () {
-            Enumeration e = getChildren ().nodes ();
-            List<Node> l = new ArrayList<Node> ();
-            while (e.hasMoreElements ()) {
-                LoaderPoolItemNode node = (LoaderPoolItemNode) e.nextElement ();
-                if (! node.isSystem) l.add (node);
-            }
-            return l.toArray (new Node[l.size ()]);
-        }
-
-        /** Get the node count. Subclasses must provide this.
-        * @return the count
-        */
-        public int getNodesCount () {
-            return getNodes ().length;
-        }
-
-        /** Reorder by permutation. Subclasses must provide this.
-        * @param perm the permutation
-        */
-        public void reorder (int[] perm) {
-            synchronized (LoaderPoolNode.class) {
-                DataLoader[] arr = loaders.toArray (new DataLoader[loaders.size()]);
-
-                if (arr.length == perm.length) {
-                    DataLoader[] target = new DataLoader[arr.length];
-                    for (int i = 0; i < arr.length; i++) {
-                        if (target[perm[i]] != null) {
-                            throw new IllegalArgumentException ();
-                        }
-                        target[perm[i]] = arr[i];
-                    }
-
-                    loaders = new ArrayList<DataLoader> (Arrays.asList (target));
-                    update ();
-                } else {
-                    throw new IllegalArgumentException ();
-                }
-            }
-        }
-
-    } // End of Index
 
 }
