@@ -84,7 +84,7 @@ public final class ParametrizedTextParser {
             // Search for '${...}'
             // '$$' interpreted as '$'
             int dollarIndex = parametrizedText.indexOf('$', index);
-            if (dollarIndex != -1) { // found
+            if (dollarIndex != -1 && dollarIndex < parametrizedText.length() - 1) { // found
                 switch (parametrizedText.charAt(dollarIndex + 1)) { // test char after '$'
                     case '{': // parameter parsing
                         // Store preceding part into fragments

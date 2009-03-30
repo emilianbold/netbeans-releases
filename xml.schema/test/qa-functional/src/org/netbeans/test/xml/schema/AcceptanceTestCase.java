@@ -489,6 +489,9 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         // Press Finish button in wizard
         opWizard.finish();
+        // Wait progress
+        JDialogOperator jdApplyProgress = new JDialogOperator( "Applying Design Pattern" );
+        jdApplyProgress.waitClosed( );
         // Waiting till UI make all required background actions
         Helpers.waitNoEvent();
         // Getting schema view file tab

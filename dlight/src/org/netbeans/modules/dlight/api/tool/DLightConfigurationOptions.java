@@ -53,9 +53,9 @@ public interface DLightConfigurationOptions {
 
     boolean areCollectorsTurnedOn();
 
-    List<DataCollector> getCollectors(DLightTool tool);
+    List<DataCollector<?>> getCollectors(DLightTool tool);
     
-    List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool);
+    List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool);
 
     boolean validateToolsRequiredUserInteraction();
 }

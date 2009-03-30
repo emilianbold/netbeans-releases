@@ -107,7 +107,9 @@ public class StructureAnalyzer implements StructureScanner {
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            itemList.add(new GroovyStructureItem(e, info));
+            if (isVisible(e)) {
+                itemList.add(new GroovyStructureItem(e, info));
+            }
         }
 
         return itemList;
@@ -364,6 +366,16 @@ public class StructureAnalyzer implements StructureScanner {
         return null;
     }
 
+    private static boolean isVisible(AstElement element) {
+        // FIXME perhaps we should store synthetic atributte in AstElement
+        if ((element.getKind() == ElementKind.METHOD)) {
+            AstMethodElement method = (AstMethodElement) element;
+            ASTNode node = method.getNode();
+            return !(node instanceof MethodNode) || !((MethodNode) node).isSynthetic();
+        }
+        return true;
+    }
+
     public static final class AnalysisResult {
 
         private List<?extends AstElement> elements;
@@ -427,6 +439,8 @@ public class StructureAnalyzer implements StructureScanner {
 
                     formatter.parameters(false);
                     formatter.appendHtml(")");
+                } else {
+                    formatter.appendHtml("()");
                 }
             }
 
@@ -476,7 +490,9 @@ public class StructureAnalyzer implements StructureScanner {
                 // FIXME: the same old problem: AstElement != ElementHandle.
 
                 for (AstElement co : nested) {
-                    children.add(new GroovyStructureItem(co, info));
+                    if (isVisible(co)) {
+                        children.add(new GroovyStructureItem(co, info));
+                    }
                 }
 
                 return children;
@@ -541,6 +557,7 @@ public class StructureAnalyzer implements StructureScanner {
         public ImageIcon getCustomIcon() {
             return null;
         }
+
     }
 
 }

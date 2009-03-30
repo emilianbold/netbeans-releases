@@ -90,7 +90,7 @@ final class IconResource extends Resource {
             for (int y = 0; y < h; y++) {
                 int badgeColor = x < badge.getWidth() && y < badge.getHeight() ? badge.getRGB(x, y) : 0;
                 int mainColor = x < main.getWidth() && y < main.getHeight() ? main.getRGB(x, y) : 0;
-                int mergedColor = packARGB(overARGB(unpackARGB(badgeColor), unpackARGB(mainColor)));
+                int mergedColor = packARGB(overARGB(unpackARGB(badgeColor), unpackAGray(mainColor)));
                 result.setRGB(x, y, mergedColor);
             }
         }
@@ -101,6 +101,11 @@ final class IconResource extends Resource {
 //        System.err.println("result:");
 //        dump(result);
         return result;
+    }
+    private static int[] unpackAGray(int c) {
+        int[] res = unpackARGB(c);
+        int gray = (res[1] * 30 + res[2] * 59 + res[3] * 11) / 100;
+        return new int[] {res[0], gray, gray, gray};
     }
     private static int[] unpackARGB(int c) {
         return new int[] {(c >> 24) & 0xFF, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF};

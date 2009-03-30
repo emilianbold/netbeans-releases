@@ -77,13 +77,15 @@ class CategoryPanelGeneral extends StorablePanel {
         breakpointsSuspendComboBox = new javax.swing.JComboBox();
         stepsResumeComboBox = new javax.swing.JComboBox();
 
-        stopOnExceptionsCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stopOnExceptionsCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(stopOnExceptionsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stopOnExceptionsCheckBox.text")); // NOI18N
 
-        applyCodeChangesCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.applyCodeChangesCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(applyCodeChangesCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.applyCodeChangesCheckBox.text")); // NOI18N
 
-        breakpointsSuspendLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendLabel.text")); // NOI18N
+        breakpointsSuspendLabel.setLabelFor(breakpointsSuspendComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(breakpointsSuspendLabel, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendLabel.text")); // NOI18N
 
-        stepsResumeLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stepsResumeLabel.text")); // NOI18N
+        stepsResumeLabel.setLabelFor(stepsResumeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(stepsResumeLabel, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stepsResumeLabel.text")); // NOI18N
 
         breakpointsSuspendComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.allThreads"), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.breakpointThread"), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.noThread") }));
 

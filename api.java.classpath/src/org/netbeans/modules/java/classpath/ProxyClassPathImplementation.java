@@ -89,8 +89,11 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
         ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (classPaths.length*10);
         for (ClassPathImplementation cpImpl : classPaths) {
             List<? extends PathResourceImplementation> subPath = cpImpl.getResources();
-            assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " 
-                + cpImpl.getClass().toString() + " ClassPathImplementation: " + cpImpl.toString();
+            if (subPath == null)
+                throw new NullPointerException (
+                    "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: "
+                    + cpImpl.getClass ().toString () + " ClassPathImplementation: " + cpImpl.toString ()
+                );
             result.addAll (subPath);
         }
         

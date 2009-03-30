@@ -200,13 +200,13 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public final boolean fixFakeRegistration(boolean projectParsedMode) {
         boolean fixed = false;
-        FileImpl aFile = (FileImpl) getContainingFile();
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
                 for (CsmMember member : cls.getMembers()) {
                     if (member.isStatic() && member.getName().equals(getName())) {
+                        FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         RepositoryUtils.remove(getUID());
@@ -224,6 +224,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 while (it.hasNext()) {
                     CsmDeclaration decl = it.next();
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
+                        FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         RepositoryUtils.remove(getUID());
@@ -236,6 +237,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             }
             if (projectParsedMode) {
                 try {
+                    FileImpl aFile = (FileImpl) getContainingFile();
                     FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
@@ -254,7 +256,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         } else {
             CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
             if (!newQname.equals(qualifiedName)) {
-                ProjectBase aProject = aFile.getProjectImpl(true);
+                ProjectBase aProject = ((FileImpl)getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;
@@ -266,18 +268,20 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     private CsmNamespaceDefinition findNamespaceDefinition() {
-	return findNamespaceDefinition(getContainingFile().getDeclarations());
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(Kind.NAMESPACE_DEFINITION);
+        return findNamespaceDefinition(CsmSelect.getDeclarations(getContainingFile(), filter), filter);
     }
     
-    private CsmNamespaceDefinition findNamespaceDefinition(Collection<CsmOffsetableDeclaration> declarations) {
-        for (CsmOffsetableDeclaration decl : declarations) {
+    private CsmNamespaceDefinition findNamespaceDefinition(Iterator<CsmOffsetableDeclaration> it, CsmFilter filter) {
+        while(it.hasNext()) {
+            CsmOffsetableDeclaration decl = it.next();
             if (decl.getStartOffset() > this.getStartOffset()) {
                 break;
             }
             if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
                 if (this.getEndOffset() < decl.getEndOffset()) {
                     CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
-                    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
+                    CsmNamespaceDefinition inner = findNamespaceDefinition(CsmSelect.getDeclarations(nsdef, filter), filter);
                     return (inner == null) ? nsdef : inner;
                 }
             }

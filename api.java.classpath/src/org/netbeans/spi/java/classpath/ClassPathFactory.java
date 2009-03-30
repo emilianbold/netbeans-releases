@@ -42,6 +42,7 @@
 package org.netbeans.spi.java.classpath;
 
 import java.net.URL;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.openide.filesystems.FileUtil;
@@ -71,7 +72,13 @@ public final class ClassPathFactory {
     
     
     private static boolean checkEntries (ClassPathImplementation spiClasspath) {
-        for (PathResourceImplementation impl : spiClasspath.getResources()) {
+        List<? extends PathResourceImplementation> resources = spiClasspath.getResources();
+        if (resources == null)
+            throw new NullPointerException (
+                "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: "
+                + spiClasspath.getClass ().toString () + " ClassPathImplementation: " + spiClasspath.toString ()
+            );
+        for (PathResourceImplementation impl : resources) {
             URL[] roots = impl.getRoots();
             for (URL root : roots) {
                 if (FileUtil.isArchiveFile(root)) {
