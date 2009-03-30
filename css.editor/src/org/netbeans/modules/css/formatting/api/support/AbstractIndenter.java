@@ -464,13 +464,18 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     assert start == -1 : ""+l;
                     start = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
                 } else if (ic.getType() == IndentCommand.Type.BLOCK_END) {
-                    assert start != -1 : ""+l;
-                    int end = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
-                    // ignore blocks which do not have 1 and more lines in them
-                    if (end-start > 1) {
-                        blocks.add(new ForeignLanguageBlock(start, end));
+                    if (start == -1) {
+                        // perhaps file is being editted and BLOCK_START is simply missing
+                        // (you can simulate this by writing "<html> </style>"):
+                        // do nothing
+                    } else {
+                        int end = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
+                        // ignore blocks which do not have 1 and more lines in them
+                        if (end-start > 1) {
+                            blocks.add(new ForeignLanguageBlock(start, end));
+                        }
+                        start = -1;
                     }
-                    start = -1;
                 } else {
                     cmds.add(ic);
                 }
