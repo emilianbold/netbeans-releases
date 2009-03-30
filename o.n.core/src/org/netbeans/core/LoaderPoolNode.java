@@ -914,11 +914,15 @@ public final class LoaderPoolNode extends AbstractNode {
             // prevents from extensive copying
             //
 
-            DataLoader[] arr = loadersArray;
-            if (arr == null) {
-                synchronized (LoaderPoolNode.class) {
-                    arr = loadersArray = loaders.toArray (new DataLoader[loaders.size()]);
+            DataLoader[] arr;
+            synchronized (LoaderPoolNode.class) {
+                if (loadersArray == null) {
+                    List<DataLoader> ldrs = new ArrayList<DataLoader>(loaders);
+                    // Since unit tests frequently add a bare DataLoader to default lookup:
+                    ldrs.addAll(Lookup.getDefault().lookupAll(DataLoader.class));
+                    loadersArray = ldrs.toArray(new DataLoader[ldrs.size()]);
                 }
+                arr = loadersArray;
             }
             return org.openide.util.Enumerations.array (arr);
         }
