@@ -41,6 +41,7 @@
 package org.netbeans.modules.debugger.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
@@ -87,6 +88,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     private Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> closedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> usedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
+    private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
 
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
 
@@ -227,10 +229,16 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                     // For the first engine disable toolbar buttons for actions that are not provided
                                     c.setVisible(false);
                                     buttonsClosed.add(c);
+                                    toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
+                                    c.setPreferredSize(new Dimension(0, 0));
                                 }
                                 if (!isFirst && containsAction) {
                                     // For next engine enable toolbar buttons that could be previously disabled
                                     // and are used for actions that are provided.
+                                    Dimension d = toolbarButtonsPrefferedSize.remove(c);
+                                    if (d != null) {
+                                        c.setPreferredSize(d);
+                                    }
                                     c.setVisible(true);
                                 }
                                 if (containsAction) {
@@ -240,6 +248,8 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             }
                         }
                     }
+                    debugToolbar.revalidate();
+                    debugToolbar.repaint();
                 } finally {
                     synchronized (closedToolbarButtons) {
                         usedToolbarButtons.put(engine, buttonsUsed);
@@ -341,6 +351,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (!ToolbarPool.getDefault ().getConfiguration ().equals("Debugging")) {
                     return ;
                 }
+                final Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
                 if (!doCloseToolbar) {
                     // An engine is removed, but there remain others =>
                     // actions that remained enabled because of this are disabled unless needed by other engines.
@@ -356,17 +367,30 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             public void run () {
                                 for (Component c : buttonsToClose) {
                                     c.setVisible(false);
+                                    toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
+                                    c.setPreferredSize(new Dimension(0, 0));
                                 }
+                                debugToolbar.revalidate();
+                                debugToolbar.repaint();
                             }
                         });
                     }
                 } else {
-                    Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
-                    for (Component c : debugToolbar.getComponents()) {
-                        if (c instanceof AbstractButton) {
-                            c.setVisible(true);
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            for (Component c : debugToolbar.getComponents()) {
+                                if (c instanceof AbstractButton) {
+                                    Dimension d = toolbarButtonsPrefferedSize.remove(c);
+                                    if (d != null) {
+                                        c.setPreferredSize(d);
+                                    }
+                                    c.setVisible(true);
+                                }
+                            }
+                            debugToolbar.revalidate();
+                            debugToolbar.repaint();
                         }
-                    }
+                    });
                 }
             }
         }
