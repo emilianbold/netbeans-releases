@@ -57,6 +57,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Handle;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
@@ -88,6 +89,7 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
         add(view);
         setName(preferredID());
         setDisplayName(NbBundle.getMessage(ServicesTab.class, "LBL_Services"));
+        setIcon(ImageUtilities.loadImage("org/netbeans/core/ide/resources/services.gif", true));
     }
 
     private static final String ID = "services"; // NOI18N
