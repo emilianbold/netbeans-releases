@@ -67,7 +67,7 @@ public class CssAnalyser {
     private static final String INVALID_CONTENT = "invalid_content";
     
     public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
-        final ArrayList<Error> errors = new ArrayList();
+        final ArrayList<Error> errors = new ArrayList<Error>();
         final PropertyModel model = PropertyModel.instance();
         NodeVisitor visitor = new NodeVisitor() {
 

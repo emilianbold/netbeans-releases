@@ -156,7 +156,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // now go backward and find opening tag on the beginning of line:
         int foundOffset = -1;
         do {
-            Token tk = ts.token();
+            Token<T1> tk = ts.token();
             if (tk == null) {
                 break;
             }
@@ -261,7 +261,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         int balance = 0;
 
         while (tokenSequence.movePrevious()) {
-            Token tk = tokenSequence.token();
+            Token<T1> tk = tokenSequence.token();
             if (!isOpenTagNameToken(tk) && !isCloseTagNameToken(tk)) {
                 continue;
             }
@@ -376,7 +376,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset()) ||
                     ts.offset() <= context.getLineEndOffset()) ) {
 
-            Token<T1> token = (Token<T1>)ts.token();
+            Token<T1> token = ts.token();
             if (token == null || ts.embedded() != null) {
                 continue;
             }

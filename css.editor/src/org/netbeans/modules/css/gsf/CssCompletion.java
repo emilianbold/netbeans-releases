@@ -101,6 +101,8 @@ public class CssCompletion implements CodeCompletionHandler {
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
     
         TokenHierarchy th = snapshot.getTokenHierarchy();
+        
+        @SuppressWarnings("unchecked")
         TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
 
         assert ts != null;

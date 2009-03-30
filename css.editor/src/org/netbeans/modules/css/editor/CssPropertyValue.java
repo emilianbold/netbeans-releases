@@ -149,6 +149,7 @@ public class CssPropertyValue {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void consume() {
         fillStack(stack, text);
         originalStack = (Stack<String>) stack.clone();

@@ -192,6 +192,7 @@ public enum CssTokenId implements TokenId {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected LanguageEmbedding embedding(
                 Token<CssTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             if(token.text() == null) {

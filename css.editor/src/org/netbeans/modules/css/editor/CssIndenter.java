@@ -185,7 +185,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
         while (!context.isBlankLine() && ts.moveNext() &&
             ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset()) ||
                     ts.offset() <= context.getLineEndOffset()) ) {
-            Token<CssTokenId> token = (Token<CssTokenId>)ts.token();
+            Token<CssTokenId> token = ts.token();
             if (token == null || ts.embedded() != null) {
                 continue;
             }

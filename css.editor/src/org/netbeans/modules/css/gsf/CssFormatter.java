@@ -70,6 +70,7 @@ public class CssFormatter implements Formatter {
         reindent(context);
     }
 
+    @SuppressWarnings( "unchecked" )
     public void reindent(final Context context) {
         final BaseDocument bdoc = (BaseDocument) context.document();
 
