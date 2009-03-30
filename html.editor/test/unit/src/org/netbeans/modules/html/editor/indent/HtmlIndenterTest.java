@@ -260,6 +260,15 @@ public class HtmlIndenterTest extends TestBase2 {
             "<html>^<style>",
             "<html>\n    ^<style>", null);
 
+        // #161105
+        insertNewline(
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>^</td>",
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>\n                    ^\n                </td>", null);
+        // test that table within p does not get eliminated and if it does it is handled properly;
+        // there was a problem that eliminated p would try to close p tag at the end
+        insertNewline(
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text^",
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text\n                        ^", null);
     }
 
 }
