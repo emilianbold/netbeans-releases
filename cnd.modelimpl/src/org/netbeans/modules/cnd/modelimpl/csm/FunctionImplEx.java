@@ -268,18 +268,20 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     private CsmNamespaceDefinition findNamespaceDefinition() {
-	return findNamespaceDefinition(getContainingFile().getDeclarations());
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(Kind.NAMESPACE_DEFINITION);
+        return findNamespaceDefinition(CsmSelect.getDeclarations(getContainingFile(), filter), filter);
     }
     
-    private CsmNamespaceDefinition findNamespaceDefinition(Collection<CsmOffsetableDeclaration> declarations) {
-        for (CsmOffsetableDeclaration decl : declarations) {
+    private CsmNamespaceDefinition findNamespaceDefinition(Iterator<CsmOffsetableDeclaration> it, CsmFilter filter) {
+        while(it.hasNext()) {
+            CsmOffsetableDeclaration decl = it.next();
             if (decl.getStartOffset() > this.getStartOffset()) {
                 break;
             }
             if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
                 if (this.getEndOffset() < decl.getEndOffset()) {
                     CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
-                    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
+                    CsmNamespaceDefinition inner = findNamespaceDefinition(CsmSelect.getDeclarations(nsdef, filter), filter);
                     return (inner == null) ? nsdef : inner;
                 }
             }

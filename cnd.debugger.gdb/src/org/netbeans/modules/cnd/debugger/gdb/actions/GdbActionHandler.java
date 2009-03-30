@@ -71,7 +71,7 @@ public class GdbActionHandler implements ProjectActionHandler {
     public void execute(final InputOutput io) {
         GdbProfile profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
-            String gdb = profile.getGdbPath((MakeConfiguration)pae.getConfiguration(), true);
+            String gdb = profile.getGdbPath(pae.getConfiguration(), true);
             if (gdb != null) {
                 executionStarted();
                 if (pae.getType() == ProjectActionEvent.Type.DEBUG || pae.getType() == ProjectActionEvent.Type.DEBUG_STEPINTO) {
