@@ -62,7 +62,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  *
  * @author marekfukala
  */
-public class CSSCompletionTest extends TestBase {
+public class CssCompletionTest extends TestBase {
 
     private static String[] AT_RULES = new String[]{"@charset", "@import", "@media", "@page", "@font-face"};
 
@@ -70,8 +70,8 @@ public class CSSCompletionTest extends TestBase {
         EXACT, CONTAINS, EMPTY, NOT_EMPTY;
     }
 
-    public CSSCompletionTest() {
-        super(CSSCompletionTest.class.getName());
+    public CssCompletionTest() {
+        super(CssCompletionTest.class.getName());
     }
 
     public void checkCC(String documentText, final String[] expectedItemsNames) throws ParseException {

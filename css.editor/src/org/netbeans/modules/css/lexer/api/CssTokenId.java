@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.lexer.CSSLexer;
+import org.netbeans.modules.css.lexer.CssLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -62,7 +62,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author Marek Fukala
  */
-public enum CSSTokenId implements TokenId {
+public enum CssTokenId implements TokenId {
 
     /* Defined categories:
      * -------------------
@@ -166,19 +166,19 @@ public enum CSSTokenId implements TokenId {
 
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     
-    CSSTokenId(String primaryCategory) {
+    CssTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
-    private static final Language<CSSTokenId> language = new LanguageHierarchy<CSSTokenId>() {
+    private static final Language<CssTokenId> language = new LanguageHierarchy<CssTokenId>() {
 
         @Override
-        protected Collection<CSSTokenId> createTokenIds() {
-            return EnumSet.allOf(CSSTokenId.class);
+        protected Collection<CssTokenId> createTokenIds() {
+            return EnumSet.allOf(CssTokenId.class);
         }
 
         @Override
-        protected Map<String, Collection<CSSTokenId>> createTokenCategories() {
-            Map<String,Collection<CSSTokenId>> cats = new HashMap<String,Collection<CSSTokenId>>();
+        protected Map<String, Collection<CssTokenId>> createTokenCategories() {
+            Map<String,Collection<CssTokenId>> cats = new HashMap<String,Collection<CssTokenId>>();
             // Additional literals being a lexical error
             
             //TODO Add all tokens to some meaningful categories otherwise the options will look messy
@@ -187,13 +187,13 @@ public enum CSSTokenId implements TokenId {
         }
 
         @Override
-        protected Lexer<CSSTokenId> createLexer(LexerRestartInfo<CSSTokenId> info) {
-            return new CSSLexer(info);
+        protected Lexer<CssTokenId> createLexer(LexerRestartInfo<CssTokenId> info) {
+            return new CssLexer(info);
         }
 
         @Override
         protected LanguageEmbedding embedding(
-                Token<CSSTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                Token<CssTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             if(token.text() == null) {
                 return null;
             }
@@ -223,7 +223,7 @@ public enum CSSTokenId implements TokenId {
      *
      * @return non-null LanguageDescription
      */
-    public static Language<CSSTokenId> language() {
+    public static Language<CssTokenId> language() {
         return language;
     }
 

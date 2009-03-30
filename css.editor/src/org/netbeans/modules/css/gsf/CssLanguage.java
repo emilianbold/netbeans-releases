@@ -48,18 +48,18 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.gsf.CSSSemanticAnalyzer;
-import org.netbeans.modules.css.gsf.CSSStructureScanner;
+import org.netbeans.modules.css.gsf.CssSemanticAnalyzer;
+import org.netbeans.modules.css.gsf.CssStructureScanner;
 import org.netbeans.modules.css.gsf.CssCommentHandler;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * Configuration for CSS
  */
-public class CSSLanguage extends DefaultLanguageConfig {
+public class CssLanguage extends DefaultLanguageConfig {
     
-    public CSSLanguage() {
+    public CssLanguage() {
     }
 
     @Override
@@ -78,7 +78,7 @@ public class CSSLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language getLexerLanguage() {
-        return CSSTokenId.language();
+        return CssTokenId.language();
     }
 
     @Override
@@ -95,22 +95,22 @@ public class CSSLanguage extends DefaultLanguageConfig {
     
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
-        return new CSSSemanticAnalyzer();
+        return new CssSemanticAnalyzer();
     }
 
     @Override
     public Parser getParser() {
-        return new CSSGSFParser();
+        return new CssGSFParser();
     }
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new CSSStructureScanner();
+        return new CssStructureScanner();
     }
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-        return new CSSCompletion();
+        return new CssCompletion();
     }
 
     @Override

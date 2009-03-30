@@ -59,7 +59,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
  *
  * @author marek
  */
-public class CSSStructureScanner implements StructureScanner {
+public class CssStructureScanner implements StructureScanner {
 
     public List<? extends StructureItem> scan(final ParserResult info) {
 //         //so far the css parser always parses the whole css content
@@ -93,10 +93,10 @@ public class CSSStructureScanner implements StructureScanner {
         NodeVisitor rulesSearch = new NodeVisitor() {
 
             public void visit(SimpleNode node) {
-                if (node.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
+                if (node.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
                     //get parent - style rule
                     SimpleNode ruleNode = (SimpleNode) node.jjtGetParent();
-                    assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
+                    assert ruleNode.kind() == CssParserTreeConstants.JJTSTYLERULE;
                     int so = snapshot.getOriginalOffset(ruleNode.startOffset());
                     int eo = snapshot.getOriginalOffset(ruleNode.endOffset());
                     if (eo != so) {
@@ -104,14 +104,14 @@ public class CSSStructureScanner implements StructureScanner {
                         StringBuffer selectorsListText = new StringBuffer();
                         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                             SimpleNode n = (SimpleNode) node.jjtGetChild(i);
-                            if (n.kind() == CSSParserTreeConstants.JJTSELECTOR) {
+                            if (n.kind() == CssParserTreeConstants.JJTSELECTOR) {
                                 StringBuffer content = new StringBuffer();
                                 //found selector
                                 for (int j = 0; j < n.jjtGetNumChildren(); j++) {
                                     SimpleNode n2 = (SimpleNode) n.jjtGetChild(j);
                                     //append simpleselectors and combinators
-                                    if (n2.kind() == CSSParserTreeConstants.JJTSIMPLESELECTOR ||
-                                            n2.kind() == CSSParserTreeConstants.JJTCOMBINATOR) {
+                                    if (n2.kind() == CssParserTreeConstants.JJTSIMPLESELECTOR ||
+                                            n2.kind() == CssParserTreeConstants.JJTCOMBINATOR) {
                                         if (n2.image().trim().length() > 0) {
                                             try {
                                                 CharSequence nodeText = snapshot.getSource().createSnapshot().getText().subSequence(
@@ -189,12 +189,12 @@ public class CSSStructureScanner implements StructureScanner {
         NodeVisitor foldsSearch = new NodeVisitor() {
 
             public void visit(SimpleNode node) {
-                if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
                     int so = snapshot.getOriginalOffset(node.startOffset());
                     int eo = snapshot.getOriginalOffset(node.endOffset());
                     for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                         SimpleNode n = (SimpleNode) node.jjtGetChild(i);
-                        if (n.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
+                        if (n.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
                             // shift fold start to the end of rule name:
                             so = snapshot.getOriginalOffset(n.endOffset());
                             break;

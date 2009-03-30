@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.openide.util.Exceptions;
@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
  * 
  * @todo fix the section reformatting so it can reformat multiple embedded pieces of css
  */
-public class CSSFormatter implements Formatter {
+public class CssFormatter implements Formatter {
 
     public boolean needsParserResult() {
         return false;
@@ -94,7 +94,7 @@ public class CSSFormatter implements Formatter {
                     TokenHierarchy th = TokenHierarchy.get(bdoc);
 
                     for (LanguagePath languagePath : (Set<LanguagePath>) th.languagePaths()) {
-                        if (languagePath.innerLanguage() == CSSTokenId.language()) {
+                        if (languagePath.innerLanguage() == CssTokenId.language()) {
                             for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
                                 TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
 
@@ -115,8 +115,8 @@ public class CSSFormatter implements Formatter {
                                     ts.move(lineBegin);
                                     while (ts.movePrevious()) {
                                         Token t = ts.token();
-                                        if (t.id() == CSSTokenId.IDENT ||
-                                                t.id() == CSSTokenId.RBRACE) {
+                                        if (t.id() == CssTokenId.IDENT ||
+                                                t.id() == CssTokenId.RBRACE) {
                                             //we are on a line with css rule item e.g. color:red; 
                                             //where the property name is of IDENT token type
                                             //..or.. we are just after end of a rule ("}" token)
@@ -126,7 +126,7 @@ public class CSSFormatter implements Formatter {
                                             int indent = Utilities.getRowIndent(bdoc, t.offset(th));
                                             context.modifyIndent(lineBegin, indent);
                                             return;
-                                        } else if (t.id() == CSSTokenId.LBRACE) {
+                                        } else if (t.id() == CssTokenId.LBRACE) {
                                             // just rule beginning before current position - increase indent
                                             int indent = Utilities.getRowIndent(bdoc, t.offset(th));
 
@@ -173,11 +173,11 @@ public class CSSFormatter implements Formatter {
                                         int ident = -1;
                                         while (ts.moveNext() && ts.offset() < lEnd) {
                                             Token t = ts.token();
-                                            if (t.id() == CSSTokenId.LBRACE) {
+                                            if (t.id() == CssTokenId.LBRACE) {
                                                 ruleStart = ts.offset();
-                                            } else if (t.id() == CSSTokenId.RBRACE) {
+                                            } else if (t.id() == CssTokenId.RBRACE) {
                                                 ruleEnd = ts.offset();
-                                            } else if (t.id() == CSSTokenId.IDENT) {
+                                            } else if (t.id() == CssTokenId.IDENT) {
                                                 ident = ts.offset();
                                             }
                                         }
@@ -245,14 +245,14 @@ public class CSSFormatter implements Formatter {
         ts.move(offset);
         while (ts.movePrevious()) {
             Token t = ts.token();
-            if (t.id() == CSSTokenId.RBRACE) {
+            if (t.id() == CssTokenId.RBRACE) {
                 //we found } => we are out of a rule
                 return null;
-            } else if (t.id() == CSSTokenId.LBRACE) {
+            } else if (t.id() == CssTokenId.LBRACE) {
                 //we are in a rule -> find the end of the rule
                 while (ts.moveNext()) {
                     Token t2 = ts.token();
-                    if (t2.id() == CSSTokenId.RBRACE) {
+                    if (t2.id() == CssTokenId.RBRACE) {
                         //end of the rule
                         return new Token[]{t, t2};
                     }

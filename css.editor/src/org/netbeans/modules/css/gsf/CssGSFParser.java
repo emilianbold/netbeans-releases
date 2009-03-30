@@ -49,7 +49,7 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.css.parser.CSSParser;
+import org.netbeans.modules.css.parser.CssParser;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.Token;
@@ -66,15 +66,15 @@ import org.openide.util.NbBundle;
  *
  * @author Marek Fukala
  */
-public class CSSGSFParser extends Parser {
+public class CssGSFParser extends Parser {
 
-    private final CSSParser PARSER = new CSSParser();
+    private final CssParser PARSER = new CssParser();
     private CssParserResult lastResult = null;
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
     public static final String GENERATED_CODE = "@@@"; //NOI18N
-    private static final String ERROR_MESSAGE_PREFIX = NbBundle.getMessage(CSSGSFParser.class, "unexpected_symbols");
+    private static final String ERROR_MESSAGE_PREFIX = NbBundle.getMessage(CssGSFParser.class, "unexpected_symbols");
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) {

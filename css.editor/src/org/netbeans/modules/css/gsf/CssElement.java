@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,49 +36,60 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.gsf;
 
-import java.util.Map;
-import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.editor.Css;
+import org.openide.filesystems.FileObject;
 
-/**
- *
- * @author marek
- */
-public class CSSOccurancesFinder extends OccurrencesFinder {
 
-    public void setCaretPosition(int position) {
-        
+public class CssElement implements ElementHandle {
+
+    private String name;
+
+    CssElement(String name) {
+        this.name = name;
     }
 
-    public Map<OffsetRange, ColoringAttributes> getOccurrences() {
+    public String getName() {
+        return name;
+    }
+
+    public FileObject getFileObject() {
         return null;
     }
 
-    public void cancel() {
-        //ignore
+    public String getMimeType() {
+        return Css.CSS_MIME_TYPE;
     }
 
-
-    @Override
-    public void run(Result result, SchedulerEvent event) {
-        //do nothing
-    }
-
-    @Override
-    public int getPriority() {
-        return 100;
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
+    public String getIn() {
         return null;
+    }
+
+    public ElementKind getKind() {
+        //XXX I need to specify my own element types, not just the default ones!
+        return ElementKind.FIELD;
+    }
+
+    public Set<Modifier> getModifiers() {
+        //XXX modifiers are something java similar specific, should't it be more generic?
+        return Collections.emptySet();
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        //TODO implement
+        return false;
+    }
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null; //XXX: fix!!!!!!!!!!
     }
 
 }

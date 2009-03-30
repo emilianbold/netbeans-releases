@@ -41,7 +41,7 @@ package org.netbeans.modules.css.parser;
 
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 
 /**
  * @author  marek.fukala@sun.com
@@ -60,7 +60,7 @@ public class CssLexerTest extends TestBase {
 
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
-                CSSTokenId.language());
+                CssTokenId.language());
     }
 
 }

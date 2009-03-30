@@ -41,9 +41,9 @@
 package org.netbeans.modules.css.lexer;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.css.parser.CSSParserTokenManager;
-import org.netbeans.modules.css.parser.PatchedCSSParserTokenManager;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.parser.CssParserTokenManager;
+import org.netbeans.modules.css.parser.PatchedCssParserTokenManager;
 import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -55,28 +55,28 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @author Marek Fukala
  * @version 1.00
  */
-public final class CSSLexer implements Lexer<CSSTokenId> {
+public final class CssLexer implements Lexer<CssTokenId> {
 
     private int lexerState;
-    private final TokenFactory<CSSTokenId> tokenFactory;
-    private CSSParserTokenManager tokenManager;
-    private LexerRestartInfo<CSSTokenId> lexerRestartInfo;
+    private final TokenFactory<CssTokenId> tokenFactory;
+    private CssParserTokenManager tokenManager;
+    private LexerRestartInfo<CssTokenId> lexerRestartInfo;
 
     public Object state() {
         return lexerState;
     }
 
-    public CSSLexer(LexerRestartInfo<CSSTokenId> info) {
+    public CssLexer(LexerRestartInfo<CssTokenId> info) {
         this.lexerRestartInfo = info;
         if (info.state() != null) {
-            tokenManager = new PatchedCSSParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
+            tokenManager = new PatchedCssParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
         } else {
-            tokenManager = new PatchedCSSParserTokenManager(new LexerCharStream(info));
+            tokenManager = new PatchedCssParserTokenManager(new LexerCharStream(info));
         }
         this.tokenFactory = info.tokenFactory();
     }
 
-    public Token<CSSTokenId> nextToken() {
+    public Token<CssTokenId> nextToken() {
         org.netbeans.modules.css.parser.Token token = null;
         try {
 
@@ -109,7 +109,7 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
 
                 //return netbeans lexer's token based on the type of the obtained javacc token
                 //all info like the image and offset will be got from the lexer input
-                return tokenFactory.createToken(CSSTokenId.values()[array_index]);
+                return tokenFactory.createToken(CssTokenId.values()[array_index]);
             }
 
         } catch (TokenMgrError tme) {
@@ -119,7 +119,7 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
         //the token got from the javacc lexer has an empty text or a TME has been thrown
         if (lexerRestartInfo.input().readLength() > 0) {
             //there is something in the buffer, return it as unknown token
-            return tokenFactory.createToken(CSSTokenId.UNKNOWN);
+            return tokenFactory.createToken(CssTokenId.UNKNOWN);
         } else {
             //just EOF in the buffer, finish lexing
             return null;
@@ -160,14 +160,14 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
 //                }
 //                break;
 ////            case ISI_TEXT:
-////                return token(CSSTokenId.STYLE);
+////                return token(CssTokenId.STYLE);
 //
 //        }
 //
 //        return null;
     }
 
-//    private Token<CSSTokenId> token(CSSTokenId tokenId) {
+//    private Token<CssTokenId> token(CssTokenId tokenId) {
 //        if (input.readLength() == 0) {
 //            System.out.println("Found zero length token: ");
 //        }

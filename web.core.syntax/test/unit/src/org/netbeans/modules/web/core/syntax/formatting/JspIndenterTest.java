@@ -54,7 +54,7 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
@@ -110,7 +110,7 @@ public class JspIndenterTest extends TestBase2 {
         // init TestLanguageProvider
         assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
 
-        TestLanguageProvider.register(CSSTokenId.language());
+        TestLanguageProvider.register(CssTokenId.language());
         TestLanguageProvider.register(HTMLTokenId.language());
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());

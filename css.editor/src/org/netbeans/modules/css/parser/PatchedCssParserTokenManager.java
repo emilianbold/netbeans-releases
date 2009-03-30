@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.parser;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.Css;
-import org.openide.filesystems.FileObject;
+public class PatchedCssParserTokenManager extends CssParserTokenManager {
 
-
-public class CSSElement implements ElementHandle {
-
-    private String name;
-
-    CSSElement(String name) {
-        this.name = name;
+    public PatchedCssParserTokenManager(CharStream stream) {
+        super(stream);
     }
 
-    public String getName() {
-        return name;
+    public PatchedCssParserTokenManager(CharStream stream, int lexState) {
+        super(stream, lexState);
     }
 
-    public FileObject getFileObject() {
-        return null;
-    }
-
-    public String getMimeType() {
-        return Css.CSS_MIME_TYPE;
-    }
-
-    public String getIn() {
-        return null;
-    }
-
-    public ElementKind getKind() {
-        //XXX I need to specify my own element types, not just the default ones!
-        return ElementKind.FIELD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        //XXX modifiers are something java similar specific, should't it be more generic?
-        return Collections.emptySet();
-    }
-
-    public boolean signatureEquals(ElementHandle handle) {
-        //TODO implement
-        return false;
-    }
-
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return null; //XXX: fix!!!!!!!!!!
+    @Override
+    protected Token jjFillToken() {
+        Token t = super.jjFillToken();
+        // initialize offset attribute (introduced in NetBeans)
+        t.offset = input_stream.offset();
+        return t;
     }
 
 }

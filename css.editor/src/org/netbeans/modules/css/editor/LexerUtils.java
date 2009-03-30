@@ -42,7 +42,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 
 /**
  *
@@ -96,7 +96,7 @@ public class LexerUtils {
         List<TokenSequence> tsl = hi.embeddedTokenSequences(offset, backwardBias);
         if (tsl.size() > 0) {
             TokenSequence ts = tsl.get(tsl.size() - 1);
-            if (ts.language() != CSSTokenId.language()) {
+            if (ts.language() != CssTokenId.language()) {
                 return null;
             } else {
                 return ts;

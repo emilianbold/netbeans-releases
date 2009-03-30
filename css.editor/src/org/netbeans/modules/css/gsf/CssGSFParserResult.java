@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author marek
  */
-public class CSSGSFParserResult extends ParserResult {
+public class CssGSFParserResult extends ParserResult {
 
     private SimpleNode root;
     private Snapshot snapshot;
@@ -60,7 +60,7 @@ public class CSSGSFParserResult extends ParserResult {
 //    private Phase currentPhase;
     private CssModel model;
     
-    CSSGSFParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
+    CssGSFParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
         super(snapshot);
         this.snapshot = snapshot;
         this.root = root;

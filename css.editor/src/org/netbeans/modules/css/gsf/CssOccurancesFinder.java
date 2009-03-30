@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,29 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.parser;
 
-public class PatchedCSSParserTokenManager extends CSSParserTokenManager {
+package org.netbeans.modules.css.gsf;
 
-    public PatchedCSSParserTokenManager(CharStream stream) {
-        super(stream);
+import java.util.Map;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+
+/**
+ *
+ * @author marek
+ */
+public class CssOccurancesFinder extends OccurrencesFinder {
+
+    public void setCaretPosition(int position) {
+        
     }
 
-    public PatchedCSSParserTokenManager(CharStream stream, int lexState) {
-        super(stream, lexState);
+    public Map<OffsetRange, ColoringAttributes> getOccurrences() {
+        return null;
+    }
+
+    public void cancel() {
+        //ignore
+    }
+
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
+        //do nothing
     }
 
     @Override
-    protected Token jjFillToken() {
-        Token t = super.jjFillToken();
-        // initialize offset attribute (introduced in NetBeans)
-        t.offset = input_stream.offset();
-        return t;
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return null;
     }
 
 }

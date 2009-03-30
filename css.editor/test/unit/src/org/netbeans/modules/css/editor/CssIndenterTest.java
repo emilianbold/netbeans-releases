@@ -51,7 +51,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
@@ -63,9 +63,9 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
-public class CSSIndenterTest extends TestBase {
+public class CssIndenterTest extends TestBase {
 
-    public CSSIndenterTest(String name) {
+    public CssIndenterTest(String name) {
         super(name);
     }
 
@@ -76,7 +76,7 @@ public class CSSIndenterTest extends TestBase {
         AbstractIndenter.inUnitTestRun = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();

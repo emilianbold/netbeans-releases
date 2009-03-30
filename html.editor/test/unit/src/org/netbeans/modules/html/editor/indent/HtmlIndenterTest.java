@@ -50,7 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.test.TestBase2;
 import org.netbeans.modules.java.source.save.Reformatter;
@@ -73,7 +73,7 @@ public class HtmlIndenterTest extends TestBase2 {
         AbstractIndenter.inUnitTestRun = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();

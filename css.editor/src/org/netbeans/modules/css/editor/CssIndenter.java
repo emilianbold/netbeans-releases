@@ -52,16 +52,16 @@ import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.css.formatting.api.support.IndentCommand;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
 
-public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
+public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     private Stack<CssStackItem> stack = null;
     private int preservedLineIndentation = -1;
 
-    public CSSIndenter(Context context) {
-        super(CSSTokenId.language(), context);
+    public CssIndenter(Context context) {
+        super(CssTokenId.language(), context);
     }
 
     private Stack<CssStackItem> getStack() {
@@ -69,14 +69,14 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected boolean isWhiteSpaceToken(Token<CSSTokenId> token) {
+    protected boolean isWhiteSpaceToken(Token<CssTokenId> token) {
         String text = token.text().toString().trim();
-        return token.id() == CSSTokenId.S && !text.startsWith("/*") && !text.endsWith("*/");
+        return token.id() == CssTokenId.S && !text.startsWith("/*") && !text.endsWith("*/");
     }
 
-    private boolean isCommentToken(Token<CSSTokenId> token) {
+    private boolean isCommentToken(Token<CssTokenId> token) {
         String text = token.text().toString().trim();
-        return token.id() == CSSTokenId.S && text.startsWith("/*") && text.endsWith("*/");
+        return token.id() == CssTokenId.S && text.startsWith("/*") && text.endsWith("*/");
     }
 
     @Override
@@ -85,7 +85,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected int getFormatStableStart(JoinedTokenSequence<CSSTokenId> ts, int startOffset, int endOffset,
+    protected int getFormatStableStart(JoinedTokenSequence<CssTokenId> ts, int startOffset, int endOffset,
             AbstractIndenter.OffsetRanges rangesToIgnore) {
         ts.move(startOffset);
 
@@ -95,21 +95,21 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
         // Look backwards to find a suitable context - beginning of a rule
         do {
-            Token<CSSTokenId> token = ts.token();
+            Token<CssTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (id == CSSTokenId.IDENT) {
+            if (id == CssTokenId.IDENT) {
                 int index = ts.index();
                 ts.moveNext();
-                Token tk = LexUtilities.findNext(ts, Arrays.asList(CSSTokenId.S));
+                Token tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
                 ts.moveIndex(index);
                 ts.moveNext();
-                if (tk != null && tk.id() == CSSTokenId.LBRACE) {
+                if (tk != null && tk.id() == CssTokenId.LBRACE) {
                     if (ts.movePrevious()) {
-                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CSSTokenId.S, CSSTokenId.IDENT));
+                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CssTokenId.S, CssTokenId.IDENT));
                         if (tk != null) {
                             ts.moveNext();
-                            tk = LexUtilities.findNext(ts, Arrays.asList(CSSTokenId.S));
+                            tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
                         }
                     }
                     return ts.offset();
@@ -170,13 +170,13 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected List<IndentCommand> getLineIndent(IndenterContextData<CSSTokenId> context,
+    protected List<IndentCommand> getLineIndent(IndenterContextData<CssTokenId> context,
             List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
         Stack<CssStackItem> blockStack = getStack();
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
 
-        JoinedTokenSequence<CSSTokenId> ts = context.getJoinedTokenSequences();
+        JoinedTokenSequence<CssTokenId> ts = context.getJoinedTokenSequences();
         ts.move(context.getLineStartOffset());
 
         boolean ruleWasDefined = false;
@@ -185,18 +185,18 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
         while (!context.isBlankLine() && ts.moveNext() &&
             ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset()) ||
                     ts.offset() <= context.getLineEndOffset()) ) {
-            Token<CSSTokenId> token = (Token<CSSTokenId>)ts.token();
+            Token<CssTokenId> token = (Token<CssTokenId>)ts.token();
             if (token == null || ts.embedded() != null) {
                 continue;
             }
 
-            if (lastLBrace != -1 && token.id() != CSSTokenId.S) {
+            if (lastLBrace != -1 && token.id() != CssTokenId.S) {
                 CssStackItem state = blockStack.peek();
                 assert state.state == StackItemState.IN_RULE;
                 state.indent = ts.offset() - context.getLineNonWhiteStartOffset();
                 lastLBrace = -1;
             }
-            if (token.id() == CSSTokenId.LBRACE) {
+            if (token.id() == CssTokenId.LBRACE) {
                 if (!isInState(blockStack, StackItemState.IN_RULE)) {
                     CssStackItem state = new CssStackItem(StackItemState.IN_RULE);
                     lastLBrace = ts.offset();
@@ -204,16 +204,16 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     blockStack.push(state);
                     ruleWasDefined = true;
                 }
-            } else if (token.id() == CSSTokenId.COLON) {
+            } else if (token.id() == CssTokenId.COLON) {
                 if (!isInState(blockStack, StackItemState.IN_VALUE) && isInState(blockStack, StackItemState.IN_RULE)) {
                     blockStack.push(new CssStackItem(StackItemState.IN_VALUE));
                 }
-            } else if (token.id() == CSSTokenId.SEMICOLON) {
+            } else if (token.id() == CssTokenId.SEMICOLON) {
                 if (isInState(blockStack, StackItemState.IN_VALUE)) {
                     CssStackItem item = blockStack.pop();
                     assert item.state == StackItemState.IN_VALUE;
                 }
-            } else if (token.id() == CSSTokenId.RBRACE) {
+            } else if (token.id() == CssTokenId.RBRACE) {
                 if (isInState(blockStack, StackItemState.IN_RULE)) {
                     CssStackItem item = blockStack.pop();
                     if (item.state == StackItemState.IN_VALUE) {

@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,7 +60,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  *
  * @author marek
  */
-public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
+public class CssSemanticAnalyzer extends  SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -107,7 +107,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
             //be changed to something more meaningful
             
             public void visit(SimpleNode node) {
-                if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
+                if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME || node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTPSEUDO || node.kind() == CssParserTreeConstants.JJTHASH || node.kind() == CssParserTreeConstants.JJTATTRIB) {
                     int dso = snapshot.getOriginalOffset(node.startOffset());
                     int deo =snapshot.getOriginalOffset(node.endOffset());
                     //filter out generated and inlined style definitions - they have just virtual selector which
@@ -116,7 +116,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
                         OffsetRange range = new OffsetRange(dso, deo);
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
-                } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
+                } else if (node.kind() == CssParserTreeConstants.JJTPROPERTY) {
                     int dso = snapshot.getOriginalOffset(node.startOffset());
                     int deo =snapshot.getOriginalOffset(node.endOffset());
 
@@ -125,7 +125,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
                         OffsetRange range = new OffsetRange(dso, deo);
 
                         String propertyName = node.image().trim();
-                        if(CSSGSFParser.containsGeneratedCode(propertyName)) {
+                        if(CssGSFParser.containsGeneratedCode(propertyName)) {
                             return;
                         }
                         

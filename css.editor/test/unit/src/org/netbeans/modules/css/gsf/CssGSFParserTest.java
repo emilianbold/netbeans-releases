@@ -56,10 +56,10 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  *
  * @author marekfukala
  */
-public class CSSGSFParserTest extends TestBase {
+public class CssGSFParserTest extends TestBase {
 
-    public CSSGSFParserTest() {
-        super(CSSGSFParserTest.class.getName());
+    public CssGSFParserTest() {
+        super(CssGSFParserTest.class.getName());
     }
 
     //issue #160780
