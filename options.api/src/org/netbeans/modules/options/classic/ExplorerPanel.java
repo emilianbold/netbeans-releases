@@ -39,31 +39,38 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.modules.options.classic;
 
-import org.netbeans.junit.NbTestCase;
-import org.openide.loaders.DataFolder;
+import javax.swing.ActionMap;
+import javax.swing.JPanel;
+import javax.swing.text.DefaultEditorKit;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 
-/**
- * Tests NbPlaces.
- * @author Peter Zavadsky
+/** Common panel to be used in core beaninfo and editors.
  */
-public class NbPlacesTest extends NbTestCase {
+public class ExplorerPanel extends JPanel implements ExplorerManager.Provider {
+    private ExplorerManager manager = new ExplorerManager();
 
-    public NbPlacesTest(String name) {
-        super(name);
+    public ExplorerPanel() {
+        manager = new ExplorerManager();
+        ActionMap map = getActionMap();
+        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true));
     }
-    
-    public void testFindSessionFolder() throws Exception {
-        
-        DataFolder a = NbPlaces.findSessionFolder("A");
-        assertNotNull("\"A\" session folder not created", a);
-        
-        DataFolder bc = NbPlaces.findSessionFolder("B/C");
-        assertNotNull("\"B/C\" session folder not created", bc);
-        
-        DataFolder def = NbPlaces.findSessionFolder("D/E/F");
-        assertNotNull("\"D/E/F\" session folder not created", def);
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
-    
+    public void addNotify() {
+        super.addNotify();
+        ExplorerUtils.activateActions(manager, true);
+    }
+    public void removeNotify() {
+        ExplorerUtils.activateActions(manager, false);
+        super.removeNotify();
+    }
 }
+

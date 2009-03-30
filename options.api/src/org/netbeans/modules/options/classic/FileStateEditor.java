@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.projects;
+package org.netbeans.modules.options.classic;
 
 import org.netbeans.beaninfo.editors.ListImageEditor;
 import org.openide.util.NbBundle;
@@ -48,7 +48,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.netbeans.core.projects.SettingChildren.FileStateProperty;
+import org.netbeans.modules.options.classic.SettingChildren.FileStateProperty;
 
 /**
  *

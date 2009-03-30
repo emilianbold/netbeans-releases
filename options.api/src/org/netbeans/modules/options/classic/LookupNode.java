@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.ui;
+package org.netbeans.modules.options.classic;
 
 import javax.swing.Action;
 import org.openide.actions.FileSystemAction;

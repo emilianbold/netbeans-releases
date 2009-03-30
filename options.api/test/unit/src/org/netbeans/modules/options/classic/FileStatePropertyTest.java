@@ -39,13 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.projects;
+package org.netbeans.modules.options.classic;
 
 import java.lang.reflect.Modifier;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.netbeans.core.projects.SettingChildren;
-import org.netbeans.core.projects.SettingChildren.FileStateProperty;
+import org.netbeans.junit.AssertionFailedErrorException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.options.classic.SettingChildren.FileStateProperty;
 
 /**
  *

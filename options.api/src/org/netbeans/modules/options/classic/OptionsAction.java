@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.actions;
+package org.netbeans.modules.options.classic;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -53,7 +53,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ObjectStreamException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -68,18 +67,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.JTableHeader;
-import org.netbeans.core.NbMainExplorer;
-import org.netbeans.core.NbPlaces;
-import org.netbeans.core.NbTopManager;
-import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
-import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.explorer.view.TreeTableView;
@@ -92,10 +85,8 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.windows.TopComponent;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -203,18 +194,8 @@ public class OptionsAction extends CallableSystemAction {
 
         private OptionsPanel () {
             validateRootContext ();
-            // show only name of top component is typical case
-            putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
-            // Show without tab when alone in container cell.
-            putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
             
             getExplorerManager().addPropertyChangeListener(this);
-        }
-        
-        /** Overriden to explicitely set persistence type of OptionsPanel
-         * to PERSISTENCE_ALWAYS */
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ALWAYS;
         }
         
         protected String preferredID () {
@@ -354,8 +335,8 @@ public class OptionsAction extends CallableSystemAction {
         }
 
 
-        protected void componentShowing () {
-            super.componentShowing ();
+        public @Override void addNotify() {
+            super.addNotify();
             if (!expanded) {
                 ((TTW)view).expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());                
                 expanded = true;
@@ -368,18 +349,6 @@ public class OptionsAction extends CallableSystemAction {
         protected void validateRootContext () {
             Node n = initRC ();
             setRootContext (n);
-        }
-        
-        /** Resolves to the singleton instance of options panel. */
-        public Object readResolve ()
-        throws ObjectStreamException {
-            if (singleton == null) {
-                singleton = this;
-            }
-            singleton.scheduleValidation();
-            // set deserialized root node
-            rootNode = getRootContext ();
-            return singleton;
         }
         
         private synchronized Node initRC () {

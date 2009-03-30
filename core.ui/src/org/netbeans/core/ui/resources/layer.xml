@@ -72,7 +72,6 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
-            <file name="org-netbeans-core-actions-OptionsAction.instance"/>
             <file name="org-openide-actions-InstantiateAction.instance"/>
             <file name="org-openide-actions-MoveDownAction.instance"/>
             <file name="org-openide-actions-MoveUpAction.instance"/>
@@ -251,7 +250,6 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1300"/>
             </file>
-            <file name="org-netbeans-core-actions-OptionsAction.instance"/>
         </folder>
 
         <folder name="Window">
