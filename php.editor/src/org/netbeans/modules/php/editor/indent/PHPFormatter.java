@@ -804,7 +804,7 @@ public class PHPFormatter implements Formatter {
 
                                 if (lineDelta != null) {
                                     currentIndent += lineDelta;
-                                    assert currentIndent >= 0;
+                                    assert currentIndent >= 0 : "currentIndent < 0";
                                 }
 
                                 if (i == firstLine) {
