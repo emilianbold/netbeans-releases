@@ -47,22 +47,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -77,12 +69,8 @@ public class TaskManagerImpl extends TaskManager {
     
     public static final String PROP_FILTER = "filter"; //NOI18N
     
-    public static final String PROP_WORKING_STATUS = "workingStatus"; //NOI18N
-    
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
-    private FileScanningWorker worker;
-    private TaskCache taskCache = new TaskCache();
     private TaskList taskList = new TaskList();
     private TaskScanningScope scope = Accessor.getEmptyScope();
     private TaskFilter filter = TaskFilter.EMPTY;
@@ -91,7 +79,8 @@ public class TaskManagerImpl extends TaskManager {
     
     private final Set<PushTaskScanner> workingScanners = new HashSet<PushTaskScanner>(10);
     private boolean fileScannerWorking = false;
-    private boolean workingStatus = false;
+
+    private Loader loader;
 
     public static TaskManagerImpl getInstance() {
         if( null == theInstance )
@@ -114,9 +103,7 @@ public class TaskManagerImpl extends TaskManager {
             if( null == newScope || Accessor.getEmptyScope().equals( newScope ) ) {
                 scope.attach( null );
                 //turn off
-                stopWorker();
-                //stop listening to file system events
-                listenToFileSystemChanges( scope, false );
+                stopLoading();
                 
                 workingScanners.clear();
                 fileScannerWorking = false;
@@ -132,9 +119,6 @@ public class TaskManagerImpl extends TaskManager {
                 filter = TaskFilter.EMPTY;
 
                 taskList.clear();
-                taskCache.clear();
-                
-                setWorkingStatus( false );
             } else {
                 //turn on or switch scope/filter
                 if( null == newFilter )
@@ -152,23 +136,13 @@ public class TaskManagerImpl extends TaskManager {
                     workingScanners.clear();
                     fileScannerWorking = false;
                 
-                    setWorkingStatus( false );
-
                     scope = newScope;
                     filter = newFilter;
                     
-                    attachFileScanners( newFilter, filter );
-                    attachPushScanners( newScope, newFilter, filter );
+                    attachFileScanners( newFilter );
+                    attachPushScanners( newScope, newFilter );
 
-                    //start listening to file system events
-                    listenToFileSystemChanges( scope, true );
-
-                    startWorker();
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            worker.scan( scope.iterator(), filter );
-                        }
-                    });
+                    startLoading();
                 }
             }
         }
@@ -176,7 +150,7 @@ public class TaskManagerImpl extends TaskManager {
         propertySupport.firePropertyChange( PROP_FILTER, oldFilter, newFilter );
     }
     
-    private void attachFileScanners( TaskFilter newFilter, TaskFilter oldFilter ) {
+    private void attachFileScanners( TaskFilter newFilter ) {
         for( FileTaskScanner scanner : getFileScanners() ) {
             if( !newFilter.isEnabled( scanner ) )
                 scanner.attach( null );
@@ -185,7 +159,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
     
-    private void attachPushScanners( TaskScanningScope newScope, TaskFilter newFilter, TaskFilter oldFilter ) {
+    private void attachPushScanners( TaskScanningScope newScope, TaskFilter newFilter ) {
         for( PushTaskScanner scanner : getPushScanners() ) {
             if( !newFilter.isEnabled( scanner ) ){
                 scanner.setScope( null, null );
@@ -201,27 +175,6 @@ public class TaskManagerImpl extends TaskManager {
     
     Iterable<? extends PushTaskScanner> getPushScanners() {
         return ScannerList.getPushScannerList().getScanners();
-    }
-    
-    public void abort() {
-        RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                doAbort();
-            }
-        });
-    }
-    
-    private void doAbort() {
-        if( null != worker )
-            worker.abort();
-        
-        for( PushTaskScanner scanner : ScannerList.getPushScannerList().getScanners() ) {
-            scanner.setScope( null, null );
-        }
-        
-        workingScanners.clear();
-        fileScannerWorking = false;
-        setWorkingStatus( false );
     }
     
     boolean isObserved() {
@@ -252,111 +205,18 @@ public class TaskManagerImpl extends TaskManager {
         propertySupport.removePropertyChangeListener( propName, listener );
     }
     
-    private void startWorker() {
-        if( null == worker ) {
-            worker = new FileScanningWorker( taskCache, taskList, filter, new FileScannerProgress() );
-            RequestProcessor.getDefault().post( worker );
-        }
+    private void startLoading() {
+        if( null != loader )
+            loader.cancel();
+
+        loader = new Loader( scope, filter, taskList );
+        RequestProcessor.getDefault().post(loader);
     }
     
-    private void stopWorker() {
-        if( null != worker ) {
-            worker.kill();
-            worker = null;
-        }
-    }
-    
-    private void maybeScanResource( final FileObject rc, final boolean clearCache ) {
-        RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                if( isObserved() && scope.isInScope( rc ) ) {
-                    synchronized( TaskManagerImpl.this ) {
-                        if( clearCache ) {
-                            taskCache.clear( rc );
-                            taskList.clear( rc );
-                        }
-                        
-                        startWorker();
-                        worker.priorityScan( rc );
-                    }
-                }
-            }
-        });
-    }
-    
-    private FileChangeListener fileListener = null;
-    private FileChangeListener getFileChangeListener() {
-        if( null == fileListener ) {
-            fileListener = new FileChangeListener() {
-
-                public void fileFolderCreated(FileEvent fe) {
-                    maybeScanResource( fe.getFile(), false );
-                }
-
-                public void fileDataCreated(FileEvent fe) {
-                    maybeScanResource( fe.getFile(), false );
-                }
-
-                public void fileChanged(FileEvent fe) {
-                    FileObject rc = fe.getFile();
-                    
-                    maybeScanResource( rc, true );
-                }
-
-                public void fileDeleted(final FileEvent fe) {
-                    RequestProcessor.getDefault().post( new Runnable() {
-                        public void run() {
-                            synchronized( TaskManagerImpl.this ) {
-                                FileObject rc = fe.getFile();
-                                taskCache.clear( rc );
-                                taskList.clear( rc );
-                            }
-                        }
-                    });
-                }
-
-                public void fileRenamed(FileRenameEvent fe) {
-                    //TODO rename in current model and in cache instead of rescan??
-                    maybeScanResource( fe.getFile(), false );
-                }
-
-                public void fileAttributeChanged(FileAttributeEvent fe) {
-                    //ignore
-                }
-            };
-        }
-        return fileListener;
-    }
-    
-    private void listenToFileSystemChanges( final TaskScanningScope scanningScope,  final boolean addListener ) {
-        FileSystem fs = getFileSystem( scanningScope );
-        if( null != fs ) {
-            if( addListener ) {
-                fs.addFileChangeListener( getFileChangeListener() );
-            } else {
-                if( null != fileListener ) {
-                    fs.removeFileChangeListener( getFileChangeListener() );
-                    fileListener = null;
-                }
-            }
-        }
-    }
-    
-    private FileSystem getFileSystem( TaskScanningScope scanningScope ) {
-        if( null != scanningScope ) {
-            Iterator<FileObject> resources = scanningScope.iterator();
-            if( resources.hasNext() ) {
-                try {
-                    FileObject rc = resources.next();
-                    if( null != rc )
-                        return rc.getFileSystem();
-                }
-                catch( FileStateInvalidException fsiE ) {
-                    getLogger().log( Level.WARNING, fsiE.getMessage(), fsiE );
-                }
-            }
-        }
-        return null;
+    private void stopLoading() {
+        if( null != loader )
+            loader.cancel();
+        loader = null;
     }
     
     public TaskFilter getFilter() {
@@ -365,8 +225,8 @@ public class TaskManagerImpl extends TaskManager {
 
     public void refresh( final FileTaskScanner scanner, final FileObject... resources) {
         synchronized( this ) {
-            taskCache.clear( scanner, resources );
             taskList.clear( scanner, resources );
+            //TODO clear index cache
             if( isObserved() && isEnabled( scanner ) ) {
                 
                 final ArrayList<FileObject> resourcesInScope = new ArrayList<FileObject>( resources.length );
@@ -376,14 +236,7 @@ public class TaskManagerImpl extends TaskManager {
                     }
                 }
                 if( !resourcesInScope.isEmpty() ) {
-                
-                    Runnable r = new Runnable() {
-                        public void run() {
-                            startWorker();
-                            worker.priorityScan( scanner, resourcesInScope.toArray( new FileObject[resourcesInScope.size()] ) );
-                        }
-                    };
-                    RequestProcessor.getDefault().post( r );
+                    //TODO request rescan
                 }
             }
         }
@@ -395,18 +248,10 @@ public class TaskManagerImpl extends TaskManager {
 
     public void refresh( FileTaskScanner scanner ) {
         synchronized( this ) {
-            taskCache.clear( scanner );
             taskList.clear( scanner );
-            
+            //TODO clear index cache
             if( isObserved() && isEnabled( scanner ) ) {
-                
-                Runnable r = new Runnable() {
-                    public void run() {
-                        startWorker();
-                        worker.scan( scope.iterator(), filter );
-                    }
-                };
-                RequestProcessor.getDefault().post( r );
+                //TODO request rescan
             }
         }
     }
@@ -424,8 +269,6 @@ public class TaskManagerImpl extends TaskManager {
     private void doRefresh( TaskScanningScope scopeToRefresh ) {
         synchronized( this ) {
             if( this.scope.equals( scopeToRefresh ) ) {
-                listenToFileSystemChanges( scope, false );
-                listenToFileSystemChanges( scope, true );
                 taskList.clear();
                 if( isObserved() ) {
                     for( PushTaskScanner scanner : ScannerList.getPushScannerList().getScanners() ) {
@@ -433,12 +276,7 @@ public class TaskManagerImpl extends TaskManager {
                         if( getFilter().isEnabled( scanner ) )
                             scanner.setScope( scopeToRefresh, Accessor.createCallback( this, scanner ) );
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            startWorker();
-                            worker.scan( scope.iterator(), filter );
-                        }
-                    });
+                    startLoading();
                 }
             }
         }
@@ -447,14 +285,12 @@ public class TaskManagerImpl extends TaskManager {
     public void started(PushTaskScanner scanner) {
         synchronized( workingScanners ) {
             workingScanners.add( scanner );
-            setWorkingStatus( true );
         }
     }
 
     public void finished(PushTaskScanner scanner) {
         synchronized( workingScanners ) {
             workingScanners.remove( scanner );
-            setWorkingStatus( isWorking() );
         }
     }
 
@@ -469,23 +305,6 @@ public class TaskManagerImpl extends TaskManager {
     
     private Logger getLogger() {
         return Logger.getLogger( TaskManagerImpl.class.getName() );
-    }
-    
-    private void setWorkingStatus( boolean newStatus ) {
-        synchronized( workingScanners ) {
-            if( newStatus != workingStatus ) {
-                boolean oldStatus = workingStatus;
-                workingStatus = newStatus;
-                Logger.getLogger("org.netbeans.log.startup").log(Level.FINE,  // NOI18N
-                        newStatus ? "start" : "end", TaskManagerImpl.class.getName()); // NOI18N
-
-                propertySupport.firePropertyChange( PROP_WORKING_STATUS, oldStatus, newStatus );
-                //for unit testing
-                if( !workingStatus ) {
-                    workingScanners.notifyAll();
-                }
-            }
-        }
     }
     
     private boolean isWorking() {
@@ -515,22 +334,6 @@ public class TaskManagerImpl extends TaskManager {
             }
             catch( InterruptedException e ) {
                 Exceptions.printStackTrace( e );
-            }
-        }
-    }
-
-    class FileScannerProgress {
-        public void started() {
-            synchronized( workingScanners ) {
-                fileScannerWorking = true;
-                setWorkingStatus( true );
-            }
-        }
-        
-        public void finished() {
-            synchronized( workingScanners ) {
-                fileScannerWorking = false;
-                setWorkingStatus( isWorking() );
             }
         }
     }

@@ -97,7 +97,6 @@ final class TaskListTopComponent extends TopComponent {
     private TaskListModel model;
     private FilterRepository filters;
     private TaskListTable table;
-    private PropertyChangeListener changeListener;
     private TaskList.Listener tasksListener;
 
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID());
@@ -289,12 +288,6 @@ final class TaskListTopComponent extends TopComponent {
             }
         }
         
-        if( null == changeListener ) {
-            changeListener = createChangeListener();
-            taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
-        }
-        
-        
         if( null == model ) {
             table = new TaskListTable();
             if( isMacLaf )
@@ -383,15 +376,6 @@ final class TaskListTopComponent extends TopComponent {
         ScannerList.getFileScannerList().removePropertyChangeListener( getScannerListListener() );
         ScannerList.getPushScannerList().removePropertyChangeListener( getScannerListListener() );
         taskManager.observe( null, null );
-        if( null != changeListener ) {
-            taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
-            changeListener = null;
-        }
-        synchronized( this ) {
-            if( null != progress )
-                progress.finish();
-            progress = null;
-        }
         try {
             FilterRepository.getDefault().save();
         } catch( IOException ioE ) {
@@ -510,34 +494,6 @@ final class TaskListTopComponent extends TopComponent {
     
     static private Logger getLogger() {
         return Logger.getLogger( TaskListTopComponent.class.getName() );
-    }
-    
-    private ProgressHandle progress;
-    private PropertyChangeListener createChangeListener() {
-        return new PropertyChangeListener() {
-            public void propertyChange( PropertyChangeEvent e ) {
-                synchronized( TaskListTopComponent.this ) {
-                    if( ((Boolean)e.getNewValue()).booleanValue() ) {
-                        if( null == progress ) {
-                            progress = ProgressHandleFactory.createHandle( 
-                                    NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
-                                    new Cancellable() { //NOI18N
-                                        public boolean cancel() {
-                                            taskManager.abort();
-                                            return true;
-                                        }
-                                    });                            
-                            progress.start();
-                            progress.switchToIndeterminate();
-                        }
-                    } else {
-                        if( null != progress )
-                            progress.finish();
-                        progress = null;
-                    }
-                }
-            }
-        };
     }
     
     final static class ResolvableHelper implements Serializable {
