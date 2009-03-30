@@ -65,6 +65,7 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
@@ -98,17 +99,14 @@ public class InstantRenameAction extends BaseAction {
             String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
 
             if (ident == null) {
-                Utilities.setStatusBoldText(target, "Cannot perform rename here.");
-
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "InstantRenameDenied"));
                 return;
             }
 
-// XXX: parsingapi
-//            if (SourceUtils.isScanInProgress()) {
-//                Utilities.setStatusBoldText(target, "Scanning In Progress");
-//
-//                return;
-//            }
+            if (IndexingManager.getDefault().isIndexing()) {
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(IndexingManager.class, "scanning-in-progress"));
+                return;
+            }
 
             Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
             if (js == null) {

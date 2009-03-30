@@ -433,7 +433,9 @@ public class PropertiesOpen extends CloneableOpenSupport
 
         public Environment(BundleStructure structure) {
             this.bundleStructure = structure;
-            dataObject = bundleStructure.getNthEntry(0).getDataObject();
+            PropertiesFileEntry entry = bundleStructure.getNthEntry(0);
+            if (entry != null)
+                dataObject = entry.getDataObject();
             //Listeners added later by addListener method
 //            addListeners();
             weakEnvPropListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();

@@ -127,20 +127,23 @@ class CategoryPanelFormatters extends StorablePanel {
 
         formattersScrollPane.setViewportView(formattersList);
 
-        formatterNameLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
+        formatterNameLabel.setLabelFor(formatterNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(formatterNameLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
 
-        formatterClassTypesLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesLabel.text")); // NOI18N
+        formatterClassTypesLabel.setLabelFor(formatterClassTypesTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(formatterClassTypesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesLabel.text")); // NOI18N
 
-        formatterClassTypesSubtypesCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesSubtypesCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formatterClassTypesSubtypesCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesSubtypesCheckBox.text")); // NOI18N
 
-        formatValueLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatValueLabel.text")); // NOI18N
+        formatValueLabel.setLabelFor(formatValueEditorPane);
+        org.openide.awt.Mnemonics.setLocalizedText(formatValueLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatValueLabel.text")); // NOI18N
 
         formatValueScrollPane.setViewportView(formatValueEditorPane);
 
-        formatChildrenLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
 
         buttonGroup1.add(formatChildrenAsCodeRadioButton);
-        formatChildrenAsCodeRadioButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsCodeRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenAsCodeRadioButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsCodeRadioButton.text")); // NOI18N
         formatChildrenAsCodeRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 formatChildrenAsCodeRadioButtonStateChanged(evt);
@@ -150,7 +153,7 @@ class CategoryPanelFormatters extends StorablePanel {
         formatChildrenCodeScrollPane.setViewportView(formatChildrenCodeEditorPane);
 
         buttonGroup1.add(formatChildrenAsListRadioButton);
-        formatChildrenAsListRadioButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsListRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenAsListRadioButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsListRadioButton.text")); // NOI18N
         formatChildrenAsListRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 formatChildrenAsListRadioButtonStateChanged(evt);
@@ -175,30 +178,31 @@ class CategoryPanelFormatters extends StorablePanel {
         });
         formatChildrenListScrollPane.setViewportView(formatChildrenListTable);
 
-        childrenExpandExpressionLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenExpandExpressionLabel.text")); // NOI18N
+        childrenExpandExpressionLabel.setLabelFor(childrenExpandExpressionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(childrenExpandExpressionLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenExpandExpressionLabel.text")); // NOI18N
 
-        formattersAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formattersAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.text")); // NOI18N
         formattersAddButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersAddButtonActionPerformed(evt);
             }
         });
 
-        formattersRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formattersRemoveButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.text")); // NOI18N
         formattersRemoveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersRemoveButtonActionPerformed(evt);
             }
         });
 
-        formattersMoveUpButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveUpButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formattersMoveUpButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveUpButton.text")); // NOI18N
         formattersMoveUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersMoveUpButtonActionPerformed(evt);
             }
         });
 
-        formattersMoveDownButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveDownButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(formattersMoveDownButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveDownButton.text")); // NOI18N
         formattersMoveDownButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersMoveDownButtonActionPerformed(evt);
@@ -226,28 +230,28 @@ class CategoryPanelFormatters extends StorablePanel {
                 .add(formattersMoveDownButton))
         );
 
-        variableAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableAddButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(variableAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableAddButton.text")); // NOI18N
         variableAddButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 variableAddButtonActionPerformed(evt);
             }
         });
 
-        variableRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableRemoveButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(variableRemoveButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableRemoveButton.text")); // NOI18N
         variableRemoveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 variableRemoveButtonActionPerformed(evt);
             }
         });
 
-        variableMoveUpButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveUpButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(variableMoveUpButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveUpButton.text")); // NOI18N
         variableMoveUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 variableMoveUpButtonActionPerformed(evt);
             }
         });
 
-        variableMoveDownButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveDownButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(variableMoveDownButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveDownButton.text")); // NOI18N
         variableMoveDownButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 variableMoveDownButtonActionPerformed(evt);
@@ -388,6 +392,9 @@ class CategoryPanelFormatters extends StorablePanel {
         int index = formattersList.getSelectedIndex();
         if (index < 0) return ;
         ((DefaultListModel) formattersList.getModel()).remove(index);
+        if (index < formattersList.getModel().getSize() || --index >= 0) {
+            formattersList.setSelectedIndex(index);
+        }
     }//GEN-LAST:event_formattersRemoveButtonActionPerformed
 
     private void formattersMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersMoveUpButtonActionPerformed
@@ -450,6 +457,9 @@ class CategoryPanelFormatters extends StorablePanel {
         if (index < 0) return ;
         DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
         model.removeRow(index);
+        if (index < formatChildrenListTable.getRowCount() || --index >= 0) {
+            formatChildrenListTable.setRowSelectionInterval(index, index);
+        }
     }//GEN-LAST:event_variableRemoveButtonActionPerformed
 
     private void variableMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveUpButtonActionPerformed
@@ -477,6 +487,9 @@ class CategoryPanelFormatters extends StorablePanel {
         boolean selected = formatChildrenAsCodeRadioButton.isSelected();
         formatChildrenCodeEditorPane.setEditable(selected);
         formatChildrenCodeEditorPane.setEnabled(selected);
+        if (selected) {
+            formatChildrenCodeEditorPane.requestFocusInWindow();
+        }
     }//GEN-LAST:event_formatChildrenAsCodeRadioButtonStateChanged
 
     private void formatChildrenAsListRadioButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formatChildrenAsListRadioButtonStateChanged
@@ -486,6 +499,9 @@ class CategoryPanelFormatters extends StorablePanel {
         variableRemoveButton.setEnabled(selected);
         variableMoveUpButton.setEnabled(selected);
         variableMoveDownButton.setEnabled(selected);
+        if (selected) {
+            formatChildrenListTable.requestFocusInWindow();
+        }
     }//GEN-LAST:event_formatChildrenAsListRadioButtonStateChanged
 
     private void initFormattersList() {
