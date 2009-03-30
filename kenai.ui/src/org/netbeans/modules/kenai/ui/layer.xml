@@ -106,7 +106,7 @@
         <folder name="Window">
             <file name="KenaiAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
-                <attr name="position" intvalue="1059"/>
+                <attr name="position" intvalue="490"/>
             </file>
         </folder>
     </folder>
