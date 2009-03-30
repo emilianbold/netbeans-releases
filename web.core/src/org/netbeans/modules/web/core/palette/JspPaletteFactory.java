@@ -52,7 +52,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Libor Kotouc
  */
-public final class JSPPaletteFactory {
+public final class JspPaletteFactory {
 
     public static final String JSP_PALETTE_FOLDER = "JSPPalette";
 
@@ -60,14 +60,14 @@ public final class JSPPaletteFactory {
 
     public static PaletteController getPalette() throws IOException {
         if (palette == null)
-            palette = PaletteFactory.createPalette(JSP_PALETTE_FOLDER, new JSPPaletteActions(), null, new JSPDragAndDropHandler());
+            palette = PaletteFactory.createPalette(JSP_PALETTE_FOLDER, new JspPaletteActions(), null, new JspDragAndDropHandler());
         
         return palette;
     }
     
     
-    private static class JSPDragAndDropHandler extends DragAndDropHandler {
-        public JSPDragAndDropHandler() {
+    private static class JspDragAndDropHandler extends DragAndDropHandler {
+        public JspDragAndDropHandler() {
             super( true );
         }
 

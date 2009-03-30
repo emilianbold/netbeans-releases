@@ -41,34 +41,59 @@
 
 package org.netbeans.modules.web.core.palette;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
- * @author Libor Kotouc
+ * @author lk155162
  */
-public class JSPEditorDropDefault implements ActiveEditorDrop {
+public class JspDragAndDropHandler extends DragAndDropHandler {
 
-    String body;
-
-    public JSPEditorDropDefault(String body) {
-        this.body = body;
+    public JspDragAndDropHandler() {
     }
 
-    public boolean handleTransfer(JTextComponent targetComponent) {
-        if (targetComponent == null)
-            return false;
+    public void customize(ExTransferable t, Lookup item) {
 
-        try {
-            JSPPaletteUtilities.insert(body, (JTextComponent)targetComponent);
-        }
-        catch (BadLocationException ble) {
-            return false;
+        ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
+        if (drop == null) {
+            String body = (String) item.lookup(String.class);
+            drop = new JspEditorDropDefault(body);
         }
         
-        return true;
+        JspPaletteItemTransferable s = new JspPaletteItemTransferable(drop);
+        t.put(s);
+        
     }
 
+    @Override
+    public boolean canDrop(Lookup targetCategory, DataFlavor[] flavors, int dndAction) {
+        return false;
+    }
+
+    @Override
+    public boolean doDrop(Lookup targetCategory, Transferable item, int dndAction, int dropIndex) {
+        return false;
+    }
+    
+    private static class JspPaletteItemTransferable extends ExTransferable.Single {
+        
+        private ActiveEditorDrop drop;
+
+        JspPaletteItemTransferable(ActiveEditorDrop drop) {
+            super(ActiveEditorDrop.FLAVOR);
+            
+            this.drop = drop;
+        }
+               
+        public Object getData () {
+            return drop;
+        }
+        
+    }
+    
 }

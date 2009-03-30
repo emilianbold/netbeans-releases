@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  * @see "#42525"
  */
 @org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=20)
-public final class JSPAntLogger extends AntLogger {
+public final class JspAntLogger extends AntLogger {
     
     /**
      * Regexp matching the compilation error from JspC. Sample message could look like this:
@@ -83,11 +83,11 @@ public final class JSPAntLogger extends AntLogger {
         AntEvent.LOG_ERR, // XXX is this needed?
     };
     
-    private static final Logger ERR = Logger.getLogger(JSPAntLogger.class.getName());
+    private static final Logger ERR = Logger.getLogger(JspAntLogger.class.getName());
     private static final boolean LOGGABLE = ERR.isLoggable(Level.FINE);
     
     /** Default constructor for lookup. */
-    public JSPAntLogger() {
+    public JspAntLogger() {
     }
     
     @Override

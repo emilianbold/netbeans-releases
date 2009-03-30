@@ -58,7 +58,7 @@ import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -78,8 +78,8 @@ public class JspUtils {
     public static TokenHierarchy<CharSequence> createJspTokenHierarchy(Snapshot jspSnapshot) {
         String mimeType = jspSnapshot.getMimeType();
 
-        assert mimeType.equals(JSPKit.JSP_MIME_TYPE) ||
-                mimeType.equals(JSPKit.TAG_MIME_TYPE);
+        assert mimeType.equals(JspKit.JSP_MIME_TYPE) ||
+                mimeType.equals(JspKit.TAG_MIME_TYPE);
 
         FileObject fo = jspSnapshot.getSource().getFileObject();
         if(fo == null) {
@@ -87,7 +87,7 @@ public class JspUtils {
             throw new IllegalArgumentException("Given snapshot is not filebased!"); //NOI18N
         }
 
-        JSPColoringData data = getJSPColoringData(fo);
+        JspColoringData data = getJSPColoringData(fo);
 
         if(data == null) {
             //error
@@ -146,9 +146,9 @@ public class JspUtils {
     /**
      * @param fo A FileObject representing a JSP like file.
      */
-    public static JSPColoringData getJSPColoringData (FileObject fo) {
+    public static JspColoringData getJSPColoringData (FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        JSPColoringData result = null; 
+        JspColoringData result = null;
         if (fo != null && fo.isValid()){
             JspContextInfo context = JspContextInfo.getContextInfo (fo);
             if (context != null)

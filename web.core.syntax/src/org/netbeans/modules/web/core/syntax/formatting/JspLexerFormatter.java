@@ -68,7 +68,7 @@ import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
  * @author Tomasz.Slota@Sun.COM
  */
 
-public class JSPLexerFormatter extends TagBasedLexerFormatter {
+public class JspLexerFormatter extends TagBasedLexerFormatter {
     @Override
     protected int getTagEndingAtPosition(JoinedTokenSequence tokenSequence, int position) throws BadLocationException {
         if (position >= 0) {

@@ -56,7 +56,7 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
  *
  * @author Petr Jiricka
  */
-public final class JSPColoringData extends PropertyChangeSupport {
+public final class JspColoringData extends PropertyChangeSupport {
     
     /** An property whose change is fired every time the tag library 
     *  information changes in such a way that recoloring of the document is required. 
@@ -77,8 +77,8 @@ public final class JSPColoringData extends PropertyChangeSupport {
 
     private boolean initialized = false;
     
-    /** Creates a new instance of JSPColoringData. */
-    public JSPColoringData(Object sourceBean) {
+    /** Creates a new instance of JspColoringData. */
+    public JspColoringData(Object sourceBean) {
         super(sourceBean);
     }
     

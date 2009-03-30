@@ -86,8 +86,8 @@ import org.openide.util.NbBundle;
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
-public class JSPHyperlinkProvider implements HyperlinkProvider {
-    private static final Logger logger = Logger.getLogger(JSPHyperlinkProvider.class.getName());
+public class JspHyperlinkProvider implements HyperlinkProvider {
+    private static final Logger logger = Logger.getLogger(JspHyperlinkProvider.class.getName());
     /**
      * Should determine whether there should be a hyperlink on the given offset
      * in the given document. May be called any number of times for given parameters.
@@ -377,7 +377,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                             openInEditor(fObj);
                         } else {
                             // when the file was not found.
-                            String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
+                            String msg = NbBundle.getMessage(JspHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
                             StatusDisplayer.getDefault().setStatusText(msg);
                         }
 
@@ -486,7 +486,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
     }
     
     private void gotoSourceFailed(){
-        String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");
+        String msg = NbBundle.getBundle(JspHyperlinkProvider.class).getString("MSG_source_not_found");
         StatusDisplayer.getDefault().setStatusText(msg);
         Toolkit.getDefaultToolkit().beep();
     }

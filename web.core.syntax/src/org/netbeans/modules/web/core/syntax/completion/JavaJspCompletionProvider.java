@@ -53,7 +53,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.core.syntax.SimplifiedJSPServlet;
+import org.netbeans.modules.web.core.syntax.SimplifiedJspServlet;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -70,9 +70,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class JavaJSPCompletionProvider implements CompletionProvider {
+public class JavaJspCompletionProvider implements CompletionProvider {
     private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
-    private static final Logger logger = Logger.getLogger(JavaJSPCompletionProvider.class.getName());
+    private static final Logger logger = Logger.getLogger(JavaJspCompletionProvider.class.getName());
 
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0){
@@ -128,7 +128,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 int caretOffset) {
 
             Source source = Source.create(doc);
-            SimplifiedJSPServlet simplifiedJSPServlet = new SimplifiedJSPServlet(source.createSnapshot(), doc);
+            SimplifiedJspServlet simplifiedJSPServlet = new SimplifiedJspServlet(source.createSnapshot(), doc);
             try{
                 simplifiedJSPServlet.process();
                 Embedding fakedClassBody = simplifiedJSPServlet.getVirtualClassBody();
@@ -156,7 +156,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         }
     }
 
-    static class CompletionQueryDelegatedToJava extends SimplifiedJSPServlet.VirtualJavaClass{
+    static class CompletionQueryDelegatedToJava extends SimplifiedJspServlet.VirtualJavaClass{
         private int caretOffset;
         private int queryType;
         private int shiftedOffset;

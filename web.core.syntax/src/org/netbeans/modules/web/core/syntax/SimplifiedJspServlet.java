@@ -72,7 +72,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
 import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
@@ -99,7 +99,7 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class SimplifiedJSPServlet {
+public class SimplifiedJspServlet {
 
     private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
             "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
@@ -130,14 +130,14 @@ public class SimplifiedJSPServlet {
     private boolean processCalled = false;
     private Embedding importStatements;
     private int expressionIndex = 1;
-    private static final Logger logger = Logger.getLogger(SimplifiedJSPServlet.class.getName());
+    private static final Logger logger = Logger.getLogger(SimplifiedJspServlet.class.getName());
     private boolean processingSuccessful = true;
 
-    public SimplifiedJSPServlet(Snapshot snapshot, Document doc){
+    public SimplifiedJspServlet(Snapshot snapshot, Document doc){
         this(snapshot, doc, null);
     }
 
-    public SimplifiedJSPServlet(Snapshot snapshot, Document doc, CharSequence charSequence) {
+    public SimplifiedJspServlet(Snapshot snapshot, Document doc, CharSequence charSequence) {
         this.doc = doc;
 
         if (charSequence == null) {
@@ -287,7 +287,7 @@ public class SimplifiedJSPServlet {
 //                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
 //
 //                    if (editor != null) {
-//                        SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+//                        SimplifiedJspServlet simplifiedServlet = new SimplifiedJspServlet(editor.openDocument());
 //                        simplifiedServlet.process(true);
 //
 //                        declarations.append(simplifiedServlet.declarations);
@@ -320,7 +320,7 @@ public class SimplifiedJSPServlet {
                 JTextComponent component = editor.getOpenedPanes()[0];
                 if (component != null) {
                     org.netbeans.editor.Utilities.setStatusBoldText(component,
-                            NbBundle.getMessage(SimplifiedJSPServlet.class, "MSG_MissingServletAPI"));
+                            NbBundle.getMessage(SimplifiedJspServlet.class, "MSG_MissingServletAPI"));
                 }
             }
         } catch (DataObjectNotFoundException e) {
@@ -352,7 +352,7 @@ public class SimplifiedJSPServlet {
         }
 
         JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
-        JSPColoringData coloringData = JspUtils.getJSPColoringData(fobj);
+        JspColoringData coloringData = JspUtils.getJSPColoringData(fobj);
 
         if (coloringData != null && coloringData.getPrefixMapper() != null){
             Collection<String> prefixes = coloringData.getPrefixMapper().keySet();

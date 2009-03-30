@@ -53,7 +53,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.openide.filesystems.FileObject;
@@ -86,7 +86,7 @@ public class TestBase2 extends CslTestBase {
 
     @Override
     protected BaseKit getEditorKit(String mimeType) {
-        return new JSPKit(JSPKit.JSP_MIME_TYPE);
+        return new JspKit(JspKit.JSP_MIME_TYPE);
     }
 
     public final void initParserJARs() throws MalformedURLException {

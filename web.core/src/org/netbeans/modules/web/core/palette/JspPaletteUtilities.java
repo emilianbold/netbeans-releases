@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  *
  * @author Libor Kotouc
  */
-public final class JSPPaletteUtilities {
+public final class JspPaletteUtilities {
 
     public static final String CARET = "&CARET&";// NOI18N
     private static final String JSTL_PREFIX = "c";  //NOI18N

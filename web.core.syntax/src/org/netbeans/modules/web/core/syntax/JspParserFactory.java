@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.palette;
+package org.netbeans.modules.web.core.syntax;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import org.netbeans.spi.palette.DragAndDropHandler;
-import org.openide.text.ActiveEditorDrop;
-import org.openide.util.Lookup;
-import org.openide.util.datatransfer.ExTransferable;
+import java.util.Collection;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.web.core.syntax.gsf.JspGSFParser;
 
 /**
  *
- * @author lk155162
+ * @author Jan Lahoda
  */
-public class JSPDragAndDropHandler extends DragAndDropHandler {
-
-    public JSPDragAndDropHandler() {
-    }
-
-    public void customize(ExTransferable t, Lookup item) {
-
-        ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
-        if (drop == null) {
-            String body = (String) item.lookup(String.class);
-            drop = new JSPEditorDropDefault(body);
-        }
-        
-        JSPPaletteItemTransferable s = new JSPPaletteItemTransferable(drop);
-        t.put(s);
-        
-    }
+public class JspParserFactory extends ParserFactory {
 
     @Override
-    public boolean canDrop(Lookup targetCategory, DataFlavor[] flavors, int dndAction) {
-        return false;
+    public Parser createParser(Collection<Snapshot> snapshots) {
+        return new JspGSFParser();
     }
-
-    @Override
-    public boolean doDrop(Lookup targetCategory, Transferable item, int dndAction, int dropIndex) {
-        return false;
-    }
-    
-    private static class JSPPaletteItemTransferable extends ExTransferable.Single {
-        
-        private ActiveEditorDrop drop;
-
-        JSPPaletteItemTransferable(ActiveEditorDrop drop) {
-            super(ActiveEditorDrop.FLAVOR);
-            
-            this.drop = drop;
-        }
-               
-        public Object getData () {
-            return drop;
-        }
-        
-    }
-    
+   
 }
