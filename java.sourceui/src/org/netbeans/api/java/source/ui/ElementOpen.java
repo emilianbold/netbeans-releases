@@ -44,6 +44,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.BinaryElementOpen;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -186,8 +187,12 @@ public final class ElementOpen {
     }
     
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
+        if (IndexingManager.getDefault().isIndexing()) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Skipping location of element offset within file, Scannig in progress");
+            return 0; //we are opening @ 0 position. Fix #160478
+        }
+
         final int[]  result = new int[] {-1};
-        
         
         JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
