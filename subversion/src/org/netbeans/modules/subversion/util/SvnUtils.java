@@ -479,7 +479,13 @@ public class SvnUtils {
             }
 
             path.add(0, file.getName());
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(repositoryURL == null && fileIsManaged) {
@@ -534,7 +540,13 @@ public class SvnUtils {
                 }
             }
 
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(repositoryURL == null && fileIsManaged) {
@@ -608,7 +620,13 @@ public class SvnUtils {
             }
 
             path.insert(0, file.getName()).insert(0, "/");
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(fileURL == null && fileIsManaged) {
