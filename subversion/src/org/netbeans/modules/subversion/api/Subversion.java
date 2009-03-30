@@ -371,7 +371,9 @@ public class Subversion {
 
     }
 
-    public static void addRecentUrl(String url) {
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new SVNUrl(url);
+
         RepositoryConnection rc = new RepositoryConnection(url);
         SvnModuleConfig.getDefault().insertRecentUrl(rc);        
     }
