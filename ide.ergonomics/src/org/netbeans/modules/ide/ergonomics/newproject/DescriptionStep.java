@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -64,6 +65,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -235,9 +237,22 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             iterator = readWizard(fo);
             // reset and warn, seems like 100 millis isn't enough!
             if (iterator instanceof FeatureOnDemanWizardIterator) {
-                Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
+                Logger.getLogger(DescriptionStep.class.getName()).warning(
+                    "There is still wrong interator " + // NOI18N
+                    iterator.getClass().getName() +
+                    " for file object " + fo // NOI18N
+                );
+                FeatureManager.dumpModules(Level.INFO, Level.INFO);
                 iterator = null;
-                if (++i == 10) break; // seems we will go to NPE :-(
+                if (++i == 10) {
+                    Logger.getLogger(DescriptionStep.class.getName()).severe("Giving up to find iterator for " + fo); // NOI18N
+                    boolean npe = false;
+                    assert npe = true;
+                    if (npe) {
+                        throw new NullPointerException("Send us the messages.log please!"); // NOI18N
+                    }
+                    return; // give up
+                }
             }
         }
         iterator.initialize (wd);

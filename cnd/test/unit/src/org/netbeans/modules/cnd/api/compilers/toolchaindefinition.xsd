@@ -10,6 +10,7 @@
             <xs:sequence>
                 <xs:element ref="tns:toolchain" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:platforms" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:makefile_writer" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:default_locations" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:drive_letter_prefix" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:base_folder" minOccurs="0" maxOccurs="1"/>
@@ -253,6 +254,12 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="makefile_writer">
+        <xs:complexType>
+            <xs:attribute name="class" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="dynamic_library">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
@@ -487,9 +494,7 @@
 
     <xs:element name="platforms">
         <xs:complexType>
-            <xs:attribute name="release_pattern" type="xs:string" use="optional" />
             <xs:attribute name="stringvalue" type="xs:string" use="optional" />
-            <xs:attribute name="release_file" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

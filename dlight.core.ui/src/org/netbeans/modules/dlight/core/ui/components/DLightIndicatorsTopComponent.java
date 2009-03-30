@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.core.ui.components;
 
 import java.awt.CardLayout;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -77,7 +79,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     private DLightIndicatorsTopComponent() {
         initComponents();
         setSession(null);
-        setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
+        setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 //        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
@@ -110,14 +112,27 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         this.session = session;
         List<Indicator> indicators = null;
         if (session != null) {
+            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             indicators = session.getIndicators();
         } else {
+            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
                 indicators = emptyContent.getEmptyContent();
             }
 
         }
+        Collections.sort(indicators, new Comparator<Indicator>() {
+            public int compare(Indicator o1, Indicator o2) {
+                if (o1.getPosition() < o2.getPosition()) {
+                    return -1;
+                } else if (o2.getPosition() < o1.getPosition()) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
         setContent(indicators);
     }
 
@@ -229,4 +244,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         }
     }
 
+    private static String getMessage(String name, Object... params) {
+        return NbBundle.getMessage(DLightIndicatorsTopComponent.class, name, params);
+    }
 }

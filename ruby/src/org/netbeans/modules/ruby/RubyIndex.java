@@ -61,7 +61,6 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -128,7 +127,7 @@ public final class RubyIndex {
 
     public static RubyIndex get(final Parser.Result result) {
         FileObject fo = RubyUtils.getFileObject(result);
-        return fo == null ? null : RubyIndex.get(GsfUtilities.getRoots(fo,
+        return fo == null ? null : RubyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));

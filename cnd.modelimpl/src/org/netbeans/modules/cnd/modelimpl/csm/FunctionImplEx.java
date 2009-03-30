@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -158,7 +159,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         return qualifiedName;
     }
-    
+
     protected String findQualifiedName() {
         CsmObject owner = findOwner(null);
         if(CsmKindUtilities.isQualified(owner)) {
@@ -197,18 +198,22 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
     }
     
-    public void fixFakeRegistration() {
+    public final boolean fixFakeRegistration(boolean projectParsedMode) {
+        boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
                 for (CsmMember member : cls.getMembers()) {
                     if (member.isStatic() && member.getName().equals(getName())) {
+                        FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
-                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
-                        ((FileImpl) getContainingFile()).addDeclaration(var);
+                        aFile.getProjectImpl(true).unregisterDeclaration(this);
+                        RepositoryUtils.remove(getUID());
+                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
-                        return;
+                        return true;
                     }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
@@ -219,36 +224,47 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 while (it.hasNext()) {
                     CsmDeclaration decl = it.next();
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
+                        FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
-                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
-                        ((FileImpl) getContainingFile()).addDeclaration(var);
+                        aFile.getProjectImpl(true).unregisterDeclaration(this);
+                        RepositoryUtils.remove(getUID());
+                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
-                        return;
+                        return true;
                     }
                 }
-            }                        
-            try {
-                FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
-                fixFakeRegistrationAst = null;
-                ((FileImpl) getContainingFile()).addDeclaration(fi);
-                if (NamespaceImpl.isNamespaceScope(fi)) {
-                    if (CsmKindUtilities.isNamespace(this.getScope())) {
-                        ((NamespaceImpl) this.getScope()).addDeclaration(fi);
+            }
+            if (projectParsedMode) {
+                try {
+                    FileImpl aFile = (FileImpl) getContainingFile();
+                    FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
+                    fixFakeRegistrationAst = null;
+                    aFile.getProjectImpl(true).unregisterDeclaration(this);
+                    RepositoryUtils.remove(getUID());
+                    aFile.addDeclaration(fi);
+                    fixed = true;
+                    if (NamespaceImpl.isNamespaceScope(fi)) {
+                        if (CsmKindUtilities.isNamespace(this.getScope())) {
+                            ((NamespaceImpl) this.getScope()).addDeclaration(fi);
+                        }
                     }
+                } catch (AstRendererException e) {
+                    DiagnosticExceptoins.register(e);
                 }
-            } catch (AstRendererException e) {
-                DiagnosticExceptoins.register(e);
             }
         } else {
             CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
             if (!newQname.equals(qualifiedName)) {
-                ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl(true);
+                ProjectBase aProject = ((FileImpl)getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;
                 aProject.registerDeclaration(this);
+                fixed = true;
             }
         }
+        return fixed;
     }
     
     private CsmNamespaceDefinition findNamespaceDefinition() {

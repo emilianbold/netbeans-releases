@@ -958,11 +958,33 @@ public class JspCompletionItem implements CompletionItem {
 
         public ELBean(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset);
-            if (type.lastIndexOf('.') > -1) {
-                this.type = type.substring(type.lastIndexOf('.') + 1);
-            } else {
-                this.type = type;
+            parseType(type);
+        }
+
+        /** Parses property type.
+         * expected inputs:
+         * java.util.Collection<java.lang.String>
+         * java.util.Collection
+         * Collection 
+         */
+        private void parseType(String t) {
+            int ltIndex = t.indexOf("<");
+
+            String mainType = ltIndex == -1 ? t : t.substring(0, ltIndex);
+            String genericType = ltIndex == -1 ? null : t.substring(ltIndex + 1);
+
+            this.type = stripPackage(mainType) + (genericType != null ? "<"+stripPackage(genericType) : ""); //NOI18N
+
+            //replace illegal html chars
+            this.type = type.replace("<", "&lt;").replace(">", "&gt;"); //NOI18N
+        }
+
+        private String stripPackage(String type) {
+            int dotIndex = type.lastIndexOf('.');
+            if(dotIndex >= 0) {
+                type = type.substring(dotIndex + 1);
             }
+            return type;
         }
 
         @Override

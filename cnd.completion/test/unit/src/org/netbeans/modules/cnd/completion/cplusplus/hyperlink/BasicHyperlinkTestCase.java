@@ -187,8 +187,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testStaticVariable() throws Exception {
         // See IZ136481
-        performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
-        performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
+        performTest("static_variable.c", 5, 16, "static_variable.h", 2, 1);
+        performTest("static_variable.c", 6, 15, "static_variable.h", 1, 1);
+        // See IZ151730: Unresolved static variable in header included after its definition
+        performTest("static_variable.h", 2, 40, "static_variable.c", 1, 1);
+    }
+
+    public void testStaticFunctions() throws Exception {
+        // IZ#151751: Unresolved usage of function name as pointer for static member initialization
+        performTest("static_function.c", 26, 10, "static_function.c", 17, 1);
+        performTest("static_function.c", 11, 30, "static_function.c", 2, 1);
     }
 
     public void testIZ131555() throws Exception {

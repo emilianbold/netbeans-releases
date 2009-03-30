@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * implementation of language filters collection
@@ -57,9 +58,13 @@ public class APTLanguageSupportImpl {
     }
     
     public static APTLanguageFilter getFilter(String lang) {
+        // no sync is needed here
         APTLanguageFilter filter = langFilters.get(lang);
         if (filter == null) {
             filter = createFilter(lang);
+            if (filter != null) {
+                addFilter(lang, filter);
+            }
         }
         return filter;
     }
@@ -67,13 +72,8 @@ public class APTLanguageSupportImpl {
     public static void addFilter(String lang, final APTLanguageFilter filter) {
         langFilters.put(lang, filter);
     }
-    
-    private static Map<String, APTLanguageFilter> getFilters() {
-        return langFilters;
-    }
 
     private static APTLanguageFilter createFilter(String lang) {
-        assert (getFilters().get(lang) == null);
         APTLanguageFilter filter = null;
         // Now support only few filters
         if (lang.equalsIgnoreCase(APTLanguageSupport.STD_C)) {
@@ -84,9 +84,8 @@ public class APTLanguageSupportImpl {
             filter = new APTGnuCFilter();
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
             filter = new APTGnuCppFilter();
-        }
-        if (filter != null) {
-            addFilter(lang, filter);
+        } else {
+            APTUtils.LOG.warning("unsupported language " + lang); // NOI18N
         }
         return filter;
     }

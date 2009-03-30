@@ -64,7 +64,7 @@ public abstract class Configuration implements ProjectConfiguration {
 
     private Configuration cloneOf;
 
-    public Configuration(String baseDir, String name) {
+    protected Configuration(String baseDir, String name) {
         this.baseDir = baseDir;
         this.name = name;
         defaultConfiguration = false;

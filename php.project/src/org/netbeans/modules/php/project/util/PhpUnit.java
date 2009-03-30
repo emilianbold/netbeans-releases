@@ -148,7 +148,8 @@ public final class PhpUnit extends PhpProgram {
     public static String[] getVersions(int[] actualVersion) {
         List<String> params = new ArrayList<String>(6);
         if (actualVersion == null) {
-            params.add("?"); params.add("?"); params.add("?"); // NOI18N
+            String questionMark = NbBundle.getMessage(PhpUnit.class, "LBL_QuestionMark");
+            params.add(questionMark); params.add(questionMark); params.add(questionMark);
         } else {
             for (Integer i : actualVersion) {
                 params.add(String.valueOf(i));

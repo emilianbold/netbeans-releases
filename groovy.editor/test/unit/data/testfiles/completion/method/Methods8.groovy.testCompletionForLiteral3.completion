@@ -20,4 +20,5 @@ METHOD     contentEquals(StringBuffer)     [PUBLIC]   boolean
 METHOD     copyValueOf(char[])             [STATIC,   String
 METHOD     copyValueOf(char[], int, int)   [STATIC,   String
 METHOD     count(String)                              int
-FIELD      count                                      int
+FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
+FIELD      class                                      Class

@@ -44,10 +44,10 @@ public abstract class DLightToolAccessor {
     
   }
 
-  public abstract List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool);
+  public abstract List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool);
   public abstract DLightTool newDLightTool(DLightToolConfiguration configuration);
-  public abstract List<Indicator> getIndicators(DLightTool tool);
-  public abstract List<DataCollector> getCollectors(DLightTool tool);
+  public abstract List<Indicator<?>> getIndicators(DLightTool tool);
+  public abstract List<DataCollector<?>> getCollectors(DLightTool tool);
   public abstract boolean collectorsTurnedOn(DLightTool tool);
   public abstract void turnCollectorsState(DLightTool tool, boolean turnedOn);
 
