@@ -87,6 +87,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/simple_class_def.php");
     }
 
+    public void testSwitchStmt() throws Exception{
+        reformatFileContents("testfiles/formatting/switch_stmt.php");
+    }
+
+    public void testSubsequentQuotes() throws Exception{
+        reformatFileContents("testfiles/formatting/subsequentquotes.php");
+    }
+
     public void test161049() throws Exception{
         reformatFileContents("testfiles/formatting/issue161049.php");
     }

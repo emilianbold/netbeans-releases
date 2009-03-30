@@ -45,11 +45,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
+import java.awt.Component;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JCheckBox;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CellEditorListener;
@@ -57,8 +59,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import javax.swing.text.TableView.TableCell;
 import org.netbeans.api.debugger.Properties;
 
 /**
@@ -76,6 +80,17 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.getColumnModel().getColumn(0).setMaxWidth(new JCheckBox().getPreferredSize().width);
         filterClassesTable.getColumnModel().getColumn(0).setResizable(false);
         filterClassesTable.getColumnModel().getColumn(1).setResizable(true);
+        TableCellRenderer columnRenderer = filterClassesTable.getColumnModel().getColumn(0).getCellRenderer();
+        if (columnRenderer == null) columnRenderer = filterClassesTable.getDefaultRenderer(filterClassesTable.getColumnClass(0));
+        filterClassesTable.getColumnModel().getColumn(0).setCellRenderer(
+                new DisablingCellRenderer(columnRenderer,
+                filterClassesTable));
+        columnRenderer = filterClassesTable.getColumnModel().getColumn(1).getCellRenderer();
+        if (columnRenderer == null) columnRenderer = filterClassesTable.getDefaultRenderer(filterClassesTable.getColumnClass(1));
+        filterClassesTable.getColumnModel().getColumn(1).setCellRenderer(
+                new DisablingCellRenderer(columnRenderer,
+                filterClassesTable));
+        useStepFiltersCheckBoxActionPerformed(null);
     }
 
     /** This method is called from within the constructor to
@@ -104,20 +119,21 @@ class CategoryPanelStepFilters extends StorablePanel {
         filtersCheckAllButton = new javax.swing.JButton();
         filtersUncheckAllButton = new javax.swing.JButton();
 
-        useStepFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.useStepFiltersCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useStepFiltersCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.useStepFiltersCheckBox.text")); // NOI18N
         useStepFiltersCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 useStepFiltersCheckBoxActionPerformed(evt);
             }
         });
 
-        filterSyntheticCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterSyntheticCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterSyntheticCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterSyntheticCheckBox.text")); // NOI18N
 
-        filterStaticInitCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterStaticInitCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterStaticInitCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterStaticInitCheckBox.text")); // NOI18N
 
-        filterConstructorsCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterConstructorsCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterConstructorsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterConstructorsCheckBox.text")); // NOI18N
 
-        filterClassesLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
+        filterClassesLabel.setLabelFor(filterClassesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(filterClassesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
 
         filterClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -141,30 +157,30 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.setTableHeader(null);
         filterClassesScrollPane.setViewportView(filterClassesTable);
 
-        stepThroughFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(stepThroughFiltersCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
 
-        filterAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.text")); // NOI18N
         filterAddButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterAddButtonActionPerformed(evt);
             }
         });
 
-        filterRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterRemoveButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.text")); // NOI18N
         filterRemoveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterRemoveButtonActionPerformed(evt);
             }
         });
 
-        filtersCheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filtersCheckAllButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.text")); // NOI18N
         filtersCheckAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filtersCheckAllButtonActionPerformed(evt);
             }
         });
 
-        filtersUncheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filtersUncheckAllButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.text")); // NOI18N
         filtersUncheckAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filtersUncheckAllButtonActionPerformed(evt);
@@ -237,7 +253,18 @@ class CategoryPanelStepFilters extends StorablePanel {
     }
 
     private void useStepFiltersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useStepFiltersCheckBoxActionPerformed
-        // TODO add your handling code here:
+        boolean enabled = useStepFiltersCheckBox.isSelected();
+        filterSyntheticCheckBox.setEnabled(enabled);
+        filterStaticInitCheckBox.setEnabled(enabled);
+        filterConstructorsCheckBox.setEnabled(enabled);
+        filterClassesLabel.setEnabled(enabled);
+        filterClassesTable.setEnabled(enabled);
+        filterClassesScrollPane.setEnabled(enabled);
+        filterAddButton.setEnabled(enabled);
+        filterRemoveButton.setEnabled(enabled && filterClassesTable.getSelectedRow() >= 0);
+        filtersCheckAllButton.setEnabled(enabled);
+        filtersUncheckAllButton.setEnabled(enabled);
+        stepThroughFiltersCheckBox.setEnabled(enabled);
     }//GEN-LAST:event_useStepFiltersCheckBoxActionPerformed
 
     private void filterAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterAddButtonActionPerformed
@@ -285,7 +312,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         if (index < 0) return ;
         DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
         model.removeRow(index);
-        if (--index >= 0) {
+        if (index < filterClassesTable.getRowCount() || --index >= 0) {
             filterClassesTable.setRowSelectionInterval(index, index);
         }
     }//GEN-LAST:event_filterRemoveButtonActionPerformed
@@ -385,4 +412,22 @@ class CategoryPanelStepFilters extends StorablePanel {
     private javax.swing.JCheckBox useStepFiltersCheckBox;
     // End of variables declaration//GEN-END:variables
 
+    /** We need to override the cell renderers in order to make setEnabled() to work. */
+    private static final class DisablingCellRenderer implements TableCellRenderer {
+        
+        private TableCellRenderer r;
+        private JTable t;
+
+        public DisablingCellRenderer(TableCellRenderer r, JTable t) {
+            this.r = r;
+            this.t = t;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = r.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            c.setEnabled(t.isEnabled());
+            return c;
+        }
+        
+    }
 }

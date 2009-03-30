@@ -293,6 +293,11 @@ public final class ClassPath {
             current = this.invalidEntries;
         }
         List<? extends PathResourceImplementation> resources = impl.getResources();
+        if (resources == null)
+            throw new NullPointerException (
+                "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: "
+                + impl.getClass ().toString () + " ClassPathImplementation: " + impl.toString ()
+            );
         final List<Object[]> snapshot = new ArrayList<Object[]>();
         for (PathResourceImplementation pr : resources) {
             snapshot.add(new Object[] {pr, pr.getRoots()});

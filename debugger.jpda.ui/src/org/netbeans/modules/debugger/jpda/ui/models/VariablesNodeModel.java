@@ -177,6 +177,10 @@ public class VariablesNodeModel implements ExtendedNodeModel {
                     "CTL_LocalsModel_Column_Name_SubArray",
                     str.substring(8, index), str.substring(index + 1));
         }
+        String name = VariablesFormatterFilter.FORMATTED_CHILDREN_VARS.get(o);
+        if (name != null) {
+            return name;
+        }
         throw new UnknownTypeException (o);
     }
     

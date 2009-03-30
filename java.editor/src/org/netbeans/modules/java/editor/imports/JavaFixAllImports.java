@@ -309,7 +309,8 @@ public class JavaFixAllImports {
 
         private ImportVisitor (CompilationInfo info) {
             this.info = info;
-            currentPackage = info.getCompilationUnit().getPackageName().toString();
+            ExpressionTree pkg = info.getCompilationUnit().getPackageName();
+            currentPackage = pkg != null ? pkg.toString() : "";
             imports = new ArrayList<TreePathHandle>();
         }
 
