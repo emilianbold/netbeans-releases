@@ -101,7 +101,8 @@ final class RegexpMaker {
                 if (wholeWords && bufIsEmpty && isWordChar(c)) {
                     buf.append(checkNotAfterWordChar);
                 }
-                if (!isSimpleCharacter(c)) {
+                buf.append('\\');
+                if (isSimpleCharacter(c)) {
                     buf.append('\\');
                 }
                 buf.append(c);

@@ -74,6 +74,7 @@ import org.openide.awt.HtmlBrowser;
 public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeListener {
 
     final private Map<String, ProjectHandleListener> projectListeners = new HashMap<String, ProjectHandleListener>();
+    final private Map<String, KenaiRepositoryListener> kenaiRepoListeners = new HashMap<String, KenaiRepositoryListener>();
 
     public QueryAccessorImpl() {
         Kenai.getDefault().addPropertyChangeListener(this);
@@ -81,12 +82,23 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX log this inconvenience
             return Collections.emptyList();
         }
+        KenaiRepositoryListener krl = null;
+        synchronized(kenaiRepoListeners) {
+            krl = kenaiRepoListeners.get(repo.getDisplayName());
+            if(krl == null) {
+                krl = new KenaiRepositoryListener(repo, project);
+                repo.addPropertyChangeListener(krl);
+                kenaiRepoListeners.put(repo.getDisplayName(), krl);
+            } 
+        }
+        
         List<QueryHandle> queries = getQueryHandles(repo);
+
         ProjectHandleListener pl;
         synchronized(projectListeners) {
             pl = projectListeners.get(project.getId());
@@ -99,6 +111,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         synchronized(projectListeners) {
             projectListeners.put(project.getId(), pl);
         }
+        
         return Collections.unmodifiableList(queries);
     }
 
@@ -129,7 +142,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.create(project);
@@ -149,10 +162,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         };
     }
 
-
     @Override
     public ActionListener getCreateIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.create(project);
@@ -171,7 +183,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             }
         };
     }
-
 
     @Override
     public ActionListener getOpenQueryResultAction(QueryResultHandle result) {
@@ -224,6 +235,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
             }
             synchronized (projectListeners) {
+                ph.removePropertyChangeListener(this);
                 projectListeners.remove(ph.getId());
             }
         }
@@ -301,6 +313,22 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                     });
                 }
             };
+        }
+    }
+
+    private class KenaiRepositoryListener implements PropertyChangeListener {
+        private final ProjectHandle ph;
+        private Repository repo;
+
+        public KenaiRepositoryListener(Repository repo, ProjectHandle ph) {
+            this.ph = ph;
+            this.repo = repo;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+                fireQueriesChanged(ph, getQueryHandles(repo));
+            }
         }
     }
 

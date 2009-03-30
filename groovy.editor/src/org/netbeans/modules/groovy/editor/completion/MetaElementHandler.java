@@ -130,8 +130,10 @@ public final class MetaElementHandler {
                 LOG.log(Level.FINEST, field.toString());
                 MetaProperty prop = (MetaProperty) field;
                 //System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
-                result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                        prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                if (prop.getName().startsWith(prefix)) {
+                    result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                            prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                }
             }
 
             return result;

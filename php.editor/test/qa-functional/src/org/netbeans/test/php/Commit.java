@@ -311,6 +311,8 @@ public class Commit extends GeneralPHP
       fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
     }
 
+    Sleep( 2000 );
+
     // Brackets
     // Predefined
     String[] asCheckers =

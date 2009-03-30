@@ -47,6 +47,8 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
@@ -61,12 +63,16 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
+import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 public class JspIndenterTest extends TestBase2 {
@@ -80,19 +86,29 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
+    private Lookup projectsLookup;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+        assert p.lookupAll(AntBasedProjectType.class) != null;
+        projectsLookup = p;
+
+        ClassLoader l = MockLookup.class.getClassLoader();
+        MockLookup.setLookup(
+                Lookups.fixed(testLanguageProvider),
+                Lookups.metaInfServices(l),
+                Lookups.singleton(l), projectsLookup);
+
         initParserJARs();
         copyWebProjectJarsTo(new File(getDataDir(), "FormattingProject/lib"));
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-        MockLookup.init();
-        MockLookup.setInstances(testLanguageProvider);
-
         // init TestLanguageProvider
-        Lookup.getDefault().lookup(TestLanguageProvider.class);
+        assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
 
         TestLanguageProvider.register(CSSTokenId.language());
         TestLanguageProvider.register(HTMLTokenId.language());
@@ -102,11 +118,18 @@ public class JspIndenterTest extends TestBase2 {
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), new JspEmbeddingProvider.Factory());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
+        ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
+
+        FileObject fo = getTestFile("FormattingProject");
+        Project webProject = ProjectManager.getDefault().findProject(fo);
+        assert webProject != null : "cannot load project for "+fo.getPath();
+
     }
 
     @Override
@@ -165,6 +188,10 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingCase007() throws Exception {
         reformatFileContents("FormattingProject/web/case007.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase008() throws Exception {
+        reformatFileContents("FormattingProject/web/case008.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {
@@ -228,6 +255,22 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline(
             "<html> <!--\n             ^comment",
             "<html> <!--\n             \n       ^comment", null);
+
+        // expression indentation:
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"}^",
+            "<html>\n    ${\"expression+\n           exp2\"}\n    ^", null);
+        insertNewline(
+            "<html>\n    some text ${\"expression+\n                         exp2\"^}",
+            "<html>\n    some text ${\"expression+\n                         exp2\"\n    ^}", null);
+        insertNewline(
+            "<html>\n    ${\"expression+\n           exp2\"\n                }^",
+            "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
+
+// #128034
+//        insertNewline(
+//            "<a href=\"${path}\">^</a>",
+//            "<a href=\"${path}\">\n    ^\n</a>", null);
 
     }
 

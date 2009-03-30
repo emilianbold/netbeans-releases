@@ -72,7 +72,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -239,9 +238,9 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 File fl = FileUtil.normalizeFile(it.getPOMFile());
                 FileObject fo = FileUtil.toFileObject(fl);
                 InstanceContent ic = new InstanceContent();
-                if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
+                if (fo != null) {
                     try {
-                        DataObject dobj = DataObject.find(fo);
+                        DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
                         if (dobj != null) {
                             ic.add(dobj);
                             EditCookie ec = dobj.getLookup().lookup(EditCookie.class);

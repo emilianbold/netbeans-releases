@@ -1,10 +1,10 @@
-Unexpected symbol(s) found: "@TEXT"
-Unexpected symbol(s) found: ":"
-Unexpected symbol(s) found: ";"
+Unexpected symbol(s) found:"@TEXT"
+Unexpected symbol(s) found:":"
+Unexpected symbol(s) found:";"
 
-Unexpected symbol(s) found: "
+Unexpected symbol(s) found:"
             "
-Unexpected symbol(s) found: "@"
-Unexpected symbol(s) found: ")"
-Unexpected symbol(s) found: ":"
+Unexpected symbol(s) found:"@"
+Unexpected symbol(s) found:")"
+Unexpected symbol(s) found:":"
 Unexpected value token ,

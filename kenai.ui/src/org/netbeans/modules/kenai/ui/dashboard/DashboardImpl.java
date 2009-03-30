@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -58,9 +57,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -102,7 +103,7 @@ public final class DashboardImpl extends Dashboard {
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> allProjects = new ArrayList<ProjectHandle>(50);
     private final Set<String> ignoredProjectIds = new HashSet<String>(50);
-    private final JPanel dashboardComponent;
+    private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
     private boolean memberProjectsLoaded = false;
@@ -121,8 +122,10 @@ public final class DashboardImpl extends Dashboard {
     private final Object LOCK = new Object();
 
     private DashboardImpl() {
-        dashboardComponent = new JPanel(new BorderLayout());
+        dashboardComponent = new JScrollPane();
+        dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
+        dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         userListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
@@ -336,7 +339,7 @@ public final class DashboardImpl extends Dashboard {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
             }
-            if( model.getSize() > 0 )
+            if( model.getSize() > 1 )
                 return;
             addProjectsToModel(-1, allProjects);
         }
@@ -351,11 +354,10 @@ public final class DashboardImpl extends Dashboard {
                     isEmpty = null == DashboardImpl.this.login && allProjects.isEmpty();
                 }
 
-                boolean isTreeListShowing = treeList.getParent() == dashboardComponent;
+                boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
                 if( isEmpty ) {
-                    if( isTreeListShowing|| dashboardComponent.getComponentCount() == 0 ) {
-                        dashboardComponent.removeAll();
-                        dashboardComponent.add(createEmptyContent(), BorderLayout.CENTER);
+                    if( isTreeListShowing || dashboardComponent.getViewport().getView() == null ) {
+                        dashboardComponent.setViewportView(createEmptyContent());
                         dashboardComponent.invalidate();
                         dashboardComponent.revalidate();
                         dashboardComponent.repaint();
@@ -363,9 +365,9 @@ public final class DashboardImpl extends Dashboard {
                 } else {
                     fillModel();
                     treeList.setModel(model);
+                    switchMemberProjects();
                     if( !isTreeListShowing ) {
-                        dashboardComponent.removeAll();
-                        dashboardComponent.add(treeList, BorderLayout.CENTER);
+                        dashboardComponent.setViewportView(treeList);
                         dashboardComponent.invalidate();
                         dashboardComponent.revalidate();
                         dashboardComponent.repaint();

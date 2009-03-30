@@ -108,7 +108,7 @@ public class SunStudioDataCollector
     private static final DataTableMetadata memSummaryInfoTable;
 
     // ***
-    private final String experimentDir;
+    private String experimentDir;
     private final Object lock = new String(SunStudioDataCollector.class.getName());
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
@@ -159,7 +159,6 @@ public class SunStudioDataCollector
     }
 
     public SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-        this.experimentDir = "/var/tmp/dlightExperiment_" + uid.incrementAndGet() + ".er"; // NOI18N
         collectedInfo = new HashSet<CollectedInfo>();
         dataTablesMetadata = new HashSet<DataTableMetadata>();
         validationListeners = new CopyOnWriteArraySet<ValidationListener>();
@@ -344,6 +343,8 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
+            this.experimentDir = "/var/tmp/dlightExperiment_" + target.getExecEnv().getUser() + '_' + uid.incrementAndGet() + ".er"; // NOI18N
+
             this.storage = (PerfanDataStorage) dataStorage;
 
             startWarmUp();
@@ -461,7 +462,11 @@ public class SunStudioDataCollector
         boolean warmUpStatus = false;
 
         try {
-            warmUpStatus = warmUpTaskResult.get().booleanValue();
+            // warmUpTaskResult may be null if invoke init against wrong target
+            // (not one that was validated)
+            warmUpStatus = warmUpTaskResult == null 
+                    ? false
+                    : warmUpTaskResult.get().booleanValue();
         } catch (CancellationException ex) {
             log.fine("Will not start SunStudioDataCollector because of " // NOI18N
                     + ex.getMessage());

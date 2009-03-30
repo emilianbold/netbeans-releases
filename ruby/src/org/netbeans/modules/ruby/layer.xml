@@ -239,5 +239,12 @@
             </file>
         </folder>
     </folder>
+        <folder name="RubyOptionsDialog">
+        <file name="org-netbeans-modules-ruby-options-TypeInferenceOptions.instance">
+            <attr name="position" intvalue="65"/>
+        </file>
+    </folder>
+
+
     
 </filesystem>

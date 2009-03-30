@@ -58,21 +58,6 @@ public interface CsmModel {
     Collection<CsmProject> projects();
 
     /**
-     * Code model calls can be very expensive.
-     * Therefore one can never call code model from event dispatching thread.
-     * Moreover, to make code model able to effectively solve synchronization issues,
-     * all callers shall use not their own threads but call enqueue method instead.
-     *
-     * The method creates a thread and runs the given task in this thread.
-     *
-     * Whether or not the thread be created immediately or the task
-     * will be just enqueued and runned later on, depends on implementation.
-     *
-     * @param task task to run
-     */
-    Cancellable enqueue(Runnable task);
-
-    /**
      * Code model calls can be very expensive. 
      * Therefore one can never call code model from event dispatching thread.
      * Moreover, to make code model able to effectively solve synchronization issues,

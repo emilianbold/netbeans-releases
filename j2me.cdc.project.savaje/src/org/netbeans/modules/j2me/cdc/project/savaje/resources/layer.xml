@@ -9,6 +9,9 @@
                         <file name="savaje-init" url="savaje-init">
                             <attr name="position" intvalue="700"/>
                         </file>
+                        <file name="cdc-hi-init" url="cdc-hi-init">
+                            <attr name="position" intvalue="750"/>
+                        </file>
                     </folder>
                     <folder name="jar-subtargets">
                         <file name="savaje-build-jnlp" url="savaje-build-jnlp">
@@ -19,10 +22,16 @@
                         <file name="savaje-run" url="savaje-run">
                             <attr name="position" intvalue="400"/>
                         </file>
+                        <file name="cdc-hi-run" url="cdc-hi-run">
+                            <attr name="position" intvalue="975"/>
+                        </file>
                     </folder>
                     <folder name="debug-subtargets">
                         <file name="savaje-debug" url="savaje-debug">
                             <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="cdc-hi-debug" url="cdc-hi-debug">
+                            <attr name="position" intvalue="450"/>
                         </file>
                     </folder>
                     <folder name="clean-subtargets">
@@ -53,11 +62,31 @@
                 <attr name="templateName" stringvalue="Templates/GUIForms/JFrame.java"/>
                 <attr name="templateType" stringvalue="main"/>
             </file>
+            <file name="cdc-hi">
+                <attr name="templateName" stringvalue="Templates/CDC/PBPMain.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
         </folder>
-    </folder>    
+    </folder>
+    <folder name="Templates">
+        <folder name="CDC">
+            <file name="PBPMain.java" url="PBPMain_java">
+                <attr name="position" intvalue="450"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/savaje/resources/PBPMain.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.savaje.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/savaje/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="CDC/PBP"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="savaje-ant-utils.xml" url="Utils.xml"/>
         </folder>
-    </folder>    
+    </folder>
+
 </filesystem>

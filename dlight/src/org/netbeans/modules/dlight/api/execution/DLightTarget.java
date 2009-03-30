@@ -148,8 +148,8 @@ public abstract class DLightTarget {
 
     }
 
-    protected final boolean putToInfo(String name, String value){
-        return true;
+    protected final String putToInfo(String name, String value){
+        return info.put(name, value);
     }
 
     /**
@@ -247,6 +247,11 @@ public abstract class DLightTarget {
         public DLightTargetExecutionService getDLightTargetExecution(DLightTarget target) {
             return target.getExecutionService();
         }
+
+        @Override
+        public Info getDLightTargetInfo(DLightTarget target) {
+            return target.info;
+        }
     }
 
     public final class Info{
@@ -258,6 +263,10 @@ public abstract class DLightTarget {
 
         public Map<String, String> getInfo(){
             return map;
+        }
+
+        String put(String name, String value){
+            return map.put(name, value);
         }
 
 

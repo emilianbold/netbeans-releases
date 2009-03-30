@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -54,6 +56,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -63,7 +66,7 @@ import org.openide.windows.InputOutput;
  *
  */
 public final class Erprint {
-
+    private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final Object lock = new String(Erprint.class.getName());
     private final ExecutionEnvironment execEnv;
     private final String er_printCmd;
@@ -100,7 +103,11 @@ public final class Erprint {
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
-        descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
+
+        if (log.isLoggable(Level.FINEST)) {
+            descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
+        }
+        
         descr = descr.outProcessorFactory(new InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -243,7 +250,7 @@ public final class Erprint {
     }
 
     private static class FilteredInputProcessor implements InputProcessor {
-        // Buffer must be synchronized, because it caould be accessed
+        // Buffer must be synchronized, because it could be accessed
         // from several threads (example: one thread - onTimer, another one -
         // user clicks on indicator)
         // The problem may appear when one thread gets buffer, while another one
@@ -293,8 +300,10 @@ public final class Erprint {
 
         public void reset() throws IOException {
             synchronized (lock) {
-                while (doneSignal.getCount() > 0) {
-                    doneSignal.countDown();
+                if (doneSignal != null) {
+                    while (doneSignal.getCount() > 0) {
+                        doneSignal.countDown();
+                    }
                 }
 
                 reset(null);

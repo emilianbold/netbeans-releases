@@ -46,9 +46,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -135,6 +137,20 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
             return;
         }
         fail("Icon shall be instance of Icon: " + smallIcon);
+    }
+
+    public void testNoIconIsOK() throws Exception {
+        myListenerCounter = 0;
+        myIconResourceCounter = 0;
+        Action a = readAction("testNoIcon.instance");
+
+        CharSequence log = Log.enable("org.openide.awt", Level.WARNING);
+
+        assertNotNull("Action created", a);
+        Object smallIcon = a.getValue(a.SMALL_ICON);
+
+        assertNull("No icon", smallIcon);
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
 
     public static URL myURL() {

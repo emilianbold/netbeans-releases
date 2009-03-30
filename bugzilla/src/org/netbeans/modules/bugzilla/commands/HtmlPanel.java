@@ -50,8 +50,9 @@ public class HtmlPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    void setHtml(String html) {
+    void setHtml(String html, String label) {
         pane.setText(html);
+        this.label.setText(label);
     }
 
     /** This method is called from within the constructor to
@@ -65,25 +66,37 @@ public class HtmlPanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         pane = new javax.swing.JTextPane();
+        label = new javax.swing.JLabel();
 
         pane.setContentType(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "HtmlPanel.pane.contentType")); // NOI18N
         jScrollPane1.setViewportView(pane);
+
+        label.setText(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "MSG_ServerResponse")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addContainerGap(193, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 374, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel label;
     private javax.swing.JTextPane pane;
     // End of variables declaration//GEN-END:variables
 

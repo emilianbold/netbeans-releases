@@ -93,6 +93,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     synchronized void cacheIssues(Repository repo, Issue[] issues) {
         HashSet<Issue> s = new HashSet<Issue>();
         for (Issue issue : issues) {
+            assert issue != null;
             s.add(issue);
         }
         issuesCached.put(repo, s);
@@ -101,7 +102,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     synchronized Issue[] getCachedIssues(Repository repo) {
         if(issuesCached != null) {
             Set<Issue> s = issuesCached.get(repo);
-            if(s != null) return s.toArray(new Issue[issuesCached.size()]);
+            if(s != null) return s.toArray(new Issue[s.size()]);
         }
         return new Issue[0];
     }

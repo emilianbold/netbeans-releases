@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.io.CharConversionException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
-import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
@@ -54,62 +57,41 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 class HudsonJobBuildNode extends AbstractNode {
 
-    private static final String ICON_BASE_RED = "org/netbeans/modules/hudson/ui/resources/red.png";
-    private static final String ICON_BASE_RED_RUN = "org/netbeans/modules/hudson/ui/resources/red_run.png";
-    private static final String ICON_BASE_BLUE = "org/netbeans/modules/hudson/ui/resources/blue.png";
-    private static final String ICON_BASE_BLUE_RUN = "org/netbeans/modules/hudson/ui/resources/blue_run.png";
-    private static final String ICON_BASE_YELLOW = "org/netbeans/modules/hudson/ui/resources/yellow.png";
-    private static final String ICON_BASE_YELLOW_RUN = "org/netbeans/modules/hudson/ui/resources/yellow_run.png";
-    private static final String ICON_BASE_GREY = "org/netbeans/modules/hudson/ui/resources/grey.png";
-
     private final HudsonJobBuild build;
-    private final String htmlDisplayName;
+    private String htmlDisplayName;
 
     public HudsonJobBuildNode(HudsonJobBuild build) {
         super(makeChildren(build), Lookups.singleton(build));
         setName(Integer.toString(build.getNumber()));
         setDisplayName("#" + build.getNumber());
-        Result result;
+        Color effectiveColor;
         if (build.isBuilding()) {
-            switch (build.getJob().getColor()) {
-            case blue:
-            case blue_anime:
-                result = Result.SUCCESS;
+            effectiveColor = build.getJob().getColor();
+        } else {
+            switch (build.getResult()) {
+            case SUCCESS:
+                effectiveColor = Color.blue;
                 break;
-            case yellow:
-            case yellow_anime:
-                result = Result.UNSTABLE;
+            case UNSTABLE:
+                effectiveColor = Color.yellow;
                 break;
-            case red:
-            case red_anime:
-                result = Result.FAILURE;
+            case FAILURE:
+                effectiveColor = Color.red;
                 break;
             default:
-                result = Result.NOT_BUILT;
+                effectiveColor = Color.grey;
             }
-        } else {
-            result = build.getResult();
         }
-        switch (result) {
-        case SUCCESS:
-            setIconBaseWithExtension(build.isBuilding() ? ICON_BASE_BLUE_RUN : ICON_BASE_BLUE);
-            htmlDisplayName = getDisplayName();
-            break;
-        case UNSTABLE:
-            setIconBaseWithExtension(build.isBuilding() ? ICON_BASE_YELLOW_RUN : ICON_BASE_YELLOW);
-            htmlDisplayName = "<font color='#989800'>" + getDisplayName() + "</font>"; // NOI18N
-            break;
-        case FAILURE:
-            setIconBaseWithExtension(build.isBuilding() ? ICON_BASE_RED_RUN : ICON_BASE_RED);
-            htmlDisplayName = "<font color='#A40000'>" + getDisplayName() + "</font>"; // NOI18N
-            break;
-        default:
-            setIconBaseWithExtension(ICON_BASE_GREY);
-            htmlDisplayName = getDisplayName();
+        try {
+            htmlDisplayName = effectiveColor.colorizeDisplayName(XMLUtil.toElementContent(getDisplayName()));
+        } catch (CharConversionException x) {
+            htmlDisplayName = null;
         }
+        setIconBaseWithExtension(effectiveColor.iconBase());
         this.build = build;
     }
 
@@ -121,7 +103,7 @@ class HudsonJobBuildNode extends AbstractNode {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ShowChanges(build));
         actions.add(new ShowBuildConsole(build));
-        if (build.getResult() == HudsonJobBuild.Result.UNSTABLE) {
+        if (build.getResult() == HudsonJobBuild.Result.UNSTABLE && build.getMavenModules().isEmpty()) {
             actions.add(new ShowFailures(build));
         }
         actions.add(null);
@@ -133,13 +115,22 @@ class HudsonJobBuildNode extends AbstractNode {
         return Children.create(new ChildFactory<Object>() {
             final Object ARTIFACTS = new Object();
             protected boolean createKeys(List<Object> toPopulate) {
-                // XXX is it possible to cheaply check in advance if the build has any artifacts?
-                toPopulate.add(ARTIFACTS);
+                Collection<? extends HudsonMavenModuleBuild> modules = build.getMavenModules();
+                if (modules.isEmpty()) {
+                    // XXX is it possible to cheaply check in advance if the build has any artifacts?
+                    toPopulate.add(ARTIFACTS);
+                } else {
+                    toPopulate.addAll(modules);
+                }
                 return true;
             }
             protected @Override Node createNodeForKey(Object key) {
-                assert key == ARTIFACTS : key;
-                return new HudsonArtifactsNode(build);
+                if (key instanceof HudsonMavenModuleBuild) {
+                    return new HudsonMavenModuleBuildNode((HudsonMavenModuleBuild) key);
+                } else {
+                    assert key == ARTIFACTS : key;
+                    return new HudsonArtifactsNode(build);
+                }
             }
         }, false);
     }

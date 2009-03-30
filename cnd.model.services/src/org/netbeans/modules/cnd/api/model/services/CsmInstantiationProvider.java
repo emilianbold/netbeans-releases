@@ -52,14 +52,16 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
 
 /**
- * Servise that provides template instantiations
+ * Service that provides template instantiations
  * 
  * @author Nick Krasilnikov
  */
@@ -90,10 +92,30 @@ public abstract class CsmInstantiationProvider {
      * Returns instantiation of template
      *
      * @param template - template for instantiation
-     * @param params - template paramrters
+     * @param params - template parameters
      * @return - instantiation
      */
     public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile);
+
+    /**
+     * Returns instantiation of template
+     *
+     * @param template - template for instantiation
+     * @param params - template parameters
+     * @param mapping - template mapping
+     * @return - instantiation
+     */
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, Map<CsmTemplateParameter, CsmType> mapping, CsmFile contextFile);
+
+    /**
+     * Returns instantiation of template
+     *
+     * @param template - template for instantiation
+     * @param params - template parameters
+     * @param type - template type
+     * @return - instantiation
+     */
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile);
 
     //
     // Implementation of the default provider
@@ -105,8 +127,17 @@ public abstract class CsmInstantiationProvider {
 
         @Override
         public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile) {
-            return null;
+            return template;
         }
 
+        @Override
+        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, Map<CsmTemplateParameter, CsmType> mapping, CsmFile contextFile) {
+            return template;
+        }
+
+        @Override
+        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile) {
+            return template;
+        }
     }
 }
