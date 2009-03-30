@@ -98,6 +98,10 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test161049() throws Exception{
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
+    
+    public void test159339_161408() throws Exception{
+        reformatFileContents("testfiles/formatting/issues_159339_161408.php");
+    }
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2,2));
