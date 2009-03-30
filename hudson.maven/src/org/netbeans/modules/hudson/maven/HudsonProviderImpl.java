@@ -68,22 +68,16 @@ public class HudsonProviderImpl extends ProjectHudsonProvider {
     }
 
     public Association findAssociation(Project p) {
-        FileObject pom = pom(p);
-        if (pom == null) {
-            return null;
+        //reading needs to be done from resolved model..
+        NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            org.apache.maven.model.CiManagement cim = prj.getMavenProject().getCiManagement();
+            if (cim != null && HUDSON_SYSTEM.equalsIgnoreCase(cim.getSystem())) {
+                return Association.fromString(cim.getUrl());
+            }
+            // could listen to NbMavenProject.PROP_PROJECT if change firing is supported
         }
-        POMModel model = POMModelFactory.getDefault().getModel(Utilities.createModelSource(pom));
-        if (model == null) {
-            return null;
-        }
-        CiManagement cim = model.getProject().getCiManagement();
-        if (cim == null) {
-            return null;
-        }
-        if (!HUDSON_SYSTEM.equalsIgnoreCase(cim.getSystem())) {
-            return null;
-        }
-        return Association.fromString(cim.getUrl());
+        return null;
     }
 
     public boolean recordAssociation(Project p, final Association a) {
