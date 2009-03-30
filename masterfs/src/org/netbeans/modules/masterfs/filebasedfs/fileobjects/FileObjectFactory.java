@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -476,10 +475,8 @@ public final class FileObjectFactory {
     }
 
     public static boolean isParentOf(final File dir, final File file) {
-        Stack stack = new Stack();
         File tempFile = file;
         while (tempFile != null && !tempFile.equals(dir)) {
-            stack.push(tempFile.getName());
             tempFile = tempFile.getParentFile();
         }
         return tempFile != null;
