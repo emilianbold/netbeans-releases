@@ -96,10 +96,10 @@ public abstract class BaseFileObj extends FileObject {
 
 
     protected BaseFileObj(final File file) {
-        this(file, NamingFactory.fromFile(file));
+        this(NamingFactory.fromFile(new FileInfo(file)));
     }
     
-    protected BaseFileObj(final File file, final FileNaming name) {
+    protected BaseFileObj(final FileNaming name) {
         this.fileName = name;
         versioningWeakListener = (FileChangeListener) WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
         addFileChangeListener(versioningWeakListener);
@@ -197,7 +197,7 @@ public abstract class BaseFileObj extends FileObject {
             if (!stack.isEmpty()) {
                 retval.append('/');//NOI18N
             }
-        }                        
+        }
         return retval.toString();
     }
 
