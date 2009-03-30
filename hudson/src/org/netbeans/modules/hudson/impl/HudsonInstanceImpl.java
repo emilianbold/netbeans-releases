@@ -43,15 +43,20 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -61,6 +66,7 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
@@ -68,6 +74,7 @@ import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,6 +86,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Michal Mocnak
  */
 public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
+
+    private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
     
     private HudsonInstanceProperties properties;
     private final HudsonConnector connector;
@@ -98,7 +107,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
      * Must be kept here, not in {@link HudsonJobImpl}, because that is transient
      * and this should persist across refreshes.
      */
-    private final Map<String,RemoteFileSystem> workspaces = new HashMap<String,RemoteFileSystem>();
+    private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
+    private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
@@ -270,13 +280,27 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
+            final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final ProgressHandle handle = ProgressHandleFactory.createHandle(
-                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()));
+                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()),
+                    new Cancellable() {
+                public boolean cancel() {
+                    Thread t = synchThread.get();
+                    if (t != null) {
+                        LOG.fine("Cancelling synchronization of " + getUrl());
+                        t.interrupt();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
             
             handle.start();
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
+                    synchThread.set(Thread.currentThread());
                     try {
                         // Get actual views
                         Collection<HudsonView> oldViews = getViews();
@@ -294,9 +318,18 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         
                         // Update state
                         fireStateChanges();
-                        
-                        for (RemoteFileSystem fs : workspaces.values()) {
-                            fs.refreshAll();
+
+                        synchronized (workspaces) {
+                            Iterator<Map.Entry<String,Reference<RemoteFileSystem>>> it = workspaces.entrySet().iterator();
+                            while (it.hasNext()) {
+                                Map.Entry<String,Reference<RemoteFileSystem>> entry = it.next();
+                                RemoteFileSystem fs = entry.getValue().get();
+                                if (fs != null) {
+                                    fs.refreshAll();
+                                } else {
+                                    it.remove();
+                                }
+                            }
                         }
 
                         // Sort retrieved list
@@ -380,33 +413,44 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return getName().compareTo(o.getName());
     }
 
-    /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(HudsonJob job) {
-        synchronized (workspaces) {
-            String name = job.getName();
-            if (!workspaces.containsKey(name)) {
-                try {
-                    workspaces.put(name, new RemoteFileSystem(job));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return FileUtil.createMemoryFileSystem();
-                }
+    /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(final HudsonJob job) {
+        return getFileSystemFromCache(workspaces, job.getName(), new Callable<RemoteFileSystem>() {
+            public RemoteFileSystem call() throws Exception {
+                return new RemoteFileSystem(job);
             }
-            return workspaces.get(name);
-        }
+        });
     }
 
-    /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(HudsonJobBuild build) {
-        synchronized (workspaces) {
-            String name = build.getJob().getName() + "/" + build.getNumber();
-            if (!workspaces.containsKey(name)) {
+    /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonJobBuild build) {
+        return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() {
+            public RemoteFileSystem call() throws Exception {
+                return new RemoteFileSystem(build);
+            }
+        });
+    }
+
+    /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonMavenModuleBuild module) {
+        return getFileSystemFromCache(artifacts, module.getBuild().getJob().getName() + "/" + module.getBuild().getNumber() + "/" + module.getName(),
+                new Callable<RemoteFileSystem>() {
+            public RemoteFileSystem call() throws Exception {
+                return new RemoteFileSystem(module);
+            }
+        });
+    }
+
+    private static FileSystem getFileSystemFromCache(Map<String,Reference<RemoteFileSystem>> cache, String key, Callable<RemoteFileSystem> create) {
+        synchronized (cache) {
+            RemoteFileSystem fs = cache.containsKey(key) ? cache.get(key).get() : null;
+            if (fs == null) {
                 try {
-                    workspaces.put(name, new RemoteFileSystem(build));
-                } catch (MalformedURLException ex) {
+                    fs = create.call();
+                    cache.put(key, new WeakReference<RemoteFileSystem>(fs));
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     return FileUtil.createMemoryFileSystem();
                 }
             }
-            return workspaces.get(name);
+            return fs;
         }
     }
 

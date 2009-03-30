@@ -39,16 +39,13 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -56,16 +53,16 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer{
+public final class VisualizerTopComponentTopComponent extends TopComponent implements VisualizerContainer {
 
     private static VisualizerTopComponentTopComponent instance;
     private static final String PREFERRED_ID = "VisualizerTopComponentTopComponent";
     //private List<JComponent> visualizerComponents = new ArrayList<JComponent>();
     //private CloseListener closeListener = new CloseListener();
     private JPanel performanceMonitorViewsArea = new JPanel();
+    private String currentToolName;
 //    private JTabbedPane tabbedPane = null;
     //private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
-    
 
     private VisualizerTopComponentTopComponent() {
         initComponents();
@@ -146,8 +143,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolName, Visualizer view) {
-        JComponent viewComponent = view.getComponent();
+    public void setContent(String toolName, JComponent viewComponent) {
+        currentToolName = toolName;
 //        if (visualizerComponents.get(toolName) == null) {//no component - add new one
 //            tabbedPane.addTab(toolName, viewComponent);
 ////      visualizerComponents.put(tool, view);
@@ -166,13 +163,18 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 //
 //        visualizerComponents.put(toolName, view);
         this.performanceMonitorViewsArea.removeAll();
-        this.performanceMonitorViewsArea.setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.performanceMonitorViewsArea.add(viewComponent);
-        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details",  toolName));//NOI18N
+        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
         validate();
         repaint();
     }
-    
+
+    public void addVisualizer(String toolName, Visualizer view) {
+        setContent(toolName, view.getComponent());
+
+    }
+
     public void showup() {
         open();
         requestActive();
@@ -182,7 +184,18 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         closePerformanceMonitor(v);
     }
 
-    
+    public void addContent(String toolName, JComponent viewComponent) {
+        if (currentToolName == null || !currentToolName.equals(toolName)) {
+            this.currentToolName = toolName;
+            this.performanceMonitorViewsArea.removeAll();
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+        this.performanceMonitorViewsArea.add(viewComponent);
+        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
+        validate();
+        repaint();
+
+    }
 
     static final class ResolvableHelper implements Serializable {
 
@@ -193,15 +206,12 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         }
     }
 
-    private void addPerformanceMonitorView(Visualizer view) {
-    }
-
     private void initPerformanceMonitorViewComponents() {
         setLayout(new BorderLayout());
 //        tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
 //        tabbedPane.addPropertyChangeListener(closeListener);
         performanceMonitorViewsArea.setLayout(new BorderLayout());
-   //     performanceMonitorViewsArea.add(tabbedPane, BorderLayout.CENTER);
+        //     performanceMonitorViewsArea.add(tabbedPane, BorderLayout.CENTER);
         this.add(performanceMonitorViewsArea, BorderLayout.CENTER);
     }
 
@@ -232,5 +242,4 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 //            }
 //        }
 //    }
-
 }

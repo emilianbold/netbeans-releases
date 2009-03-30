@@ -69,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -142,18 +143,29 @@ public final class AddCast implements ErrorRule<Void> {
             
             if (expected != null && resolved != null) {
                 TypeMirror foundTM = info.getTrees().getTypeMirror(new TreePath(path, found));
-                
+
+                if (foundTM.getKind() == TypeKind.ERROR) {
+                    foundTM = info.getTrees().getOriginalType((ErrorType) foundTM);
+                }
+
+                if (resolved.getKind() == TypeKind.ERROR) {
+                    resolved = info.getTrees().getOriginalType((ErrorType) resolved);
+                }
+
                 if (foundTM.getKind() == TypeKind.EXECUTABLE) {
                     //XXX: ignoring executable, see AddCast9 for more information when this happens.
                 } else {
-                    if (   !info.getTypes().isAssignable(foundTM, expected)
-                        && info.getTypeUtilities().isCastable(resolved, expected)
-                           /*#85346: cast hint should not be proposed for error types:*/
-                        && foundTM.getKind() != TypeKind.ERROR
-                        && expected.getKind() != TypeKind.ERROR) {
-                        tm[0] = expected;
-                        expression[0] = found;
-                        leaf[0] = scope;
+                    if (info.getTypeUtilities().isCastable(resolved, expected)) {
+                        if (!info.getTypes().isAssignable(foundTM, expected)
+                                /*#85346: cast hint should not be proposed for error types:*/
+                                && foundTM.getKind() != TypeKind.ERROR
+                                && expected.getKind() != TypeKind.ERROR) {
+                            tm[0] = expected;
+                            expression[0] = found;
+                            leaf[0] = scope;
+                        }
+                    } else {
+                        tm[0] = null; //clean up, test136313
                     }
                 }
             }

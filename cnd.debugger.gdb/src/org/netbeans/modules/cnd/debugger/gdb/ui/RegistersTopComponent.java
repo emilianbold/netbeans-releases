@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -16,11 +17,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -49,6 +57,8 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         
         jScrollPane1.getViewport().setBackground(UIManager.getColor("Table.background")); // NOI18N
         jTable1.setDefaultRenderer(RegisterValue.class, new RegisterCellRendererForValue());
+        TableColumn col = jTable1.getColumnModel().getColumn(RegisterTableModel.COLUMN_VALUE);
+        col.setCellEditor(new RegisterTableCellEditor());
         
         model.refresh();
     }
@@ -191,6 +201,42 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         }
 
         @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == COLUMN_VALUE;
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            RegisterValue oldVal = values.get(rowIndex);
+            String value = (String) aValue;
+
+            if (oldVal.getValue().equals(value)) {
+                return;
+            }
+
+            GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
+            if (gdbDebugger == null) {
+                return;
+            }
+            String gdbValue = gdbDebugger.updateVariable("$" + oldVal.getName(), value); // NOI18N
+
+            // gdb returns value in decimal format
+            try {
+                gdbValue = "0x" + Integer.toHexString(Integer.parseInt(gdbValue)); // NOI18N
+                RegisterValue val = new RegisterValue(oldVal.getName(), gdbValue, false);
+                @SuppressWarnings("unchecked")
+                List<RegisterValue> cur =
+                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+                cur.set(rowIndex, val);
+            } catch (Exception e) {
+                // do nothing
+            }
+
+            RegisterValue val = new RegisterValue(oldVal.getName(), gdbValue, false);
+            values.set(rowIndex, val);
+        }
+
+        @Override
         public String getColumnName(int column) {
             return columnNames[column];
         }
@@ -198,8 +244,8 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         @SuppressWarnings("unchecked")
         private void refresh() {
             values.clear();
-            Collection<RegisterValue> res = 
-                    (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+            List<RegisterValue> res =
+                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
             if (res != null) {
                 values.addAll(res);
             }
@@ -213,13 +259,47 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
             return o1.getName().compareTo(o2.getName());
         }
     };
+
+    private static class RegisterTableCellEditor extends AbstractCellEditor implements TableCellEditor {
+        // This is the component that will handle the editing of the cell value
+        JComponent component = new JTextField();
+
+        public RegisterTableCellEditor() {
+            component.setBorder(new LineBorder(Color.black, 0));
+        }
+
+        // This method is called when a cell value is edited by the user.
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int rowIndex, int vColIndex) {
+            // 'value' is value contained in the cell located at (rowIndex, vColIndex)
+
+            if (isSelected) {
+                // cell (and perhaps other cells) are selected
+            }
+
+            RegisterValue rv = (RegisterValue) value;
+
+            // Configure the component with the specified value
+            ((JTextField)component).setText(rv.getValue());
+
+            // Return the configured component
+            return component;
+        }
+
+        // This method is called when editing is completed.
+        // It must return the new value to be stored in the cell.
+        public Object getCellEditorValue() {
+            return ((JTextField)component).getText();
+        }
+    }
+
     
     private static class RegisterCellRendererForValue extends DefaultTableCellRenderer.UIResource {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setEnabled(table == null || table.isEnabled());
             
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            super.getTableCellRendererComponent(table, ((RegisterValue)value).getValue(), isSelected, hasFocus, row, column);
             
             if (value instanceof RegisterValue) {
                 RegisterValue rval = (RegisterValue) value;

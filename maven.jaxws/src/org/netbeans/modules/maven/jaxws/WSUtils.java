@@ -84,6 +84,7 @@ import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -102,6 +103,7 @@ import org.openide.util.NbBundle;
  */
 public class WSUtils {
 
+    public static final String NON_JSR109_DONT_ASK = "dont_ask_for_nonjsr109_config"; //NOI18N
     private final static String SERVLET_CLASS_NAME =
             "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     private final static String SERVLET_LISTENER =
@@ -629,22 +631,49 @@ public class WSUtils {
     }
 
     public static boolean generateNonJsr109Artifacts(Project prj) {
-        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries",
-                    prj.getProjectDirectory().getName()),
-                NbBundle.getMessage(WSUtils.class,"TTL_GenerateDDEntries"),
-                NotifyDescriptor.YES_NO_OPTION);
-        Object result = DialogDisplayer.getDefault().notify(desc);
-        return NotifyDescriptor.YES_OPTION.equals(result);
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
+            ConfirmationPanel panel =
+                new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries", prj.getProjectDirectory().getName()));
+            DialogDescriptor dd = new DialogDescriptor(
+                    panel,
+                    NbBundle.getMessage(WSUtils.class,"TTL_GenerateDDEntries"),
+                    true,
+                    DialogDescriptor.YES_NO_OPTION,
+                    null,null);
+            Object result = DialogDisplayer.getDefault().notify(dd);
+            if (panel.notAskAgain()) {
+                if (prefs != null) {
+                    prefs.put(NON_JSR109_DONT_ASK , "true"); //NOI18N
+                }
+            }
+            return NotifyDescriptor.YES_OPTION.equals(result);
+        } else {
+            return false;
+        }
     }
 
     private static boolean removeNonJsr109Artifacts(Project prj) {
-        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"),
-                NbBundle.getMessage(WSUtils.class,"TTL_RemoveDDEntries"),
-                NotifyDescriptor.YES_NO_OPTION);
-        Object result = DialogDisplayer.getDefault().notify(desc);
-        return NotifyDescriptor.YES_OPTION.equals(result);
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
+            ConfirmationPanel panel =
+                new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"));
+            DialogDescriptor dd = new DialogDescriptor(
+                    panel,
+                    NbBundle.getMessage(WSUtils.class,"TTL_RemoveDDEntries"),
+                    true,
+                    DialogDescriptor.YES_NO_OPTION,
+                    null,null);
+            Object result = DialogDisplayer.getDefault().notify(dd);
+            if (panel.notAskAgain()) {
+                if (prefs != null) {
+                    prefs.put(NON_JSR109_DONT_ASK , "true"); //NOI18N
+                }
+            }
+            return NotifyDescriptor.YES_OPTION.equals(result);
+        } else {
+            return false;
+        }
     }
 
     public static boolean isJsr109Supported(Project project) {

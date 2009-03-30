@@ -68,14 +68,6 @@ import org.openide.xml.XMLUtil;
  */
 public class HudsonJobNode extends AbstractNode {
     
-    private static final String ICON_BASE_RED = "org/netbeans/modules/hudson/ui/resources/red.png";
-    private static final String ICON_BASE_RED_RUN = "org/netbeans/modules/hudson/ui/resources/red_run.png";
-    private static final String ICON_BASE_BLUE = "org/netbeans/modules/hudson/ui/resources/blue.png";
-    private static final String ICON_BASE_BLUE_RUN = "org/netbeans/modules/hudson/ui/resources/blue_run.png";
-    private static final String ICON_BASE_YELLOW = "org/netbeans/modules/hudson/ui/resources/yellow.png";
-    private static final String ICON_BASE_YELLOW_RUN = "org/netbeans/modules/hudson/ui/resources/yellow_run.png";
-    private static final String ICON_BASE_GREY = "org/netbeans/modules/hudson/ui/resources/grey.png";
-    
     private String htmlDisplayName;
     private HudsonJob job;
     
@@ -101,7 +93,7 @@ public class HudsonJobNode extends AbstractNode {
                     return new HudsonJobBuildNode((HudsonJobBuild) key);
                 }
             }
-        }, false);
+        }, true);
     }
 
     @Override
@@ -135,49 +127,18 @@ public class HudsonJobNode extends AbstractNode {
         Color color = job.getColor();
         setShortDescription(job.getUrl());
 
-        switch(color) {
-        case red:
-            // XXX #159836: tooltips
-            setIconBaseWithExtension(ICON_BASE_RED);
-            break;
-        case red_anime:
-            setIconBaseWithExtension(ICON_BASE_RED_RUN);
-            break;
-        case blue:
-            setIconBaseWithExtension(ICON_BASE_BLUE);
-            break;
-        case blue_anime:
-            setIconBaseWithExtension(ICON_BASE_BLUE_RUN);
-            break;
-        case yellow:
-            setIconBaseWithExtension(ICON_BASE_YELLOW);
-            break;
-        case yellow_anime:
-            setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
-            break;
-        default: // grey, disabled, aborted
-            setIconBaseWithExtension(ICON_BASE_GREY);
-        }
+        // XXX #159836: tooltips
+        setIconBaseWithExtension(color.iconBase());
 
         String oldHtmlDisplayName = getHtmlDisplayName();
         try {
-            htmlDisplayName = XMLUtil.toElementContent(job.getDisplayName());
+            htmlDisplayName = color.colorizeDisplayName(XMLUtil.toElementContent(job.getDisplayName()));
         } catch (CharConversionException ex) {
             assert false : ex;
             return;
         }
         if (!job.isSalient()) {
             // XXX visually mark this somehow?
-        }
-        switch (color) {
-        case red:
-        case red_anime:
-            htmlDisplayName = "<font color='#A40000'>" + htmlDisplayName + "</font>"; // NOI18N
-            break;
-        case yellow:
-        case yellow_anime:
-            htmlDisplayName = "<font color='#989800'>" + htmlDisplayName + "</font>"; // NOI18N
-            break;
         }
         switch (color) {
         case red_anime:

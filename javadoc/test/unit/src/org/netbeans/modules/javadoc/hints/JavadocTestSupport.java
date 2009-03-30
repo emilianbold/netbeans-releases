@@ -83,12 +83,12 @@ public abstract class JavadocTestSupport extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        FileUtil.setMIMEType("java", "text/x-java");
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new JavaKit());
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {
             new Pool(),
             new MockMimeLookup(),
         });
+        FileUtil.setMIMEType("java", "text/x-java");
         
         if (cache == null) {
             cache = TestUtil.createWorkFolder();

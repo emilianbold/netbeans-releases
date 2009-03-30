@@ -51,8 +51,8 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 public class MemoryIndicatorConfiguration extends IndicatorConfiguration{
   static final String ID = "MemoryIndicatorConfigurationID";
 
-  public MemoryIndicatorConfiguration(IndicatorMetadata metadata) {
-    super(metadata);
+  public MemoryIndicatorConfiguration(IndicatorMetadata metadata, int position) {
+    super(metadata, position);
   }
 
 

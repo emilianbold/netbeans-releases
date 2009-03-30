@@ -109,6 +109,9 @@ abstract class URIMapper {
         return mergedMapper;
     }
     static URIMapper createDefaultMapper(URI webServerURI, FileObject sourceFileObj, FileObject sourceRoot) {
+        if (!"file".equals(webServerURI.getScheme())) {//NOI18N
+            return null;
+        }
         File webServerFile = new File(webServerURI);
         File sourceFile = FileUtil.toFile(sourceFileObj);
         String sourcePath = FileUtil.getRelativePath(sourceRoot, sourceFileObj);
@@ -273,10 +276,12 @@ abstract class URIMapper {
 
         @Override
         File toSourceFile(URI remoteURI) {
-            for (URIMapper mapperInstance : mappers) {
-                File sourceFile = mapperInstance.toSourceFile(remoteURI);
-                if (sourceFile != null) {
-                    return sourceFile;
+            if ("file".equals(remoteURI.getScheme())) {//NOI18N
+                for (URIMapper mapperInstance : mappers) {
+                    File sourceFile = mapperInstance.toSourceFile(remoteURI);
+                    if (sourceFile != null) {
+                        return sourceFile;
+                    }
                 }
             }
             return null;

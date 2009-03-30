@@ -692,8 +692,11 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             if (tree == null) {
                                 // add panel with appropriate content
                                 tree = new JTree(root);
+                                if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                                    tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                                }
                                 ToolTipManager.sharedInstance().registerComponent(tree);
-                                tree.setCellRenderer(new CheckRenderer(isQuery));
+                                tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
                                 String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
                                 tree.getAccessibleContext().setAccessibleDescription(s);
                                 tree.getAccessibleContext().setAccessibleName(s);

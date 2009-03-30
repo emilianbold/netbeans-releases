@@ -256,6 +256,9 @@ public class KenaiTest extends NbTestCase {
         PasswordAuthentication passAuth = instance.getPasswordAuthentication();
         assertEquals(uname, passAuth.getUserName());
         assertEquals(passw, new String(passAuth.getPassword()));
+        if (System.getProperty("show_login").equals("true")) {
+            System.out.println("cred:" + uname + "/" + passw);
+        }
     }
 
     @Test

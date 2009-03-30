@@ -142,7 +142,7 @@ final class ExecutionContext {
         List<DataCollector> collectors = new ArrayList<DataCollector>();
         if (getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : tools) {
-                List<DataCollector> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
 //                    if (c.getValidationStatus().isValid()) {//for valid collectors only
@@ -157,7 +157,7 @@ final class ExecutionContext {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<IndicatorDataProvider> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<IndicatorDataProvider<?>> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             for (IndicatorDataProvider idp : tool_idps){
                 if (!collectors.contains(idp) && !idps.contains(idps)){
                     idps.add(idp);

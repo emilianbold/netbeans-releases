@@ -395,7 +395,7 @@ public class JspCompletionQuery {
                     addAttributeItems(result, offset, sup, elem, sup.getDirectiveAttributes(elem.getName(), ""), null); // NOI18N
                 } else if (prevId.getNumericID() == JspTagTokenContext.SYMBOL_ID && prevToken.equals("<%@")) { // NOI18N
                     // just after the beginning of the directive
-                    int removeLength = tokenPart.length() + 2;
+                    int removeLength = tokenPart.length() + "<%@".length(); //NOI18N
                     addDirectiveItems(result, offset - removeLength, sup.getDirectives("")); // NOI18N
                 }
             } else {

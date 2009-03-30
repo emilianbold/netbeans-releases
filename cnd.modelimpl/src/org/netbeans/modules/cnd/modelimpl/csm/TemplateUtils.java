@@ -47,12 +47,15 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -256,6 +259,47 @@ public class TemplateUtils {
                         }
                     }
                     break;
+            }
+        }
+        return res;
+    }
+
+    public static List<CsmSpecializationParameter> getSpecializationParameters(AST ast, CsmFile file, CsmScope scope, boolean global) {
+        assert (ast != null);
+        List<CsmSpecializationParameter> res = new ArrayList<CsmSpecializationParameter>();
+        AST start;
+        for (start = ast.getFirstChild(); start != null; start = start.getNextSibling()) {
+            if (start.getType() == CPPTokenTypes.LESSTHAN) {
+                start = start.getNextSibling();
+                break;
+            }
+        }
+        if (start != null) {
+            AST ptr = null;
+            AST type = null;
+            for (AST child = start; child != null; child = child.getNextSibling()) {
+                switch (child.getType()) {
+                    case CPPTokenTypes.CSM_PTR_OPERATOR:
+                        ptr = child;
+                        break;
+                    case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                    case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                        type = child;
+                        break;
+                    case CPPTokenTypes.CSM_EXPRESSION:
+                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope), scope,
+                                file, OffsetableBase.getStartOffset(child), OffsetableBase.getEndOffset(child)));
+                        break;
+                    case CPPTokenTypes.COMMA:
+                    case CPPTokenTypes.GREATERTHAN:
+                        if (type != null) {
+                            res.add(new TypeBasedSpecializationParameterImpl(TypeFactory.createType(type, file, ptr, 0, scope), scope,
+                                    file, OffsetableBase.getStartOffset(type), OffsetableBase.getEndOffset(type)));
+                        }
+                        type = null;
+                        ptr = null;
+                        break;
+                }
             }
         }
         return res;

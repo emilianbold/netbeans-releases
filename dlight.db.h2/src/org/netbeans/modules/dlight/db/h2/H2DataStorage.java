@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -61,151 +63,149 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
-  
-  private static final String SQL_QUERY_DELIMETER = ";";
-  private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
-  private static boolean driverLoaded = false;
-  private static final AtomicInteger dbIndex = new AtomicInteger();
-  private SQLStackStorage stackStorage;
-  private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-  private static final String url = "jdbc:h2:/tmp/dlight";
-  static{
-    try {
-        Class driver = Class.forName("org.h2.Driver");
-        logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
-      } catch (ClassNotFoundException ex) {
-        logger.log(Level.SEVERE, null, ex);
-      }
-  }
-
-  private void initStorageTypes() {
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2DataStorageFactory.H2_DATA_STORAGE_TYPE));
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-    supportedStorageTypes.addAll(super.getStorageTypes());
-  }
-
-  H2DataStorage() {
-    this(url +  dbIndex.incrementAndGet());
-  }
+    private static final String SQL_QUERY_DELIMETER = ";";
+    private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
+    private static boolean driverLoaded = false;
+    private static final AtomicInteger dbIndex = new AtomicInteger();
+    private SQLStackStorage stackStorage;
+    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    private static final String url = "jdbc:h2:/tmp/dlight";
 
 
-
-  private H2DataStorage(String url) {
-    super(url);
-    try {
-      initStorageTypes();
-      stackStorage = new SQLStackStorage(this);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-    } catch (IOException ex) {
-      logger.log(Level.SEVERE, null, ex);
-    }
-  }
-
-  // FIXUP: deleting /tmp/dlight*
-
-
-  static {
-    File tmpDir = new File("/tmp");
-    if (tmpDir.exists()) {
-      File[] files = tmpDir.listFiles(new FilenameFilter() {
-
-        public boolean accept(File dir, String name) {
-          return name.startsWith("dlight");
+    static {
+        try {
+            Class driver = Class.forName("org.h2.Driver");
+            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
-      });
-      int newValue = 0;
-      boolean result = true;
-      for (int i = 0; i < files.length; i++) {
-          boolean localResult= files[i].delete();
-          result = result && localResult;
-          newValue++;
-      }
-      if (!result){
-          //should increse dbIndex??
-          dbIndex.set(newValue);
-      }
     }
-  }
 
-  @Override
-  public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
-    for (DataTableMetadata tdmd : tableMetadatas) {
-      if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
-        if (!createTable(tdmd)) {
-          return false;
+    private void initStorageTypes() {
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2DataStorageFactory.H2_DATA_STORAGE_TYPE));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        supportedStorageTypes.addAll(super.getStorageTypes());
+    }
+
+    H2DataStorage() throws SQLException {
+        this(url + dbIndex.incrementAndGet());
+    }
+
+    private H2DataStorage(String url) throws SQLException {
+        super(url);
+        try {
+            initStorageTypes();
+            stackStorage = new SQLStackStorage(this);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
-      }
     }
 
-    return true;
-  }
+    // FIXUP: deleting /tmp/dlight*
 
-  @Override
-  public Collection<DataStorageType> getStorageTypes() {
-    return supportedStorageTypes;
-  }
 
-  @Override
-  protected void connect(String dburl) {
-    try {
-      connection = DriverManager.getConnection(dburl, "admin", "");
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
+    static {
+        File tmpDir = new File("/tmp");
+        if (tmpDir.exists()) {
+            File[] files = tmpDir.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith("dlight");
+                }
+            });
+            int newValue = 0;
+            boolean result = true;
+            for (int i = 0; i < files.length; i++) {
+                boolean localResult = files[i].delete();
+                result = result && localResult;
+                newValue++;
+            }
+            if (!result) {
+                //should increse dbIndex??
+                dbIndex.set(newValue);
+            }
+        }
     }
 
-  }
+    @Override
+    public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
+        for (DataTableMetadata tdmd : tableMetadatas) {
+            if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
+                if (!createTable(tdmd)) {
+                    return false;
+                }
+            }
+        }
 
-  public int putStack(List<CharSequence> stack, long sampleDuration) {
-    return stackStorage.putStack(stack, sampleDuration);
-  }
-
-  public void flush() {
-    try {
-      stackStorage.flush();
-    } catch (InterruptedException ex) {
-      logger.log(Level.SEVERE, null, ex);
+        return true;
     }
-  }
 
-  public List<FunctionMetric> getMetricsList() {
-    return stackStorage.getMetricsList();
-  }
-
-  public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
-    try {
-      return stackStorage.getPeriodicStacks(startTime, endTime, interval);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-      return null;
+    @Override
+    public Collection<DataStorageType> getStorageTypes() {
+        return supportedStorageTypes;
     }
-  }
 
-  public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
-    try {
-      return stackStorage.getCallers(path, aggregate);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-      return new ArrayList<FunctionCall>();
+    @Override
+    protected void connect(String dburl) throws SQLException {
+        connection = DriverManager.getConnection(dburl, "admin", "");
     }
-  }
 
-  public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
-    try {
-      return stackStorage.getCallees(path, aggregate);
-    } catch (SQLException ex) {
-      logger.log(Level.SEVERE, null, ex);
-      return new ArrayList<FunctionCall>();
+    public int putStack(List<CharSequence> stack, long sampleDuration) {
+        return stackStorage.putStack(stack, sampleDuration);
     }
-  }
 
-  public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
-      return stackStorage.getHotSpotFunctions(metric, limit);
+    public void flush() {
+        try {
+            stackStorage.flush();
+        } catch (InterruptedException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
 
-  }
+    public List<FunctionMetric> getMetricsList() {
+        return stackStorage.getMetricsList();
+    }
 
-  @Override
-  protected String getSQLQueriesDelimeter() {
-    return SQL_QUERY_DELIMETER;
-  }
+    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
+        try {
+            return stackStorage.getPeriodicStacks(startTime, endTime, interval);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+        try {
+            return stackStorage.getCallers(path, aggregate);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return new ArrayList<FunctionCall>();
+        }
+    }
+
+    public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+        try {
+            return stackStorage.getCallees(path, aggregate);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return new ArrayList<FunctionCall>();
+        }
+    }
+
+    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+        return stackStorage.getHotSpotFunctions(metric, limit);
+
+    }
+
+    @Override
+    protected String getSQLQueriesDelimeter() {
+        return SQL_QUERY_DELIMETER;
+    }
+
+    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
+    }
 }

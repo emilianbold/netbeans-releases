@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -85,47 +84,31 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author marek
+ * @author Marek Fukala <mfukala@netbeans.org>
  * 
- * @todo extend the GSF code completion item so it can handle case like
- *       background-image: url(|) - completing url() and setting the caret 
- *       between the braces
  */
 public class CSSCompletion implements CodeCompletionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(CSSCompletion.class.getName());
     private final PropertyModel PROPERTIES = PropertyModel.instance();
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
 
+    @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CssParserResult info = (CssParserResult)context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
 
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
-        QueryType queryType = context.getQueryType();
-        boolean caseSensitive = context.isCaseSensitive();
     
-//        TokenSequence ts = LexerUtils.getCssTokenSequence(document, caretOffset);
-//        if (ts == null || prefix == null) {
-//            // No CSS tokens here: perhaps we're doing code completion in an
-//            // empty CSS context like an empty HTML style attribute; in that case,
-//            // just offer the CSS properties.
-//            return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset);
-//        }
-
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(info.getSnapshot().getText(), CSSTokenId.language());
+        TokenHierarchy th = snapshot.getTokenHierarchy();
         TokenSequence<CSSTokenId> ts = th.tokenSequence(CSSTokenId.language());
+
+        assert ts != null;
+
         ts.move(caretOffset - prefix.length());
         boolean hasNext = ts.moveNext();
 
-
-        //so far the css parser always parses the whole css content
-//        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-//        TranslatedSource source = presult.getTranslatedSource();
-        
         SimpleNode root = info.root();
-
         if (root == null) {
             //broken source
             return CodeCompletionResult.NONE;
@@ -138,7 +121,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             //the parse tree is likely broken by some text typed, 
             //but we still need to provide the completion in some cases
 
-            if (hasNext && "@".equals(ts.token().text().toString())) { //NOI18N
+            if (hasNext && ts.token().text().charAt(0) == '@') { //NOI18N
                 //complete rules
                 return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, ts.offset());
             }
@@ -239,7 +222,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
             }
 
-            Property prop = PROPERTIES.getProperty(property.image());
+            Property prop = PROPERTIES.getProperty(property.image().trim());
             if (prop != null) {
 
                 CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
@@ -426,6 +409,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
+    @Override
     public String document(ParserResult info, ElementHandle element) {
         if (element instanceof CssValueElement) {
             CssValueElement e = (CssValueElement) element;
@@ -441,10 +425,12 @@ public class CSSCompletion implements CodeCompletionHandler {
         return null;
     }
    
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
         return new ElementHandle.UrlHandle(CssHelpResolver.HELP_URL + link);
     }
     
+    @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
@@ -477,6 +463,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         }
     }
 
+    @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
@@ -496,14 +483,17 @@ public class CSSCompletion implements CodeCompletionHandler {
         return QueryType.NONE;
     }
 
+    @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return ""; //NOI18N
     }
 
+    @Override
     public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
+    @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
     }
@@ -686,7 +676,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         @Override
          public String getInsertPrefix() {
             return super.getInsertPrefix() + ":"; //NOI18N
-        }
+        } 
         
     }
 
@@ -721,22 +711,27 @@ public class CSSCompletion implements CodeCompletionHandler {
             return anchorOffset;
         }
 
+        @Override
         public String getName() {
             return value;
         }
 
+        @Override
         public String getInsertPrefix() {
             return getName();
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.OTHER;
         }
 
+        @Override
         public ImageIcon getIcon() {
             if (kind == CompletionItemKind.PROPERTY) {
                 if (propertyIcon == null) {
@@ -752,15 +747,18 @@ public class CSSCompletion implements CodeCompletionHandler {
             return null;
         }
 
+        @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             return formatter.getText();
         }
 
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             return null;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
@@ -774,10 +772,12 @@ public class CSSCompletion implements CodeCompletionHandler {
             return false;
         }
 
+        @Override
         public String getCustomInsertTemplate() {
             return null;
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }

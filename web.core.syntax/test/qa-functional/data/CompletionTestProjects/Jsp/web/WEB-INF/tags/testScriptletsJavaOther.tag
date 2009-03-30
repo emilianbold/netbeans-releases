@@ -11,9 +11,9 @@
 
 <%-- Java completion for HttpSession object methods --%>
 <%--CC
-<% request.getSession().|   %>
-void setAttribute (String name , Object value )
-<% request.getSession().setAttribute(name, value);   %>
+<% request.getSession().|
+void removeAttribute (String name )
+<% request.getSession().removeAttribute(name)
 --%>
 
 <%-- Java completion for session object --%>

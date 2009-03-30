@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  * Helper utility class
  */
 public class Utilities {
-    
+
     private Utilities() {}
     
     public static boolean isSupportedVersion(HudsonVersion version) {
@@ -85,6 +85,17 @@ public class Utilities {
         } catch (URISyntaxException x) {
             throw (IllegalArgumentException) new IllegalArgumentException(x.toString()).initCause(x);
         }
+    }
+
+    /**
+     * Inverse of {@link #uriEncode}.
+     */
+    public static String uriDecode(String string) {
+        String d = URI.create(string).getPath();
+        if (d.contains("/")) {
+            throw new IllegalArgumentException(d);
+        }
+        return d;
     }
 
         /**

@@ -47,7 +47,7 @@ public abstract class FunctionCall{
   private final long offset;
 
   protected FunctionCall(Function function) {
-    this(function, 0);
+    this(function, -1);
   }
 
   protected FunctionCall(Function function, long offset) {
@@ -61,6 +61,10 @@ public abstract class FunctionCall{
 
   public final long getOffset(){
       return offset;
+  }
+
+  public final boolean hasOffset(){
+      return offset >= 0;
   }
 
   public abstract Object getMetricValue(FunctionMetric metric);

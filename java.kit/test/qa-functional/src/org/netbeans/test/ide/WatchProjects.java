@@ -235,8 +235,16 @@ public final class WatchProjects {
             }
             Object now = ret;
             ret = f.get(now);
-            f.set(now, null);
-            Assert.assertEquals("Field is really cleared " + f, null, f.get(now));
+            for (int tryHarder = 0;; tryHarder++) {
+                f.set(now, null);
+                if (f.get(now) == null) {
+                    break;
+                }
+                if (tryHarder == 10) {
+                    Assert.fail("Field is really cleared " + f + " but was: " + f.get(now));
+                }
+                Thread.sleep(100);
+            }
             if (ret == null) {
                 LOG.info("Getting " + f + " from " + now + " returned null");
                 break;

@@ -311,6 +311,10 @@ public class HudsonConnector {
                             job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
                             job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals("module")) { // NOI18N
+                            Element e = (Element) d;
+                            job.addModule(Utilities.xpath("name", e), Utilities.xpath("displayName", e), // NOI18N
+                                    Color.valueOf(Utilities.xpath("color", e)), Utilities.xpath("url", e)); // NOI18N
                         }
                     }
                 }
@@ -350,7 +354,6 @@ public class HudsonConnector {
     }
     
     Document getDocument(String url) {
-        LOG.log(Level.FINER, "Loading: {0}", url);
         Document doc = null;
         
         try {
@@ -401,4 +404,5 @@ public class HudsonConnector {
         
         return doc;
     }
+
 }

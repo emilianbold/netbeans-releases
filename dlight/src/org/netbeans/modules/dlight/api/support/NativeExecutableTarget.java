@@ -93,6 +93,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
+        Map<String, String> info = configuration.getInfo();
+        for (String name: info.keySet()){
+            putToInfo(name, info.get(name));
+        }
 
         String[] argsCopy = null;
         if (args != null) {

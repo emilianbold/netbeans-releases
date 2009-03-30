@@ -51,9 +51,15 @@ public interface Call extends Comparable<Call>{
 
     /**
      * 
-     * @return Function call lime to display in text pane
+     * @return Function call text to display in text pane
      */
     String getHtmlDisplayName();
+
+    /**
+     *
+     * @return Function call context
+     */
+    String getDescription();
 
     Function getCallee();
     Function getCaller();

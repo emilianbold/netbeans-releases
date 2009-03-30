@@ -104,7 +104,10 @@ public class GotoOppositeAction extends CallableSystemAction {
     @Override
     public boolean isEnabled() {
         assert EventQueue.isDispatchThread();
-        
+        EditorCookie ec =  Utilities.actionsGlobalContext().lookup(EditorCookie.class);
+        if (ec == null || ec.getDocument() == null) {
+            return false;
+        }
         return getCurrentFileType() != FileType.NEITHER;
     }
 
@@ -235,7 +238,7 @@ public class GotoOppositeAction extends CallableSystemAction {
         
         return false;
     }
-    
+
     private FileObject getApplicableFileObject(int[] caretPosHolder) {
         if (!EventQueue.isDispatchThread()) {
             // Unsafe to ask for an editor pane from a random thread.
