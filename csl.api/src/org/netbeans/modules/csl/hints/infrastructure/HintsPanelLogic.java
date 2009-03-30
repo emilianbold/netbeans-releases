@@ -180,10 +180,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 try {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         public @Override void run(ResultIterator resultIterator) throws Exception {
-// XXX: parsingapi
-//                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-//                                return;
-//                            }
                             GsfHintsManager.refreshHints(resultIterator);
                         }
                     });
