@@ -158,9 +158,10 @@ public final class ConnectionManager {
         if (env.isLocal()) {
             return true;
         }
-        
+
         synchronized (lock) {
-            if (getSession(env) != null) {
+            Session session = getSession(env);
+            if (session != null && session.isConnected()) {
                 // just return if already connected ...
                 return false;
             }
@@ -225,9 +226,9 @@ public final class ConnectionManager {
                         }
 
                         Throwable cause = e.getCause();
-                        
+
                         if (cause != null && cause instanceof IOException) {
-                            throw (IOException)cause;
+                            throw (IOException) cause;
                         }
 
                         // Should not happen
@@ -262,11 +263,11 @@ public final class ConnectionManager {
                 Throwable cause = ex.getCause();
                 if (cause != null) {
                     if (cause instanceof IOException) {
-                        throw (IOException)cause;
+                        throw (IOException) cause;
                     }
 
                     if (cause instanceof CancellationException) {
-                        throw (CancellationException)cause;
+                        throw (CancellationException) cause;
                     }
                 }
                 // Should not happen
@@ -278,7 +279,7 @@ public final class ConnectionManager {
             if (session != null) {
                 sessions.put(env.toString(), session);
                 HostInfoUtils.updateHostInfo(env);
-                
+
                 log.info("New connection established: " + env.toString()); // NOI18N
                 return true;
             }

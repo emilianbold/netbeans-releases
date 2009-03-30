@@ -36,44 +36,69 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.regex.Pattern;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
  *
  * @author ak119685
  */
-public final class EnvWriter {
+public class MacroHashMapTest {
 
-    private final OutputStream os;
-
-    public EnvWriter(OutputStream os) {
-        this.os = os;
+    public MacroHashMapTest() {
     }
 
-    public void write(final MacroMap env) throws IOException {
-        if (!env.isEmpty()) {
-            String val = null;
-            // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
-                    continue;
-                }
-
-                val = env.get(var);
-
-                if (val != null) {
-                    // TODO: is it safe to replace all '\' with '/'?
-                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
-                    os.flush();
-                }
-            }
-        }
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of put method, of class MacroMap.
+     */
+    @Test
+    public void test() {
+        System.out.println("put"); // NOI18N
+        MacroExpander expander = MacroExpanderFactory.getExpander(new ExecutionEnvironment());
+        MacroMap m = new CaseInsensitiveMacroMap(expander);
+
+        m.put("PAtH", "/bin:$PATH:/home/$USER"); // NOI18N
+        m.put("USER", "UserName"); // NOI18N
+        m.put("Path", "/first:$PATH"); // NOI18N
+        m.put("USER", "AnotherUser"); // NOI18N
+        m.put("PaTH", "$PATH:/usr/bin"); // NOI18N
+
+        System.out.println(m.toString());
+
+        m = new MacroMap(expander);
+
+        m.put("PAtH", "/bin:$PATH:/home/$USER"); // NOI18N
+        m.put("USER", "UserName"); // NOI18N
+        m.put("Path", "/first:$PATH"); // NOI18N
+        m.put("USER", "AnotherUser"); // NOI18N
+        m.put("PaTH", "$PATH:/usr/bin"); // NOI18N
+
+        System.out.println(m.toString());
+    }
+
 }
