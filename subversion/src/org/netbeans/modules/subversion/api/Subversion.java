@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.api;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -56,6 +57,7 @@ import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -176,11 +178,10 @@ public class Subversion {
         return true;
     }
 
-
     /**
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
-     * 
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -203,6 +204,7 @@ public class Subversion {
                                         localFolder,
                                         null,
                                         null,
+                                        false,
                                         scanForNewProjects);
     }
 
@@ -210,6 +212,40 @@ public class Subversion {
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
      * 
+     * @param  repositoryUrl  URL of the Subversion repository
+     * @param  relativePaths  relative paths denoting folder the folder in the
+     *                       repository that is to be checked-out; to specify
+     *                       that the whole repository folder should be
+     *                       checked-out, use use a sing arrya containig one empty string
+     * @param  localFolder  local folder to store the checked-out files to
+     * @param  atLocalFolderLevel if true the contents from the remote url with be
+     *         checked out into the given local folder, otherwise a new folder with the remote
+     *         folders name will be created in the local folder
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
+     *
+     * @return  {@code true} if the checkout was successful,
+     *          {@code false} otherwise
+     */
+    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+                                                   String[] relativePaths,
+                                                   File localFolder,
+                                                   boolean atLocalFolderLevel,
+                                                   boolean scanForNewProjects)
+            throws MalformedURLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+        return checkoutRepositoryFolder(repositoryUrl,
+                                        relativePaths,
+                                        localFolder,
+                                        null,
+                                        null,
+                                        scanForNewProjects);
+    }
+
+    /**
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -228,32 +264,55 @@ public class Subversion {
                                                    File localFolder,
                                                    String username,
                                                    String password,
+                                                   boolean scanForNewProjects) throws MalformedURLException {
+        return checkoutRepositoryFolder(
+                repositoryUrl,
+                repoRelativePaths,
+                localFolder,
+                username,
+                password,
+                false,
+                scanForNewProjects);
+    }
+
+    /**
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     * 
+     * @param  repositoryUrl  URL of the Subversion repository
+     * @param  relativePaths  relative paths denoting folder the folder in the
+     *                       repository that is to be checked-out; to specify
+     *                       that the whole repository folder should be
+     *                       checked-out, use a string array containig one empty string
+     * @param  localFolder  local folder to store the checked-out files to
+     * @param  username  username for access to the given repository
+     * @param  password  password for access to the given repository
+     * @param  atLocalFolderLevel if true the contents from the remote url with be
+     *         checked out into the given local folder, otherwise a new folder with the remote
+     *         folders name will be created in the local folder
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
+     * @return  {@code true} if the checkout was successful,
+     *          {@code false} otherwise
+     */
+    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+                                                   String[] repoRelativePaths,
+                                                   File localFolder,
+                                                   String username,
+                                                   String password,
+                                                   boolean atLocalFolderLevel,
                                                    boolean scanForNewProjects)
             throws MalformedURLException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-
-        org.netbeans.modules.subversion.Subversion subversion
-                = org.netbeans.modules.subversion.Subversion.getInstance();
-        if(!subversion.checkClientAvailable()) {
-            return false;
-        }
 
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
-        SvnClient client;
-        try {
-            client = (username != null)
-                               ? subversion.getClient(svnUrl,
-                                                      username,
-                                                      (password != null) ? password
-                                                                         : "") //NOI18N
-                               : subversion.getClient(svnUrl);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, true);
+        SvnClient client = getClient(svnUrl, username, password);
+        if(client == null) {
             return false;
         }
 
@@ -275,7 +334,7 @@ public class Subversion {
                 client,
                 repositoryFiles,
                 localFolder,
-                false,             // do not checkout at working dir level
+                atLocalFolderLevel,
                 scanForNewProjects).waitFinished();
 
         try {
@@ -284,6 +343,31 @@ public class Subversion {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
         return true;
+    }
+
+    /**
+     * Creates a new remote folder with the given url. Missing parents also wil be created.
+     *
+     * @param url
+     * @param user
+     * @param password
+     * @param message
+     * @throws java.net.MalformedURLException
+     * @throws java.io.IOException
+     */
+    public static void mkdir(String url, String user, String password, String message) throws MalformedURLException, IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+
+        SVNUrl svnUrl = new SVNUrl(url);
+
+        SvnClient client = getClient(svnUrl, user, password);
+        try {
+            client.mkdir(svnUrl, true, message);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, true);
+            throw new IOException(ex.getMessage());
+        }
+
     }
 
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
@@ -385,4 +469,23 @@ public class Subversion {
         return (buf != null) ? buf.toString() : str;
     }
 
+    private static SvnClient getClient(SVNUrl url, String username, String password) {
+        org.netbeans.modules.subversion.Subversion subversion
+                = org.netbeans.modules.subversion.Subversion.getInstance();
+        if(!subversion.checkClientAvailable()) {
+            return null;
+        }
+        
+        try {
+            if(username != null) {
+                password = password != null ? password : "";                    // NOI18N
+                return subversion.getClient(url, username, password);
+            } else {
+                return subversion.getClient(url);
+            }
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, true);
+        }        
+        return null;
+    }
 }
