@@ -45,8 +45,6 @@ import java.util.Collection;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
-import org.netbeans.modules.tasklist.trampoline.TaskGroup;
-import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -72,7 +70,9 @@ public class Loader implements Runnable, Cancellable {
     }
 
     public void run() {
-        FileObject[] roots = scope.getRoots();
+        FileObject[] roots = scope.getLookup().lookup(FileObject[].class);
+        if( null == roots || roots.length == 0 )
+            return;
         ArrayList<Task> loadedTasks = new ArrayList<Task>(100);
         try {
             QuerySupport qs = QuerySupport.forRoots("TaskListIndexer", 1, roots);

@@ -47,22 +47,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -278,14 +270,13 @@ public class TaskManagerImpl extends TaskManager {
         synchronized( this ) {
             if( this.scope.equals( scopeToRefresh ) ) {
                 taskList.clear();
-                //TODO clear index cache
                 if( isObserved() ) {
                     for( PushTaskScanner scanner : ScannerList.getPushScannerList().getScanners() ) {
                         scanner.setScope( null, null );
                         if( getFilter().isEnabled( scanner ) )
                             scanner.setScope( scopeToRefresh, Accessor.createCallback( this, scanner ) );
                     }
-                    //TODO request rescan
+                    startLoading();
                 }
             }
         }

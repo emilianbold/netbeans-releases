@@ -48,13 +48,11 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
-import org.netbeans.modules.tasklist.impl.ScannerList;
 import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
-import org.netbeans.modules.tasklist.trampoline.TaskGroup;
-import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
+import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -73,8 +71,10 @@ public class TaskIndexer extends CustomIndexer {
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         try {
+            //TODO create lazily
             TaskManagerImpl tm = TaskManagerImpl.getInstance();
             TaskFilter filter = tm.getFilter();
+            TaskScanningScope scope = tm.getScope();
             ArrayList<FileTaskScanner> scanners = new ArrayList<FileTaskScanner>( 20 );
             for( FileTaskScanner s : tm.getFileScanners() ) {
                 if( filter.isEnabled(s) ) {
@@ -94,7 +94,8 @@ public class TaskIndexer extends CustomIndexer {
                     List<? extends Task> tasks = scanner.scan(fo);
                     if( null == tasks || tasks.isEmpty() )
                         continue;
-                    taskList.update(scanner, fo, new ArrayList<Task>(tasks), filter);
+                    if( scope.isInScope(fo) )
+                        taskList.update(scanner, fo, new ArrayList<Task>(tasks), filter);
                     if( null == doc ) {
                         doc = is.createDocument(idx);
                         is.addDocument(doc);
@@ -114,7 +115,6 @@ public class TaskIndexer extends CustomIndexer {
     }
 
     private static String encode( Task t ) {
-        //TODO add group
         int line = Accessor.DEFAULT.getLine(t);
         String group = Accessor.DEFAULT.getGroup(t).getName();
         String description = Accessor.DEFAULT.getDescription(t);
