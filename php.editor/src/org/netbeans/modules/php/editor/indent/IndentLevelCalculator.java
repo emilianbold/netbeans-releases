@@ -142,8 +142,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
             int endOfFirstLine = Utilities.getRowEnd(doc, node.getStartOffset());
 
             if (endOfFirstLine < node.getEndOffset()){
-                indentLevels.put(endOfFirstLine + 1, continuationIndentSize);
-                indentLevels.put(node.getEndOffset(), -1 * continuationIndentSize);
+                addIndentLevel(endOfFirstLine + 1, continuationIndentSize);
+                addIndentLevel(node.getEndOffset(), -1 * continuationIndentSize);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -156,8 +156,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
             ASTNode lastNode = stmts.get(stmts.size() - 1);
             int start = firstNonWSBwd(doc, firstNode.getStartOffset());
             int end = firstNonWSFwd(doc, lastNode.getEndOffset());
-            indentLevels.put(start, indentSize);
-            indentLevels.put(end, -1 * indentSize);
+            addIndentLevel(start, indentSize);
+            addIndentLevel(end, -1 * indentSize);
         }
     }
 
@@ -168,8 +168,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         if (paramCount > 0){
             FormalParameter firstParam = node.getFormalParameters().get(0);
             FormalParameter lastParam = node.getFormalParameters().get(paramCount -1);
-            indentLevels.put(firstParam.getStartOffset(), continuationIndentSize);
-            indentLevels.put(lastParam.getEndOffset(), -1 * continuationIndentSize);
+            addIndentLevel(firstParam.getStartOffset(), continuationIndentSize);
+            addIndentLevel(lastParam.getEndOffset(), -1 * continuationIndentSize);
         }
 
         super.visit(node);
@@ -179,8 +179,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         if (node != null && !(node instanceof Block)) {
             int start = firstNonWSBwd(doc, node.getStartOffset());
             int end = firstNonWSFwd(doc, node.getEndOffset());
-            indentLevels.put(start, indentSize);
-            indentLevels.put(end, -1 * indentSize);
+            addIndentLevel(start, indentSize);
+            addIndentLevel(end, -1 * indentSize);
         }
     }
 
@@ -212,5 +212,12 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         }
 
         return r;
+    }
+
+    private void addIndentLevel(int offset, int indent){
+        Integer existingIndent = indentLevels.get(offset);
+
+        int newIndent = existingIndent == null ? indent : indent + existingIndent;
+        indentLevels.put(offset, newIndent);
     }
 }
