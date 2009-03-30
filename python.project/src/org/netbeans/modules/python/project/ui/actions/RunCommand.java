@@ -1,6 +1,7 @@
 
 package org.netbeans.modules.python.project.ui.actions;
 
+import java.io.File;
 import org.netbeans.modules.python.api.PythonExecution;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.project.PythonProject;
@@ -55,7 +56,7 @@ public class RunCommand extends Command {
         final PythonPlatform platform = checkProjectPythonPlatform(pyProject);
         if ( platform == null )
           return ; // invalid platform user has been warn in check so safe to return
-        
+         
         if (getProperties().getMainModule() == null ||
                 getProperties().getMainModule().equals("")){
             String main = Utils.chooseMainModule(getProject().getSourceRoots().getRoots());
@@ -63,10 +64,15 @@ public class RunCommand extends Command {
             getProperties().save();
         }
         //System.out.println("main module " + getProperties().getMainModule());
-        FileObject script = findMainFile(pyProject);
+        FileObject script = findMainFile(pyProject);       
+        //assert script != null;        
+        if (script == null ){
+            String main = Utils.chooseMainModule(getProject().getSourceRoots().getRoots());
+            getProperties().setMainModule(main);
+            getProperties().save();
+            script = findMainFile(pyProject);
+        }
         final FileObject parent = script.getParent();
-        assert script != null;
-
         PythonExecution pyexec = new PythonExecution();
         pyexec.setDisplayName (ProjectUtils.getInformation(pyProject).getDisplayName());                
         //Set work dir - probably we need a property to store work dir
