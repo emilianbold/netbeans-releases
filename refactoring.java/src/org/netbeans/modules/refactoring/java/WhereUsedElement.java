@@ -189,11 +189,11 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         long lastLine = lm.getLineNumber(eof);
         long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
-        sb.append(content.subSequence((int)start,(int)end));
+        sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
@@ -246,11 +246,11 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         long lastLine = lm.getLineNumber(eof);
         long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
-        sb.append(content.subSequence((int)start,(int)end));
+        sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
