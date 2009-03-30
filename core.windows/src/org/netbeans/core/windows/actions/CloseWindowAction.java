@@ -64,7 +64,17 @@ implements PropertyChangeListener {
         putValue(NAME, NbBundle.getMessage(CloseWindowAction.class, "CTL_CloseWindowAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
-        updateEnabled();
+        // #161406 WindowsAPI to be called from AWT thread only.
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateEnabled();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    updateEnabled();
+                }
+            });
+        }
     }
     
     private TopComponent tc;
