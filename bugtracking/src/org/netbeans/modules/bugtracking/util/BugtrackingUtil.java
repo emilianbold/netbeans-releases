@@ -272,6 +272,10 @@ public class BugtrackingUtil {
             }
         }
 
+        return getContextFromProjects();
+    }
+
+    public static File getContextFromProjects() {
         final OpenProjects projects = OpenProjects.getDefault();
 
         Project mainProject = projects.getMainProject();
