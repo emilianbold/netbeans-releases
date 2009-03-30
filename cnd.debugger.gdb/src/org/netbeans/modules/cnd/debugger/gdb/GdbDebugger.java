@@ -723,6 +723,8 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public boolean comparePaths(String path1, String path2) {
+        path1 = path1.trim();
+        path2 = path2.trim();
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             return winpath(path1).toLowerCase().equals(winpath(path2).toLowerCase());
         }
