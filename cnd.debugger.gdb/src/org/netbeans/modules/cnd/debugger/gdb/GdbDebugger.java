@@ -98,6 +98,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -1331,6 +1333,9 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private static final String KILL_PATH1 = "/usr/bin/kill";
+    private static final String KILL_PATH2 = "/bin/kill";
+
     /**
      * Send a kill command to the debuggee.
      *
@@ -1343,19 +1348,20 @@ public class GdbDebugger implements PropertyChangeListener {
             File f;
 
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                //TODO: Windows supported only locally for now
                 f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", null, false); // NOI18N
                 if (f.exists()) {
                     killcmd.add(f.getAbsolutePath());
                 }
             } else {
-                f = new File("/usr/bin/kill"); // NOI18N
-                if (f.exists()) {
-                    killcmd.add(f.getAbsolutePath());
-                } else {
-                    f = new File("/bin/kill"); // NOI18N
-                    if (f.exists()) {
-                        killcmd.add(f.getAbsolutePath());
+                try {
+                    if (HostInfoUtils.fileExists(execEnv, KILL_PATH1)) {
+                        killcmd.add(KILL_PATH1);
+                    } else if (HostInfoUtils.fileExists(execEnv, KILL_PATH2)) {
+                        killcmd.add(KILL_PATH2);
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
             if (!killcmd.isEmpty()) {
@@ -1378,10 +1384,13 @@ public class GdbDebugger implements PropertyChangeListener {
                 killcmd.add(signalName);
 
                 killcmd.add(Long.toString(pid));
-                ProcessBuilder pb = new ProcessBuilder(killcmd);
+                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0));
+                String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
+                // setArguments returns new builder instance, so it is necessary to reassign it...
+                npb = npb.setArguments(args);
                 try {
-                    pb.start();
-                } catch (IOException ex) {
+                    npb.call();
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 gdb.getLogger().logMessage("External Command: " + killcmd.toString()); // NOI18N
