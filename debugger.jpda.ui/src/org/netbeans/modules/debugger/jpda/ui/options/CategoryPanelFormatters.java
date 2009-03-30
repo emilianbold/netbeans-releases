@@ -392,6 +392,9 @@ class CategoryPanelFormatters extends StorablePanel {
         int index = formattersList.getSelectedIndex();
         if (index < 0) return ;
         ((DefaultListModel) formattersList.getModel()).remove(index);
+        if (index < formattersList.getModel().getSize() || --index >= 0) {
+            formattersList.setSelectedIndex(index);
+        }
     }//GEN-LAST:event_formattersRemoveButtonActionPerformed
 
     private void formattersMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersMoveUpButtonActionPerformed
@@ -454,6 +457,9 @@ class CategoryPanelFormatters extends StorablePanel {
         if (index < 0) return ;
         DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
         model.removeRow(index);
+        if (index < formatChildrenListTable.getRowCount() || --index >= 0) {
+            formatChildrenListTable.setRowSelectionInterval(index, index);
+        }
     }//GEN-LAST:event_variableRemoveButtonActionPerformed
 
     private void variableMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveUpButtonActionPerformed

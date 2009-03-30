@@ -312,7 +312,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         if (index < 0) return ;
         DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
         model.removeRow(index);
-        if (--index >= 0) {
+        if (index < filterClassesTable.getRowCount() || --index >= 0) {
             filterClassesTable.setRowSelectionInterval(index, index);
         }
     }//GEN-LAST:event_filterRemoveButtonActionPerformed
