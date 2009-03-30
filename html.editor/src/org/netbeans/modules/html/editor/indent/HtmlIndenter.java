@@ -76,7 +76,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
         return token.id() == HTMLTokenId.TAG_OPEN ||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE"));
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().toUpperCase().startsWith("<!DOCTYPE"));
     }
 
     @Override
@@ -250,15 +250,15 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
         return isOpenTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script")) && isOpeningTag(ts);
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script")) && isOpeningTag(ts);
     }
 
     @Override
     protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
         return isCloseTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script"));
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script"));
     }
 
 }

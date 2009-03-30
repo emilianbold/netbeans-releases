@@ -155,6 +155,11 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n  </pre>",
             "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n</pre>", null);
+
+        // #161341
+        format(
+            "<!doctype html public \"unknown\">",
+            "<!doctype html public \"unknown\">", null);
     }
 
     public void testFormattingHTML() throws Exception {
