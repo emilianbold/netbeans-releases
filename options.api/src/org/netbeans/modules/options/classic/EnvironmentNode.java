@@ -39,18 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.modules.options.classic;
 
-import org.netbeans.core.ui.LookupNode;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ToolsAction;
 import org.openide.loaders.DataFolder;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /** This object represents environment settings in the Corona system.
@@ -59,30 +56,17 @@ import org.openide.util.actions.SystemAction;
 *
 * @author Petr Hamernik, Dafe Simonek
 */
-final class EnvironmentNode extends AbstractNode {
+final class EnvironmentNode {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 4782447107972624693L;
     /** name of section to filter */
     private String filter;
-    /** icon base for icons of this node */
-    private static final String EN_ICON_BASE = "org/netbeans/core/resources/"; // NOI18N
     /** map between type of node and the parent node for this type */
     private static java.util.HashMap<String, Node> types = new java.util.HashMap<String, Node> (11);
     /** A lock for the find method. */
     private static final Object lock = new Object();
-
-    /** Type to add an entry to the root nodes. */
-    public static final String TYPE_ROOTS = "roots"; // NOI18N
     /** Type to add an entry to the Session settings. */
     public static final String TYPE_SESSION = "session"; // NOI18N
-    
-    /** Constructor */
-    private EnvironmentNode (String filter, Children children) {
-        super (children);
-        this.filter = filter;
-        decorateNode(filter, this);
-    }
-    
     
     /** Finds the node for given name.
      */
@@ -95,12 +79,8 @@ final class EnvironmentNode extends AbstractNode {
                         Node n = types.get (name);
                         if (n == null) {
                             DataFolder folder = null;
-                            if (TYPE_ROOTS.equals(name)) {
-                                folder = NbPlaces.getDefault().findSessionFolder("UI/Roots");
-                            } else {
-                                assert TYPE_SESSION.equals(name) : name;
-                                folder = NbPlaces.getDefault().findSessionFolder("UI/Services"); // NOI18N
-                            }
+                            assert TYPE_SESSION.equals(name) : name;
+                            folder = NbPlaces.findSessionFolder("UI/Services"); // NOI18N
 
                             n = new PersistentLookupNode(name, folder);
                             types.put (name, n);
@@ -113,14 +93,6 @@ final class EnvironmentNode extends AbstractNode {
             return retValue;
         }
         throw new IllegalStateException();
-    }
-    
-    private static void decorateNode (String name, AbstractNode node) {
-        String resourceName = "CTL_" + name + "_name"; // NOI18N
-        String iconBase = EN_ICON_BASE + name.toLowerCase () + ".gif";
-        
-        node.setDisplayName(NbBundle.getMessage (EnvironmentNode.class, resourceName));
-        node.setIconBaseWithExtension(iconBase);
     }
         
 
@@ -142,11 +114,6 @@ final class EnvironmentNode extends AbstractNode {
                };
     }
 
-    /** For deserialization */
-    public Node.Handle getHandle () {
-        return new EnvironmentHandle (filter);
-    }
-
     /** Adds serialization support to LookupNode */
     private static final class PersistentLookupNode extends LookupNode 
     implements java.beans.PropertyChangeListener {
@@ -156,11 +123,6 @@ final class EnvironmentNode extends AbstractNode {
         public PersistentLookupNode (String filter, DataFolder folder) {
             super(folder);
             this.filter = filter;
-            
-            if (TYPE_ROOTS.equals(filter)) {
-                folder.addPropertyChangeListener(
-                    org.openide.util.WeakListeners.propertyChange(this, folder));
-            }
         }
         
         public Node.Handle getHandle () {

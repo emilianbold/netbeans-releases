@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.actions;
+package org.netbeans.modules.options.classic;
 
 import java.awt.CardLayout;
 import java.awt.Color;

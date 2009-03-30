@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.projects;
+package org.netbeans.modules.options.classic;
 
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;

@@ -39,22 +39,38 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.beaninfo;
+package org.netbeans.modules.options.classic;
 
-import java.beans.*;
+import javax.swing.ActionMap;
+import javax.swing.JPanel;
+import javax.swing.text.DefaultEditorKit;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 
-import org.openide.loaders.DataLoader;
-import org.openide.util.Exceptions;
+/** Common panel to be used in core beaninfo and editors.
+ */
+public class ExplorerPanel extends JPanel implements ExplorerManager.Provider {
+    private ExplorerManager manager = new ExplorerManager();
 
-public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
-
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
-        } catch (IntrospectionException ie) {
-            Exceptions.printStackTrace(ie);
-            return null;
-        }
+    public ExplorerPanel() {
+        manager = new ExplorerManager();
+        ActionMap map = getActionMap();
+        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true));
     }
 
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    public void addNotify() {
+        super.addNotify();
+        ExplorerUtils.activateActions(manager, true);
+    }
+    public void removeNotify() {
+        ExplorerUtils.activateActions(manager, false);
+        super.removeNotify();
+    }
 }
+

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.modules.options.classic;
 
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
@@ -88,30 +88,6 @@ public final class NbPlaces extends Object {
     /** Session node */
     public Node session () {
         return EnvironmentNode.find(EnvironmentNode.TYPE_SESSION); 
-    }
-
-    /** Root nodes.
-    */
-    public Node[] roots () {
-        return EnvironmentNode.find(EnvironmentNode.TYPE_ROOTS).getChildren ().getNodes (); 
-    }
-
-    /** Default folder for toolbars.
-    */
-    public DataFolder toolbars () {
-        return findSessionFolder ("Toolbars"); // NOI18N
-    }
-
-    /** Default folder for menus.
-    */
-    public DataFolder menus () {
-        return findSessionFolder ("Menu"); // NOI18N
-    }
-
-    /** Default folder for actions pool.
-    */
-    public DataFolder actions () {
-        return findSessionFolder ("Actions"); // NOI18N
     }
 
      /**
