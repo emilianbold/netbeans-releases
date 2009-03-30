@@ -60,10 +60,10 @@ import org.openide.util.NbBundle;
  *
  * @author Libor Kotouc
  */
-public class HTMLPaletteActions extends PaletteActions {
+public class HtmlPaletteActions extends PaletteActions {
     
     /** Creates a new instance of FormPaletteProvider */
-    public HTMLPaletteActions() {
+    public HtmlPaletteActions() {
     }
 
     public Action[] getImportActions() {
@@ -83,14 +83,14 @@ public class HTMLPaletteActions extends PaletteActions {
     }
 
     public Action getPreferredAction( Lookup item ) {
-        return new HTMLPaletteInsertAction(item);
+        return new HtmlPaletteInsertAction(item);
     }
     
-    private static class HTMLPaletteInsertAction extends AbstractAction {
+    private static class HtmlPaletteInsertAction extends AbstractAction {
         
         private Lookup item;
         
-        HTMLPaletteInsertAction(Lookup item) {
+        HtmlPaletteInsertAction(Lookup item) {
             this.item = item;
         }
                 
@@ -104,7 +104,7 @@ public class HTMLPaletteActions extends PaletteActions {
             
             JTextComponent target = Utilities.getFocusedComponent();
             if (target == null) {
-                String msg = NbBundle.getMessage(HTMLPaletteActions.class, "MSG_ErrorNoFocusedDocument");
+                String msg = NbBundle.getMessage(HtmlPaletteActions.class, "MSG_ErrorNoFocusedDocument");
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -117,7 +117,7 @@ public class HTMLPaletteActions extends PaletteActions {
             }
             
             try {
-                PaletteController pc = HTMLPaletteFactory.getPalette();
+                PaletteController pc = HtmlPaletteFactory.getPalette();
                 pc.clearSelection();
             }
             catch (IOException ioe) {

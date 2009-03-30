@@ -46,13 +46,13 @@ import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -76,7 +76,7 @@ import org.openide.util.Exceptions;
  *
  * @author Marek Fukala
  */
-public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
+public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
     private LanguagePath htmlLanguagePath;
@@ -84,11 +84,11 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
     private static final String BLOCK_COMMENT_END = "-->"; //NOI18N
     static boolean testMode = false;
 
-    public HTMLBracesMatching() {
+    public HtmlBracesMatching() {
         this(null, null);
     }
 
-    private HTMLBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
+    private HtmlBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
         this.context = context;
         this.htmlLanguagePath = htmlLanguagePath;
     }
@@ -99,10 +99,10 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(context.getDocument());
+            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(context.getDocument());
             TokenHierarchy th = TokenHierarchy.get(context.getDocument());
 
-            if (ts.language() == HTMLTokenId.language()) {
+            if (ts.language() == HtmlTokenId.language()) {
                 ts.move(context.getSearchOffset());
                 //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
                 if (ts.moveNext()) {
@@ -117,14 +117,14 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             Token t2 = ts.token();
                             if (!tokenInTag(t2)) {
                                 return null;
-                            } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                            } else if (t2.id() == HtmlTokenId.TAG_OPEN_SYMBOL) {
                                 //find end
                                 int tagNameEnd = -1;
                                 while (ts.moveNext()) {
                                     Token t3 = ts.token();
-                                    if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                                    if (!tokenInTag(t3) || t3.id() == HtmlTokenId.TAG_OPEN_SYMBOL) {
                                         return null;
-                                    } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                                    } else if (t3.id() == HtmlTokenId.TAG_CLOSE_SYMBOL) {
                                         if ("/>".equals(t3.text().toString())) {
                                             //do no match empty tags
                                             return null;
@@ -139,14 +139,14 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                                 return new int[]{from, to};
                                             }
                                         }
-                                    } else if (t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
+                                    } else if (t3.id() == HtmlTokenId.TAG_OPEN || t3.id() == HtmlTokenId.TAG_CLOSE) {
                                         tagNameEnd = t3.offset(th) + t3.length();
                                     }
                                 }
                                 break;
                             }
                         } while (ts.movePrevious());
-                    } else if (t.id() == HTMLTokenId.BLOCK_COMMENT) {
+                    } else if (t.id() == HtmlTokenId.BLOCK_COMMENT) {
                         String tokenImage = t.text().toString();
                         if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < (t.offset(th)) + BLOCK_COMMENT_START.length()) {
                             return new int[]{t.offset(th), t.offset(th) + BLOCK_COMMENT_START.length()};
@@ -163,7 +163,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     private boolean tokenInTag(Token t) {
-        return t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL || t.id() == HTMLTokenId.TAG_OPEN_SYMBOL || t.id() == HTMLTokenId.TAG_OPEN || t.id() == HTMLTokenId.TAG_CLOSE || t.id() == HTMLTokenId.WS || t.id() == HTMLTokenId.ARGUMENT || t.id() == HTMLTokenId.VALUE || t.id() == HTMLTokenId.VALUE_CSS || t.id() == HTMLTokenId.VALUE_JAVASCRIPT || t.id() == HTMLTokenId.OPERATOR || t.id() == HTMLTokenId.EOL;
+        return t.id() == HtmlTokenId.TAG_CLOSE_SYMBOL || t.id() == HtmlTokenId.TAG_OPEN_SYMBOL || t.id() == HtmlTokenId.TAG_OPEN || t.id() == HtmlTokenId.TAG_CLOSE || t.id() == HtmlTokenId.WS || t.id() == HtmlTokenId.ARGUMENT || t.id() == HtmlTokenId.VALUE || t.id() == HtmlTokenId.VALUE_CSS || t.id() == HtmlTokenId.VALUE_JAVASCRIPT || t.id() == HtmlTokenId.OPERATOR || t.id() == HtmlTokenId.EOL;
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
@@ -186,9 +186,9 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return;
                     }
 
-                    if (!source.getMimeType().equals(HTMLKit.HTML_MIME_TYPE)) {
+                    if (!source.getMimeType().equals(HtmlKit.HTML_MIME_TYPE)) {
                         //find embedded result iterator
-                        resultIterator = Utils.getResultIterator(resultIterator, HTMLKit.HTML_MIME_TYPE);
+                        resultIterator = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
                     }
 
                     if (resultIterator == null) {
@@ -264,15 +264,15 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     //BracesMatcherFactory implementation
     public BracesMatcher createMatcher(final MatcherContext context) {
-        final HTMLBracesMatching[] ret = {null};
+        final HtmlBracesMatching[] ret = {null};
         context.getDocument().render(new Runnable() {
 
             public void run() {
                 TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
 
                 //test if the html sequence is the top level one
-                if (hierarchy.tokenSequence().language() == HTMLTokenId.language()) {
-                    ret[0] = new HTMLBracesMatching(context, hierarchy.tokenSequence().languagePath());
+                if (hierarchy.tokenSequence().language() == HtmlTokenId.language()) {
+                    ret[0] = new HtmlBracesMatching(context, hierarchy.tokenSequence().languagePath());
                     return;
                 }
 
@@ -280,8 +280,8 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
                 for (TokenSequence ts : ets) {
                     Language language = ts.language();
-                    if (language == HTMLTokenId.language()) {
-                        ret[0] = new HTMLBracesMatching(context, ts.languagePath());
+                    if (language == HtmlTokenId.language()) {
+                        ret[0] = new HtmlBracesMatching(context, ts.languagePath());
                         return;
                     }
                 }

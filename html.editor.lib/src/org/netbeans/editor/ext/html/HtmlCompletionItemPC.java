@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
  *
  * @author  Dusan Balek
  */
-public class HTMLCompletionItemPC extends JPanel {
+public class HtmlCompletionItemPC extends JPanel {
 
     static final String PACKAGE = "org/netbeans/modules/editor/resources/completion/defaultFolder.gif"; // NOI18N
     
@@ -94,7 +94,7 @@ public class HTMLCompletionItemPC extends JPanel {
     public static final Color KEYWORD_COLOR = Color.darkGray;
     public static final Color TYPE_COLOR = Color.black;
 
-    public HTMLCompletionItemPC(){
+    public HtmlCompletionItemPC(){
         super();
         setOpaque(true);
         setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
@@ -291,7 +291,7 @@ public class HTMLCompletionItemPC extends JPanel {
         return drawX;
     }
 
-    public static class StringPaintComponent extends HTMLCompletionItemPC {
+    public static class StringPaintComponent extends HtmlCompletionItemPC {
         private Color c;
         
         public StringPaintComponent(Color c) {

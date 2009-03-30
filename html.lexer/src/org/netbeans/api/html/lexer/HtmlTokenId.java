@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.html.lexer.HTMLLexer;
+import org.netbeans.lib.html.lexer.HtmlLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -60,7 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author Jan Lahoda, Miloslav Metelka, Marek Fukala
  */
-public enum HTMLTokenId implements TokenId {
+public enum HtmlTokenId implements TokenId {
     
     /** HTML text */
     TEXT("text"), 
@@ -106,33 +106,33 @@ public enum HTMLTokenId implements TokenId {
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
     
-    HTMLTokenId(String primaryCategory) {
+    HtmlTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
-    private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
+    private static final Language<HtmlTokenId> language = new LanguageHierarchy<HtmlTokenId>() {
         @Override
-        protected Collection<HTMLTokenId> createTokenIds() {
-            return EnumSet.allOf(HTMLTokenId.class);
+        protected Collection<HtmlTokenId> createTokenIds() {
+            return EnumSet.allOf(HtmlTokenId.class);
         }
         
         @Override
-        protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
-            //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
+        protected Map<String,Collection<HtmlTokenId>> createTokenCategories() {
+            //Map<String,Collection<HtmlTokenId>> cats = new HashMap<String,Collection<HtmlTokenId>>();
             // Additional literals being a lexical error
             //cats.put("error", EnumSet.of());
             return null;
         }
         
         @Override
-        protected Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
-            return new HTMLLexer(info);
+        protected Lexer<HtmlTokenId> createLexer(LexerRestartInfo<HtmlTokenId> info) {
+            return new HtmlLexer(info);
         }
         
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
-        Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<HtmlTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             String mimeType = null;
             switch(token.id()) {
                 // BEGIN TOR MODIFICATIONS
@@ -204,7 +204,7 @@ public enum HTMLTokenId implements TokenId {
      *
      * @return non-null LanguageDescription
      */
-    public static Language<HTMLTokenId> language() {
+    public static Language<HtmlTokenId> language() {
         return language;
     }
     

@@ -54,7 +54,7 @@ import org.netbeans.editor.TokenID;
 * @deprecated Use Lexer API instead. See {@link HTMLLexer} and {@link HTMLTokenId}.
 */
 
-public class HTMLSyntax extends Syntax {
+public class HtmlSyntax extends Syntax {
 
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
@@ -100,8 +100,8 @@ public class HTMLSyntax extends Syntax {
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     private static final int ISI_TAG_SLASH = 34; //after slash in html tag
 
-    public HTMLSyntax() {
-        tokenContextPath = HTMLTokenContext.contextPath;
+    public HtmlSyntax() {
+        tokenContextPath = HtmlTokenContext.contextPath;
     }
 
     private final boolean isAZ( char ch ) {
@@ -138,7 +138,7 @@ public class HTMLSyntax extends Syntax {
 
         while(offset < stopOffset) {
             actChar = buffer[offset];
-             //System.out.println("HTMLSyntax: parseToken tokenOffset=" + tokenOffset + ", actChar='" + actChar + "', offset=" + offset + ", state=" + getStateName(state) + 
+             //System.out.println("HtmlSyntax: parseToken tokenOffset=" + tokenOffset + ", actChar='" + actChar + "', offset=" + offset + ", state=" + getStateName(state) +
              //      ", stopOffset=" + stopOffset + ", lastBuffer=" + lastBuffer);
             switch( state ) {
             case INIT:              // DONE
@@ -161,29 +161,29 @@ public class HTMLSyntax extends Syntax {
                 case '<':
                 case '&':
                     state = INIT;
-                    return HTMLTokenContext.TEXT;
+                    return HtmlTokenContext.TEXT;
                 }
                 break;
 
             case ISI_ERROR:      // DONE
                 offset++;
                 state = INIT;
-                return HTMLTokenContext.ERROR;
+                return HtmlTokenContext.ERROR;
 
             case ISA_LT:         // PENDING other transitions - e.g '<?'
                 if( isAZ( actChar ) ) {   // <'a..Z'
                     state = ISI_TAG;
-                    return HTMLTokenContext.TAG_OPEN_SYMBOL;
+                    return HtmlTokenContext.TAG_OPEN_SYMBOL;
                 }
                 switch( actChar ) {
                 case '/':               // ETAGO - </
                     state = ISA_SLASH;
                     offset++;
-                    return HTMLTokenContext.TAG_OPEN_SYMBOL;
+                    return HtmlTokenContext.TAG_OPEN_SYMBOL;
                 case '>':               // Empty start tag <>, RELAXED
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_CLOSE_SYMBOL;
+                    return HtmlTokenContext.TAG_CLOSE_SYMBOL;
                 case '!':
                     state = ISA_SGML_ESCAPE;
                     break;
@@ -202,7 +202,7 @@ public class HTMLSyntax extends Syntax {
                 case '>':               // Empty end tag </>, RELAXED
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_CLOSE_SYMBOL;
+                    return HtmlTokenContext.TAG_CLOSE_SYMBOL;
                 default:                // Part of text, e.g. </3, </'\n', RELAXED
                     state = ISI_TEXT;
                     continue;             // don'e eat the char
@@ -212,7 +212,7 @@ public class HTMLSyntax extends Syntax {
             case ISI_ENDTAG:        // DONE
                 if( isName( actChar ) ) break;    // Still in endtag identifier, eat next char
                 state = ISP_ENDTAG_X;
-                return HTMLTokenContext.TAG_CLOSE;
+                return HtmlTokenContext.TAG_CLOSE;
 
 
             case ISP_ENDTAG_X:      // DONE
@@ -224,7 +224,7 @@ public class HTMLSyntax extends Syntax {
                 case '>':               // Closing of endtag, e.g. </H6 _>_
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_CLOSE_SYMBOL;
+                    return HtmlTokenContext.TAG_CLOSE_SYMBOL;
                 case '<':               // next tag, e.g. </H6 _<_, RELAXED
                     state = INIT;
                     continue;
@@ -237,13 +237,13 @@ public class HTMLSyntax extends Syntax {
             case ISP_ENDTAG_WS:      // DONE
                 if( isWS( actChar ) ) break;  // eat all WS
                 state = ISP_ENDTAG_X;
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
 
             case ISI_TAG:        // DONE
                 if( isName( actChar ) ) break;    // Still in tag identifier, eat next char
                 state = ISP_TAG_X;
-                return HTMLTokenContext.TAG_OPEN;
+                return HtmlTokenContext.TAG_OPEN;
 
             case ISP_TAG_X:     // DONE
                 if( isWS( actChar ) ) {
@@ -262,7 +262,7 @@ public class HTMLSyntax extends Syntax {
                 case '>':
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_CLOSE_SYMBOL;
+                    return HtmlTokenContext.TAG_CLOSE_SYMBOL;
                 case '<':
                     state = INIT;
                     continue;       // don't eat it!!!
@@ -275,14 +275,14 @@ public class HTMLSyntax extends Syntax {
             case ISP_TAG_WS:        // DONE
                 if( isWS( actChar ) ) break;    // eat all WS
                 state = ISP_TAG_X;
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
             case ISI_TAG_SLASH:
                 switch( actChar ) {
                     case '>':
                         offset++;
                         state = INIT;
-                        return HTMLTokenContext.TAG_CLOSE_SYMBOL;
+                        return HtmlTokenContext.TAG_CLOSE_SYMBOL;
                     default:
                         state = ISI_ERROR;
                         continue;
@@ -291,7 +291,7 @@ public class HTMLSyntax extends Syntax {
             case ISI_ARG:           // DONE
                 if( isName( actChar ) ) break; // eat next char
                 state = ISP_ARG_X;
-                return HTMLTokenContext.ARGUMENT;
+                return HtmlTokenContext.ARGUMENT;
 
             case ISP_ARG_X:
                 if( isWS( actChar ) ) {
@@ -307,14 +307,14 @@ public class HTMLSyntax extends Syntax {
                 case '>':
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_OPEN;
+                    return HtmlTokenContext.TAG_OPEN;
                 case '<':
                     state = INIT;
                     continue;           // don't eat !!!
                 case '=':
                     offset++;
                     state = ISP_EQ;
-                    return HTMLTokenContext.OPERATOR;
+                    return HtmlTokenContext.OPERATOR;
                 default:
                     state = ISI_ERROR;
                     continue;
@@ -324,7 +324,7 @@ public class HTMLSyntax extends Syntax {
             case ISP_ARG_WS:
                 if( isWS( actChar ) ) break;    // Eat all WhiteSpace
                 state = ISP_ARG_X;
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
             case ISP_EQ:
                 if( isWS( actChar ) ) {
@@ -341,7 +341,7 @@ public class HTMLSyntax extends Syntax {
                 case '>':               
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.TAG_OPEN;    
+                    return HtmlTokenContext.TAG_OPEN;
                 default:
                     state = ISI_VAL; //everything else if attribute value
                     break;
@@ -351,28 +351,28 @@ public class HTMLSyntax extends Syntax {
             case ISP_EQ_WS:
                 if( isWS( actChar ) ) break;    // Consume all WS
                 state = ISP_EQ;
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
 
             case ISI_VAL:
                 if( !isWS( actChar ) 
                     && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
                 state = ISP_TAG_X;
-                return HTMLTokenContext.VALUE;
+                return HtmlTokenContext.VALUE;
 
             case ISI_VAL_QUOT:
                 switch( actChar ) {
                 case '\'':
                     offset++;
                     state = ISP_TAG_X;
-                    return HTMLTokenContext.VALUE;
+                    return HtmlTokenContext.VALUE;
                 case '&':
                     if( offset == tokenOffset ) {
                         subState = state;
                         state = ISA_REF;
                         break;
                     } else {
-                        return HTMLTokenContext.VALUE;
+                        return HtmlTokenContext.VALUE;
                     }
                 }
                 break;  // else simply consume next char of VALUE
@@ -382,14 +382,14 @@ public class HTMLSyntax extends Syntax {
                 case '"':
                     offset++;
                     state = ISP_TAG_X;
-                    return HTMLTokenContext.VALUE;
+                    return HtmlTokenContext.VALUE;
                 case '&':
                     if( offset == tokenOffset ) {
                         subState = state;
                         state = ISA_REF;
                         break;
                     } else {
-                        return HTMLTokenContext.VALUE;
+                        return HtmlTokenContext.VALUE;
                     }
                 }
                 break;  // else simply consume next char of VALUE
@@ -432,7 +432,7 @@ public class HTMLSyntax extends Syntax {
                     offset++;
                     //leave the some state - we are still in an HTML comment,
                     //we just need to create a token for each line.
-                    return HTMLTokenContext.BLOCK_COMMENT;
+                    return HtmlTokenContext.BLOCK_COMMENT;
                 }
                 break;
 
@@ -453,7 +453,7 @@ public class HTMLSyntax extends Syntax {
                 case '>':
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.BLOCK_COMMENT;
+                    return HtmlTokenContext.BLOCK_COMMENT;
                 default:
                     state = ISI_HTML_COMMENT;
                     continue;
@@ -465,13 +465,13 @@ public class HTMLSyntax extends Syntax {
                 case '>':
                     offset++;
                     state = INIT;
-                    return HTMLTokenContext.DECLARATION;
+                    return HtmlTokenContext.DECLARATION;
                 case '-':
                     if( offset == tokenOffset ) {
                         state = ISA_SGML_DECL_DASH;
                         break;
                     } else {
-                        return HTMLTokenContext.DECLARATION;
+                        return HtmlTokenContext.DECLARATION;
                     }
                 }
                 break;
@@ -497,7 +497,7 @@ public class HTMLSyntax extends Syntax {
                 if( actChar == '-' ) {
                     offset++;
                     state = ISI_SGML_DECL;
-                    return HTMLTokenContext.SGML_COMMENT;
+                    return HtmlTokenContext.SGML_COMMENT;
                 } else {
                     state = ISI_SGML_COMMENT;
                     continue;
@@ -520,7 +520,7 @@ public class HTMLSyntax extends Syntax {
                 if( isName( actChar ) ) break;
                 if( actChar == ';' ) offset++;
                 state = subState;
-                return HTMLTokenContext.CHARACTER;
+                return HtmlTokenContext.CHARACTER;
 
             case ISA_REF_HASH:
                 if( actChar >= '0' && actChar <= '9' ) {
@@ -534,7 +534,7 @@ public class HTMLSyntax extends Syntax {
                 if( isAZ( actChar ) ) {
                     offset++;
                     state = subState;
-                    return HTMLTokenContext.ERROR;
+                    return HtmlTokenContext.ERROR;
                 }
                 state = subState;
                 continue;
@@ -543,7 +543,7 @@ public class HTMLSyntax extends Syntax {
                 if( actChar >= '0' && actChar <= '9' ) break;
                 if( actChar == ';' ) offset++;
                 state = subState;
-                return HTMLTokenContext.CHARACTER;
+                return HtmlTokenContext.CHARACTER;
 
             case ISA_REF_X:
                 if( (actChar >= '0' && actChar <= '9') ||
@@ -554,7 +554,7 @@ public class HTMLSyntax extends Syntax {
                     break;
                 }
                 state = subState;
-                return HTMLTokenContext.ERROR;       // error on previous "&#x" sequence
+                return HtmlTokenContext.ERROR;       // error on previous "&#x" sequence
 
             case ISI_REF_HEX:
                 if( (actChar >= '0' && actChar <= '9') ||
@@ -563,7 +563,7 @@ public class HTMLSyntax extends Syntax {
                   ) break;
                 if( actChar == ';' ) offset++;
                 state = subState;
-                return HTMLTokenContext.CHARACTER;
+                return HtmlTokenContext.CHARACTER;
             }
 
 
@@ -583,59 +583,59 @@ public class HTMLSyntax extends Syntax {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
-                return HTMLTokenContext.TEXT;
+                return HtmlTokenContext.TEXT;
 
             case ISA_REF:
             case ISA_REF_HASH:
-                if( subState == ISI_TEXT ) return HTMLTokenContext.TEXT;
-                else return HTMLTokenContext.VALUE;
+                if( subState == ISI_TEXT ) return HtmlTokenContext.TEXT;
+                else return HtmlTokenContext.VALUE;
 
             case ISI_HTML_COMMENT:
             case ISA_HTML_COMMENT_DASH:
             case ISI_HTML_COMMENT_WS:
-                return HTMLTokenContext.BLOCK_COMMENT;
+                return HtmlTokenContext.BLOCK_COMMENT;
 
             case ISI_TAG:
-                return HTMLTokenContext.TAG_OPEN;
+                return HtmlTokenContext.TAG_OPEN;
             case ISI_ENDTAG:
-                return HTMLTokenContext.TAG_CLOSE;
+                return HtmlTokenContext.TAG_CLOSE;
 
             case ISI_ARG:
-                return HTMLTokenContext.ARGUMENT;
+                return HtmlTokenContext.ARGUMENT;
 
             case ISI_ERROR:
-                return HTMLTokenContext.ERROR;
+                return HtmlTokenContext.ERROR;
 
             case ISP_ARG_WS:
             case ISP_TAG_WS:
             case ISP_ENDTAG_WS:
             case ISP_EQ_WS:
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
             case ISP_ARG_X:
             case ISP_TAG_X:
             case ISP_ENDTAG_X:
             case ISP_EQ:
-                return HTMLTokenContext.WS;
+                return HtmlTokenContext.WS;
 
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
-                return HTMLTokenContext.VALUE;
+                return HtmlTokenContext.VALUE;
 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
-                return HTMLTokenContext.DECLARATION;
+                return HtmlTokenContext.DECLARATION;
 
             case ISI_SGML_COMMENT:
             case ISA_SGML_COMMENT_DASH:
-                return HTMLTokenContext.SGML_COMMENT;
+                return HtmlTokenContext.SGML_COMMENT;
 
             case ISI_REF_NAME:
             case ISI_REF_DEC:
             case ISA_REF_X:
             case ISI_REF_HEX:
-                return HTMLTokenContext.CHARACTER;
+                return HtmlTokenContext.CHARACTER;
             }
         }
 
@@ -723,29 +723,29 @@ public class HTMLSyntax extends Syntax {
     */
     public void loadState(StateInfo stateInfo) {
         super.loadState( stateInfo );
-        subState = ((HTMLStateInfo)stateInfo).getSubState();
+        subState = ((HtmlStateInfo)stateInfo).getSubState();
     }
 
     /** Store state of this analyzer into given mark state. */
     public void storeState(StateInfo stateInfo) {
         super.storeState( stateInfo );
-        ((HTMLStateInfo)stateInfo).setSubState( subState );
+        ((HtmlStateInfo)stateInfo).setSubState( subState );
     }
 
     /** Compare state of this analyzer to given state info */
     public int compareState(StateInfo stateInfo) {
         if( super.compareState( stateInfo ) == DIFFERENT_STATE ) return DIFFERENT_STATE;
-        return ( ((HTMLStateInfo)stateInfo).getSubState() == subState) ? EQUAL_STATE : DIFFERENT_STATE;
+        return ( ((HtmlStateInfo)stateInfo).getSubState() == subState) ? EQUAL_STATE : DIFFERENT_STATE;
     }
 
     /** Create state info appropriate for particular analyzer */
     public StateInfo createStateInfo() {
-        return new HTMLStateInfo();
+        return new HtmlStateInfo();
     }
 
 
     /** Base implementation of the StateInfo interface */
-    public static class HTMLStateInfo extends Syntax.BaseStateInfo {
+    public static class HtmlStateInfo extends Syntax.BaseStateInfo {
 
         /** analyzer subState during parsing character references */
         private int subState;

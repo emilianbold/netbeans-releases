@@ -40,37 +40,58 @@
  */
 
 package org.netbeans.modules.html.palette;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.openide.text.ActiveEditorDrop;
 
-
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author Libor Kotouc
+ * @author lk155162
  */
-public class HTMLEditorDropDefault implements ActiveEditorDrop {
+public class HtmlPaletteCustomizerAction extends CallableSystemAction {
 
-    String body;
-
-    public HTMLEditorDropDefault(String body) {
-        this.body = body;
+    private static String name;
+    
+    public HtmlPaletteCustomizerAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public boolean handleTransfer(JTextComponent targetComponent) {
+    protected boolean asynchronous() {
+        return false;
+    }
 
-        if (targetComponent == null)
-            return false;
-
-        try {
-            HTMLPaletteUtilities.insert(body, (JTextComponent)targetComponent);
-        }
-        catch (BadLocationException ble) {
-            return false;
-        }
+    /** Human presentable name of the action. This should be
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
+    public String getName() {
+        if (name == null)
+            name = NbBundle.getBundle(HtmlPaletteCustomizerAction.class).getString("ACT_OpenHTMLCustomizer"); // NOI18N
         
-        return true;
+        return name;
+    }
+
+    /** Help context where to find more about the action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    /** This method is called by one of the "invokers" as a result of
+     * some user's action that should lead to actual "performing" of the action.
+     */
+    public void performAction() {
+        try {
+            HtmlPaletteFactory.getPalette().showCustomizer();
+        }
+        catch (IOException ioe) {
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
+        }
     }
 
 }

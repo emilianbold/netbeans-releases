@@ -42,7 +42,7 @@
 package org.netbeans.lib.html.lexer;
 
 import junit.framework.TestCase;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.RandomCharDescriptor;
@@ -55,9 +55,9 @@ import org.netbeans.lib.lexer.test.TestRandomModify;
  *
  * @author mmetelka
  */
-public class HTMLLexerRandomTest extends TestCase {
+public class HtmlLexerRandomTest extends TestCase {
     
-    public HTMLLexerRandomTest(String testName) {
+    public HtmlLexerRandomTest(String testName) {
         super(testName);
     }
     
@@ -75,7 +75,7 @@ public class HTMLLexerRandomTest extends TestCase {
     
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
-        randomModify.setLanguage(HTMLTokenId.language());
+        randomModify.setLanguage(HtmlTokenId.language());
         
         //randomModify.setDebugOperation(true);
         //randomModify.setDebugDocumentText(true);

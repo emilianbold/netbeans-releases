@@ -59,7 +59,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.javadoc.HelpManager;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -80,7 +80,7 @@ import org.openide.ErrorManager;
  * @author Marek Fukala
  * @version 1.10
  */
-public class HTMLCompletionQuery  {
+public class HtmlCompletionQuery  {
     
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
@@ -90,9 +90,9 @@ public class HTMLCompletionQuery  {
     private static boolean lowerCase;
     private static boolean isXHTML = false;
     
-    private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
+    private static final HtmlCompletionQuery DEFAULT = new HtmlCompletionQuery();
     
-    public static HTMLCompletionQuery getDefault() {
+    public static HtmlCompletionQuery getDefault() {
         return DEFAULT;
     }
     
@@ -118,7 +118,7 @@ public class HTMLCompletionQuery  {
         lowerCase = true;
         
         if( doc.getLength() == 0 ) return null; // nothing to examine
-        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
         
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
         
@@ -133,13 +133,13 @@ public class HTMLCompletionQuery  {
         doc.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(doc);
-            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+            TokenSequence ts = hi.tokenSequence(HtmlTokenId.language());
             if(ts == null) {
                 //HTML language is not top level one
                 ts = hi.tokenSequence();
                 ts.move(offset);
                 if (ts.moveNext() || ts.movePrevious()) {
-                    ts = ts.embedded(HTMLTokenId.language());
+                    ts = ts.embedded(HtmlTokenId.language());
                 } else { // no tokens
                     return null;
                 }
@@ -170,7 +170,7 @@ public class HTMLCompletionQuery  {
             
             Token tok = item;
             //scan the token chain before the
-            while(!(tok.id() == HTMLTokenId.TAG_OPEN || tok.id() == HTMLTokenId.TAG_CLOSE) && ts.movePrevious()) {
+            while(!(tok.id() == HtmlTokenId.TAG_OPEN || tok.id() == HtmlTokenId.TAG_CLOSE) && ts.movePrevious()) {
                 tok = ts.token();
             }
             
@@ -205,18 +205,18 @@ public class HTMLCompletionQuery  {
             
             /* Character reference finder */
             int ampIndex = preText.lastIndexOf('&'); //NOI18N
-            if((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > -1) {
+            if((id == HtmlTokenId.TEXT || id == HtmlTokenId.VALUE) && ampIndex > -1) {
                 len = preText.length() - ampIndex;
                 String refNamePrefix = preText.substring(ampIndex + 1);
                 result = translateCharRefs( offset-len, len, dtd.getCharRefList( refNamePrefix ) );
                 
-            } else if( id == HTMLTokenId.CHARACTER ) {
+            } else if( id == HtmlTokenId.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;
                     result = translateCharRefs( offset-len, len, dtd.getCharRefList( preText.substring(1) ) );
                 }
                 /* Tag finder */
-            } else if( id == HTMLTokenId.TAG_OPEN) { // NOI18N
+            } else if( id == HtmlTokenId.TAG_OPEN) { // NOI18N
                 len = offset - itemOffset + 1; // minus the < char length
                 result = translateTags( itemOffset -1 , len, dtd.getElementList( preText ) );
                 
@@ -236,10 +236,10 @@ public class HTMLCompletionQuery  {
                         Token t = ts.token();
                         
                         //test if next token is a whitespace and the next a tag token or an attribute token
-                        if(t.id() == HTMLTokenId.WS) {
+                        if(t.id() == HtmlTokenId.WS) {
                             if(ts.moveNext()) {
                                 t = ts.token();
-                                if((t.id() == HTMLTokenId.TAG_CLOSE || t.id() == HTMLTokenId.ARGUMENT )) {
+                                if((t.id() == HtmlTokenId.TAG_CLOSE || t.id() == HtmlTokenId.ARGUMENT )) {
                                     //do not put the item into CC - otherwise it will break the completed tag
                                     result = null;
                                 }
@@ -249,19 +249,19 @@ public class HTMLCompletionQuery  {
                 }
                 
                 
-            } else if( id != HTMLTokenId.BLOCK_COMMENT &&  preText.endsWith( "<" ) ) { // NOI18N
+            } else if( id != HtmlTokenId.BLOCK_COMMENT &&  preText.endsWith( "<" ) ) { // NOI18N
                 // There will be lookup for possible StartTags, in SyntaxSupport
                 //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
                 result = translateTags( offset-len, len, dtd.getElementList( "" ) );
                 
                 /* EndTag finder */
-            } else if( id == HTMLTokenId.TEXT && preText.endsWith( "</" ) ) { // NOI18N
+            } else if( id == HtmlTokenId.TEXT && preText.endsWith( "</" ) ) { // NOI18N
                 len = 2;
                 result = sup.getPossibleEndTags( offset, "" );
-            } else if( id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith( "</" ) ) { // NOI18N
+            } else if( id == HtmlTokenId.TAG_OPEN_SYMBOL && preText.endsWith( "</" ) ) { // NOI18N
                 len = 2;
                 result = sup.getPossibleEndTags( offset, "" );
-            } else if( id == HTMLTokenId.TAG_CLOSE) { // NOI18N
+            } else if( id == HtmlTokenId.TAG_CLOSE) { // NOI18N
                 len = offset - itemOffset;
                 result = sup.getPossibleEndTags( offset, preText);
                 
@@ -270,10 +270,10 @@ public class HTMLCompletionQuery  {
              * arg, these rules doesn't match start of such arg this case because
              * of need for matching starting quote
              */
-            } else if(id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+            } else if(id == HtmlTokenId.TAG_CLOSE_SYMBOL) {
                 result = sup.getAutocompletedEndTag(offset);
                 
-            } else if( id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT ) {
+            } else if( id == HtmlTokenId.WS || id == HtmlTokenId.ARGUMENT ) {
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain( offset );
@@ -314,7 +314,7 @@ public class HTMLCompletionQuery  {
                     
                     if( tag == null ) return null; // unknown tag
                     
-                    String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
+                    String prefix = (id == HtmlTokenId.ARGUMENT) ? preText : "";
                     len = prefix.length();
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
                     Collection<SyntaxElement.TagAttribute> existing = tagElem.getAttributes(); // Attribs already used
@@ -349,14 +349,14 @@ public class HTMLCompletionQuery  {
              * color,.... - may be better resolved by attr type, may be moved
              * to propertysheet
              */
-            } else if( id == HTMLTokenId.VALUE || id == HTMLTokenId.OPERATOR || id == HTMLTokenId.WS ) {
+            } else if( id == HtmlTokenId.VALUE || id == HtmlTokenId.OPERATOR || id == HtmlTokenId.WS ) {
                 
-                if(id == HTMLTokenId.WS) {
+                if(id == HtmlTokenId.WS) {
                     //is the token before an operator? '<div color= |red>'
                     ts.move(item.offset(hi));
                     ts.movePrevious();
                     Token t = ts.token();
-                    if(t.id() != HTMLTokenId.OPERATOR) {
+                    if(t.id() != HtmlTokenId.OPERATOR) {
                         return null;
                     }
                 }
@@ -385,18 +385,18 @@ public class HTMLCompletionQuery  {
                     ts.move(item.offset(hi));
                     ts.moveNext();
                     Token argItem = ts.token();
-                    while(argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {
+                    while(argItem.id() != HtmlTokenId.ARGUMENT && ts.movePrevious()) {
                         argItem = ts.token();
                     }
                     
-                    if(argItem.id() != HTMLTokenId.ARGUMENT) return null; // no ArgItem
+                    if(argItem.id() != HtmlTokenId.ARGUMENT) return null; // no ArgItem
                     
                     String argName = argItem.text().toString().toLowerCase(Locale.ENGLISH);
                     
                     DTD.Attribute arg = tag.getAttribute( argName );
                     if( arg == null || arg.getType() != DTD.Attribute.TYPE_SET ) return null;
                     
-                    if( id != HTMLTokenId.VALUE ) {
+                    if( id != HtmlTokenId.VALUE ) {
                         len = 0;
                         result = translateValues( offset-len, len, arg.getValueList( "" ) );
                     } else {
@@ -411,9 +411,9 @@ public class HTMLCompletionQuery  {
                         result = translateValues( offset-len, len, arg.getValueList( quotationChar == null ? preText : preText.substring(1)) , quotationChar );
                     }
                 }
-            } else if( id == HTMLTokenId.SCRIPT) {
+            } else if( id == HtmlTokenId.SCRIPT) {
                 result = addEndTag(SCRIPT_TAG_NAME, preText, offset);
-            } else if( id == HTMLTokenId.STYLE) {
+            } else if( id == HtmlTokenId.STYLE) {
                 result = addEndTag(STYLE_TAG_NAME, preText, offset);
             }
             
@@ -525,7 +525,7 @@ public class HTMLCompletionQuery  {
         
         boolean shift = false;
         
-        private HTMLCompletionItemPC component;
+        private HtmlCompletionItemPC component;
         
         private static final int HTML_ITEMS_SORT_PRIORITY = 20;
         
@@ -558,14 +558,14 @@ public class HTMLCompletionQuery  {
         
         public Component getPaintComponent(boolean isSelected) {
             //TODO: the paint component should be caches somehow
-            HTMLCompletionItemPC component = new HTMLCompletionItemPC.StringPaintComponent(getPaintColor());
+            HtmlCompletionItemPC component = new HtmlCompletionItemPC.StringPaintComponent(getPaintColor());
             component.setSelected(isSelected);
             component.setString(getItemText());
             return component;
         }
         
         public int getPreferredWidth(Graphics g, Font defaultFont) {
-            HTMLCompletionItemPC renderComponent = (HTMLCompletionItemPC)getPaintComponent(false);
+            HtmlCompletionItemPC renderComponent = (HtmlCompletionItemPC)getPaintComponent(false);
             return renderComponent.getPreferredWidth(g, defaultFont);
         }
         
@@ -576,7 +576,7 @@ public class HTMLCompletionQuery  {
             renderComponent.setForeground(defaultColor);
             renderComponent.setBackground(backgroundColor);
             renderComponent.setBounds(0, 0, width, height);
-            ((HTMLCompletionItemPC)renderComponent).paintComponent(g);
+            ((HtmlCompletionItemPC)renderComponent).paintComponent(g);
         }
         
         protected Object getAssociatedObject() {
@@ -752,9 +752,9 @@ public class HTMLCompletionQuery  {
         
     }
     
-    static class NonHTMLEndTagItem extends EndTagItem {
+    static class NonHtmlEndTagItem extends EndTagItem {
         
-        public NonHTMLEndTagItem( String baseText, int offset, int length, int order ) {
+        public NonHtmlEndTagItem( String baseText, int offset, int length, int order ) {
             super( baseText, offset, length, null, order );
             this.baseText = baseText; //ufff, ugly ... reset the original text back in super we change the case 
         }
@@ -807,7 +807,7 @@ public class HTMLCompletionQuery  {
 
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
             for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
-                if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                if (languagePath.innerLanguage() == HtmlTokenId.language()) {
                     doc.runAtomic(new Runnable() {
                         public void run() {
                             HtmlIndenter.indentEndTag(doc, languagePath, dotPos, baseText);

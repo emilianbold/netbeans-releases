@@ -57,8 +57,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -68,9 +68,9 @@ import org.openide.util.Exceptions;
  *
  * @author Libor Kotouc
  */
-public final class HTMLPaletteUtilities {
+public final class HtmlPaletteUtilities {
     
-    public static int wrapTags(HTMLSyntaxSupport sup, int start, int end, BaseDocument doc) {
+    public static int wrapTags(HtmlSyntaxSupport sup, int start, int end, BaseDocument doc) {
         
         try {
             TokenItem token = sup.getTokenChain(start, start + 1);
@@ -80,7 +80,7 @@ public final class HTMLPaletteUtilities {
             
             while (token.getOffset() < end) { // interested only in the tokens inside the body
                 token = token.getNext();
-                if (token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) { // it's '<' token
+                if (token.getTokenID() == HtmlTokenContext.TAG_OPEN_SYMBOL) { // it's '<' token
                     int offset = token.getOffset();
                     doc.insertString(offset, "\n", null);   // insert a new-line before '<'
                     end++;  // remember new body end

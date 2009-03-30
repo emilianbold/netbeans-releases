@@ -40,58 +40,37 @@
  */
 
 package org.netbeans.modules.html.palette;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.openide.text.ActiveEditorDrop;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+
 
 /**
  *
- * @author lk155162
+ * @author Libor Kotouc
  */
-public class HTMLPaletteCustomizerAction extends CallableSystemAction {
+public class HtmlEditorDropDefault implements ActiveEditorDrop {
 
-    private static String name;
-    
-    public HTMLPaletteCustomizerAction () {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    String body;
+
+    public HtmlEditorDropDefault(String body) {
+        this.body = body;
     }
 
-    protected boolean asynchronous() {
-        return false;
-    }
+    public boolean handleTransfer(JTextComponent targetComponent) {
 
-    /** Human presentable name of the action. This should be
-     * presented as an item in a menu.
-     * @return the name of the action
-     */
-    public String getName() {
-        if (name == null)
-            name = NbBundle.getBundle(HTMLPaletteCustomizerAction.class).getString("ACT_OpenHTMLCustomizer"); // NOI18N
-        
-        return name;
-    }
+        if (targetComponent == null)
+            return false;
 
-    /** Help context where to find more about the action.
-     * @return the help context for this action
-     */
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    /** This method is called by one of the "invokers" as a result of
-     * some user's action that should lead to actual "performing" of the action.
-     */
-    public void performAction() {
         try {
-            HTMLPaletteFactory.getPalette().showCustomizer();
+            HtmlPaletteUtilities.insert(body, (JTextComponent)targetComponent);
         }
-        catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
+        catch (BadLocationException ble) {
+            return false;
         }
+        
+        return true;
     }
 
 }

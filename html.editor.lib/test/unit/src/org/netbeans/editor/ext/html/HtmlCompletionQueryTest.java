@@ -60,9 +60,9 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  *
  * @author Marek Fukala
  */
-public class HTMLCompletionQueryTest extends TestBase {
+public class HtmlCompletionQueryTest extends TestBase {
     
-    public HTMLCompletionQueryTest() throws IOException, BadLocationException {
+    public HtmlCompletionQueryTest() throws IOException, BadLocationException {
         super("htmlsyntaxsupporttest");
         NbReaderProvider.setupReaders(); //initialize DTD providers
     }
@@ -80,7 +80,7 @@ public class HTMLCompletionQueryTest extends TestBase {
     
     // causing OutOfMemoryError
 //    public void testNetbeansFrontPageHtml() throws IOException, BadLocationException {
-//        testCompletionResults(new File(getDataDir(), "input/HTMLCompletionQueryTest/truncated_netbeans_front_page.html"));
+//        testCompletionResults(new File(getDataDir(), "input/HtmlCompletionQueryTest/truncated_netbeans_front_page.html"));
 //    }
     
     //helper methods ------------
@@ -88,8 +88,8 @@ public class HTMLCompletionQueryTest extends TestBase {
         String content = Utils.readFileContentToString(inputFile);
         BaseDocument doc = createDocument();
         doc.insertString(0,content,null);
-        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
-        HTMLCompletionQuery query = new HTMLCompletionQuery();
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
+        HtmlCompletionQuery query = new HtmlCompletionQuery();
         
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);

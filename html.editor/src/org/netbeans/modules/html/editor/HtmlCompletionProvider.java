@@ -45,15 +45,15 @@ import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlCompletionQuery;
+import org.netbeans.editor.ext.html.HtmlCompletionQuery.HTMLResultItem;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -67,17 +67,17 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  *
  * @author Marek Fukala
  */
-public class HTMLCompletionProvider implements CompletionProvider {
+public class HtmlCompletionProvider implements CompletionProvider {
     
     /** Creates a new instance of JavaDocCompletionProvider */
-    public HTMLCompletionProvider() {
+    public HtmlCompletionProvider() {
         NbReaderProvider.setupReaders();
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int dotPos = component.getCaret().getDot();
-        boolean openCC = HTMLSyntaxSupport.checkOpenCompletion(doc, dotPos, typedText);
+        boolean openCC = HtmlSyntaxSupport.checkOpenCompletion(doc, dotPos, typedText);
         return openCC ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
     }
     
@@ -101,7 +101,7 @@ public class HTMLCompletionProvider implements CompletionProvider {
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            List<CompletionItem> items = HTMLCompletionQuery.getDefault().query(component, caretOffset);
+            List<CompletionItem> items = HtmlCompletionQuery.getDefault().query(component, caretOffset);
             if(items == null) {
                 return ;
             }
@@ -130,14 +130,14 @@ public class HTMLCompletionProvider implements CompletionProvider {
                 //item == null means that the DocQuery is invoked
                 //based on the explicit documentation opening request
                 //(not ivoked by selecting a completion item in the list)
-                res = HTMLCompletionQuery.getDefault().query(component, caretOffset);
+                res = HtmlCompletionQuery.getDefault().query(component, caretOffset);
                 if (res != null && res.size() > 0) {
                     item = res.get(0);
                 }
             }
             HTMLResultItem htmlItem = (HTMLResultItem) item;
             if (htmlItem != null && htmlItem.getHelpID() != null) {
-                resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
+                resultSet.setDocumentation(new HtmlCompletionQuery.DocItem(htmlItem));
             }
         }
     }
@@ -174,7 +174,7 @@ public class HTMLCompletionProvider implements CompletionProvider {
                 return;
             
             Token tokenItem = tokenSequence.token();
-            if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+            if(tokenItem.id() == HtmlTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
                 hideCompletion();
             }
             

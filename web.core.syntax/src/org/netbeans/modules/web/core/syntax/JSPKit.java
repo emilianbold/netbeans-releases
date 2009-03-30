@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.html.editor.HTMLAutoCompletion;
+import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -62,7 +62,7 @@ import java.beans.*;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.netbeans.editor.ext.html.HTMLSyntax;
+import org.netbeans.editor.ext.html.HtmlSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -86,7 +86,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
-import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.editor.ext.html.HtmlLexerFormatter;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
@@ -293,7 +293,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             //create a special javasyntax patched for use in JSPs (fix of #55628)
             return new JavaSyntax(sourceLevel, true);
         } else {
-            return new HTMLSyntax();
+            return new HtmlSyntax();
         }
     }
 
@@ -484,7 +484,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             //handle reformat
             handleTagClosingSymbol(doc, dotPos, str.charAt(0));
             //handle html quotations completion
-            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+            HtmlAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
 
         @Override
@@ -538,8 +538,8 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
-                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
-                HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(htmlInJSPPath);
+                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HtmlTokenId.language());
+                HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(htmlInJSPPath);
 
                 if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
                       HtmlIndenter.indentEndTag(doc, htmlInJSPPath, dotPos, null);

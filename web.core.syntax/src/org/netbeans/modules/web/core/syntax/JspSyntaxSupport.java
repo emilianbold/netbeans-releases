@@ -55,7 +55,7 @@ import javax.servlet.jsp.tagext.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery;
+import org.netbeans.editor.ext.html.HtmlCompletionQuery;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
@@ -74,7 +74,7 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileUtil;
@@ -160,7 +160,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     
     private static final TagNameComparator TAG_NAME_COMPARATOR = new TagNameComparator();
     
-    /** Creates new HTMLSyntaxSupport */
+    /** Creates new HtmlSyntaxSupport */
     
     public static synchronized JspSyntaxSupport get(Document doc) {
         JspSyntaxSupport sup = (JspSyntaxSupport)doc.getProperty(JspSyntaxSupport.class);
@@ -325,7 +325,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     }
     
     /** Returns SyntaxSupport corresponding to content type of JSP data object.
-     *  HTMLSyntaxSupport is used when we can't find it. */
+     *  HtmlSyntaxSupport is used when we can't find it. */
     protected ExtSyntaxSupport getContentLanguageSyntaxSupport() {
         if (contentLanguageSyntaxSupport != null) {
             return contentLanguageSyntaxSupport;
@@ -340,7 +340,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                 return contentLanguageSyntaxSupport;
             }
         }
-        return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HTMLSyntaxSupport.class );
+        return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HtmlSyntaxSupport.class );
     }
     
     /** This method decides what kind of completion (html, java, jsp-tag, ...) should be opened
@@ -361,7 +361,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         
         TokenContextPath tcp = item.getTokenContextPath();
         
-        if(tcp.contains(HTMLTokenContext.contextPath)) {
+        if(tcp.contains(HtmlTokenContext.contextPath)) {
             //we are in content language
             if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "CONTENTL_COMPLETION_CONTEXT");   // NOI18N
             ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
@@ -1856,7 +1856,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             SyntaxElement elem = getElementChain( offset - 1);
             if(elem != null && elem instanceof SyntaxElement.Tag) {
                 String tagName = ((SyntaxElement.Tag)elem).getName();
-                return new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, false);
+                return new HtmlCompletionQuery.AutocompleteEndTagItem(tagName, offset, false);
             }
         }catch(BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -1903,7 +1903,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         
         TokenItem token = getItemAtOrBefore((offset<getDocument().getLength())?offset+1:offset);
         if (token != null){
-            if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
+            if (token.getTokenContextPath().contains(HtmlTokenContext.contextPath)){
                 r_value = getContentLanguageSyntaxSupport().findMatchingBlock(offset, simpleSearch);
             } else {
                 //do we need to match jsp comment?

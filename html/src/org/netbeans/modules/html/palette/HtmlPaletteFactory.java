@@ -39,49 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.html.lexer;
+package org.netbeans.modules.html.palette;
+import java.io.IOException;
+import org.netbeans.spi.palette.DragAndDropHandler;
+import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import junit.framework.TestCase;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+
+
+
+
 
 /**
- * HTMLLanguage test
  *
- * @author Marek Fukala
+ * @author Libor Kotouc
  */
-public class HTMLLanguageTest extends TestCase {
+public final class HtmlPaletteFactory {
 
-    private static final int IDS_SIZE = 10;
-    
-    public HTMLLanguageTest(String testName) {
-        super(testName);
-    }
-    
-    protected void setUp() throws java.lang.Exception {
-    }
+    public static final String HTML_PALETTE_FOLDER = "HTMLPalette";
 
-    protected void tearDown() throws java.lang.Exception {
-    }
+    private static PaletteController palette = null;
 
-    public void testTokenIds() {
-        // Check that token ids are all present and correctly ordered
-        Language language = HTMLTokenId.language();
+    public static PaletteController getPalette() throws IOException {
 
-        // Check token categories
-        Set testTids = language.tokenCategories();
-        Collection tids = Arrays.asList(new String[] {
-            "text", "script", "style", "ws", "error", "tag", "tag", "argument",
-            "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
-            "character", "text", "tag", "tag"
-        });
-        LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
-                
+        if (palette == null)
+            palette = PaletteFactory.createPalette(HTML_PALETTE_FOLDER, new HtmlPaletteActions(), null, new HtmlDragAndDropHandler());
+            
+        return palette;
     }
 
+    private static class HtmlDragAndDropHandler extends DragAndDropHandler {
+
+        public HtmlDragAndDropHandler() {
+            super( true );
+        }
+        
+        @Override
+        public void customize(ExTransferable t, Lookup item) {
+            //do nothing
+        }
+    }
 }

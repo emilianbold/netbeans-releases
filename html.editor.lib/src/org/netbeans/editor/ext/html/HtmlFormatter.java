@@ -55,28 +55,28 @@ import org.netbeans.modules.editor.structure.formatting.TagBasedFormatter;
  * @author Tomasz.Slota@Sun.COM
  */
 
-public class HTMLFormatter extends TagBasedFormatter {
+public class HtmlFormatter extends TagBasedFormatter {
     private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
     
     /** Creates a new instance of HTMLFormater */
-    public HTMLFormatter(Class kitClass) {
+    public HtmlFormatter(Class kitClass) {
 	super(kitClass);
     }
     
     @Override protected boolean acceptSyntax(Syntax syntax) {
-	return (syntax instanceof HTMLSyntax);
+	return (syntax instanceof HtmlSyntax);
     }
     
     @Override protected ExtSyntaxSupport getSyntaxSupport(BaseDocument doc){
-	return HTMLSyntaxSupport.get(doc);
+	return HtmlSyntaxSupport.get(doc);
     }
     
     @Override protected TokenItem getTagTokenEndingAtPosition(BaseDocument doc, int position) throws BadLocationException{
 	if (position >= 0) {
-	    HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
+	    HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
 	    TokenItem token = sup.getTokenChain(position, position + 1);
 	    
-	    if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL &&
+	    if (token.getTokenID() == HtmlTokenContext.TAG_CLOSE_SYMBOL &&
 		    !token.getImage().endsWith("/>")){ //NOI18N
                 
                 do {
@@ -93,7 +93,7 @@ public class HTMLFormatter extends TagBasedFormatter {
     @Override protected int getTagEndOffset(TokenItem token){
         TokenItem t = token.getNext();
         
-        while (t != null && t.getTokenID() != HTMLTokenContext.TAG_CLOSE_SYMBOL){
+        while (t != null && t.getTokenID() != HtmlTokenContext.TAG_CLOSE_SYMBOL){
             t = t.getNext();
         }
         
@@ -106,11 +106,11 @@ public class HTMLFormatter extends TagBasedFormatter {
     }
     
     @Override protected boolean isClosingTag(TokenItem token){
-	return token != null && token.getTokenID() == HTMLTokenContext.TAG_CLOSE;
+	return token != null && token.getTokenID() == HtmlTokenContext.TAG_CLOSE;
     }
     
     @Override protected boolean isOpeningTag(TokenItem token){
-	return token != null && token.getTokenID() == HTMLTokenContext.TAG_OPEN;
+	return token != null && token.getTokenID() == HtmlTokenContext.TAG_OPEN;
     }
     
     @Override protected String extractTagName(TokenItem tknTag){
@@ -127,7 +127,7 @@ public class HTMLFormatter extends TagBasedFormatter {
 	do{
 	    tkn = tkn.getPrevious();
 	}
-	while(tkn != null && tkn.getTokenID() != HTMLTokenContext.TAG_OPEN_SYMBOL);
+	while(tkn != null && tkn.getTokenID() != HtmlTokenContext.TAG_OPEN_SYMBOL);
 	
 	if (tkn != null){
 	    return tkn.getOffset();
@@ -137,7 +137,7 @@ public class HTMLFormatter extends TagBasedFormatter {
     }
     
     @Override protected boolean isClosingTagRequired(BaseDocument doc, String tagName) {
-	HTMLSyntaxSupport htmlsup = HTMLSyntaxSupport.get(doc);
+	HtmlSyntaxSupport htmlsup = HtmlSyntaxSupport.get(doc);
         DTD dtd = htmlsup.getDTD();
         
         if (dtd == null){
@@ -157,7 +157,7 @@ public class HTMLFormatter extends TagBasedFormatter {
     
     @Override protected boolean isUnformattableToken(TokenItem token) {
 	
-	if (token.getTokenID() == HTMLTokenContext.BLOCK_COMMENT){
+	if (token.getTokenID() == HtmlTokenContext.BLOCK_COMMENT){
 	    return true;
 	}
 	

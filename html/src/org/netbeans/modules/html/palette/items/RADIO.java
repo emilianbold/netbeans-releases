@@ -46,9 +46,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
-import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlTokenContext;
+import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -104,7 +104,7 @@ public class RADIO implements ActiveEditorDrop {
         if (accept) {
             String body = createBody();
             try {
-                HTMLPaletteUtilities.insert(body, targetComponent);
+                HtmlPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -139,7 +139,7 @@ public class RADIO implements ActiveEditorDrop {
         if (doc.getLength() == 0)
             return groups;
 
-        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
         
         try {
             TokenItem token = sup.getTokenChain(0, 1);
@@ -155,10 +155,10 @@ public class RADIO implements ActiveEditorDrop {
             while (token != null && token.getOffset() < end) {
                 token = token.getNext();
                 if (token != null) {
-                    if (token.getTokenID() == HTMLTokenContext.TAG_OPEN && token.getImage().equals("input")) { //input open
+                    if (token.getTokenID() == HtmlTokenContext.TAG_OPEN && token.getImage().equals("input")) { //input open
                         inputTagFound = true;
                     }
-                    else if (inputTagFound && token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) { // input close
+                    else if (inputTagFound && token.getTokenID() == HtmlTokenContext.TAG_CLOSE_SYMBOL) { // input close
                         
                         if (radioValFound && groupName != null && groupName.length() > 0)
                             groupSet.add(groupName);
@@ -169,17 +169,17 @@ public class RADIO implements ActiveEditorDrop {
                         nameAttrFound = false;
                         groupName = null;
                     }
-                    else if (inputTagFound && token.getTokenID() == HTMLTokenContext.ARGUMENT) {
+                    else if (inputTagFound && token.getTokenID() == HtmlTokenContext.ARGUMENT) {
                         if (token.getImage().equals("type"))
                             typeAttrFound = true;
                         else if (token.getImage().equals("name"))
                             nameAttrFound = true;
                     }
-                    else if (typeAttrFound && token.getTokenID() == HTMLTokenContext.VALUE && token.getImage().equals("\"radio\"")) {
+                    else if (typeAttrFound && token.getTokenID() == HtmlTokenContext.VALUE && token.getImage().equals("\"radio\"")) {
                         radioValFound = true;
                         typeAttrFound = false;
                     }
-                    else if (nameAttrFound && token.getTokenID() == HTMLTokenContext.VALUE) {
+                    else if (nameAttrFound && token.getTokenID() == HtmlTokenContext.VALUE) {
                         groupName = token.getImage();
                         groupName = groupName.substring(1);
                         groupName = groupName.substring(0, groupName.length() - 1);

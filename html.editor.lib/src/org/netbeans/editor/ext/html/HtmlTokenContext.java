@@ -59,7 +59,7 @@ import org.netbeans.editor.Utilities;
 * @deprecated Use Lexer API instead. See {@link HTMLTokenId}.
 */
 
-public class HTMLTokenContext extends TokenContext {
+public class HtmlTokenContext extends TokenContext {
 
     // Numeric-ids for token-ids
     public static final int TEXT_ID = 1;
@@ -119,12 +119,12 @@ public class HTMLTokenContext extends TokenContext {
     public static final BaseTokenID TAG_CLOSE_SYMBOL = new BaseTokenID("tag-close-symbol", TAG_CLOSE_SYMBOL_ID, TAG_CATEGORY); //NOI18N
 
     // Context instance declaration
-    public static final HTMLTokenContext context = new HTMLTokenContext();
+    public static final HtmlTokenContext context = new HtmlTokenContext();
 
     public static final TokenContextPath contextPath = context.getContextPath();
 
 
-    private HTMLTokenContext() {
+    private HtmlTokenContext() {
         super("html-"); // NOI18N
 
         try {

@@ -42,11 +42,11 @@ package org.netbeans.modules.html.editor;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -55,7 +55,7 @@ import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
  * The methods of the class are called from different actions as
  * KeyTyped, DeletePreviousChar.
  */
-public class HTMLAutoCompletion {
+public class HtmlAutoCompletion {
 
     /**
      * A hook method called after a character was inserted into the
@@ -85,7 +85,7 @@ public class HTMLAutoCompletion {
         //test whether the user typed an ending quotation in the attribute value
         doc.readLock();
         try {
-            TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
+            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
             if (ts == null) {
                 return; //no html ts at the caret position
             }
@@ -95,7 +95,7 @@ public class HTMLAutoCompletion {
             }
 
             Token token = ts.token();
-            if (token.id() == HTMLTokenId.VALUE) {
+            if (token.id() == HtmlTokenId.VALUE) {
                 //test if the user inserted the qutation in an attribute value and before
                 //an already existing end quotation
                 //the text looks following in such a situation:
@@ -119,7 +119,7 @@ public class HTMLAutoCompletion {
     private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         doc.readLock();
         try {
-            TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
+            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
             if (ts == null) {
                 return; //no html ts at the caret position
             }
@@ -132,7 +132,7 @@ public class HTMLAutoCompletion {
 
             int dotPosAfterTypedChar = dotPos + 1;
             if (token != null &&
-                    token.id() == HTMLTokenId.OPERATOR) {
+                    token.id() == HtmlTokenId.OPERATOR) {
                 doc.insertString(dotPosAfterTypedChar, "\"\"", null);
                 caret.setDot(dotPosAfterTypedChar + 1);
             }

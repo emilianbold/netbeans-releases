@@ -68,7 +68,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
@@ -92,21 +92,21 @@ import org.openide.util.Exceptions;
  * @author Miloslav Metelka
  * @version 1.00
  */
-public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
+public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(HTMLKit.class);
+        return new org.openide.util.HelpCtx(HtmlKit.class);
     }
-    private static final Logger LOGGER = Logger.getLogger(HTMLKit.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(HtmlKit.class.getName());
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
 
-    public HTMLKit() {
+    public HtmlKit() {
         this(HTML_MIME_TYPE);
     }
 
-    public HTMLKit(String mimeType) {
+    public HtmlKit(String mimeType) {
         super();
         NbReaderProvider.setupReaders();
     }
@@ -118,7 +118,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     @Override
     public Object clone() {
-        return new HTMLKit();
+        return new HtmlKit();
     }
 
     @Override
@@ -130,7 +130,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         //listen on the HTML parser and recolor after changes
-//        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
+//        LanguagePath htmlLP = LanguagePath.get(HtmlTokenId.language());
 //        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
 
@@ -138,28 +138,28 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     @Override
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
-        c.setTransferHandler(new HTMLTransferHandler());
+        c.setTransferHandler(new HtmlTransferHandler());
     }
     
     protected DeleteCharAction createDeletePrevAction() {
-        return new HTMLDeleteCharAction(deletePrevCharAction, false);
+        return new HtmlDeleteCharAction(deletePrevCharAction, false);
     }
     
     protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
-        return new HTMLDefaultKeyTypedAction();
+        return new HtmlDefaultKeyTypedAction();
     }
 
     protected InsertBreakAction createInsertBreakAction() {
-        return new HTMLInsertBreakAction();
+        return new HtmlInsertBreakAction();
     }
     
     @Override
     protected Action[] createActions() {
-        Action[] HTMLActions = new Action[]{
+        Action[] HtmlActions = new Action[]{
             createInsertBreakAction(),
             createDefaultKeyTypedAction(),
             createDeletePrevAction(),
-            new HTMLDeleteCharAction(deleteNextCharAction, true),
+            new HtmlDeleteCharAction(deleteNextCharAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
@@ -167,7 +167,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };
-        return TextAction.augmentList(super.createActions(), HTMLActions);
+        return TextAction.augmentList(super.createActions(), HtmlActions);
     }
 
     static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
@@ -190,7 +190,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return true;
     }
 
-    public class HTMLInsertBreakAction extends InsertBreakAction {
+    public class HtmlInsertBreakAction extends InsertBreakAction {
 
         static final long serialVersionUID = -1506173310438326380L;
 
@@ -236,7 +236,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
 
-    public static class HTMLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+    public static class HtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
         private String insertedText;
@@ -341,8 +341,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             if (lastChar == '>') {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
-                    if (languagePath.innerLanguage() == HTMLTokenId.language()) {
-                        HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(languagePath);
+                    if (languagePath.innerLanguage() == HtmlTokenId.language()) {
+                        HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(languagePath);
 
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
                             doc.runAtomic(new Runnable() {
@@ -376,11 +376,11 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
 
-    public static class HTMLDeleteCharAction extends DeleteCharAction {
+    public static class HtmlDeleteCharAction extends DeleteCharAction {
 
         private JTextComponent currentTarget;
         
-        public HTMLDeleteCharAction(String name, boolean nextChar) {
+        public HtmlDeleteCharAction(String name, boolean nextChar) {
             super(name, nextChar);
         }
         
@@ -421,7 +421,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
      *
      * !!!!!!!!!!!!!!!!!!!!!
      */
-    static class HTMLTransferHandler extends TransferHandler implements UIResource {
+    static class HtmlTransferHandler extends TransferHandler implements UIResource {
 
         private JTextComponent exportComp;
         private boolean shouldRemove;
@@ -612,7 +612,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             shouldRemove = true;
             p0 = exportComp.getSelectionStart();
             p1 = exportComp.getSelectionEnd();
-            return (p0 != p1) ? (new HTMLTransferable(exportComp, p0, p1)) : null;
+            return (p0 != p1) ? (new HtmlTransferable(exportComp, p0, p1)) : null;
         }
 
         /**
@@ -629,7 +629,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             // only remove the text if shouldRemove has not been set to
             // false by importData and only if the action is a move
             if (shouldRemove && action == MOVE) {
-                HTMLTransferable t = (HTMLTransferable) data;
+                HtmlTransferable t = (HtmlTransferable) data;
                 t.removeText();
             }
 
@@ -718,9 +718,9 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * (if that is not the active format) since that can be
          * extracted from other formats.
          */
-        static class HTMLTransferable extends BasicTransferable {
+        static class HtmlTransferable extends BasicTransferable {
 
-            HTMLTransferable(JTextComponent c, int start, int end) {
+            HtmlTransferable(JTextComponent c, int start, int end) {
                 super(null, null);
 
                 this.c = c;

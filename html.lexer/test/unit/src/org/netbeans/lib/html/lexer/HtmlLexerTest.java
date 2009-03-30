@@ -38,7 +38,7 @@
  */
 package org.netbeans.lib.html.lexer;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -49,9 +49,9 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
  *
  * @author Tor Norbye
  */
-public class HTMLLexerTest extends NbTestCase {
+public class HtmlLexerTest extends NbTestCase {
 
-    public HTMLLexerTest(String testName) {
+    public HtmlLexerTest(String testName) {
         super(testName);
     }
 
@@ -63,36 +63,36 @@ public class HTMLLexerTest extends NbTestCase {
 
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
-                HTMLTokenId.language());
+                HtmlTokenId.language());
     }
 
     public void test146930() {
-        TokenHierarchy th = TokenHierarchy.create("<<body>", HTMLTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create("<<body>", HtmlTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
 
         assertTrue(ts.moveNext());
         assertEquals("<", ts.token().text().toString());
-        assertEquals(HTMLTokenId.TEXT, ts.token().id());
+        assertEquals(HtmlTokenId.TEXT, ts.token().id());
 
         assertTrue(ts.moveNext());
         assertEquals("<", ts.token().text().toString());
-        assertEquals(HTMLTokenId.TAG_OPEN_SYMBOL, ts.token().id());
+        assertEquals(HtmlTokenId.TAG_OPEN_SYMBOL, ts.token().id());
 
         assertTrue(ts.moveNext());
         assertEquals("body", ts.token().text().toString());
-        assertEquals(HTMLTokenId.TAG_OPEN, ts.token().id());
+        assertEquals(HtmlTokenId.TAG_OPEN, ts.token().id());
 
         assertTrue(ts.moveNext());
         assertEquals(">", ts.token().text().toString());
-        assertEquals(HTMLTokenId.TAG_CLOSE_SYMBOL, ts.token().id());
+        assertEquals(HtmlTokenId.TAG_CLOSE_SYMBOL, ts.token().id());
 
         assertFalse(ts.moveNext());
     }
 
     public void test149018() throws Exception { //JSP editor not recognizing valid end-of-html comment
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.html.txt",
-                HTMLTokenId.language());
+                HtmlTokenId.language());
     }
 
     public void testEmptyTag() {
@@ -101,7 +101,7 @@ public class HTMLLexerTest extends NbTestCase {
 
 
     private void checkTokens(String text, String... descriptions) {
-        TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create(text, HtmlTokenId.language());
         TokenSequence ts = th.tokenSequence();
 
 //        System.out.println(ts);

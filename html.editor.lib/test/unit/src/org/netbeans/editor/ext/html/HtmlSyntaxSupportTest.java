@@ -47,32 +47,32 @@ import org.netbeans.editor.ext.html.test.TestBase;
  *
  * @author marekfukala
  */
-public class HTMLSyntaxSupportTest extends TestBase {
+public class HtmlSyntaxSupportTest extends TestBase {
 
-    public HTMLSyntaxSupportTest() {
-        super(HTMLSyntaxSupportTest.class.getName());
+    public HtmlSyntaxSupportTest() {
+        super(HtmlSyntaxSupportTest.class.getName());
     }
 
     public void testCheckOpenCompletion() throws BadLocationException {
         Document doc = createDocument();
         
         doc.insertString(0, "<", null);
-        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 1, "<"));
+        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 1, "<"));
 
         doc.insertString(1, "div", null);
-        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 4, "div"));
+        assertFalse(HtmlSyntaxSupport.checkOpenCompletion(doc, 4, "div"));
 
         doc.insertString(4, " ", null);
-        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 5, " "));
+        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 5, " "));
 
         doc.insertString(5, "/>", null);
-        assertFalse(HTMLSyntaxSupport.checkOpenCompletion(doc, 7, "/>"));
+        assertFalse(HtmlSyntaxSupport.checkOpenCompletion(doc, 7, "/>"));
 
         doc.insertString(7, "</", null);
-        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 9, "</"));
+        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 9, "</"));
 
         doc.insertString(9, "div> &", null);
-        assertTrue(HTMLSyntaxSupport.checkOpenCompletion(doc, 15, "div> &"));
+        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 15, "div> &"));
 
     }
 

@@ -45,7 +45,7 @@ import javax.swing.text.Document;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -65,24 +65,24 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  * @author Petr Nejedly
  * @author Marek Fukala
  */
-public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateListener {
+public class HtmlSyntaxSupport extends ExtSyntaxSupport implements InvalidateListener {
     private static final String FALLBACK_DOCTYPE =
             "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
     
     private DTD dtd;
     private String docType;
     
-    public static synchronized HTMLSyntaxSupport get(Document doc) {
-        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getProperty(HTMLSyntaxSupport.class);
+    public static synchronized HtmlSyntaxSupport get(Document doc) {
+        HtmlSyntaxSupport sup = (HtmlSyntaxSupport)doc.getProperty(HtmlSyntaxSupport.class);
         if(sup == null) {
-            sup = new HTMLSyntaxSupport((BaseDocument)doc);
-            doc.putProperty(HTMLSyntaxSupport.class, sup);
+            sup = new HtmlSyntaxSupport((BaseDocument)doc);
+            doc.putProperty(HtmlSyntaxSupport.class, sup);
         }
         return sup;
     }
     
-    /** Creates new HTMLSyntaxSupport */
-    private HTMLSyntaxSupport( BaseDocument doc ) {
+    /** Creates new HtmlSyntaxSupport */
+    private HtmlSyntaxSupport( BaseDocument doc ) {
         super(doc);
     }
     
@@ -157,7 +157,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 
                     ts.move(dotPos-1);
                     if(ts.moveNext() || ts.movePrevious()) {
-                        if(ts.token().id() == HTMLTokenId.WS) {
+                        if(ts.token().id() == HtmlTokenId.WS) {
                             return true;
                         }
                     }
@@ -195,7 +195,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         getDocument().readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(getDocument());
-            TokenSequence<HTMLTokenId> ts = getJoinedHtmlSequence(getDocument());
+            TokenSequence<HtmlTokenId> ts = getJoinedHtmlSequence(getDocument());
             
             if(ts == null) {
                 return  null;
@@ -213,20 +213,20 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 return null;
             }
             
-            if( item.id() == HTMLTokenId.CHARACTER ) {
+            if( item.id() == HtmlTokenId.CHARACTER ) {
                 do {
                     item = ts.token();
                     beginning = ts.offset();
-                } while(item.id() == HTMLTokenId.CHARACTER && ts.movePrevious());
+                } while(item.id() == HtmlTokenId.CHARACTER && ts.movePrevious());
                 
                 // now item is either HTMLSyntax.VALUE or we're in text, or at BOF
-                if( item.id() != HTMLTokenId.VALUE && item.id() != HTMLTokenId.TEXT ) {
+                if( item.id() != HtmlTokenId.VALUE && item.id() != HtmlTokenId.TEXT ) {
                     return getNextElement(  beginning );
                 } // else ( for VALUE or TEXT ) fall through
             }
             
-            if( item.id() == HTMLTokenId.WS || item.id() == HTMLTokenId.ARGUMENT ||     // these are possible only in Tags
-                    item.id() == HTMLTokenId.OPERATOR || item.id() == HTMLTokenId.VALUE ) { // so find boundary
+            if( item.id() == HtmlTokenId.WS || item.id() == HtmlTokenId.ARGUMENT ||     // these are possible only in Tags
+                    item.id() == HtmlTokenId.OPERATOR || item.id() == HtmlTokenId.VALUE ) { // so find boundary
                 //find beginning of the tag
                 while(ts.movePrevious() && !isTagSymbol(item = ts.token())) {
                     //just skip tokens
@@ -234,52 +234,52 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 return getNextElement(  item.offset(hi) );       // TAGC
             }
             
-            if( item.id() == HTMLTokenId.TEXT ) {
+            if( item.id() == HtmlTokenId.TEXT ) {
                 do {
                     beginning = ts.offset();
-                } while ( ts.movePrevious() && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.CHARACTER));
+                } while ( ts.movePrevious() && (ts.token().id() == HtmlTokenId.TEXT || ts.token().id() == HtmlTokenId.CHARACTER));
                 
                 return getNextElement(  beginning ); // from start of Commment
             }
             
-            if( item.id() == HTMLTokenId.SCRIPT) {
+            if( item.id() == HtmlTokenId.SCRIPT) {
                 //we have just one big token for script
                 return getNextElement(  ts.token().offset(hi));
             }
             
-            if( item.id() == HTMLTokenId.STYLE) {
+            if( item.id() == HtmlTokenId.STYLE) {
                 //we have just one big token for script
                 return getNextElement(  ts.token().offset(hi));
             }
             
             
             if( isTag(item)) {
-                if( item.id() == HTMLTokenId.TAG_OPEN ||
-                        item.id() == HTMLTokenId.TAG_OPEN_SYMBOL)  return getNextElement(  item.offset(hi) );  // TAGO/ETAGO // NOI18N
+                if( item.id() == HtmlTokenId.TAG_OPEN ||
+                        item.id() == HtmlTokenId.TAG_OPEN_SYMBOL)  return getNextElement(  item.offset(hi) );  // TAGO/ETAGO // NOI18N
                 else {
                     do {
                         if(!ts.movePrevious()) {
                             return getNextElement( item.offset(hi));
                         }
                         item = ts.token();
-                    } while( item.id() != HTMLTokenId.TAG_OPEN_SYMBOL);
+                    } while( item.id() != HtmlTokenId.TAG_OPEN_SYMBOL);
                     
                     return getNextElement(  item.offset(hi) );       // TAGC
                 }
             }
             
-            if( item.id() == HTMLTokenId.ERROR )
+            if( item.id() == HtmlTokenId.ERROR )
                 return new SyntaxElement( this, item.offset(hi), getTokenEnd( hi, item ), SyntaxElement.TYPE_ERROR );
             
-            if( item.id() == HTMLTokenId.BLOCK_COMMENT ) {
-                while( item.id() == HTMLTokenId.BLOCK_COMMENT && !item.text().toString().startsWith( "<!--" ) && ts.movePrevious()) { // NOI18N
+            if( item.id() == HtmlTokenId.BLOCK_COMMENT ) {
+                while( item.id() == HtmlTokenId.BLOCK_COMMENT && !item.text().toString().startsWith( "<!--" ) && ts.movePrevious()) { // NOI18N
                     item = ts.token();
                 }
                 return getNextElement(  item.offset(hi)); // from start of Commment
             }
             
-            if( item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.SGML_COMMENT ) {
-                while((item.id() != HTMLTokenId.DECLARATION || !item.text().toString().startsWith( "<!" )) && ts.movePrevious()) { // NOI18N
+            if( item.id() == HtmlTokenId.DECLARATION || item.id() == HtmlTokenId.SGML_COMMENT ) {
+                while((item.id() != HtmlTokenId.DECLARATION || !item.text().toString().startsWith( "<!" )) && ts.movePrevious()) { // NOI18N
                     item = ts.token();
                 }
                 return getNextElement(  item.offset(hi) ); // from start of Commment
@@ -306,27 +306,27 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             org.netbeans.api.lexer.Token item = ts.token();
             int lastOffset = getTokenEnd(hi, item);
             
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT) {
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.BLOCK_COMMENT) {
                 do {
                     lastOffset = getTokenEnd(hi, ts.token());
                 } while (ts.token().id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT &&
+                        org.netbeans.api.html.lexer.HtmlTokenId.BLOCK_COMMENT &&
                         ts.moveNext());
                 return new SyntaxElement(this, offset, lastOffset,
                         SyntaxElement.TYPE_COMMENT);
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION) {
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.DECLARATION) {
                 java.lang.StringBuffer sb = new java.lang.StringBuffer(item.text());
                 
-                while (item.id() == HTMLTokenId.DECLARATION || 
-                       item.id() == HTMLTokenId.SGML_COMMENT ||
-                       item.id() == HTMLTokenId.WS) {
+                while (item.id() == HtmlTokenId.DECLARATION ||
+                       item.id() == HtmlTokenId.SGML_COMMENT ||
+                       item.id() == HtmlTokenId.WS) {
                     lastOffset = getTokenEnd(hi, item);
                     if (!ts.moveNext()) {
                         break;
                     }
                     item = ts.token();
-                    if (item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.WS) {
+                    if (item.id() == HtmlTokenId.DECLARATION || item.id() == HtmlTokenId.WS) {
                         sb.append(item.text().toString());
                     }
                 }
@@ -388,36 +388,36 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         null,
                         null);
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.ERROR)
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.ERROR)
                 return new SyntaxElement(this, item.offset(hi), lastOffset,
                         SyntaxElement.TYPE_ERROR);
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
-                    item.id() == org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) {
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TEXT ||
+                    item.id() == org.netbeans.api.html.lexer.HtmlTokenId.CHARACTER) {
                 do {
                     lastOffset = getTokenEnd(hi, item);
                     item = ts.token();
                 } while (ts.moveNext() &&
-                        (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
+                        (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TEXT ||
                         item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER));
+                        org.netbeans.api.html.lexer.HtmlTokenId.CHARACTER));
                 return new SyntaxElement(this, offset, lastOffset,
                         SyntaxElement.TYPE_TEXT);
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.SCRIPT) {
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.SCRIPT) {
                 return new SyntaxElement(this, offset, getTokenEnd(hi, item),
                         SyntaxElement.TYPE_SCRIPT);
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.STYLE) {
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.STYLE) {
                 return new SyntaxElement(this, offset, getTokenEnd(hi, item),
                         SyntaxElement.TYPE_STYLE);
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE || (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TAG_CLOSE || (item.id() ==
+                    org.netbeans.api.html.lexer.HtmlTokenId.TAG_OPEN_SYMBOL &&
                     item.text().toString().equals("</"))) {
                 java.lang.String name = item.text().toString();
                 
                 if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
+                        org.netbeans.api.html.lexer.HtmlTokenId.TAG_OPEN_SYMBOL) {
                     ts.moveNext();
                     name = ts.token().text().toString();
                 }
@@ -426,10 +426,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 do {
                     item = ts.token();
                     lastOffset = getTokenEnd(hi, item);
-                } while (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS &&
+                } while (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.WS &&
                         ts.moveNext());
                 if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        org.netbeans.api.html.lexer.HtmlTokenId.TAG_CLOSE_SYMBOL) {
                     return new org.netbeans.editor.ext.html.SyntaxElement.Named(this,
                             offset,
                             getTokenEnd(hi,
@@ -444,13 +444,13 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                             name);
                 }
             }
-            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN ||
-                    (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
+            if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TAG_OPEN ||
+                    (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TAG_OPEN_SYMBOL &&
                     !item.text().toString().equals("</"))) {
                 java.lang.String name = item.text().toString();
                 ArrayList<SyntaxElement.TagAttribute> attrs = new ArrayList<SyntaxElement.TagAttribute>();
                 
-                if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
+                if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TAG_OPEN_SYMBOL) {
                     ts.moveNext();
                     name = ts.token().text().toString();
                 }
@@ -461,10 +461,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 Token attrNameToken = null;
                 do {
                     item = ts.token();
-                    if (item.id() == HTMLTokenId.ARGUMENT) {
+                    if (item.id() == HtmlTokenId.ARGUMENT) {
                         //attribute name
                         attrNameToken = item;
-                    } else if (item.id() == HTMLTokenId.VALUE && attrNameToken != null) {
+                    } else if (item.id() == HtmlTokenId.VALUE && attrNameToken != null) {
                         //found attribute value after attribute name
                         
                         //there may be entity reference inside the attribute value
@@ -475,7 +475,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         do {
                             t = ts.token();
                             value.append(t.text().toString());
-                        } while (ts.moveNext() && (ts.token().id() == HTMLTokenId.VALUE || ts.token().id() == HTMLTokenId.CHARACTER));
+                        } while (ts.moveNext() && (ts.token().id() == HtmlTokenId.VALUE || ts.token().id() == HtmlTokenId.CHARACTER));
                         
                         SyntaxElement.TagAttribute tagAttr =
                                 new SyntaxElement.TagAttribute(attrNameToken.text().toString(),
@@ -486,14 +486,14 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         attrNameToken = null;
                     }
                     lastOffset = getTokenEnd(hi, item);
-                } while ((item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS ||
-                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT ||
-                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.OPERATOR ||
-                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.VALUE ||
-                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) &&
+                } while ((item.id() == org.netbeans.api.html.lexer.HtmlTokenId.WS ||
+                        item.id() == org.netbeans.api.html.lexer.HtmlTokenId.ARGUMENT ||
+                        item.id() == org.netbeans.api.html.lexer.HtmlTokenId.OPERATOR ||
+                        item.id() == org.netbeans.api.html.lexer.HtmlTokenId.VALUE ||
+                        item.id() == org.netbeans.api.html.lexer.HtmlTokenId.CHARACTER) &&
                         ts.moveNext());
                 
-                if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                if (item.id() == org.netbeans.api.html.lexer.HtmlTokenId.TAG_CLOSE_SYMBOL) {
                     return new org.netbeans.editor.ext.html.SyntaxElement.Tag(this,
                             offset,
                             getTokenEnd(hi,
@@ -517,15 +517,15 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     }
     
     private static boolean isTagSymbol(Token t) {
-        return (( t.id() == HTMLTokenId.TAG_OPEN_SYMBOL) ||
-                ( t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL));
+        return (( t.id() == HtmlTokenId.TAG_OPEN_SYMBOL) ||
+                ( t.id() == HtmlTokenId.TAG_CLOSE_SYMBOL));
     }
     
     private static boolean isTag(Token t) {
-        return (( t.id() == HTMLTokenId.TAG_OPEN ) ||
-                ( t.id() == HTMLTokenId.TAG_CLOSE ) ||
-                ( t.id() == HTMLTokenId.TAG_OPEN_SYMBOL) ||
-                ( t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL));
+        return (( t.id() == HtmlTokenId.TAG_OPEN ) ||
+                ( t.id() == HtmlTokenId.TAG_CLOSE ) ||
+                ( t.id() == HtmlTokenId.TAG_OPEN_SYMBOL) ||
+                ( t.id() == HtmlTokenId.TAG_CLOSE_SYMBOL));
     }
     
     private static int getTokenEnd( TokenHierarchy thi, Token item ) {
@@ -610,10 +610,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         found.add( tagName );
                         if(tag != null) {
                             //html item
-                            result.add( new HTMLCompletionQuery.EndTagItem( tagName, offset-2-prefixLen, prefixLen+2, tagName, itemsCount ) );
+                            result.add( new HtmlCompletionQuery.EndTagItem( tagName, offset-2-prefixLen, prefixLen+2, tagName, itemsCount ) );
                         } else {
                             //non html item
-                            result.add( new HTMLCompletionQuery.NonHTMLEndTagItem( tagName, offset-2-prefixLen, prefixLen+2, itemsCount ) );
+                            result.add( new HtmlCompletionQuery.NonHtmlEndTagItem( tagName, offset-2-prefixLen, prefixLen+2, itemsCount ) );
                         }
                     }
                     if( tag != null && !tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
@@ -637,7 +637,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
                 if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
-                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, dtdElem != null);
+                    CompletionItem eti = new HtmlCompletionQuery.AutocompleteEndTagItem(tagName, offset, dtdElem != null);
                     l.add(eti);
                 }
             }
@@ -650,7 +650,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     private static LanguagePath findTopMostHtml(Document doc) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         for(LanguagePath path : (Set<LanguagePath>)th.languagePaths()) {
-            if(path.innerLanguage() == HTMLTokenId.language()) { //is this always correct???
+            if(path.innerLanguage() == HtmlTokenId.language()) { //is this always correct???
                 return path;
             }
         }
@@ -658,7 +658,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     }
     
     /** returns top most joined html token seuence for the document. */
-    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc) {
+    public static TokenSequence<HtmlTokenId> getJoinedHtmlSequence(Document doc) {
          LanguagePath path = findTopMostHtml(doc);
          if(path == null) {
              return null;
@@ -670,7 +670,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     /*
      * supposes html tokens are always joined - just one joined sequence over the document!
      */
-    private static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, LanguagePath languagePath) {
+    private static TokenSequence<HtmlTokenId> getJoinedHtmlSequence(Document doc, LanguagePath languagePath) {
         //find html token sequence, in joined version if embedded
         TokenHierarchy th = TokenHierarchy.get(doc);
         List<TokenSequence> tslist = th.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
@@ -684,7 +684,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
         TokenSequence sequence = null;
         for (TokenSequence ts : embedded) {
-            if (ts.language() == HTMLTokenId.language()) {
+            if (ts.language() == HtmlTokenId.language()) {
                 if (sequence == null) {
                     //html is top level
                     sequence = ts;
@@ -692,7 +692,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 } else {
                     //the sequence is my master language
                     //get joined html sequence from it
-                    sequence = sequence.embeddedJoined(HTMLTokenId.language());
+                    sequence = sequence.embeddedJoined(HtmlTokenId.language());
                     assert sequence != null;
                     break;
                 }
