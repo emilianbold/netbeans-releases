@@ -8,4 +8,3 @@ METHOD     div(Number)                                Number
 METHOD     doubleValue()                   [PUBLIC]   double
 METHOD     downto(Number, Closure)                    void
 METHOD     dump()                                     String
-FIELD      digits                                     char[]

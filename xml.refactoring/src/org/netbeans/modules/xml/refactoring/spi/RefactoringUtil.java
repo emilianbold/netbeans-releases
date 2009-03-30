@@ -98,7 +98,7 @@ public class RefactoringUtil {
             if (spp == null) continue;
             for (Object o : spp.getSubprojects()) {
                 Project sp = (Project) o;
-                if (sp == project) {
+                if (sp.equals(project) || project.equals(sp)) {
                     result.add(p);
                     break;
                 }

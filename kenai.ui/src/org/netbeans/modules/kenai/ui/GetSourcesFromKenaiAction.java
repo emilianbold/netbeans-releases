@@ -99,22 +99,32 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                     public void run() {
                         try {
 
-                            Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
-                                new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                            if (passwdAuth != null) {
+                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                    new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                            } else {
+                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                    new File(sourcesInfo.localFolderPath), true);
+                            }
 
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
                 });
-            } else if (Utilities.HG_REPO.equals(sourcesInfo.feature.getService())) { // XXX service or name
+            } else if (Utilities.HG_REPO.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
-                            Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                            if (passwdAuth != null) {
+                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-                            
+                            } else {
+                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                    "", "", "");
+                            }
+
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

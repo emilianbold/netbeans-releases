@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes.children;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -27,10 +26,7 @@ import java.util.List;
 import org.netbeans.modules.bpel.core.BPELCatalog;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.nodes.PrimitiveTypeNode;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -38,10 +34,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Shows the list of Bpel Global Catalog Elements
@@ -66,7 +59,8 @@ public class BpelGlobalCatalogChildren extends Children.Keys {
                 String pubId = publicIDs.next();
 //                String sysId = myBpelGlobalCatalog.getSystemID(pubId);
                 if (pubId != null) {
-                    keys.add(pubId);
+                    String sysID = bpelCatalog.getSystemID(pubId);
+                    keys.add(sysID);
                 }
             }
         }
@@ -77,25 +71,20 @@ public class BpelGlobalCatalogChildren extends Children.Keys {
     protected Node[] createNodes(Object key) {
         if(key instanceof String) {
             try {
-                String pubId = (String) key;
-//                InputSource iSource = myBpelGlobalCatalog.resolveEntity(
-//                        myBpelGlobalCatalog.getSystemID(pubId), pubId);
-
+                String sysID = (String) key;
                 ModelSource modelSource = CatalogModelFactory.getDefault()
                         .getCatalogModel(myBpelModel.getModelSource())
-                            .getModelSource(new URI(pubId));
+                            .getModelSource(new URI(sysID));
                 if (modelSource != null) {
-                    if (pubId.startsWith(BPELCatalog.SCHEMA)) {
-                        SchemaModel schemaModel = SchemaModelFactory.getDefault().
-                                getModel(modelSource);
-                        if (schemaModel != null) {
-                            NodeFactory nodeFactory =
-                                    myLookup.lookup(NodeFactory.class);
-                            Node newNode = nodeFactory.createNode(
-                                    NodeType.SCHEMA_FILE, schemaModel, myLookup);
-                            if (newNode != null) {
-                                return new Node[] {newNode};
-                            }
+                    SchemaModel schemaModel = SchemaModelFactory.getDefault().
+                            getModel(modelSource);
+                    if (schemaModel != null) {
+                        NodeFactory nodeFactory =
+                                myLookup.lookup(NodeFactory.class);
+                        Node newNode = nodeFactory.createNode(
+                                NodeType.SCHEMA_FILE, schemaModel, myLookup);
+                        if (newNode != null) {
+                            return new Node[] {newNode};
                         }
                     }
                 }

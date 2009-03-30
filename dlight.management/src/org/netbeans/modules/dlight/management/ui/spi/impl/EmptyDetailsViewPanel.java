@@ -1,0 +1,220 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.dlight.management.ui.spi.impl;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.Validateable;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.support.ValidateableSupport;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author mt154047
+ */
+class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
+
+    private final DLightConfiguration configuration;
+    private final DLightTool currentTool;
+    private final DLightTarget targetToValidateWith;
+    private final Map<Validateable, ValidationStatus> states = new HashMap<Validateable, ValidationStatus>();
+    private final Map<Validateable, Integer> panels = new HashMap<Validateable, Integer>();
+    private final List<JPanel> panelsList;
+
+    public EmptyDetailsViewPanel(DLightConfiguration dlightConfiguration, DLightTool tool, DLightTarget targetToValidateWith) {
+        //find the proper tool
+        this.configuration = dlightConfiguration;
+        this.targetToValidateWith = targetToValidateWith;
+        this.currentTool = tool;
+        List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
+        panelsList = new ArrayList<JPanel>();
+        //get the first one
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        JPanel repairPanel = new JPanel();
+        repairPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        repairPanel.setLayout(new BoxLayout(repairPanel, BoxLayout.Y_AXIS));
+        for (final DataCollector c : collectors) {
+            if (!c.getValidationStatus().isKnown()) {
+                c.addValidationListener(this);
+                //validate one more time
+                states.put(c, c.getValidationStatus());
+                JPanel p = new JPanel();
+                p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                JLabel label = new JLabel(c.getValidationStatus().getReason());
+                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                p.add(label);
+                p.add(Box.createVerticalStrut(10));
+                JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));
+                repairButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                repairButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        repair(c);
+                    }
+                });
+                p.add(repairButton);
+                repairPanel.add(p);
+                panelsList.add(p);
+                panels.put(c, panelsList.indexOf(p));
+            } else {
+                ValidationStatus status = c.getValidationStatus();
+                JPanel p = new JPanel();
+                p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                if (!status.isKnown()) {
+                    p.add(new JLabel(status.getReason()));
+                } else if (status.isValid()) {
+                    p.add(new JLabel("Will show details on the next run"));//NOI18N
+                } else if (status.isInvalid()) {
+                    p.add(new JLabel(status.getReason()));
+
+                }
+                JLabel label = new JLabel(c.getValidationStatus().getReason());
+                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                p.add(label);
+                repairPanel.add(p);
+                panelsList.add(p);
+                panels.put(c, panelsList.indexOf(p));
+            }
+        }
+        repairPanel.setAlignmentX(CENTER_ALIGNMENT);
+        repairPanel.setAlignmentY(CENTER_ALIGNMENT);
+        this.add(repairPanel);
+    }
+
+    private void repair(final DataCollector<?> c) {
+        final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
+        final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToValidateWith, true);
+        DLightExecutorService.submit(new Callable<Boolean>() {
+
+            public Boolean call() throws Exception {
+                ValidationStatus status = taskStatus.get();
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        updateUI(c);
+                    }
+                });
+                return status.isKnown();
+            }
+        }, "EmptyDetailsViewPanel task");//NOI18N
+    }
+
+    private void updateUI(Validateable v) {
+        //get panel
+        JPanel p = panelsList.get(panels.get(v));
+        //we should renove all and set new message
+        p.removeAll();
+        ValidationStatus status = v.getValidationStatus();
+        if (!status.isKnown()) {
+            p.add(new JLabel(status.getReason()));
+            repaint();
+            return;
+        }
+        if (status.isValid()) {
+            p.add(new JLabel("Will show details on the next run"));//NOI18N
+            repaint();
+            return;
+        }
+        if (status.isInvalid()) {
+            p.add(new JLabel(status.getReason()));
+            repaint();
+            return;
+
+        }
+    }
+
+    private void updateAllUI() {
+        //get panel
+        for (Validateable v : states.keySet()) {
+            JPanel p = panelsList.get(panels.get(v));
+            //we should renove all and set new message
+            p.removeAll();
+            ValidationStatus status = v.getValidationStatus();
+            if (!status.isKnown()) {
+                p.add(new JLabel(status.getReason()));
+            } else if (status.isValid()) {
+                p.add(new JLabel("Will show details on the next run"));//NOI18N
+            } else if (status.isInvalid()) {
+                p.add(new JLabel(status.getReason()));
+            }
+        }
+        repaint();
+    }
+
+    public void validationStateChanged(final Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {
+        if (states.get(source) == null) {//but we need to update
+            UIThread.invoke(new Runnable() {
+
+                public void run() {
+                    updateAllUI();
+                }
+            });
+            return;//nothing to do
+        }
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                updateUI(source);
+            }
+        });
+    }
+}

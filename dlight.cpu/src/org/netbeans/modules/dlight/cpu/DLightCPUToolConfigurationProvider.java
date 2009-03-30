@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 public final class DLightCPUToolConfigurationProvider
     implements DLightToolConfigurationProvider {
 
+    public static final int INDICATOR_POSITION = 100;
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final List<Column> PRSTAT_COLUMNS = Arrays.asList(
         new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null), // NOI18N
@@ -148,7 +149,7 @@ public final class DLightCPUToolConfigurationProvider
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);
         CpuIndicatorConfiguration indicatorConfiguration =
-            new CpuIndicatorConfiguration(indicatorMetadata);
+            new CpuIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -232,8 +233,7 @@ public final class DLightCPUToolConfigurationProvider
                 return null;
             }
 
-            return new DataRow(colnames, Arrays.asList(
-                new Float[]{utime, stime, wtime}));
+            return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
         }
     }
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-
+PATH=/bin:/usr/bin:${PATH}
 PROG=`basename $0`
 USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
 PROMPT=NO
@@ -12,6 +12,7 @@ fail() {
 doExit() {
   test -f ${PIDFILE} && rm ${PIDFILE}
   test -f ${ENVFILE} && rm ${ENVFILE}
+  echo ${STATUS} > ${PIDFILE}.res
   exit ${STATUS}
 }
 
@@ -45,7 +46,6 @@ test -r ${ENVFILE} && ENVSETUP=" && . ${ENVFILE}"
 /bin/sh -c "echo \$\$>${PIDFILE} ${ENVSETUP} && cd ${WDIR} && exec $@"
 STATUS=$?
 echo ${STATUS} > ${PIDFILE}.res
-
 
 if [ "${PROMPT}" != "NO" ]; then
   /bin/echo "${PROMPT}"

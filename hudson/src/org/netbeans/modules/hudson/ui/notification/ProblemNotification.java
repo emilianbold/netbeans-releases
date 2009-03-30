@@ -44,9 +44,9 @@ import java.awt.event.ActionListener;
 import java.io.CharConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
@@ -94,8 +94,11 @@ class ProblemNotification implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         for (HudsonJobBuild b : job.getBuilds()) {
             if (b.getNumber() == build) {
-                Action delegate = failed ? new ShowBuildConsole(b) : new ShowFailures(b);
-                delegate.actionPerformed(e);
+                if (failed) {
+                    new ShowBuildConsole(b).actionPerformed(e);
+                } else if (b.getMavenModules().isEmpty()) {
+                    new ShowFailures(b).actionPerformed(e);
+                } // XXX for Maven moduleset, not obvious which module had failing builds
                 break;
             }
         }
@@ -106,8 +109,7 @@ class ProblemNotification implements ActionListener {
     }
 
     private Icon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/" + // NOI18N
-                (failed ? "red" : "yellow") + (running ? "_run" : "") + ".png", true); // NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true);
     }
 
     void add() {

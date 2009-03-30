@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfigu
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -146,6 +148,49 @@ public class DiscoveryProjectGenerator {
             projectBridge.setupFolder(foldersIncludes, true, foldersMacros, true, isCPP, subFolder);
             downConfiguration(subFolder, isCPP, aCommonFoldersIncludes, cCommonFoldersMacros);
         }
+    }
+
+    private Folder getOrCreateFolder(Folder folder, String name, AbstractRoot used) {
+        Folder added = folder.findFolderByName(name);
+        if (added == null) {
+            added = projectBridge.createFolder(folder, name);
+            //if (!folder.isDiskFolder()) {
+            //    String additionalPath = used.getFolder();
+            //    added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+            //    projectBridge.addSourceRoot(additionalPath);
+            //}
+            folder.addFolder(added);
+        } else {
+            if (added.isDiskFolder()) {
+                String additionalPath = used.getFolder();
+                String folderPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), added.getRootPath());
+                Folder logicalCandidate = null;
+                if (!additionalPath.equals(folderPath)) {
+                    for (Folder candidate : folder.getFolders()) {
+                        if (candidate.isDiskFolder()) {
+                            folderPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), candidate.getRootPath());
+                            if (additionalPath.equals(folderPath)) {
+                                added = candidate;
+                                break;
+                            }
+                        } else if (logicalCandidate == null && candidate.getName().equals(name)) {
+                            logicalCandidate = candidate;
+                        }
+                    }
+                }
+                if (!additionalPath.equals(folderPath)) {
+                    if (logicalCandidate == null) {
+                        added = projectBridge.createFolder(folder, name);
+                        //added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+                        //projectBridge.addSourceRoot(additionalPath);
+                        folder.addFolder(added);
+                    } else {
+                        added = logicalCandidate;
+                    }
+                }
+            }
+        }
+        return added;
     }
 
     private boolean upConfiguration(Folder folder, boolean isCPP) {
@@ -254,8 +299,11 @@ public class DiscoveryProjectGenerator {
 
 
     public Set makeProject(){
-        process();
-        return projectBridge.getResult();
+        if (projectBridge.isValid()) {
+            process();
+            return projectBridge.getResult();
+        }
+        return Collections.emptySet();
     }
     
     private Set<String> getSourceFolders(){
@@ -300,6 +348,7 @@ public class DiscoveryProjectGenerator {
         Set<String> folders = getSourceFolders();
         Set<String> used = new HashSet<String>();
         Set<String> needAdd = new HashSet<String>();
+        Set<String> needCheck = new HashSet<String>();
         List<String> list = wizard.getIncludedFiles();
         Map<String,Folder> preffered = prefferedFolders();
         for (String name : list){
@@ -330,22 +379,29 @@ public class DiscoveryProjectGenerator {
                         if (prefferedFolder != null) {
                             item = projectBridge.createItem(name);
                             item = prefferedFolder.addItem(item);
+                            if(!MIMENames.isCppOrC(item.getMIMEType())){
+                                needCheck.add(path);
+                            }
                             isNeedAdd = false;
                         }
                     }
                 }
                 if (isNeedAdd){
+                    needCheck.add(path);
                     needAdd.add(name);
                 }
             } else {
                 if (!usedItems.contains(item)) {
                     ProjectBridge.setExclude(item,false);
                     projectBridge.setHeaderTool(item);
+                } else {
+                    if(!MIMENames.isCppOrC(item.getMIMEType())){
+                        needCheck.add(path);
+                    }
                 }
             }
         }
         if (needAdd.size()>0) {
-            projectBridge.checkForNewExtensions(needAdd);
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
             addAdditionalFolder(folder, additional);
         }
@@ -377,11 +433,14 @@ public class DiscoveryProjectGenerator {
                 ProjectBridge.setExclude(item,true);
             }
         }
+        if (needCheck.size()>0) {
+            projectBridge.checkForNewExtensions(needCheck);
+        }
     }
 
     private void addAdditionalFolder(Folder folder, AbstractRoot used){
         String name = used.getName();
-        Folder added = folder.findFolderByName(name);
+        Folder added = getOrCreateFolder(folder, name, used);
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
@@ -577,11 +636,7 @@ public class DiscoveryProjectGenerator {
     
     private void addFolder(Folder folder, AbstractRoot additional, Map<String,Pair> folders, boolean isCPP){
         String name = additional.getName();
-        Folder added = folder.findFolderByName(name);
-        if (added == null) {
-            added = projectBridge.createFolder(folder, name);
-            folder.addFolder(added);
-        }
+        Folder added = getOrCreateFolder(folder, name, additional);
         for(AbstractRoot sub : additional.getChildren()){
             addFolder(added, sub, folders, isCPP);
         }

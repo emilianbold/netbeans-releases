@@ -78,7 +78,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         JLabel label = new JLabel(title);
         Font labelFont = label.getFont();
         label.setFont(labelFont.deriveFont(labelFont.getStyle() | Font.BOLD));
-        label.setForeground(GraphColors.TEXT_COLOR);
+        label.setForeground(GraphConfig.TEXT_COLOR);
         c = new GridBagConstraints();
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -94,7 +94,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
             add(vAxis, c);
         }
 
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -104,7 +104,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         add(graph, c);
 
         legend.setBackground(Color.WHITE);
-        legend.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        legend.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;

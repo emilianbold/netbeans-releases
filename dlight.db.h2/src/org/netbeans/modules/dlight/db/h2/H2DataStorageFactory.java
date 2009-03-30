@@ -38,36 +38,44 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position=10)
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 10)
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
-  static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
-  private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
+    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
-  public H2DataStorageFactory() {
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-    supportedStorageTypes.addAll(super.getStorageTypes());
-  }
+    public H2DataStorageFactory() {
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        supportedStorageTypes.addAll(super.getStorageTypes());
+    }
 
-  @Override
-  public Collection<DataStorageType> getStorageTypes() {
-    return supportedStorageTypes;
-  }
+    @Override
+    public Collection<DataStorageType> getStorageTypes() {
+        return supportedStorageTypes;
+    }
 
-  public H2DataStorage createStorage() {
-    return new H2DataStorage();
-  }
+    public H2DataStorage createStorage() {
+        try {
+            return new H2DataStorage();
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
 }

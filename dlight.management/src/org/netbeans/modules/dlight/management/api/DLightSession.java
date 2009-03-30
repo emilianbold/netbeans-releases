@@ -56,6 +56,8 @@ import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -82,8 +84,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
     private final DLightSessionContext sessionContext;
+    private final String name;
 
-    public enum SessionState {
+    public static enum SessionState {
 
         CONFIGURATION,
         STARTING,
@@ -117,14 +120,19 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * Instead DLightManager.newSession() should be used.
      *
      */
-    DLightSession() {
+    DLightSession(String name) {
         this.state = SessionState.CONFIGURATION;
+        this.name = name;
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
 
     public DLightSessionContext getSessionContext() {
         return sessionContext;
+    }
+
+    List<ExecutionContext> getExecutionContexts() {
+        return contexts;
     }
 
     void addExecutionContext(ExecutionContext context) {
@@ -182,6 +190,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             description = "Session #" + sessionID + " (" + targets + ")"; // NOI18N
         }
         return description;
+    }
+
+    public String getDisplayName() {
+        return name == null? getDescription() : name;
     }
 
     boolean isRunning() {
@@ -291,7 +303,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : validTools) {
-                List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     if (!collectors.contains(c)) {
@@ -305,12 +317,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
 
+        
         //if we have IDP which are collectors add them into the list of collectors
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
+            List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp.getValidationStatus().isValid()) {
@@ -325,11 +339,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                 notAttachableDataCollector = ((DataCollector) idp);
                             }
                         }
-                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
-                           target.addTargetListener(i);
+                            target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
+                                if (!subscribedIndicators.contains(i)){
+                                    subscribedIndicators.add(i);
+                                }
                                 target.addTargetListener(idp);
                                 log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
                             }
@@ -337,7 +354,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
                 }
             }
+            List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+            for (Indicator i : indicators){
+                if (!subscribedIndicators.contains(i)){
+                    IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
+                }
+            }
         }
+
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
@@ -351,7 +375,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 //init storage with the target values
                 DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
                 Map<String, String> info = targetInfo.getInfo();
-                for (String key : info.keySet()){
+                for (String key : info.keySet()) {
                     storage.put(key, info.get(key));
                 }
                 toolCollector.init(storage, target);

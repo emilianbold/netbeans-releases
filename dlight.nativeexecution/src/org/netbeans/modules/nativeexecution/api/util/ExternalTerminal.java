@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.StringWriter;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -157,6 +158,14 @@ public final class ExternalTerminal {
                     continue;
                 }
 
+                if ("$shell".equals(arg)) { // NOI18N
+                    try {
+                        result.add(HostInfoUtils.getShell(execEnv));
+                    } catch (ConnectException ex) {
+                    }
+                    continue;
+                }
+
                 if (arg.contains("$title")) { // NOI18N
                     arg = arg.replace("$title", terminal.title); // NOI18N
                 }
@@ -185,15 +194,24 @@ public final class ExternalTerminal {
             return command;
         }
 
-        StringBuilder cmd = new StringBuilder("sh -c 'which " + command); // NOI18N
+        StringBuilder cmd = new StringBuilder();
 
         for (String s : searchPaths) {
-            cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
+            cmd.append("/bin/ls " + s + "/" + command + " || "); // NOI18N
         }
 
-        cmd.append("'");
+        cmd.append("which " + command); // NOI18N
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
+        String shell = "/bin/sh"; // NOI18N
+
+        try {
+            shell = HostInfoUtils.getShell(execEnv);
+        } catch (ConnectException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, shell);
+        npb = npb.setArguments("-c", cmd.toString()); // NOI18N
         StringWriter result = new StringWriter();
 
         ExecutionDescriptor descriptor =

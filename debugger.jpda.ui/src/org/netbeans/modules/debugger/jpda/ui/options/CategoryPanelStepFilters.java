@@ -246,11 +246,11 @@ class CategoryPanelStepFilters extends StorablePanel {
         final int index = model.getRowCount() - 1;
         filterClassesTable.getSelectionModel().setSelectionInterval(index, index);
         filterClassesTable.editCellAt(index, 1);
-        filterClassesTable.requestFocus();
+        filterClassesTable.getEditorComponent().requestFocus();
          //DefaultCellEditor ed = (DefaultCellEditor)
-        filterClassesTable.getCellEditor(index, 1).shouldSelectCell(
+        /*filterClassesTable.getCellEditor(index, 1).shouldSelectCell(
                 new ListSelectionEvent(filterClassesTable,
-                                       index, index, true));
+                                       index, index, true));*/
         filterRemoveButton.setEnabled(false);
         filterAddButton.setEnabled(false);
         filterClassesTable.getCellEditor(index, 1).addCellEditorListener(new CellEditorListener() {

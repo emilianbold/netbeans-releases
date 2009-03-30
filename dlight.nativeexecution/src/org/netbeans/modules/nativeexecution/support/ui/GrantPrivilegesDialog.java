@@ -47,11 +47,15 @@ package org.netbeans.modules.nativeexecution.support.ui;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class GrantPrivilegesDialog extends javax.swing.JPanel {
+    private volatile  boolean res;
 
     /** Creates new form GrantPrivilegesDialog */
     public GrantPrivilegesDialog() {
@@ -78,7 +82,7 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
         suLoginField = new javax.swing.JTextField();
         suPasswordField = new javax.swing.JPasswordField();
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
+        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background")); // NOI18N
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
@@ -143,26 +147,37 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
     public boolean askPassword() {
         suPasswordField.setText(null);
 
-        DialogDescriptor dd = new DialogDescriptor(this,
+        final DialogDescriptor dd = new DialogDescriptor(this,
                 loc("GrantPrivilegesDialog.title"), true, // NOI18N
                 new Object[]{
                     DialogDescriptor.OK_OPTION,
                     DialogDescriptor.CANCEL_OPTION
                 }, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
+        res = false;
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.addWindowFocusListener(new WindowAdapter() {
+                public void run() {
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+                    dialog.addWindowFocusListener(new WindowAdapter() {
 
-            @Override
-            public void windowGainedFocus(WindowEvent e) {
-                suPasswordField.requestFocusInWindow();
-            }
-        });
-
-        dialog.setVisible(true);
-
-        return dd.getValue() == DialogDescriptor.OK_OPTION;
+                        @Override
+                        public void windowGainedFocus(WindowEvent e) {
+                            suPasswordField.requestFocusInWindow();
+                        }
+                    });
+                    dialog.setVisible(true);
+                    res = dd.getValue() == DialogDescriptor.OK_OPTION;
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return res;
     }
 
     public char[] getPassword() {

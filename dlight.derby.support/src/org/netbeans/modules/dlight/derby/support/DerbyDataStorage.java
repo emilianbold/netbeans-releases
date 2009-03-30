@@ -90,7 +90,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     /**
      * Empty constructor, used by Lookup
      */
-    public DerbyDataStorage() {
+    public DerbyDataStorage() throws SQLException {
         this("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd");
 
     }
@@ -102,7 +102,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
 
     }
 
-    private DerbyDataStorage(String url) {
+    private DerbyDataStorage(String url) throws SQLException {
         super(url);
         try {
             initStorageTypes();
@@ -124,13 +124,8 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
 
     @Override
-    protected void connect(String dburl) {
-        try {
-            connection = DriverManager.getConnection(dburl);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-    //super.connect(dburl);
+    protected void connect(String dburl) throws SQLException {
+        connection = DriverManager.getConnection(dburl);
     }
 
     @Override

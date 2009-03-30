@@ -64,7 +64,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -116,7 +115,7 @@ public class PHPIndex {
 
     public static PHPIndex get(ParserResult info){
         // TODO: specify the claspath ids to improve performance and avoid conflicts
-        return get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP), Collections.<String>emptySet()));
+        return get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(), Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP), Collections.<String>emptySet()));
     }
 
     public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {
