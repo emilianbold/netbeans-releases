@@ -42,7 +42,7 @@ fi
 STATUS=-1
 
 if [ -r ${ENVFILE} ]; then
-  /bin/sh -c "echo \$\$>${PIDFILE} && source ${ENVFILE} && cd ${WDIR} && exec $@"
+  /bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd ${WDIR} && exec $@"
   STATUS=$?
 else
   /bin/sh -c "echo \$\$>${PIDFILE} && cd ${WDIR} && exec $@"
