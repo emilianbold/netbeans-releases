@@ -164,6 +164,12 @@ public class SimplifiedJSPServlet {
     public void process(final boolean processAsIncluded) throws BadLocationException {
         processCalled = true;
 
+        if( fobj == null) {
+            //do not handle non fileobject documents like coloring properties preview document
+            processingSuccessful = false;
+            return;
+        }
+        
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
