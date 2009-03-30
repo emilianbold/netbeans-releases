@@ -144,7 +144,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * LineSet.
     */
     private Task prepareTask;
-
+    
     /** editor kit to work with */
     private EditorKit kit;
 
@@ -538,31 +538,22 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 documentStatus = DOCUMENT_LOADING;
                 counterPrepareDocument++;
                 Task t = prepareDocument(false);
-                //Check for null is workaround for issue #144722
-                if (t != null) {
-                    t.addTaskListener(new TaskListener() {
-                        public void taskFinished(Task task) {
-                            counterPrepareDocument--;
-                            if (isStrongSet && canReleaseDoc()) {
-                                isStrongSet = false;
-                                if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
-                                    CloneableEditorSupport.this.doc.setStrong(false);
-                                }
+                
+                t.addTaskListener(new TaskListener() {
+                    public void taskFinished(Task task) {
+                        counterPrepareDocument--;
+                        if (isStrongSet && canReleaseDoc()) {
+                            isStrongSet = false;
+                            if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
+                                CloneableEditorSupport.this.doc.setStrong(false);
                             }
-                            task.removeTaskListener(this);
                         }
-                    });
-                } else {
-                    counterPrepareDocument--;
-                    if (isStrongSet && canReleaseDoc()) {
-                        isStrongSet = false;
-                        if ((this.doc != null) && !isAlreadyModified()) {
-                            this.doc.setStrong(false);
-                        }
+                        task.removeTaskListener(this);
                     }
-                }
+                });
+                
                 return t;
-
+                
             default:
 
                 if (prepareTask == null) { // should never happen
@@ -585,6 +576,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         boolean failed = true;
 	
+        //#144722: Help variable to make sure we always return non null task from prepareDocument
+        Task prepareTaskReturn = null;
         try {
             // listen to modifications on env, but remove
             // previous instance first
@@ -611,7 +604,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
 
             // The thread nume should be: "Loading document " + env; // NOI18N
-            prepareTask = RP.post(new Runnable() {
+            prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
 
                                                    public void run() {
@@ -683,6 +676,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        }
                                                    }
                                                });
+            prepareTaskReturn = prepareTask;
+            ((RequestProcessor.Task)prepareTask).schedule(0);
             if (RP.isRequestProcessorThread()) {
                 prepareTask.waitFinished();
             }
@@ -699,7 +694,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 getLock().notifyAll();
 	    }
         }
-        return prepareTask;
+        assert prepareTaskReturn != null : "CloneableEditorSupport.prepareDocument must return non null value";
+        return prepareTaskReturn;
     }
     
     final void addRemoveDocListener(Document d, boolean add) {
@@ -1055,7 +1051,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     public JEditorPane[] getOpenedPanes() {
         // expected in AWT only
-        assert SwingUtilities.isEventDispatchThread(); // NOI18N
+        assert SwingUtilities.isEventDispatchThread()
+                : "CloneableEditorSupport.getOpenedPanes() must be called from AWT thread only"; // NOI18N
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.getOpenedPanes();

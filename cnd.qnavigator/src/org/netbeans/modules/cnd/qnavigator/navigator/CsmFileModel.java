@@ -158,7 +158,7 @@ public class CsmFileModel {
     private boolean compareNodeContent(IndexOffsetNode n1, IndexOffsetNode n2){
         CppDeclarationNode d1 = (CppDeclarationNode) n1.getNode();
         CppDeclarationNode d2 = (CppDeclarationNode) n2.getNode();
-        return d1.getName().equals(d2.getName());
+        return d1.compareTo(d2) == 0;
     }
 
     private void updateNodeContent(IndexOffsetNode n1, IndexOffsetNode n2){

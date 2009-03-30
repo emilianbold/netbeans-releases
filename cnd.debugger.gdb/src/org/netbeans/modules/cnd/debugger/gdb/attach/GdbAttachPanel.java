@@ -39,16 +39,16 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.project.Project;
@@ -69,36 +69,51 @@ import org.openide.util.NbBundle;
  */
 public class GdbAttachPanel extends JPanel implements ProcessListReader {
     
-    private ProcessList procList;
-    private AttachTableModel processModel;
-    private FilterController filterController;
-    private Controller controller;
-    private static List<FilterItem> filterList;
-    private static String selectedFilter;
-    
-    static {
-        filterList = new ArrayList<FilterItem>();
-        selectedFilter = "";
-    }
+    private final ProcessList procList;
+    private final AttachTableModel processModel = new AttachTableModel();
+    private final Controller controller;
+    private static String lastFilterValue = "";
+    private static boolean showAll = false;
     
     /** Creates new form GdbAttachPanel */
     public GdbAttachPanel() {
-        procList = new ProcessList(this);
-        filterController = new FilterController(this);
+        procList = new ProcessList();
         controller = new GdbAttachController();
-        initProcessModel(true);
         initComponents();
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                filterTextChanged();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                filterTextChanged();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                filterTextChanged();
+            }
+        });
         postComponentsInit();
+    }
+
+    private synchronized void filterTextChanged() {
+        lastFilterValue = filterField.getText();
+        updateProcessList();
     }
     
     private void postComponentsInit() {
-        // Initialize the filter
-        filterCB.addItem("");
-        for (FilterItem item : filterList) {
-            filterCB.addItem(item);
+        for (AttachTableColumn hdr : procList.getColumnHeaders()) {
+            processModel.addColumn(hdr);
         }
-        filterCB.setSelectedItem(selectedFilter);
         setupCommandColumn();
+
+        // Initialize the filter
+        filterField.setText(lastFilterValue);
+        allCheckBox.setSelected(showAll);
+        // list will not be updated if text is empty
+        if (lastFilterValue.length() == 0) {
+            updateProcessList();
+        }
         
         // Fill the Projects combo box
         Project main = OpenProjects.getDefault().getMainProject();
@@ -109,16 +124,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             if (main != null && proj == main) {
                 projectCB.setSelectedItem(pi);
             }
-        }
-    }
-    
-    private synchronized void initProcessModel(boolean clear) {
-        if (processModel != null && !clear) {
-            return;
-        }
-        processModel = new AttachTableModel();
-        for (AttachTableColumn hdr : procList.getColumnHeaders()) {
-            processModel.addColumn(hdr);
         }
     }
 
@@ -139,11 +144,12 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     }
     
     private void updateProcessList() {
-        initProcessModel(true);
-        processTable.setModel(processModel);
-        setupCommandColumn();
-        // Now get the process list
-        procList = new ProcessList(this);
+        // Get the process list
+        if (showAll) {
+            procList.requestFull(this);
+        } else {
+            procList.requestSimple(this);
+        }
     }
 
     Controller getController() {
@@ -159,7 +165,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
      */
     public void processListCallback(List<String> list) {
         Pattern re = getFilterRE();
-        
+        final Vector<Vector> rows = new Vector<Vector>();
         for (String line : list) {
             Vector<String> row = new Vector<String>();
             StringTokenizer tok = new StringTokenizer(line);
@@ -176,11 +182,18 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                     // too early, the process list is not yet ready
                 }
                 if (rowData != null) {
-                    initProcessModel(false);
-                    processModel.addRow(rowData);
+                    rows.add(rowData);
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                processModel.setRowCount(0);
+                for (Vector obj : rows) {
+                    processModel.addRow(obj);
+                }
+            }
+        });
     }
     
     private Vector<String> reorderWindowsProcLine(Vector<String> oldrow) {
@@ -245,81 +258,14 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     }
     
     private Pattern getFilterRE() {
-        if (selectedFilter.length() > 0) {
-            for (FilterItem item : filterList) {
-                if (item.toString().equals(selectedFilter)) {
-                    return item.getPattern();
-                }
-            }
+        try {
+            return Pattern.compile(lastFilterValue);
+        } catch (PatternSyntaxException pse) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(GdbAttachPanel.class,
+                    "ERR_BadFilterPattern"))); // NOI18N
         }
         return null;
-    }
-    
-    class FilterController implements ActionListener {
-        
-        private GdbAttachPanel panel;
-        
-        public FilterController(GdbAttachPanel panel) {
-            this.panel = panel;
-        }
-        
-        public void actionPerformed(ActionEvent ev) {
-            String current = filterCB.getSelectedItem().toString();
-            String cmd = ev.getActionCommand();
-            boolean changed = false;
-            
-            if (cmd.equals("comboBoxEdited")) { // NOI18N
-                if (current.length() > 0 && !filterList.contains(current)) {
-                    FilterItem item = new FilterItem(current);
-                    if (item.isValid()) {
-                        filterList.add(item);
-                        filterCB.addItem(item);
-                        selectedFilter = current;
-                    }
-                }
-            } else if (cmd.equals("comboBoxChanged")) { // NOI18N
-                if (!current.equals(selectedFilter)) {
-                    selectedFilter = current;
-                    changed = true;
-                }
-            }
-            
-            if (changed) {
-                panel.updateProcessList();
-            }
-        }
-    }
-    
-    static class FilterItem {
-        
-        private String text;
-        private Pattern pattern;
-        private boolean valid;
-        
-        public FilterItem(String text) {
-            this.text = text;
-            try {
-                pattern = Pattern.compile(text);
-                valid = true;
-            } catch (PatternSyntaxException pse) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbAttachPanel.class,
-                        "ERR_BadFilterPattern"))); // NOI18N
-            }
-        }
-        
-        @Override
-        public String toString() {
-            return text;
-        }
-        
-        public boolean isValid() {
-            return valid;
-        }
-        
-        public Pattern getPattern() {
-            return pattern;
-        }
     }
     
     static class PItem {
@@ -407,11 +353,11 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         jScrollPane1 = new javax.swing.JScrollPane();
         processTable = new javax.swing.JTable();
         filterLabel = new javax.swing.JLabel();
-        filterCB = new javax.swing.JComboBox();
-        filterCB.addActionListener(filterController);
         procLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCB = new javax.swing.JComboBox();
+        allCheckBox = new javax.swing.JCheckBox();
+        filterField = new javax.swing.JTextField();
 
         processTable.setModel(processModel);
         processTable.setColumnSelectionAllowed(false);
@@ -420,11 +366,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         jScrollPane1.setViewportView(processTable);
 
         filterLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/attach/Bundle").getString("GdbAttachFilterMNEM").charAt(0));
-        filterLabel.setLabelFor(filterCB);
         filterLabel.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachFilterLabel")); // NOI18N
-
-        filterCB.setEditable(true);
-        filterCB.setSelectedItem(selectedFilter);
 
         procLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/attach/Bundle").getString("GdbAttachProcessMNEM").charAt(0));
         procLabel.setLabelFor(jScrollPane1);
@@ -434,42 +376,60 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         projectLabel.setLabelFor(projectCB);
         projectLabel.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachProjectLabel")); // NOI18N
 
+        allCheckBox.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachPanel.allCheckBox.text")); // NOI18N
+        allCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                allCheckBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(filterLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(filterCB, 0, 495, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(filterField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(projectLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectCB, 0, 488, Short.MAX_VALUE))
+                .add(projectCB, 0, 502, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(procLabel)
                 .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(allCheckBox)
+                .addContainerGap())
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(filterLabel)
-                    .add(filterCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(filterField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(procLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(allCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectLabel)
                     .add(projectCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void allCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allCheckBoxActionPerformed
+        showAll = allCheckBox.isSelected();
+        updateProcessList();
+    }//GEN-LAST:event_allCheckBoxActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox filterCB;
+    private javax.swing.JCheckBox allCheckBox;
+    private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel procLabel;

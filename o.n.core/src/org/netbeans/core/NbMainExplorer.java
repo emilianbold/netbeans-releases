@@ -47,8 +47,6 @@ import java.io.ObjectInput;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
@@ -334,8 +332,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
         // roots added by modules (javadoc etc...)
         result.addAll(Arrays.asList(places.roots()));
-        // runtime
-        result.add(places.environment());
 
         return result;
     }
@@ -347,36 +343,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
         MainTab panel = null;
         NbPlaces places = NbPlaces.getDefault();
 
-        if (rc.equals(places.environment())) {
-            // default tabs
-            if (deserialize) {
-                TopComponent tc = WindowManager.getDefault().findTopComponent("runtime"); // NOI18N
-                if (tc != null) {
-                    if (tc instanceof MainTab) {
-                        panel = (MainTab) tc;
-                    } else {
-                        //Incorrect settings file?
-                        IllegalStateException exc = new IllegalStateException
-                        ("Incorrect settings file. Unexpected class returned." // NOI18N
-                        + " Expected:" + MainTab.class.getName() // NOI18N
-                        + " Returned:" + tc.getClass().getName()); // NOI18N
-                        Logger.getLogger(NbMainExplorer.class.getName()).log(Level.WARNING, null, exc);
-                        panel = MainTab.getDefaultMainTab();
-                    }
-                } else {
-                    panel = MainTab.getDefaultMainTab();
-                }
-            } else {
-                panel = MainTab.getDefaultMainTab();
-            }
-            panel.setRootContext(rc, false);
-        } else {
             // tabs added by modules
             //We cannot use findTopComponent here because we do not know unique
             //TC ID ie. proper deserialization of such TC will not work.
             panel = NbMainExplorer.findModuleTab(rc, null);
             panel.setRootContext(rc);
-        }
 
 
         rootsToTCs().put(rc, panel);
@@ -785,6 +756,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     } // end of ExplorerTab inner class
 
+    /** Special class for tabs added by modules to the main explorer */
+
     /** Tab of main explorer. Tries to dock itself to main explorer mode
     * before opening, if it's not docked already.
     * Also deserialization is enhanced in contrast to superclass */
@@ -810,25 +783,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
             }
 
             return DEFAULT;
-        }
-
-        /** Creator/accessor method of Runtime tab singleton. Instance is properly
-         * deserialized by winsys.
-         */
-        public static MainTab findEnvironmentTab () {
-            return (MainTab)getExplorer().createTC(
-                NbPlaces.getDefault().environment(), true
-            );
-        }
-
-        /** Creator/accessor method used ONLY by winsys for first time instantiation
-         * of Runtime tab. Use <code>findEnvironmentTab</code> to properly deserialize
-         * singleton instance.
-         */
-        public static MainTab createEnvironmentTab () {
-            return (MainTab)getExplorer().createTC(
-            NbPlaces.getDefault().environment(), false
-            );
         }
 
         /** Overriden to explicitely set persistence type of MainTab
@@ -904,8 +858,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
     } // end of MainTab inner class
-
-    /** Special class for tabs added by modules to the main explorer */
     public static class ModuleTab extends MainTab {
         static final long serialVersionUID =8089827754534653731L;
 

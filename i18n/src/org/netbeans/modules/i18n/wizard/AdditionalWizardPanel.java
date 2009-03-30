@@ -193,12 +193,13 @@ final class AdditionalWizardPanel extends JPanel {
         if (selected != null) {
             support = (sourceMap.get(selected)).getSupport();
         }
-
+        additionalComponent.setVisible(false);
         // remove last one
         remove(additionalComponent);
         
         if(support != null && support.hasAdditionalCustomizer()) {
             additionalComponent = support.getAdditionalCustomizer();
+            additionalComponent.setVisible(true);
             viewedSources.add(selected);
         } else {
             additionalComponent = EMPTY_COMPONENT;

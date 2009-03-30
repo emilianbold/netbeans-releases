@@ -216,8 +216,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         if(formI18nInteger == null) {
             formI18nInteger = createFormI18nInteger();
 
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nInteger.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            if(I18nUtil.getOptions().getLastResource2(sourceDataObject) != null)
+                formI18nInteger.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2(sourceDataObject));
         }
         
         return formI18nInteger;
@@ -232,8 +232,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         else {
             formI18nInteger = createFormI18nInteger();
         
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nInteger.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            if(I18nUtil.getOptions().getLastResource2(sourceDataObject) != null)
+                formI18nInteger.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2(sourceDataObject));
         }
     }
 

@@ -41,35 +41,59 @@
 
 package org.netbeans.modules.hudson.maven;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.maven.model.CiManagement;
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.CiManagement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectHudsonProvider.class, position=100)
 public class HudsonProviderImpl extends ProjectHudsonProvider {
 
+    private static final String HUDSON_SYSTEM = "hudson";
+
+    static boolean TEST;
+
+    private FileObject pom(Project p) {
+        if (!TEST && p.getLookup().lookup(NbMavenProject.class) == null) {
+            return null;
+        }
+        return p.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
+    }
+
     public Association findAssociation(Project p) {
+        //reading needs to be done from resolved model..
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
-            CiManagement cim = prj.getMavenProject().getCiManagement();
-            if (cim != null && cim.getSystem() != null && "hudson".equalsIgnoreCase(cim.getSystem())) {
-                Matcher m = Pattern.compile("(http://.+?/)(?:job/([^/]+)/?)?").matcher(cim.getUrl());
-                if (m.matches()) {
-                    return new Association(m.group(1), m.group(2));
-                }
+            org.apache.maven.model.CiManagement cim = prj.getMavenProject().getCiManagement();
+            if (cim != null && HUDSON_SYSTEM.equalsIgnoreCase(cim.getSystem())) {
+                return Association.fromString(cim.getUrl());
             }
             // could listen to NbMavenProject.PROP_PROJECT if change firing is supported
         }
         return null;
     }
 
-    public boolean recordAssociation(Project p, Association a) {
-        // XXX #158037: record in CiManagement
-        return false;
+    public boolean recordAssociation(Project p, final Association a) {
+        FileObject pom = pom(p);
+        if (pom == null) {
+            return false;
+        }
+        Utilities.performPOMModelOperations(pom, Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                CiManagement cim = model.getFactory().createCiManagement();
+                cim.setSystem(HUDSON_SYSTEM);
+                cim.setUrl(a.toString());
+                model.getProject().setCiManagement(cim);
+            }
+        }));
+        return true; // XXX pPOMMO does not rethrow exceptions or have a return value
     }
 
 }

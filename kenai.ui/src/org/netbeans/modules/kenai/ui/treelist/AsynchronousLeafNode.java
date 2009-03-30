@@ -199,6 +199,8 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
                     } else {
                         lblLoading.setVisible(false);
                         lblError.setVisible(false);
+                        if( null != inner )
+                            panel.remove(inner);
                         inner = c;
                         panel.remove(lblTitle);
                         panel.add( inner, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,

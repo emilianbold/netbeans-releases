@@ -36,27 +36,44 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.visualizer;
 
+import javax.swing.JComponent;
 
 /**
  * Container to put Visualizer in
  */
 public interface VisualizerContainer {
-  /**
-   * Adds new visualizer to container for tool with the name <code>toolName</code>
-   * @param toolName toolname
-   * @param v visualizer
-   */
-  public void addVisualizer(String toolName, Visualizer v);
-  /**
-   * Removed visualizer from the container
-   * @param v visualizer to remove
-   */
-  public void removeVisualizer(Visualizer v);
-  /**
-   * Show container
-   */
-  public void showup();
+
+    /**
+     * Adds new visualizer to container for tool with the name <code>toolName</code>
+     * @param toolName toolname
+     * @param v visualizer
+     */
+    void addVisualizer(String toolName, Visualizer v);
+
+    /**
+     * Sets new content for wool with the name <code>toolName</code>
+     * @param toolName
+     * @param component
+     */
+    void setContent(String toolName, JComponent component);
+
+    /**
+     * Adds new content for wool with the name <code>toolName</code>
+     * @param toolName
+     * @param component
+     */
+    void addContent(String toolName, JComponent component);
+
+    /**
+     * Removed visualizer from the container
+     * @param v visualizer to remove
+     */
+    void removeVisualizer(Visualizer v);
+
+    /**
+     * Show container
+     */
+    void showup();
 }

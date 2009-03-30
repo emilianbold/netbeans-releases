@@ -544,7 +544,7 @@ public class SvnClientExceptionHandler {
             return EX_CLOSED_CONNECTION;
         } else if(isCommitFailed(msg)) {
             return EX_COMMIT_FAILED;
-        } else if(isNoSvnClient(msg)) {               
+        } else if(isNoCliSvnClient(msg)) {
             return EX_NO_SVN_CLIENT;
         } else if(isHTTP403(msg)) {
             return EX_HTTP_FORBIDDEN;
@@ -684,10 +684,15 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("out of date") > -1 || msg.indexOf("out-of-date") > -1;                                             // NOI18N
     }
     
-    private static boolean isNoSvnClient(String msg) {
+    public static boolean isNoCliSvnClient(String msg) {
         msg = msg.toLowerCase();
         return (msg.indexOf("command line client adapter is not available") > -1) || 
                (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
+    }
+
+    public static boolean isUnsupportedJavaHl(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf(CommandlineClient.ERR_JAVAHL_NOT_SUPPORTED) > -1;
     }
 
     public static boolean isMissingOrLocked(String msg) {
@@ -714,7 +719,7 @@ public class SvnClientExceptionHandler {
     }
     
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
-        if(isNoSvnClient(ex.getMessage())) {
+        if(isNoCliSvnClient(ex.getMessage())) {
             if(isUI) {
                 notifyNoClient();
             }

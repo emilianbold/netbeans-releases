@@ -57,7 +57,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTable
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
@@ -69,7 +69,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
@@ -303,6 +302,9 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     @Override
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+            }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
                 public List<FunctionCall> call() {
@@ -365,16 +367,12 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     @Override
     public void removeNotify() {
         super.removeNotify();
-        synchronized(syncFillInLock){
-            if (syncFillDataTask != null){
-                if (!syncFillDataTask.isDone()){
-                    syncFillDataTask.cancel(true);
-                }
+        synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
             }
         }
     }
-
-
 
     @Override
     public int onTimer() {
@@ -397,10 +395,13 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return;
             }
-            //find function name
-            OpenFunctionInEditorActionProvider.getInstance().openFunction(((FunctionCallTreeTableNode) nodeObject).getValue() + "");
-//                return (nodeObject instanceof FunctionCallTreeTableNode) ? ((TreeTableNode) nodeObject).getValue() + " " : nodeObject.toString();
-
+            FunctionCall functionCall = ((FunctionCallTreeTableNode)nodeObject).getDeligator();
+            SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                return;
+            }
+            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+            sourceSupportProvider.showSource(sourceFileInfo);
         }
 
         public Action[] getActions(Object node) throws UnknownTypeException {
@@ -412,21 +413,28 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return null;
             }
-            final String functionName = ((FunctionCallTreeTableNode) nodeObject).getValue() + "";
-            //final TableVisualizerEvent event = (TableVisualizerEvent)node;
-            AbstractAction goToSourceAction = new AbstractAction(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName") + " " + functionName) {
+            return new Action[]{new GoToSourceAction(((FunctionCallTreeTableNode) nodeObject).getDeligator())};
+        }
+    }
 
-                public void actionPerformed(ActionEvent e) {
-                    OpenFunctionInEditorActionProvider.getInstance().openFunction(functionName);
-                }
+    private class GoToSourceAction extends AbstractAction {
 
-                @Override
-                public boolean isEnabled() {
-                    return Lookup.getDefault().lookup(SourceSupportProvider.class) != null &&
-                        Lookup.getDefault().lookup(SourceFileInfoProvider.class) != null;
-                }
-            };
-            return new Action[]{goToSourceAction};
+        private final FunctionCall functionCall;
+
+        public GoToSourceAction(FunctionCall functionCall) {
+            super("Go To Source");//NOI18N
+            this.functionCall = functionCall;
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                return;
+            }
+            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+            sourceSupportProvider.showSource(sourceFileInfo);
+        //System.out.println(sourceFileInfo == null ? " NO SOURCE FILE INFO FOUND" : sourceFileInfo.getFileName() + ":" + sourceFileInfo.getOffset() + ":" + sourceFileInfo.getLine());//NOI18N
         }
     }
 

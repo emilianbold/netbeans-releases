@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -89,9 +90,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
     /** Set of opened {@code QueryTopComponent}s. */
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
-
+    private Query[] savedQueries = null;
+    
     private static final String PREFERRED_ID = "QueryTopComponent";
     private Query query; // XXX synchronized
+    private static final Object LOCK = new Object();
 
     QueryTopComponent() {
         this(null, null);
@@ -100,11 +103,18 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     QueryTopComponent(Query query) {
         this(query, null);
     }
+
     QueryTopComponent(Query query, Repository toSelect) {
+
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
+
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        int unitIncrement = (int)(s*1.5);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
         
         this.query = query;
 
@@ -138,15 +148,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            DefaultComboBoxModel repoModel;
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
+            setupRepositoryModel();
             if(toSelect != null) {
                 repositoryComboBox.setSelectedItem(toSelect);
                 onRepoSelected();
             } else {
-                repositoryComboBox.setModel(repoModel);
                 if(repositoryComboBox.getModel().getSize() > 0) {
                     repositoryComboBox.setSelectedIndex(0);
                     onRepoSelected();
@@ -154,8 +160,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
+                    Repository repo = (Repository) e.getItem();
                     if(e.getStateChange() == ItemEvent.SELECTED) {
                         onRepoSelected();
+                    } else if(e.getStateChange() == ItemEvent.DESELECTED) {
+                        repo.removePropertyChangeListener(QueryTopComponent.this);
                     }
                 }
             });
@@ -390,6 +399,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     @Override
     public void componentOpened() {
         openQueries.add(this);
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -397,7 +407,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
-        }        
+        }
+        Kenai.getDefault().removePropertyChangeListener(this);
     }
 
     /** replaces this in object stream */
@@ -421,9 +432,21 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                         close();
                     }
                 });
-            } else {
-                updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
             }
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
+                  evt.getPropertyName().equals(Kenai.PROP_LOGIN))
+        {
+            updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
         }
     }
 
@@ -455,7 +478,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 if (repo == null) {
                     return;
                 }
-
+                repo.addPropertyChangeListener(QueryTopComponent.this);
+                
                 final BugtrackingController removeController = query != null ? query.getController() : null;
                 if(query != null) {
                     query.removePropertyChangeListener(QueryTopComponent.this);
@@ -503,37 +527,64 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         setNameAndTooltip();
     }
 
-    private void updateSavedQueries(Repository repo) {        
+    private void setupRepositoryModel() {
+        Object lastSelection = repositoryComboBox.getSelectedItem();
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+        
+        for (int i = 0; i < repoModel.getSize(); i++) {
+            Repository r = (Repository) repoModel.getElementAt(i);
+            if(r == lastSelection) {
+                repoModel.setSelectedItem(r);
+                break;
+            }
+        }
+    }
+
+    private void updateSavedQueries(Repository repo) {
+        synchronized (LOCK) {
+            if(savedQueries != null) {
+                for (Query q : savedQueries) {
+                    q.removePropertyChangeListener(this);
+                }
+            }
+        }
         Query[] queries = repo.getQueries();
-        if(queries == null || queries.length == 0) {
-            queriesPanel.setVisible(false);
-            return;
-        }
-        queriesPanel.setVisible(true);
-        Component[] componenets = queriesPanel.getComponents();
-        for (Component c : componenets) {
-            if(c instanceof QueryButton || c instanceof JSeparator) {
-                queriesPanel.remove(c);
+        synchronized (LOCK) {
+            savedQueries = queries;
+            if(savedQueries == null || savedQueries.length == 0) {
+                queriesPanel.setVisible(false);
+                return;
             }
-        }
-        queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
-        QueryButton ql = null;
-        Arrays.sort(queries);
-        for (int i = 0; i < queries.length; i++) {
-            Query q = queries[i];
-            q.addPropertyChangeListener(this);
-            ql = new QueryButton(repo, q);
-            ql.setText(q.getDisplayName());
-            queriesPanel.add(ql);
-            if(i < queries.length - 1) {
-                JSeparator s = new JSeparator();
-                s.setOrientation(javax.swing.SwingConstants.VERTICAL);
-                s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
-                s.setBorder(new LineBorder(Color.BLACK, 1));
-                queriesPanel.add(s);
+            queriesPanel.setVisible(true);
+            Component[] componenets = queriesPanel.getComponents();
+            for (Component c : componenets) {
+                if(c instanceof QueryButton || c instanceof JSeparator) {
+                    queriesPanel.remove(c);
+                }
             }
+            queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
+            QueryButton ql = null;
+            Arrays.sort(savedQueries);
+            for (int i = 0; i < savedQueries.length; i++) {
+                Query q = savedQueries[i];
+                q.addPropertyChangeListener(this);
+                ql = new QueryButton(repo, q);
+                ql.setText(q.getDisplayName());
+                queriesPanel.add(ql);
+                if(i < savedQueries.length - 1) {
+                    JSeparator s = new JSeparator();
+                    s.setOrientation(javax.swing.SwingConstants.VERTICAL);
+                    s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
+                    s.setBorder(new LineBorder(Color.BLACK, 1));
+                    queriesPanel.add(s);
+                }
+            }
+            updateSavedQueriesPanel();
         }
-        updateSavedQueriesPanel();
     }
 
     private void updateSavedQueriesPanel() {

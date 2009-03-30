@@ -46,9 +46,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -90,6 +93,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
+    private boolean submitting;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -121,6 +125,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
+        if (submitting) {
+            return;
+        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -151,7 +158,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     changedUpdate(e);
                 }
                 public void changedUpdate(DocumentEvent e) {
-                    updateMessagePanel();
+                    updateNoSummary();
                 }
             });
         }
@@ -186,6 +193,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        submitButton.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
@@ -239,7 +247,7 @@ public class IssuePanel extends javax.swing.JPanel {
             addCommentArea.setText(""); // NOI18N
         }
         updateFieldStatuses();
-        updateMessagePanel();
+        updateNoSummary();
         reloading = false;
     }
 
@@ -408,29 +416,49 @@ public class IssuePanel extends javax.swing.JPanel {
         ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));
         blocksField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(blocksLabel));
         dependsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(dependsLabel));
+        CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
+        blocksField.getDocument().addDocumentListener(cyclicDependencyListener);
+        dependsField.getDocument().addDocumentListener(cyclicDependencyListener);
     }
 
-    private boolean noSummary = false;
-    private void updateMessagePanel() {
+    private void updateNoSummary() {
         if (summaryField.getText().trim().length() == 0) {
             if (!noSummary) {
                 noSummary = true;
-                messagePanel.removeAll();
-                submitButton.setEnabled(false);
-                JLabel noSummaryLabel = new JLabel();
-                noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-                String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
-                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
-                messagePanel.add(noSummaryLabel);
-                messagePanel.setVisible(true);
-                messagePanel.revalidate();
+                updateMessagePanel();
             }
         } else {
             if (noSummary) {
                 noSummary = false;
-                submitButton.setEnabled(true);
-                messagePanel.setVisible(false);
+                updateMessagePanel();
             }
+        }
+    }
+
+    private boolean noSummary = false;
+    private boolean cyclicDependency = false;
+    private void updateMessagePanel() {
+        messagePanel.removeAll();
+        if (noSummary) {
+            JLabel noSummaryLabel = new JLabel();
+            noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
+            String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+            noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+            messagePanel.add(noSummaryLabel);
+        }
+        if (cyclicDependency) {
+            JLabel cyclicDependencyLabel = new JLabel();
+            cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
+            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(cyclicDependencyLabel);
+        }
+        if (noSummary || cyclicDependency) {
+            submitButton.setEnabled(false);
+            messagePanel.setVisible(true);
+            messagePanel.revalidate();
+        } else {
+            submitButton.setEnabled(true);
+            messagePanel.setVisible(false);
         }
     }
 
@@ -439,10 +467,21 @@ public class IssuePanel extends javax.swing.JPanel {
         super.addNotify();
         if (issue != null) {
             // Hack - reset any previous modifications when the issue window is reopened
+            // XXX any chance to get rid of the hack?
             reloadForm(true);
+
+            issue.opened();
         }
     }
-    
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1044,6 +1083,8 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    submitting = true;
+                    issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1054,8 +1095,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             // PENDING notify user
                         }
                     }
-                    issue.submitAndRefresh();
                 } finally {
+                    submitting = false;
                     handle.finish();
                     reloadFormInAWT(true);
                 }
@@ -1227,6 +1268,46 @@ public class IssuePanel extends javax.swing.JPanel {
 
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
+        }
+    }
+
+    class CyclicDependencyDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            Set<Integer> bugs1 = bugs(blocksField.getText());
+            Set<Integer> bugs2 = bugs(dependsField.getText());
+            bugs1.retainAll(bugs2);
+            if (bugs1.isEmpty()) {
+                if (cyclicDependency) {
+                    cyclicDependency = false;
+                    updateMessagePanel();
+                }
+            } else {
+                if (!cyclicDependency) {
+                    cyclicDependency = true;
+                    updateMessagePanel();
+                }
+            }
+        }
+
+        private Set<Integer> bugs(String values) {
+            Set<Integer> bugs = new HashSet<Integer>();
+            StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                try {
+                    bugs.add(Integer.parseInt(token));
+                } catch (NumberFormatException nfex) {}
+            }
+            return bugs;
         }
 
     }

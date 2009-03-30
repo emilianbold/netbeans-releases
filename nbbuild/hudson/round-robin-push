@@ -50,7 +50,7 @@ dobuild() {
     ant build $ANT_PARAM || exit 2
     ant commit-validation $ANT_PARAM || exit 3
     ant check-sigtests-release $ANT_PARAM || exit 35
-    ant build-test-dist $ANT_PARAM || exit 4
+#    ant build-test-dist $ANT_PARAM || exit 4
 
     testmodule openide.awt || exit 5
 
@@ -125,7 +125,7 @@ fi
 HGOUT=`hg out $push_url`
 testresult "$TESTDIR" "outgoing.changes" "$HGOUT"
 
-OUT_COUNT=`hg out --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
+OUT_COUNT=`hg out --no-merges --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
 if [ "$OUT_COUNT" -gt 0 ]; then
     echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
@@ -143,10 +143,14 @@ else
 fi
 
 
-if dobuild && hg push "$push_url"; then
-    echo "Build and push successful"
-    unset BASETIP
-    exit 0
+if dobuild; then
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+        if hg push "$push_url"; then
+            echo "Build and push successful"
+            unset BASETIP
+            exit 0
+        fi
+    done
 else
     echo "Failure, rolling back own commits to $BASETIP"
     exit 1

@@ -61,8 +61,6 @@ cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
 cd ../..
 
-sh nbbuild/hudson/sigtests || exit 1
-
 # Try to build all tests in the system to make sure they at least compile.
 ant -Dtest.fail.on.error=false build-test-dist
 ###############  Commit validation tests  ##########################
