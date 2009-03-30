@@ -119,20 +119,21 @@ class CategoryPanelStepFilters extends StorablePanel {
         filtersCheckAllButton = new javax.swing.JButton();
         filtersUncheckAllButton = new javax.swing.JButton();
 
-        useStepFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.useStepFiltersCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useStepFiltersCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.useStepFiltersCheckBox.text")); // NOI18N
         useStepFiltersCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 useStepFiltersCheckBoxActionPerformed(evt);
             }
         });
 
-        filterSyntheticCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterSyntheticCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterSyntheticCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterSyntheticCheckBox.text")); // NOI18N
 
-        filterStaticInitCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterStaticInitCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterStaticInitCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterStaticInitCheckBox.text")); // NOI18N
 
-        filterConstructorsCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterConstructorsCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterConstructorsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterConstructorsCheckBox.text")); // NOI18N
 
-        filterClassesLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
+        filterClassesLabel.setLabelFor(filterClassesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(filterClassesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
 
         filterClassesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -156,30 +157,30 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.setTableHeader(null);
         filterClassesScrollPane.setViewportView(filterClassesTable);
 
-        stepThroughFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(stepThroughFiltersCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
 
-        filterAddButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.text")); // NOI18N
         filterAddButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterAddButtonActionPerformed(evt);
             }
         });
 
-        filterRemoveButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterRemoveButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.text")); // NOI18N
         filterRemoveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterRemoveButtonActionPerformed(evt);
             }
         });
 
-        filtersCheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filtersCheckAllButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.text")); // NOI18N
         filtersCheckAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filtersCheckAllButtonActionPerformed(evt);
             }
         });
 
-        filtersUncheckAllButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filtersUncheckAllButton, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.text")); // NOI18N
         filtersUncheckAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filtersUncheckAllButtonActionPerformed(evt);
