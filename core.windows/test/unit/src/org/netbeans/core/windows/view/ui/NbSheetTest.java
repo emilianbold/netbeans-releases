@@ -39,11 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.windows.view.ui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.actions.GlobalPropertiesAction;
+import org.netbeans.core.windows.actions.GlobalPropertiesAction;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;

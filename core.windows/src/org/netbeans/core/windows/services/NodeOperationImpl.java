@@ -58,7 +58,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultEditorKit;
-import org.netbeans.core.NbSheet;
+import org.netbeans.core.windows.view.ui.NbSheet;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;

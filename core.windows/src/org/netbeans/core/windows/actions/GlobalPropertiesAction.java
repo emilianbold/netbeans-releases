@@ -39,14 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.actions;
+package org.netbeans.core.windows.actions;
 
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
-import org.netbeans.core.NbSheet;
+import org.netbeans.core.windows.view.ui.NbSheet;
 
 /** Opens properties that listen on global changes of selected nodes and update itself.
 *

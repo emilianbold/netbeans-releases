@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.windows.view.ui;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
