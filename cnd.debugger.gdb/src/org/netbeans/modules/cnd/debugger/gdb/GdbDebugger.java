@@ -244,7 +244,7 @@ public class GdbDebugger implements PropertyChangeListener {
         setStarting();
         try {
             pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-            execEnv = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
+            execEnv = (pae.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
             pathMap = HostInfoProvider.getDefault().getMapper(execEnv);
             iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
@@ -254,7 +254,7 @@ public class GdbDebugger implements PropertyChangeListener {
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-            platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
+            platform = (pae.getConfiguration()).getPlatform().getValue();
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -269,7 +269,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }, 30000);
             }
-            String gdbCommand = profile.getGdbPath((MakeConfiguration) pae.getConfiguration(), false);
+            String gdbCommand = profile.getGdbPath(pae.getConfiguration(), false);
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
@@ -294,7 +294,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.getLogger().logMessage("IDE: project executable: " + path); // NOI18N
 
                 programPID = lookupProvider.lookupFirst(null, Long.class);
-                if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
+                if ((pae.getConfiguration()).isDynamicLibraryConfiguration()) {
                     pgm = getExePath(programPID);
                     gdb.file_exec_and_symbols(pgm);
                     isSharedLibrary = true;
@@ -543,7 +543,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private String getCompilerSetPath(ProjectActionEvent pae) {
-        CompilerSet2Configuration cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet();
+        CompilerSet2Configuration cs = (pae.getConfiguration()).getCompilerSet();
         String csname = cs.getOption();
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
