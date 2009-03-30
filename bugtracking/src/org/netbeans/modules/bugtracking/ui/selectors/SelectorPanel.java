@@ -101,7 +101,7 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle");
         dd = new DialogDescriptor(this, title);
         validateController();
-        updateErorrLabel(errorMessage);
+        updateErrorLabel(errorMessage);
         boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
         return ret;
     }
@@ -221,11 +221,11 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
             boolean valid = controller.isValid();
             dd.setValid(valid);
             String msg = controller.getErrorMessage();
-            updateErorrLabel(msg);
+            updateErrorLabel(msg);
         }
     }
 
-    private void updateErorrLabel(String msg) {
+    private void updateErrorLabel(String msg) {
         if(msg == null) {
             errorLabel.setText("");
             errorLabel.setIcon(null);
