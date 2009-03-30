@@ -1333,8 +1333,8 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private static final String KILL_PATH1 = "/usr/bin/kill";
-    private static final String KILL_PATH2 = "/bin/kill";
+    private static final String KILL_PATH1 = "/usr/bin/kill"; // NOI18N
+    private static final String KILL_PATH2 = "/bin/kill"; // NOI18N
 
     /**
      * Send a kill command to the debuggee.
