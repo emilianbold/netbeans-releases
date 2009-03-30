@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -76,6 +77,9 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
+    private Node activeNode;
+    private boolean isShareExistingFolder;
+
 
     public static final String PROP_PRJ_NAME = "projectName";
     public static final String PROP_PRJ_TITLE = "projectTitle";
@@ -93,6 +97,15 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String NO_ISSUES = "none";
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai");
+
+    NewKenaiProjectWizardIterator(Node activatedNode) {
+        this.activeNode = activatedNode;
+        isShareExistingFolder = true;
+    }
+
+    NewKenaiProjectWizardIterator() {
+        isShareExistingFolder = false;
+    }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
@@ -396,10 +409,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[]{
-            new NameAndLicenseWizardPanel(),
-            new SourceAndIssuesWizardPanel()
-        };
+        if (isShareExistingFolder) {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(activeNode)
+                    };
+
+        } else {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(),
+                        new SourceAndIssuesWizardPanel()
+                    };
+        }
     }
 
 }
