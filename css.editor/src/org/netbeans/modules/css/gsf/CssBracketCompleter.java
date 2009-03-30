@@ -39,7 +39,6 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -246,9 +245,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
     @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
-        //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
 
-//        CSSGSFParserResult result = (CSSGSFParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
         SimpleNode root = ((CssParserResult) info).root();
         Snapshot snapshot = info.getSnapshot();
 
@@ -258,13 +255,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
             if (node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = node.startOffset();
-                    int to = node.endOffset();
+                    int from = snapshot.getOriginalOffset(node.startOffset());
+                    int to = snapshot.getOriginalOffset(node.endOffset());
+
+                    if(from == -1 || to == -1) {
+                        continue;
+                    }
 
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
                     if (last == null || !(last.getStart() == from && last.getEnd() == to)) {
-                        ranges.add(new OffsetRange(snapshot.getOriginalOffset(from), snapshot.getOriginalOffset(to)));
+                        ranges.add(new OffsetRange(from, to));
                     }
                 } while ((node = (SimpleNode) node.jjtGetParent()) != null);
             }
@@ -280,6 +281,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         return ranges;
     }
 
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }

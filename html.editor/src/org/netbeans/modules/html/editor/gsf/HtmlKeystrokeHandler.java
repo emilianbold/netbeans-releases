@@ -220,18 +220,17 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-//        HtmlParserResult result = (HtmlParserResult)info.getEmbeddedResult("text/html", caretOffset);
-
         AstNode root = result.root();
+        Snapshot snapshot = result.getSnapshot();
 
         if(root != null) {
             //find leaf at the position
-            AstNode node = AstNodeUtils.findDescendant(root, astOffset(result.getSnapshot(), caretOffset));
+            AstNode node = AstNodeUtils.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = node.startOffset();
-                    int to = node.endOffset();
+                    int from = snapshot.getOriginalOffset(node.startOffset());
+                    int to = snapshot.getOriginalOffset(node.endOffset());
 
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
@@ -249,10 +248,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         }
 
         return ranges;
-    }
-
-     private int astOffset(Snapshot snapshot, int offset) {
-         return snapshot.getEmbeddedOffset(offset);
     }
 
     //TODO implement
