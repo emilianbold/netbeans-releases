@@ -44,7 +44,7 @@ package org.netbeans.modules.web.core.syntax.deprecated;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 
 /** Handles syntax coloring for JSP 1.1. This involves handling custom tags.
  * This class relies on an external source of data, which provides information
@@ -80,7 +80,7 @@ public class Jsp11Syntax extends JspMultiSyntax {
     public Object listenerReference;
 
     /** Data providing the information about tag libraries. */
-    public JSPColoringData data;
+    public JspColoringData data;
 
     protected boolean isJspTag(String tagName) {
         // not calling super() for performance reasons

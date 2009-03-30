@@ -44,7 +44,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.gsf.CSSLanguage;
+import org.netbeans.modules.css.gsf.CssLanguage;
 
 /**
  * Common ancestor for all test classes.
@@ -59,7 +59,7 @@ public class TestBase extends CslTestBase {
 
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
-        return new CSSLanguage();
+        return new CssLanguage();
     }
 
     @Override

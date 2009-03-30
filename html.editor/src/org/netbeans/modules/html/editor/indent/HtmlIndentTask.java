@@ -45,7 +45,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.editor.ext.html.HtmlLexerFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
@@ -84,7 +84,7 @@ public class HtmlIndentTask implements IndentTask, Lookup.Provider {
         return null;
     }
 
-    private HTMLLexerFormatter getFormatter() {
+    private HtmlLexerFormatter getFormatter() {
         MimePath mimePath = MimePath.parse (context.mimePath ());
         LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
         
@@ -92,7 +92,7 @@ public class HtmlIndentTask implements IndentTask, Lookup.Provider {
             languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
         }
 
-        return new HTMLLexerFormatter(languagePath);
+        return new HtmlLexerFormatter(languagePath);
     }
 
     public Lookup getLookup() {

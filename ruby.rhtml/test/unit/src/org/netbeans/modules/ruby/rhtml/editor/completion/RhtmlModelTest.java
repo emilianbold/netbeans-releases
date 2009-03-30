@@ -45,7 +45,7 @@ import java.io.File;
 import java.util.Collection;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 //import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -86,7 +86,7 @@ public class RhtmlModelTest extends RubyTestBase {
             // Already registered?
         }
         try {
-            TestLanguageProvider.register(HTMLTokenId.language());
+            TestLanguageProvider.register(HtmlTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
@@ -120,7 +120,7 @@ public class RhtmlModelTest extends RubyTestBase {
 //        String mimeType;
 //        if (relFilePath.endsWith(".html")) {
 //            mimeType = HTML_MIME_TYPE;
-//            lexerLanguage = HTMLTokenId.language();
+//            lexerLanguage = HtmlTokenId.language();
 //        } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
 //            mimeType = RHTML_MIME_TYPE;
 //            lexerLanguage = RhtmlTokenId.language();

@@ -47,7 +47,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspJavaFakeTokenContext;
 import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.editor.ext.plain.PlainTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 
@@ -92,7 +92,7 @@ public class JspMultiTokenContext extends TokenContext {
     
     /** Path for HTML tokens in jsp */
     public static final TokenContextPath htmlContextPath
-        = context.getContextPath(HTMLTokenContext.contextPath);
+        = context.getContextPath(HtmlTokenContext.contextPath);
 
     /** Path for plain tokens in jsp */
     public static final TokenContextPath plainContextPath
@@ -106,7 +106,7 @@ public class JspMultiTokenContext extends TokenContext {
                 JspJavaFakeTokenContext.JavaScriptletTokenContext.context,
                 JspJavaFakeTokenContext.JavaDeclarationTokenContext.context,
                 JspJavaFakeTokenContext.JavaExpressionTokenContext.context,
-                HTMLTokenContext.context,
+                HtmlTokenContext.context,
                 PlainTokenContext.context
             }
         );
