@@ -41,7 +41,7 @@
 
 package org.netbeans.core.lookup;
 
-import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.core.NbLoaderPool;
 
 import org.openide.util.Lookup;
 import javax.swing.Action;
@@ -87,7 +87,7 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertTrue("Glboal Class loaders really changed", g1 != g2);
             
             
-            LoaderPoolNode.waitFinished();
+            NbLoaderPool.waitFinished();
             ERR.log("After waitFinished");
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
@@ -137,7 +137,7 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             Class c2 = l2.loadClass("test2.SomeAction");
             assertTrue("Class really changed", c1 != c2);
             // Make sure the changes take effect
-            LoaderPoolNode.waitFinished();
+            NbLoaderPool.waitFinished();
             ERR.log("After waitFinished");
             
             assertTrue("SomeAction<1> instance not found after module reload",

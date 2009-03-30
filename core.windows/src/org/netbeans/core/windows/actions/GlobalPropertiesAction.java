@@ -73,7 +73,7 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
     }
 
     protected String iconResource () {
-        return "org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
+        return "org/netbeans/core/windows/resources/properties.gif"; // NOI18N
     }
     
 }

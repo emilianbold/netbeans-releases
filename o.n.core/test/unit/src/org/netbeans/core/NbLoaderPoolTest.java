@@ -43,89 +43,73 @@ package org.netbeans.core;
 
 import java.io.*;
 import java.util.*;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.actions.*;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.nodes.Index;
-import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
+
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class LoaderPoolNodeReorderTest extends NbTestCase {
+public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
     private OldStyleLoader oldL;
     private NewStyleLoader newL;
 
-    public LoaderPoolNodeReorderTest (String testName) {
+    public NbLoaderPoolTest (String testName) {
         super (testName);
     }
 
-    protected @Override void setUp() throws Exception {
-        LoaderPoolNode.installationFinished();
+    protected void setUp () throws java.lang.Exception {
+        NbLoaderPool.installationFinished();
 
         oldL = DataLoader.getLoader(OldStyleLoader.class);
         newL = DataLoader.getLoader(NewStyleLoader.class);
-        LoaderPoolNode.doAdd (oldL, null);
-        LoaderPoolNode.doAdd (newL, null);
-        LoaderPoolNode.waitFinished();
+        NbLoaderPool.doAdd(oldL, null);
+        NbLoaderPool.doAdd(newL, null);
+        NbLoaderPool.waitFinished();
     }
 
-    protected @Override void tearDown() throws Exception {
-        for (Enumeration en = LoaderPoolNode.getNbLoaderPool().loaders(); en.hasMoreElements(); ) {
-            DataLoader l = (DataLoader)en.nextElement();
-
-            LoaderPoolNode.remove(l);
-        }
-        LoaderPoolNode.waitFinished();
+    protected void tearDown () throws java.lang.Exception {
+        NbLoaderPool.remove(oldL);
+        NbLoaderPool.remove(newL);
     }
 
-    public void testReorderABit () throws Exception {
-        {
-            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
-            assertEquals(2, arr.length);
-            assertEquals(arr[0].getDisplayName(), oldL.getDisplayName());
-            assertEquals(arr[1].getDisplayName(), newL.getDisplayName());
-        }
-
-        Index idx = LoaderPoolNode.getLoaderPoolNode().getLookup().lookup(Index.class);
-        assertNotNull("There is index in the node", idx);
-
-        idx.reorder(new int[] { 1, 0 });
-        LoaderPoolNode.waitFinished();
-
-
-        {
-            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
-            assertEquals(2, arr.length);
-            assertEquals("reord1", arr[1].getDisplayName(), oldL.getDisplayName());
-            assertEquals("reord0", arr[0].getDisplayName(), newL.getDisplayName());
-        }
-
-        idx.reorder(new int[] { 1, 0 });
-        LoaderPoolNode.waitFinished();
-
-        {
-            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
-            assertEquals(2, arr.length);
-            assertEquals("noreord0", arr[0].getDisplayName(), oldL.getDisplayName());
-            assertEquals("noreord1", arr[1].getDisplayName(), newL.getDisplayName());
-        }
+    public void testOldLoaderThatChangesActionsBecomesModified () throws Exception {
+        assertFalse("Not modified at begining", NbLoaderPool.isModified(oldL));
+        Object actions = oldL.getActions ();
+        assertNotNull ("Some actions there", actions);
+        assertTrue ("Default actions called", oldL.defaultActionsCalled);
+        assertFalse("Still not modified", NbLoaderPool.isModified(oldL));
+        
+        List<SystemAction> list = new ArrayList<SystemAction>();
+        list.add(SystemAction.get(OpenAction.class));
+        list.add(SystemAction.get(NewAction.class));
+        oldL.setActions(list.toArray(new SystemAction[0]));
+        
+        assertTrue("Now it is modified", NbLoaderPool.isModified(oldL));
+        List l = Arrays.asList (oldL.getActions ());
+        assertEquals ("Actions are the same", list, l);        
     }
-
-
-    private static Node[] extractFixed(Node[] arr) {
-        List<Node> all = new ArrayList<Node>();
-        for (Node n : arr) {
-            if (!n.getDisplayName().contains("fixed")) {
-                all.add(n);
-            }
-        }
-        return all.toArray(new Node[0]);
+    
+    public void testNewLoaderThatChangesActionsBecomesModified () throws Exception {
+        assertFalse("Not modified at begining", NbLoaderPool.isModified(newL));
+        Object actions = newL.getActions ();
+        assertNotNull ("Some actions there", actions);
+        assertTrue ("Default actions called", newL.defaultActionsCalled);
+        assertFalse("Still not modified", NbLoaderPool.isModified(newL));
+        
+        List<SystemAction> list = new ArrayList<SystemAction>();
+        list.add(SystemAction.get(OpenAction.class));
+        list.add(SystemAction.get(NewAction.class));
+        newL.setActions(list.toArray(new SystemAction[0]));
+        
+        assertFalse("Even if we changed actions, it is not modified", NbLoaderPool.isModified(newL));
+        List l = Arrays.asList (newL.getActions ());
+        assertEquals ("But actions are changed", list, l);        
     }
     
     public static class OldStyleLoader extends UniFileLoader {
@@ -133,10 +117,8 @@ public class LoaderPoolNodeReorderTest extends NbTestCase {
         
         public OldStyleLoader () {
             super(MultiDataObject.class.getName());
-
-            setDisplayName(getClass().getName());
         }
-
+        
         protected MultiDataObject createMultiObject(FileObject fo) throws IOException {
             throw new IOException ("Not implemented");
         }
@@ -156,15 +138,5 @@ public class LoaderPoolNodeReorderTest extends NbTestCase {
         protected String actionsContext () {
             return "Loaders/IamTheNewBeggining";
         }
-    }
-    public static final class L1 extends OldStyleLoader {
-    }
-    public static final class L2 extends OldStyleLoader {
-    }
-    public static final class L3 extends OldStyleLoader {
-    }
-    public static final class L4 extends OldStyleLoader {
-    }
-    public static final class L5 extends OldStyleLoader {
     }
 }

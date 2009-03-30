@@ -98,17 +98,17 @@ implements Runnable {
     
     protected void loadLoaderSection(ManifestSection.LoaderSection s, boolean load) throws Exception {
         if (load) {
-            LoaderPoolNode.add(s);
+            NbLoaderPool.add(s);
         } else {
-            LoaderPoolNode.remove((org.openide.loaders.DataLoader)s.getInstance());
+            NbLoaderPool.remove((org.openide.loaders.DataLoader)s.getInstance());
         }
     }
     
     protected void loaderPoolTransaction (boolean begin) {
         if (begin) {
-            LoaderPoolNode.beginUpdates();
+            NbLoaderPool.beginUpdates();
         } else {
-            LoaderPoolNode.endUpdates();
+            NbLoaderPool.endUpdates();
         }
     }
     

@@ -128,7 +128,7 @@ public final class NbSheet extends TopComponent {
         setLayout (new BorderLayout ());
         add(propertySheet, BorderLayout.CENTER);
 
-        setIcon (ImageUtilities.loadImage("org/netbeans/core/resources/frames/properties.gif", true)); // NOI18N
+        setIcon (ImageUtilities.loadImage("org/netbeans/core/windows/resources/properties.gif", true)); // NOI18N
 
         // #36738 Component has to have a name from begining.
         updateTitle();

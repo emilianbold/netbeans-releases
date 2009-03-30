@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-GlobalPropertiesAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.core.windows.actions.GlobalPropertiesAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/core/resources/frames/globalProperties.gif"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/windows/resources/properties.gif"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.windows.actions.Bundle#GlobalProperties"/>
             </file>
             <file name="org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
