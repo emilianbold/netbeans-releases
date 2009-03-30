@@ -176,12 +176,15 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return foundOffset;
     }
 
-    private void eliminateUnnecessaryTags(JoinedTokenSequence<T1> ts, int from, int to, AbstractIndenter.OffsetRanges rangesToIgnore) {
+    private void eliminateUnnecessaryTags(JoinedTokenSequence<T1> ts, int from, int to, AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
         ts.move(from, false);
 
-        // go backwards and find any closed tags with in given range and eliminate them:
+        // go backwards and find any closed tags within given range and eliminate them:
         while (ts.movePrevious()) {
             Token<T1> tk = ts.token();
+            if (ts.offset() < to) {
+                break;
+            }
             String tag;
             // if closing tag was found jump to opening one but
             // only if both opening and closing tags are mandatory - not doing
@@ -211,8 +214,15 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         rangeStart = ts.offset();
                     }
                     if (rangeStart < rangeEnd) {
-                        rangesToIgnore.add(rangeStart, rangeEnd);
-                        eliminatedTags.add(new EliminatedTag(rangeStart, rangeEnd, tag));
+                        int startLine = Utilities.getLineOffset(getDocument(), rangeStart);
+                        int endLine = Utilities.getLineOffset(getDocument(), rangeEnd);
+                        // ignore a range on a single line; they are not worth the effort
+                        // and are not properly handled in processEliminatedTags() anyway;
+                        // t o d o: perhaps if range covers whole line it could be added
+                        if (startLine != endLine) {
+                            rangesToIgnore.add(rangeStart, rangeEnd);
+                            eliminatedTags.add(0, new EliminatedTag(rangeStart, rangeEnd, tag));
+                        }
                     }
                 }
             }
@@ -801,6 +811,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             this.start = start;
             this.end = end;
             this.tag = tag;
+        }
+
+        @Override
+        public String toString() {
+            return "EliminatedTag["+tag+" at "+start+"-"+end+"]";
         }
 
     }
