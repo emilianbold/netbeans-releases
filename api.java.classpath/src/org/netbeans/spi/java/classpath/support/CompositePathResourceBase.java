@@ -71,7 +71,13 @@ public abstract class CompositePathResourceBase implements PathResourceImplement
                 if (this.roots == null) {
                     initContent ();
                     List<URL> result = new ArrayList<URL> ();
-                    for (PathResourceImplementation pri : this.model.getResources()) {
+                    List<? extends PathResourceImplementation> resources = this.model.getResources();
+                    if (resources == null)
+                        throw new NullPointerException (
+                            "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: "
+                            + this.model.getClass ().toString () + " ClassPathImplementation: " + this.model.toString ()
+                        );
+                    for (PathResourceImplementation pri : resources) {
                         result.addAll (Arrays.asList(pri.getRoots()));
                     }
                     this.roots = result.toArray (new URL [result.size()]);

@@ -59,10 +59,10 @@ import org.openide.util.NbBundle;
 public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
     public static final String HISTORY_NODE =
-        "org/netbeans/modules/debugger/jpda/resources/field.gif";
+        "org/netbeans/modules/debugger/jpda/resources/history_node_16.png";
 
     public static final String HISTORY_ITEM =
-        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.gif";
+        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.png";
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
 

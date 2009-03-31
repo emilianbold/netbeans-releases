@@ -99,8 +99,15 @@ final class RepositorySelectorPanel extends JPanel implements ItemListener {
 
     private Dimension requestedSize;
 
+    /**
+     * 
+     * @param existingRepositories
+     * @param connectors
+     * @param repoToPreselect  repository to be pre-selected, or {@code null}
+     */
     RepositorySelectorPanel(Repository[] existingRepositories,
-                            BugtrackingConnector[] connectors) {
+                            BugtrackingConnector[] connectors,
+                            Repository repoToPreselect) {
 
         this.existingRepositories = existingRepositories;
         this.connectors = connectors;
@@ -108,8 +115,26 @@ final class RepositorySelectorPanel extends JPanel implements ItemListener {
         lblSelect = new JLabel();
         combo = new JComboBox(getComboPopupDisplayNames());
 
+        if (repoToPreselect != null) {
+            int indexToPreselect = getIndexOf(repoToPreselect);
+            if (indexToPreselect >= 0) {
+                combo.setSelectedIndex(indexToPreselect);
+            }
+        }
         initComponents();
         itemSelected(combo.getSelectedIndex());
+    }
+
+    private int getIndexOf(Repository repoToPreselect) {
+        if (repoToPreselect == null) {
+            return -1;
+        }
+        for (int i = 0; i < existingRepositories.length; i++) {
+            if (existingRepositories[i] == repoToPreselect) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     Repository getSelectedRepository() {
