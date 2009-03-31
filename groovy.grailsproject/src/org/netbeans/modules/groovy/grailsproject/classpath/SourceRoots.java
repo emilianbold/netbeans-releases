@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -108,11 +109,20 @@ public class SourceRoots {
 //                result.add(child);
 //            }
 //        }
-        FileObject grailsAppFo = projectRoot.getFileObject("grails-app"); // NOI18N
-        if (grailsAppFo != null) {
-            for (FileObject child : grailsAppFo.getChildren()) {
-                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
-                        !GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+
+        addUnknownRoots(GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP, projectRoot, result, "grails-app");
+        addUnknownRoots(GrailsSources.KNOWN_FOLDERS_IN_TEST, projectRoot, result, "test");
+    }
+
+    private static void addUnknownRoots(Collection<String> alreadyKnown,
+            FileObject projectRoot, List<FileObject> result, String relativePath) {
+
+        FileObject folder = projectRoot.getFileObject(relativePath);
+        if (folder != null) {
+            for (FileObject child : folder.getChildren()) {
+                if (child.isFolder()
+                        && VisibilityQuery.getDefault().isVisible(child)
+                        && !alreadyKnown.contains(child.getName())) {
                     result.add(child);
                 }
             }
