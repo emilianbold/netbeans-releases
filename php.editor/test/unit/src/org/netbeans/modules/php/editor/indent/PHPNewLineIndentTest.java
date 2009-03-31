@@ -63,6 +63,26 @@ public class PHPNewLineIndentTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/smart_enter.php");
     }
 
+    public void testHtmlIndentInPHP() throws Exception{
+        testIndentInFile("testfiles/indent/html_indent_in_php.php");
+    }
+
+    public void testTrivialRepeatedIndent() throws Exception{
+        testIndentInFile("testfiles/indent/trivial_repeated_indent.php");
+    }
+
+    public void testAfterSwitchCase() throws Exception{
+        testIndentInFile("testfiles/indent/after_switch_case.php");
+    }
+
+    public void testAfterSwitchBreak() throws Exception{
+        testIndentInFile("testfiles/indent/after_switch_break.php");
+    }
+
+    public void testMultilineFunctionCall() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
