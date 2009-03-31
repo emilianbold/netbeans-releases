@@ -131,7 +131,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             folderToShareLabel.setVisible(false);
             folderTosShareTextField.setVisible(false);
             additionalDescription.setVisible(false);
-            jCheckBox1.setVisible(false);
+            autoCommit.setVisible(false);
             specifyLabel.setVisible(false);
         }
         refreshUsername();
@@ -170,6 +170,14 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         setupLicensesListModel();
 
+    }
+
+    private void setAutoCommit(boolean autoCommit) {
+        this.autoCommit.setSelected(autoCommit);
+    }
+
+    private boolean isAutoCommit() {
+        return this.autoCommit.isSelected();
     }
 
     private void setupLicensesListModel() {
@@ -277,7 +285,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         browse = new JButton();
         specifyLabel = new JLabel();
         additionalDescription = new JLabel();
-        jCheckBox1 = new JCheckBox();
+        autoCommit = new JCheckBox();
 
         setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
@@ -490,11 +498,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(20, 0, 10, 0);
         add(additionalDescription, gridBagConstraints);
 
-        jCheckBox1.setSelected(true);
-        jCheckBox1.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.jCheckBox1.text")); // NOI18N
-        jCheckBox1.addActionListener(new ActionListener() {
+        autoCommit.setSelected(true);
+        autoCommit.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.autoCommit.text")); // NOI18N
+        autoCommit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+                autoCommitActionPerformed(evt);
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -503,7 +511,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        add(jCheckBox1, gridBagConstraints);
+        add(autoCommit, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
@@ -567,16 +575,16 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel.fireChangeEvent();
     }//GEN-LAST:event_browseActionPerformed
 
-    private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+    private void autoCommitActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoCommitActionPerformed
         // TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox1ActionPerformed
+}//GEN-LAST:event_autoCommitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel additionalDescription;
+    private JCheckBox autoCommit;
     private JButton browse;
     private JLabel folderToShareLabel;
     private JTextField folderTosShareTextField;
-    private JCheckBox jCheckBox1;
     private JLabel kenaiURLPreviewLabel;
     private JLabel loggedInLabel;
     private JButton loginButton;
@@ -680,7 +688,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.versioningNotSupported");
             }
-        } else if (!Utilities.isUserLoggedIn()) {
+        }
+        if (!Utilities.isUserLoggedIn()) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin");
         } else if (getProjectName().trim().equals("")) {
@@ -746,6 +755,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         }
         String prjLicense = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE);
         setProjectLicense(prjLicense);
+
+        String c = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT);
+        setAutoCommit(c==null?true:Boolean.parseBoolean(c));
     }
 
     public void store(WizardDescriptor settings) {
@@ -766,6 +778,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     SourceAndIssuesWizardPanelGUI.SVN_REPO_NAME,
                     getProjectName(), 
                     SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME));
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT, Boolean.toString(isAutoCommit()));
         }
     }
 
