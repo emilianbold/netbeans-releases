@@ -20,6 +20,7 @@ if [ "$action" = "build" ]; then
     testmodule autoupdate.services
     testmodule autoupdate.ui
     testmodule core.execution
+    testmodule core.ide
     testmodule core.kit
     testmodule core.multiview
     testmodule core.output2
