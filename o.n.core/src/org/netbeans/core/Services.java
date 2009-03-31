@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.openide.ServiceType;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -161,7 +162,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         @SuppressWarnings("unchecked") java.util.List<ServiceType> arr = ensureSingleness((java.util.List<ServiceType>) arr0);
         
         HashMap<ServiceType,DataObject> services = new HashMap<ServiceType,DataObject>(20); // <service type, DataObject>
-        searchServices(NbPlaces.getDefault().findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
+        searchServices(findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
         
         // storing services
         HashMap<DataFolder,List<DataObject>> order = new HashMap<DataFolder,List<DataObject>>(10); // <parent folder, <file>>
@@ -236,7 +237,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         try{
             String folder = org.openide.util.Utilities.getShortClassName(stype);
 
-            DataFolder dfServices = NbPlaces.getDefault().findSessionFolder("Services"); // NOI18N
+            DataFolder dfServices = findSessionFolder("Services"); // NOI18N
             DataFolder dfTarget = DataFolder.create(dfServices, folder);
             
             return InstanceDataObject.create(dfTarget, null, st, null);
@@ -376,4 +377,18 @@ public final class Services extends ServiceType.Registry implements LookupListen
     private Object readResolve () {
         return getDefault ();
     }
+
+    private static DataFolder findSessionFolder(String name) {
+        try {
+            FileObject fo = FileUtil.getConfigFile(name);
+            if (fo == null) {
+                // resource not found, try to create new folder
+                fo = FileUtil.createFolder(FileUtil.getConfigRoot(), name);
+            }
+            return DataFolder.findFolder(fo);
+        } catch (IOException ex) {
+            throw (IllegalStateException) new IllegalStateException("Folder not found and cannot be created: " + name).initCause(ex); // NOI18N
+        }
+    }
+
 }
