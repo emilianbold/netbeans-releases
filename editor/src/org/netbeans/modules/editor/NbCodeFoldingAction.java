@@ -69,7 +69,7 @@ import org.openide.util.actions.Presenter;
  *
  *  @author  Martin Roskanin
  */
-public  class NbCodeFoldingAction extends GlobalContextAction implements Presenter.Menu{
+public class NbCodeFoldingAction implements Presenter.Menu {
 
     
     /** Creates a new instance of NbCodeFoldingAction */
@@ -85,9 +85,6 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
             "Menu/View/CodeFolds"); //NOI18N
     }        
 
-    public void resultChanged(org.openide.util.LookupEvent ev) {
-    }    
-    
     public boolean isEnabled() {
         return false;
     }
@@ -148,7 +145,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
                     boolean foldingAvailable = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
                     
                     if (foldingAvailable){
-                        ActionMap contextActionmap = getContextActionMap();
+                        ActionMap contextActionmap = org.openide.util.Utilities.actionsGlobalContext().lookup(ActionMap.class);
                         if (contextActionmap!=null){
                             foldingAvailable = contextActionmap.get(BaseKit.collapseFoldAction) != null &&
                                 component != null;
