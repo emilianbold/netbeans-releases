@@ -519,7 +519,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected final void ensureFilesCreated() {
+    protected void ensureFilesCreated() {
         boolean notify = false;
         synchronized (this) {
             if (status == Status.Initial || status == Status.Restored) {
