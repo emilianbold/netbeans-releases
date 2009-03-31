@@ -81,7 +81,7 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
             public void removeChangeListener(ChangeListener listener) {}
 
             public Document configure() throws IOException {
-                Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null);
+                Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null); // NOI18N
                 scm.configure(doc);
                 Helper.addLogRotator(doc);
                 return doc;

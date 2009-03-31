@@ -56,6 +56,7 @@ import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
@@ -102,7 +103,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     public Collection<? extends HudsonJobChangeItem> getChanges() {
         if (changes == null) {
             Document changeSet = connector.getDocument(getUrl() +
-                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet");
+                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet"); // NOI18N
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
                     changes = scm.parseChangeSet(job, changeSet.getDocumentElement());
@@ -128,6 +129,10 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
             modules.add(new HudsonMavenModuleBuildImpl(module));
         }
         return modules;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", job.getDisplayName(), getNumber());
     }
 
     private final class HudsonMavenModuleBuildImpl implements HudsonMavenModuleBuild, OpenableInBrowser {
@@ -164,6 +169,10 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
         public @Override String toString() {
             return getUrl();
+        }
+
+        public String getBuildDisplayName() {
+            return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", getDisplayName(), getNumber());
         }
 
     }

@@ -128,11 +128,11 @@ public abstract class ProjectHudsonProvider {
          */
         public Association(String serverURL, String jobName) throws IllegalArgumentException {
             URI.create(serverURL); // check syntax
-            if (!serverURL.endsWith("/")) {
-                throw new IllegalArgumentException(serverURL + " must end in a slash");
+            if (!serverURL.endsWith("/")) { // NOI18N
+                throw new IllegalArgumentException(serverURL + " must end in a slash"); // NOI18N
             }
             if (jobName != null && (jobName.length() == 0 || !jobName.trim().equals(jobName))) {
-                throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName);
+                throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName); // NOI18N
             }
             this.serverURL = serverURL;
             this.jobName = jobName;

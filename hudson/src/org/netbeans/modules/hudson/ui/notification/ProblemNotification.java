@@ -53,6 +53,7 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Build failed or was unstable.
@@ -73,11 +74,13 @@ class ProblemNotification implements ActionListener {
     }
 
     private String getTitle() {
-        return job.getDisplayName() + " #" + build + (failed ? " failed" : " is unstable"); // XXX I18N
+        // XXX use HudsonJobBuild.getDisplayName
+        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.title.failed" : "ProblemNotification.title.unstable",
+                job.getDisplayName(), build);
     }
 
     private String getDescription() {
-        return failed ? "The build failed." : "Some tests failed."; // XXX I18N
+        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.description.failed" : "ProblemNotification.description.unstable");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -106,7 +109,7 @@ class ProblemNotification implements ActionListener {
     }
 
     private Icon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true);
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true); // NOI18N
     }
 
     void add() {
@@ -135,7 +138,7 @@ class ProblemNotification implements ActionListener {
     }
 
     public @Override String toString() {
-        return "ProblemNotification[" + job.getName() + "#" + build + "]";
+        return "ProblemNotification[" + job.getName() + "#" + build + "]"; // NOI18N
     }
 
 }
