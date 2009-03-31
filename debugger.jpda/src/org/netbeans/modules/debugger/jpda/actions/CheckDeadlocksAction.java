@@ -110,6 +110,9 @@ public class CheckDeadlocksAction extends AbstractAction
             return;
         }
         VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) {
+            return ;
+        }
         try {
             VirtualMachineWrapper.suspend(vm);
             List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();
