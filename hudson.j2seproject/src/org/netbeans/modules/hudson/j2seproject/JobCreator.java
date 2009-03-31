@@ -48,8 +48,11 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
@@ -57,6 +60,7 @@ import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectSharability;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -85,6 +89,10 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         this.shar = shar;
         scm = Helper.prepareSCM(FileUtil.toFile(project.getProjectDirectory()));
         initComponents();
+        if (!hasTests(project)) {
+            runTests.setSelected(false);
+            runTests.setEnabled(false);
+        }
     }
 
     public String jobName() {
@@ -170,6 +178,31 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         scm.configure(doc);
         Helper.addLogRotator(doc);
         return doc;
+    }
+
+    /**
+     * #159831: check whether it makes sense to run any tests.
+     */
+    private static boolean hasTests(Project project) {
+        for (SourceGroup g : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            FileObject root = g.getRootFolder();
+            if (UnitTestForSourceQuery.findSources(root).length > 0 && containsSources(root)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static boolean containsSources(FileObject f) {
+        if (f.isFolder()) {
+            for (FileObject k : f.getChildren()) {
+                if (containsSources(k)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return f.hasExt("java"); // NOI18N
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

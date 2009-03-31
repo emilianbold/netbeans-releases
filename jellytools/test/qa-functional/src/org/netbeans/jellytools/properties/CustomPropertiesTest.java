@@ -44,9 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JDialog;
 import junit.framework.TestSuite;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.properties.editors.FontCustomEditorOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -233,15 +231,6 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         String s[] = p.getProcessDescriptorValue();
         assertEquals("test process", s[0]);  // NOI18N
         assertEquals("test arguments", s[1]);  // NOI18N
-    }
-    
-    /** Test org.netbeans.jellytools.properties.ServiceTypeProperty. */
-    public void testServiceTypeProperty() {
-        ServiceTypeProperty p = new ServiceTypeProperty(new PropertySheetOperator(TestNode.NODE_NAME), "Service Type");  // NOI18N
-        // "No Indentation"
-        String noIndentationLabel = Bundle.getString("org.netbeans.beaninfo.Bundle", "LAB_IndentEngineDefault");  // NOI18N
-        p.setServiceTypeValue(noIndentationLabel);
-        assertEquals(noIndentationLabel, p.getServiceTypeValue());
     }
     
     /** Close property sheet. */
