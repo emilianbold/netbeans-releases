@@ -65,8 +65,6 @@ import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -220,17 +218,14 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                                 String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
                                     final String remoteDir = scmLoc.toASCIIString().concat("/" + dirName);
                                 try {
-                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), "Initial commit");
+                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), "Initial revision");
                                 } catch (IOException io) {
                                     Exceptions.printStackTrace(io);
                                 }
                                 Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."},localFile,
                                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
-                                final FileObject fob = FileUtil.toFileObject(localFile);
-                                fob.refresh();
-                                fob.getChildren();
                                 if (autoCommit) {
-                                    //commit
+                                    Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), "Initial revision");
                                 }
                             } else {
                                 Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[]{"."},localFile,
