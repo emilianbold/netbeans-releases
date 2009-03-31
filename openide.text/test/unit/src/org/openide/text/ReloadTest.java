@@ -41,16 +41,26 @@
 
 package org.openide.text;
 
-import java.beans.*;
-import java.io.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.VetoableChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import javax.swing.text.*;
-import org.netbeans.junit.*;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.windows.*;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 
 /** Test to simulate problem #46885
  * @author  Jaroslav Tulach
@@ -94,7 +104,6 @@ implements CloneableEditorSupport.Env {
         err = Logger.getLogger(getName());
     }
     
-    @RandomlyFails // NB-Core-Build #670
     public void testRefreshProblem46885 () throws Exception {
         StyledDocument doc = support.openDocument ();
         
