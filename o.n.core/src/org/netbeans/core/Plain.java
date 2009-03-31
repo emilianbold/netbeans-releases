@@ -118,9 +118,9 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
             if (!FileUtil.getConfigRoot().getFileSystem().isReadOnly()) {
                 moduleSystem.readList();
                 moduleSystem.restore();
-                LoaderPoolNode.installationFinished();
+                NbLoaderPool.installationFinished();
             } else {
-                LoaderPoolNode.installationFinished();
+                NbLoaderPool.installationFinished();
             }
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);

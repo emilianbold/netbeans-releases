@@ -72,6 +72,28 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="classic">
+        <api name="OptionsAPI"/>
+        <summary>"Classic" mode fully implemented in module</summary>
+        <version major="1" minor="12"/>
+        <date day="30" month="3" year="2009"/>
+        <author login="jglick"/>
+        <compatibility semantic="incompatible">
+            <p>
+                Platform applications using the old <code>UI/Services</code> now
+                need to include this module. Module developers are however
+                strongly encouraged to use the new Options SPI.
+            </p>
+        </compatibility>
+        <description>
+            The <b>Advanced Options</b> button (also known as "classic" mode) is
+            now fully implemented in the Options Dialog and SPI module, rather
+            than in Core. The functionality remains the same: any displayable
+            objects (such as beans) present under the <code>UI/Services</code>
+            configuration folder will trigger the button to be displayed which
+            opens a special dialog for them.
+        </description>
+    </change>
     <change id="DeclarativeController">
         <api name="OptionsAPI"/>
         <summary>Support for searchable options</summary>

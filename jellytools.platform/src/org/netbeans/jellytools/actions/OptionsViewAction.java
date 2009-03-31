@@ -42,8 +42,7 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Tools|Options" main menu item or
- * "org.netbeans.core.actions.OptionsAction". If called on MAC it uses IDE API to
+/** Used to call "Tools|Options" main menu item. If called on MAC it uses IDE API to
  * open Options.
  * @see Action
  */
@@ -52,8 +51,8 @@ public class OptionsViewAction extends Action {
         Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle",
                                 "Menu/Tools") +
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", 
-                                "Options");
+        Bundle.getStringTrimmed("org.netbeans.modules.options.Bundle",
+                                "CTL_Options_Window_Action");
 
     /** Creates new instance. */    
     public OptionsViewAction() {

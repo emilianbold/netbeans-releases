@@ -41,14 +41,10 @@
 
 package org.openide.loaders;
 
-
-import org.openide.filesystems.FileObject;
-import java.lang.reflect.*;
-import java.util.*;
 import javax.swing.event.ChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import org.openide.util.Lookup;
+import java.lang.reflect.Field;
+import java.util.List;
 
 /** Utility to add a loader to the loader pool.
  * Should only be used in external execution mode!
@@ -67,7 +63,7 @@ public final class AddLoaderManuallyHid {
         // Now add the loader. Would be easy enough if we could directly access
         // core classes, but then this test would have to be compiled with core.jar
         // in the classpath...
-        Class lpnClazz = Class.forName("org.netbeans.core.LoaderPoolNode");
+        Class lpnClazz = Class.forName("org.netbeans.core.NbLoaderPool");
         Field loadersF = lpnClazz.getDeclaredField("loaders");
         loadersF.setAccessible(true);
         List loaders = (List)loadersF.get(null);

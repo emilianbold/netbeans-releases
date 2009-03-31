@@ -59,6 +59,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 
@@ -75,7 +76,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
@@ -330,9 +330,7 @@ public class OptionsDisplayerImpl {
                     optionsPanel.cancel ();
                 }
                 try {
-                    ClassLoader cl = (ClassLoader) Lookup.getDefault ().lookup (ClassLoader.class);
-                    Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.core.actions.OptionsAction");
-                    CallableSystemAction a = SystemAction.findObject(clz, true);
+                    CallableSystemAction a = SystemAction.get(OptionsAction.class);
                     a.putValue ("additionalActionName", loc ("CTL_Modern"));
                     a.putValue ("optionsDialogTitle", loc ("CTL_Classic_Title"));
                     a.putValue ("additionalActionListener", new OpenOptionsListener ()
