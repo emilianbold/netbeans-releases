@@ -235,9 +235,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.windows</friend>
                 <friend>org.netbeans.modules.jellytools</friend>
                 <friend>org.netbeans.modules.jellytools.platform</friend>
+                <friend>org.netbeans.modules.options.api</friend>
                 <friend>org.netbeans.modules.settings</friend>
                 <friend>org.openide.compat</friend>
-                <package>org.netbeans.beaninfo</package>
                 <package>org.netbeans.beaninfo.editors</package>
                 <package>org.netbeans.core</package>
                 <package>org.netbeans.core.actions</package>
