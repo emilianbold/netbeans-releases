@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.hudson.j2seproject
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hudson/j2seproject/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
