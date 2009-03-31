@@ -445,7 +445,8 @@ public class Subversion {
                     CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, Collections.<SvnHook>emptyList() );
                 }
             };
-            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")).waitFinished(); // NOI18N
+
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
