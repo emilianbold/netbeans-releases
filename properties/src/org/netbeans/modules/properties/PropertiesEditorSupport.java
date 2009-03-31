@@ -108,6 +108,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -355,9 +356,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         myEntry.getHandler().autoParse();
 
         if (super.notifyModified()) {
-            ((Environment)env).addSaveCookie();
+            if (hasOpenedEditorComponent() || hasOpenedTableComponent()) {
+                ((Environment)env).addSaveCookie();
             
-            return true;
+                return true;
+            } else {
+            //Issue 89029: Need to save properties file if no editors opened
+                try {
+                    ((Environment) env).save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return false;
+            }
         } else {
             return false;
         }
