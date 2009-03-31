@@ -41,28 +41,19 @@
 package org.netbeans.modules.html.editor.completion;
 
 import org.netbeans.editor.ext.html.*;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
 import java.util.*;
-import java.awt.Color;
-import java.awt.event.KeyEvent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.ErrorManager;
 
 /**
