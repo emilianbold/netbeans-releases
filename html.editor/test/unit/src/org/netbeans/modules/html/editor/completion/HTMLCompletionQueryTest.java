@@ -74,6 +74,10 @@ public class HTMLCompletionQueryTest extends TestBase {
         super.setUp();
         MockServices.setServices(MockMimeLookup.class);
     }
+
+    public void testX() {
+        
+    }
         
 //    //test methods -----------
 //    public void testIndexHtml() throws IOException, BadLocationException {
