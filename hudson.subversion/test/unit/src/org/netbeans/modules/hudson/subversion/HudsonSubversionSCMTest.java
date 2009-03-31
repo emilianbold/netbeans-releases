@@ -88,7 +88,7 @@ public class HudsonSubversionSCMTest extends NbTestCase {
                 "<local>.</local>" +
                 "</hudson.scm.SubversionSCM_-ModuleLocation>" +
                 "</locations>" +
-                "<useUpdate>true</useUpdate>" +
+                "<useUpdate>false</useUpdate>" +
                 "</scm>" +
                 "<triggers>" +
                 "<hudson.triggers.SCMTrigger>" +

@@ -83,7 +83,8 @@ public class HudsonSubversionSCM implements HudsonSCM {
                             appendChild(doc.createElement("hudson.scm.SubversionSCM_-ModuleLocation"));
                     loc.appendChild(doc.createElement("remote")).appendChild(doc.createTextNode(urlS));
                     loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode("."));
-                    configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("true"));
+                    // HUDSON-3390 would be a more attractive alternative:
+                    configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("false"));
                     Helper.addTrigger(doc);
                 }
             };
