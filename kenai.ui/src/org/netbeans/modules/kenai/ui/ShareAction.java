@@ -38,18 +38,12 @@
  */
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Set;
-import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
@@ -61,22 +55,7 @@ public final class ShareAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
         assert activatedNodes.length==1;
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(activatedNodes[0]));
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-        wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                "NewKenaiProjectAction.dialogTitle"));
-
-        DialogDisplayer.getDefault().notify(wizardDescriptor);
-
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
-            // everything should be created, show summary
-            // XXX check the project is really created
-            // returning the repo will be needed as well
-            showLandingPage(createdProjects);
-        }
+        actionPerformed(activatedNodes[0]);
     }
 
     protected int mode() {
@@ -112,9 +91,9 @@ public final class ShareAction extends CookieAction {
         return remoteLocation==null;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public static void actionPerformed(Node e) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator());
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
@@ -133,31 +112,8 @@ public final class ShareAction extends CookieAction {
 
     }
 
-    private void showLandingPage(Set<CreatedProjectInfo> projects) {
-
-        Object options[] = new Object[3];
-        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai"));
-        options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
-        options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
-
-        CreatedProjectInfo cpi = projects.iterator().next();
-        KenaiProject kenaiPrj = cpi.project;
-        String localPath = cpi.localRepoPath;
-
-        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath),
-                NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.dialogTitle"),
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-
-        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
-
-        if (options[0].equals(option)) { // open Kenai project page
-            URL projectUrl = kenaiPrj.getWebLocation();
-            URLDisplayer.getDefault().showURL(projectUrl);
-        } else if (options[1].equals(option)) { // create NB project
-            System.out.println("Opening new project wizard in created repository");
-
-        }
-
+    private static void showLandingPage(Set<CreatedProjectInfo> projects) {
+        //TODO: Implement landing page. Need UI spec.
     }
 
 }
