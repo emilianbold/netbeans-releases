@@ -48,14 +48,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
-import org.netbeans.modules.debugger.jpda.ui.HistoryPanel;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.NbBundle;
 
 public class EvaluatorTreeModelFilter implements TreeModelFilter {
 

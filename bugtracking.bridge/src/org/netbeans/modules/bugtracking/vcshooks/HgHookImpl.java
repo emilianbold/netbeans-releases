@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.PushAction;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
@@ -215,10 +216,21 @@ public class HgHookImpl extends HgHook {
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         if(context.getFiles().length == 0) {
             LOG.warning("creating hg hook component for zero files");           // NOI18N
-            panel = new HookPanel(repos, null);
+            Repository repoToSelect = null;
+            File largerContext = BugtrackingUtil.getContextFromProjects();
+            if (largerContext != null) {
+                repoToSelect = FileToRepoMappingStorage.getInstance().getRepository(largerContext);
+            }
+            panel = new HookPanel(repos, repoToSelect);
         } else {
             File file = context.getFiles()[0];
             Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
+            if (repoToSelect == null) {
+                File largerContext = BugtrackingUtil.getLargerContext(file);
+                if (largerContext != null) {
+                    repoToSelect = FileToRepoMappingStorage.getInstance().getRepository(largerContext);
+                }
+            }
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

@@ -44,9 +44,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -75,7 +78,11 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(Query query) {
-        openQuery(query, null);
+        File context = BugtrackingUtil.getLargerContext();
+        Repository repository = (context != null)
+                                ? FileToRepoMappingStorage.getInstance().getRepository(context)
+                                : null;
+        openQuery(query, repository);
     }
 
     public static void openQuery(final Query query, final Repository repository) {
