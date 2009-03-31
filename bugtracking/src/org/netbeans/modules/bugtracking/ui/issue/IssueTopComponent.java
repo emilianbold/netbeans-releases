@@ -94,6 +94,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(Repository toSelect) {
+        initNewIssue(toSelect, false);
+    }
+
+    public void initNewIssue(Repository toSelect, boolean suggestedSelectionOnly) {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -120,7 +124,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
 
-        if(toSelect != null) {
+        if ((toSelect != null) && !suggestedSelectionOnly) {
+            /* fixed selection that cannot be changed by user */
             DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
             repoModel.addElement(toSelect);
             repositoryComboBox.setModel(repoModel);
@@ -129,9 +134,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             newButton.setEnabled(false);
             onRepoSelected();
         } else {
-            setupRepositoryModel();
-            if(repositoryComboBox.getModel().getSize() > 0) {
+            boolean selected = setupRepositoryModel(toSelect);
+            if (!selected && (repositoryComboBox.getModel().getSize() > 0)) {
                 repositoryComboBox.setSelectedIndex(0);
+                selected = true;
+            }
+            if (selected) {
                 onRepoSelected();
             }
         }
@@ -367,20 +375,39 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setupRepositoryModel() {
-        Object lastSelection = repositoryComboBox.getSelectedItem();
+        setupRepositoryModel(null);
+    }
+
+    /**
+     * Initializes the combo-box's data model.
+     *
+     * @param  object (repository) to be preselected if possible, or {@code null}
+     * @return  {@code true} if the preferred selection was found and selected,
+     *          {@code false} otherwise
+     */
+    private boolean setupRepositoryModel(Object preferredSelection) {
+        assert (preferredSelection == null)
+               || (preferredSelection instanceof Repository);
+
+        if (preferredSelection == null) {
+            preferredSelection = repositoryComboBox.getSelectedItem();
+        }
 
         DefaultComboBoxModel repoModel;
         Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
         repoModel = new DefaultComboBoxModel(repos);
         repositoryComboBox.setModel(repoModel);
 
-        for (int i = 0; i < repoModel.getSize(); i++) {
-            Repository r = (Repository) repoModel.getElementAt(i);
-            if(r == lastSelection) {
-                repoModel.setSelectedItem(r);
-                break;
+        if (preferredSelection != null) {
+            for (int i = 0; i < repoModel.getSize(); i++) {
+                Repository r = (Repository) repoModel.getElementAt(i);
+                if (r == preferredSelection) {
+                    repoModel.setSelectedItem(r);
+                    return true;
+                }
             }
         }
+        return false;
     }
 
 }

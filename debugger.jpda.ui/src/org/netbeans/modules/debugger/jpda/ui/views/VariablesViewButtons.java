@@ -65,7 +65,7 @@ public class VariablesViewButtons {
 
     public static JButton createOpenOptionsButton() {
         JButton button = createButton(
-                "org/netbeans/modules/debugger/jpda/resources/show_formatters_16.png",
+                "org/netbeans/modules/debugger/jpda/resources/formatters_options_16.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Open_Formatters")
             );
         button.addActionListener(new ActionListener() {
@@ -83,7 +83,7 @@ public class VariablesViewButtons {
         }
         showValueAsStringToggle = createToggleButton(
                 SHOW_VALUE_AS_STRING,
-                "org/netbeans/modules/debugger/jpda/resources/class.gif",
+                "org/netbeans/modules/debugger/jpda/resources/show_variable_values_16.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Value_As_String")
             );
         showValueAsStringToggle.addActionListener(new ShowValueAsStringActionListener(showValueAsStringToggle));
