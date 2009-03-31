@@ -1270,19 +1270,6 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    void addIfNotInTypeHolderList(List<TypeHolder> result, TypeHolder newEntry) {
-
-            for (TypeHolder typeHolder : result) {
-                if(typeHolder.getName().equals(newEntry.getName())){
-                    return;
-                }
-            }
-
-            LOG.log(Level.FINEST, "Adding Name to list : {0}", newEntry.getName()); // NOI18N
-            result.add(newEntry);
-
-    }
-
     // this was: Utilities.nextName()
     private static String camelCaseHunch(CharSequence name) {
         StringBuilder sb = new StringBuilder();
@@ -1821,10 +1808,9 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
-        // get the JavaSource for our file.
 
+        // get the JavaSource for our file.
         final JavaSource javaSource = getJavaSourceFromRequest(request);
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
@@ -1874,22 +1860,18 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
 
             if (index != null) {
-
-                // This retrieves all classes from index:
-                Set<IndexedClass> classes = index.getClasses("", QuerySupport.Kind.PREFIX, true, false, false);
+                Set<IndexedClass> classes = index.getClasses(request.prefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX,
+                        true, false, false);
 
                 if (classes.size() == 0) {
                     LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
                 } else {
                     LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
 
-                    List<TypeHolder> typelist = new ArrayList<TypeHolder>();
+                    Set<TypeHolder> typelist = new HashSet<TypeHolder>();
 
-                    // FIXME all classes in the index - this is performance defect
                     for (IndexedClass indexedClass : classes) {
-                        LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getName());
-
-                        // remove duplicates
+                        LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getFqn());
 
                         ElementKind ek;
                         if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
@@ -1898,13 +1880,12 @@ public class CompletionHandler implements CodeCompletionHandler {
                             ek = ElementKind.INTERFACE;
                         }
 
-                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getFqn(), ek));
+                        typelist.add(new TypeHolder(indexedClass.getFqn(), ek));
                     }
 
                     for (TypeHolder type : typelist) {
                         addToProposalUsingFilter(addedTypes, proposals, request, type, onlyInterfaces);
                     }
-
                 }
             }
         }
