@@ -60,6 +60,7 @@ public class HyperlinkerTest extends NbTestCase {
                 "[deprecation] toURL() in java.io.File has been deprecated")));
         assertEquals("http://nowhere.net/", String.valueOf(logger.findHyperlink("http://nowhere.net/")));
         assertEquals("null", String.valueOf(logger.findHyperlink("see http://nowhere.net/ for more")));
+        assertEquals("pom.xml:4:-1:stupid error", String.valueOf(logger.findHyperlink("/hudson/workspace/myprj/pom.xml:5: stupid error"))); // slave WS
     }
 
 }
