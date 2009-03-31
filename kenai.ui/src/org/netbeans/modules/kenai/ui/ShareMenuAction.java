@@ -36,45 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.kenai.ui.spi;
-
-import java.util.prefs.Preferences;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openide.util.NbPreferences;
-import static org.junit.Assert.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.api.project.Project;
+import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 
 /**
- *
  * @author Jan Becicka
  */
-public class UIUtilsTest {
+public final class ShareMenuAction implements ActionListener {
 
-    public UIUtilsTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    /**
-     * Test of showLogin method, of class UIUtils.
-     */
-    @Test
-    public void testEncodeDecode() {
-        String testpass = "pswd";
-        String scram = Scrambler.getInstance().scramble(testpass);
-        Preferences preferences=NbPreferences.forModule(UIUtils.class);
-        preferences.put("kenai.test.password", scram);
-        String newp=preferences.get("kenai.test.password", null);
-        String r = Scrambler.getInstance().descramble(newp);
-        assertEquals(testpass, r);
-        // TODO review the generated test code and remove the default call to fail.
+    public void actionPerformed(ActionEvent e) {
+        Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (n.length>0) {
+            if (n[0].getLookup().lookup(Project.class)!=null) {
+                ShareAction.actionPerformed(n[0]);
+                return;
+            }
+        }
+        
+        ShareAction.actionPerformed((Node) null);
     }
 }
