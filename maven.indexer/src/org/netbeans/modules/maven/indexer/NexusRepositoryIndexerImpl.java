@@ -640,6 +640,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     String id = groupId + AbstractIndexCreator.FS + artifactId + AbstractIndexCreator.FS + version + AbstractIndexCreator.FS;
                     bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
@@ -711,6 +712,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     String clsname = className.replace(".", "/");
                     FlatSearchRequest fsr = new FlatSearchRequest(indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase()),
                             ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
                             clsname)));
@@ -736,6 +738,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_ARTIFACT, artifactId)), BooleanClause.Occur.MUST));
                     bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_VERSION, version)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
@@ -758,6 +761,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     BooleanQuery bq = new BooleanQuery();
                     bq.add(new BooleanClause((indexer.constructQuery(ArtifactInfo.MD5, (md5))), BooleanClause.Occur.SHOULD));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
@@ -780,6 +784,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     BooleanQuery bq = new BooleanQuery();
                     bq.add(new BooleanClause((indexer.constructQuery(ArtifactInfo.SHA1, sha1)), BooleanClause.Occur.SHOULD));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
@@ -802,6 +807,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     BooleanQuery bq = new BooleanQuery();
                     bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
@@ -826,6 +832,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                     bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);
@@ -851,6 +858,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                     bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.groupId);
@@ -876,6 +884,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     String id = groupId + AbstractIndexCreator.FS + prefix;
                     bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);

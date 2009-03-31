@@ -273,7 +273,7 @@ public final class CsmInheritanceUtilities {
         return getContextVisibilityInfo(clazz, contextDeclaration, defVisibilityValue, checkInheritance).visibility;
     }
 
-    public static class ContextVisibilityInfo {
+    public static final class ContextVisibilityInfo {
         public final  CsmVisibility visibility;
         public final  boolean friend;
 
