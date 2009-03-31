@@ -175,11 +175,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     public void start() {
-        // Start job
         instance.getConnector().startJob(this);
-        
-        // Synchronize jobs
-        instance.synchronize();
     }
     
     public Sheet.Set getSheetSet() {
