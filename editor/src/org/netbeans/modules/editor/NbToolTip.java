@@ -94,7 +94,7 @@ public class NbToolTip extends FileChangeAdapter {
     
     private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap<String,WeakReference<NbToolTip>>();
     
-    private static AtomicInteger lastRequestId;
+    private static final AtomicInteger lastRequestId = new AtomicInteger(0);
     
     private final String mimeType;
     
