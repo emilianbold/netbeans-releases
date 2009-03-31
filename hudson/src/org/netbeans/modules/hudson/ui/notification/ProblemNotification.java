@@ -41,21 +41,17 @@ package org.netbeans.modules.hudson.ui.notification;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.CharConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.xml.XMLUtil;
 
 /**
  * Build failed or was unstable.
@@ -78,13 +74,7 @@ class ProblemNotification implements ActionListener {
     }
 
     private String getTitle() {
-        try {
-            return XMLUtil.toElementContent(job.getDisplayName()) + " #" + build +
-                    (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
-        } catch (CharConversionException ex) {
-            Exceptions.printStackTrace(ex);
-            return "";
-        }
+        return job.getDisplayName() + " #" + build + (failed ? " failed" : " is unstable"); // XXX I18N
     }
 
     private String getDescription() {
