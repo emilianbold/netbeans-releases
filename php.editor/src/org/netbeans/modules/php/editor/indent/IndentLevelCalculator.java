@@ -165,7 +165,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
                         
                     } while (indentContinuationWithinStatement_skipToken(ts.token()));
 
-                    end = ts.offset() + ts.token().length();
+                    end = firstNonWSBwd(doc, ts.offset() + ts.token().length());
                 }
 
                 addIndentLevel(end, -1 * continuationIndentSize);
