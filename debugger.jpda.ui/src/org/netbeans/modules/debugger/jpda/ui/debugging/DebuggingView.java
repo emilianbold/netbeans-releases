@@ -179,7 +179,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     public DebuggingView() {
         setIcon(ImageUtilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
         // Remember the location of the component when closed.
-        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE);    // NOI18N
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {                    //NOI18N
+            treeBackgroundColor = UIManager.getColor("NbExplorerView.background");  //NOI18N
+        }
         
         initComponents();
     
