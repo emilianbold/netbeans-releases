@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -91,10 +92,10 @@ public class TestBase2 extends CslTestBase {
 
     public final void initParserJARs() throws MalformedURLException {
         String path = System.getProperty("jsp.parser.jars");
-        StringTokenizer st = new StringTokenizer(path, ":");
+        String[] paths = PropertyUtils.tokenizePath(path);
         List<URL> list = new ArrayList();
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
+        for (int i = 0; i< paths.length; i++) {
+            String token = paths[i];
             File f = new File(token);
             if (!f.exists()) {
                 fail("cannot find file "+token);
