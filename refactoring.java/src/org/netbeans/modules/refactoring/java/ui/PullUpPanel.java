@@ -169,7 +169,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // 2. be disabled for static methods
                     // 3. be disabled and checked for methods if the target type is an interface
                     // 4. be disabled and check for abstract methods
-                    membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer() {
+                    membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable) {
                         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                             // make the checkbox checked (even if "Make Abstract" is not set)
                             // for non-static methods if the target type is an interface

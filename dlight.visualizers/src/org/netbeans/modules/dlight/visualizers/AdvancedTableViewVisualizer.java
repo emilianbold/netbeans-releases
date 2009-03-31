@@ -117,7 +117,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
-        List<Property> result = new ArrayList();
+        List<Property> result = new ArrayList<Property>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
@@ -349,7 +349,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         isShown = false;
     }
 
-    public class DataChildren extends Children.Keys {
+    public class DataChildren extends Children.Keys<DataRow> {
 
         private final List<DataRow> list;
 
@@ -358,9 +358,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
-            DataRow row = (DataRow) key;
-            return new Node[]{new DataRowNode(row)};
+        protected Node[] createNodes(DataRow key) {
+            return new Node[]{new DataRowNode(key)};
         }
 
         @Override
@@ -381,7 +380,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList();
+                    List<Property> result = new ArrayList<Property>();
                     for (String columnName : dataRow.getColumnNames()) {
                         if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);

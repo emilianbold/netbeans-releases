@@ -1581,6 +1581,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         top = top2;
                                         break;
 
+                                    case PARENTHESIS_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top = top2;
+                                        break;
+
                                     default:
                                         int cnt = expStack.size();
                                         CsmCompletionExpression gen = null;
@@ -1633,7 +1639,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         break;
                                     case DOT_OPEN:
                                     case ARROW_OPEN:
-                                    case SCOPE_OPEN: {
+                                    case SCOPE_OPEN:
+                                    {
                                         CsmCompletionExpression top3 = peekExp2();
                                         if (getValidExpID(top3) == ANNOTATION) {
                                             top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
@@ -1643,6 +1650,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                             popExp();
                                             break;
                                         }
+                                        // nobreak
                                     }
                                     default:
                                         CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
@@ -1669,6 +1677,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case PARENTHESIS:      // if (a > b) (
                             case GENERIC_TYPE_OPEN:// a < (
                             case MEMBER_POINTER_OPEN:// *(
+                            case UNARY_OPERATOR: // !(
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
 
@@ -1739,7 +1748,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         } else {
                                             popExp();
                                             top2.addParameter(top);
-                                            top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
+                                            if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)) {
+                                                top2.setExpID(CONVERSION);
+                                            } else {
+                                                top2.setExpID(PARENTHESIS);
+                                            }
                                             addTokenTo(top2);
                                         }
                                         break;
