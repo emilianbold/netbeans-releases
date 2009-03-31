@@ -103,6 +103,7 @@ class TaskListTable extends JTable {
     
     /** Creates a new instance of TaskListTable */
     public TaskListTable() {
+        this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         addMouseListener( new MouseAdapter() {
             @Override
             public void mousePressed( MouseEvent e ) {
@@ -723,7 +724,7 @@ class TaskListTable extends JTable {
         }
 
         public int getIconHeight() {
-            return 1;
+            return 16;
         }
     };
     
