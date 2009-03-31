@@ -333,7 +333,7 @@ public class RetoucheUtils {
         for (Project pr : opened) {
             for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                    return true;
+                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
                 }
             }
         }
