@@ -43,8 +43,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -287,13 +291,13 @@ public class TemplateUtils {
                         type = child;
                         break;
                     case CPPTokenTypes.CSM_EXPRESSION:
-                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope), scope,
+                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope),
                                 file, OffsetableBase.getStartOffset(child), OffsetableBase.getEndOffset(child)));
                         break;
                     case CPPTokenTypes.COMMA:
                     case CPPTokenTypes.GREATERTHAN:
                         if (type != null) {
-                            res.add(new TypeBasedSpecializationParameterImpl(TypeFactory.createType(type, file, ptr, 0, scope), scope,
+                            res.add(new TypeBasedSpecializationParameterImpl(TypeFactory.createType(type, file, ptr, 0, scope),
                                     file, OffsetableBase.getStartOffset(type), OffsetableBase.getEndOffset(type)));
                         }
                         type = null;
@@ -350,6 +354,21 @@ public class TemplateUtils {
         
         return type;
     }
+
+    public static Map<CsmTemplateParameter, CsmType> gatherMapping(CsmInstantiation inst) {
+        Map<CsmTemplateParameter, CsmType> newMapping = new HashMap<CsmTemplateParameter, CsmType>();
+        while(inst != null) {
+            newMapping.putAll(inst.getMapping());
+            CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
+            if(decl instanceof CsmInstantiation) {
+                inst = (CsmInstantiation) decl;
+            } else {
+                break;
+            }
+        }
+        return newMapping;
+    }
+
 
     private TemplateUtils() {
     }

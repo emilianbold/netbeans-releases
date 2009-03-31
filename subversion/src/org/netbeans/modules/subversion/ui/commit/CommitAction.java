@@ -538,24 +538,23 @@ public class CommitAction extends ContextAction {
     }
 
     private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, List<SvnHook> hooks) {
-        performCommit(message, commitFiles, ctx, support, false, hooks);
+        SvnClient client = getClient(ctx, support);
+        if(client == null) {
+            return;
+        }
+        performCommit(client, message, commitFiles, ctx, support, false, hooks);
     }
 
     public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate) {
-        performCommit(message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
+        SvnClient client = getClient(ctx, support);
+        if(client == null) {
+            return;
+        }
+        performCommit(client, message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
     }
 
-    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
-        ISVNLogMessage[] log;
+    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
         try {
-
-            SvnClient client;
-            try {
-                client = Subversion.getInstance().getClient(ctx, support);
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
-                return;
-            }
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
@@ -995,5 +994,14 @@ public class CommitAction extends ContextAction {
         }
 
         return ret;
+    }
+
+    private static SvnClient getClient(Context ctx, SvnProgressSupport support) {
+        try {
+            return Subversion.getInstance().getClient(ctx, support);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
+            return null;
+        }
     }
 }

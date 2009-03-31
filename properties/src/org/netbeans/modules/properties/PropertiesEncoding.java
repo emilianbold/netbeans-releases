@@ -99,14 +99,14 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private URL fileURL;
         
         PropCharset(FileObject file) throws FileStateInvalidException {
-            super("resource_bundle_charset", null);                     //NOI18N
+            super("ISO-8859-1", null);                     //NOI18N
             fileRef = new WeakReference<FileObject>(file);
             file.addFileChangeListener(this);
             updateURL(file);
         }
 
         PropCharset() {
-            super("resource_bundle_charset", null);                     //NOI18N
+            super("ISO-8859-1", null);                     //NOI18N
             fileRef = null;
         }
 

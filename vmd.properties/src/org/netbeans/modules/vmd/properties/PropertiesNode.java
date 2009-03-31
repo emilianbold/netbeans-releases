@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
@@ -56,58 +54,72 @@ import org.openide.nodes.Sheet;
  *
  * @author Karol Harezlak
  */
-public class PropertiesNode extends AbstractNode{
-    
+public class PropertiesNode extends AbstractNode {
+
     private WeakReference<DesignComponent> component;
     private WeakReference<DataEditorView> view;
     private String displayName;
-    
+
     public PropertiesNode(DataEditorView view, DesignComponent component) {
         super(Children.LEAF, view.getContext().getDataObject().getLookup());
+        assert component != null;
+        assert view != null;
         this.component = new WeakReference<DesignComponent>(component);
         this.view = new WeakReference<DataEditorView>(view);
     }
-    
+
     public DesignComponent getComponent() {
         return component.get();
     }
-    
+
+    @Override
     public Sheet createSheet() {
-        if(component.get() == null)
-            super.createSheet();
-        return PropertiesNodesManager.getInstance(view.get()).getSheet(component.get());
+        if (component.get() == null || view.get() == null) {
+            return super.createSheet();
+        }
+        Sheet sheet =  PropertiesNodesManager.getInstance(view.get()).getSheet(component.get());
+        if (sheet == null) {
+            sheet = super.createSheet();
+        }
+
+        return sheet;
     }
-    
+
+    @Override
     public String getDisplayName() {
         return createName();
     }
-    
+
     public String createName() {
-        if (component.get() == null)
+        if (component.get() == null) {
             return super.getDisplayName();
+        }
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
-                if (component.get().getParentComponent() == null && component.get().getDocument().getRootComponent() != component.get())
+                if (component.get().getParentComponent() == null && component.get().getDocument().getRootComponent() != component.get()) {
                     return;
-                if (component.get().getPresenter(InfoPresenter.class) != null)
+                }
+                if (component.get().getPresenter(InfoPresenter.class) != null) {
                     displayName = InfoPresenter.getDisplayName(component.get());
+                }
             }
         });
         return displayName;
     }
-    
+
     public void updateNode(Sheet sheet) {
-        if (component == null || component.get() == null) {
+        if (component.get() == null) {
             return;
         }
 
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(component.get().getDocument());
-        if (context == null)
+        if (context == null) {
             return;
+        }
         setSheet(sheet);
         setName(createName());
     }
-    
 }
 
 
