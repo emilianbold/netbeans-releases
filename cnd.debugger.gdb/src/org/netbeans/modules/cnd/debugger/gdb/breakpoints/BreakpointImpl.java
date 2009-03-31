@@ -95,25 +95,29 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
                 // fix for IZ 157752, we need to resolve sym links
-                String canonicalPath = path;
+                // TODO: what about remote?
                 try {
                     File srcFile = new File(path);
-                    canonicalPath = srcFile.getCanonicalPath();
+                    path = srcFile.getCanonicalPath();
                 } catch (IOException ex) {
                     // do nothing
                 }
                 if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
-                    canonicalPath = canonicalPath.replace("\\", "/").toLowerCase(); // NOI18N
-                    fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
+                    // No need to do this since we compare paths with debugger.comparePaths
+                    //path = path.replace("\\", "/").toLowerCase(); // NOI18N
+                    //fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
                 } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
-                    canonicalPath = canonicalPath.toLowerCase();
+                    path = path.toLowerCase();
                     fullname = fullname.toLowerCase();
                 }
-                if (!fullname.equals(debugger.getPathMap().getRemotePath(canonicalPath))) {
+                // go through path map
+                path = debugger.getPathMap().getRemotePath(path);
+                
+                if (!debugger.comparePaths(path, fullname)) {
                     debugger.getGdbProxy().getLogger().logMessage(
-                            "IDE: incorrect breakpoint file: requested " + canonicalPath + " found " + fullname); // NOI18N
+                            "IDE: incorrect breakpoint file: requested " + path + " found " + fullname); // NOI18N
                     debugger.getGdbProxy().break_delete(number);
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);

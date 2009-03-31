@@ -105,6 +105,8 @@ public abstract class Crawler {
                 for (String u : unseen) {
                     deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
                 }
+            } else {
+                deleted = Collections.<Indexable>emptyList();
             }
         }
     }

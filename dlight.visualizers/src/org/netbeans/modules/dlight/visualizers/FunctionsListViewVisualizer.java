@@ -122,7 +122,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         outlineView = new OutlineView(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
-        List<Property> result = new ArrayList();
+        List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
             result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
                 c.getColumnUName(), c.getColumnUName(), true, false) {
@@ -363,7 +363,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return explorerManager;
     }
 
-    public class FunctionCallChildren extends Children.Keys {
+    public class FunctionCallChildren extends Children.Keys<FunctionCall> {
 
         private final List<FunctionCall> list;
 
@@ -371,10 +371,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
             this.list = list;
         }
 
-        @Override
-        protected Node[] createNodes(Object key) {
-            FunctionCall functionCall = (FunctionCall) key;
-            return new Node[]{new FunctionCallNode(functionCall)};
+        protected Node[] createNodes(FunctionCall key) {
+            return new Node[]{new FunctionCallNode(key)};
         }
 
         @Override
@@ -399,7 +397,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList();
+                    List<Property> result = new ArrayList<Property>();
                     //create for metrics
                     for (final Column metric : metrics) {
                         result.add(new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
