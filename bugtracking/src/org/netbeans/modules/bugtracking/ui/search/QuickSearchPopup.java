@@ -109,7 +109,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(comboBar, this));
-        rp = new RequestProcessor("", 1); // XXX throughput 1 ???
+        rp = new RequestProcessor("", 1); // NOI18N // XXX throughput 1 ???
 
         updateStatusPanel();
     }
@@ -218,7 +218,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     private void searchLocalIssues() {
         String criteria = comboBar.getCommand().getText().trim();
-        if(criteria.equals("")) {
+        if(criteria.equals("")) { // NOI18N
             rModel.setContent(null);
             return;
         }
