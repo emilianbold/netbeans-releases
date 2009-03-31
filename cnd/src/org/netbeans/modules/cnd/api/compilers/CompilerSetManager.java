@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
@@ -1190,10 +1189,7 @@ public class CompilerSetManager {
 
     private static CompilerProvider getCompilerProvider() {
         if (compilerProvider == null) {
-            compilerProvider = Lookup.getDefault().lookup(CompilerProvider.class);
-        }
-        if (compilerProvider == null) {
-            compilerProvider = new DefaultCompilerProvider();
+            compilerProvider = CompilerProvider.getInstance();
         }
         return compilerProvider;
     }

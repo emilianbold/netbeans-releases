@@ -46,6 +46,8 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -466,7 +468,8 @@ public class AstRenderer {
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
         }
-        return findVariable(name, file.getDeclarations(), offset);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION);
+        return findVariable(name, CsmSelect.getDeclarations(file, filter), offset, filter);
     }
 
     /**
@@ -478,7 +481,8 @@ public class AstRenderer {
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
         }
-        return findFunction(name, file.getDeclarations(), offset);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
+        return findFunction(name, CsmSelect.getDeclarations(file, filter), offset, filter);
     }
 
     private boolean findGlobal(CsmProject project, String uname, Collection<CsmProject> processedProjects) {
@@ -497,8 +501,9 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean findVariable(CharSequence name, Collection<CsmOffsetableDeclaration> declarations, int offset) {
-        for (CsmOffsetableDeclaration decl : declarations) {
+    private boolean findVariable(CharSequence name, Iterator<CsmOffsetableDeclaration> it, int offset, CsmFilter filter) {
+        while(it.hasNext()) {
+            CsmOffsetableDeclaration decl = it.next();
             if (decl.getStartOffset() >= offset) {
                 break;
             }
@@ -516,7 +521,7 @@ public class AstRenderer {
                 case NAMESPACE_DEFINITION:
                     CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                     if (nd.getStartOffset() <= offset && nd.getEndOffset() >= offset) {
-                        if (findVariable(name, nd.getDeclarations(), offset)) {
+                        if (findVariable(name, CsmSelect.getDeclarations(nd, filter), offset, filter)) {
                             return true;
                         }
                     }
@@ -526,8 +531,9 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean findFunction(CharSequence name, Collection<CsmOffsetableDeclaration> declarations, int offset) {
-        for (CsmOffsetableDeclaration decl : declarations) {
+    private boolean findFunction(CharSequence name, Iterator<CsmOffsetableDeclaration> it, int offset, CsmFilter filter) {
+        while(it.hasNext()) {
+            CsmOffsetableDeclaration decl = it.next();
             if (decl.getStartOffset() >= offset) {
                 break;
             }
@@ -545,7 +551,7 @@ public class AstRenderer {
                 case NAMESPACE_DEFINITION:
                     CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                     if (nd.getStartOffset() <= offset && nd.getEndOffset() >= offset) {
-                        if (findFunction(name, nd.getDeclarations(), offset)) {
+                        if (findFunction(name, CsmSelect.getDeclarations(nd, filter), offset, filter)) {
                             return true;
                         }
                     }

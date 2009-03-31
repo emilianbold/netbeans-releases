@@ -122,33 +122,39 @@ public class Bugzilla {
         }
         BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
-            repositories.add(repository);
+            getStoredRepositories().add(repository);
         }
     }
 
     public void removeRepository(BugzillaRepository repository) {
         BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
-            repositories.remove(repository);
+            getStoredRepositories().remove(repository);
         }
     }
 
     public BugzillaRepository[] getRepositories() {
         synchronized(REPOSITORIES_LOCK) {
-            if(repositories == null) {
-                String[] names = BugzillaConfig.getInstance().getRepositories();
-                if(names == null || names.length == 0) {
-                    return new BugzillaRepository[] {};
-                }
-                repositories = new HashSet<BugzillaRepository>();
-                for (String name : names) {
-                    BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(name);
-                    if(repo != null) {
-                        repositories.add(repo);
-                    }
-                }
-            }
-            return repositories.toArray(new BugzillaRepository[repositories.size()]);
+            Set<BugzillaRepository> s = getStoredRepositories();
+            return s.toArray(new BugzillaRepository[s.size()]);
         }
     }
+
+    private Set<BugzillaRepository> getStoredRepositories() {
+        if (repositories == null) {
+            repositories = new HashSet<BugzillaRepository>();
+            String[] names = BugzillaConfig.getInstance().getRepositories();
+            if (names == null || names.length == 0) {
+                return repositories;
+            }
+            for (String name : names) {
+                BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(name);
+                if (repo != null) {
+                    repositories.add(repo);
+                }
+            }
+        }
+        return repositories;
+    }
+
 }

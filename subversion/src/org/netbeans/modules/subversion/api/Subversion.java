@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
@@ -368,6 +369,13 @@ public class Subversion {
             throw new IOException(ex.getMessage());
         }
 
+    }
+
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new SVNUrl(url);
+
+        RepositoryConnection rc = new RepositoryConnection(url);
+        SvnModuleConfig.getDefault().insertRecentUrl(rc);        
     }
 
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
