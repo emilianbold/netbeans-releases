@@ -104,6 +104,8 @@ public class QuickSearchPopup extends javax.swing.JPanel
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
+        hintLabel.setVisible(false);
+        hintSep.setVisible(false);
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(comboBar, this));
@@ -509,7 +511,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         boolean shouldBeVisible = false;
 
         boolean isInProgress = evalTask != null;
-        searchingSep.setVisible(isInProgress);
+        searchingSep.setVisible(isInProgress && (rModel.getSize() > 0));
         searchingLabel.setVisible(isInProgress);
         shouldBeVisible = shouldBeVisible || isInProgress;
 
