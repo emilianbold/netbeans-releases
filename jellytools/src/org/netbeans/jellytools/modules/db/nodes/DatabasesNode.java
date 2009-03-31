@@ -62,7 +62,7 @@ import org.netbeans.jellytools.nodes.Node;
 public class DatabasesNode extends Node {
     static final String TREE_PATH = Bundle.getStringTrimmed(
                 "org.netbeans.modules.db.resources.Bundle",
-                "NDN_Databases");
+                "Databases");
     private static final Action enableDebugAction = new EnableDebugAction();
     private static final Action disableDebugAction = new DisableDebugAction();
     

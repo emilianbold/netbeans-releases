@@ -102,7 +102,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
         //"<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
-        "<link rel=\"StyleSheet\" href=\"nbresloc:/org/netbeans/modules/gsfret/hints/infrastructure/ide.css\" type=\"text/css\">" + // NOI18N
+        "<link rel=\"StyleSheet\" href=\"nbresloc:/org/netbeans/modules/csl/hints/infrastructure/ide.css\" type=\"text/css\">" + // NOI18N
         "</head><body>"; // NOI18N
 
     private static final String DESCRIPTION_FOOTER = "</body></html>"; // NOI18N
@@ -180,10 +180,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 try {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         public @Override void run(ResultIterator resultIterator) throws Exception {
-// XXX: parsingapi
-//                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-//                                return;
-//                            }
                             GsfHintsManager.refreshHints(resultIterator);
                         }
                     });

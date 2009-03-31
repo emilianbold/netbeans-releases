@@ -43,6 +43,8 @@ package org.netbeans.modules.hudson.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
@@ -68,7 +70,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private HudsonInstanceImpl instance;
     
     private Sheet.Set set;
-    
+
     /**
      * Creates a new instance of Job
      *
@@ -173,11 +175,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     public void start() {
-        // Start job
         instance.getConnector().startJob(this);
-        
-        // Synchronize jobs
-        instance.synchronize();
     }
     
     public Sheet.Set getSheetSet() {
@@ -248,6 +246,9 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         if (getLastCompletedBuild() != j.getLastCompletedBuild()) {
             return false;
         }
+        if (!mavenModules.equals(j.mavenModules)) {
+            return false;
+        }
         
         return true;
     }
@@ -280,7 +281,37 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     public boolean isSalient() {
         return instance.isSalient(this);
     }
-    
+
+    final List<HudsonMavenModule> mavenModules = new LinkedList<HudsonMavenModule>();
+    void addModule(String name, String displayName, Color color, String url) {
+        mavenModules.add(new HudsonMavenModule(name, displayName, color, url));
+    }
+    static class HudsonMavenModule {
+        final String name;
+        final String displayName;
+        final Color color;
+        final String url;
+        HudsonMavenModule(String name, String displayName, Color color, String url) {
+            this.name = name;
+            this.displayName = displayName;
+            this.color = color;
+            this.url = url;
+        }
+        public @Override boolean equals(Object other) {
+            if (!(other instanceof HudsonMavenModule)) {
+                return false;
+            }
+            HudsonMavenModule o = (HudsonMavenModule) other;
+            return name.equals(o.name) && displayName.equals(o.displayName) && color == o.color && url.equals(o.url);
+        }
+        public @Override int hashCode() {
+            return name.hashCode();
+        }
+        public @Override String toString() {
+            return url;
+        }
+    }
+
     private class HudsonJobProperty extends PropertySupport.ReadOnly<String> {
         public HudsonJobProperty(String key, String name, String desc) {
             super(key, String.class, name, desc);

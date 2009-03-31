@@ -233,7 +233,17 @@ public abstract class CsmFileTaskFactory {
     public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
         runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay());
     }
-    
+
+    private void runAllTasks(PhaseRunner.Phase phase, int delay) {
+        Set<FileObject> fos;
+        synchronized (this) {
+            fos = fobj2task.keySet();
+        }
+        for (FileObject fo : fos) {
+            runTask(fo, phase, delay);
+        }
+    }
+
     private final void runTask(FileObject fobj, PhaseRunner.Phase phase, int delay) {
         TaskData pr = fobj2task.get(fobj);
         if (pr != null) {
@@ -302,6 +312,12 @@ public abstract class CsmFileTaskFactory {
         public void fileParsingStarted(CsmFile file) {
             runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY);
         }
+
+        @Override
+        public void projectParsingFinished(CsmProject project) {
+            runAllTasks(PhaseRunner.Phase.PROJECT_PARSED, IMMEDIATELY);
+        }
+
     }
     
     private class ModelListener implements CsmModelListener {
@@ -341,6 +357,7 @@ public abstract class CsmFileTaskFactory {
             INIT,
             PARSING_STARTED, 
             PARSED, 
+            PROJECT_PARSED,
             CLEANUP
         };
         public abstract void run(Phase phase);

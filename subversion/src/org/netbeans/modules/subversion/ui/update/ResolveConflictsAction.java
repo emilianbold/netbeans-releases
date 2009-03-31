@@ -42,6 +42,9 @@
 package org.netbeans.modules.subversion.ui.update;
 
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -49,6 +52,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module).
@@ -64,16 +68,16 @@ public class ResolveConflictsAction extends ContextAction {
         return "ResolveConflicts";  // NOI18N
     }
 
-    
+
     protected boolean enable(Node[] nodes) {
         Context ctx = SvnUtils.getCurrentContext(nodes);
-        return SvnUtils.getModifiedFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length > 0; 
-    }        
+        return SvnUtils.getModifiedFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length > 0;
+    }
 
     protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        if(!Subversion.getInstance().checkClientAvailable()) {
             return;
-        }       
+        }
         Context ctx = getContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
@@ -81,21 +85,45 @@ public class ResolveConflictsAction extends ContextAction {
         resolveConflicts(files);
     }
 
-    static void resolveConflicts(File[] files) {
-        if (files.length == 0) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
-        } else {
-            for (int i = 0; i<files.length; i++) {
-                File file = files[i];
-                ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
-                executor.exec();
+    static void resolveConflicts(final File[] files) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final List<File> filteredFiles = removeFolders(files);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (filteredFiles.size() == 0) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
+                            DialogDisplayer.getDefault().notify(nd);
+                        } else {
+                            for (File file : filteredFiles) {
+                                ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
+                                executor.exec();
+                            }
+                        }
+                    }
+                });
             }
-        }        
+        });
     }
-    
+
+    /**
+     * Filters the array and returns only existing files, not folders.
+     * I/O access
+     * @param files
+     * @return
+     */
+    private static List removeFolders(File[] files) {
+        LinkedList<File> filteredFiles = new LinkedList<File>();
+        for (File file : files) {
+            if (file.isFile()) {
+                filteredFiles.add(file);
+            }
+        }
+        return filteredFiles;
+    }
+
     public boolean asynchronous() {
         return false;
     }
-    
+
 }

@@ -551,16 +551,16 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         final int state = tfClassName.getStatus();
         switch (state) {
             case ClassNameTextField.STATUS_EMPTY:
-                //PENDING - polish the message:
                 key = "MSG_ClassnameMustNotBeEmpty";                    //NOI18N
                 break;
             case ClassNameTextField.STATUS_INVALID:
-                //PENDING - polish the message:
                 key = "MSG_InvalidClassName";                           //NOI18N
                 break;
             case ClassNameTextField.STATUS_VALID_NOT_DEFAULT:
-                //PENDING - polish the message:
                 key = "MSG_ClassNameNotDefault";                        //NOI18N
+                break;
+            case ClassNameTextField.STATUS_VALID_END_NOT_TEST:
+                key = "MSG_ClassNameEndNotTest";                        //NOI18N
                 break;
         }
         if (state != ClassNameTextField.STATUS_VALID_NOT_DEFAULT) {

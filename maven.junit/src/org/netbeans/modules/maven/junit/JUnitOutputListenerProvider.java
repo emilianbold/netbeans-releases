@@ -132,8 +132,11 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
             TestSession.SessionType type = TestSession.SessionType.TEST;
-            if (config.getActionName().contains("debug")) { //NOI81N
-                 type = TestSession.SessionType.DEBUG;
+            String action = config.getActionName();
+            if (action != null) { //custom
+                if (action.contains("debug")) { //NOI81N
+                     type = TestSession.SessionType.DEBUG;
+                }
             }
             final TestSession.SessionType fType = type;
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
@@ -170,20 +173,24 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
 
     private static Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
 
-    static Trouble constructTrouble(String type, String message, String text) {
-        Trouble t = new Trouble(true);
-        Matcher match = COMPARISON_PATTERN.matcher(message);
-        if (match.matches()) {
-            t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
+    static Trouble constructTrouble(String type, String message, String text, boolean error) {
+        Trouble t = new Trouble(error);
+        if (message != null) {
+            Matcher match = COMPARISON_PATTERN.matcher(message);
+            if (match.matches()) {
+                t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
+            }
         }
-        String[] strs = StringUtils.split(text, "\n");
-        List<String> lines = new ArrayList<String>();
-        lines.add(message);
-        lines.add(type);
-        for (int i = 1; i < strs.length; i++) {
-            lines.add(strs[i]);
+        if (text != null) {
+            String[] strs = StringUtils.split(text, "\n");
+            List<String> lines = new ArrayList<String>();
+            lines.add(message);
+            lines.add(type);
+            for (int i = 1; i < strs.length; i++) {
+                lines.add(strs[i]);
+            }
+            t.setStackTrace(lines.toArray(new String[0]));
         }
-        t.setStackTrace(lines.toArray(new String[0]));
         return t;
     }
 
@@ -224,7 +231,8 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
             
             for (Element testcase : testcases) {
-                Testcase test = new Testcase(testcase.getAttributeValue("name"), "zzz", session);
+                String name = testcase.getAttributeValue("name");
+                Testcase test = new Testcase(name, null, session);
                 Element stdout = testcase.getChild("system-out"); //NOI18N
                 if (stdout != null) {
                     logText(stdout.getText(), test, false);
@@ -234,24 +242,27 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
                 Trouble trouble = null;
                 if (failure != null) {
                     status = Status.FAILED;
-                    trouble = constructTrouble(failure.getAttributeValue("type"), failure.getAttributeValue("message"), failure.getText());
-                    trouble.setError(false);
+                    trouble = constructTrouble(failure.getAttributeValue("type"), failure.getAttributeValue("message"), failure.getText(), false);
                 }
                 Element error = testcase.getChild("error"); //NOI18N
                 if (error != null) {
                     status = Status.ERROR;
-                    trouble = constructTrouble(error.getAttributeValue("type"), error.getAttributeValue("message"), error.getText());
-                    trouble.setError(true);
+                    trouble = constructTrouble(error.getAttributeValue("type"), error.getAttributeValue("message"), error.getText(), true);
                 }
                 test.setStatus(status);
                 if (trouble != null) {
                     test.setTrouble(trouble);
                 }
                 String time = testcase.getAttributeValue("time");
-                float fl = Float.parseFloat(time);
-                test.setTimeMillis((long)(fl * 1000));
-                test.setClassName(testcase.getAttributeValue("classname"));
-                test.setLocation(test.getClassName().replace('.', '/') + ".java");
+                if (time != null) {
+                    float fl = Float.parseFloat(time);
+                    test.setTimeMillis((long)(fl * 1000));
+                }
+                String classname = testcase.getAttributeValue("classname");
+                if (classname != null) {
+                    test.setClassName(classname);
+                    test.setLocation(test.getClassName().replace('.', '/') + ".java");
+                }
                 session.addTestCase(test);
             }
             String time = testSuite.getAttributeValue("time");

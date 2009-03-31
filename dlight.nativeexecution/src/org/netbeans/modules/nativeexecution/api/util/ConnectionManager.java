@@ -160,7 +160,8 @@ public final class ConnectionManager {
         }
         
         synchronized (lock) {
-            if (getSession(env) != null) {
+            Session session = getSession(env);
+            if (session != null && session.isConnected()) {
                 // just return if already connected ...
                 return false;
             }

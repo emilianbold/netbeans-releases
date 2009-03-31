@@ -58,6 +58,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.patch.ContextualPatch;
@@ -74,12 +77,16 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
+ * @author Marian Petras
  */
 public class BugtrackingUtil {
 
@@ -253,4 +260,109 @@ public class BugtrackingUtil {
         }
         file.delete();
     }
+
+    public static File getLargerContext() {
+        FileObject openFile = getOpenFileObj();
+        if (openFile != null) {
+            File largerContext = getLargerContext(openFile);
+            if (largerContext != null) {
+                return largerContext;
+            }
+        }
+
+        return getContextFromProjects();
+    }
+
+    public static File getContextFromProjects() {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            return getLargerContext(mainProject);       //null or non-null
+        }
+
+        Project[] openProjects = projects.getOpenProjects();
+        if ((openProjects != null) && (openProjects.length == 1)) {
+            return getLargerContext(openProjects[0]);
+        }
+
+        return null;
+    }
+
+    public static File getLargerContext(File file) {
+        return getLargerContext(file, null);
+    }
+
+    public static File getLargerContext(FileObject fileObj) {
+        return getLargerContext(null, fileObj);
+    }
+
+    public static File getLargerContext(File file, FileObject fileObj) {
+        if ((file == null) && (fileObj == null)) {
+            throw new IllegalArgumentException(
+                    "both File and FileObject are null");               //NOI18N
+        }
+
+        assert (file == null)
+               || (fileObj == null)
+               || FileUtil.toFileObject(file).equals(fileObj);
+
+        if (fileObj == null) {
+            fileObj = FileUtil.toFileObject(file);
+        } else if (file == null) {
+            file = FileUtil.toFile(fileObj);
+        }
+
+        if (!fileObj.isValid()) {
+            return null;
+        }
+
+        Project parentProject = FileOwnerQuery.getOwner(fileObj);
+        if (parentProject != null) {
+            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+            if (parentProjectFolder.equals(fileObj) && (file != null)) {
+                return file;
+            }
+            File folder = FileUtil.toFile(parentProjectFolder);
+            if (folder != null) {
+                return folder;
+            }
+        }
+
+        if (fileObj.isFolder()) {
+            return file;                        //whether it is null or non-null
+        } else {
+            fileObj = fileObj.getParent();
+            assert fileObj != null;      //every non-folder should have a parent
+            return FileUtil.toFile(fileObj);    //whether it is null or non-null
+        }
+    }
+
+    public static File getLargerContext(Project project) {
+        FileObject projectFolder = project.getProjectDirectory();
+        assert projectFolder != null;
+
+        return FileUtil.toFile(projectFolder);
+    }
+
+    private static FileObject getOpenFileObj() {
+        TopComponent activatedTopComponent = TopComponent.getRegistry()
+                                             .getActivated();
+        if (activatedTopComponent == null) {
+            return null;
+        }
+
+        DataObject dataObj = activatedTopComponent.getLookup()
+                             .lookup(DataObject.class);
+        if ((dataObj == null) || !dataObj.isValid()) {
+            return null;
+        }
+
+        return dataObj.getPrimaryFile();
+    }
+
 }
+
+
+
+ 

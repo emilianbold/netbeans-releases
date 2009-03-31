@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
@@ -90,7 +89,7 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
@@ -153,7 +152,7 @@ public final class GroovyElementHandler {
         }
 
         // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {

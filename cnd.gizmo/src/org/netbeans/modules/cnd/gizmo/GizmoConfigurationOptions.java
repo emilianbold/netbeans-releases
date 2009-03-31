@@ -57,7 +57,6 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -151,9 +150,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return areCollectorsTurnedOn;
     }
 
-    public List<DataCollector> getCollectors(DLightTool tool) {
-        List<DataCollector> collectors = tool.getCollectors();
-        List<DataCollector> result = new ArrayList<DataCollector>();
+    public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        List<DataCollector<?>> collectors = tool.getCollectors();
+        List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
         for (DataCollector collector : collectors) {
             if (collector.getName().equals(DLightCollectorString)) {
                 result.add(collector);
@@ -162,9 +161,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return result;
     }
 
-    public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
-        List<IndicatorDataProvider> idps = tool.getIndicatorDataProviders();
-        List<IndicatorDataProvider> result = new ArrayList<IndicatorDataProvider>();
+    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
+        List<IndicatorDataProvider<?>> idps = tool.getIndicatorDataProviders();
+        List<IndicatorDataProvider<?>> result = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : idps) {
             for (String idpStringName : DLightIndicatorDPStrings){
                 if (idp.getName().equals(idpStringName)) {
@@ -176,7 +175,8 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public boolean validateToolsRequiredUserInteraction() {
-        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-        return options.getUserInteractionRequiredActionsEnabled();
+//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
+//        return options.getUserInteractionRequiredActionsEnabled();
+        return false;
     }
 }

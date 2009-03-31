@@ -92,6 +92,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
 
         final JDialog dialog;
         final AtomicBoolean success = new AtomicBoolean(true);
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         if (parent instanceof Frame) {
             dialog = new JDialog((Frame)parent, title, true);           
@@ -106,11 +107,8 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         } else {
             Cancellable wrapper = new Cancellable() {
                 public boolean cancel() {
-                    boolean calncelled = cancellable.cancel();
-                    if (calncelled) {
-                        success.set(false);
-                    }
-                    return calncelled;
+                    cancelled.set(cancellable.cancel());
+                    return cancelled.get();
                 }
             };
             panel = new ModalMessageDlgCancellablePane(message, wrapper);
@@ -138,7 +136,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
                             // hide dialog and run action if successfully connected
                             dialog.setVisible(false);
                             dialog.dispose();
-                            if (postEDTTask != null) {
+                            if (postEDTTask != null && ! cancelled.get()) {
                                 postEDTTask.run();
                             }
                         }

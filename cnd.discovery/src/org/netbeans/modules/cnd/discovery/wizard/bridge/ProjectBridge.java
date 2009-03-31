@@ -90,7 +90,13 @@ public class ProjectBridge {
         baseFolder = File.separator+project.getProjectDirectory().getPath();
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        if (pdp != null) {
+            makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        }
+    }
+
+    public boolean isValid(){
+        return makeConfigurationDescriptor != null;
     }
     
     public ProjectBridge(String baseFolder) throws IOException{
@@ -111,6 +117,9 @@ public class ProjectBridge {
         return new Folder(makeConfigurationDescriptor, parent, name, name, true);
     }
     
+    public void addSourceRoot(String path){
+        makeConfigurationDescriptor.addSourceRootRaw(path);
+    }
     
     /**
      * Create new item. Path is converted to relative.

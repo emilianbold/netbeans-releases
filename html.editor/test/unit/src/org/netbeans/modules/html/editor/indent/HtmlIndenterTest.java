@@ -135,6 +135,26 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<html>\n    <body>\n\t<table>",
             "<html>\n    <body>\n        <table>", null);
+
+        // new line at the end used to cause NPE:
+        format(
+            "<a href=\"a\"><code>Validator</code></a>\n",
+            "<a href=\"a\"><code>Validator</code></a>\n", null);
+
+        // textarea is unformattable but within single line it should have no impact:
+        format(
+            "<p>\nA <a href=\"b\"><textarea>c</textarea></a>d\ne<textarea>f</textarea>g\nh\n</p>",
+            "<p>\n    A <a href=\"b\"><textarea>c</textarea></a>d\n    e<textarea>f</textarea>g\n    h\n</p>", null);
+
+        // unformattable content may contains other tags which should not be formatted:
+        format(
+            "<pre>\n       text\n          &quot;text2\n    <b>smth</b>\n</pre>",
+            "<pre>\n       text\n          &quot;text2\n    <b>smth</b>\n</pre>", null);
+
+        // unformattable content may contains other tags which should not be formatted:
+        format(
+            "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n  </pre>",
+            "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n</pre>", null);
     }
 
     public void testFormattingHTML() throws Exception {
@@ -228,6 +248,27 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "  <html\n     a=b\n       c=d>^",
             "  <html\n     a=b\n       c=d>\n      ^", null);
+
+        // #160646 - check that unneeded tags are eliminated but
+        // used to close tag with optional end:
+        insertNewline(
+            "  <p>\n  <table>\n  </table>^",
+            "  <p>\n  <table>\n  </table>\n  ^", null);
+
+        // #160651
+        insertNewline(
+            "<html>^<style>",
+            "<html>\n    ^<style>", null);
+
+        // #161105
+        insertNewline(
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>^</td>",
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>\n                    ^\n                </td>", null);
+        // test that table within p does not get eliminated and if it does it is handled properly;
+        // there was a problem that eliminated p would try to close p tag at the end
+        insertNewline(
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text^",
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text\n                        ^", null);
     }
 
 }

@@ -53,6 +53,12 @@ public interface Function {
     String getName();
     
     /**
+     *
+     * @return Scope name
+     */
+    String getScopeName();
+
+    /**
      * 
      * @return Function html name to display in tree/list view
      */

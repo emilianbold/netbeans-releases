@@ -47,7 +47,7 @@ import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 /**
  *
  * @author Vita Stejskal
- * @since 1.3
+ * @since 1.6
  */
 public final class IndexingManager {
 
@@ -104,10 +104,26 @@ public final class IndexingManager {
      * @param files The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
-     * @since 1.5
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
         RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
+    }
+
+    /**
+     * Schedules a new job for refreshing all indicies created by the given indexer.
+     * This method only works for <code>CustomIndexer</code>s. It is not possible to
+     * refresh indicies created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param indexerName The name of the indexer, which indicies should be refreshed
+     *
+     * @since 1.8
+     */
+    public void refreshAllIndicies(String indexerName) {
+        RepositoryUpdater.getDefault().addIndexingJob(indexerName);
     }
 
     // -----------------------------------------------------------------------
