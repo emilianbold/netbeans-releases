@@ -320,7 +320,7 @@ public final class CompletionSupport {
      *   even the methods with more parameters.
      */
     public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
-            boolean acceptMoreParameters) {
+            boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
         assert (methodList != null);
         if (parmTypeList == null) {
             return methodList;
@@ -328,7 +328,7 @@ public final class CompletionSupport {
 
         List<CsmFunction> ret = new ArrayList<CsmFunction>();
         int parmTypeCnt = parmTypeList.size();
-        int maxMatched = -1;
+        int maxMatched = acceptIfSameNumberParams ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         for (CsmFunction m : methodList) {
             // Use constructor conversion to allow to use it too for the constructors
             CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
@@ -490,7 +490,7 @@ public final class CompletionSupport {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.getType(cls, 0);
+                        type = CsmCompletion.getType(cls, 0, false, 0);
                     }
                 }
                 return type;

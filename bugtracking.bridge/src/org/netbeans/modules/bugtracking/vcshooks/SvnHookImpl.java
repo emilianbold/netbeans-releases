@@ -110,7 +110,7 @@ public class SvnHookImpl extends SvnHook {
             context = new SvnHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;
         }
-        return super.beforeCommit(context);
+        return null;
     }
 
     @Override
