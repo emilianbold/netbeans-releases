@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -60,7 +59,6 @@ import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
