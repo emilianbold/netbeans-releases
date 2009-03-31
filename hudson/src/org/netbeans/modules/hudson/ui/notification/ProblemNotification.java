@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.awt.Notification;
@@ -86,7 +87,15 @@ class ProblemNotification implements ActionListener {
                     new ShowBuildConsole(b).actionPerformed(e);
                 } else if (b.getMavenModules().isEmpty()) {
                     new ShowFailures(b).actionPerformed(e);
-                } // XXX for Maven moduleset, not obvious which module had failing builds
+                } else {
+                    for (HudsonMavenModuleBuild module : b.getMavenModules()) {
+                        switch (module.getColor()) {
+                        case yellow:
+                        case yellow_anime:
+                            new ShowFailures(module).actionPerformed(e);
+                        }
+                    }
+                }
                 break;
             }
         }
