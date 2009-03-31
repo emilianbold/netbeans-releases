@@ -207,6 +207,10 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         if (list.getModel().getSize() > 0) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    JList l = displayer.getList();
+                    if (l.getSelectedIndex() == -1) { // Issue 161447
+                        l.setSelectedIndex(l.getModel().getSize()-1);
+                    }
                     displayer.invoke();
                 }
             });
