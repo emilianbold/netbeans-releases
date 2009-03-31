@@ -17,6 +17,8 @@ import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -60,9 +62,14 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         
         public HeadersHighlighting(Document document) {
             this.document = document;
-            headersBag = new OffsetsBag(document);
             this.document.addDocumentListener(WeakListeners.document(this, this.document));
             this.document.putProperty(PROP_HIGLIGHT_HEADER_LAYER, this);
+            headersBag = new OffsetsBag(document);
+            headersBag.addHighlightsChangeListener(new HighlightsChangeListener() {
+                public void highlightChanged(HighlightsChangeEvent event) {
+                    fireHighlightsChange(event.getStartOffset(), event.getEndOffset());
+                }
+            });
             updateBags();
         }
 
@@ -115,9 +122,14 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
 
         public BlocksHighlighting(Document document) {
             this.document = document;
-            blocksBag = new OffsetsBag(document, true);            
             this.document.addDocumentListener(WeakListeners.document(this, this.document));
             this.document.putProperty(PROP_HIGLIGHT_BLOCKS_LAYER, this);
+            blocksBag = new OffsetsBag(document, true);
+            blocksBag.addHighlightsChangeListener(new HighlightsChangeListener() {
+                public void highlightChanged(HighlightsChangeEvent event) {
+                    fireHighlightsChange(event.getStartOffset(), event.getEndOffset());
+                }
+            });
             updateBags();
         }
 
