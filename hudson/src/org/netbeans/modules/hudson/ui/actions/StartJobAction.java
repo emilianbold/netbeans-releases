@@ -45,6 +45,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -54,16 +55,17 @@ import org.openide.util.actions.NodeAction;
  */
 public class StartJobAction extends NodeAction {
     
-    protected void performAction(Node[] nodes) {
-        for (Node node : nodes) {
-            HudsonJob job = node.getLookup().lookup(HudsonJob.class);
-            
-            if (null == job)
-                continue;
-            
-            // Start Hudson job
-            job.start();
-        }
+    protected void performAction(final Node[] nodes) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                for (Node node : nodes) {
+                    HudsonJob job = node.getLookup().lookup(HudsonJob.class);
+                    if (job != null) {
+                        job.start();
+                    }
+                }
+            }
+        });
     }
     
     protected boolean enable(Node[] nodes) {
@@ -81,7 +83,7 @@ public class StartJobAction extends NodeAction {
         return NbBundle.getMessage(StartJobAction.class, "LBL_StartJobAction"); // NOI18N
     }
     
-    protected boolean asynchronous() {
+    protected @Override boolean asynchronous() {
         return false;
     }
     

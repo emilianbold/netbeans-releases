@@ -181,39 +181,22 @@ class ExtPlainView extends PlainView {
     }
 
     private void underline(Graphics g, Segment s, int x, int p0, int y) {
-        int wid = g.getFontMetrics().charWidth(' '); //NOI18N
         char[] txt = s.array;
-        int txtOffset = s.offset;
-        int txtCount = s.count;
         int n = s.offset + s.count;
-        int tabCount = 0;
         int wsCount = 0;
         for (int i = s.offset; i < n; i++) {
-            if (txt[i] == '\t') { //NOI18N
-                x = (int) nextTabStop((float) x,
-                p0 + i - txtOffset);
-                tabCount++;
-            } else if (Character.isWhitespace(txt[i])) {
-                x += wid;
+            if (Character.isWhitespace(txt[i])) {
                 wsCount++;
             } else {
                 break;
             }
         }
-        int end = x + (wid * (txtCount - (wsCount + tabCount + 1)));
-        if (end > x) {
-            g.drawLine (x, y+1, end, y+1);
-        }
-    }
 
-    @Override
-    protected void damageLineRange(int line0, int line1, Shape a, Component host) {
-        super.damageLineRange(line0, line1, a, host);
-    }
-
-    @Override
-    protected void drawLine(int lineIndex, Graphics g, int x, int y) {
-        super.drawLine(lineIndex, g, x, y);
+        int lineLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0);
+        s.offset += wsCount;
+        s.count -= wsCount;
+        int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0 + wsCount);
+        g.drawLine(x + lineLen - textLen, y + 1, x + lineLen, y + 1);
     }
 
     @Override
@@ -292,11 +275,6 @@ class ExtPlainView extends PlainView {
     }
 
     @Override
-    public int getEndOffset() {
-        return super.getEndOffset();
-    }
-
-    @Override
     public float getPreferredSpan(int axis) {
         if (axis == Y_AXIS) {
             return super.getPreferredSpan(axis);
@@ -329,13 +307,12 @@ class ExtPlainView extends PlainView {
 
     @Override
     protected void updateMetrics() {
-	Component host = getContainer();
-	Font f = host.getFont();        
-	if (font != f) {
-	    // The font changed, we need to recalculate the longest line.
-	    calcLongestLineLength();
-	    //tabSize = getTabSize() * metrics.charWidth('m');
-	}
+        Component host = getContainer();
+        Font f = host.getFont();
+        if (font != f) {
+            // The font changed, we need to recalculate the longest line.
+            calcLongestLineLength();
+        }
     }
     
     /**

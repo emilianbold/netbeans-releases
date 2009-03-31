@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -161,9 +160,6 @@ import org.xml.sax.helpers.DefaultHandler;
     }
 
     boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
-        if (!releaseFileMatch(d)) {
-            return false;
-        }
         switch (platform) {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC:
                 for (String p : d.getPlatforms()) {
@@ -216,41 +212,6 @@ import org.xml.sax.helpers.DefaultHandler;
                 break;
         }
         return false;
-    }
-
-    /**
-     * Check a file for a file for a specified pattern. This is typically used to search /etc/release on
-     * Unix systems (many Unix' have an /etc/release* file). This lets us fine tune a toolchain for a
-     * specific version of a Unix distribution.
-     *
-     * This method was written specifically to ensure that /opt/SunStudioExpress is <b>only</b> used on
-     * OpenSolaris systems.
-     */
-    private boolean releaseFileMatch(ToolchainDescriptor d) {
-        String releaseFile = d.getReleaseFile();
-        String releasePattern = d.getReleasePattern();
-        String line;
-
-        if (releaseFile != null && releasePattern != null) {
-            File file = new File(releaseFile);
-            if (file.exists()) {
-                Pattern pattern = Pattern.compile(releasePattern);
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(releaseFile));
-
-                    while ((line = in.readLine()) != null) {
-                        if (pattern.matcher(line).find()) {
-                            return true;
-                        }
-                    }
-                    in.close();
-                } catch (Exception ex) {
-                    log.warning("Excetpiont reading releae file [" + releaseFile + "] for " + d.getName());
-                }
-            }
-            return false;
-        }
-        return true;
     }
 
     boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
@@ -561,17 +522,17 @@ import org.xml.sax.helpers.DefaultHandler;
 
                         element = doc.createElement("platforms"); // NOI18N
                         element.setAttribute("stringvalue", unsplit(descriptor.getPlatforms())); // NOI18N
-                        if (descriptor.getReleaseFile() != null) {
-                            element.setAttribute("release_file", descriptor.getReleaseFile()); // NOI18N
-                        }
-                        if (descriptor.getReleasePattern() != null) {
-                            element.setAttribute("release_pattern", descriptor.getReleasePattern()); // NOI18N
-                        }
                         root.appendChild(element);
 
                         if (descriptor.getDriveLetterPrefix() != null) {
                             element = doc.createElement("drive_letter_prefix"); // NOI18N
                             element.setAttribute("stringvalue", descriptor.getDriveLetterPrefix()); // NOI18N
+                            root.appendChild(element);
+                        }
+
+                        if (descriptor.getMakefileWriter() != null) {
+                            element = doc.createElement("makefile_writer"); // NOI18N
+                            element.setAttribute("class", descriptor.getMakefileWriter()); // NOI18N
                             root.appendChild(element);
                         }
 
@@ -1158,8 +1119,6 @@ import org.xml.sax.helpers.DefaultHandler;
         Map<String, String> default_locations;
         String family;
         String platforms;
-        String release_file;
-        String release_pattern;
         String driveLetterPrefix;
         String baseFolderKey;
         String baseFolderPattern;
@@ -1170,6 +1129,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String commandFolderSuffix;
         String commandFolderPathPattern;
         String qmakespec;
+        String makefileWriter;
         Compiler c = new Compiler();
         Compiler cpp = new Compiler();
         Compiler fortran = new Compiler();
@@ -1679,11 +1639,12 @@ import org.xml.sax.helpers.DefaultHandler;
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
-                v.release_file = getValue(attributes, "release_file"); // NOI18N
-                v.release_pattern = getValue(attributes, "release_pattern"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
+                return;
+            } else if (path.endsWith(".makefile_writer")) { // NOI18N
+                v.makefileWriter = getValue(attributes, "class"); // NOI18N
                 return;
             } else if (path.endsWith(".base_folder")) { // NOI18N
                 v.baseFolderKey = getValue(attributes, "regestry"); // NOI18N
@@ -2094,14 +2055,6 @@ import org.xml.sax.helpers.DefaultHandler;
             return v.toolChainDisplay;
         }
 
-        public String getReleaseFile() {
-            return v.release_file;
-        }
-
-        public String getReleasePattern() {
-            return v.release_pattern;
-        }
-
         public String[] getFamily() {
             if (v.family != null && v.family.length() > 0) {
                 return v.family.split(","); // NOI18N
@@ -2118,6 +2071,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
+        }
+
+        public String getMakefileWriter() {
+            return v.makefileWriter;
         }
 
         public CompilerDescriptor getC() {

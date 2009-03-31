@@ -394,6 +394,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public static void openEvaluator() {
         CodeEvaluator evaluator = getInstance();
         evaluator.open ();
+        evaluator.codePane.selectAll();
         evaluator.requestActive ();
     }
 
@@ -506,7 +507,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.isControlDown()) {
             e.consume();
-            evaluate();
+            if (debuggerRef.get() != null) {
+                evaluate();
+            }
+        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            e.consume();
+            close();
         }
     }
 
@@ -634,9 +640,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             //System.out.println("evaluate: '"+exp+"'");
             try {
                 JPDADebugger debugger = debuggerRef.get();
-                Variable var = debugger.evaluate(exp);
-                addResultToHistory(exp, var);
-                displayResult(var);
+                if (debugger != null) {
+                    Variable var = debugger.evaluate(exp);
+                    addResultToHistory(exp, var);
+                    displayResult(var);
+                }
             } catch (InvalidExpressionException ieex) {
                 String message = ieex.getLocalizedMessage();
                 Throwable t = ieex.getTargetException();

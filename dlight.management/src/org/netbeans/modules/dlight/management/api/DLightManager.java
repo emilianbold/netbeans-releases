@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import org.netbeans.modules.dlight.management.ui.spi.DetailsViewEmptyContentProvider;
+import java.awt.BorderLayout;
+import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import java.util.ArrayList;
@@ -45,6 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -52,9 +57,11 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightS
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
+import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
@@ -95,22 +102,38 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public DLightSession createNewSession(DLightTarget target, String configurationName) {
-        return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName));
+        return createNewSession(target, configurationName, null);
+    }
+
+    public DLightSession createNewSession(DLightTarget target, String configurationName, String sessionName) {
+        return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName), sessionName);
     }
 
     public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration) {
+        return createNewSession(target, configuration, null);
+    }
+
+    public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
         // TODO: For now just create new session every time we set a target...
-        DLightSession session = newSession(target, configuration);
+        DLightSession session = newSession(target, configuration, sessionName);
         setActiveSession(session);
         return session;
     }
 
     public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName));
+        return createSession(target, configurationName, null);
+    }
+
+    public DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName, sessionName));
     }
 
     public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration));
+        return createSession(target, configuration, null);
+    }
+
+    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration, sessionName));
     }
 
     public void closeSession(DLightSession session) {
@@ -218,8 +241,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
-        DLightSession session = new DLightSession();
+    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+        DLightSession session = new DLightSession(sessionName);
         //DLightSessionContext sessionContext = session.getSessionContext();
 //        try {
 //            DLightSessionContextAccessor.getDefault().put(sessionContext, "os", HostInfoUtils.getOS(target.getExecEnv()));
@@ -260,7 +283,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
          *
          */
 
-        Collection<? extends VisualizerProvider> allVisualizerFactories = Lookup.getDefault().lookupAll(VisualizerProvider.class);
         Collection<? extends DataStorage> activeDataStorages = activeSession.getStorages();
 
 //        for (VisualizerFactory vf : allVisualizerFactories) {
@@ -296,6 +318,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                     break;
                 }
             }
+            if (visualizer != null) {
+                break;
+            }
         }
         //there is one more changes to find VisualizerDataProvider without any storage attached
 
@@ -306,7 +331,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 //if it is DataProvider instance it had to be returned at the previous loop
                 //and if we are here it means no storage exists for this DataProvider
                 // no providers for this storage can be found nor created
-                log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID());
+                log.info("Unable to find storage to create Visualizer with ID == " + configuration.getID());
                 return null;
             } else {
                 // Found! Can craete visualizer with this id for this dataProvider
@@ -331,6 +356,41 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         activeSession.addVisualizer(visualizer);
 
         return visualizer;
+    }
+
+    private void openEmptyVisualizer(String toolName) {
+        DetailsViewEmptyContentProvider emptyContentProvider = Lookup.getDefault().lookup(DetailsViewEmptyContentProvider.class);
+        if (emptyContentProvider == null) {
+            emptyContentProvider = DefaultDetailsViewEmptyContentProvider.instance;
+        }
+        JComponent view = null;
+        boolean isFirstView = true;
+        if (Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class) == null){
+            return;
+        }
+        DLightTool tool = null;
+        List<DLightTool> tools = activeSession.getTools();
+        for (DLightTool t :tools){
+            if (toolName != null && toolName.equals(t.getName())){
+                tool = t;
+                break;
+            }
+        }
+        if (tool == null){
+            return;//nothing to show
+        }
+        VisualizerContainer container = Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class).getEmptyVisualizerContainer();
+        for (ExecutionContext context : activeSession.getExecutionContexts()) {
+            view = emptyContentProvider.getEmptyView(context.getDLightConfiguration(), tool, context.getTarget());
+            if (isFirstView){               
+                container.setContent(toolName, view);
+                isFirstView = false;
+            }else{
+                container.addContent(toolName, view);
+            }
+        }
+        container.showup();
+
     }
 
     private void notifySessionRemoved(DLightSession session) {
@@ -398,14 +458,37 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     public void mouseClickedOnIndicator(Indicator source) {
         List<VisualizerConfiguration> list = IndicatorAccessor.getDefault().getVisualizerConfigurations(source);
+        boolean found = false;
         if (list != null) {
             for (VisualizerConfiguration vc : list) {
                 if (openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc) != null) {
+                    found = true;
                     break;
                 }
 
             }
+        }
+        if (!found) {
+            openEmptyVisualizer(IndicatorAccessor.getDefault().getToolName(source));
+        }
+    }
+
+    private static final class DefaultDetailsViewEmptyContentProvider implements DetailsViewEmptyContentProvider {
+
+        private static final DefaultDetailsViewEmptyContentProvider instance = new DefaultDetailsViewEmptyContentProvider();
+        private final JPanel p;
+
+        DefaultDetailsViewEmptyContentProvider() {
+            p = new JPanel();
+            p.setLayout(new BorderLayout());
+            p.add(new JLabel("no data..."), BorderLayout.CENTER);
+
+        }
+
+        public JComponent getEmptyView(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToValidateWith) {
+            return p;
 
         }
     }
+
 }

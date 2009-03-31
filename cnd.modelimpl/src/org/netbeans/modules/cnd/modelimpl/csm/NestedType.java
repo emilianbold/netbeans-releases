@@ -49,12 +49,15 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
@@ -73,6 +76,18 @@ public class NestedType extends TypeImpl {
     public NestedType(CsmType parent, CsmType type) {
         super(type);
         this.parentType = parent;
+    }
+
+    // package-local - for facory only
+    NestedType(NestedType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+        super(type, pointerDepth, reference, arrayDepth, _const);
+        this.parentType = type.parentType;
+    }
+
+    // package-local - for facory only
+    NestedType(NestedType type, List<CsmType> instantiationParams) {
+        super(type, instantiationParams);
+        this.parentType = type.parentType;
     }
 
     @Override
@@ -102,7 +117,16 @@ public class NestedType extends TypeImpl {
             _setClassifier(classifier);
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
-            classifier = (CsmClassifier)Instantiation.create((CsmTemplate)classifier, this);
+            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            CsmObject obj;
+            if (ip instanceof InstantiationProviderImpl) {
+                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), parent);
+            } else {
+                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile());
+            }
+            if (CsmKindUtilities.isClassifier(obj)) {
+                classifier = (CsmClassifier) obj;
+            }
         }
         return classifier;
     }

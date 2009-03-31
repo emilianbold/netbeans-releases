@@ -63,6 +63,7 @@ import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -341,13 +342,12 @@ public class GsfFoldManager implements FoldManager {
             
             long startTime = System.currentTimeMillis();
 
-// XXX: parsingapi
-//            // Don't update folds, if there is an invalid result
-//            // It should be solved per lenguages, but then there has to be remembered
-//            // lates folds and transformed to the new possition.
-//            if (info.hasInvalidResults()) {
-//                return;
-//            }
+            // Don't update folds, if there is an invalid result
+            // It should be solved per lenguages, but then there has to be remembered
+            // lates folds and transformed to the new possition.
+            if (hasErrors(info)) {
+                return;
+            }
 
             TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
             boolean success = gsfFoldScan(fm, info, folds);
@@ -715,5 +715,14 @@ public class GsfFoldManager implements FoldManager {
             
             return 0;
         }
+    }
+
+    private static boolean hasErrors(ParserResult r) {
+        for(org.netbeans.modules.csl.api.Error e : r.getDiagnostics()) {
+            if (e.getSeverity() == Severity.ERROR) {
+                return true;
+            }
+        }
+        return false;
     }
 }

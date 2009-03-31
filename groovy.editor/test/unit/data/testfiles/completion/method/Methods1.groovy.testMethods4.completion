@@ -91,19 +91,15 @@ METHOD     withInputStream(Closure)                   Object
 METHOD     withReader(Closure)                        Object
 METHOD     withReader(String, Closure)                Object
 FIELD      authority                                  String
-FIELD      factory                                    URLStreamHandlerFactory
+FIELD      class                                      Class
+FIELD      content                                    Object
+FIELD      defaultPort                                int
 FIELD      file                                       String
-FIELD      handler                                    URLStreamHandler
-FIELD      handlers                                   Hashtable
-FIELD      hashCode                                   int
 FIELD      host                                       String
-FIELD      hostAddress                                InetAddress
 FIELD      path                                       String
 FIELD      port                                       int
 FIELD      protocol                                   String
-FIELD      protocolPathProp                           String
 FIELD      query                                      String
 FIELD      ref                                        String
-FIELD      serialVersionUID                           long
-FIELD      streamHandlerLock                          Object
+FIELD      uRLStreamHandlerFactory                    URLStreamHandlerFactory
 FIELD      userInfo                                   String

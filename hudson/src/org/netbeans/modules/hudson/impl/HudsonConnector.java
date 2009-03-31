@@ -67,7 +67,6 @@ import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -129,20 +128,17 @@ public class HudsonConnector {
     }
     
     public synchronized void startJob(final HudsonJob job) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
         handle.start();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
-                } catch (IOException e) {
-                    LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
-                } finally {
-                    handle.finish();
-                }
-            }
-        });
+        try {
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
+        } catch (IOException e) {
+            LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
+        } finally {
+            handle.finish();
+        }
+        instance.synchronize();
     }
 
     /**
@@ -311,6 +307,10 @@ public class HudsonConnector {
                             job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
                             job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals("module")) { // NOI18N
+                            Element e = (Element) d;
+                            job.addModule(Utilities.xpath("name", e), Utilities.xpath("displayName", e), // NOI18N
+                                    Color.valueOf(Utilities.xpath("color", e)), Utilities.xpath("url", e)); // NOI18N
                         }
                     }
                 }
@@ -350,7 +350,6 @@ public class HudsonConnector {
     }
     
     Document getDocument(String url) {
-        LOG.log(Level.FINER, "Loading: {0}", url);
         Document doc = null;
         
         try {
@@ -401,4 +400,5 @@ public class HudsonConnector {
         
         return doc;
     }
+
 }

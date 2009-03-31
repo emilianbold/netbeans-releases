@@ -41,8 +41,7 @@
 
 package org.netbeans.core.lookup;
 
-import org.netbeans.core.LoaderPoolNode;
-
+import org.netbeans.core.NbLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.InstanceCookie;
@@ -81,7 +80,7 @@ public class InstanceDataObjectModuleTest5 extends InstanceDataObjectModuleTestH
             
             ERR.log("After successful checks that there was a reload changes");
             
-            LoaderPoolNode.waitFinished();
+            NbLoaderPool.waitFinished();
             
             ERR.log("Waiting for pool node to update itself");
 

@@ -153,7 +153,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(EXPERIMENTAL);
+        jCheckAccess.setEnabled(false && EXPERIMENTAL);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboAccess.setEnabled(false && EXPERIMENTAL);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
@@ -640,10 +640,21 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                 // this item contains info about fields
                 @SuppressWarnings("unchecked")
                 MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
+                // getter
+                CsmMethod defaultGetter = null;
+                if (((AccessorInfo) row.get(2)).defaultAccessor != null) {
+                    defaultGetter = (CsmMethod) ((AccessorInfo) row.get(2)).defaultAccessor.getElementHandle();
+                }
+                // setter
+                CsmMethod defaultSetter = null;
+                if (((AccessorInfo) row.get(4)).defaultAccessor != null) {
+                    defaultSetter = (CsmMethod) ((AccessorInfo) row.get(4)).defaultAccessor.getElementHandle();
+                }
                 result.add(new EncapsulateFieldInfo(
                         mi.getElementHandle(),
                         "".equals(getterName)?null:getterName, // NOI18N
-                        "".equals(setterName)?null:setterName)); // NOI18N
+                        "".equals(setterName)?null:setterName,  // NOI18N
+                        defaultGetter, defaultSetter));
             }
         }
 

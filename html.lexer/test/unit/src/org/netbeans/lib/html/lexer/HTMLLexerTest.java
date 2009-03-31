@@ -36,10 +36,10 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.lib.html.lexer;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -50,10 +50,10 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
  * @author Tor Norbye
  */
 public class HTMLLexerTest extends NbTestCase {
-    
+
     public HTMLLexerTest(String testName) {
         super(testName);
-    }            
+    }
 
     @Override
     protected void setUp() throws java.lang.Exception {
@@ -65,16 +65,16 @@ public class HTMLLexerTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
                 HTMLTokenId.language());
     }
-    
+
     public void test146930() {
         TokenHierarchy th = TokenHierarchy.create("<<body>", HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
-        
+
         assertTrue(ts.moveNext());
         assertEquals("<", ts.token().text().toString());
         assertEquals(HTMLTokenId.TEXT, ts.token().id());
-        
+
         assertTrue(ts.moveNext());
         assertEquals("<", ts.token().text().toString());
         assertEquals(HTMLTokenId.TAG_OPEN_SYMBOL, ts.token().id());
@@ -82,11 +82,11 @@ public class HTMLLexerTest extends NbTestCase {
         assertTrue(ts.moveNext());
         assertEquals("body", ts.token().text().toString());
         assertEquals(HTMLTokenId.TAG_OPEN, ts.token().id());
-        
+
         assertTrue(ts.moveNext());
         assertEquals(">", ts.token().text().toString());
         assertEquals(HTMLTokenId.TAG_CLOSE_SYMBOL, ts.token().id());
-        
+
         assertFalse(ts.moveNext());
     }
 
@@ -95,5 +95,38 @@ public class HTMLLexerTest extends NbTestCase {
                 HTMLTokenId.language());
     }
 
-    
+    public void testEmptyTag() {
+        checkTokens("<div/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", "/>|TAG_CLOSE_SYMBOL");
+    }
+
+
+    private void checkTokens(String text, String... descriptions) {
+        TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+
+//        System.out.println(ts);
+        
+        ts.moveStart();
+        for(String descr : descriptions) {
+            //parse description
+            int slashIndex = descr.indexOf('|');
+            assert slashIndex >= 0;
+
+            String image = descr.substring(0, slashIndex);
+            String id = descr.substring(slashIndex + 1);
+
+            assertTrue(ts.moveNext());
+            Token t = ts.token();
+            assertNotNull(t);
+
+            if(image.length() > 0) {
+                assertEquals(image, t.text().toString());
+            }
+
+            if(id.length() > 0) {
+                assertEquals(id, t.id().name());
+            }
+        }
+    }
+
 }

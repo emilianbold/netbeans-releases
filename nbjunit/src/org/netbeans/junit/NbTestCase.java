@@ -425,6 +425,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     while ((c = bis.read()) != -1) {
                         bos.write(c);
                     }
+                    bos.flush();
+                    bos.close();
                 } finally {
                     os.close();
                 }

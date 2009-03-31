@@ -42,10 +42,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 import java.beans.PropertyChangeEvent;
 import javax.lang.model.element.ElementKind;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
-import groovy.lang.MetaProperty;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -111,7 +109,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -1037,67 +1034,21 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        LOG.log(Level.FINEST, "requestedClass is : {0}", declaringClass); // NOI18N
+        // If we are dealing with GStrings, the prefix is prefixed ;-)
+        // ... with the dollar sign $ See # 143295
+        int anchorShift = 0;
+        String fieldName = request.prefix;
 
-        List<FieldNode> fields = declaringClass.getFields();
-
-        for (FieldNode field : fields) {
-            LOG.log(Level.FINEST, "-------------------------------------------------------------------------"); // NOI18N
-            LOG.log(Level.FINEST, "Field found       : {0}", field.getName()); // NOI18N
-
-            String fieldTypeAsString = field.getType().getNameWithoutPackage();
-
-            if (request.isBehindDot()) {
-                Class clz = null;
-
-                try {
-                    clz = Class.forName(field.getOwner().getName());
-                } catch (ClassNotFoundException e) {
-                    LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-                // we keep on running here, since we might deal with a class
-                // defined in our very own file.
-                }
-
-                if (clz != null) {
-                    MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
-                    if (metaClz != null) {
-                        MetaProperty metaProp = metaClz.getMetaProperty(field.getName());
-
-                        if (metaProp != null) {
-                            LOG.log(Level.FINEST, "Type from MetaProperty: {0}", metaProp.getType()); // NOI18N
-                            fieldTypeAsString = metaProp.getType().getSimpleName();
-                        }
-                    }
-                }
-
-            }
-
-            // TODO: I take the freedom to filter this out: __timeStamp*
-            if (field.getName().startsWith("__timeStamp")) { // NOI18N
-                continue;
-            }
-
-            // If we are dealing with GStrings, the prefix is prefixed ;-)
-            // ... with the dollar sign $ See # 143295
-
-            int anchorShift = 0;
-            String fieldName = request.prefix;
-
-            if(request.prefix.startsWith("$")) {
-                fieldName = request.prefix.substring(1);
-                anchorShift = 1;
-            }
-
-            if (field.getName().startsWith(fieldName)) {
-                proposals.add(new CompletionItem.FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request.info, fieldTypeAsString));
-            }
+        if (request.prefix.startsWith("$")) {
+            fieldName = request.prefix.substring(1);
+            anchorShift = 1;
         }
 
-        // FIXME just a dirty prototype
-//        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
-//                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor, true, request.info.getFileObject());
-//        proposals.addAll(dynamic.values());
+        Map<FieldSignature, ? extends CompletionItem> result = CompleteElementHandler
+                .forCompilationInfo(request.info)
+                    .getFields(getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
+
+        proposals.addAll(result.values());
 
         return true;
     }
@@ -1869,6 +1820,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
 
+        Set<String> addedTypes = new HashSet<String>();
         // get the JavaSource for our file.
 
         final JavaSource javaSource = getJavaSourceFromRequest(request);
@@ -1889,6 +1841,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
                 for (TypeHolder singleType : stringTypelist) {
+                    addedTypes.add(singleType.getName());
                     addToProposalUsingFilter(proposals, request, singleType, onlyInterfaces);
                 }
             }
@@ -1913,7 +1866,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             GroovyIndex index = null;
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
-                index = GroovyIndex.get(GsfUtilities.getRoots(fo,
+                index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE), null, null));
             }
 
@@ -1929,6 +1882,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
                     List<TypeHolder> typelist = new ArrayList<TypeHolder>();
 
+                    // FIXME all classes in the index - this is performance defect
                     for (IndexedClass indexedClass : classes) {
                         LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getName());
 
@@ -1942,12 +1896,15 @@ public class CompletionHandler implements CodeCompletionHandler {
                             ek = ElementKind.INTERFACE;
                         }
 
-                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getName(), ek));
+                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getFqn(), ek));
                     }
 
                     for (TypeHolder type : typelist) {
-                        // now finally add to proposals
-                        addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
+                        if (!addedTypes.contains(type.getName())) {
+                            // now finally add to proposals
+                            addedTypes.add(type.getName());
+                            addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
+                        }
                     }
 
                 }
@@ -1976,8 +1933,10 @@ public class CompletionHandler implements CodeCompletionHandler {
                         ek = ElementKind.CLASS;
                     }
 
-
-                    addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
+                    if (!addedTypes.contains(importNode.getClassName())) {
+                        addedTypes.add(importNode.getClassName());
+                        addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
+                    }
                 }
             }
 
@@ -2020,15 +1979,21 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             for (TypeHolder element : typeList) {
                 // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
-                addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
+                if (!addedTypes.contains(element.getName())) {
+                    addedTypes.add(element.getName());
+                    addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
+                }
             }
         }
 
         // Adding two single classes per hand
 
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
-
+        if (!addedTypes.contains("java.math.BigDecimal")) {
+            addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
+        }
+        if (!addedTypes.contains("java.math.BigInteger")) {
+            addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
+        }
         return true;
     }
 
@@ -2052,7 +2017,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             // LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
             proposals.add(new CompletionItem.TypeItem(typeName, anchor, type.getKind()));
         }
-
 
         return;
     }

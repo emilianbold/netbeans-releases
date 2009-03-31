@@ -284,17 +284,25 @@ public class HudsonInstanceNode extends AbstractNode {
                 }
                 public JComponent[] getMenuPresenters() {
                     removeAll();
-                    String selectedView = instance.prefs().get(SELECTED_VIEW, HudsonView.ALL_VIEW);
+                    String selectedView = instance.prefs().get(SELECTED_VIEW, null);
+                    JRadioButtonMenuItem item = new JRadioButtonMenuItem("All"); // XXX I18N
+                    item.setSelected(selectedView == null);
+                    item.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            instance.prefs().remove(SELECTED_VIEW);
+                        }
+                    });
+                    add(item);
+                    addSeparator();
                     for (final HudsonView view : instance.getViews()) {
-                        JRadioButtonMenuItem item = new JRadioButtonMenuItem(view.getName());
+                        if (view.getName().equals(HudsonView.ALL_VIEW)) {
+                            continue;
+                        }
+                        item = new JRadioButtonMenuItem(view.getName());
                         item.setSelected(view.getName().equals(selectedView));
                         item.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                if (view.getName().equals(HudsonView.ALL_VIEW)) {
-                                    instance.prefs().remove(SELECTED_VIEW);
-                                } else {
-                                    instance.prefs().put(SELECTED_VIEW, view.getName());
-                                }
+                                instance.prefs().put(SELECTED_VIEW, view.getName());
                             }
                         });
                         add(item);

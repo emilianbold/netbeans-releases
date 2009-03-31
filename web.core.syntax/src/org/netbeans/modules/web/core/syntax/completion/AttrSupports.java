@@ -88,6 +88,23 @@ public class AttrSupports {
         }
         
     }
+
+    public static class BodyContentSupport extends AttributeValueSupport.Default {
+
+        public BodyContentSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
+        }
+
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
+            list.add("scriptless");    // NOI18N
+            list.add("tagdependent");           // NOI18N
+            list.add("empty");        // NOI18N
+            return list;
+        }
+
+    }
     
     public static class RootVersionSupport extends AttributeValueSupport.Default {
         

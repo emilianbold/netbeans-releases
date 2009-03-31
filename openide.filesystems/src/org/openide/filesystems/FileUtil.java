@@ -1825,7 +1825,8 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                // #160507 - silently ignore exception (e.g. permission denied)
+                // #160507 - ignore exception (e.g. permission denied)
+                LOG.log(Level.FINE, null, ioe);
             }
 
             if (b == null) {

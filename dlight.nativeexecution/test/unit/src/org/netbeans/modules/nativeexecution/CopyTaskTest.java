@@ -80,9 +80,9 @@ public class CopyTaskTest {
      */
     @Test
     public void testCopyTo() throws InterruptedException {
-        System.out.println("copyTo");
-        String srcFileName = "/tmp/src";
-        String dstFileName = "/tmp/trg_x";
+        System.out.println("copyTo"); // NOI18N
+        String srcFileName = "/tmp/src"; // NOI18N
+        String dstFileName = "/tmp/trg_x"; // NOI18N
 
         CharArrayWriter err = new CharArrayWriter();
         Future<Integer> fresult = CommonTasksSupport.uploadFile(
@@ -91,7 +91,7 @@ public class CopyTaskTest {
                 dstFileName, 0777, err);
 
         if (fresult == null) {
-            System.out.println("Error: " + err.toString());
+            System.out.println("Error: " + err.toString()); // NOI18N
         }
 
         int result = -1;
@@ -101,10 +101,10 @@ public class CopyTaskTest {
             Exceptions.printStackTrace(ex);
         }
 
-        System.out.println("Done with status " + result);
+        System.out.println("Done with status " + result); // NOI18N
 
         if (result != 0) {
-            System.out.println("Error: " + err.toString());
+            System.out.println("Error: " + err.toString()); // NOI18N
         }
 
 

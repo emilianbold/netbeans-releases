@@ -44,7 +44,6 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position.Bias;
@@ -105,12 +104,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     
     public static WhereUsedElement create(CompilationInfo compiler, TreePath tree) {
         CompilationUnitTree unit = tree.getCompilationUnit();
-        CharSequence content = null;
-        try {
-            content = unit.getSourceFile().getCharContent(true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        CharSequence content = compiler.getSnapshot().getText();
         SourcePositions sp = compiler.getTrees().getSourcePositions();
         Tree t= tree.getLeaf();
         int start;
@@ -191,13 +185,15 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         long line = lm.getLineNumber(start);
         long endLine = lm.getLineNumber(end);
         long sta = lm.getStartPosition(line);
-        long en = lm.getStartPosition(endLine+1)-1;
+        int eof = content.length();
+        long lastLine = lm.getLineNumber(eof);
+        long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
-        sb.append(content.subSequence((int)start,(int)end));
+        sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
@@ -241,25 +237,20 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     }
     
     public static WhereUsedElement create(int start, int end, CompilationInfo compiler) {
-        CompilationUnitTree unit = compiler.getCompilationUnit();
-        CharSequence content = null;
-        try {
-            content = unit.getSourceFile().getCharContent(true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        SourcePositions sp = compiler.getTrees().getSourcePositions();
+        CharSequence content = compiler.getSnapshot().getText();
         LineMap lm = compiler.getCompilationUnit().getLineMap();
         long line = lm.getLineNumber(start);
         long endLine = lm.getLineNumber(end);
         long sta = lm.getStartPosition(line);
-        long en = lm.getStartPosition(endLine+1)-1;
+        int eof = content.length();
+        long lastLine = lm.getLineNumber(eof);
+        long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
-        sb.append(content.subSequence((int)start,(int)end));
+        sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
