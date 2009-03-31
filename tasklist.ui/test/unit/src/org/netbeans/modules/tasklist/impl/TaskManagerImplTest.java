@@ -90,7 +90,9 @@ public class TaskManagerImplTest extends NbTestCase {
     public void testProviderCanStartImmediately() throws Exception {
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {
             public void setScope(TaskScanningScope scope, Callback callback) {
+                callback.started();
                 callback.setTasks(file1, Collections.singletonList(Task.create(file1, "unknown", "x", 2)));
+                callback.finished();
             }
         };
         
@@ -133,8 +135,10 @@ public class TaskManagerImplTest extends NbTestCase {
         final Callback[] cb = new Callback[1];
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {
             public void setScope(TaskScanningScope scope, Callback callback) {
-                callback.setTasks(file1, Collections.singletonList(Task.create(file1, "unknown", "x", 2)));
                 cb[0] = callback;
+                callback.started();
+                callback.setTasks(file1, Collections.singletonList(Task.create(file1, "unknown", "x", 2)));
+                callback.finished();
             }
         };
         
@@ -170,8 +174,10 @@ public class TaskManagerImplTest extends NbTestCase {
         impl._waitFinished();
         
         assertEquals(1, impl.getTasks().getTasks().size());
-        
+
+        cb[0].started();
         cb[0].setTasks(file1, Collections.<Task>emptyList());
+        cb[0].finished();
         
         assertTrue(impl.getTasks().getTasks().isEmpty());
     }

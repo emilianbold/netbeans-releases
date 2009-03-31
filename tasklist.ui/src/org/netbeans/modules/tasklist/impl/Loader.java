@@ -42,6 +42,12 @@ package org.netbeans.modules.tasklist.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
@@ -50,11 +56,11 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 
 /**
- *
- * @author sa
+ * Load cached tasks for given scope and given filter.
+ * 
+ * @author S. Aubrecht
  */
 public class Loader implements Runnable, Cancellable {
     
@@ -70,41 +76,27 @@ public class Loader implements Runnable, Cancellable {
     }
 
     public void run() {
-        FileObject[] roots = scope.getLookup().lookup(FileObject[].class);
-        if( null == roots || roots.length == 0 )
-            return;
-        ArrayList<Task> loadedTasks = new ArrayList<Task>(100);
+        TaskManagerImpl.getInstance().setLoadingStatus(this, true);
         try {
-            QuerySupport qs = QuerySupport.forRoots("TaskListIndexer", 1, roots);
-            TaskManagerImpl tm = TaskManagerImpl.getInstance();
-            for( FileTaskScanner scanner : ScannerList.getFileScannerList().getScanners() ) {
-                if( cancelled )
-                    return;
-                if( !filter.isEnabled(scanner) )
-                    continue;
-
-                String scannerId = ScannerDescriptor.getType( scanner );
-                Collection<? extends IndexResult> cache = qs.query("scanner", scannerId, QuerySupport.Kind.EXACT, "task");
-                for( IndexResult ir : cache ) {
+            Collection<? extends Project> projectsInScope = scope.getLookup().lookupAll(Project.class);
+            if( !projectsInScope.isEmpty() ) {
+                LinkedList<FileObject> roots = new LinkedList<FileObject>();
+                for( Project p : projectsInScope ) {
                     if( cancelled )
                         return;
-                    FileObject fo = ir.getFile();
-                    loadedTasks.clear();
-                    String[] tasks = ir.getValues("task");
-                    for( String encodedTask : tasks ) {
-                        if( cancelled )
-                            return;
-
-                        Task t = TaskIndexer.decode(fo, encodedTask);
-                        loadedTasks.add(t);
-                    }
-                    if( cancelled )
-                        return;
-                    taskList.update(scanner, fo, loadedTasks, filter);
+                    roots.addAll( QuerySupport.findRoots(p, null, null, null) );
+                }
+                loadTasks( roots.toArray( new FileObject[roots.size()] ), null );
+            } else {
+                Iterator<FileObject> it = scope.iterator();
+                while( it.hasNext() && !cancelled ) {
+                    FileObject fo = it.next();
+                    List<FileObject> roots = new ArrayList<FileObject>( QuerySupport.findRoots(fo, null, null, null) );
+                    loadTasks( roots.toArray( new FileObject[roots.size()] ), fo );
                 }
             }
-        } catch( IOException ex ) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            TaskManagerImpl.getInstance().setLoadingStatus(this, false);
         }
     }
 
@@ -113,4 +105,52 @@ public class Loader implements Runnable, Cancellable {
         return true;
     }
 
+    private void loadTasks( FileObject[] roots, FileObject resource ) {
+        ArrayList<Task> loadedTasks = null;
+        try {
+            QuerySupport qs = QuerySupport.forRoots(TaskIndexerFactory.INDEXER_NAME,
+                    TaskIndexerFactory.INDEXER_VERSION, roots);
+
+            for( FileTaskScanner scanner : ScannerList.getFileScannerList().getScanners() ) {
+
+                if( cancelled )
+                    return;
+
+                if( !filter.isEnabled(scanner) )
+                    continue;
+
+                String scannerId = ScannerDescriptor.getType( scanner );
+                Collection<? extends IndexResult> cache = qs.query(TaskIndexer.KEY_SCANNER, scannerId, QuerySupport.Kind.EXACT, TaskIndexer.KEY_TASK);
+                for( IndexResult ir : cache ) {
+                    if( cancelled )
+                        return;
+                    FileObject fo = ir.getFile();
+                    if( null == fo )
+                        continue;
+                    if( null != resource && !resource.equals(ir.getFile()) )
+                        continue;
+                    if( null != loadedTasks )
+                        loadedTasks.clear();
+                    String[] tasks = ir.getValues(TaskIndexer.KEY_TASK);
+                    for( String encodedTask : tasks ) {
+                        if( cancelled )
+                            return;
+
+                        Task t = TaskIndexer.decode(fo, encodedTask);
+                        if( null == loadedTasks ) {
+                            loadedTasks = new ArrayList<Task>(1000);
+                        }
+                        loadedTasks.add(t);
+                    }
+                    if( cancelled )
+                        return;
+                    if( null != loadedTasks && !loadedTasks.isEmpty() )
+                        taskList.update(scanner, fo, loadedTasks, filter);
+                }
+            }
+        } catch( IOException ioE ) {
+            Logger.getLogger(TaskIndexer.class.getName()).log(Level.INFO,
+                    "Error while loading tasks from cache", ioE);
+        }
+    }
 }

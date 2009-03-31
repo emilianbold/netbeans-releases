@@ -50,22 +50,24 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author sa
+ * @author S. Aubrecht
  */
 public class TaskIndexerFactory extends CustomIndexerFactory {
 
+    static final String INDEXER_NAME = "TaskListIndexer"; //NOI18N
+    static final int INDEXER_VERSION = 1;
+
     public TaskIndexerFactory() {
-        System.out.println("factory created");
     }
 
     @Override
     public String getIndexerName() {
-        return "TaskListIndexer";
+        return INDEXER_NAME;
     }
 
     @Override
     public int getIndexVersion() {
-        return 1;
+        return INDEXER_VERSION;
     }
 
     @Override
@@ -78,13 +80,13 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : deleted ) {
-                System.out.println("deleted: " + idx.getURL().toString());
                 is.removeDocuments(idx);
-                //TODO remove files from task list
             }
         } catch( IOException ex ) {
             Exceptions.printStackTrace(ex);
         }
+        TaskManagerImpl tm = TaskManagerImpl.getInstance();
+        tm.getTasks().clearDeletedFiles();
     }
 
     @Override
@@ -92,10 +94,7 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : dirty ) {
-                System.out.println("dirty: " + idx.getURL().toString());
                 is.markDirtyDocuments(idx);
-
-                //TODO remove files from task list
             }
         } catch( IOException ex ) {
             Exceptions.printStackTrace(ex);
@@ -106,5 +105,4 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
     public boolean supportsEmbeddedIndexers() {
         return true;
     }
-
 }

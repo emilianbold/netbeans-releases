@@ -42,27 +42,33 @@ package org.netbeans.modules.tasklist.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
+ * Called from Indexing API framework. Simply asks all registered and active
+ * FileTaskProviders to scan files provided by Indexing framework.
  *
- * @author sa
+ * @author S. Aubrecht
  */
 public class TaskIndexer extends CustomIndexer {
 
     private final TaskList taskList;
+    private final static Logger LOG = Logger.getLogger(TaskIndexer.class.getName());
+
+    static final String KEY_SCANNER = "scanner"; //NOI18N
+    static final String KEY_TASK = "task"; //NOI18N
 
     public TaskIndexer( TaskList taskList ) {
         this.taskList = taskList;
@@ -70,27 +76,29 @@ public class TaskIndexer extends CustomIndexer {
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
+        TaskManagerImpl tm = TaskManagerImpl.getInstance();
+        TaskFilter filter = tm.getFilter();
+        TaskScanningScope scope = tm.getScope();
+        ArrayList<FileTaskScanner> scanners = null;
         try {
-            //TODO create lazily
-            TaskManagerImpl tm = TaskManagerImpl.getInstance();
-            TaskFilter filter = tm.getFilter();
-            TaskScanningScope scope = tm.getScope();
-            ArrayList<FileTaskScanner> scanners = new ArrayList<FileTaskScanner>( 20 );
-            for( FileTaskScanner s : tm.getFileScanners() ) {
-                if( filter.isEnabled(s) ) {
-                    s.notifyPrepare();
-                    scanners.add(s);
-                }
-            }
             IndexingSupport is = IndexingSupport.getInstance(context);
-            System.out.println("---- Context: " + context.getRoot());
             for( Indexable idx : files ) {
-                System.out.println("Indexing: " + idx.getRelativePath());
-                ProxyFileObject fo = null;
+                if( null == scanners ) {
+                    scanners = new ArrayList<FileTaskScanner>( 20 );
+                    for( FileTaskScanner s : tm.getFileScanners() ) {
+                        if( filter.isEnabled(s) ) {
+                            s.notifyPrepare();
+                            scanners.add(s);
+                        }
+                    }
+                }
+                FileObject fo = context.getRoot().getFileObject(idx.getRelativePath());
+                if( null == fo ) {
+                    LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), context.getRoot()});
+                    continue;
+                }
                 IndexDocument doc = null;
                 for( FileTaskScanner scanner : scanners ) {
-                    if( null == fo )
-                        fo = new ProxyFileObject(context.getRoot(), idx);
                     List<? extends Task> tasks = scanner.scan(fo);
                     if( null == tasks || tasks.isEmpty() )
                         continue;
@@ -99,18 +107,21 @@ public class TaskIndexer extends CustomIndexer {
                     if( null == doc ) {
                         doc = is.createDocument(idx);
                         is.addDocument(doc);
-                        doc.addPair("scanner", ScannerDescriptor.getType(scanner), true, true);
+                        doc.addPair(KEY_SCANNER, ScannerDescriptor.getType(scanner), true, true);
                     }
                     for( Task t : tasks ) {
-                        doc.addPair("task", encode(t), false, true);
+                        doc.addPair(KEY_TASK, encode(t), false, true);
                     }
                 }
             }
-            for( FileTaskScanner s : scanners ) {
-                s.notifyFinish();
+        } catch( IOException ioE ) {
+            LOG.log(Level.INFO, "Error while scanning file for tasks.", ioE);
+        } finally {
+            if( null != scanners ) {
+                for( FileTaskScanner s : scanners ) {
+                    s.notifyFinish();
+                }
             }
-        } catch( IOException ex ) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
