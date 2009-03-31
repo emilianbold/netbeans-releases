@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -186,7 +187,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component out = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
+            out.setText(execEnv.isLocal() ? "localhost" : //NOI18N
+                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
             if (index == getDefaultIndex()) {
                 out.setFont(out.getFont().deriveFont(Font.BOLD));
             }

@@ -161,7 +161,9 @@ public class BugtrackingOwnerSupport {
             return repo;
         }
 
-        repo = askUserToSpecifyRepository(fileObject, issueId);
+        Repository suggestedRepository = FileToRepoMappingStorage.getInstance()
+                                         .getLooselyAssociatedRepository(context);
+        repo = askUserToSpecifyRepository(fileObject, issueId, suggestedRepository);
         if (repo != null) {
             fileToRepo.put(context, repo);
             storeRepositoryMappingToPrefs(context, repo);
@@ -200,11 +202,12 @@ public class BugtrackingOwnerSupport {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(root, repository);
     }
 
-    private Repository askUserToSpecifyRepository(FileObject file, String issueId) {
+    private Repository askUserToSpecifyRepository(FileObject file, String issueId,
+                                                  Repository suggestedRepo) {
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 
-        final RepositorySelectorPanel selectorPanel = new RepositorySelectorPanel(repos, connectors);
+        final RepositorySelectorPanel selectorPanel = new RepositorySelectorPanel(repos, connectors, suggestedRepo);
 
         final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
         final String selectButtonLabel = getMessage("CTL_Select");            //NOI18N

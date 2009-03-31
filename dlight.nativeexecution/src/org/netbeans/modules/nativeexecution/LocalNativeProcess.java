@@ -49,7 +49,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.PathConverter;
+import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
@@ -59,7 +59,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     private final static String shell;
     private final static boolean isWindows;
     private final static boolean isMacOS;
-    private final static PathConverter pathConverter;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -78,7 +77,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         isWindows = Utilities.isWindows();
         isMacOS = Utilities.isMac();
-        pathConverter = new PathConverter();
     }
 
     // TODO: For now cygwin is the ONLY tested environment on Windows!
@@ -143,7 +141,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                                 unbufferPath + "/" + unbufferLib; // NOI18N
                         
                         if (isWindows) {
-                            ldPreload = pathConverter.normalize(ldPreload);
+                            ldPreload = WindowsSupport.getInstance().normalizePath(ldPreload);
                         }
                     } else {
                         ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
@@ -157,7 +155,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                     } else {
                         String ldLibPath = env.get(ldLibraryPathEnv);
                         if (isWindows) {
-                            ldLibPath = pathConverter.normalizeAll(ldLibPath);
+                            ldLibPath = WindowsSupport.getInstance().normalizeAllPaths(ldLibPath);
                         }
                         ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
                                 unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
@@ -197,7 +195,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             String dir = wdir.toString();
             
             if (isWindows) {
-                dir = pathConverter.normalize(dir);
+                dir = WindowsSupport.getInstance().normalizePath(dir);
             }
             
             processInput.write(("cd \"" + dir + "\"\n").getBytes()); // NOI18N
