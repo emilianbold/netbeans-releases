@@ -74,8 +74,6 @@ import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -272,6 +270,10 @@ public class BugtrackingUtil {
             }
         }
 
+        return getContextFromProjects();
+    }
+
+    public static File getContextFromProjects() {
         final OpenProjects projects = OpenProjects.getDefault();
 
         Project mainProject = projects.getMainProject();
@@ -315,13 +317,6 @@ public class BugtrackingUtil {
             return null;
         }
 
-        if (file != null) {
-            File context = getVersioningSystemContext(file);
-            if (context != null) {
-                return context;
-            }
-        }
-
         Project parentProject = FileOwnerQuery.getOwner(fileObj);
         if (parentProject != null) {
             FileObject parentProjectFolder = parentProject.getProjectDirectory();
@@ -347,29 +342,7 @@ public class BugtrackingUtil {
         FileObject projectFolder = project.getProjectDirectory();
         assert projectFolder != null;
 
-        File file = FileUtil.toFile(projectFolder);
-        if (file != null) {
-            return getVersioningSystemContext(file);
-        } else {
-            assert false;
-            return null;
-        }
-    }
-
-    private static File getVersioningSystemContext(File file) {
-        VersioningSystem owner = VersioningSupport.getOwner(file);
-        if (owner == null) {
-            return null;
-        }
-
-        //XXX: should be the nearest managed ancestor (rather than topmost)
-        File topmostManagedAncestor = owner.getTopmostManagedAncestor(file);
-        if (topmostManagedAncestor != null) {
-            return topmostManagedAncestor;
-        } else {
-            assert false;       //this should not happen
-            return null;
-        }
+        return FileUtil.toFile(projectFolder);
     }
 
     private static FileObject getOpenFileObj() {

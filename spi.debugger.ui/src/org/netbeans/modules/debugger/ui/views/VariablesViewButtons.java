@@ -68,7 +68,7 @@ public class VariablesViewButtons {
     public static JToggleButton createShowWatchesButton() {
         JToggleButton button = createToggleButton(
                 SHOW_WATCHES,
-                "org/netbeans/modules/debugger/resources/watchesView/watch_16.png",
+                "org/netbeans/modules/debugger/resources/localsView/show_watches_16.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Watches")
             );
         button.addActionListener(new ShowWatchesActionListener(button));
@@ -78,7 +78,7 @@ public class VariablesViewButtons {
     public static JToggleButton createShowResultButton() {
         JToggleButton button = createToggleButton(
                 SHOW_EVALUTOR_RESULT,
-                "org/netbeans/modules/debugger/resources/watchesView/Watch.gif",
+                "org/netbeans/modules/debugger/resources/localsView/show_evaluator_result_16.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Result")
             );
         button.addActionListener(new ShowResultActionListener(button));
@@ -87,7 +87,7 @@ public class VariablesViewButtons {
 
     public static JButton createNewWatchButton() {
         JButton button = createButton(
-                "org/netbeans/modules/debugger/resources/watchesView/Field.gif",
+                "org/netbeans/modules/debugger/resources/watchesView/create_new_watch_16.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Create_New_Watch")
             );
         button.addActionListener(new ActionListener() {
