@@ -60,7 +60,6 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HTMLKit;
 //import org.netbeans.modules.gsf.api.Error;
 //import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel.UpdateState;
 //import org.netbeans.modules.gsf.api.Severity;
