@@ -81,4 +81,9 @@ public interface HudsonJobBuild {
      */
     Collection<? extends HudsonMavenModuleBuild> getMavenModules();
 
+    /**
+     * Display name comprised of job display name and build number.
+     */
+    String getDisplayName();
+
 }
