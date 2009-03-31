@@ -57,7 +57,12 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Handle;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
@@ -88,6 +93,7 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
         add(view);
         setName(preferredID());
         setDisplayName(NbBundle.getMessage(ServicesTab.class, "LBL_Services"));
+        setIcon(ImageUtilities.loadImage("org/netbeans/core/ide/resources/services.gif", true));
     }
 
     private static final String ID = "services"; // NOI18N
@@ -141,15 +147,7 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
     private static class ServicesNode extends AbstractNode {
 
         ServicesNode() {
-            super(Children.create(new ChildFactory<Node>() {
-                protected @Override Node createNodeForKey(Node key) {
-                    return key;
-                }
-                protected boolean createKeys(List<Node> toPopulate) {
-                    toPopulate.addAll(Lookups.forPath("UI/Runtime").lookupAll(Node.class)); // NOI18N
-                    return true;
-                }
-            }, true));
+            super(Children.create(new ServicesChildren(), true));
         }
 
         public @Override PasteType getDropType(Transferable t, int action, int index) {
@@ -166,6 +164,28 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
 
         public @Override Action[] getActions(boolean context) {
             return new Action[0];
+        }
+
+        private static class ServicesChildren extends ChildFactory<Node> implements LookupListener {
+
+            private final Lookup.Result<Node> nodes = Lookups.forPath("UI/Runtime").lookupResult(Node.class);
+            ServicesChildren() {
+                nodes.addLookupListener(WeakListeners.create(LookupListener.class, this, nodes));
+            }
+
+            protected @Override Node createNodeForKey(Node key) {
+                return key;
+            }
+
+            protected boolean createKeys(List<Node> toPopulate) {
+                toPopulate.addAll(nodes.allInstances()); // NOI18N
+                return true;
+            }
+
+            public void resultChanged(LookupEvent ev) {
+                refresh(false);
+            }
+
         }
 
     }
