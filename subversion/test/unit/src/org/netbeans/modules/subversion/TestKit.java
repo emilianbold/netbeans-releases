@@ -37,6 +37,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -140,7 +141,7 @@ public class TestKit {
         String url = TestUtilities.formatFileURL(repoDir);
         SVNUrl repoUrl = new SVNUrl(url);
         repoUrl = repoUrl.appendPath(folder);
-        client.mkdir(repoUrl, "creating folder " + folder);
+        client.mkdir(repoUrl, true, "creating folder " + folder);
     }
 
     public static void commit(File folder) throws SVNClientException {
@@ -185,6 +186,10 @@ public class TestKit {
 
     public static ISVNStatus getSVNStatus(File file) throws SVNClientException {            
         return getClient().getSingleStatus(file);        
+    }
+
+    public static ISVNInfo getSVNInfo(String url) throws SVNClientException, MalformedURLException {
+        return getClient().getInfo(new SVNUrl(url));
     }
 
     

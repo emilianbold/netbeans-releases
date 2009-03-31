@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
@@ -72,6 +73,8 @@ import org.openide.util.Exceptions;
  * @author   Martin Entlicher
  */
 public class VariablesFormatterFilter extends VariablesFilterAdapter {
+
+    static Map<Object, String> FORMATTED_CHILDREN_VARS = new WeakHashMap<Object, String>();
 
     private JPDADebugger debugger;
 
@@ -143,7 +146,16 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     Object[] ch = new Object[chvs.size()];
                     int i = 0;
                     for (String name : chvs.keySet()) {
-                        ch[i++] = new ChildrenFormattedVariable(name, ov, chvs.get(name));
+                        try {
+                            java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
+                            evaluateMethod.setAccessible(true);
+                            Object var = evaluateMethod.invoke(ov, chvs.get(name));
+                            FORMATTED_CHILDREN_VARS.put(var, name);
+                            ch[i++] = var;
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                            return new Object[] {};
+                        }
                     }
                     return ch;
                 } else {
@@ -399,215 +411,6 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             Exceptions.printStackTrace(ex);
             return false;
         }
-    }
-
-    private class ChildrenFormattedVariable implements Field, ObjectVariable, Refreshable {
-
-        private String name;
-        private ObjectVariable ov;
-        private String code;
-        private Variable result;
-        
-        public ChildrenFormattedVariable(String name, ObjectVariable ov, String code) {
-            this.name = name;
-            this.ov = ov;
-            this.code = code;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        private synchronized Variable resultValue() {
-            if (result == null) {
-                try {
-                    java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
-                    evaluateMethod.setAccessible(true);
-                    Variable ret = (Variable) evaluateMethod.invoke(ov, code);
-                    result = ret;
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
-            }
-            return result;
-        }
-
-        public String getClassName() {
-            return ov.getType();
-        }
-
-        public JPDAClassType getDeclaringClass() {
-            return ov.getClassType();
-        }
-
-        public String getDeclaredType() {
-            return getType();
-        }
-
-        public boolean isStatic() {
-            return false;
-        }
-
-        public void setValue(String value) throws InvalidExpressionException {
-            throw new InvalidExpressionException("Not supported.");
-        }
-
-        public String getType() {
-            Variable v = resultValue();
-            if (v != null) {
-                return v.getType();
-            } else {
-                return "";
-            }
-        }
-
-        public String getValue() {
-            Variable v = resultValue();
-            if (v != null) {
-                return v.getValue();
-            } else {
-                return null;
-            }
-        }
-
-        public String getToStringValue() throws InvalidExpressionException {
-            Variable v = resultValue();
-            if (v != null) {
-                if (v instanceof ObjectVariable) {
-                    return ((ObjectVariable) v).getToStringValue();
-                } else {
-                    return v.getValue();
-                }
-            } else {
-                return null;
-            }
-        }
-
-        public Variable invokeMethod(String methodName, String signature, Variable[] arguments) throws NoSuchMethodException, InvalidExpressionException {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).invokeMethod(methodName, signature, arguments);
-            } else {
-                return null;
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public int getFieldsCount() {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getFieldsCount();
-            } else {
-                return 0;
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public Field getField(String name) {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getField(name);
-            } else {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public Field[] getFields(int from, int to) {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getFields(from, to);
-            } else {
-                return new Field[] {};
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public Field[] getAllStaticFields(int from, int to) {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getAllStaticFields(from, to);
-            } else {
-                return new Field[] {};
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public Field[] getInheritedFields(int from, int to) {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getInheritedFields(from, to);
-            } else {
-                return new Field[] {};
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public List<ObjectVariable> getReferringObjects(long maxReferrers) throws UnsupportedOperationException {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getReferringObjects(maxReferrers);
-            } else {
-                return Collections.emptyList();
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public Super getSuper() {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getSuper();
-            } else {
-                return null;
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public List<JPDAClassType> getAllInterfaces() {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                try {
-                    java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
-                    allInterfacesMethod.setAccessible(true);
-                    return (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
-            } else {
-                return Collections.emptyList();
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public JPDAClassType getClassType() {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getClassType();
-            } else {
-                return null;
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public long getUniqueID() {
-            Variable v = resultValue();
-            if (v instanceof ObjectVariable) {
-                return ((ObjectVariable) v).getUniqueID();
-            } else {
-                return v.hashCode();
-                //throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        public boolean isCurrent() {
-            return result != null;
-        }
-
-        public void refresh() throws RefreshFailedException {
-            resultValue();
-        }
-
     }
 
 }
