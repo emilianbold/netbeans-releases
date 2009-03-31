@@ -101,7 +101,7 @@ class Hyperlinker {
         PlainLoggerLogic(HudsonJob job, String jobName) {
             this.job = job;
             // XXX support Windows build servers (using backslashes)
-            hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + jobName +
+            hyperlinkable = Pattern.compile("\\s*(?:\\[.+\\] )?/.+/jobs/\\Q" + jobName +
                 "\\E/workspace/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)");
         }
         OutputListener findHyperlink(String line) {
