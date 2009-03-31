@@ -47,8 +47,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
+import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -172,5 +174,18 @@ public class Mercurial {
             }
         });
         return true;
+    }
+
+    /**
+     * Adds a remote url for the combos used in Clone wizard
+     *
+     * @param url
+     * @throws java.net.MalformedURLException
+     */
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new URL(url); // check url format
+
+        RepositoryConnection rc = new RepositoryConnection(url);
+        HgModuleConfig.getDefault().insertRecentUrl(rc);
     }
 }
