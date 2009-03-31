@@ -183,7 +183,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     private boolean isUnder(FileObject projectDirectory) {
         String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation");
-        if (remoteLocation==null || remoteLocation.isEmpty()) {
+        if (remoteLocation==null || remoteLocation.length()==0) {
             return false;
         }
         if (feature.getLocation().toASCIIString().equals(remoteLocation))
