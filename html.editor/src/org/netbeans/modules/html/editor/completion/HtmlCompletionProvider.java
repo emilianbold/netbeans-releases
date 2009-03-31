@@ -39,8 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.html.editor;
+package org.netbeans.modules.html.editor.completion;
 
+import java.net.URL;
+import javax.swing.Action;
+import org.netbeans.editor.ext.html.javadoc.HelpManager;
+import org.netbeans.modules.html.editor.*;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -50,10 +54,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HtmlCompletionQuery;
-import org.netbeans.editor.ext.html.HtmlCompletionQuery.HTMLResultItem;
 import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -63,7 +65,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 
 /**
- * Implementation of {@link CompletionProvider} for HTML documents.
+ * Implementation of {@link CompletionProvider} for Html documents.
  *
  * @author Marek Fukala
  */
@@ -110,12 +112,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
     
-    static class DocQuery extends AbstractQuery {
+    public static class DocQuery extends AbstractQuery {
         
         private JTextComponent component;
         private CompletionItem item;
         
-        DocQuery(HTMLResultItem item) {
+        DocQuery(HtmlCompletionItem item) {
             this.item = item;
         }
         
@@ -135,9 +137,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     item = res.get(0);
                 }
             }
-            HTMLResultItem htmlItem = (HTMLResultItem) item;
-            if (htmlItem != null && htmlItem.getHelpID() != null) {
-                resultSet.setDocumentation(new HtmlCompletionQuery.DocItem(htmlItem));
+            HtmlCompletionItem htmlItem = (HtmlCompletionItem) item;
+            if (htmlItem != null && htmlItem.getHelp() != null) {
+                resultSet.setDocumentation(new DocItem(htmlItem));
             }
         }
     }
@@ -187,4 +189,63 @@ public class HtmlCompletionProvider implements CompletionProvider {
         Completion.get().hideCompletion();
         Completion.get().hideDocumentation();
     }
+
+    public static class LinkDocItem implements CompletionDocumentation {
+
+        private URL url;
+
+        public LinkDocItem(URL url) {
+            this.url = url;
+        }
+
+        public String getText() {
+            return null;
+            /*
+            String anchor = HelpManager.getDefault().getAnchorText(url);
+            if(anchor != null)
+            return HelpManager.getDefault().getHelpText(url, anchor);
+            else
+            return HelpManager.getDefault().getHelpText(url);
+             */
+        }
+
+        public URL getURL() {
+            return url;
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
+        }
+
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
+    public static class DocItem implements CompletionDocumentation {
+
+        HtmlCompletionItem item;
+
+        public DocItem(HtmlCompletionItem ri) {
+            this.item = ri;
+        }
+
+        public String getText() {
+            return item.getHelp();
+        }
+
+        public URL getURL() {
+            return item.getHelpURL();
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+//            String currentLink = HelpManager.getDefault().findHelpItem(item.getHelpId()).getFile();
+            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(HelpManager.getDefault().getHelpURL(item.getHelpId()), link));
+        }
+
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
 }
