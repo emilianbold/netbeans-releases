@@ -87,7 +87,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             if (events[0].getType() == ProjectActionEvent.Type.CLEAN &&
                 events[1].getType() == ProjectActionEvent.Type.BUILD &&
                 (events[1].getConfiguration() instanceof MakeConfiguration)&&
-                ((MakeConfiguration)events[1].getConfiguration()).getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                 events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
             }
         }
