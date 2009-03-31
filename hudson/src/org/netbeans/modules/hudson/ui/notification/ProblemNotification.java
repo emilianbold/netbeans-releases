@@ -63,14 +63,12 @@ class ProblemNotification implements ActionListener {
     final HudsonJob job;
     private final int build;
     private final boolean failed;
-    private final boolean running;
     private Notification notification;
 
-    ProblemNotification(HudsonJob job, int build, boolean failed, boolean running) {
+    ProblemNotification(HudsonJob job, int build, boolean failed) {
         this.job = job;
         this.build = build;
         this.failed = failed;
-        this.running = running;
     }
 
     private String getTitle() {
