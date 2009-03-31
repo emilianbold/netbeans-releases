@@ -215,17 +215,20 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                         final File localFile = new File(newPrjScmLocal);
                         if (Utilities.SVN_REPO.equals(featureService)) {
                             if (isShareExistingFolder) {
+                                String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
                                 String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
                                     final String remoteDir = scmLoc.toASCIIString().concat("/" + dirName);
                                 try {
-                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), "Initial revision");
+                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 } catch (IOException io) {
                                     Exceptions.printStackTrace(io);
                                 }
                                 Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."},localFile,
                                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
                                 if (autoCommit) {
-                                    Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), "Initial revision");
+                                    handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                                    "NewKenaiProject.progress.repositoryCommit"));
+                                    Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 }
                             } else {
                                 Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[]{"."},localFile,
