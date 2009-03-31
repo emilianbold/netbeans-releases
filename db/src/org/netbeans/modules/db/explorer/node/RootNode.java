@@ -75,7 +75,7 @@ public class RootNode extends BaseNode {
      */
     @ServiceTabNodeRegistration(
         name="Databases",
-        displayName="org/netbeans/modules/db/resources/Bundle#RootNode_DISPLAYNAME",
+        displayName="org.netbeans.modules.db.resources.Bundle#RootNode_DISPLAYNAME",
         iconResource="org/netbeans/modules/db/resources/database.gif",
         position=101
     )
