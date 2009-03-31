@@ -53,6 +53,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -70,9 +71,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.NbBundle;
@@ -82,7 +86,8 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class QueryTopComponent extends TopComponent implements PropertyChangeListener {
+final class QueryTopComponent extends TopComponent
+                              implements PropertyChangeListener, QueryNotifyListener {
 
     private static QueryTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -450,6 +455,32 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         }
     }
 
+    public void started() {
+        /* the query was started */
+        assert query != null;
+        if (query == null) {
+            return;
+        }
+
+        assert query.getRepository() != null;
+
+        File context = BugtrackingUtil.getLargerContext();
+        if (context == null) {
+            return;
+        }
+
+        FileToRepoMappingStorage.getInstance()
+                .setLooseAssociation(context, query.getRepository());
+    }
+
+    public void notifyData(Issue issue) {
+        /* some (partial) results for the query are available */
+    }
+
+    public void finished() {
+        /* the query was finished */
+    }
+
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -490,6 +521,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                     return;
                 }
                 query.addPropertyChangeListener(QueryTopComponent.this);
+                query.addNotifyListener(QueryTopComponent.this);
 
                 updateSavedQueries(repo);
 
