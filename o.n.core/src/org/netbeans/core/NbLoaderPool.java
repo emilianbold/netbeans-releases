@@ -87,7 +87,10 @@ import org.openide.util.lookup.ServiceProvider;
 public final class NbLoaderPool extends DataLoaderPool implements PropertyChangeListener, Runnable, LookupListener {
     private static final Logger err = Logger.getLogger(NbLoaderPool.class.getName()); // NOI18N
 
-    /** Array of DataLoader objects */
+    /**
+     * Currently managed data loaders.
+     * @see org.openide.loaders.AddLoaderManuallyHid
+     */
     private static List<DataLoader> loaders = new ArrayList<DataLoader> ();
     /** Those which have been modified since being read from the pool */
     private static Set<DataLoader> modifiedLoaders = new HashSet<DataLoader>();
@@ -101,7 +104,10 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     /** Map from loader class names to arrays of class names for Install-After's */
     private static Map<String,String[]> installAfters = new HashMap<String,String[]> ();
 
-    /** copy of the loaders to prevent copying */
+    /**
+     * Copy of the loaders to prevent copying.
+     * @see org.openide.loaders.AddLoaderManuallyHid
+     */
     private static DataLoader[] loadersArray;
 
     /** true if changes in loaders should be notified */
