@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -213,7 +214,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             // inherit mapping
             List<CsmTemplateParameter> specParams = ((CsmTemplate)specialization).getTemplateParameters();
             List<CsmTemplateParameter> clsParams = ((CsmTemplate)classifier).getTemplateParameters();
-            Map<CsmTemplateParameter, CsmType> mapping = gatherMapping((CsmInstantiation) classifier);
+            Map<CsmTemplateParameter, CsmType> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);
             Map<CsmTemplateParameter, CsmType> newMapping = new HashMap<CsmTemplateParameter, CsmType>(mapping);
             for (CsmTemplateParameter p : mapping.keySet()) {
                 int length = (clsParams.size() < specParams.size()) ? clsParams.size() : specParams.size();
@@ -230,20 +231,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return specialization;
-    }
-
-    private static Map<CsmTemplateParameter, CsmType> gatherMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmType> newMapping = new HashMap<CsmTemplateParameter, CsmType>();
-        while(inst != null) {
-            newMapping.putAll(inst.getMapping());
-            CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
-            if(decl instanceof CsmInstantiation) {
-                inst = (CsmInstantiation) decl;
-            } else {
-                break;
-            }
-        }
-        return newMapping;
     }
 
     private static int match(ClassImplSpecialization specialization, List<CsmType> params, CsmClassifier cls, Resolver resolver) {
