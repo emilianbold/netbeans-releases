@@ -117,6 +117,11 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile);
 
+    /**
+     * returns instantiated text if possible to resolve all instantiation mappings
+     */
+    public abstract CharSequence getInstantiatedText(CsmType type);
+
     //
     // Implementation of the default provider
     //
@@ -138,6 +143,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile) {
             return template;
+        }
+
+        @Override
+        public CharSequence getInstantiatedText(CsmType type) {
+            return type.getText();
         }
     }
 }

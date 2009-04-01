@@ -103,6 +103,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return instantiate(template, params, type, contextFile, null);
     }
 
+    @Override
+    public CharSequence getInstantiatedText(CsmType type) {
+        return Instantiation.getInstantiatedText(type);
+    }
+
     public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile, Resolver resolver) {
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
