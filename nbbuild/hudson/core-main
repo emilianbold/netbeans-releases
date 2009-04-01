@@ -32,6 +32,7 @@ if [ "$action" = "build" ]; then
     testmodule java.api.common
     testmodule java.freeform
     testmodule java.j2seplatform
+    testmodule java.j2seproject
     testmodule java.platform
     testmodule java.project
     testmodule javahelp
