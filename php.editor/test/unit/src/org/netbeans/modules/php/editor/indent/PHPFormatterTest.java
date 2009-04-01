@@ -99,6 +99,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
     }
 
+    public void testMultilineString() throws Exception{
+        reformatFileContents("testfiles/formatting/multiline_string.php");
+    }
+
     public void test161049() throws Exception{
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
