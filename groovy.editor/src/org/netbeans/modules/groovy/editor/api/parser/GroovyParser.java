@@ -480,7 +480,7 @@ class GroovyParser extends Parser {
 
         try {
             try {
-                compilationUnit.compile(Phases.INSTRUCTION_SELECTION);
+                compilationUnit.compile(Phases.CLASS_GENERATION);
             } catch (CancellationException ex) {
                 // cancelled probably
                 if (isCancelled()) {
