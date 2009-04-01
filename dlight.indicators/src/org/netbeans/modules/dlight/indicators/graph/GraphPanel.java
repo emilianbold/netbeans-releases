@@ -149,13 +149,17 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     @Override
     public void doLayout() {
         Insets insets = getInsets();
-        Rectangle rect = new Rectangle(insets.left, insets.top,
-                getWidth() - insets.left - insets.right, getHeight() - insets.top - insets.bottom);
-        graphPanel.setBounds(rect);
+        graphPanel.setBounds(insets.left, insets.top,
+                getWidth() - insets.left - insets.right,
+                getHeight() - insets.top - insets.bottom);
         synchronized (this) {
             if (overlay != null) {
                 graphPanel.validate();
-                overlay.setBounds(graph.getBounds());
+                Rectangle rect = graph.getBounds();
+                overlay.setBounds(
+                        insets.left + rect.x + PADDING / 2,
+                        insets.top + rect.y + PADDING / 2,
+                        rect.width - PADDING, rect.height - PADDING);
             }
         }
     }

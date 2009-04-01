@@ -69,7 +69,7 @@ public interface CsmType extends CsmOffsetable {
     CharSequence getClassifierText();
     
     boolean isInstantiation();
-    List<CsmType> getInstantiationParams();
+    List<CsmSpecializationParameter> getInstantiationParams();
     
     /** array depth, i.e. 2 for "int[][]", 1 for "int[]", 0 for "int" */
     int getArrayDepth();

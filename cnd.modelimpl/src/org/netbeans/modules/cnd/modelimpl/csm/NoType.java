@@ -120,7 +120,7 @@ public class NoType implements CsmType {
         return null;
     }
 
-    public List<CsmType> getInstantiationParams() {
+    public List<CsmSpecializationParameter> getInstantiationParams() {
         return Collections.emptyList();
     }
 
