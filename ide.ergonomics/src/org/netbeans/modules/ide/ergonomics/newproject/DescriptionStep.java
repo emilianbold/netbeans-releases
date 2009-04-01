@@ -140,18 +140,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
     private void presentModulesForActivation () {
         forEnable = getFinder ().getModulesForEnable ();
-        if (forEnable != null && ! forEnable.isEmpty ()) {
-            presentModulesForEnable ();
-        } else {
-            presentNone ();
-        }
-    }
-    
-    private void presentNone () {
-        panel.replaceComponents (
-            new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-            new JLabel ()
-        );
+        presentModulesForEnable ();
     }
     
     private void presentModulesForEnable () {
@@ -187,10 +176,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             panel.replaceComponents(pan[0]);
             forEnable = elems;
         } else {
-            panel.replaceComponents (
-                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                new JLabel ()
-            );
+            FoDFileSystem.getInstance().refresh();
+            waitForDelegateWizard ();
         }
         fireChange ();
     }
