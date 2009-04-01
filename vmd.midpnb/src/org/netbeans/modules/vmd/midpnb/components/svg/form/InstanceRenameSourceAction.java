@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.gsf;
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameAction;
 
 /**
  *
- * @author mkleint
+ * @author ads
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-public class LookupProviderImpl implements LookupProvider {
+ public class InstanceRenameSourceAction extends InstanceRenameAction {
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-
-        NbMavenProject nbprj = baseContext.lookup(NbMavenProject.class);
-        Project prj = baseContext.lookup(Project.class);
-        assert prj != null;
-        assert nbprj != null;
-        CPProvider cpp = new CPProvider(prj);
-        //TODO add the classpathprovider
-        return Lookups.fixed(new GSFRecoTemplates(),
-                new ProjectOpenedHookImpl(prj), 
-                cpp,
-                new GsfMavenSourcesImpl(cpp, prj));
-    }
-
-    private static class GSFRecoTemplates implements RecommendedTemplates {
-
-        public String[] getRecommendedTypes() {
-            return new String[] {
-                "scala-classes"
-            };
+        @Override
+        public void setComponent(DesignComponent component) {
+            DesignComponent comp = component.readProperty(SVGButtonEventSourceCD.PROP_SVGCOMPONENT).getComponent();
+            super.setComponent(component);
+            setActionComponent(comp);
         }
-
     }
-
-}

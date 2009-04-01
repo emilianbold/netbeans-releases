@@ -288,12 +288,11 @@ final class TaskListTopComponent extends TopComponent {
                 getLogger().log( Level.INFO, ioE.getMessage(), ioE );
             }
         }
-        
+
         if( null == changeListener ) {
             changeListener = createChangeListener();
             taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
         }
-        
         
         if( null == model ) {
             table = new TaskListTable();
@@ -511,7 +510,7 @@ final class TaskListTopComponent extends TopComponent {
     static private Logger getLogger() {
         return Logger.getLogger( TaskListTopComponent.class.getName() );
     }
-    
+
     private ProgressHandle progress;
     private PropertyChangeListener createChangeListener() {
         return new PropertyChangeListener() {
@@ -519,14 +518,14 @@ final class TaskListTopComponent extends TopComponent {
                 synchronized( TaskListTopComponent.this ) {
                     if( ((Boolean)e.getNewValue()).booleanValue() ) {
                         if( null == progress ) {
-                            progress = ProgressHandleFactory.createHandle( 
+                            progress = ProgressHandleFactory.createHandle(
                                     NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
                                     new Cancellable() { //NOI18N
                                         public boolean cancel() {
                                             taskManager.abort();
                                             return true;
                                         }
-                                    });                            
+                                    });
                             progress.start();
                             progress.switchToIndeterminate();
                         }

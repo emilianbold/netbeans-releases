@@ -59,11 +59,9 @@ import org.openide.filesystems.FileObject;
 class OpenedProjectsIterator implements Iterator<FileObject> {
     
     private Iterator<FileObject> iterator;
-    private Collection<FileObject> editedFiles;
     
     /** Creates a new instance of OpenedProjectsIterator */
-    public OpenedProjectsIterator( Collection<FileObject> editedFiles ) {
-        this.editedFiles = editedFiles;
+    public OpenedProjectsIterator() {
     }
     
     public boolean hasNext() {
@@ -97,6 +95,6 @@ class OpenedProjectsIterator implements Iterator<FileObject> {
                 roots.add( rootFolder );
             }
         }
-        return new FileObjectIterator( roots, editedFiles );
+        return new FileObjectIterator( roots );
     }
 }
