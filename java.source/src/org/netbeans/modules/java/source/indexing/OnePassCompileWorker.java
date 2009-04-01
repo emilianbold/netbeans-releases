@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.net.URI;
@@ -60,6 +61,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
@@ -190,6 +192,10 @@ final class OnePassCompileWorker extends CompileWorker {
                     finished.add(active.indexable);
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
+            } catch (CouplingAbort ca) {
+                //coupling error
+                //TODO: check if the source sig file ~ the source java file:
+                TreeLoader.dumpCouplingAbort(ca, active.jfo);
             } catch (Throwable t) {
                 if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);

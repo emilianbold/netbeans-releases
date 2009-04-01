@@ -37,9 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.gsf;
+package org.netbeans.modules.maven.nodes;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -48,7 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -59,10 +58,10 @@ import org.openide.nodes.Node;
  * @author mkleint
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=139)
-public class SourcesNodeFactory implements NodeFactory {
+public class GroovyScalaSourcesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of SourcesNodeFactory */
-    public SourcesNodeFactory() {
+    public GroovyScalaSourcesNodeFactory() {
     }
     
     public NodeList createNodes(Project project) {
@@ -78,25 +77,19 @@ public class SourcesNodeFactory implements NodeFactory {
         public List<SourceGroup> keys() {
             List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
-            SourceGroup[] groovygroup = srcs.getSourceGroups(GsfMavenSourcesImpl.TYPE_GROOVY);
+            SourceGroup[] groovygroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
             for (int i = 0; i < groovygroup.length; i++) {
-                    list.add(groovygroup[i]);
+                list.add(groovygroup[i]);
             }
-            SourceGroup[] scalagroup = srcs.getSourceGroups(GsfMavenSourcesImpl.TYPE_SCALA);
+            SourceGroup[] scalagroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA);
             for (int i = 0; i < scalagroup.length; i++) {
-                    list.add(scalagroup[i]);
+                list.add(scalagroup[i]);
             }
             return list;
         }
         
         public Node node(SourceGroup group) {
             return PackageView.createPackageView(group);
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                fireChange();
-            }
         }
         
         @Override

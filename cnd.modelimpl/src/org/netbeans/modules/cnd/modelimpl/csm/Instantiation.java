@@ -766,11 +766,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
-            CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
+            CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
             if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
                 return new TemplateParameterType(type, instantiation);
-//            } else {
-//                type = instantiatedType;
             }
         }
         if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
@@ -778,6 +776,27 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new NestedType(type, instantiation);
         }
         return new Type(type, instantiation);
+    }
+
+    private static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
+        if (CsmKindUtilities.isTemplateParameterType(type)) {
+            Map<CsmTemplateParameter, CsmType> mapping = TemplateUtils.gatherMapping(instantiation);
+            CsmType instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+            int iteration = MAX_INHERITANCE_DEPTH;
+            while(CsmKindUtilities.isTemplateParameterType(instantiatedType) && iteration != 0) {
+                CsmType nextInstantiatedType = mapping.get(((CsmTemplateParameterType) instantiatedType).getParameter());
+                if(nextInstantiatedType != null) {
+                    instantiatedType = nextInstantiatedType;
+                } else {
+                    break;
+                }
+                iteration--;
+            }
+            if(instantiatedType != null) {
+                return instantiatedType;
+            }
+        }
+        return type;
     }
 
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
@@ -809,7 +828,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
-                newType = instantiation.getMapping().get(paramType.getParameter());
+                newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
                     newType = TypeFactory.createType(newType, origType.getPointerDepth(), origType.isReference(), origType.getArrayDepth(), origType.isConst());
                     CsmTemplateParameter p = paramType.getParameter();
@@ -837,10 +856,15 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     newType = type;
                 }
             }
-            this.originalType = origType;
-            this.instantiatedType = newType;
 
-            CndUtils.assertTrue(!isRecursion(this, MAX_INHERITANCE_DEPTH), "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
+            if(!isRecursion(this, MAX_INHERITANCE_DEPTH)) {
+                this.originalType = origType;
+                this.instantiatedType = newType;
+            } else {
+                CndUtils.assertTrue(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
+                this.originalType = origType;
+                this.instantiatedType = origType;
+            }
         }
 
         private boolean instantiationHappened() {
@@ -854,6 +878,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public CharSequence getText() {
             if (originalType instanceof TypeImpl) {
                 return ((TypeImpl)originalType).decorateText(getClassifierText(), this, false, null);
+            }
+            if (originalType instanceof NestedType) {
+                return ((NestedType)originalType).getOwnText();
             }
             return originalType.getText();
         }
@@ -995,9 +1022,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                         CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                         CsmObject obj;
                         if(ip instanceof InstantiationProviderImpl) {
-                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), instantiation.getMapping(), getContainingFile(), resolver);
+                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), resolver);
                         } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), instantiation.getMapping(), getContainingFile());
+                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile());
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;

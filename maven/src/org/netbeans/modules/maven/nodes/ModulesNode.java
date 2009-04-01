@@ -70,6 +70,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  * display the modules for pom packaged project
@@ -232,7 +233,7 @@ public class ModulesNode extends AbstractNode {
         }
     }
 
-    private static class OpenProjectAction extends AbstractAction {
+    private static class OpenProjectAction extends AbstractAction implements Runnable {
 
         private NbMavenProjectImpl project;
 
@@ -242,6 +243,10 @@ public class ModulesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
             OpenProjects.getDefault().open(new Project[]{project}, false);
         }
     }
