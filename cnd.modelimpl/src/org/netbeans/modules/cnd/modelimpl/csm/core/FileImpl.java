@@ -1753,7 +1753,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public static class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
+    public static final class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
 
         private int start = 0;
         private CharSequence name;
