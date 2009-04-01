@@ -47,7 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -105,23 +106,19 @@ public class TestBase2 extends CslTestBase {
         JspParserImpl.setParserJARs(list.toArray(new URL[list.size()]));
     }
 
-    public final void copyWebProjectJarsTo(File p) throws MalformedURLException, IOException {
+    public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
         String path = System.getProperty("web.project.jars");
-        StringTokenizer st = new StringTokenizer(path, ":");
-        if (p.exists()) {
-            return;
-        }
-        p.mkdir();
-        FileObject dest = FileUtil.toFileObject(p);
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
+        String[] st = PropertyUtils.tokenizePath(path);
+        List<FileObject> fos = new ArrayList<FileObject>();
+        for (int i=0; i<st.length; i++) {
+            String token = st[i];
             File f = new File(token);
             if (!f.exists()) {
                 fail("cannot find file "+token);
             }
             FileObject fo = FileUtil.toFileObject(f);
-            FileUtil.copyFile(fo, dest, fo.getName(), fo.getExt());
+            fos.add(FileUtil.getArchiveRoot(fo));
         }
+        return ClassPathSupport.createClassPath(fos.toArray(new FileObject[fos.size()]));
     }
-
 }
