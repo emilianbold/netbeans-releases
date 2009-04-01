@@ -4686,6 +4686,10 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testExpandToTab() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.expandTabToSpaces, false);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
@@ -4711,6 +4715,10 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testExpandToTab2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.expandTabToSpaces, false);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
@@ -4734,6 +4742,10 @@ public class FormatterTestCase extends EditorBase {
     }
 
     public void testIZ145529() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceClass,
+                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
                 "class Base {\n" +
                 "\n" +
