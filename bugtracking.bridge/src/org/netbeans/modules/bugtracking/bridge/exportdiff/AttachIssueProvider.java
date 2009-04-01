@@ -76,7 +76,7 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     }
 
     @Override
-    public void handeDiffFile(File file) {
+    public void handleDiffFile(File file) {
         LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
 
         Issue issue = panel.getIssue();
