@@ -2826,7 +2826,9 @@ public class Reformatter implements ReformatTask {
             int alignIndent = -1;
             for (Iterator<? extends Tree> it = trees.iterator(); it.hasNext();) {
                 Tree impl = it.next();
-                if (first) {
+                if (impl.getKind() == Tree.Kind.ERRONEOUS) {
+                    scan(impl, null);
+                } else if (first) {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
