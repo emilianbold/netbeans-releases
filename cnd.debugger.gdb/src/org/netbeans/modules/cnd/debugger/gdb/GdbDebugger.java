@@ -1697,6 +1697,8 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (reason.equals("shlib-event")) { // NOI18N
                 checkSharedLibs();
             } else if (reason.equals("signal-received")) { // NOI18N
+                // see IZ:160393 - inform user about signals
+                warn(false, NbBundle.getMessage(GdbDebugger.class, "ERR_SignalReceived", map.get("signal-name")));
                 if (getState() == State.RUNNING) {
                     String tid = map.get("thread-id"); // NOI18N
                     if (tid != null && !tid.equals(currentThreadID)) {

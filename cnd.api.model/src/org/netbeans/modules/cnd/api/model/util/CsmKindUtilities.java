@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
@@ -70,10 +71,12 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
@@ -166,6 +169,17 @@ public class CsmKindUtilities {
         return (obj instanceof CsmClassifierBasedTemplateParameter);
     }
 
+    public static boolean isSpecalizationParameter(CsmObject obj) {
+        return (obj instanceof CsmSpecializationParameter);
+    }
+
+    public static boolean isTypeBasedSpecalizationParameter(CsmObject obj) {
+        return (obj instanceof CsmTypeBasedSpecializationParameter);
+    }
+
+    public static boolean isExpressionBasedSpecalizationParameter(CsmObject obj) {
+        return (obj instanceof CsmExpressionBasedSpecializationParameter);
+    }
     
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);

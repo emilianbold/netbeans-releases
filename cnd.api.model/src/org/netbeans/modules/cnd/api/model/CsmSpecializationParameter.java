@@ -54,6 +54,12 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Template specialization parameter.
  *
+ * Specialization parameters are used in template specializations and instantiations.
+ * template <> class Z <Type, 1> {};
+ * Type and 1 is specialization parameters.
+ * Z<int, 2> z;
+ * int and 2 are specialization parameters too.
+ *
  * @author Nick Krasilnikov
  */
 public interface CsmSpecializationParameter extends CsmOffsetable {
