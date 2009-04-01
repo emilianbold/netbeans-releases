@@ -88,6 +88,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         this.document = document;
         rootFolderWrapper = new InspectorFolderWrapper(document, new RootFolder());
         rootFolderWrapper.resolveFolder(document);
+        assert ui != null;
         this.ui = ui;
     }
 
@@ -108,7 +109,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
                     updateTreeStructureView();
                     Collection<InspectorFolderWrapper> foldersToExpand = rootFolderWrapper.getChildren();
-                    if (foldersToExpand != null) {
+                    if (foldersToExpand != null && ui != null) {
                         ui.expandNodes(foldersToExpand);
                     }
                 }
