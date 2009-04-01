@@ -78,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
@@ -479,7 +480,7 @@ class GroovyParser extends Parser {
 
         try {
             try {
-                compilationUnit.compile(Phases.CLASS_GENERATION);
+                compilationUnit.compile(Phases.INSTRUCTION_SELECTION);
             } catch (CancellationException ex) {
                 // cancelled probably
                 if (isCancelled()) {
@@ -826,20 +827,21 @@ class GroovyParser extends Parser {
             this.path = path;
         }
 
-//        @Override
-//        protected Class<?> findClass(String name) throws ClassNotFoundException {
-//            // if it is a class (java or compiled groovy) it is resolved via java infr.
-//            // if it is groovy it is resolved with resource loader with compile unit
-//            throw new ClassNotFoundException();
-//        }
-//
-//        @Override
-//        public Class loadClass(String name, boolean lookupScriptFiles,
-//                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
-//            // if it is a class (java or compiled groovy) it is resolved via java infr.
-//            // if it is groovy it is resolved with resource loader with compile unit
-//            throw new ClassNotFoundException();
-//        }
+        @Override
+        public Class loadClass(String name, boolean lookupScriptFiles,
+                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+
+            boolean assertsEnabled = false;
+            assert assertsEnabled = true;
+            if (assertsEnabled) {
+                Class clazz = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
+                assert false : "Class " + clazz + " loaded by GroovyClassLoader";
+            }
+
+            // if it is a class (java or compiled groovy) it is resolved via java infr.
+            // if it is groovy it is resolved with resource loader with compile unit
+            throw new ClassNotFoundException();
+        }
 
         @Override
         public GroovyResourceLoader getResourceLoader() {
