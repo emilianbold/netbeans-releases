@@ -96,7 +96,7 @@ public class Graph extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
-        graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight());
+        graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public void addData(int... newData) {

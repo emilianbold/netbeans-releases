@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -85,7 +86,7 @@ public class NestedType extends TypeImpl {
     }
 
     // package-local - for facory only
-    NestedType(NestedType type, List<CsmType> instantiationParams) {
+    NestedType(NestedType type, List<CsmSpecializationParameter> instantiationParams) {
         super(type, instantiationParams);
         this.parentType = type.parentType;
     }

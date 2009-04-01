@@ -538,6 +538,20 @@ public class PersistentUtils {
         }
         assert handler == SPECIALIZATION_PARAMETERS_LIST;
         List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+        readSpecializationParametersList(params, input);
+        return params;
+    }
+
+    public static void readSpecializationParameters(List<CsmSpecializationParameter> params, DataInput input) throws IOException {
+        int handler = input.readInt();
+        if (handler == AbstractObjectFactory.NULL_POINTER) {
+            return;
+        }
+        assert handler == SPECIALIZATION_PARAMETERS_LIST;
+        readSpecializationParametersList(params, input);
+    }
+
+    private static void readSpecializationParametersList(List<CsmSpecializationParameter> params, DataInput input) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
             int type = input.readInt();
@@ -549,9 +563,8 @@ public class PersistentUtils {
                 assert false : "unexpected instance of specialization parameter ";
             }
         }
-        return params;
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
     public static void writeVisibility(CsmVisibility visibility, DataOutput output) throws IOException {
