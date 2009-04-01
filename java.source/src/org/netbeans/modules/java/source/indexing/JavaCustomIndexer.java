@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.java.source.indexing;
 
-import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,7 +63,6 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
@@ -176,10 +174,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                     });
                 }
             });
-        } catch (OutputFileManager.InvalidSourcePath e) {
-            //Deleted project, ignore
-        } catch (MissingPlatformError mp) {
-            //No platform ignore
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
