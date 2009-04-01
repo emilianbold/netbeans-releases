@@ -100,7 +100,7 @@ public final class Kenai {
      public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                Kenai.url = new URL(System.getProperty("kenai.com.url", "https://kenai.com"));
+                Kenai.url = new URL(System.getProperty("kenai.com.url", "https://testkenai.com"));
                 KenaiImpl impl = new KenaiREST(Kenai.url);
                 instance = new Kenai(impl);
             } catch (MalformedURLException ex) {
