@@ -51,7 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -90,7 +90,7 @@ public class BugtrackingRootNode extends AbstractNode {
      *
      * @return default instance of BugtrackingRootNode
      */
-    @ServiceTabNodeRegistration(
+    @ServicesTabNodeRegistration(
         name="bugtracking",
         displayName="org.netbeans.modules.bugtracking.ui.nodes.Bundle#LBL_BugtrackingNode",
         iconResource="org/netbeans/modules/bugtracking/ui/resources/bugtracking.png",

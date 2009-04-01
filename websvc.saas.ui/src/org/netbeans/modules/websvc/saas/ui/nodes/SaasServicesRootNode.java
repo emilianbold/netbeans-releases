@@ -43,7 +43,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
@@ -61,7 +61,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author nam
  */
-@ServiceTabNodeRegistration(
+@ServicesTabNodeRegistration(
     position=210,
     name="rootSaasGroup",
     displayName="org.netbeans.modules.websvc.saas.ui.nodes.Bundle#Web_Services",

@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -85,7 +85,7 @@ public class HudsonRootNode extends AbstractNode {
      *
      * @return default instance of HudsonRootNode
      */
-    @ServiceTabNodeRegistration(
+    @ServicesTabNodeRegistration(
         name="hudson",
         displayName="org.netbeans.modules.hudson.ui.nodes.Bundle#LBL_HudsonNode",
         iconResource="org/netbeans/modules/hudson/ui/resources/hudson.png",

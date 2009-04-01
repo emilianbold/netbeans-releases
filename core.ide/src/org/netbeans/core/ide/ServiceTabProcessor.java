@@ -46,13 +46,8 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
-import org.omg.PortableServer.POA;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -65,15 +60,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.api.core.ide.ServiceTabNodeRegistration")//NOI18N
+@SupportedAnnotationTypes("org.netbeans.api.core.ide.ServicesTabNodeRegistration")//NOI18N
 public class ServiceTabProcessor extends LayerGeneratingProcessor {
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {
             return false;
         }
-        for (Element e : roundEnv.getElementsAnnotatedWith(ServiceTabNodeRegistration.class)) {
-            ServiceTabNodeRegistration reg = e.getAnnotation(ServiceTabNodeRegistration.class);
+        for (Element e : roundEnv.getElementsAnnotatedWith(ServicesTabNodeRegistration.class)) {
+            ServicesTabNodeRegistration reg = e.getAnnotation(ServicesTabNodeRegistration.class);
             File f = layer(e).
                 instanceFile("UI/Runtime", null, Node.class).
                 stringvalue("iconResource", reg.iconResource()).

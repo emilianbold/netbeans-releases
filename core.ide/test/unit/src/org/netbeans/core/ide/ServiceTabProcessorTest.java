@@ -45,7 +45,7 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -94,7 +94,7 @@ public class ServiceTabProcessorTest {
 
     }
 
-    @ServiceTabNodeRegistration(
+    @ServicesTabNodeRegistration(
         name="my1", displayName="org.netbeans.core.ide.TestBundle#NAME", position=10,
         iconResource="org/netbeans/core/ide/TestIcon1.png"
     )

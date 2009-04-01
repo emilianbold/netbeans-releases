@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.METHOD, ElementType.TYPE })
-public @interface ServiceTabNodeRegistration {
+public @interface ServicesTabNodeRegistration {
     /** @return programatic name of the node */
     String name();
     /** Human readable name. Use <code>#KEY</code> to reference a key in

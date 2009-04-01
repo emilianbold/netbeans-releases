@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.core.ide.ServiceTabNodeRegistration;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -76,7 +76,7 @@ public final class RootNode extends AbstractNode {
         setIconBaseWithExtension(SERVERS_ICON);
     }
 
-    @ServiceTabNodeRegistration(
+    @ServicesTabNodeRegistration(
         name = "servers",
         displayName = "org.netbeans.modules.server.ui.node.Bundle#Server_Registry_Node_Name",
         shortDescription = "org.netbeans.modules.server.ui.node.Bundle#Server_Registry_Node_Short_Description",
