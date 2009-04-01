@@ -374,10 +374,6 @@ public final class CreateElement implements ErrorRule<Void> {
                 return result;
             } else {
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
-                //XXX: workaround for tests (they reside in Incorrect folder)
-                if (targetFile == null) {
-                    targetFile = info.getFileObject();
-                }
                 if (targetFile != null) {
                     if (target.getKind() == ElementKind.ENUM) {
                         result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
@@ -424,8 +420,7 @@ public final class CreateElement implements ErrorRule<Void> {
 	if(!isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
 
-        FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-
+        FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
         if (targetFile == null)
             return Collections.<Fix>emptyList();
 
