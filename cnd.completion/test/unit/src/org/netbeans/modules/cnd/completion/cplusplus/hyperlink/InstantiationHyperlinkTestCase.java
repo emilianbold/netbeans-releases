@@ -145,4 +145,11 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz144869_2.cpp", 38, 8, "iz144869_2.cpp", 16, 5);
         performTest("iz144869_2.cpp", 41, 8, "iz144869_2.cpp", 26, 5);
     }
+
+    public void test161504() throws Exception {
+        // IZ#161504 : Unresolved ids in vector wrapper from Loki
+        performTest("iz161504.cpp", 248, 14, "iz161504.cpp", 49, 9);
+        performTest("iz161504.cpp", 250, 14, "iz161504.cpp", 49, 9);
+        performTest("iz161504.cpp", 252, 14, "iz161504.cpp", 49, 9);
+    }
 }

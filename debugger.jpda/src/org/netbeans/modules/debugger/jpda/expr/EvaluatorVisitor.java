@@ -773,6 +773,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
+        if (var instanceof ObjectReference) {
+            var = unboxIfCan(arg0, (ObjectReference) var, evaluationContext);
+        }
         if (var instanceof BooleanValue) {
             boolean v = ((BooleanValue) var).value();
             boolean e = ((BooleanValue) exp).value();
@@ -859,6 +862,102 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof IntegerValue) {
             int v = ((IntegerValue) var).value();
+            int e = ((PrimitiveValue) exp).intValue();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    v <<= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                case REMAINDER_ASSIGNMENT:
+                    v %= e; break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    v >>= e; break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    v >>>= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = mirrorOf(evaluationContext, v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof ShortValue) {
+            short v = ((ShortValue) var).value();
+            int e = ((PrimitiveValue) exp).intValue();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    v <<= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                case REMAINDER_ASSIGNMENT:
+                    v %= e; break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    v >>= e; break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    v >>>= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = mirrorOf(evaluationContext, v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof CharValue) {
+            char v = ((CharValue) var).value();
+            int e = ((PrimitiveValue) exp).intValue();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    v <<= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                case REMAINDER_ASSIGNMENT:
+                    v %= e; break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    v >>= e; break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    v >>>= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = mirrorOf(evaluationContext, v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof ByteValue) {
+            byte v = ((ByteValue) var).value();
             int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
