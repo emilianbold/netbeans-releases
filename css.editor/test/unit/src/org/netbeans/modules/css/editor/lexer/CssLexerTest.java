@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.css.editor.lexer;
 
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.css.editor.test.TestBase;
