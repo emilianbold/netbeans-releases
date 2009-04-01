@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
                             schemaTargetNamespace="{$schema_namespace}">
                                 <classpath>
                                     <pathelement location="${{build.dir}}/classes"/>
+                                    <pathelement location="${{javac.classpath}}"/>
                                 </classpath>
                         </java2wsdl>
                     </target>
