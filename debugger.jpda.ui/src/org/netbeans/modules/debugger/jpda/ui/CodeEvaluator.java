@@ -166,15 +166,18 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         defaultInstance = this;
     }
 
+    public void pasteExpression(String expr) {
+        codePane.setText(expr);
+    }
+
     private JButton createDropDownButton() {
         Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/drop_down_arrow.png", false);
         final JButton button = new DropDownButton();
         button.setIcon(icon);
-        setToolTipText(NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip"));
         String tooltipText = NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip");
         button.setToolTipText(tooltipText);
         button.setEnabled(false);
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        Dimension size = new Dimension(icon.getIconWidth() + 3, icon.getIconHeight() + 2);
         button.setPreferredSize(size);
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setFocusable(false);
