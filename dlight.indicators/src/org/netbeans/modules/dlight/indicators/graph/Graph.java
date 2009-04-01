@@ -145,7 +145,9 @@ public class Graph extends JComponent {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), upperLimit, getBackground());
+            if (isEnabled()) {
+                graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), upperLimit, getBackground());
+            }
         }
 
     }

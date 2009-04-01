@@ -519,47 +519,53 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected synchronized void ensureFilesCreated() {
-        if (status == Status.Initial || status == Status.Restored) {
-            try {
-                setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
-                long time = 0;
-                if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                    System.err.println("suspend queue");
-                    ParserQueue.instance().suspend();
-                    if (TraceFlags.TIMING) {
-                        time = System.currentTimeMillis();
-                    }
-                }
-                ParserQueue.instance().onStartAddingProjectFiles(this);
-                registerProjectListeners();
-                NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
-                if (nativeProject != null) {
-                    try {
+    protected void ensureFilesCreated() {
+        boolean notify = false;
+        synchronized (this) {
+            if (status == Status.Initial || status == Status.Restored) {
+                try {
+                    setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
+                    long time = 0;
+                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                        System.err.println("suspend queue");
                         ParserQueue.instance().suspend();
-                        createProjectFilesIfNeed(nativeProject);
-                    } finally {
+                        if (TraceFlags.TIMING) {
+                            time = System.currentTimeMillis();
+                        }
+                    }
+                    ParserQueue.instance().onStartAddingProjectFiles(this);
+                    registerProjectListeners();
+                    NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
+                    if (nativeProject != null) {
+                        try {
+                            ParserQueue.instance().suspend();
+                            createProjectFilesIfNeed(nativeProject);
+                        } finally {
+                            ParserQueue.instance().resume();
+                        }
+                    }
+                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                        if (TraceFlags.TIMING) {
+                            time = System.currentTimeMillis() - time;
+                            System.err.println("getting files from project system + put in queue took " + time + "ms");
+                        }
+                        try {
+                            System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
+                            Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+                            System.err.println("woke up after sleep");
+                        } catch (InterruptedException ex) {
+                            // do nothing
+                        }
                         ParserQueue.instance().resume();
                     }
+                    notify = true;
+                } finally {
+                    setStatus(Status.Ready);
                 }
-                if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                    if (TraceFlags.TIMING) {
-                        time = System.currentTimeMillis() - time;
-                        System.err.println("getting files from project system + put in queue took " + time + "ms");
-                    }
-                    try {
-                        System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                        Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                        System.err.println("woke up after sleep");
-                    } catch (InterruptedException ex) {
-                        // do nothing
-                    }
-                    ParserQueue.instance().resume();
-                }
-                ParserQueue.instance().onEndAddingProjectFiles(this);
-            } finally {
-                setStatus(Status.Ready);
             }
+        }
+        if (notify) {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
 
