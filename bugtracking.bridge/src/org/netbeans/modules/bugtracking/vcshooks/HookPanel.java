@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 /*
@@ -67,6 +67,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  */
 public class HookPanel extends javax.swing.JPanel implements ItemListener, PropertyChangeListener {
     private QuickSearchComboBar qs;
+    private Repository selectedRepository;
 
     private class UpdateFiledsState {
         private boolean addComment = false;
@@ -131,6 +132,10 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
 
     Issue getIssue() {
         return qs.getIssue();
+    }
+
+    public Repository getSelectedRepository() {
+        return selectedRepository;
     }
 
     private void enableFields() {
@@ -380,6 +385,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Repository repo = (Repository) e.getItem();
+            selectedRepository = repo;
             if(repo != null) {
                 qs.setRepository(repo);
             }

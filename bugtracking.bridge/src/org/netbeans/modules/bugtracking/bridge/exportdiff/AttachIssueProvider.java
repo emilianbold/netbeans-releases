@@ -102,7 +102,7 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
         Repository repoToSelect = null;
         if(files.length > 0) {
             for (File file : files) {
-                repoToSelect = support.getRepository(file);
+                repoToSelect = support.getRepository(file, false);
                 if(repoToSelect == null) {
                     LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
                 } else {

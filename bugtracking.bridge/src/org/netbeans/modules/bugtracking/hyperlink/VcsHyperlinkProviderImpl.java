@@ -44,6 +44,7 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.util.NbBundle;
@@ -73,8 +74,10 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
         final String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 
-        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
         if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
         
         class IssueDisplayer implements Runnable {
             private Issue issue = null;

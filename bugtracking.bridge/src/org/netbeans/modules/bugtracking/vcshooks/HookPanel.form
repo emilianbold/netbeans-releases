@@ -28,7 +28,7 @@
                           <Component id="resolveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="179" max="32767" attributes="0"/>
+                      <EmptySpace pref="181" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="commitRadioButton" min="-2" max="-2" attributes="0"/>
                           <Component id="pushRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -60,7 +60,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="repositoryLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="repositoryComboBox" max="32767" attributes="2"/>
+                      <Component id="repositoryComboBox" pref="485" max="32767" attributes="2"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -245,8 +245,8 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="issuePanel" alignment="0" max="32767" attributes="2"/>
-              <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
+              <Component id="issuePanel" alignment="0" pref="524" max="32767" attributes="2"/>
+              <Component id="jLabel2" alignment="0" pref="524" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
