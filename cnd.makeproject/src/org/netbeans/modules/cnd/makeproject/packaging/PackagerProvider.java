@@ -55,6 +55,7 @@ public class PackagerProvider implements PackagerDescriptorProvider {
         list.add(new TarPackager());
         list.add(new ZipPackager());
         list.add(new SVR4Packager());
+        list.add(new IPSPackager());
         list.add(new RPMPackager());
         list.add(new DebianPackager());
         return list;

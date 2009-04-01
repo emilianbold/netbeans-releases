@@ -60,16 +60,16 @@ import org.openide.util.NbBundle;
  *
  * @author thp
  */
-public class SVR4Packager implements PackagerDescriptor {
+public class IPSPackager implements PackagerDescriptor {
 
-    public static final String PACKAGER_NAME = "SVR4"; // NOI18N
+    public static final String PACKAGER_NAME = "IPS"; // NOI18N
 
     public String getName() {
         return PACKAGER_NAME;
     }
 
     public String getDisplayName() {
-        return getString("SCR4Package"); // FIXUP: typo...
+        return getString("IPSPackage"); // FIXUP: typo...
     }
 
     public boolean hasInfoList() {
@@ -87,14 +87,8 @@ public class SVR4Packager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "PKG", packagingConfiguration.getOutputName(), true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "NAME", "Package description ...", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "ARCH", defArch, true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "CATEGORY", "application", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "VERSION", "1.0", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "BASEDIR", "/opt", false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "CLASSES", "none", false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "description", "Package description ...", true, true)); // NOI18N
 
         return infoList;
     }
@@ -136,7 +130,7 @@ public class SVR4Packager implements PackagerDescriptor {
     }
 
     public String getDefaultTool() {
-        return "pkgmk"; // NOI18N
+        return "pkgsend"; // NOI18N
     }
 
     public boolean isOutputAFolder() {
@@ -286,6 +280,6 @@ public class SVR4Packager implements PackagerDescriptor {
 
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getMessage(SVR4Packager.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
+        return NbBundle.getMessage(IPSPackager.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
     }
 }
