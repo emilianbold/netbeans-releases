@@ -91,6 +91,7 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
@@ -476,6 +477,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private javax.swing.JButton createSessionsSwitchButton() {
         final javax.swing.JButton b = new javax.swing.JButton(new ImageIcon(viewIcon));
+        b.setToolTipText(NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
         b.setMargin(new Insets(2, 2, 2, 2));
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

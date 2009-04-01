@@ -92,11 +92,18 @@ public class FileChangedManager extends SecurityManager {
         }
         return retval;
     }    
-    
+
+    public void setExists(FileInfo fileInfo) {
+        Integer id = fileInfo.getID();
+        remove(id);
+        put(id, fileInfo.exists());
+    }
+
     public boolean exists(File file) {
         boolean retval = file.exists();
-        remove(getKey(file));
-        put(file,retval);
+        Integer id = getKey(file);
+        remove(id);
+        put(id, retval);
         return retval;
     }
     
@@ -126,26 +133,19 @@ public class FileChangedManager extends SecurityManager {
         return false;
     }
     
-    
-    
-    private Integer get(int id) {
-        long now = System.currentTimeMillis();
-        if ((now - shrinkTime) > 5000) {
-            int size = hints.size();
-            if (size > 1500) {                
-                shrink();
-            }
-            shrinkTime = now;
-        } 
-        return hints.get(id);
-    }
-
-    
     private void shrink() {
         hints.keySet().clear();
     }
     
     private Integer remove(int id) {
+        long now = System.currentTimeMillis();
+        if ((now - shrinkTime) > 5000) {
+            int size = hints.size();
+            if (size > 1500) {
+                shrink();
+            }
+            shrinkTime = now;
+        }
         return hints.remove(id);
     }                
     
@@ -158,17 +158,5 @@ public class FileChangedManager extends SecurityManager {
 
     private Integer put(String f, boolean value) {
         return put(getKey(f), value);
-    }
-    
-    private Integer put(File f, boolean value) {
-        return put(getKey(f), value);
-    }
-    
-    private Integer get(String file) {
-        return get(getKey(file));
-    }
-
-    private Integer get(File file) {
-        return get(getKey(file));        
     }
 }

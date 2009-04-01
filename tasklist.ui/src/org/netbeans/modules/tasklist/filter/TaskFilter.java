@@ -70,7 +70,7 @@ public class TaskFilter {
     private TaskFilter( TaskFilter src ) {
         this.name = src.name;
         keywords = null == src.keywords ? null : (KeywordsFilter)src.keywords.clone();
-        types = null == src.types ? null : (TypesFilter)src.types.clone();
+        types = null == src.types ? null : src.types.clone();
     }
      
     public boolean accept( Task task ) {

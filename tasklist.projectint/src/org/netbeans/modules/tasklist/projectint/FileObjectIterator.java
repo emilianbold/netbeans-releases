@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.tasklist.projectint;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -57,35 +56,25 @@ import org.openide.filesystems.FileUtil;
 class FileObjectIterator implements Iterator<FileObject> {
     
     private Collection<FileObject> roots;
-    private Collection<FileObject> editedFiles;
     
     private Iterator<FileObject> rootsIterator;
-    private Iterator<FileObject> editedFilesIterator;
     private Enumeration<? extends FileObject> rootChildrenEnum;
     
     /** Creates a new instance of FileObjectIterator */
-    public FileObjectIterator( Collection<FileObject> roots, Collection<FileObject> editedFiles ) {
+    public FileObjectIterator( Collection<FileObject> roots ) {
         this.roots = roots;
-        this.editedFiles = editedFiles;
     }
     
     public boolean hasNext() {
         if( null == rootsIterator ) {
-            checkEditedFiles();
             rootsIterator = roots.iterator();
             return rootsIterator.hasNext();
         }
         return (null != rootChildrenEnum && rootChildrenEnum.hasMoreElements()) 
-                || rootsIterator.hasNext() 
-                || editedFilesIterator.hasNext();
+                || rootsIterator.hasNext();
     }
     
     public FileObject next() {
-        //make sure opened files are scanned first
-        if( editedFilesIterator.hasNext() ) {
-            return editedFilesIterator.next();
-        }
-        
         FileObject result = null;
         if( null == rootChildrenEnum || !rootChildrenEnum.hasMoreElements() ) {
             if( rootsIterator.hasNext() ) {
@@ -102,21 +91,6 @@ class FileObjectIterator implements Iterator<FileObject> {
     
     public void remove() {
         throw new UnsupportedOperationException();
-    }
-    
-    private void checkEditedFiles() {
-        if( null != editedFiles ) {
-            ArrayList<FileObject> editedFilesUnderRoots = new ArrayList<FileObject>( editedFiles.size() );
-            for( FileObject fo : editedFiles ) {
-                if( isUnderRoots( fo ) ) {
-                    editedFilesUnderRoots.add( fo );
-                }
-            }
-            editedFiles = null;
-            editedFilesIterator = editedFilesUnderRoots.iterator();
-        } else {
-            editedFilesIterator = new EmptyIterator();
-        }
     }
     
     private boolean isUnderRoots( FileObject fo ) {
