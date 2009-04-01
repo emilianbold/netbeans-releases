@@ -59,7 +59,7 @@ PARSER_END(CssParser)
   < ~[] > : MS_EXPRESSION
 }
 
-<COMMENT> SKIP :
+<COMMENT> TOKEN :
 {
   < "*/" > : DEFAULT
 }
