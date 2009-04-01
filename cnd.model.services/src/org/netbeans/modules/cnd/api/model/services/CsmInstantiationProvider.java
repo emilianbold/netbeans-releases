@@ -120,8 +120,23 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile);
 
+    /**
+     * Creates specialization parameter based on type.
+     *
+     * @param type - type for parameter
+     * @return specialization parameter
+     */
     public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
 
+     /**
+     * Creates specialization parameter based on expression.
+     *
+     * @param expression - string with expression
+     * @param file - containing file
+     * @param start - start offset
+     * @param end - end offset
+     * @return specialization parameter
+      */
     public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end);
     /**
      * returns instantiated text if possible to resolve all instantiation mappings
