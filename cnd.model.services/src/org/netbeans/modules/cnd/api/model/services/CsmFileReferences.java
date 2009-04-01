@@ -56,8 +56,10 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
@@ -253,10 +255,12 @@ public abstract class CsmFileReferences {
    private static boolean isActualInstantiation(CsmClass cls) {
        if (CsmKindUtilities.isInstantiation(cls)) {
            CsmInstantiation instantiation = (CsmInstantiation) cls;
-           Map<CsmTemplateParameter, CsmType> mapping = instantiation.getMapping();
-           for (CsmType type : mapping.values()) {
-               if (type.isTemplateBased()) {
-                   return false;
+           Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
+           for (CsmSpecializationParameter param : mapping.values()) {
+               if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                   if (((CsmTypeBasedSpecializationParameter) param).isTemplateBased()) {
+                       return false;
+                   }
                }
            }
            return true;
