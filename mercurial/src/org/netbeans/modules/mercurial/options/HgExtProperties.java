@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -63,8 +64,6 @@ import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.options.PropertiesPanel;
-import org.netbeans.modules.mercurial.options.PropertiesTable;
 import org.netbeans.modules.mercurial.ui.properties.HgPropertiesNode;
 import org.openide.util.RequestProcessor;
 
@@ -205,12 +204,16 @@ public class HgExtProperties implements ActionListener, DocumentListener {
         try {
             support = new HgProgressSupport() {
                 protected void perform() {
-                    HgModuleConfig.getDefault().clearProperties(root, "extensions"); // NOI18N
-                    HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-                    for (int i = 0; i < hgPropertiesNodes.length; i++) {
-                        String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
-                        String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
-                        HgModuleConfig.getDefault().setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
+                    try {
+                        HgModuleConfig.getDefault().clearProperties(root, "extensions"); // NOI18N
+                        HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+                        for (int i = 0; i < hgPropertiesNodes.length; i++) {
+                            String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
+                            String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
+                            HgModuleConfig.getDefault().setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
+                        }
+                    } catch (IOException ex) {
+                        HgModuleConfig.notifyParsingError();
                     }
                 }
             };
