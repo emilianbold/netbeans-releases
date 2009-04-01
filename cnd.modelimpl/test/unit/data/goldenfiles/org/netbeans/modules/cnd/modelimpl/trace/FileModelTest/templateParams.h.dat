@@ -81,7 +81,7 @@ VARIABLE DEFINITION b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [4
 CLASS T<bool b> (T ) [49:1/1304-50:2/1333] lcurly=1330 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
+TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T<A::b == 1>  [52:9/1344-52:21/1356] SCOPE: $Global$ 
 FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE parse_dot<class>(ScannerT&)
     UNIQUE NAME f:parse_dot<class>(ScannerT&)
@@ -186,7 +186,7 @@ CLASS A (A ) [42:1/1238-45:2/1280] lcurly=1245 SCOPE: $Global$
 CLASS T<bool b> (T ) [49:1/1304-50:2/1333] lcurly=1330 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
+TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T<A::b == 1>  [52:9/1344-52:21/1356] SCOPE: $Global$ 
 FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE parse_dot<class>(ScannerT&)
     UNIQUE NAME f:parse_dot<class>(ScannerT&)
