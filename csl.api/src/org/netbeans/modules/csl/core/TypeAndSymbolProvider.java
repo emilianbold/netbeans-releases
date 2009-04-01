@@ -185,10 +185,11 @@ public class TypeAndSymbolProvider {
 //                }
 //            }
 
+            Object [] o = t2t(searchType, text);
             if (typeProvider) {
-                languageResults = searcher.getTypes(project, text, t2t(searchType), HELPER);
+                languageResults = searcher.getTypes(project, (String) o[1], (QuerySupport.Kind) o[0], HELPER);
             } else {
-                languageResults = searcher.getSymbols(project, text, t2t(searchType), HELPER);
+                languageResults = searcher.getSymbols(project, (String) o[1], (QuerySupport.Kind) o[0], HELPER);
             }
 
             if (LOG.isLoggable(Level.FINE)) {
@@ -248,23 +249,27 @@ public class TypeAndSymbolProvider {
 //        }
 //    }
 
-    private static QuerySupport.Kind t2t(SearchType searchType) {
+    private static Object [] t2t(SearchType searchType, String text) {
         switch(searchType) {
             case EXACT_NAME:
-                return QuerySupport.Kind.EXACT;
+                return new Object [] { QuerySupport.Kind.EXACT, text };
             case PREFIX:
-                return QuerySupport.Kind.PREFIX;
+                return new Object [] { QuerySupport.Kind.PREFIX, text };
             case CASE_INSENSITIVE_PREFIX:
-                return QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
+                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, text };
             case REGEXP:
-                return QuerySupport.Kind.REGEXP;
+                return new Object [] { QuerySupport.Kind.REGEXP, wildcards2regexp(text) };
             case CASE_INSENSITIVE_REGEXP:
-                return QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, wildcards2regexp(text) };
             case CAMEL_CASE:
-                return QuerySupport.Kind.CAMEL_CASE;
+                return new Object [] { QuerySupport.Kind.CAMEL_CASE, text };
             default:
                 throw new IllegalStateException("Can't translate " + searchType + " to QuerySupport.Kind"); //NOI18N
         }
+    }
+
+    private static String wildcards2regexp(String pattern) {
+        return pattern.replace( "*", ".*" ).replace( '?', '.' ); //NOI18N
     }
 
     private static final class TypeWrapper extends TypeDescriptor {
