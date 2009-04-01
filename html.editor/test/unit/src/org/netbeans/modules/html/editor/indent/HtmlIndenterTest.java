@@ -160,6 +160,11 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<!doctype html public \"unknown\">",
             "<!doctype html public \"unknown\">", null);
+
+        // #161606
+        format(
+            "<div style=\"\"",
+            "<div style=\"\"", null);
     }
 
     public void testFormattingHTML() throws Exception {

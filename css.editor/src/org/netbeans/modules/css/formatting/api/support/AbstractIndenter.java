@@ -1197,23 +1197,25 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 // which contains embedded EL token for "expression". Following
                 // code tries to treat "${" and "}" as JSP code and rest as EL code:
                 TokenSequence<? extends TokenId> ts = joinedTS.embedded();
-                int start = LexUtilities.getTokenSequenceStartOffset(ts);
-                int end = LexUtilities.getTokenSequenceEndOffset(ts);
-                if (forward) {
-                    if (start > tokenStart && tokenStart >= rowStartOffset) {
-                        ok = true;
-                        tokenEnd = tokenStart + (start - tokenStart);
-                    } else if (end < tokenEnd && end >= rowStartOffset) {
-                        ok = true;
-                        tokenStart = end;
-                    }
-                } else {
-                    if (end < tokenEnd && tokenEnd <= rowStartOffset) {
-                        ok = true;
-                        tokenStart = end;
-                    } else if (start > tokenStart && start <= rowStartOffset) {
-                        ok = true;
-                        tokenEnd = tokenStart + (start - tokenStart);
+                if (!ts.isEmpty()) {
+                    int start = LexUtilities.getTokenSequenceStartOffset(ts);
+                    int end = LexUtilities.getTokenSequenceEndOffset(ts);
+                    if (forward) {
+                        if (start > tokenStart && tokenStart >= rowStartOffset) {
+                            ok = true;
+                            tokenEnd = tokenStart + (start - tokenStart);
+                        } else if (end < tokenEnd && end >= rowStartOffset) {
+                            ok = true;
+                            tokenStart = end;
+                        }
+                    } else {
+                        if (end < tokenEnd && tokenEnd <= rowStartOffset) {
+                            ok = true;
+                            tokenStart = end;
+                        } else if (start > tokenStart && start <= rowStartOffset) {
+                            ok = true;
+                            tokenEnd = tokenStart + (start - tokenStart);
+                        }
                     }
                 }
             }
