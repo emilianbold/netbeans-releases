@@ -58,6 +58,12 @@ made subject to such option by the copyright holder.
                 <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_MemoryViewAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-AutosAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.AutosAction"/>
+                <!--<attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/autos.png"/>-->
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_AutosAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Editors">
@@ -313,6 +319,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-MemoryViewAction.instance"/>
                     <attr name="position" intvalue="952"/>
                 </file>
+                <!--<file name="AutosAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-AutosAction.instance"/>
+                    <attr name="position" intvalue="949"/>
+                </file>-->
             </folder>
         </folder>
     </folder>
@@ -354,6 +364,7 @@ made subject to such option by the copyright holder.
         <folder name="Components">
             <file name="MemoryViewTopComponent.settings" url="MemoryViewTopComponentSettings.xml"/>
             <file name="RegistersTopComponent.settings" url="RegistersTopComponentSettings.xml"/>
+            <file name="AutosTopComponent.settings" url="AutosTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
@@ -362,6 +373,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="MemoryViewTopComponent.wstcref" url="MemoryViewTopComponentWstcref.xml">
                     <attr name="position" intvalue="835"/>
+                </file>
+                <file name="AutosTopComponent.wstcref" url="AutosTopComponentWstcref.xml">
+                    <attr name="position" intvalue="836"/>
                 </file>
             </folder>
         </folder>
