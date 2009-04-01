@@ -63,6 +63,31 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /** Utility class for operations on nodes.
+ * <p>
+ * Since version 7.9 this class supports creation of a <q>lazy node</q> -
+ * a node that displays basic information
+ * about the original node behind it, without touching the original. As soon as
+ * the node is expanded, or a pop up menu is invoked on it, it switches
+ * to the real delegates and since then everything is being bridged to
+ * the real node.
+ * This method is especially useful when used from
+ * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>.
+ * Use following
+ * XML snippet to register your node into Services tab:
+ * <pre>
+ * &lt;folder name="UI"&gt;
+ *   &lt;folder name="Runtime"&gt;
+ *     &lt;file name="org-yourorg-yourpgk-YourNode.instance"&gt;
+ *       &lt;attr name="instanceCreate" methodvalue="org.openide.nodes.NodeOp.factory"/&gt;
+ *       &lt;attr name="name" stringvalue="YourNode"/&gt;
+ *       &lt;attr name="displayName" bundlevalue="org.yourorg.yourpkg.Bundle#NAME-KEY"/&gt;
+ *       &lt;attr name="shortDescription" bundlevalue="org.yourorg.yourpkg.Bundle#SHORT-KEY"/&gt;
+ *       &lt;attr name="iconResource" stringvalue="org/yourorg/yourpkg/image.png"/&gt;
+ *       &lt;attr name="original" newvalue="org.yourorg.yourpkg.YourNode"/&gt;
+ *     &lt;file/&gt;
+ *   &lt;folder/&gt;
+ * &lt;folder/&gt;
+ * </pre>
  *
  * @author Jaroslav Tulach, Petr Hamernik, Dafe Simonek
  */
@@ -442,54 +467,9 @@ public final class NodeOp extends Object {
         return WeakListeners.create(NodeListener.class, l, source);
     }
 
-    /** Creates a <q>lazy node</q> - a node that displays basic information
-     * about the original node behind it, without touching it. As soon as
-     * the node is expanded, or a pop up menu is invoked on it, it switches
-     * to the real delegates and since then everything is being bridged to
-     * the real node.
-     * <p>
-     * This method is especially useful when used from 
-     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>.
-     * Use following
-     * XML snippet to register your node into Services tab:
-     * <pre>
-     * &lt;folder name="UI"&gt;
-     *   &lt;folder name="Runtime"&gt;
-     *     &lt;file name="org-yourorg-yourpgk-YourNode.instance"&gt;
-     *       &lt;attr name="instanceCreate" methodvalue="org.openide.nodes.NodeOp.factory"/&gt;
-     *       &lt;attr name="name" stringvalue="YourNode"/&gt;
-     *       &lt;attr name="displayName" bundlevalue="org.yourorg.yourpkg.Bundle#NAME-KEY"/&gt;
-     *       &lt;attr name="shortDescription" bundlevalue="org.yourorg.yourpkg.Bundle#SHORT-KEY"/&gt;
-     *       &lt;attr name="iconResource" stringvalue="org/yourorg/yourpkg/image.png"/&gt;
-     *       &lt;attr name="original" newvalue="org.yourorg.yourpkg.YourNode"/&gt;
-     *     &lt;file/&gt;
-     *   &lt;folder/&gt;
-     * &lt;folder/&gt;
-     * </pre>
-     *
-     * @param original the real node behind the one created
-     * @param name programatic name of the node
-     * @param displayName human readable name of the node
-     * @param shortDescription short description for the node
-     * @param iconResource path to icon to use as in {@link AbstractNode#setIconBaseWithExtension(java.lang.String)}
-     * @return new node with preset defaults that can delegate to original
-     *
+    /** more info in class javadoc.
      * @since 7.9
      */
-    public static Node factory(
-        Node original,
-        String name, String displayName, String shortDescription,
-        String iconResource
-    ) {
-        Map<Object,Object> map = new HashMap<Object,Object>();
-        map.put("original", original); // NOI18N
-        map.put("name", name); // NOI18N
-        map.put("displayName", displayName); // NOI18N
-        map.put("shortDescription", shortDescription); // NOI18N
-        map.put("iconResource", iconResource); // NOI18N
-        return new LazyNode(map);
-    }
-
     static Node factory(Map<?,?> map) {
         return new LazyNode(map);
     }
