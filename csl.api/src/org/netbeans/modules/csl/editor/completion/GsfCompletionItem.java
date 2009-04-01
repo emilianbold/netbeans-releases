@@ -372,7 +372,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/csl/editor/completion/warning.png")); // NOI18N
         }
 
         public int getSortPriority() {

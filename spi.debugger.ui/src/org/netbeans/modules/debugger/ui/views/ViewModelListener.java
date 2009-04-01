@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
@@ -658,7 +657,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
-            return Integer.MAX_VALUE; // [TODO]
+            try {
+                int origCount = original.getChildrenCount(node);
+                int count = treeModel.getChildrenCount(node);
+                if (origCount == Integer.MAX_VALUE || count == Integer.MAX_VALUE) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return origCount + count;
+                }
+            } catch (UnknownTypeException e) {
+                return treeModel.getChildrenCount(node);
+            }
         }
 
         public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {

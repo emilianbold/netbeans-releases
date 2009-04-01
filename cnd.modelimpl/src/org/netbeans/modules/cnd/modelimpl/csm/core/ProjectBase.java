@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -94,12 +93,12 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -1990,7 +1989,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return Math.max(threadCount, 1);
     }
 
-    public void fixFakeRegistration(boolean libsAlreadyParsed){
+    public final void fixFakeRegistration(boolean libsAlreadyParsed){
         final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         CountDownLatch countDownLatch = new CountDownLatch(files.size());
         RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
@@ -2643,11 +2642,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return;
                 }
                 FileImpl impl = (FileImpl) file.getObject();
-                Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                impl.fixFakeRegistrations();
-                if (libsAlreadyParsed) {
-                    impl.clearFakeRegistrations();
+                CndUtils.assertTrue(impl != null, "");
+                if (impl == null) {
+                    return;
                 }
+                Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {
                 countDownLatch.countDown();
             }

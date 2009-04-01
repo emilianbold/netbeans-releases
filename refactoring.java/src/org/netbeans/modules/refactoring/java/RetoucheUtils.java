@@ -289,12 +289,7 @@ public class RetoucheUtils {
         if (f==null)
             return false;
         Project p = FileOwnerQuery.getOwner(f);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
-                return true;
-        }
-        return false;
+        return isOpenProject(p);
     }
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         FileObject file = SourceUtils.getFile(element, info);
@@ -325,12 +320,7 @@ public class RetoucheUtils {
         if (p == null) {
             return false;
         }
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p.equals(opened[i]))
-                return true;
-        }
-        return false;
+        return isOpenProject(p);
     }
     
     public static boolean isOnSourceClasspath(FileObject fo) {
@@ -343,7 +333,7 @@ public class RetoucheUtils {
         for (Project pr : opened) {
             for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                    return true;
+                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
                 }
             }
         }
@@ -485,6 +475,16 @@ public class RetoucheUtils {
     
     public static TypeElement typeToElement(TypeMirror type, CompilationInfo info) {
         return (TypeElement) info.getTypes().asElement(type);
+    }
+
+    private static boolean isOpenProject(Project p) {
+        Project[] opened = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < opened.length; i++) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static Collection<TypeElement> typesToElements(Collection<? extends TypeMirror> types, CompilationInfo info) {

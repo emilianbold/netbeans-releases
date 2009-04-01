@@ -91,8 +91,10 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         "org/netbeans/modules/debugger/resources/watchesView/SuperVariable.gif";
     public static final String RETURN =
         "org/netbeans/modules/debugger/jpda/resources/Filter.gif";
+    public static final String NO_DEBUG_INFO =
+        "org/netbeans/modules/debugger/jpda/resources/wrong_pass.png";
     public static final String EXPR_ARGUMENTS =
-        "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif";
+        "org/netbeans/modules/debugger/jpda/resources/wrong_pass.png";
 
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
 
@@ -163,6 +165,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o == "NativeMethodException") {
             return NbBundle.getMessage(VariablesNodeModel.class, "NativeMethod");
         }
+        if (o == "noDebugInfoWarning") {
+            return NbBundle.getMessage(VariablesNodeModel.class, "noDebugInfoWarning");
+        }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
             int index = str.indexOf('-');
@@ -215,6 +220,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (o == "NativeMethodException") {
             return NbBundle.getMessage(VariablesNodeModel.class, "NativeMethod_descr");
+        }
+        if (o == "noDebugInfoWarning") {
+            return NbBundle.getMessage(VariablesNodeModel.class, "noDebugInfoWarning_descr");
         }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
@@ -336,6 +344,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o == "lastOperations") return ; // NOI18N
         if (o instanceof String && ((String) o).startsWith("operationArguments ")) return ; // NOI18N
         if (o == "NativeMethodException") return ; // NOI18N
+        if (o == "noDebugInfoWarning") return ; // NOI18N
         if (o instanceof JPDAClassType) return ;
         if (o instanceof ClassVariable) return ;
         if (o instanceof ReturnVariable) return ;
@@ -403,6 +412,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof ReturnVariable || node == "lastOperations") {
             return RETURN;
+        }
+        if (node == "noDebugInfoWarning") {
+            return NO_DEBUG_INFO;
         }
         if (node instanceof String && ((String) node).startsWith("operationArguments ")) { // NOI18N
             return EXPR_ARGUMENTS;

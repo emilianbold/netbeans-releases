@@ -116,4 +116,40 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151619.cpp", 6, 14, "iz151619.cpp", 3, 5);
         performTest("iz151619.cpp", 7, 14, "iz151619.cpp", 3, 5);
     }
+
+    public void test147518() throws Exception {
+        // IZ#147518 : Code completion issue with template specialization
+        performTest("iz147518.cpp", 61, 21, "iz147518.cpp", 41, 5);
+        performTest("iz147518.cpp", 49, 17, "iz147518.cpp", 7, 5);
+        performTest("iz147518.cpp", 50, 17, "iz147518.cpp", 7, 5);
+        performTest("iz147518.cpp", 53, 17, "iz147518.cpp", 25, 5);
+        performTest("iz147518.cpp", 54, 17, "iz147518.cpp", 25, 5);
+        performTest("iz147518.cpp", 57, 17, "iz147518.cpp", 16, 5);
+        performTest("iz147518.cpp", 58, 17, "iz147518.cpp", 16, 5);
+    }
+
+    public void test144869() throws Exception {
+        // IZ#144869 : pair members are not resolved when accessed via iterator
+        performTest("iz144869.cpp", 282, 10, "iz144869.cpp", 81, 7);
+        performTest("iz144869.cpp", 283, 10, "iz144869.cpp", 82, 7);
+        performTest("iz144869.cpp", 288, 10, "iz144869.cpp", 81, 7);
+        performTest("iz144869.cpp", 289, 10, "iz144869.cpp", 82, 7);
+        performTest("iz144869.cpp", 294, 10, "iz144869.cpp", 81, 7);
+        performTest("iz144869.cpp", 295, 10, "iz144869.cpp", 82, 7);
+    }
+
+    public void test144869_2() throws Exception {
+        // IZ#144869 : pair members are not resolved when accessed via iterator
+        performTest("iz144869_2.cpp", 32, 7, "iz144869_2.cpp", 6, 5);
+        performTest("iz144869_2.cpp", 35, 8, "iz144869_2.cpp", 11, 5);
+        performTest("iz144869_2.cpp", 38, 8, "iz144869_2.cpp", 16, 5);
+        performTest("iz144869_2.cpp", 41, 8, "iz144869_2.cpp", 26, 5);
+    }
+
+    public void test161504() throws Exception {
+        // IZ#161504 : Unresolved ids in vector wrapper from Loki
+        performTest("iz161504.cpp", 248, 14, "iz161504.cpp", 49, 9);
+        performTest("iz161504.cpp", 250, 14, "iz161504.cpp", 49, 9);
+        performTest("iz161504.cpp", 252, 14, "iz161504.cpp", 49, 9);
+    }
 }

@@ -52,6 +52,7 @@ import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.spi.project.SingleMethod.COMMAND_RUN_SINGLE_METHOD;
 import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
 
 /**
@@ -59,8 +60,6 @@ import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
  * @author answer
  */
 public class JUnitTestMethodNode extends TestMethodNode{
-
-    public static final String COMMAND_RUN_SINGLE_METHOD = "run.single.method";
 
     public JUnitTestMethodNode(Testcase testcase, Project project, Lookup lookup) {
         super(testcase, project, lookup);

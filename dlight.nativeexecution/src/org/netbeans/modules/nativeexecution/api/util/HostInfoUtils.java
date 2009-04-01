@@ -19,10 +19,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -116,7 +115,7 @@ public final class HostInfoUtils {
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, cmd_test).setArguments("-f", fname);
+                    execEnv, cmd_test).setArguments("-f", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;
@@ -232,22 +231,11 @@ public final class HostInfoUtils {
 
     private static HostInfo getLocalHostInfo() {
         HostInfo info = new HostInfo();
-        info.os = System.getProperty("os.name"); // NOI18N
+        info.os = System.getProperty("os.name").replaceAll(" ", "_"); // NOI18N
         info.platform = System.getProperty("os.arch"); // NOI18N
 
         if (Utilities.isWindows()) {
-            String cygwinRoot = queryWindowsRegistry(
-                    "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
-                    "native", // NOI18N
-                    ".*native.*REG_SZ(.*)"); // NOI18N
-
-            if (cygwinRoot != null) {
-                info.shell = cygwinRoot + "\\bin\\sh"; // NOI18N
-            } else {
-                // TODO: mingGW, no *nix emulator...
-                info.shell = null;
-            }
-
+            info.shell = WindowsSupport.getInstance().getShell();
         } else {
             info.shell = "/bin/sh"; // NOI18N
         }
@@ -279,41 +267,11 @@ public final class HostInfoUtils {
         return info;
     }
 
-    private static String queryWindowsRegistry(String key, String param, String regExpr) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    "c:\\windows\\system32\\reg.exe", // NOI18N
-                    "query", key, "/v", param); // NOI18N
-            Process p = pb.start();
-            String s;
-            Pattern pattern = Pattern.compile(regExpr);
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            try {
-                p.waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            while (true) {
-                s = br.readLine();
-                if (s == null) {
-                    break;
-                }
-                Matcher m = pattern.matcher(s);
-                if (m.matches()) {
-                    return m.group(1).trim();
-                }
-            }
-        } catch (IOException e) {
-        }
-
-        return null;
-    }
-
     private static HostInfo getRemoteHostInfo(Session session) {
         ChannelExec echannel = null;
         StringBuilder command = new StringBuilder();
 
-        command.append("U=/bin/uname &&"); // NOI18N
+        command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
         command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
         command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
         command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N

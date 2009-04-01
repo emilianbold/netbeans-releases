@@ -41,22 +41,35 @@ package org.netbeans.modules.subversion.api;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -127,6 +140,10 @@ public class Subversion {
         return relativePaths;
     }
 
+    private static org.netbeans.modules.subversion.Subversion getSubversion() {
+        return org.netbeans.modules.subversion.Subversion.getInstance();
+    }
+
     private static String[] makeRelativePaths(RepositoryFile repositoryFile,
                                               RepositoryFile[] selectedFiles) {
         String[] result = new String[selectedFiles.length];
@@ -176,11 +193,10 @@ public class Subversion {
         return true;
     }
 
-
     /**
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
-     * 
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -203,6 +219,7 @@ public class Subversion {
                                         localFolder,
                                         null,
                                         null,
+                                        false,
                                         scanForNewProjects);
     }
 
@@ -210,6 +227,40 @@ public class Subversion {
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
      * 
+     * @param  repositoryUrl  URL of the Subversion repository
+     * @param  relativePaths  relative paths denoting folder the folder in the
+     *                       repository that is to be checked-out; to specify
+     *                       that the whole repository folder should be
+     *                       checked-out, use use a sing arrya containig one empty string
+     * @param  localFolder  local folder to store the checked-out files to
+     * @param  atLocalFolderLevel if true the contents from the remote url with be
+     *         checked out into the given local folder, otherwise a new folder with the remote
+     *         folders name will be created in the local folder
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
+     *
+     * @return  {@code true} if the checkout was successful,
+     *          {@code false} otherwise
+     */
+    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+                                                   String[] relativePaths,
+                                                   File localFolder,
+                                                   boolean atLocalFolderLevel,
+                                                   boolean scanForNewProjects)
+            throws MalformedURLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+        return checkoutRepositoryFolder(repositoryUrl,
+                                        relativePaths,
+                                        localFolder,
+                                        null,
+                                        null,
+                                        scanForNewProjects);
+    }
+
+    /**
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -228,32 +279,55 @@ public class Subversion {
                                                    File localFolder,
                                                    String username,
                                                    String password,
+                                                   boolean scanForNewProjects) throws MalformedURLException {
+        return checkoutRepositoryFolder(
+                repositoryUrl,
+                repoRelativePaths,
+                localFolder,
+                username,
+                password,
+                false,
+                scanForNewProjects);
+    }
+
+    /**
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     * 
+     * @param  repositoryUrl  URL of the Subversion repository
+     * @param  relativePaths  relative paths denoting folder the folder in the
+     *                       repository that is to be checked-out; to specify
+     *                       that the whole repository folder should be
+     *                       checked-out, use a string array containig one empty string
+     * @param  localFolder  local folder to store the checked-out files to
+     * @param  username  username for access to the given repository
+     * @param  password  password for access to the given repository
+     * @param  atLocalFolderLevel if true the contents from the remote url with be
+     *         checked out into the given local folder, otherwise a new folder with the remote
+     *         folders name will be created in the local folder
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
+     * @return  {@code true} if the checkout was successful,
+     *          {@code false} otherwise
+     */
+    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+                                                   String[] repoRelativePaths,
+                                                   File localFolder,
+                                                   String username,
+                                                   String password,
+                                                   boolean atLocalFolderLevel,
                                                    boolean scanForNewProjects)
             throws MalformedURLException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-
-        org.netbeans.modules.subversion.Subversion subversion
-                = org.netbeans.modules.subversion.Subversion.getInstance();
-        if(!subversion.checkClientAvailable()) {
-            return false;
-        }
 
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
-        SvnClient client;
-        try {
-            client = (username != null)
-                               ? subversion.getClient(svnUrl,
-                                                      username,
-                                                      (password != null) ? password
-                                                                         : "") //NOI18N
-                               : subversion.getClient(svnUrl);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, true);
+        SvnClient client = getClient(svnUrl, username, password);
+        if(client == null) {
             return false;
         }
 
@@ -275,7 +349,7 @@ public class Subversion {
                 client,
                 repositoryFiles,
                 localFolder,
-                false,             // do not checkout at working dir level
+                atLocalFolderLevel,
                 scanForNewProjects).waitFinished();
 
         try {
@@ -283,7 +357,97 @@ public class Subversion {
         } catch (Exception e) {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
+
+        // XXX shouldn't be done after every chcekout...
+        getSubversion().versionedFilesChanged();
+        SvnUtils.refreshParents(localFolder);
+        // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
+        getSubversion().getStatusCache().refreshRecursively(localFolder);
+
         return true;
+    }
+
+    /**
+     * Creates a new remote folder with the given url. Missing parents also wil be created.
+     *
+     * @param url
+     * @param user
+     * @param password
+     * @param message
+     * @throws java.net.MalformedURLException
+     * @throws java.io.IOException
+     */
+    public static void mkdir(String url, String user, String password, String message) throws MalformedURLException, IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+
+        SVNUrl svnUrl = new SVNUrl(url);
+
+        SvnClient client = getClient(svnUrl, user, password);
+        try {
+            client.mkdir(svnUrl, true, message);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, true);
+            throw new IOException(ex.getMessage());
+        }
+
+    }
+
+    /**
+     * Adds a remote url for the combos used in Checkout and Import wizard
+     *
+     * @param url
+     * @throws java.net.MalformedURLException
+     */
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new SVNUrl(url); // check url format
+
+        RepositoryConnection rc = new RepositoryConnection(url);
+        SvnModuleConfig.getDefault().insertRecentUrl(rc);        
+    }
+
+    /**
+     * Commits all local chages under the given root
+     *
+     * @param root
+     * @param message
+     */
+    public static void commit(final File[] roots, final String user, final String password, final String message) {
+        FileStatusCache cache = getSubversion().getStatusCache();
+        File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
+
+        if (files.length == 0) {
+            return;
+        }
+
+        SvnFileNode[] nodes = new SvnFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nodes[i] = new SvnFileNode(files[i]);            
+        }
+        CommitOptions[] commitOptions = SvnUtils.createDefaultCommitOptions(nodes, false);
+        final Map<SvnFileNode, CommitOptions> commitFiles = new HashMap<SvnFileNode, CommitOptions>(nodes.length);
+        for (int i = 0; i < nodes.length; i++) {
+            commitFiles.put(nodes[i], commitOptions[i]);
+        }
+
+        try {
+            final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
+            SvnProgressSupport support = new SvnProgressSupport() {
+                public void perform() {
+                    SvnClient client;
+                    try {
+                        client = getSubversion().getClient(repositoryUrl, user, password, this);
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
+                        return;
+                    }
+                    CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, null);
+                }
+            };
+            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+        }
     }
 
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
@@ -323,7 +487,7 @@ public class Subversion {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
             return false;
         }
-        if(!org.netbeans.modules.subversion.Subversion.getInstance().checkClientAvailable()) {
+        if(!getSubversion().checkClientAvailable()) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             return false;
         }
@@ -385,4 +549,21 @@ public class Subversion {
         return (buf != null) ? buf.toString() : str;
     }
 
+    private static SvnClient getClient(SVNUrl url, String username, String password) {
+        if(!getSubversion().checkClientAvailable()) {
+            return null;
+        }
+        
+        try {
+            if(username != null) {
+                password = password != null ? password : "";                    // NOI18N
+                return getSubversion().getClient(url, username, password);
+            } else {
+                return getSubversion().getClient(url);
+            }
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, true);
+        }        
+        return null;
+    }
 }

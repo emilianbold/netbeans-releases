@@ -108,8 +108,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
-    private static final boolean SKIP_UNNECESSARY_FAKE_FIXES = false;
-    private static final boolean SKIP_FAKE_FIXES_IN_GETTERS = true; // set false to get a deadlock
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -428,7 +426,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void postParse() {
-        fixFakeRegistrations();
+        fixFakeRegistrations(false);
         if (isValid()) {   // FIXUP: use a special lock here
             RepositoryUtils.put(this);
         }
@@ -441,6 +439,25 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } else {
             // FIXUP: there should be a notificator per project instead!
             Notificator.instance().reset();
+        }
+    }
+
+    /*package*/ void onProjectParseFinished(boolean prjLibsAlreadyParsed) {
+        if (fixFakeRegistrations(true)) {
+            if (isValid()) {   // FIXUP: use a special lock here
+                RepositoryUtils.put(this);
+            }
+            if (isValid()) {   // FIXUP: use a special lock here
+                Notificator.instance().registerChangedFile(this);
+                Notificator.instance().flush();
+                ProgressSupport.instance().fireFileParsingFinished(this);
+            } else {
+                // FIXUP: there should be a notificator per project instead!
+                Notificator.instance().reset();
+            }
+        }
+        if (prjLibsAlreadyParsed) {
+            clearFakeRegistrations();
         }
     }
 
@@ -890,6 +907,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }
+//        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+//            if (getAbsolutePath().toString().endsWith(".h")) { // NOI18N
+//                try {
+//                    Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+//                } catch (InterruptedException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        }
         if (aptFull != null) {
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
@@ -1098,9 +1124,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
-            fixFakeRegistrations();
-        }
         Collection<CsmOffsetableDeclaration> decls;
         try {
             declarationsLock.readLock().lock();
@@ -1113,9 +1136,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
-        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
-            fixFakeRegistrations();
-        }
         Iterator<CsmOffsetableDeclaration> out;
         try {
             declarationsLock.readLock().lock();
@@ -1133,9 +1153,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @return number of declarations
      */
     public int getDeclarationsSize(){
-//        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-//            fixFakeRegistrations(false);
-//        }
         try {
             declarationsLock.readLock().lock();
             return declarations.size();
@@ -1145,9 +1162,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
-        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
-            fixFakeRegistrations();
-        }
         Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
         try {
             declarationsLock.readLock().lock();
@@ -1188,9 +1202,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
-        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
-            fixFakeRegistrations();
-        }
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
             declarationsLock.readLock().lock();
@@ -1216,9 +1227,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
-        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
-            fixFakeRegistrations();
-        }
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
             declarationsLock.readLock().lock();
@@ -1491,19 +1499,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             }
         }
-        if (SKIP_UNNECESSARY_FAKE_FIXES && fixFakes) {
-            fixFakeRegistrations();
-        }
     }
 
-    public void onFakeRegisration(FunctionImplEx decl) {
+    public final void onFakeRegisration(FunctionImplEx decl) {
         synchronized (fakeRegistrationUIDs) {
             CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
             fakeRegistrationUIDs.add(uidDecl);
         }
     }
 
-    public void clearFakeRegistrations() {
+    private void clearFakeRegistrations() {
         synchronized (fakeRegistrationUIDs) {
             fakeRegistrationUIDs.clear();
         }
@@ -1516,23 +1521,25 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      *
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
-    public void fixFakeRegistrations() {
+    private boolean fixFakeRegistrations(boolean projectParsedMode) {
+        boolean wereFakes = false;
         synchronized (fakeRegistrationUIDs) {
             if (!alreadyInFixFakeRegistrations) {
                 alreadyInFixFakeRegistrations = true;
                 if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
                     alreadyInFixFakeRegistrations = false;
-                    return;
+                    return false;
                 }
                 if (fakeRegistrationUIDs.size() > 0) {
                     for (CsmUID<? extends CsmDeclaration> fakeUid : fakeRegistrationUIDs) {
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
                             if (curElem instanceof FunctionImplEx) {
-                                ((FunctionImplEx) curElem).fixFakeRegistration();
+                                wereFakes = true;
                                 parseCount++;
+                                ((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode);
                             } else {
-                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass() + " for fake UID:" + fakeUid)); // NOI18N
                             }
                         }
                     }
@@ -1540,6 +1547,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 alreadyInFixFakeRegistrations = false;
             }
         }
+        return wereFakes;
     }
     
     public 
@@ -1745,7 +1753,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public static class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
+    public static final class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
 
         private int start = 0;
         private CharSequence name;

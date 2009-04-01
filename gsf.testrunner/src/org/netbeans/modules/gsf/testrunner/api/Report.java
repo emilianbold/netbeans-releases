@@ -71,6 +71,7 @@ public final class Report {
     private Collection<Testcase> tests;
     private FileLocator fileLocator;
     private Project project;
+    private boolean aborted;
 
     protected boolean completed;
 
@@ -82,6 +83,7 @@ public final class Report {
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.tests = new ArrayList<Testcase>(10);
         this.completed = true;
+        this.aborted = false;
     }
 
     public FileLocator getFileLocator() {
@@ -121,7 +123,9 @@ public final class Report {
     }
     
     public Status getStatus() {
-        if (errors > 0) {
+        if (aborted){
+            return Status.ABORTED;
+        } else if (errors > 0) {
             return Status.ERROR;
         } else if (failures > 0) {
             return Status.FAILED;
@@ -280,5 +284,12 @@ public final class Report {
     public void setProject(Project project) {
         this.project = project;
     }
-    
+
+    public boolean isAborted() {
+        return aborted;
+    }
+
+    public void setAborted(boolean aborted) {
+        this.aborted = aborted;
+    }
 }

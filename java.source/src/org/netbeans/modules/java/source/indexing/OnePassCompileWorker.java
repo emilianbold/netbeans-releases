@@ -41,8 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.util.Abort;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.net.URI;
@@ -62,6 +61,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
@@ -74,7 +74,6 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -111,24 +110,26 @@ final class OnePassCompileWorker extends CompileWorker {
                         jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, null);
                     }
                     CompileTuple tuple = createTuple(context, javaContext, i);
-                    for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
-                        if (!stopAfterParse)
-                            units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
-                        computeFQNs(file2FQNs, cut, tuple.jfo);
+                    if (tuple != null) {
+                        for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
+                            if (!stopAfterParse)
+                                units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
+                            computeFQNs(file2FQNs, cut, tuple.jfo);
+                        }
                     }
                 } catch (Throwable t) {
-                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        final String message = String.format("OnePassCompileWorker caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                    FileUtil.getFileDisplayName(context.getRoot()),
+                        final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                     i.getURL().toString(),
+                                    FileUtil.getFileDisplayName(context.getRoot()),
                                     bootPath == null   ? null : bootPath.toString(),
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
                                     );
-                        JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
+                        JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
                     }
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -138,18 +139,6 @@ final class OnePassCompileWorker extends CompileWorker {
                         jt = null;
                         units.clear();
                         System.gc();
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
-                                i.getURL().toString(),
-                                bootPath == null   ? null : bootPath.toString(),
-                                classPath == null  ? null : classPath.toString(),
-                                sourcePath == null ? null : sourcePath.toString()
-                                ));
-// XXX: commenting out because of #160618
-//                        Exceptions.printStackTrace(t);
                     }
                 }
             }
@@ -203,19 +192,23 @@ final class OnePassCompileWorker extends CompileWorker {
                     finished.add(active.indexable);
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
+            } catch (CouplingAbort ca) {
+                //coupling error
+                //TODO: check if the source sig file ~ the source java file:
+                TreeLoader.dumpCouplingAbort(ca, active.jfo);
             } catch (Throwable t) {
-                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                    final String message = String.format("OnePassCompileWorker caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
+                    final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                 active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
                                 bootPath == null   ? null : bootPath.toString(),
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
                                 );
-                    JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
+                    JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
                 }
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
@@ -227,22 +220,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 else if (t instanceof MissingPlatformError) {
                     //Handled above
                     throw (MissingPlatformError) t;
-                }
-                else {
-                    if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                FileUtil.getFileDisplayName(context.getRoot()),
-                                active.jfo.toUri().toString(),
-                                bootPath == null   ? null : bootPath.toString(),
-                                classPath == null  ? null : classPath.toString(),
-                                sourcePath == null ? null : sourcePath.toString()
-                                ));
-// XXX: commenting out because of #160618
-//                        Exceptions.printStackTrace(t);
-                    }
                 }
             }
             return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);

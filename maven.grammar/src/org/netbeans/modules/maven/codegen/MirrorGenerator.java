@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.codegen;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -88,6 +90,11 @@ public class MirrorGenerator implements CodeGenerator {
     }
 
     public void invoke() {
+        try {
+            model.sync();
+        } catch (IOException ex) {
+            Logger.getLogger(MirrorGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
+        }
         if (!model.getState().equals(State.VALID)) {
             //TODO report somehow, status line?
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(MirrorGenerator.class, "MSG_Cannot_Parse"));

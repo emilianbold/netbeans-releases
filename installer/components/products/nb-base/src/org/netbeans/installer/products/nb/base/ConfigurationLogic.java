@@ -737,6 +737,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String SHORTCUT_FILENAME =
             "netbeans-{display-version}.desktop"; // NOI18N
     public static final String[] SHORTCUT_CATEGORIES = new String[] {
+        "Application",
         "Development", // NOI18N
         "Java",// NOI18N
         "IDE"// NOI18N

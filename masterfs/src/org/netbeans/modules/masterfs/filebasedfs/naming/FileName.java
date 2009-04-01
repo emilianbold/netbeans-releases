@@ -45,6 +45,7 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
@@ -55,10 +56,10 @@ public class FileName implements FileNaming {
     private final FileNaming parent;
     private Integer id;
 
-    protected FileName(final FileNaming parent, final File file) {
+    protected FileName(final FileNaming parent, final FileInfo fileInfo) {
         this.parent = parent;
-        this.name = parseName(parent, file);
-        id = NamingFactory.createID(file);
+        this.name = parseName(parent, fileInfo.getFile());
+        id = fileInfo.getID();
     }
 
     private static String parseName(final FileNaming parent, final File file) {

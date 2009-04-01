@@ -79,7 +79,8 @@ public class JspUtils {
         String mimeType = jspSnapshot.getMimeType();
 
         assert mimeType.equals(JSPKit.JSP_MIME_TYPE) ||
-                mimeType.equals(JSPKit.TAG_MIME_TYPE);
+               mimeType.equals(JSPKit.TAG_MIME_TYPE) ||
+               mimeType.equals("text/x-facelet+x-jsp") : "Unexpected MIME type " + mimeType; // NOI18N
 
         FileObject fo = jspSnapshot.getSource().getFileObject();
         if(fo == null) {

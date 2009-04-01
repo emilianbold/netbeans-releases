@@ -558,7 +558,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
-    
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
     public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;

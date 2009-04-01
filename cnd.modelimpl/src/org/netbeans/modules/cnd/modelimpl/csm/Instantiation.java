@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -59,12 +59,14 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -84,6 +86,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     private Instantiation(T declaration, CsmType instType) {
         this.declaration = declaration;
         this.mapping = new HashMap<CsmTemplateParameter, CsmType>();
+        // inherit mapping
+        if(instType instanceof Type) {
+            CsmInstantiation inst = ((Type)instType).getInstantiation();
+            if(inst != null) {
+                mapping.putAll(inst.getMapping());
+            }
+        }
         // create mapping map
         if (CsmKindUtilities.isTemplate(declaration)) {
             Iterator<CsmType> typeIter = instType.getInstantiationParams().iterator();
@@ -101,11 +110,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                             mapping.put(param, defaultType);
                         }
                     }
-                }                
+                }
             }
         }
     }
-    
+
     private Instantiation(T declaration, Map<CsmTemplateParameter, CsmType> mapping) {
         this.declaration = declaration;
         this.mapping = mapping;
@@ -150,7 +159,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     public boolean isValid() {
         return CsmBaseUtilities.isValid(declaration);
     }
-    
+
     /*
      * The only public method to create a new instantiation
      */
@@ -166,7 +175,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
         return template;
     }
-    
+
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmType> mapping) {
         if (template instanceof CsmClass) {
             return new Class((CsmClass)template, mapping);
@@ -227,7 +236,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     public CsmUID<Instantiation> getUID() {
         return new InstantiationUID(this);
     }
-    
+
     //////////////////////////////
     ////////////// STATIC MEMBERS
     public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
@@ -237,7 +246,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
             assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+toString();
         }
-        
+
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
             super(clazz, mapping);
         }
@@ -300,7 +309,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
             return res.iterator();
         }
-        
+
         public int getLeftBracketOffset() {
             return declaration.getLeftBracketOffset();
         }
@@ -406,16 +415,16 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
     }
-    
+
     private static class Function extends Instantiation<CsmFunction> implements CsmFunction {
         private final CsmType retType;
-        
+
         public Function(CsmFunction function, CsmType instantiation) {
             super(function, instantiation);
             assert instantiation.isInstantiation() : "Instantiation without parameters"; // NOI18N
             this.retType = createType(function.getReturnType(), this);
         }
-        
+
         public Function(CsmFunction function, Map<CsmTemplateParameter, CsmType> mapping) {
             super(function, mapping);
             this.retType = createType(function.getReturnType(), this);
@@ -436,11 +445,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public boolean isOperator() {
             return declaration.isOperator();
         }
-        
+
         public OperatorKind getOperatorKind() {
             return declaration.getOperatorKind();
         }
-        
+
         public CharSequence getSignature() {
             return declaration.getSignature();
         }
@@ -475,7 +484,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public CsmFunction getDeclaration() {
             return declaration.getDeclaration();
         }
-        
+
         public CharSequence getDeclarationText() {
             return declaration.getDeclarationText();
         }
@@ -535,7 +544,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-    
+
     private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
         private final CsmType type;
 
@@ -569,7 +578,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-    
+
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
 
@@ -698,7 +707,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public OperatorKind getOperatorKind() {
             return declaration.getOperatorKind();
         }
-        
+
         public CsmCompoundStatement getBody() {
             return ((CsmFunctionDefinition)declaration).getBody();
         }
@@ -706,13 +715,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public CsmFunction getDeclaration() {
             return ((CsmFunctionDefinition)declaration).getDeclaration();
         }
-        
+
         @Override
         public String toString() {
             return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-    
+
     private static class Parameter extends Instantiation<CsmParameter> implements CsmParameter {
         private final CsmType type;
 
@@ -755,13 +764,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
 
-    private static Type createType(CsmType type, CsmInstantiation instantiation) {
+    public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
-            CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
+            CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
             if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
                 return new TemplateParameterType(type, instantiation);
-//            } else {
-//                type = instantiatedType;
             }
         }
         if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
@@ -770,12 +777,33 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
         return new Type(type, instantiation);
     }
-    
+
+    private static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
+        if (CsmKindUtilities.isTemplateParameterType(type)) {
+            Map<CsmTemplateParameter, CsmType> mapping = TemplateUtils.gatherMapping(instantiation);
+            CsmType instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+            int iteration = MAX_INHERITANCE_DEPTH;
+            while(CsmKindUtilities.isTemplateParameterType(instantiatedType) && iteration != 0) {
+                CsmType nextInstantiatedType = mapping.get(((CsmTemplateParameterType) instantiatedType).getParameter());
+                if(nextInstantiatedType != null) {
+                    instantiatedType = nextInstantiatedType;
+                } else {
+                    break;
+                }
+                iteration--;
+            }
+            if(instantiatedType != null) {
+                return instantiatedType;
+            }
+        }
+        return type;
+    }
+
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation) {
             super(type, instantiation);
         }
-        
+
         public CsmTemplateParameter getParameter() {
             return ((CsmTemplateParameterType)instantiatedType).getParameter();
         }
@@ -784,7 +812,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return ((CsmTemplateParameterType)instantiatedType).getTemplateType();
         }
     }
-    
+
     private static class Type implements CsmType, Resolver.SafeClassifierProvider, SafeTemplateBasedProvider {
         protected final CsmType originalType;
         protected final CsmInstantiation instantiation;
@@ -797,24 +825,28 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             inst = type.isInstantiation();
             CsmType origType = type;
             CsmType newType = type;
-            
+
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
-                newType = instantiation.getMapping().get(paramType.getParameter());
+                newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
+                    newType = TypeFactory.createType(newType, origType.getPointerDepth(), origType.isReference(), origType.getArrayDepth(), origType.isConst());
                     CsmTemplateParameter p = paramType.getParameter();
                     if (CsmKindUtilities.isTemplate(p)) {
                         CsmType paramTemplateType = paramType.getTemplateType();
                         if (paramTemplateType != null) {
                             List<CsmType> paramInstParams = paramTemplateType.getInstantiationParams();
-                            if (paramInstParams != null && !paramInstParams.isEmpty()) {
-                                List<CsmType> newInstParams = newType.getInstantiationParams();
-                                if(newInstParams != null) {
-                                    for (CsmType csmType : paramInstParams) {
-                                        if(!newInstParams.contains(csmType)) {
-                                            newInstParams.add(csmType);
-                                        }
+                            if (!paramInstParams.isEmpty()) {
+                                List<CsmType> newInstParams = new ArrayList<CsmType>(newType.getInstantiationParams());
+                                boolean updateInstParams = false;
+                                for (CsmType csmType : paramInstParams) {
+                                    if (!newInstParams.contains(csmType)) {
+                                        newInstParams.add(csmType);
+                                        updateInstParams = true;
                                     }
+                                }
+                                if(updateInstParams) {
+                                    newType = TypeFactory.createType(newType, newInstParams);
                                 }
                             }
                         }
@@ -824,11 +856,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     newType = type;
                 }
             }
-            this.originalType = origType;
-            this.instantiatedType = newType;
-            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+this.toString();
+
+            if(!isRecursion(this, MAX_INHERITANCE_DEPTH)) {
+                this.originalType = origType;
+                this.instantiatedType = newType;
+            } else {
+                CndUtils.assertTrue(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
+                this.originalType = origType;
+                this.instantiatedType = origType;
+            }
         }
-        
+
         private boolean instantiationHappened() {
             return originalType != instantiatedType;
         }
@@ -840,6 +878,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public CharSequence getText() {
             if (originalType instanceof TypeImpl) {
                 return ((TypeImpl)originalType).decorateText(getClassifierText(), this, false, null);
+            }
+            if (originalType instanceof NestedType) {
+                return ((NestedType)originalType).getOwnText();
             }
             return originalType.getText();
         }
@@ -978,9 +1019,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     }
                     if (CsmKindUtilities.isTemplate(classifier) &&
                             !CsmKindUtilities.isTemplateParameter(classifier)) {
-                        resolved = (CsmClassifier)Class.create(
-                                (CsmTemplate)classifier, instantiation.getMapping());
-                        return resolved;
+                        CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                        CsmObject obj;
+                        if(ip instanceof InstantiationProviderImpl) {
+                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), resolver);
+                        } else {
+                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile());
+                        }
+                        if (CsmKindUtilities.isClassifier(obj)) {
+                            resolved = (CsmClassifier) obj;
+                            return resolved;
+                        }
                     }
                 }
 
@@ -989,7 +1038,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 } else {
                     resolved = instantiatedType.getClassifier();
                 }
-                
+
                 if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
@@ -1000,7 +1049,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
             return resolved;
         }
-        
+
         public CsmClassifier getClassifier() {
             return getClassifier(null);
         }
@@ -1016,7 +1065,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 return originalType.getArrayDepth();
             }
         }
-        
+
+        public CsmInstantiation getInstantiation() {
+            return instantiation;
+        }
+
         @Override
         public String toString() {
             String res = "INSTANTIATION OF TYPE: " + originalType + " with types (" + instantiation.getMapping() + ")"; // NOI18N
@@ -1082,7 +1135,16 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     }
                 }
                 if (isInstantiation() && CsmKindUtilities.isTemplate(resolved) && !((CsmTemplate) resolved).getTemplateParameters().isEmpty()) {
-                    resolved = (CsmClassifier) Instantiation.create((CsmTemplate) resolved, this);
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    CsmObject obj;
+                    if (ip instanceof InstantiationProviderImpl) {
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), resolver);
+                    } else {
+                        obj = ip.instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile());
+                    }
+                    if (CsmKindUtilities.isClassifier(obj)) {
+                        resolved = (CsmClassifier) obj;
+                    }
                 }
                 if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember) resolved;
@@ -1116,7 +1178,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return this.ref;
         }
         ////////////////////////////////////////////////////////////////////////////
-        // impl for Persistent 
+        // impl for Persistent
 
         public void write(DataOutput output) throws IOException {
             // write nothing

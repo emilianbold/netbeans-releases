@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -148,7 +149,7 @@ public class RunDialogAction extends NodeAction {
                     ProjectActionEvent.Type.RUN,
                     IpeUtils.getBaseName(path) + " (run)", // NOI18N
                     path,
-                    ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive(),
+                    (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive(),
                     profile,
                     false);
             ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});

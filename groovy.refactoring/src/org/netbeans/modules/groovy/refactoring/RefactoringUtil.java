@@ -144,7 +144,7 @@ public class RefactoringUtil {
         if (p==null) return false;
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for (int j = 0; j < gr.length; j++) {
                     if (fo==gr[j].getRootFolder()) return true;

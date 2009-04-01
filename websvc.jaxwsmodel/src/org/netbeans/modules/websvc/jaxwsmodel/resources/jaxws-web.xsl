@@ -101,17 +101,6 @@ made subject to such option by the copyright holder.
                         </target>
                     </xsl:if>
                 </xsl:for-each>
-                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
-                    <target name="wsgen-service-compile">
-                        <xsl:attribute name="depends">
-                            <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
-                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                                <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
-                            </xsl:for-each>
-                        </xsl:attribute>
-                        <webproject2:javac srcdir="${{build.generated.sources.dir}}/jax-ws" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                    </target>
-                </xsl:if>
             </xsl:if>
             <!-- END: Invoke wsgen if web service is not JSR 109 -->
 

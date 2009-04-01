@@ -48,7 +48,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
@@ -129,7 +128,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        JsIndex index = JsIndex.get(GsfUtilities.getRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
+        JsIndex index = JsIndex.get(QuerySupport.findRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {
@@ -237,7 +236,7 @@ public class JsTypeSearcher implements IndexSearcher {
 //            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
 //        }
 
-        JsIndex index = JsIndex.get(GsfUtilities.getRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
+        JsIndex index = JsIndex.get(QuerySupport.findRoots(project, null, Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX /*|| kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP*/) {

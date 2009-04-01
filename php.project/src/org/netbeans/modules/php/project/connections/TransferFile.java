@@ -126,7 +126,6 @@ public final class TransferFile {
         assert remoteFile != null;
         assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
         assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
-        assert !baseDirectory.endsWith(SEPARATOR) && !parentDirectory.endsWith(SEPARATOR) : "Both base and parent directory cannot end with '" + SEPARATOR + "' [" + baseDirectory + ", " + parentDirectory + "]";
         assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
         String name = remoteFile.getName();

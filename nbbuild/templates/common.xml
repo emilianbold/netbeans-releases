@@ -103,6 +103,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-javac-init" depends="build-init">
+        <property name="bootclasspath.mac" value=""/>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
@@ -115,7 +116,10 @@ made subject to such option by the copyright holder.
         <!-- Also needs to include transitive dependencies. -->
         <presetdef name="nb-javac">
             <custom-javac>
-                <bootclasspath path="${nbjdk.bootclasspath}"/>
+                <bootclasspath>
+                    <path path="${bootclasspath.mac}"/>
+                    <path path="${nbjdk.bootclasspath}"/>
+                </bootclasspath>
                 <javacclasspath refid="javacimpl"/>
             </custom-javac>
         </presetdef>
@@ -574,6 +578,7 @@ made subject to such option by the copyright holder.
                 </batchtest>
                 <classpath refid="test.@{test.type}.run.cp"/>
                 <syspropertyset refid="test.@{test.type}.properties"/>
+                <jvmarg value="-Xbootclasspath/p:${bootclasspath.mac}"/>
                 <jvmarg line="${test.run.args}"/>
                 <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                 <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
@@ -628,6 +633,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
+                    <jvmarg value="-Xbootclasspath/p:${bootclasspath.mac}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                 </junit>
@@ -658,6 +664,7 @@ made subject to such option by the copyright holder.
                         <pathelement location="${ant.home}/lib/ant.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
                     </classpath>
+                    <jvmarg value="-Xbootclasspath/p:${bootclasspath.mac}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <arg value="${test.class}"/>
                     <arg value="showoutput=true"/>
@@ -792,6 +799,7 @@ made subject to such option by the copyright holder.
                     <jvmarg line="${profiler.info.jvmargs}"/>
                     <test name="${profile.class}" todir="${build.test.@{test.type}.results.dir}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
+                    <jvmarg value="-Xbootclasspath/p:${bootclasspath.mac}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
                     <formatter type="brief" usefile="false"/>

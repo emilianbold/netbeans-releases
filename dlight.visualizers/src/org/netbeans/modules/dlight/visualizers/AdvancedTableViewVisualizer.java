@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  * @author mt154047
  */
 final class AdvancedTableViewVisualizer extends JPanel implements
-        Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider  {
+    Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
     private TableDataProvider provider;
     private AdvancedTableViewVisualizerConfiguration configuration;
@@ -117,12 +117,12 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
-        List<Property> result = new ArrayList();
+        List<Property> result = new ArrayList<Property>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                        c.getColumnUName(), c.getColumnUName(), true, false) {
+                    c.getColumnUName(), c.getColumnUName(), true, false) {
 
                     @Override
                     public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -139,10 +139,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
     }
-
- 
-
-
 
     public ExplorerManager getExplorerManager() {
         return explorerManager;
@@ -165,11 +161,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        synchronized(queryLock){
-            if (task != null){
-                if (!task.isDone()){
-                    task.cancel(true);
-                }
+        synchronized (queryLock) {
+            if (task != null) {
+                task.cancel(true);
             }
         }
         if (timerHandler != null) {
@@ -218,12 +212,11 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     protected void updateList(List<DataRow> list) {
-        synchronized(uiLock){
+        synchronized (uiLock) {
             setNonEmptyContent();
             this.explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
         }
     }
-
 
     private void setNonEmptyContent() {
         isEmptyContent = false;
@@ -279,26 +272,24 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void asyncFillModel() {
-        synchronized(queryLock){
-            if (task != null){
-                if (!task.isDone()){
-                    task.cancel(true);
-                }
+        synchronized (queryLock) {
+            if (task != null) {
+                task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>(){
+                    Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>() {
 
                         public List<DataRow> call() throws Exception {
                             return provider.queryData(configuration.getMetadata());
                         }
-
-                    },  "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
-                    try{
+                    }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+                    try {
                         final List<DataRow> list = queryDataTask.get();
                         final boolean isEmptyConent = list == null || list.isEmpty();
                         UIThread.invoke(new Runnable() {
+
                             public void run() {
                                 setContent(isEmptyConent);
                                 if (isEmptyConent) {
@@ -309,9 +300,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                             }
                         });
                         return Boolean.valueOf(true);
-                    }catch(ExecutionException ex){
+                    } catch (ExecutionException ex) {
                         Thread.currentThread().interrupt();
-                    }catch(InterruptedException e){
+                    } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
                     return Boolean.valueOf(false);
@@ -358,8 +349,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         isShown = false;
     }
 
-
-    public class DataChildren extends Children.Keys {
+    public class DataChildren extends Children.Keys<DataRow> {
 
         private final List<DataRow> list;
 
@@ -368,9 +358,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
-            DataRow row = (DataRow) key;
-            return new Node[]{new DataRowNode(row)};
+        protected Node[] createNodes(DataRow key) {
+            return new Node[]{new DataRowNode(key)};
         }
 
         @Override
@@ -391,12 +380,12 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList();
+                    List<Property> result = new ArrayList<Property>();
                     for (String columnName : dataRow.getColumnNames()) {
                         if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);
                             result.add(new PropertySupport(columnName, c.getColumnClass(),
-                                    c.getColumnUName(), c.getColumnUName(), true, false) {
+                                c.getColumnUName(), c.getColumnUName(), true, false) {
 
                                 @Override
                                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -420,7 +409,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         public DataRow getDataRow() {
             return dataRow;
         }
-        
 
         @Override
         public String getDisplayName() {
@@ -442,7 +430,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             }
 
             PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
-            if (editor != null && value!= null && !(value + "").trim().equals("")) {
+            if (editor != null && value != null && !(value + "").trim().equals("")) {
                 editor.setValue(value);
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
             }
@@ -450,4 +438,5 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
+
 }
