@@ -141,6 +141,23 @@ public class Legend extends JPanel {
         }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (isEnabled()) {
+            super.paintComponent(g);
+        } else {
+            g.setColor(GraphConfig.LEGEND_COLOR);
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+
+    @Override
+    protected void paintChildren(Graphics g) {
+        if (isEnabled()) {
+            super.paintChildren(g);
+        }
+    }
+
     private static class ColorIcon implements Icon {
 
         private static final int WIDTH = 10;

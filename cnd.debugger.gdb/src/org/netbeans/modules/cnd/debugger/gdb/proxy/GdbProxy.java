@@ -419,7 +419,7 @@ public class GdbProxy {
      */
     public void exec_interrupt() {
         if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (Utilities.isWindows()) {
+            if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 debugger.kill(18);
             } else {
                 debugger.kill(2);
