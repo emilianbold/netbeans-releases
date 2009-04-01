@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
@@ -1876,17 +1877,30 @@ abstract public class CsmCompletionQuery {
 
         private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp) {
             if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
-                List<CsmType> params = new ArrayList<CsmType>();
+                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
                 int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
                 for (int i = 0; i < paramsNumber; i++) {
                     CsmCompletionExpression paramInst = exp.getParameter(i + 1);
                     if (paramInst != null) {
-                        params.add(resolveType(paramInst));
+                        switch (paramInst.getExpID()) {
+                            case CsmCompletionExpression.CONSTANT:
+                                params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
+                                        contextFile, paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                break;
+                            default:
+                                CsmType type = resolveType(paramInst);
+                                if (type != null) {
+                                    params.add(ip.createTypeBasedSpecializationParameter(type));
+                                } else {
+                                    params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
+                                            contextFile, paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                }
+                        }
                     } else {
                         break;
                     }
                 }
-                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                 return ip.instantiate(template, params, getFinder().getCsmFile());
             }
             return null;

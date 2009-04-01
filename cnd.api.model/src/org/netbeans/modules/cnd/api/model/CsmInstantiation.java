@@ -61,8 +61,8 @@ public interface CsmInstantiation extends CsmObject {
     CsmOffsetableDeclaration getTemplateDeclaration();
     
     /**
-     * returns mapping of template parameters to the types
+     * returns mapping of template parameters to the values
      * @return
      */
-    Map<CsmTemplateParameter, CsmType> getMapping();
+    Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping();
 }

@@ -37,52 +37,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.cnd.debugger.gdb.ui;
 
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
-/**
- * @author Alexey Vladykin
- */
-public class RepairPanel extends JPanel {
-
-    private static final int MARGIN = 2;
-    private final JLabel label;
-    private final JButton button;
-
-    public RepairPanel(ActionListener action) {
-        setOpaque(false);
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(Box.createVerticalGlue());
-        label = new JLabel("<html><center>Indicator needs special access rights. To fix the problem click</center></html>");
-        label.setAlignmentX(0.5f);
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setVerticalAlignment(SwingConstants.TOP);
-        label.setForeground(GraphConfig.TEXT_COLOR);
-        label.setToolTipText("Indicator needs special access rights. To fix the problem click \"Repair\" button");
-        add(label);
-        add(Box.createVerticalStrut(MARGIN));
-        button = new JButton("Repair...");
-        button.setAlignmentX(0.5f);
-        button.addActionListener(action);
-        add(button);
-        add(Box.createVerticalGlue());
+public final class AutosAction extends AbstractAction {
+    public AutosAction() {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
+        super(NbBundle.getMessage(RegistersAction.class, "CTL_AutosAction"));
+        //putValue(SMALL_ICON, ImageUtilities.loadImageIcon(RegistersTopComponent.ICON_PATH, true));
     }
 
-    @Override
-    public void doLayout() {
-        Dimension size = new Dimension(getWidth(), Math.min(
-                getHeight() - button.getPreferredSize().height - MARGIN, label.getMinimumSize().height));
-        label.setMaximumSize(size);
-        label.setPreferredSize(size);
-        super.doLayout();
+    public void actionPerformed(ActionEvent evt) {
+        TopComponent win = AutosTopComponent.findInstance();
+        win.open();
+        win.requestActive();
     }
-
 }

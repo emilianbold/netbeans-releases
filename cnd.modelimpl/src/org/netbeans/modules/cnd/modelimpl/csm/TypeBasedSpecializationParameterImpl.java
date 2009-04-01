@@ -58,7 +58,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -75,9 +75,18 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableBase impleme
 
     private final CsmType type;
 
-    TypeBasedSpecializationParameterImpl(CsmType type, CsmFile file, int start, int end) {
+    public TypeBasedSpecializationParameterImpl(CsmType type, CsmFile file, int start, int end) {
         super(file, start, end);
         this.type = type;
+    }
+
+    public TypeBasedSpecializationParameterImpl(CsmType type) {
+        super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
+        this.type = type;
+    }
+
+    public CsmType getType() {
+        return type;
     }
 
     public CsmClassifier getClassifier() {
@@ -100,7 +109,7 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableBase impleme
         return type.isInstantiation();
     }
 
-    public List<CsmType> getInstantiationParams() {
+    public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }
 
@@ -134,6 +143,11 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableBase impleme
 
     public CharSequence getCanonicalText() {
         return type.getCanonicalText();
+    }
+
+    @Override
+    public CharSequence getText() {
+        return type.getText();
     }
 
     @Override
