@@ -1,4 +1,4 @@
-t1 T1
+t1 T1<1>
 DataSource<class T>
 Person
 T1<int i>

@@ -134,12 +134,13 @@ class GraphPainter {
      * @param y  upper coordinate of drawing area
      * @param w  width of drawing area
      * @param h  height of drawing area
+     * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, int x, int y, int w, int h) {
+    public void paint(Graphics g, int scale, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
-                paintGrid(g, x, y, w, h);
+                paintGrid(g, x, y, w, h, ticks);
                 paintGraph(g, scale, x, y, w, h);
             }
         }
@@ -160,7 +161,7 @@ class GraphPainter {
     /**
      * Paints background grid.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h) {
+    private void paintGrid(Graphics g, int x, int y, int w, int h, boolean ticks) {
         // vertical lines
         g.setColor(GraphConfig.GRID_COLOR);
         int scrolled = GraphConfig.STEP_SIZE * (data.size() - w / GraphConfig.STEP_SIZE + 1);
@@ -168,37 +169,41 @@ class GraphPainter {
         for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
             g.drawLine(gridX, y, gridX, y + h - 1);
         }
-        g.setColor(GraphConfig.BORDER_COLOR);
-        for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
-            g.drawLine(gridX, y + h - 1, gridX, y + h - 5);
+        if (ticks) {
+            g.setColor(GraphConfig.BORDER_COLOR);
+            for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
+                g.drawLine(gridX, y + h - 1, gridX, y + h - 5);
+            }
         }
         // horizontal lines
-        paintHLine(g, x, x + w - 1, y + (int)(GraphConfig.FONT_SIZE / 2), MAX_ALPHA); // yes, font size affects how we paint grid
-        paintHLine(g, x, x + w - 1, y + h - 1, MAX_ALPHA);
-        paintHLines(g, x, y + 5, x + w - 1, y + h - 1);
+        paintHLine(g, x, x + w - 1, y + (int)(GraphConfig.FONT_SIZE / 2), MAX_ALPHA, ticks); // yes, font size affects how we paint grid
+        paintHLine(g, x, x + w - 1, y + h - 1, MAX_ALPHA, ticks);
+        paintHLines(g, x, y + 5, x + w - 1, y + h - 1, ticks);
     }
 
     /**
      * Recursively paints horizontal grid lines.
      */
-    private static void paintHLines(Graphics g, int x1, int y1, int x2, int y2) {
+    private static void paintHLines(Graphics g, int x1, int y1, int x2, int y2, boolean ticks) {
         if (y2 - y1 <= GraphConfig.GRID_SIZE) { return; }
         int my = (y1 + y2) / 2; // middle y
-        paintHLine(g, x1, x2, my, map(y2 - y1, 3 * GraphConfig.GRID_SIZE / 2, 2 * GraphConfig.GRID_SIZE, 0, MAX_ALPHA));
+        paintHLine(g, x1, x2, my, map(y2 - y1, 3 * GraphConfig.GRID_SIZE / 2, 2 * GraphConfig.GRID_SIZE, 0, MAX_ALPHA), ticks);
         if (2 * GraphConfig.GRID_SIZE <= y2 - y1) {
-            paintHLines(g, x1, y1, x2, my);
-            paintHLines(g, x1, my, x2, y2);
+            paintHLines(g, x1, y1, x2, my, ticks);
+            paintHLines(g, x1, my, x2, y2, ticks);
         }
     }
 
     /**
      * Paints single horizontal line of the grid.
      */
-    private static void paintHLine(Graphics g, int x1, int x2, int y, int alpha) {
+    private static void paintHLine(Graphics g, int x1, int x2, int y, int alpha, boolean ticks) {
         g.setColor(transparent(GraphConfig.GRID_COLOR, alpha));
         g.drawLine(x1, y, x2, y);
-        g.setColor(transparent(GraphConfig.BORDER_COLOR, alpha));
-        g.drawLine(x1, y, x1 + GraphConfig.GRID_SIZE / 2, y);
+        if (ticks) {
+            g.setColor(transparent(GraphConfig.BORDER_COLOR, alpha));
+            g.drawLine(x1, y, x1 + GraphConfig.GRID_SIZE / 2, y);
+        }
     }
 
     /**

@@ -55,16 +55,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -77,9 +73,24 @@ public class ExpressionBasedSpecializationParameterImpl extends OffsetableBase i
 
     private final CharSequence expression;
 
-    ExpressionBasedSpecializationParameterImpl(CsmExpressionStatement expression, CsmFile file, int start, int end) {
+    public ExpressionBasedSpecializationParameterImpl(CsmExpressionStatement expression, CsmFile file, int start, int end) {
         super(file, start, end);
         this.expression = NameCache.getManager().getString(expression.getText());
+    }
+
+    public ExpressionBasedSpecializationParameterImpl(String expression, CsmFile file, int start, int end) {
+        super(file, start, end);
+        this.expression = NameCache.getManager().getString(expression);
+    }
+
+    @Override
+    public CharSequence getText() {
+        return expression;
+    }
+
+    @Override
+    public String toString() {
+        return expression.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////

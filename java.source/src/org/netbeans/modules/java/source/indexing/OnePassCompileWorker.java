@@ -193,11 +193,42 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
             } catch (CouplingAbort ca) {
-                //coupling error
-                //TODO: check if the source sig file ~ the source java file:
+                //Coupling error
                 TreeLoader.dumpCouplingAbort(ca, active.jfo);
+            } catch (OutputFileManager.InvalidSourcePath isp) {
+                //Deleted project - log & ignore
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
+                                bootPath == null   ? null : bootPath.toString(),
+                                classPath == null  ? null : classPath.toString(),
+                                sourcePath == null ? null : sourcePath.toString()
+                                );
+                    JavaIndex.LOG.log(Level.FINEST, message, isp);
+                }
+            } catch (MissingPlatformError mpe) {
+                //No platform - log & ignore
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final String message = String.format("OnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                active.jfo.toUri().toString(),
+                                FileUtil.getFileDisplayName(context.getRoot()),
+                                bootPath == null   ? null : bootPath.toString(),
+                                classPath == null  ? null : classPath.toString(),
+                                sourcePath == null ? null : sourcePath.toString()
+                                );
+                    JavaIndex.LOG.log(Level.FINEST, message, mpe);
+                }
             } catch (Throwable t) {
-                if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -209,17 +240,6 @@ final class OnePassCompileWorker extends CompileWorker {
                                 sourcePath == null ? null : sourcePath.toString()
                                 );
                     JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
-                }
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                }
-                else if (t instanceof OutputFileManager.InvalidSourcePath) {
-                    //Handled above
-                    throw (OutputFileManager.InvalidSourcePath) t;
-                }
-                else if (t instanceof MissingPlatformError) {
-                    //Handled above
-                    throw (MissingPlatformError) t;
                 }
             }
             return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);

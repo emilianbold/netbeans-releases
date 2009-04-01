@@ -53,11 +53,14 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.openide.util.Lookup;
 
 /**
@@ -95,7 +98,7 @@ public abstract class CsmInstantiationProvider {
      * @param params - template parameters
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile);
 
     /**
      * Returns instantiation of template
@@ -105,7 +108,7 @@ public abstract class CsmInstantiationProvider {
      * @param mapping - template mapping
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, Map<CsmTemplateParameter, CsmType> mapping, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile);
 
     /**
      * Returns instantiation of template
@@ -115,8 +118,27 @@ public abstract class CsmInstantiationProvider {
      * @param type - template type
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile);
 
+    /**
+     * Creates specialization parameter based on type.
+     *
+     * @param type - type for parameter
+     * @return specialization parameter
+     */
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
+
+    /**
+     * Creates specialization parameter based on expression.
+     *
+     * @param expression - string with expression
+     * @param file - containing file
+     * @param start - start offset
+     * @param end - end offset
+     * @return specialization parameter
+     */
+    public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end);
+    
     //
     // Implementation of the default provider
     //
@@ -126,18 +148,28 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile) {
             return template;
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, Map<CsmTemplateParameter, CsmType> mapping, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile) {
             return template;
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmType type, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile) {
             return template;
+        }
+
+        @Override
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
+            return null;
+        }
+
+        @Override
+        public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
+            return null;
         }
     }
 }
