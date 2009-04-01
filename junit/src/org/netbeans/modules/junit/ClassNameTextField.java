@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 
 /**
  * Text-field that validates whether its text is a valid class name (may be
@@ -132,6 +136,13 @@ public final class ClassNameTextField extends JTextField {
     public ClassNameTextField(String text) {
         super(text == null ? "" : text);                                //NOI18N
         setupDocumentListener();
+    }
+
+    @Override
+    protected Document createDefaultModel() {
+        PlainDocument doc = (PlainDocument) super.createDefaultModel();
+        doc.setDocumentFilter(new SpaceIgnoringDocumentFilter());
+        return doc;
     }
     
     /**
@@ -426,6 +437,62 @@ public final class ClassNameTextField extends JTextField {
             assert length == getDocument().getLength();
         }
 
+    }
+
+    /**
+     * {@code DocumentFilter} that ignores (does not allow to insert) space
+     * characters.
+     */
+    private static final class SpaceIgnoringDocumentFilter extends DocumentFilter {
+
+        @Override
+        public void insertString(DocumentFilter.FilterBypass fb,
+                                 int offset,
+                                 String string,
+                                 AttributeSet attr) throws BadLocationException {
+            String strToAdd = removeSpaces(string);
+            if (strToAdd != null) {
+                super.insertString(fb, offset, strToAdd, null);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb,
+                            int offset,
+                            int length,
+                            String text,
+                            AttributeSet attrs) throws BadLocationException {
+            String strToAdd = removeSpaces(text);
+            if (strToAdd == null) {
+                super.remove(fb, offset, length);
+            } else {
+                super.replace(fb, offset, length, strToAdd, null);
+            }
+        }
+
+        private String removeSpaces(String str) {
+            int length = str.length();
+            if (length == 0) {
+                return null;
+            } else if (length == 1) {
+                return (str.charAt(0) == ' ') ? null : str;
+            } else {
+                StringBuilder buf = null;
+                for (int i = 0; i < length; i++) {
+                    if (str.charAt(i) != ' ') {
+                        if (buf != null) {
+                            buf.append(str.charAt(i));
+                        }
+                    } else if (buf == null) {
+                        buf = new StringBuilder(str.length() - 1);
+                        buf.append(str.substring(0, i));
+                    }
+                }
+                return (buf == null) ? str
+                                     : (buf.length() != 0) ? buf.toString()
+                                                           : null;
+            }
+        }
     }
     
 }

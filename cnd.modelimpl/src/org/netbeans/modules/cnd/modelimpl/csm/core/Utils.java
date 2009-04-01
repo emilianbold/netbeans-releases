@@ -191,8 +191,6 @@ public class Utils {
                 return "g"; // NOI18N
             case TEMPLATE_PARAMETER:
                 return "p"; // NOI18N
-            case SPECIALIZATION_PARAMETER:
-                return "z"; // NOI18N
             case CLASS_FRIEND_DECLARATION:
                 return "r"; // NOI18N
             case TEMPLATE_SPECIALIZATION:

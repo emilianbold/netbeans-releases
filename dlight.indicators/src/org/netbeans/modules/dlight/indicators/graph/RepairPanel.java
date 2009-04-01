@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor;
+package org.netbeans.modules.dlight.indicators.graph;
 
-import javax.swing.ActionMap;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
+import java.awt.event.ActionListener;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
- *
- * @author  Miloslav Metelka, Martin Roskanin
+ * @author Alexey Vladykin
  */
-abstract class GlobalContextAction implements LookupListener{
+public class RepairPanel extends JPanel {
 
-    private Lookup.Result result;
-
-    public GlobalContextAction() {
-        result = Utilities.actionsGlobalContext ().lookup (
-            new Lookup.Template (ActionMap.class)
-        );
-
-        result.addLookupListener(this);
+    public RepairPanel(ActionListener action) {
+        setOpaque(false);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(Box.createVerticalGlue());
+        JLabel label = new JLabel("<html><center>Indicator needs special access rights. To fix the problem click</center></html>");
+        label.setAlignmentX(0.5f);
+        label.setForeground(GraphConfig.TEXT_COLOR);
+        add(label);
+        JButton button = new JButton("Repair...");
+        button.setAlignmentX(0.5f);
+        button.addActionListener(action);
+        add(button);
+        add(Box.createVerticalGlue());
     }
 
-    protected ActionMap getContextActionMap () {
-        return (ActionMap)Utilities.actionsGlobalContext ().lookup (ActionMap.class);
-    }
-    
-    public abstract void resultChanged(org.openide.util.LookupEvent ev);
-    
 }

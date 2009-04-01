@@ -71,6 +71,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -1284,4 +1285,41 @@ public class SvnUtils {
         return false;
     }
 
+    public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
+        // NOI18N
+        CommitOptions[] commitOptions = new CommitOptions[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            SvnFileNode node = nodes[i];
+            File file = node.getFile();
+            if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
+                commitOptions[i] = CommitOptions.EXCLUDE;
+            } else {
+                switch (node.getInformation().getStatus()) {
+                    case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                        commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
+                        break;
+                    case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+                    case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                        commitOptions[i] = CommitOptions.COMMIT_REMOVE;
+                        break;
+                    default:
+                        commitOptions[i] = CommitOptions.COMMIT;
+                }
+            }
+        }
+        return commitOptions;
+    }
+
+
+    private static CommitOptions getDefaultCommitOptions(File file) {
+        if (file.isFile()) {
+            if (getMimeType(file).startsWith("text")) {
+                return CommitOptions.ADD_TEXT;
+            } else {
+                return CommitOptions.ADD_BINARY;
+            }
+        } else {
+            return CommitOptions.ADD_DIRECTORY;
+        }
+    }
  }

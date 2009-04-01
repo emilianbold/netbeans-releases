@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
@@ -312,6 +313,7 @@ public class Utilities {
         POMModel model = POMModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
+                model.sync();
                 model.startTransaction();
                 for (ModelOperation<POMModel> op : operations) {
                     op.performOperation(model);
@@ -319,6 +321,7 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
+                //TODO how to report?
                 Exceptions.printStackTrace(ex);
             } finally {
                 if (model.isIntransaction()) {
@@ -343,6 +346,7 @@ public class Utilities {
         ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
+                model.sync();
                 model.startTransaction();
                 for (ModelOperation<ProfilesModel> op : operations) {
                     op.performOperation(model);
@@ -350,6 +354,7 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
+                //TODO how to report?
                 Exceptions.printStackTrace(ex);
             } finally {
                 if (model.isIntransaction()) {
@@ -375,6 +380,7 @@ public class Utilities {
         SettingsModel model = SettingsModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
+                model.sync();
                 model.startTransaction();
                 for (ModelOperation<SettingsModel> op : operations) {
                     op.performOperation(model);
@@ -382,6 +388,7 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
+                //TODO how to report?
                 Exceptions.printStackTrace(ex);
             } finally {
                 if (model.isIntransaction()) {

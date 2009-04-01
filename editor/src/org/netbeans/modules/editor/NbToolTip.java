@@ -68,6 +68,7 @@ import java.util.Enumeration;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
@@ -93,13 +94,14 @@ public class NbToolTip extends FileChangeAdapter {
     
     private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap<String,WeakReference<NbToolTip>>();
     
-    private static int lastRequestId;
+    private static final AtomicInteger lastRequestId = new AtomicInteger(0);
     
-    private String mimeType;
+    private final String mimeType;
     
     private Annotation[] tipAnnotations;
     
-    private RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1); // NOI18N
+    private static final RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1); // NOI18N
+    private static volatile RequestProcessor.Task lastToolTipTask = null;
     
     static synchronized void buildToolTip(JTextComponent target) {
         String mimeType = NbEditorUtilities.getMimeType(target.getDocument());
@@ -108,11 +110,11 @@ public class NbToolTip extends FileChangeAdapter {
     }
     
     private static int newRequestId() {
-        return ++lastRequestId;
+        return lastRequestId.incrementAndGet();
     }
     
     private static int getLastRequestId() {
-        return lastRequestId;
+        return lastRequestId.get();
     }
     
     
@@ -284,7 +286,10 @@ public class NbToolTip extends FileChangeAdapter {
 
                                 if ((lp != null && tooltipAnnotations != null) || tooltipAttributeValue != null) {
                                     int requestId = newRequestId();
-                                    toolTipRP.post(new Request(
+                                    if (lastToolTipTask != null) {
+                                        lastToolTipTask.cancel();
+                                    }
+                                    lastToolTipTask = toolTipRP.post(new Request(
                                         annoDesc, tooltipAnnotations, lp, // annotations stuff
                                         offset, tooltipAttributeValue, // highlighting layers stuff
                                         tts, target, doc, (NbEditorKit) kit, requestId)); // request & tooltip support

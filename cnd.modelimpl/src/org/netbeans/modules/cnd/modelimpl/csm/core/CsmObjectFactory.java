@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
@@ -80,7 +79,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
@@ -256,10 +254,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
-        } else if (object instanceof TypeBasedSpecializationParameterImpl) {
-            aHandler = SPECIALIZATION_PARAMETER_TYPE_IMPL;
-        } else if (object instanceof ExpressionBasedSpecializationParameterImpl) {
-            aHandler = SPECIALIZATION_PARAMETER_EXPRESSION_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -474,14 +468,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new TemplateParameterImpl(stream);
                 break;
 
-            case SPECIALIZATION_PARAMETER_TYPE_IMPL:
-                obj = new TypeBasedSpecializationParameterImpl(stream);
-                break;
-
-            case SPECIALIZATION_PARAMETER_EXPRESSION_IMPL:
-                obj = new ExpressionBasedSpecializationParameterImpl(stream);
-                break;
-
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -572,10 +558,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
-    private static final int SPECIALIZATION_PARAMETER_TYPE_IMPL  = TEMPLATE_PARAMETER_IMPL + 1;
-    private static final int SPECIALIZATION_PARAMETER_EXPRESSION_IMPL  = SPECIALIZATION_PARAMETER_TYPE_IMPL + 1;
-    
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = SPECIALIZATION_PARAMETER_EXPRESSION_IMPL;
+    public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;
 }
