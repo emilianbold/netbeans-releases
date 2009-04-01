@@ -345,6 +345,8 @@ public class Subversion {
             }
         }
 
+        boolean notVersionedYet = localFolder.exists() && !SvnUtils.isManaged(localFolder);
+
         CheckoutAction.performCheckout(
                 svnUrl,
                 client,
@@ -359,12 +361,12 @@ public class Subversion {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
 
-        // XXX shouldn't be done after every chcekout...
-        getSubversion().versionedFilesChanged();
-        SvnUtils.refreshParents(localFolder);
-        // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-        getSubversion().getStatusCache().refreshRecursively(localFolder);
-
+        if(!notVersionedYet) {
+            getSubversion().versionedFilesChanged();
+            SvnUtils.refreshParents(localFolder);
+            getSubversion().getStatusCache().refreshRecursively(localFolder);
+        }
+        
         return true;
     }
 
