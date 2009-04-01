@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -268,9 +269,13 @@ public class TypeFactory {
                                 } else {
                                     // Initialize instantiation params
                                     // TODO: maybe we need to filter out some more tokens
-                                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
-                                            || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-                                        type.instantiationParams.add(AstRenderer.renderType(namePart, file));
+                                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                                        CsmType t = AstRenderer.renderType(namePart, file);
+                                        type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
+                                    }
+                                    if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
+                                        type.instantiationParams.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(namePart, type.getContainingFile(), scope),
+                                                type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }
                             }
@@ -310,7 +315,7 @@ public class TypeFactory {
         return new TypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
     }
 
-    public static CsmType createType(CsmType type, List<CsmType> instantiationParams) {
+    public static CsmType createType(CsmType type, List<CsmSpecializationParameter> instantiationParams) {
         if(type instanceof NestedType) {
             return new NestedType((NestedType)type, instantiationParams);
         }
@@ -353,7 +358,7 @@ public class TypeFactory {
             return type.isInstantiation();
         }
 
-        public List<CsmType> getInstantiationParams() {
+        public List<CsmSpecializationParameter> getInstantiationParams() {
             return type.getInstantiationParams();
         }
 
