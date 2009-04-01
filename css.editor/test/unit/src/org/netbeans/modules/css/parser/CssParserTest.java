@@ -102,6 +102,18 @@ public class CssParserTest extends TestBase {
         
     }
 
+    public void testParseComment() throws ParseException {
+        SimpleNode node = parse("h1 { /* comment */ }");
+        Assert.assertNotNull(node);
+        assertNoErrors(node);
+    }
+
+    public void testParseComment2() throws ParseException {
+        SimpleNode node = parse("h1 { color: /* comment */ red; }");
+        Assert.assertNotNull(node);
+        assertNoErrors(node);
+    }
+
     private void check(String source) throws ParseException {
         SimpleNode node = parse(source);
         Assert.assertNotNull(node);

@@ -3800,7 +3800,10 @@ public static final int[] jjnewLexState = {
    -1, -1, -1, -1, -1, -1, -1, 
 };
 static final long[] jjtoToken = {
-   0xdffffffffdffff53L, 0x20000L, 
+   0xdffffffffdffff13L, 0x20000L, 
+};
+static final long[] jjtoSkip = {
+   0x40L, 0x0L, 
 };
 static final long[] jjtoMore = {
    0xacL, 0x0L, 
@@ -3967,6 +3970,12 @@ public Token getNextToken()
        if (jjnewLexState[jjmatchedKind] != -1)
          curLexState = jjnewLexState[jjmatchedKind];
            return matchedToken;
+        }
+        else if ((jjtoSkip[jjmatchedKind >> 6] & (1L << (jjmatchedKind & 077))) != 0L)
+        {
+         if (jjnewLexState[jjmatchedKind] != -1)
+           curLexState = jjnewLexState[jjmatchedKind];
+           continue EOFLoop;
         }
         jjimageLen += jjmatchedPos + 1;
       if (jjnewLexState[jjmatchedKind] != -1)
