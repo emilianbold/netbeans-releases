@@ -15,6 +15,7 @@ void checkIZ151763() {
     }
 
 }
+typedef QueueIter<struct string> StringQueueIter;
 
 struct string {
     bool empty();
@@ -24,11 +25,13 @@ protected:
     friend int split(const string& x, string *res, int maxn);
 };
 
+
 void checkEmptyAfterColon() {
     string orig;
     string s;
+    StringQueueIter iter(0);
     if (!(s = orig, s).empty()) {
-
+        iter().empty();
     }
 }
 
