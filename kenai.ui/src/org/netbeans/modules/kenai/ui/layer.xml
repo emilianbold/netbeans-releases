@@ -48,13 +48,11 @@
     </folder>
     <folder name="Projects">
         <folder name="Actions">
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-kenai-ui-ShareAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                </folder>
-           </folder>
+            <file name="org-netbeans-modules-kenai-ui-ShareAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+        </folder>
     </folder>
 <!--    <folder name="Loaders">
         <folder name="folder">
