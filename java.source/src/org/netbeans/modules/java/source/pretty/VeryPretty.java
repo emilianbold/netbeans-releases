@@ -2013,6 +2013,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 print("/* ");
                 break;
             case JAVADOC:
+                toLeftMargin();
                 print("/**");
                 newline();
                 toLeftMargin();
@@ -2043,7 +2044,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         }
-        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK) {
+        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK || comment.style() != Comment.Style.JAVADOC) {
             newline();
             toLeftMargin();
         } else {
