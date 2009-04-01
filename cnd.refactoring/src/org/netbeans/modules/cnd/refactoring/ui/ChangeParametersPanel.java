@@ -138,12 +138,11 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         returnType = functionObj.getReturnType().getCanonicalText().toString();
         if (CsmKindUtilities.isMethod(functionObj)) {
             CsmMethod method = (CsmMethod)CsmBaseUtilities.getFunctionDeclaration(functionObj);
-            modifiersCombo.setEnabled(true);
             setModifier(method.getVisibility());
         } else {
-            modifiersCombo.setEnabled(false);
             setModifier(CsmVisibility.NONE);
         }
+        modifiersCombo.setEnabled(false);
         initTableData();
         previewChange.setText(genDeclarationString());
         initialized = true;
@@ -657,16 +656,18 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 buf.append(parameters[i].get(1));
                 buf.append(' ');
                 buf.append(parameters[i].get(0));
-                if (parameters[i].get(2) != null) {
-                    buf.append(" /* = ").append(parameters[i].get(2)).append(" */"); // NOI18N
+                String defParam = (String) parameters[i].get(2);
+                if (defParam != null && defParam.length() > 0) {
+                    buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
                 }
                 buf.append(',').append(' '); // NOI18N
             }
             buf.append(parameters[i].get(1));
             buf.append(' ');
             buf.append(parameters[i].get(0));
-            if (parameters[i].get(2) != null) {
-                buf.append(" /* = ").append(parameters[i].get(2)).append(" */"); // NOI18N
+            String defParam = (String) parameters[i].get(2);
+            if (defParam != null && defParam.length() > 0) {
+                buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
             }
         }
         buf.append(')'); //NOI18N

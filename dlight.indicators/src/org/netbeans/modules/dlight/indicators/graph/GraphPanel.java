@@ -43,9 +43,11 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 /**
@@ -53,26 +55,30 @@ import javax.swing.JPanel;
  *
  * @author Alexey Vladykin
  */
-public class GraphPanel<G extends JComponent, L extends JComponent> extends JPanel {
+public class GraphPanel<G extends JComponent, L extends JComponent> extends JLayeredPane {
 
     private static final int PADDING = 12;
-    private final String title;
     private final G graph;
     private final L legend;
     private final JComponent hAxis;
     private final JComponent vAxis;
+    private final JComponent graphPanel;
+    private JComponent overlay;
 
     public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis) {
-        this.title = title;
         this.graph = graph;
         this.legend = legend;
         this.hAxis = hAxis;
         this.vAxis = vAxis;
-        initComponents();
+        this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis);
+        setOpaque(true); // otherwise background is white
+        setMinimumSize(graphPanel.getMinimumSize());
+        setPreferredSize(graphPanel.getPreferredSize());
+        add(graphPanel, Integer.valueOf(0));
     }
 
-    private void initComponents() {
-        setLayout(new GridBagLayout());
+    private static JPanel createGraphPanel(String title, JComponent graph, JComponent legend, JComponent hAxis, JComponent vAxis) {
+        JPanel graphPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c;
 
         JLabel label = new JLabel(title);
@@ -84,14 +90,14 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
         c.insets = new Insets(PADDING, PADDING, 0, PADDING);
-        add(label, c);
+        graphPanel.add(label, c);
 
         if (vAxis != null) {
             c = new GridBagConstraints();
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
             c.insets = new Insets(PADDING / 2, PADDING, hAxis == null? PADDING : 0, 0);
-            add(vAxis, c);
+            graphPanel.add(vAxis, c);
         }
 
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
@@ -101,7 +107,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         c.weightx = 1.0;
         c.weighty = 1.0;
         c.insets = new Insets(PADDING / 2, vAxis == null ? PADDING : 0, hAxis == null ? PADDING : 0, 0);
-        add(graph, c);
+        graphPanel.add(graph, c);
 
         legend.setBackground(Color.WHITE);
         legend.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
@@ -110,7 +116,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 1.0;
         c.insets = new Insets(PADDING / 2, -1, hAxis == null ? PADDING : 0, PADDING);
-        add(legend, c);
+        graphPanel.add(legend, c);
 
         if (hAxis != null) {
             c = new GridBagConstraints();
@@ -118,8 +124,10 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1.0;
             c.insets = new Insets(0, vAxis == null ? PADDING : 0, PADDING, 0);
-            add(hAxis, c);
+            graphPanel.add(hAxis, c);
         }
+
+        return graphPanel;
     }
 
     protected final G getGraph() {
@@ -137,4 +145,47 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JPan
     protected final JComponent getVerticalAxis() {
         return vAxis;
     }
+
+    @Override
+    public void doLayout() {
+        Insets insets = getInsets();
+        Rectangle rect = new Rectangle(insets.left, insets.top,
+                getWidth() - insets.left - insets.right, getHeight() - insets.top - insets.bottom);
+        graphPanel.setBounds(rect);
+        synchronized (this) {
+            if (overlay != null) {
+                graphPanel.validate();
+                overlay.setBounds(graph.getBounds());
+            }
+        }
+    }
+
+    @Override
+    public synchronized void setEnabled(boolean enabled) {
+        graph.setEnabled(enabled);
+        legend.setEnabled(enabled);
+        if (vAxis != null) {
+            vAxis.setEnabled(enabled);
+        }
+        if (hAxis != null) {
+            hAxis.setEnabled(enabled);
+        }
+        super.setEnabled(enabled);
+    }
+
+    public final synchronized void setOverlay(JComponent overlay) {
+        if (this.overlay == overlay) {
+            return;
+        }
+        if (this.overlay != null) {
+            remove(this.overlay);
+        }
+        if (overlay != null) {
+            add(overlay, Integer.valueOf(1));
+        }
+        this.overlay = overlay;
+        revalidate();
+        repaint();
+    }
+
 }
