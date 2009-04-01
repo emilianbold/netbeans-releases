@@ -188,7 +188,7 @@ public class HgHookImpl extends HgHook {
 
         Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
         if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
+            LOG.log(Level.FINE, " could not find issue tracker for " + file);      // NOI18N
             return;
         }
         LogEntry[] entries = context.getLogEntries();
@@ -232,7 +232,7 @@ public class HgHookImpl extends HgHook {
                 }
             }
             if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
             }
             panel = new HookPanel(repos, repoToSelect);
         }

@@ -80,7 +80,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             String location = f.getLocation().toString();
             int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
             if(idx <= 0) {
-                Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + location + "]"); // NOI18N
+                Bugzilla.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
                 return null;
             }
             String url = location.substring(0, idx);
@@ -92,7 +92,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             String product = null;
             idx = location.indexOf(productAttribute);
             if(idx <= 0) {
-                Bugzilla.LOG.warning("can't get bugtracking product from [" + project.getName() + ", " + location + "]"); // NOI18N
+                Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
             } else {
                 productParamUrl = location.substring(idx);
                 product = location.substring(idx + productAttribute.length());

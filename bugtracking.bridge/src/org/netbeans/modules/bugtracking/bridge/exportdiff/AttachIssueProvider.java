@@ -104,9 +104,9 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
             for (File file : files) {
                 repoToSelect = support.getRepository(file);
                 if(repoToSelect == null) {
-                    LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
                 } else {
-                    LOG.log(Level.FINE, " found repository " + repoToSelect + " for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " found issue tracker " + repoToSelect + " for " + file);  // NOI18N
                     break;
                 }
             }
