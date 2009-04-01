@@ -41,8 +41,10 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +56,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -68,7 +71,7 @@ import org.openide.text.Line;
 *
 *  XXX: Needs to filter out indentical stacktrace hashes
 *
-* @author Petr Hrebejk
+* @author Petr Hrebejk, Jan Stola
 */
 public class StackTraceSupport {
 
@@ -83,6 +86,10 @@ public class StackTraceSupport {
         for (StackTracePosition stp : st) {
             final StackTraceElement ste = stp.getStackTraceElements()[0];
             String path = ste.getClassName();
+            int index = path.indexOf('$');
+            if (index != -1) {
+                path = path.substring(0, index);
+            }
             path = path.replace(".", "/") + ".java"; // XXX .java ???
             open(path, ste.getLineNumber() - 1); // XXX -1 ???
             break;
@@ -327,26 +334,51 @@ public class StackTraceSupport {
 
    static private FileObject search( String path ) {
         Project[] projects = getProjects();
-        for ( Project project : projects ) {
-            SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
-            for( SourceGroup group : groups ) {
-                FileObject groupRoot = group.getRootFolder();
-                FileObject fo = groupRoot.getFileObject(path);
-                if ( fo != null ) {
-                    return fo;
-                }
-                FileObject[] ch = groupRoot.getChildren();
-                for (FileObject child : ch) {
-                    if(!child.isFolder()) continue;
-                    fo = groupRoot.getFileObject(child.getName() + "/" + path);  // XXX HACK - javaapp returns project forlder as root instead of src
-                    if ( fo != null ) {
-                        return fo;
-                    }
-                }
+        Set<Project> prs = new HashSet<Project>();
+        for (Project project : projects) {
+            collectProjects(project, prs);
+        }
+        for (Project project : prs) {
+            FileObject fob = search(project, path);
+            if (fob != null) {
+                return fob;
             }
         }
         return null;
     }
+
+   static private void collectProjects(Project project, Set<Project> projects) {
+       if (projects.contains(project)) {
+           return;
+       }
+       projects.add(project);
+       SubprojectProvider subProvider = project.getLookup().lookup(SubprojectProvider.class);
+       if (subProvider != null) {
+           for (Project subProject : subProvider.getSubprojects()) {
+               collectProjects(subProject, projects);
+           }
+       }
+   }
+
+   private static FileObject search(Project project, String path) {
+        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+        for( SourceGroup group : groups ) {
+            FileObject groupRoot = group.getRootFolder();
+            FileObject fo = groupRoot.getFileObject(path);
+            if ( fo != null ) {
+                return fo;
+            }
+            FileObject[] ch = groupRoot.getChildren();
+            for (FileObject child : ch) {
+                if(!child.isFolder()) continue;
+                fo = groupRoot.getFileObject(child.getName() + "/" + path);  // XXX HACK - javaapp returns project forlder as root instead of src
+                if ( fo != null ) {
+                    return fo;
+                }
+            }
+        }
+        return null;
+   }
 
     private static  Project[] getProjects() {
         return OpenProjects.getDefault().getOpenProjects();
