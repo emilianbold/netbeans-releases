@@ -50,6 +50,7 @@ import java.util.*;
 import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -94,6 +96,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         this.arrayDepth = (byte) arrayDepth;
         _const = initIsConst(ast);
         if (classifier == null) {
+            CndUtils.assertTrue(false, "why null classifier?", Level.INFO);
             this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {
@@ -525,7 +528,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                             }
                         } else {
                             // TODO: maybe we need to filter out some more tokens
-                            if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                            if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
+                                    || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
+                                    || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
                                 instantiationParams.add(AstRenderer.renderType(namePart, getContainingFile()));
                             }
                         }
