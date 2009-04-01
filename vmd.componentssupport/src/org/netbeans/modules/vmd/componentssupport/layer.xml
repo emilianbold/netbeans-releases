@@ -30,7 +30,7 @@
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponent.html"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentIcon.gif"/>
-                <attr name="templateCategory" stringvalue="nbm-specific"/>
+                <attr name="templateCategory" stringvalue="nbm-specific2"/>
             </file>           
         </folder> 
         <folder name="MobilityCustomComponent-files">

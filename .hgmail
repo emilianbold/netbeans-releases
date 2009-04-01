@@ -72,3 +72,4 @@ jglick@netbeans.org=hudson*/*
 tstupka@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
 mpetras@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
 jstola@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
+mkleint@netbeans.org=hudson.maven/*,maven*/*
