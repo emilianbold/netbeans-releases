@@ -254,7 +254,9 @@ public class GdbDebugger implements PropertyChangeListener {
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-            platform = (pae.getConfiguration()).getPlatform().getValue();
+            // See IZ 161592: we do not care what platform we have in project configuration
+            // we use real platform instead
+            platform = HostInfoProvider.getDefault().getPlatform(execEnv);
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
