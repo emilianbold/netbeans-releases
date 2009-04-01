@@ -45,11 +45,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -60,8 +61,6 @@ import org.netbeans.modules.dlight.util.UIThread;
  */
 public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
-    private final JButton b = new JButton("Repair...");//NOI18N
-    private JLabel label;
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
     private int lastLocks;
@@ -105,38 +104,37 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            b.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            b.setAlignmentY(JComponent.CENTER_ALIGNMENT);
-            label =  new JLabel(getRepairActionProvider().getReason());
-            label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            label.setAlignmentY(JComponent.CENTER_ALIGNMENT);
-            b.addActionListener(new ActionListener() {
-
+            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
-
                         public Boolean call() throws Exception {
-                            Boolean status = result.get();
                             UIThread.invoke(new Runnable() {
-
                                 public void run() {
-                                    panel.getPanel().remove(b);
-                                    panel.getPanel().remove(label);
+                                    panel.getPanel().setOverlay(null);
                                 }
                             });
-                            return status.booleanValue();
+                            return result.get();
                         }
                     }, "Click On Repair in Sync Indicator task");//NOI18N
                 }
             });
-            panel.getPanel().add(b);
-            panel.getPanel().add(label);
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setEnabled(false);
+                    panel.getPanel().setOverlay(repairPanel);
+                }
+            });
         } else {
-            //Remove here Button REpair
-            panel.getPanel().remove(b);
-            panel.getPanel().remove(label);
-            panel.getPanel().add(new JLabel(getRepairActionProvider().isValid() ? "Will show data on the next run" : "Invalid"));//NOI18N
+            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
+                "<html><center>Will show data on the next run</center></html>" :
+                "<html><center>Invalid</center></html>");
+            label.setForeground(GraphConfig.TEXT_COLOR);
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setOverlay(label);
+                }
+            });
         }
     }
 }

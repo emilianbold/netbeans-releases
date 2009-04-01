@@ -57,18 +57,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -76,17 +71,22 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nick Krasilnikov
  */
-public class TypeBasedSpecializationParameterImpl extends OffsetableDeclarationBase implements CsmTypeBasedSpecializationParameter, SelfPersistent, Resolver.SafeClassifierProvider {
+public class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent, Resolver.SafeClassifierProvider {
 
     private final CsmType type;
-    private CsmUID<CsmScope> scope;
 
-    TypeBasedSpecializationParameterImpl(CsmType type, CsmScope scope, CsmFile file, int start, int end) {
+    public TypeBasedSpecializationParameterImpl(CsmType type, CsmFile file, int start, int end) {
         super(file, start, end);
         this.type = type;
-        if ((scope instanceof CsmIdentifiable)) {
-            this.scope = UIDCsmConverter.scopeToUID(scope);
-        }
+    }
+
+    public TypeBasedSpecializationParameterImpl(CsmType type) {
+        super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
+        this.type = type;
+    }
+
+    public CsmType getType() {
+        return type;
     }
 
     public CsmClassifier getClassifier() {
@@ -109,7 +109,7 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableDeclarationB
         return type.isInstantiation();
     }
 
-    public List<CsmType> getInstantiationParams() {
+    public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }
 
@@ -146,24 +146,13 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableDeclarationB
     }
 
     @Override
+    public CharSequence getText() {
+        return type.getText();
+    }
+
+    @Override
     public String toString() {
         return type.toString();
-    }
-
-    public Kind getKind() {
-        return Kind.SPECIALIZATION_PARAMETER;
-    }
-
-    public CharSequence getQualifiedName() {
-        return type.getCanonicalText();
-    }
-
-    public CharSequence getName() {
-        return type.getCanonicalText();
-    }
-
-    public CsmScope getScope() {
-        return scope == null? null : scope.getObject();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -173,13 +162,11 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableDeclarationB
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeType(type, output);
-        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
     }
 
     public TypeBasedSpecializationParameterImpl(DataInput input) throws IOException {
         super(input);
         this.type = PersistentUtils.readType(input);
-        this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 
 }

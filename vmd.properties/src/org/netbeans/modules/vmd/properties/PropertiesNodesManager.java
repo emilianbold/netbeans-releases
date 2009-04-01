@@ -88,6 +88,7 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
     };
 
     public static synchronized PropertiesNodesManager getInstance(DataEditorView view) {
+        assert view != null;
         if (INSTANCES.get(view) == null) {
             PropertiesNodesManager manager = new PropertiesNodesManager(view);
             INSTANCES.put(view, manager);

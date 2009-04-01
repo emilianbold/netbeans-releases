@@ -207,7 +207,7 @@ public final class OptionsChooserPanel extends JPanel {
     private Outline getOutline() {
         Outline outline = new Outline();
         outline.setModel(DefaultOutlineModel.createOutlineModel(
-                getOptionsTreeModel(),
+                createOptionsTreeModel(),
                 new OptionsRowModel(),
                 true,
                 NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.header.tree")));
@@ -222,30 +222,31 @@ public final class OptionsChooserPanel extends JPanel {
         return outline;
     }
 
-    /** Returns tree model based on current state of this model. */
-    private TreeModel getOptionsTreeModel() {
-        if (treeModel == null) {
-            LOGGER.fine("getOptionsTreeModel - " + getOptionsExportModel());  //NOI18N
-            String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
-            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
-            for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
-                LOGGER.fine("category=" + category);  //NOI18N
-                DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
-                List<OptionsExportModel.Item> items = category.getItems();
-                for (OptionsExportModel.Item item : items) {
-                    LOGGER.fine("    item=" + item);  //NOI18N
-                    if (item.isApplicable()) {
-                        categoryNode.add(new DefaultMutableTreeNode(item));
-                    }
-                }
-                if (categoryNode.getChildCount() != 0) {
-                    // do not show category node if it has no children
-                    rootNode.add(categoryNode);
-                    updateCategoryNode(categoryNode);
+    /** Returns tree model based on current state of OptionsExportModel. Sets treeModel field. */
+    private TreeModel createOptionsTreeModel() {
+        LOGGER.fine("getOptionsTreeModel - " + getOptionsExportModel());  //NOI18N
+        String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
+        for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
+            LOGGER.fine("category=" + category);  //NOI18N
+            DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
+            List<OptionsExportModel.Item> items = category.getItems();
+            for (OptionsExportModel.Item item : items) {
+                LOGGER.fine("    item=" + item);  //NOI18N
+                if (item.isApplicable()) {
+                    categoryNode.add(new DefaultMutableTreeNode(item));
                 }
             }
-            treeModel = new DefaultTreeModel(rootNode);
+            if (categoryNode.getChildCount() != 0) {
+                // do not show category node if it has no children
+                rootNode.add(categoryNode);
+                updateCategoryNode(categoryNode);
+            }
         }
+        if (rootNode.getChildCount() == 0) {
+            rootNode = null;
+        }
+        treeModel = new DefaultTreeModel(rootNode);
         return treeModel;
     }
 
@@ -502,7 +503,7 @@ public final class OptionsChooserPanel extends JPanel {
                 updateCategoryNode((DefaultMutableTreeNode) parent);
             }
             // fire an event to refresh parent or child nodes
-            ((DefaultTreeModel) getOptionsTreeModel()).nodeChanged((TreeNode) node);
+            ((DefaultTreeModel) treeModel).nodeChanged((TreeNode) node);
             dialogDescriptor.setValid(isPanelValid());
         }
     }

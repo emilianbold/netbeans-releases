@@ -1,7 +1,7 @@
 #!/bin/sh
 PATH=/bin:/usr/bin:${PATH}
 PROG=`basename $0`
-USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
+USAGE="usage: ${PROG} -p pidfile -e envfile [-w work dir] [-x prompt] ..."
 PROMPT=NO
 
 fail() {
@@ -41,10 +41,14 @@ fi
 
 STATUS=-1
 
-test -r ${ENVFILE} && ENVSETUP=" && . ${ENVFILE}"
+if [ -r ${ENVFILE} ]; then
+  /bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd ${WDIR} && exec $@"
+  STATUS=$?
+else
+  /bin/sh -c "echo \$\$>${PIDFILE} && cd ${WDIR} && exec $@"
+  STATUS=$?
+fi
 
-/bin/sh -c "echo \$\$>${PIDFILE} ${ENVSETUP} && cd ${WDIR} && exec $@"
-STATUS=$?
 echo ${STATUS} > ${PIDFILE}.res
 
 if [ "${PROMPT}" != "NO" ]; then

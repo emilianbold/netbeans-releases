@@ -214,10 +214,18 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      *
      * @param c A JComponent, which must == the displayer field initialized in the constructor
      */
+    @Override
     public final void installUI(JComponent c) {
         assert c == container;
         container.setLayout(createLayout());
         contentDisplayer = createContentDisplayer();
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) //NOI18N
+            && (container.getType() == TabbedContainer.TYPE_VIEW
+                || container.getType() == TabbedContainer.TYPE_SLIDING)
+                && !Boolean.getBoolean("nb.explorerview.aqua.defaultbackground")) { //NOI18N
+            contentDisplayer.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            contentDisplayer.setOpaque(true);
+        }
         tabDisplayer = createTabDisplayer();
         selectionListener = createSelectionListener();
         modelListener = createModelListener();

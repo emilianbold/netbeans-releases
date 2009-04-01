@@ -44,21 +44,32 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -127,6 +138,10 @@ public class Subversion {
 
         String[] relativePaths = makeRelativePaths(repositoryFile, selectedFiles);
         return relativePaths;
+    }
+
+    private static org.netbeans.modules.subversion.Subversion getSubversion() {
+        return org.netbeans.modules.subversion.Subversion.getInstance();
     }
 
     private static String[] makeRelativePaths(RepositoryFile repositoryFile,
@@ -342,6 +357,13 @@ public class Subversion {
         } catch (Exception e) {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
+
+        // XXX shouldn't be done after every chcekout...
+        getSubversion().versionedFilesChanged();
+        SvnUtils.refreshParents(localFolder);
+        // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
+        getSubversion().getStatusCache().refreshRecursively(localFolder);
+
         return true;
     }
 
@@ -368,6 +390,64 @@ public class Subversion {
             throw new IOException(ex.getMessage());
         }
 
+    }
+
+    /**
+     * Adds a remote url for the combos used in Checkout and Import wizard
+     *
+     * @param url
+     * @throws java.net.MalformedURLException
+     */
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new SVNUrl(url); // check url format
+
+        RepositoryConnection rc = new RepositoryConnection(url);
+        SvnModuleConfig.getDefault().insertRecentUrl(rc);        
+    }
+
+    /**
+     * Commits all local chages under the given root
+     *
+     * @param root
+     * @param message
+     */
+    public static void commit(final File[] roots, final String user, final String password, final String message) {
+        FileStatusCache cache = getSubversion().getStatusCache();
+        File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
+
+        if (files.length == 0) {
+            return;
+        }
+
+        SvnFileNode[] nodes = new SvnFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nodes[i] = new SvnFileNode(files[i]);            
+        }
+        CommitOptions[] commitOptions = SvnUtils.createDefaultCommitOptions(nodes, false);
+        final Map<SvnFileNode, CommitOptions> commitFiles = new HashMap<SvnFileNode, CommitOptions>(nodes.length);
+        for (int i = 0; i < nodes.length; i++) {
+            commitFiles.put(nodes[i], commitOptions[i]);
+        }
+
+        try {
+            final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
+            SvnProgressSupport support = new SvnProgressSupport() {
+                public void perform() {
+                    SvnClient client;
+                    try {
+                        client = getSubversion().getClient(repositoryUrl, user, password, this);
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
+                        return;
+                    }
+                    CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, null);
+                }
+            };
+            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+        }
     }
 
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
@@ -407,7 +487,7 @@ public class Subversion {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
             return false;
         }
-        if(!org.netbeans.modules.subversion.Subversion.getInstance().checkClientAvailable()) {
+        if(!getSubversion().checkClientAvailable()) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             return false;
         }
@@ -470,18 +550,16 @@ public class Subversion {
     }
 
     private static SvnClient getClient(SVNUrl url, String username, String password) {
-        org.netbeans.modules.subversion.Subversion subversion
-                = org.netbeans.modules.subversion.Subversion.getInstance();
-        if(!subversion.checkClientAvailable()) {
+        if(!getSubversion().checkClientAvailable()) {
             return null;
         }
         
         try {
             if(username != null) {
                 password = password != null ? password : "";                    // NOI18N
-                return subversion.getClient(url, username, password);
+                return getSubversion().getClient(url, username, password);
             } else {
-                return subversion.getClient(url);
+                return getSubversion().getClient(url);
             }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, true);

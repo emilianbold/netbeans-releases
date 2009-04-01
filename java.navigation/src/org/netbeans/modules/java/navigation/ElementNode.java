@@ -87,7 +87,7 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( Description description ) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null || description.treePathHandle.getFileObject() == null ? null : Lookups.fixed(description.treePathHandle, description.treePathHandle.getFileObject()));
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null || description.getFileObject() == null ? null : Lookups.fixed(description.treePathHandle, description.getFileObject()));
         this.description = description;
         setDisplayName( description.name ); 
     }

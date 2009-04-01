@@ -1442,7 +1442,7 @@ public class SVGPlayer extends Canvas implements CommandListener { // need to us
             if (safeSvgEventListener != null) {
                 invokeAndWaitSafely(new Runnable() {
                     public void run() {
-                        safeSvgEventListener.pointerPressed(x, y);
+                        safeSvgEventListener.pointerReleased(x, y);
                     }
                 });
             }            

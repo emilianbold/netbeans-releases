@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
@@ -54,9 +55,14 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 public final class NamingFactory {
     private static final Map nameMap = new WeakHashMap();
 
+    /** Now used only from tests. */
     public static synchronized FileNaming fromFile(final File file) {
+        return fromFile(new FileInfo(file));
+    }
+
+    public static synchronized FileNaming fromFile(final FileInfo fileInfo) {
         final LinkedList<File> list = new LinkedList<File>();
-        File current = file;
+        File current = fileInfo.getFile();
         while (current != null) {
             list.addFirst(current);
             current = current.getParentFile();
@@ -70,9 +76,13 @@ public final class NamingFactory {
                 i++;
                 continue;
             }
-            // returns unknown if last in the list, otherwise directory
-            FileType type = (i == list.size() - 1) ? FileType.unknown : FileType.directory;
-            fileName = NamingFactory.registerInstanceOfFileNaming(fileName, f, type);
+            if (i == list.size() - 1) {
+                // last path element
+                fileName = NamingFactory.registerInstanceOfFileNaming(fileName, fileInfo, FileType.unknown);
+            } else {
+                // parent dirs of given file
+                fileName = NamingFactory.registerInstanceOfFileNaming(fileName, new FileInfo(f), FileType.directory);
+            }
         }
 
         return fileName;
@@ -82,8 +92,8 @@ public final class NamingFactory {
         return nameMap.size();
     }
     
-    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
-        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, FileType.unknown);
+    public static synchronized FileNaming fromFile(final FileNaming parentFn, final FileInfo fileInfo) {
+        return NamingFactory.registerInstanceOfFileNaming(parentFn, fileInfo, FileType.unknown);
     }
     
     public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
@@ -110,7 +120,7 @@ public final class NamingFactory {
         
         synchronized(NamingFactory.class) {        
             all.add(fNaming);
-            NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming, true, FileType.unknown);
+            NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), new FileInfo(fNaming.getFile()), fNaming, true, FileType.unknown);
             renameChildren(all);
             return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
         }
@@ -151,7 +161,7 @@ public final class NamingFactory {
             all.add(fN);    
             remove(fN, id);
             fN.getId(true);
-            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false, FileType.unknown);            
+            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), new FileInfo(fN.getFile()), fN,false, FileType.unknown);
         }
     }
 
@@ -171,28 +181,29 @@ public final class NamingFactory {
     public static Integer createID(final File file) {
         return new Integer(file.hashCode());
     }
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
-        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
+
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final FileInfo fileInfo, FileType type) {
+        return NamingFactory.registerInstanceOfFileNaming(parentName, fileInfo, null, false, type);
     }
 
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final FileInfo fileInfo, final FileNaming newValue,boolean ignoreCache, FileType type) {
         FileNaming retVal;
-        
-        final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
+
+        final Object value = NamingFactory.nameMap.get(fileInfo.getID());
         Reference ref = (Reference) (value instanceof Reference ? value : null);
-        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
+        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, fileInfo.getFile()) : ref);
 
         final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-        
-        if (!ignoreCache && cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
+
+        if (!ignoreCache && cachedElement != null && cachedElement.getFile().equals(fileInfo.getFile())) {
             retVal = cachedElement;
         } else {
-            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName, type) : newValue;
+            retVal = (newValue == null) ? NamingFactory.createFileNaming(fileInfo, parentName, type) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
 
             final boolean isList = (value instanceof List);
             if ((!ignoreCache && cachedElement != null) || isList) {
-                // List impl.                
+                // List impl.
                 if (isList) {
                     ((List) value).add(refRetVal);
                 } else {
@@ -201,7 +212,7 @@ public final class NamingFactory {
                     NamingFactory.nameMap.put(retVal.getId(), l);
                 }
             } else {
-                // Reference impl.                
+                // Reference impl.
                 Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
                 if (ignoreCache && r != null) {
                     FileName original = (FileName)r.get();
@@ -210,9 +221,9 @@ public final class NamingFactory {
                         for (Iterator childrenIt = children.iterator(); childrenIt.hasNext();) {
                             FileNaming child = (FileNaming) childrenIt.next();
                             remove(child, null);
-                        }                        
+                        }
                     }
-                }                
+                }
             }
         }
 
@@ -258,28 +269,22 @@ public final class NamingFactory {
     }
 
     public static enum FileType {file, directory, unknown}
-    
-    private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
-        FileName retVal = null;
+
+    private static FileNaming createFileNaming(final FileInfo fileInfo, final FileNaming parentName, FileType type) {
         //TODO: check all tests for isFile & isDirectory
         if (type.equals(FileType.unknown)) {
-            if (f.isDirectory()) {
+            if (fileInfo.isDirectory()) {
                 type = FileType.directory;
             } else {
-                //important for resolving  named pipes
-                 type = FileType.file;
-            }            
+                type = FileType.file;
+            }
         }
-        
         switch(type) {
             case file:
-                retVal = new FileName(parentName, f);
-                break;
+                return new FileName(parentName, fileInfo);
             case directory:
-                retVal = new FolderName(parentName, f);
-                break;
+                return new FolderName(parentName, fileInfo);
         }
-        return retVal;
+        return null;
     }
-
 }

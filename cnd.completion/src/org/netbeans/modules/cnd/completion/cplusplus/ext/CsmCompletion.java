@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -525,7 +526,7 @@ abstract public class CsmCompletion {
             }
         }
 
-        public List<CsmType> getInstantiationParams() {
+        public List<CsmSpecializationParameter> getInstantiationParams() {
             return Collections.emptyList();
         }
 

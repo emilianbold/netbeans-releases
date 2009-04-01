@@ -57,20 +57,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * Container for template specialization parameters
@@ -78,30 +72,15 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @author Nick Krasilnikov
  */
 public class SpecializationDescriptor {
-    private final Collection<CsmUID<CsmSpecializationParameter>> specializationParams;
+    private final List<CsmSpecializationParameter> specializationParams;
 
     public SpecializationDescriptor(List<CsmSpecializationParameter> specializationParams, boolean global) {
-        register(specializationParams, global);
-        this.specializationParams = UIDCsmConverter.objectsToUIDs(specializationParams);
-    }
-
-    private void register(List<CsmSpecializationParameter> specializationParams, boolean global){
-        for (CsmSpecializationParameter par : specializationParams){
-            if (global) {
-                RepositoryUtils.put(par);
-            } else {
-                Utils.setSelfUID((CsmDeclaration)par);
-            }
-        }
+        this.specializationParams = new ArrayList<CsmSpecializationParameter>(specializationParams);
     }
 
     public List<CsmSpecializationParameter> getSpecializationParameters() {
         if (specializationParams != null) {
-            List<CsmSpecializationParameter> res = new ArrayList<CsmSpecializationParameter>();
-            for(CsmSpecializationParameter par : UIDCsmConverter.UIDsToCsmObjects(specializationParams)){
-                res.add(par);
-            }
-            return res;
+            return new ArrayList<CsmSpecializationParameter>(specializationParams);
         }
     	return Collections.<CsmSpecializationParameter>emptyList();
     }
@@ -126,10 +105,10 @@ public class SpecializationDescriptor {
     // impl of SelfPersistent
 
     public SpecializationDescriptor(DataInput input) throws IOException {
-        this.specializationParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmSpecializationParameter>>(), input);
+        this.specializationParams = PersistentUtils.readSpecializationParameters(input);
     }
 
     public void write(DataOutput output) throws IOException {
-        UIDObjectFactory.getDefaultFactory().writeUIDCollection(specializationParams, output, false);
+        PersistentUtils.writeSpecializationParameters(specializationParams, output);
     }
 }
