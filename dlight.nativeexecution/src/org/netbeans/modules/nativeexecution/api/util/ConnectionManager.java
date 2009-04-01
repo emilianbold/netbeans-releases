@@ -184,7 +184,7 @@ public final class ConnectionManager {
             final ExecutionEnvironment env) throws IOException, CancellationException {
         synchronized (lock) {
             boolean result = false;
-
+            /*
             try {
                 result = connectTo(env, PasswordManager.getInstance().get(env), false);
             } catch (ConnectException ex) {
@@ -195,7 +195,23 @@ public final class ConnectionManager {
                     throw ex;
                 }
             }
-
+            */
+            final char[] passwd = PasswordManager.getInstance().get(env);
+            if (passwd == null || passwd.length == 0) {
+                // I don't know the password: trying with user-interaction
+                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+            } else {
+                try {
+                    result = connectTo(env, PasswordManager.getInstance().get(env), false);
+                } catch (ConnectException ex) {
+                    if (ex.getMessage().equals("Auth fail")) { // NOI18N
+                        // Try with user-interaction
+                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                    } else {
+                        throw ex;
+                    }
+                }
+            }
             return result;
         }
     }
