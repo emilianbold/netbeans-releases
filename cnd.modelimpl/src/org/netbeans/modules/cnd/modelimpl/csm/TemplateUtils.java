@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -322,11 +323,13 @@ public class TemplateUtils {
         // Check instantiation parameters
         if (type.isInstantiation()) {
             TypeImpl typeImpl = (TypeImpl) type;
-            List<CsmType> params = typeImpl.getInstantiationParams();
-            for (CsmType instParam : params) {
-                CsmType newType = checkTemplateType(instParam, scope);
-                if (newType != instParam) {
-                    params.set(params.indexOf(instParam), newType);
+            List<CsmSpecializationParameter> params = typeImpl.getInstantiationParams();
+            for (CsmSpecializationParameter instParam : params) {
+                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
+                    CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope);
+                    if (newType != instParam) {
+                        params.set(params.indexOf(instParam), new TypeBasedSpecializationParameterImpl(newType));
+                    }
                 }
             }
         }
@@ -355,8 +358,8 @@ public class TemplateUtils {
         return type;
     }
 
-    public static Map<CsmTemplateParameter, CsmType> gatherMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmType> newMapping = new HashMap<CsmTemplateParameter, CsmType>();
+    public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
+        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
         while(inst != null) {
             newMapping.putAll(inst.getMapping());
             CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();

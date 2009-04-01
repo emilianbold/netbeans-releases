@@ -79,7 +79,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
     }
 
     // package-local - for facory only
-    TypeFunPtrImpl(TypeFunPtrImpl type, List<CsmType> instantiationParams) {
+    TypeFunPtrImpl(TypeFunPtrImpl type, List<CsmSpecializationParameter> instantiationParams) {
         super(type, instantiationParams);
         if(type.functionParameters != null) {
             functionParameters = new ArrayList<CsmUID<CsmParameter>>(type.functionParameters);
