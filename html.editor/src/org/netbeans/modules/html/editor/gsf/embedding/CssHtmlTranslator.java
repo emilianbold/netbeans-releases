@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -69,7 +69,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy th = TokenHierarchy.create(snapshot.getText(), HTMLTokenId.language());
+        TokenHierarchy th = TokenHierarchy.create(snapshot.getText(), HtmlTokenId.language());
         TokenSequence ts = th.tokenSequence();
         HashMap<String, Object> state = new HashMap<String, Object>(6);
         List<Embedding> embeddings = new ArrayList<Embedding>();
@@ -84,11 +84,11 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     private static final String QUTE_CUT = "quote_cut";
 
     /** @param ts An HTML token sequence always positioned at the beginning. */
-    protected void extractCssFromHTML(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, HashMap<String, Object> state, List<Embedding> embeddings) {
+    protected void extractCssFromHTML(Snapshot snapshot, TokenSequence<HtmlTokenId> ts, HashMap<String, Object> state, List<Embedding> embeddings) {
         while (ts.moveNext()) {
-            Token<HTMLTokenId> htmlToken = ts.token();
+            Token<HtmlTokenId> htmlToken = ts.token();
             TokenId htmlId = htmlToken.id();
-            if (htmlId == HTMLTokenId.STYLE) {
+            if (htmlId == HtmlTokenId.STYLE) {
                 state.put(IN_STYLE, Boolean.TRUE);
                 //jumped into style
                 int sourceStart = ts.offset();
@@ -99,7 +99,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 state.remove(IN_STYLE);
 
                 if (state.get(IN_INLINED_STYLE) != null) {
-                    if (htmlId == HTMLTokenId.VALUE_CSS) {
+                    if (htmlId == HtmlTokenId.VALUE_CSS) {
                         //continuation of the html style attribute value after templating
                         int sourceStart = ts.offset();
                         CharSequence text = htmlToken.text();
@@ -131,19 +131,19 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                     }
                 }
 
-                if (htmlId == HTMLTokenId.TAG_OPEN) {
+                if (htmlId == HtmlTokenId.TAG_OPEN) {
                     //look at the tag and try to find the style="xx" attribute
                     //TODO make it work at the border of embedded sections
 
-                    //TokenSequence<? extends HTMLTokenId> ts = ts.subSequence(ts.offset());
+                    //TokenSequence<? extends HtmlTokenId> ts = ts.subSequence(ts.offset());
                     //ts.moveStart();
                     while (ts.moveNext()) {
-                        Token<? extends HTMLTokenId> t = ts.token();
+                        Token<? extends HtmlTokenId> t = ts.token();
                         TokenId id = t.id();
 
-                        if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        if (id == HtmlTokenId.TAG_CLOSE_SYMBOL) {
                             break;
-                        } else if (id == HTMLTokenId.VALUE_CSS) {
+                        } else if (id == HtmlTokenId.VALUE_CSS) {
                             //found inlined css
                             int sourceStart = ts.offset();
                             String text = t.text().toString();

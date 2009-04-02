@@ -45,8 +45,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CSSParserConstants;
-import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
@@ -116,7 +116,7 @@ public final class CssModel {
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {
-                        if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                        if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
                             //find curly brackets
                             Token t = node.jjtGetFirstToken();
                             Token last = node.jjtGetLastToken();
@@ -126,26 +126,26 @@ public final class CssModel {
                             ArrayList<Integer> semicolons = new ArrayList<Integer>();
                             ArrayList<Integer> colons = new ArrayList<Integer>();
                             while (t != null && t.offset <= last.offset) { //also include the last token
-                                if (t.kind == CSSParserConstants.LBRACE) {
+                                if (t.kind == CssParserConstants.LBRACE) {
                                     openCurlyBracketOffset = t.offset;
-                                } else if (t.kind == CSSParserConstants.RBRACE) {
+                                } else if (t.kind == CssParserConstants.RBRACE) {
                                     closeCurlyBracketOffset = t.offset;
-                                } else if (t.kind == CSSParserConstants.SEMICOLON) {
+                                } else if (t.kind == CssParserConstants.SEMICOLON) {
                                     semicolons.add(Integer.valueOf(t.offset));
-                                } else if (t.kind == CSSParserConstants.COLON) {
+                                } else if (t.kind == CssParserConstants.COLON) {
                                     colons.add(Integer.valueOf(t.offset));
                                 }
                                 t = t.next;
                             }
 
                             //parse style rule
-                            SimpleNode selectortList = SimpleNodeUtil.getChildByType(node, CSSParserTreeConstants.JJTSELECTORLIST);
-                            SimpleNode[] declarations = SimpleNodeUtil.getChildrenByType(node, CSSParserTreeConstants.JJTDECLARATION);
+                            SimpleNode selectortList = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTSELECTORLIST);
+                            SimpleNode[] declarations = SimpleNodeUtil.getChildrenByType(node, CssParserTreeConstants.JJTDECLARATION);
                             List<CssRuleItem> ruleItems = new ArrayList<CssRuleItem>(declarations.length);
                             for (int i = 0; i < declarations.length; i++) {
                                 SimpleNode declaration = declarations[i];
-                                SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CSSParserTreeConstants.JJTPROPERTY);
-                                SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CSSParserTreeConstants.JJTEXPR);
+                                SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTPROPERTY);
+                                SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
 
                                 int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
                                 int colonOffset = colons.get(i);

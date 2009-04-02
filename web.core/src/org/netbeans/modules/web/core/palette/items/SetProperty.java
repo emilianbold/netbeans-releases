@@ -43,7 +43,7 @@ package org.netbeans.modules.web.core.palette.items;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 
 
 /**
@@ -65,7 +65,7 @@ public class SetProperty extends GetProperty {
         if (accept) {
             String body = createBody();
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }

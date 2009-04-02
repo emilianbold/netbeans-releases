@@ -92,6 +92,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
     public static final String REMOTE_PERMISSIONS = "remote.permissions"; // NOI18N
+    public static final String REMOTE_UPLOAD_DIRECTLY = "remote.upload.directly"; // NOI18N
     public static final String DEBUG_URL = "debug.url"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_REMOTE = "debug.path.mapping.remote"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_LOCAL = "debug.path.mapping.local"; // NOI18N
@@ -110,6 +111,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
         REMOTE_PERMISSIONS,
+        REMOTE_UPLOAD_DIRECTLY,
         DEBUG_URL,
         DEBUG_PATH_MAPPING_REMOTE,
         DEBUG_PATH_MAPPING_LOCAL,

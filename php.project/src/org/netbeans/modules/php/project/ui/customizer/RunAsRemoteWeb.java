@@ -183,9 +183,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
         updateRemoteConnectionHint();
 
-        // preserve permissions
         preservePermissionsCheckBox.addActionListener(new CheckBoxUpdater(
                 PhpProjectProperties.REMOTE_PERMISSIONS, preservePermissionsCheckBox));
+        uploadDirectlyCheckBox.addActionListener(new CheckBoxUpdater(
+                PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY, uploadDirectlyCheckBox));
     }
 
     @Override
@@ -356,6 +357,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesHintLabel = new JLabel();
         preservePermissionsCheckBox = new JCheckBox();
         preservePermissionsLabel = new JLabel();
+        uploadDirectlyCheckBox = new JCheckBox();
+        uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
         setFocusTraversalPolicy(null);
@@ -416,6 +419,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
         preservePermissionsLabel.setEnabled(false);
+
+
+        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
+        uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
+        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
+        uploadDirectlyLabel.setEnabled(false);
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -468,6 +477,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(21, 21, 21)
                 .add(preservePermissionsLabel)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(uploadDirectlyCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(21, 21, 21)
+                .add(uploadDirectlyLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
@@ -514,7 +530,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(preservePermissionsCheckBox)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(preservePermissionsLabel)
-                .add(18, 18, 18)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(uploadDirectlyCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(uploadDirectlyLabel)
+                .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(advancedButton)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -602,6 +622,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JLabel remoteConnectionLabel;
     private JComboBox runAsComboBox;
     private JLabel runAsLabel;
+    private JCheckBox uploadDirectlyCheckBox;
+    private JLabel uploadDirectlyLabel;
     private JLabel uploadDirectoryLabel;
     private JTextField uploadDirectoryTextField;
     private JComboBox uploadFilesComboBox;

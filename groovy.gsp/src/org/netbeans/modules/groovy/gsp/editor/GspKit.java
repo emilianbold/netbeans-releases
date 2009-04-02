@@ -65,7 +65,7 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.util.Exceptions;
 
@@ -79,7 +79,7 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  */
 
-public class GspKit extends HTMLKit {
+public class GspKit extends HtmlKit {
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(GspKit.class);

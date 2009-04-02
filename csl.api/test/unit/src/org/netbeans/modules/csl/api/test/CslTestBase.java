@@ -609,9 +609,19 @@ public abstract class CslTestBase extends NbTestCase {
                 expected.trim(), description.trim());
     }
 
-    protected void assertDescriptionMatches(FileObject fileObject, 
+    protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext) throws IOException {
-        File goldenFile = getDataFile("testfiles/" + fileObject.getNameExt() + (includeTestName ? ("." + getName()) : "") + ext);
+            assertDescriptionMatches(fileObject, description, includeTestName, ext, false);
+    }
+    
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+
+        String goldenFileDir = goldenFileInTestFileDir ? 
+            FileUtil.getRelativePath(FileUtil.toFileObject(getDataDir()), fileObject.getParent()) :
+            "testfiles";
+
+        File goldenFile = getDataFile(goldenFileDir + "/" + fileObject.getNameExt() + (includeTestName ? ("." + getName()) : "") + ext);
         if (!goldenFile.exists()) {
             if (!goldenFile.createNewFile()) {
                 NbTestCase.fail("Cannot create file " + goldenFile);

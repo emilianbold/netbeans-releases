@@ -51,7 +51,7 @@ import javax.swing.JComboBox;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -154,7 +154,7 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
             propertyNameCb.setModel(new DefaultComboBoxModel());
         } else {
             String[] pref = {"get", "is"};  // NOI18N
-            propertyNameCb.setModel(new DefaultComboBoxModel(JSPPaletteUtilities.getTypeProperties(target, currentBean.getFqcn(), pref).toArray()));
+            propertyNameCb.setModel(new DefaultComboBoxModel(JspPaletteUtilities.getTypeProperties(target, currentBean.getFqcn(), pref).toArray()));
         }
     }
 

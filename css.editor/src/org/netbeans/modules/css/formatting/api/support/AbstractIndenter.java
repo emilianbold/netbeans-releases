@@ -274,7 +274,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         // create joined TokenSequence for our language
-        JoinedTokenSequence joinedTS = JoinedTokenSequence.createFromCodeBlocks(blocks);
+        JoinedTokenSequence<T1> joinedTS = JoinedTokenSequence.createFromCodeBlocks(blocks);
 
         // start on the beginning of line:
         int start = Utilities.getRowStart(doc, startOffset);
@@ -288,14 +288,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         OffsetRanges rangesToIgnore = new OffsetRanges();
         if (start > 0) {
             // find point of stable formatting start if start position not zero
-            TokenSequence<T1> ts = (TokenSequence<T1>)LexUtilities.getTokenSequence(doc, start, language);
+            TokenSequence<T1> ts = LexUtilities.getTokenSequence(doc, start, language);
             if (ts == null) {
                 int newStart = findPreviousOccuranceOfOurLanguage(joinedTS, start);
                 if (newStart == -1) {
                     // nothing to do
                     return;
                 }
-                ts = (TokenSequence<T1>)LexUtilities.getTokenSequence(doc, newStart, language);
+                ts = LexUtilities.getTokenSequence(doc, newStart, language);
                 assert ts != null : "start="+start+" newStart="+newStart+" jts="+joinedTS;
                 start = newStart;
             }
@@ -766,7 +766,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             assert l != null;
             if (l.index >= pair.line) {
-                List<IndentCommand> commands = new ArrayList(pair.commands);
+                List<IndentCommand> commands = new ArrayList<IndentCommand>(pair.commands);
                 for (IndentCommand ic : l.lineIndent) {
                     if (ic.getType() != IndentCommand.Type.NO_CHANGE ||
                             (ic.getType() == IndentCommand.Type.NO_CHANGE && commands.size() == 0)) {
@@ -1132,7 +1132,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
 
                 // ask formatter for line indentation:
-                IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset, emptyLine);
+                IndenterContextData<T1> cd = new IndenterContextData<T1>(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset, emptyLine);
                 cd.setLanguageBlockStart(line == lp.startingLine);
                 cd.setLanguageBlockEnd(line == realEndingLine);
                 List<IndentCommand> preliminaryNextLineIndent = new ArrayList<IndentCommand>();
@@ -1196,7 +1196,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 // this JSP code results in JSP token for "${expression}"
                 // which contains embedded EL token for "expression". Following
                 // code tries to treat "${" and "}" as JSP code and rest as EL code:
-                TokenSequence ts = joinedTS.embedded();
+                TokenSequence<? extends TokenId> ts = joinedTS.embedded();
                 int start = LexUtilities.getTokenSequenceStartOffset(ts);
                 int end = LexUtilities.getTokenSequenceEndOffset(ts);
                 if (forward) {
