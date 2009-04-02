@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -96,6 +97,11 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             "views" // NOI18N
             );
 
+    public static final List KNOWN_FOLDERS_IN_TEST = Arrays.asList(
+            "unit", // NOI18N
+            "integration" // NOI18N
+            );
+
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -142,21 +148,15 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             addGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views", result);
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
             addGroup(SourceCategory.PLUGINS, "LBL_Plugins", result);
-            for (FileObject child : projectDir.getChildren()) {
-                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
-                    String name = child.getName();
-                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
-                }
-            }
-            FileObject grailsAppFo = projectDir.getFileObject("grails-app");
-            if (grailsAppFo != null) {
-                for (FileObject child : grailsAppFo.getChildren()) {
-                    if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
-                        String name = child.getName();
-                        addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
-                    }
-                }
-            }
+//            for (FileObject child : projectDir.getChildren()) {
+//                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
+//                    String name = child.getName();
+//                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
+//                }
+//            }
+
+            addUnknownGroups(KNOWN_FOLDERS_IN_GRAILS_APP, result, "grails-app", null);
+            addUnknownGroups(KNOWN_FOLDERS_IN_TEST, result, "test", "LBL_SomeTests");
         }
         return result.toArray(new SourceGroup[result.size()]);
     }
@@ -182,6 +182,26 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         changeSupport.fireChange();
+    }
+
+    private void addUnknownGroups(Collection<String> alreadyKnown, List<Group> result,
+            String relativePath, String bundleKey) {
+        FileObject folder = projectDir.getFileObject(relativePath);
+        if (folder != null) {
+            for (FileObject child : folder.getChildren()) {
+                if (child.isFolder()
+                        && VisibilityQuery.getDefault().isVisible(child)
+                        && !alreadyKnown.contains(child.getName())) {
+
+                    String name = child.getName();
+                    String localizedName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                    if (bundleKey != null) {
+                        localizedName = NbBundle.getMessage(GrailsSources.class, bundleKey, localizedName);
+                    }
+                    addGroup(child, localizedName, result);
+                }
+            }
+        }
     }
 
     private void addGroup(FileObject fileObject, String displayName, List<Group> list) {

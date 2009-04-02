@@ -86,14 +86,14 @@ public class CheckStyleAction extends BaseAction implements ErrorHandler, Docume
     private int warnings;
     
     private DataObject csso;
-    private CSSDisplayer disp;      //and its displayer
+    private CssDisplayer disp;      //and its displayer
     
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         
         failed = false;
         warnings = 0;
         
-        disp = new CSSDisplayer();
+        disp = new CssDisplayer();
         
         Parser parser = new org.w3c.flute.parser.Parser();
         parser.setErrorHandler(this);

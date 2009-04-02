@@ -47,7 +47,7 @@ import java.io.File;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
+import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -341,7 +341,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
 
         Document targetDoc = target.getDocument();
         FileObject targetDocFO = NbEditorUtilities.getFileObject(targetDoc);
-        SourceGroup[] sg = HTMLPaletteUtilities.getSourceGroups(targetDocFO);
+        SourceGroup[] sg = HtmlPaletteUtilities.getSourceGroups(targetDocFO);
         
         File file = null;
         if (sg.length > 0) {
@@ -361,7 +361,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
             String path = file.getAbsolutePath();
             FileObject actionFO = FileUtil.toFileObject(file);
             try {
-                String relPathToAction = HTMLPaletteUtilities.getRelativePath(targetDocFO, actionFO);
+                String relPathToAction = HtmlPaletteUtilities.getRelativePath(targetDocFO, actionFO);
                 if (relPathToAction.length() > 0)
                     path = relPathToAction;
             }

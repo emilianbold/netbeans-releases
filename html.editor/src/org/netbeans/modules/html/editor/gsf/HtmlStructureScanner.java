@@ -63,7 +63,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.HtmlStructureScanner;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -78,7 +78,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
     public List<? extends StructureItem> scan(final ParserResult info) {
 
-//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HtmlKit.HTML_MIME_TYPE).iterator();
 //        if (!presultIterator.hasNext()) {
 //            return Collections.emptyList();
 //        }
@@ -109,7 +109,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return Collections.emptyMap();
         }
 //        //so far the css parser always parses the whole css content
-//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HtmlKit.HTML_MIME_TYPE).iterator();
 //        if (!presultIterator.hasNext()) {
 //            return Collections.emptyMap();
 //        }

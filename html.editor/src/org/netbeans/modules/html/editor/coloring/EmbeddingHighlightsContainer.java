@@ -54,7 +54,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -192,7 +192,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                         tokenSequenceList = scanner.tokenSequenceList(topLevelLanguagePath, startOffsetBoundary, endOffsetBoundary);
                     } else {
                         //html is embedded in some other language
-                        LanguagePath htmlPath = LanguagePath.get(topLevelLanguagePath, HTMLTokenId.language());
+                        LanguagePath htmlPath = LanguagePath.get(topLevelLanguagePath, HtmlTokenId.language());
                         tokenSequenceList = scanner.tokenSequenceList(htmlPath, startOffsetBoundary, endOffsetBoundary);
                     }
                 } else {
