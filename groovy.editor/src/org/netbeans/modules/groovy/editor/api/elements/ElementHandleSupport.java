@@ -127,7 +127,7 @@ public class ElementHandleSupport {
         ASTNode newNode = find(oldRoot, oldNode, newRoot);
 
         if (newNode != null) {
-            GroovyElement co = AstElement.create(newNode);
+            GroovyElement co = AstElement.create(AstUtilities.getParseResult(info), newNode);
 
             return co;
         }

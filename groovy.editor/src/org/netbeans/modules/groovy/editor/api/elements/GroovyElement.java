@@ -82,7 +82,6 @@ public abstract class GroovyElement implements Element {
         return null;
     }
 
-    // FIXME parsing API
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
     }

@@ -70,7 +70,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -99,7 +98,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Martin Adamek
  */
-class GroovyParser extends Parser {
+public class GroovyParser extends Parser {
 
     private static final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
 
@@ -171,8 +170,8 @@ class GroovyParser extends Parser {
         waitJavaScanFinished = shouldWait;
     }
 
-    protected GroovyParserResult createParseResult(Snapshot snapshot, AstRootElement rootElement, ErrorCollector errorCollector) {
-        GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootElement, errorCollector);
+    protected GroovyParserResult createParseResult(Snapshot snapshot, ModuleNode rootNode, ErrorCollector errorCollector) {
+        GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootNode, errorCollector);
         return parserResult;
     }
 
@@ -596,8 +595,7 @@ class GroovyParser extends Parser {
         if (module != null) {
             context.sanitized = sanitizing;
             // FIXME parsing API
-            AstRootElement astRootElement = new AstRootElement(context.snapshot.getSource().getFileObject(), module);
-            GroovyParserResult r = createParseResult(context.snapshot, astRootElement, compilationUnit.getErrorCollector());
+            GroovyParserResult r = createParseResult(context.snapshot, module, compilationUnit.getErrorCollector());
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
         } else {
