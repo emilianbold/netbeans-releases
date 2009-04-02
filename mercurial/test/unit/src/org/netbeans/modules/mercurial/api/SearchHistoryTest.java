@@ -81,12 +81,12 @@ public class SearchHistoryTest extends AbstractHgTest {
         f = new File("/tmp/testShowFileHistory.file");
         
         // folder
-        showing = Mercurial.showFileHistory(f.getParentFile().getAbsolutePath(), 1);
+        showing = Mercurial.showFileHistory(f.getParentFile(), 1);
         assertFalse(showing);
 
         // unversioned file
         f.createNewFile();
-        showing = Mercurial.showFileHistory(f.getAbsolutePath(), 1);
+        showing = Mercurial.showFileHistory(f, 1);
         assertFalse(showing);
 
         // AWT
@@ -94,7 +94,7 @@ public class SearchHistoryTest extends AbstractHgTest {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    Mercurial.showFileHistory(file.getAbsolutePath(), 1);
+                    Mercurial.showFileHistory(file, 1);
                     fail("AWT test failed");
                 } catch (AssertionError err) {
                     
