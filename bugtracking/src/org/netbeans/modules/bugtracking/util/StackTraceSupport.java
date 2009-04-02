@@ -43,23 +43,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.VCSSupport;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -369,55 +362,8 @@ public class StackTraceSupport {
         return false;
    }
 
-   static private FileObject search( String path ) {
-        Project[] projects = getProjects();
-        Set<Project> prs = new HashSet<Project>();
-        for (Project project : projects) {
-            collectProjects(project, prs);
-        }
-        for (Project project : prs) {
-            FileObject fob = search(project, path);
-            if (fob != null) {
-                return fob;
-            }
-        }
-        return null;
+   static private FileObject search(String path) {
+       return GlobalPathRegistry.getDefault().findResource(path);
     }
 
-   static private void collectProjects(Project project, Set<Project> projects) {
-       if (projects.contains(project)) {
-           return;
-       }
-       projects.add(project);
-       SubprojectProvider subProvider = project.getLookup().lookup(SubprojectProvider.class);
-       if (subProvider != null) {
-           for (Project subProject : subProvider.getSubprojects()) {
-               collectProjects(subProject, projects);
-           }
-       }
-   }
-
-   private static FileObject search(Project project, String path) {
-        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
-        for( SourceGroup group : groups ) {
-            FileObject groupRoot = group.getRootFolder();
-            FileObject fo = groupRoot.getFileObject(path);
-            if ( fo != null ) {
-                return fo;
-            }
-            FileObject[] ch = groupRoot.getChildren();
-            for (FileObject child : ch) {
-                if(!child.isFolder()) continue;
-                fo = groupRoot.getFileObject(child.getName() + "/" + path);  // XXX HACK - javaapp returns project forlder as root instead of src
-                if ( fo != null ) {
-                    return fo;
-                }
-            }
-        }
-        return null;
-   }
-
-    private static  Project[] getProjects() {
-        return OpenProjects.getDefault().getOpenProjects();
-    }
 }
