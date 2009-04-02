@@ -68,10 +68,10 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     private Kenai kenai = Kenai.getDefault();
 
     @Override
-    public List<ProjectHandle> getMemberProjects(LoginHandle login) {
+    public List<ProjectHandle> getMemberProjects(LoginHandle login, boolean force) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-            for (KenaiProject prj : kenai.getMyProjects(true)) {
+            for (KenaiProject prj : kenai.getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
             }
             return l;
@@ -82,9 +82,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(String projectId) {
+    public ProjectHandle getNonMemberProject(String projectId, boolean force) {
         try {
-            return new ProjectHandleImpl(kenai.getProject(projectId,true));
+            return new ProjectHandleImpl(kenai.getProject(projectId,force));
         } catch (KenaiException ex) {
             throw new RuntimeException(ex);
         }
