@@ -1793,6 +1793,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return hash;
         }
 
+        @Override
+        public String toString() {
+            return "OffsetSortedKey: " + this.name + "[" + this.start; // NO18N
+        }
+
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
             PersistentUtils.writeUTF(name, output);
@@ -1841,6 +1846,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             hash = 37 * hash + this.start;
             hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "NameSortedKey: " + this.name + "[" + this.start; // NO18N
         }
 
         public static NameSortedKey getStartKey(CharSequence name) {
