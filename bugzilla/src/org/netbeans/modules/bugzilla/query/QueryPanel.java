@@ -277,6 +277,11 @@ public class QueryPanel extends javax.swing.JPanel {
         bugAssigneeCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.bugAssigneeCheckBox.text")); // NOI18N
 
         reporterCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.reporterCheckBox.text")); // NOI18N
+        reporterCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reporterCheckBoxActionPerformed(evt);
+            }
+        });
 
         ccCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ccCheckBox.text")); // NOI18N
 
@@ -304,7 +309,7 @@ public class QueryPanel extends javax.swing.JPanel {
                         .add(7, 7, 7)
                         .add(peopleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 163, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(reporterCheckBox))
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
         byPeoplePanelLayout.setVerticalGroup(
             byPeoplePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1017,6 +1022,10 @@ public class QueryPanel extends javax.swing.JPanel {
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_keywordsButtonActionPerformed
+
+    private void reporterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporterCheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_reporterCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

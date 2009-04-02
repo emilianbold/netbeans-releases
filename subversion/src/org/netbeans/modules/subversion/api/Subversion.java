@@ -345,6 +345,8 @@ public class Subversion {
             }
         }
 
+        boolean notVersionedYet = localFolder.exists() && !SvnUtils.isManaged(localFolder);
+
         CheckoutAction.performCheckout(
                 svnUrl,
                 client,
@@ -359,12 +361,12 @@ public class Subversion {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
 
-        // XXX shouldn't be done after every chcekout...
-        getSubversion().versionedFilesChanged();
-        SvnUtils.refreshParents(localFolder);
-        // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-        getSubversion().getStatusCache().refreshRecursively(localFolder);
-
+        if(!notVersionedYet) {
+            getSubversion().versionedFilesChanged();
+            SvnUtils.refreshParents(localFolder);
+            getSubversion().getStatusCache().refreshRecursively(localFolder);
+        }
+        
         return true;
     }
 
@@ -473,10 +475,9 @@ public class Subversion {
      * @param lineNumber requested line number to fix on
      * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
      */
-    public static boolean showFileHistory (final String path, final int lineNumber) {
+    public static boolean showFileHistory (final File file, final int lineNumber) {
         assert !EventQueue.isDispatchThread();
-
-        final File file = FileUtil.normalizeFile(new File(path));
+        
         if (!file.exists()) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
             return false;

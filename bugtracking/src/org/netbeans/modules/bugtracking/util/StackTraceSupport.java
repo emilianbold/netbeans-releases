@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,24 +62,27 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.util.Lookup;
 
-/** Finds stacktraces in texts.
-*
-*  XXX Does not handle poorly formated stacktraces e.g.
-*  http://www.netbeans.org/issues/show_bug.cgi?id=100005&x=17&y=10
-*
-*  XXX: Needs to filter out indentical stacktrace hashes
-*
+/**
+ * Finds stacktraces in texts.
+ *
+ *  XXX Does not handle poorly formated stacktraces e.g.
+ *  http://www.netbeans.org/issues/show_bug.cgi?id=100005&x=17&y=10
+ *
+ *  XXX: Needs to filter out indentical stacktrace hashes
+ *
 * @author Petr Hrebejk, Jan Stola
-*/
+ */
 public class StackTraceSupport {
 
     private static final Pattern ST_PATTERN =
            Pattern.compile("([\\p{Alnum}\\.\\$_<>]*?)\\((?:Native Method|Unknown Source|Compiled Code|([\\p{Alnum}\\.\\$_]*?):(\\p{Digit}+?))\\)", Pattern.DOTALL);
 
-    private StackTraceSupport() {}
+    private StackTraceSupport() { }
 
     @SuppressWarnings("empty-statement")
     public static void findAndOpen(String text) {
@@ -92,6 +96,17 @@ public class StackTraceSupport {
             }
             path = path.replace(".", "/") + ".java"; // XXX .java ???
             open(path, ste.getLineNumber() - 1); // XXX -1 ???
+            break;
+        }
+    }
+
+    public static void findAndShowHistory(String text) {
+        List<StackTracePosition> st = StackTraceSupport.find(text);
+        for (StackTracePosition stp : st) {
+            final StackTraceElement ste = stp.getStackTraceElements()[0];
+            String path = ste.getClassName();
+            path = path.replace(".", "/") + ".java"; // XXX .java ???
+            openSearchHistory(path, ste.getLineNumber() - 1); // XXX -1 ???
             break;
         }
     }
@@ -256,6 +271,26 @@ public class StackTraceSupport {
                     doOpen(fo, line);
                 }
             });
+        }
+    }
+
+    public static void openSearchHistory(String path, final int line) {
+        final FileObject fo = search(path);
+        if ( fo != null ) {
+            final File file = FileUtil.toFile(fo);
+            Collection<? extends VCSSupport> supports = Lookup.getDefault().lookupAll(VCSSupport.class);
+            if(supports == null) {
+                return;
+            }
+            for (final VCSSupport s : supports) {
+                // XXX this is messy - we implicitly expect that unrelevant VCS modules
+                // will skip the action
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        s.searchHistory(file, line);
+                    }
+                });
+            }
         }
     }
 
