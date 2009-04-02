@@ -72,22 +72,40 @@ public class IssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        openQuery();
+    }
+
+    public static void openQuery() {
         openQuery(null);
     }
 
-    public static void openQuery(Issue issue) {
-        Repository suggestedRepository = null;
-        File context = BugtrackingUtil.getLargerContext();
-        if (context != null) {
-            suggestedRepository = FileToRepoMappingStorage.getInstance()
-                                  .getRepository(context);
+    public static void openQuery(Repository givenRepository) {
+        final Repository repository;
+        final boolean repositoryGiven;
+
+        if (givenRepository != null) {
+            repository = givenRepository;
+            repositoryGiven = true;
+        } else {
+            Repository suggestedRepository = null;
+            File context = BugtrackingUtil.getLargerContext();
+            if (context != null) {
+                suggestedRepository = FileToRepoMappingStorage.getInstance()
+                                      .getRepository(context);
+            }
+
+            repository = suggestedRepository;
+            repositoryGiven = false;
         }
 
-        openIssue(issue, suggestedRepository, true);
-    }
-
-    public static void openIssue(final Issue issue, final Repository repository) {
-        openIssue(issue, repository, false);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                IssueTopComponent tc = new IssueTopComponent();
+                tc.initNewIssue(repository, !repositoryGiven);
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
 
     public static void openIssue(final Issue issue, final Repository repository,
