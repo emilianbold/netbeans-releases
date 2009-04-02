@@ -109,8 +109,8 @@ is the proper place.
             <api name="general"/>
             <summary>Added <code>SourcesHelper</code> constructor accepting <code>Project</code></summary>
             <version major="1" minor="31"/>
-            <date day="27" month="3" year="2009"/>
-            <author login="tzezula"/>
+            <date day="2" month="4" year="2009"/>
+            <author login="jglick"/>
             <compatibility addition="yes" deprecation="yes"/>
             <description>
                 <p>
