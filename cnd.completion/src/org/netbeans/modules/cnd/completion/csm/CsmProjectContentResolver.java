@@ -108,6 +108,7 @@ public final class CsmProjectContentResolver {
     private boolean sort = false;
     private CsmFile file;
     private CsmProject project;
+    private Collection<CsmProject> libs;
 
     public CsmProjectContentResolver() {
         this(false);
@@ -129,55 +130,14 @@ public final class CsmProjectContentResolver {
 
     /**
      * Creates a new instance of CsmProjectContentResolver
-     * could be used for getting info only from model
-     */
-    public CsmProjectContentResolver(CsmProject project) {
-        this(project, false);
-    }
-
-    /**
-     * Creates a new instance of CsmProjectContentResolver
-     * could be used for getting info only from project
-     */
-    public CsmProjectContentResolver(CsmProject project, boolean caseSensitive) {
-        this(project, caseSensitive, false, false);
-    }
-
-    /**
-     * Creates a new instance of CsmProjectContentResolver
      * could be used for getting info only from project
      */
     public CsmProjectContentResolver(CsmProject project, boolean caseSensitive, boolean needSort, boolean naturalSort) {
-        this((CsmFile) null, caseSensitive, needSort, naturalSort);
-        this.project = project;
-    }
-
-    /**
-     * Creates a new instance of CsmProjectContentResolver
-     * could be used for getting info from file and it's project
-     */
-    public CsmProjectContentResolver(CsmFile file) {
-        this(file, false, false, false);
-    }
-
-    /**
-     * Creates a new instance of CsmProjectContentResolver
-     * could be used for getting info from file and it's project
-     */
-    public CsmProjectContentResolver(CsmFile file, boolean caseSensitive) {
-        this(file, caseSensitive, false, false);
-    }
-
-    /**
-     * Creates a new instance of CsmProjectContentResolver
-     * could be used for getting info from file and it's project
-     */
-    public CsmProjectContentResolver(CsmFile file, boolean caseSensitive, boolean needSort, boolean naturalSort) {
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
-        this.file = file;
-        this.project = file != null ? file.getProject() : null;
+        this.file = null;
         this.sort = needSort;
+        this.project = project;
     }
 
     private List<CsmEnumerator> getEnumeratorsFromEnumsEnumeratorsAndTypedefs(List enumsEnumeratorsAndTypedefs, boolean match, String strPrefix, boolean sort) {
