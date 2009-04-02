@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.project.util;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -51,6 +52,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Radek Matous
@@ -72,7 +74,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     @Override
     Callable<Boolean> createCopyHandler(final FileObject source) {
-        return /*(isEnabled()) ? new Callable<Boolean>() {
+        return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 RemoteClient client = getRemoteClient(project);
@@ -86,9 +88,6 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (client != null) {
                     try {
                         if (transferFiles.size() > 0) {
-                            if (!client.isConnected()) {
-                                client.connect();
-                            }
                             TransferInfo transferInfo = client.upload(sourceRoot, transferFiles);
                             return transferInfo.hasAnyTransfered();
                         }
@@ -98,12 +97,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 }
                 return false;
             }
-        } : */null;
+        } : null;
     }
 
     @Override
     Callable<Boolean> createDeleteHandler(final FileObject source) {
-        return /*(isEnabled()) ? new Callable<Boolean>() {
+        return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 RemoteClient client = getRemoteClient(project);
@@ -112,19 +111,13 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 FileObject sourceRoot = (client != null) ? sourcesDirectory : null;
                 boolean sourceFileValid = sourceRoot != null ? isSourceFileValid(sourceRoot, source) : false;
                 if (sourceFileValid) {
-                    transferFiles = client.prepareUpload(sourceRoot, source);
+                    transferFiles = client.prepareDelete(sourceRoot, source);
                 }
                 if (client != null) {
                     try {
                         if (transferFiles.size() > 0) {
-                            if (!client.isConnected()) {
-                                client.connect();
-                            }
-                            for (TransferFile transferFile : transferFiles) {
-                                if (!client.deleteFile(transferFile)) {
-                                    return false;
-                                }
-                            }
+                            TransferInfo transferInfo = client.delete(transferFiles);
+                            return !transferInfo.hasAnyFailed();
                         }
                     } finally {
                         client.disconnect();
@@ -132,7 +125,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 }
                 return false;
             }
-        } : */null;
+        } : null;
     }
 
     @Override
@@ -142,7 +135,34 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     @Override
     Callable<Boolean> createRenameHandler(final FileObject source, final String oldName) {
-        return null;
+                return (isEnabled()) ? new Callable<Boolean>() {
+
+            public Boolean call() throws Exception {
+                RemoteClient client = getRemoteClient(project);
+                TransferFile fromTransferFile = null;
+                TransferFile toTransferFile = null;
+                FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
+                FileObject sourceRoot = (client != null) ? sourcesDirectory : null;
+                boolean sourceFileValid = sourceRoot != null ? isSourceFileValid(sourceRoot, source) : false;
+                if (sourceFileValid) {
+                    String baseDirectory = FileUtil.toFile(sourcesDirectory).getAbsolutePath();
+                    File sourceFile = FileUtil.toFile(source);
+                    toTransferFile = TransferFile.fromFileObject(source,baseDirectory);
+                    fromTransferFile = TransferFile.fromFile(new File(sourceFile.getParentFile(), oldName),baseDirectory);
+                }
+                if (client != null) {
+                    try {
+                        if (fromTransferFile != null && toTransferFile != null) {
+                            return client.rename(fromTransferFile, toTransferFile);
+                        }
+                    } finally {
+                        client.disconnect();
+                    }
+                }
+                return false;
+            }
+        } : null;
+
     }
 
     protected static boolean isValidRemoteConfig(PhpProject project) {
@@ -175,8 +195,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected static boolean isUploadOnSave(PhpProject project) {
         UploadFiles howToUpload = ProjectPropertiesSupport.getRemoteUpload(project);
-        //TODO: use ON_SAVE.equals(howToUpload) instance of false (now diabled)
-        return (howToUpload != null) ? UploadFiles.MANUALLY.equals(howToUpload) : false;
+        return (howToUpload != null) ? UploadFiles.ON_SAVE.equals(howToUpload) : false;
     }
 
     protected static boolean isRemoteConfigSelected(PhpProject project) {
@@ -186,8 +205,11 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected synchronized RemoteClient getRemoteClient(PhpProject project) {
         if (remoteClient == null) {
-            remoteClient = new RemoteClient(getRemoteConfiguration(project), null,
-                    getRemoteDirectory(project), ProjectPropertiesSupport.areRemotePermissionsPreserved(project));
+            remoteClient = new RemoteClient(getRemoteConfiguration(project), RemoteClient.AdvancedProperties.create(
+                    null,
+                    getRemoteDirectory(project),
+                    ProjectPropertiesSupport.areRemotePermissionsPreserved(project),
+                    ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
         }
         return remoteClient;
     }
