@@ -84,7 +84,8 @@ public class BugtrackingOwnerSupport {
     public enum ContextType {
         MAIN_PROJECT_ONLY,
         MAIN_OR_SINGLE_PROJECT,
-        ALL_PROJECTS
+        ALL_PROJECTS,
+        SELECTED_FILE_AND_ALL_PROJECTS,
     }
 
     public Repository getRepository(ContextType context) {
@@ -105,6 +106,9 @@ public class BugtrackingOwnerSupport {
                 break;
             case ALL_PROJECTS:
                 return getRepository(projects.getOpenProjects());
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                return getRepositoryForContext(BugtrackingUtil.getLargerContext(),
+                                               false);
             default:
                 assert false;
                 break;
@@ -198,6 +202,11 @@ public class BugtrackingOwnerSupport {
         }
 
         return getRepositoryForContext(context, issueId, askIfUnknown);
+    }
+
+    private Repository getRepositoryForContext(File context,
+                                               boolean askIfUnknown) {
+        return getRepositoryForContext(context, null, askIfUnknown);
     }
 
     private Repository getRepositoryForContext(File context, String issueId,
