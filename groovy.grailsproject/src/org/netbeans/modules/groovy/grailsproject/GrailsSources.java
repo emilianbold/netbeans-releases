@@ -97,9 +97,10 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             "views" // NOI18N
             );
 
-    public static final List KNOWN_FOLDERS_IN_TEST = Arrays.asList(
+    public static final List KNOWN_OR_IGNORED_FOLDERS_IN_TEST = Arrays.asList(
             "unit", // NOI18N
-            "integration" // NOI18N
+            "integration", // NOI18N
+            "reports" // NOI18N
             );
 
     private final FileObject projectDir;
@@ -156,7 +157,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
 //            }
 
             addUnknownGroups(KNOWN_FOLDERS_IN_GRAILS_APP, result, "grails-app", null);
-            addUnknownGroups(KNOWN_FOLDERS_IN_TEST, result, "test", "LBL_SomeTests");
+            addUnknownGroups(KNOWN_OR_IGNORED_FOLDERS_IN_TEST, result, "test", "LBL_SomeTests");
         }
         return result.toArray(new SourceGroup[result.size()]);
     }

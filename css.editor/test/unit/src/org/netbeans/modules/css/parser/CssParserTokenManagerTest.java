@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.elements;
+package org.netbeans.modules.css.parser;
 
-import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
+import java.io.StringReader;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
- * @author Martin Adamek
+ * @author marekfukala
  */
-public class AstRootElement extends AstElement {
+public class CssParserTokenManagerTest {
 
-    private final FileObject fileObject;
-    private final ModuleNode moduleNode;
-
-    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
-        super(info, moduleNode);
-        this.fileObject = fo;
-        this.moduleNode = moduleNode;
+    public CssParserTokenManagerTest() {
     }
 
-    @Override
-    public String getName() {
-        return fileObject.getNameExt();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    public ModuleNode getModuleNode() {
-        return moduleNode;
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
+
+    @Test
+    public void basic() {
+        String source = "h1 { color : red; /* comment */ }";
+        CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        org.netbeans.modules.css.parser.Token token = null;
+        do {
+            token = tm.getNextToken();
+//            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");
+            if(token == null) {
+                break;
+            }
+            if(token.kind == CssParserConstants.EOF) {
+                break;
+            }
+        } while(true);
+
+    }
+
 }

@@ -41,13 +41,14 @@ package org.netbeans.modules.groovy.editor.api.elements;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
 public class AstFieldElement extends AstElement {
 
     private boolean property;
 
-    public AstFieldElement(ASTNode node) {
-        super(node);
+    public AstFieldElement(GroovyParserResult info, ASTNode node) {
+        super(info, node);
     }
 
     @Override

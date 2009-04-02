@@ -312,7 +312,7 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
         Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
-        dbgStarter.start(project, initDebuggingCallable, debuggedFile, false, ProjectPropertiesSupport.getEncodedDebugPathMapping(project));
+        dbgStarter.start(project, initDebuggingCallable, debuggedFile, false, ProjectPropertiesSupport.getDebugPathMapping(project));
     }
 
     private void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {

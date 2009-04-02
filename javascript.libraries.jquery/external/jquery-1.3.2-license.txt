@@ -1,12 +1,12 @@
 Name: jQuery
-Version: 1.2.6
+Version: 1.3.2
 Description: JavaScript Library
 License: BSD
 OSR:
 Origin: http://jquery.com
-files: jquery-1.2.6.zip
+files: jquery-1.3.2.zip
 Source:
-Comment: JavaScript source for jQuery 1.2.6 JavaScript Library Manager
+Comment: JavaScript source for jQuery 1.3.2 JavaScript Library Manager
 Copyright (c) 2008 John Resig, http://jquery.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
