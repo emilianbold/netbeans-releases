@@ -107,6 +107,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="node.actions">
+            <api name="common_server_properties_api"/>
+            <summary>Extensible actions on root server node</summary>
+            <version major="1" minor="4"/>
+            <date day="3" month="4" year="2009"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                By registering actions to <code>Servers/Actions</code> you
+                can extend the list of popup actions on Servers node in
+                Services tab.
+            </description>
+        </change>
         <change>
             <api name="common_server_properties_api"/>
             <summary>Support API for server instance persistence</summary>

@@ -52,5 +52,15 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Servers"/>
+    <folder name="Servers">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-server-ui-node-AddServerInstanceAction.instance">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="JSeparator1.instance">
+                <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
