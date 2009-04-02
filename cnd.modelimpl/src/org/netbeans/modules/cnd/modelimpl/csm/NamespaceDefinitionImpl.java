@@ -89,19 +89,19 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         nsImpl.addNamespaceDefinition(this);
     }
 
-    public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
+    public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
         CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
-        for (CsmDeclaration decl : container.getDeclarations()) {
-            if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                NamespaceDefinitionImpl candidate = (NamespaceDefinitionImpl) decl;
-                if (candidate.getStartOffset() == start && candidate.getEndOffset() == end && candidate.getName().equals(name)) {
-                    return candidate;
-                }
-            }
+        // #147376 Strange navigator behavior in header
+        CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, end, name);
+        if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
+            return (NamespaceDefinitionImpl) candidate;
+        } else {
+            NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(ast, containerfile, parentNamespace);
+            container.addDeclaration(ns);
+            return ns;
         }
-        return null;
     }
     
     public CsmDeclaration.Kind getKind() {
@@ -124,10 +124,22 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
          return out;
     }
 
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
+        CsmUID<CsmOffsetableDeclaration> out = null;
+        // look for the object with the same start position and the same name
+        // TODO: for now we are in O(n), but better to be O(ln n) speed
+        synchronized (this) {
+            out = UIDUtilities.findExistingUIDInList(declarations, start, end, name);
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
-        insertIntoSortedDeclArray(uid);
+        synchronized (this) {
+            UIDUtilities.insertIntoSortedUIDList(uid, declarations);
+        }
         if (decl instanceof VariableImpl) {
             VariableImpl v = (VariableImpl) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
@@ -145,16 +157,20 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
     
     private void insertIntoSortedDeclArray(CsmUID<CsmOffsetableDeclaration> uid) {
-        for (int pos = 0; pos < declarations.size(); pos++) {
+        int start = UIDUtilities.getStartOffset(uid);
+        // start from the last, because most of the time we are in append, not insert mode
+        for (int pos = declarations.size() - 1; pos >= 0; pos--) {
             CsmUID<CsmOffsetableDeclaration> currUID = declarations.get(pos);
-            int i = UIDUtilities.compareWithinFile(uid, currUID);
+            int i = UIDUtilities.compareWithinFile(currUID, uid);
             if (i <= 0) {
                 if (i == 0){
                     declarations.set(pos, uid);
-                    return;
+                } else {
+                    declarations.add(pos+1, uid);
                 }
-                declarations.add(pos, uid);
                 return;
+            } else if (UIDUtilities.getStartOffset(currUID) < start){
+                break;
             }
         }
         declarations.add(uid);
