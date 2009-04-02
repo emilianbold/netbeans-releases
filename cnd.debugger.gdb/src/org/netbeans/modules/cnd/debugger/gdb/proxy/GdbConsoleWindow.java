@@ -71,7 +71,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
     private JScrollBar scrollBar;
     private static GdbConsoleWindow instance = null;
 
-    private final Object textLock = new String("Console text lock");
+    private final Object textLock = new String("Console text lock"); // NOI18N
     
     /** Creates new GdbConsoleWindow */
     private GdbConsoleWindow(GdbDebugger debugger, GdbProxy gdbProxy) {
