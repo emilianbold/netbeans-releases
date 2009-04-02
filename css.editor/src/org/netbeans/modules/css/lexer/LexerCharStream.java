@@ -40,7 +40,7 @@
 package org.netbeans.modules.css.lexer;
 
 import java.io.IOException;
-import org.netbeans.modules.css.parser.CSSParserConstants;
+import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CharStream;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;

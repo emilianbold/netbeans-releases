@@ -157,6 +157,7 @@ public class PerformanceTest extends NbTestCase {
         FileObject testObject = FileUtil.createData(testFile);
         DataObject dataObj = DataObject.find(testObject);
         EditorCookie.Observable ed = dataObj.getCookie(Observable.class);
+        waitTimeout();
         ed.openDocument();
         ed.open();
         waitTimeout();

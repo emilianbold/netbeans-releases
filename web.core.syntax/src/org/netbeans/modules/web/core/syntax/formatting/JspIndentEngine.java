@@ -55,7 +55,7 @@ public class JspIndentEngine extends JavaIndentEngine {
 
     /** Creates a new instance of HTMLIndentEngine */
     public JspIndentEngine() {
-        setAcceptedMimeTypes(new String[] { JSPKit.JSP_MIME_TYPE});
+        setAcceptedMimeTypes(new String[] { JspKit.JSP_MIME_TYPE});
     }
 
     protected org.netbeans.editor.ext.ExtFormatter createFormatter() {

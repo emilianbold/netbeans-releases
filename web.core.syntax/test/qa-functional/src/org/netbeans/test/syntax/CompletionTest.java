@@ -480,7 +480,7 @@ public class CompletionTest extends J2eeTestCase {
                     selectedItem = (CompletionItem) next;
                 }
                 if (printDirectly && !isJavaScript()) {
-                    ref(dispText);
+                    logIntoRef(dispText);
                 } else {
                     finalItems.add(dispText);
                 }
@@ -488,7 +488,7 @@ public class CompletionTest extends J2eeTestCase {
             if (printDirectly && isJavaScript()){
                 Collections.sort(finalItems);
                 for (String str : finalItems) {
-                    ref(str);
+                    logIntoRef(str);
                 }
             }
             class DefaultActionRunner implements Runnable {
@@ -514,7 +514,7 @@ public class CompletionTest extends J2eeTestCase {
                         Collections.sort(finalItems);
                     }
                     for (String str : finalItems) {
-                        ref(str);
+                        logIntoRef(str);
                     }
                 }
                 runInAWT(new DefaultActionRunner(selectedItem, editor));
@@ -529,6 +529,11 @@ public class CompletionTest extends J2eeTestCase {
             ref("Instant substitution performed");
         }
         return false;
+    }
+
+    private void logIntoRef(String message){
+        message = message.replaceAll("<\\?>", "");
+        ref(message);
     }
 
     private String getPrefix(String completionText){

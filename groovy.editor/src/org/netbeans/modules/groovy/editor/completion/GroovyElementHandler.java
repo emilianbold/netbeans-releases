@@ -80,17 +80,8 @@ public final class GroovyElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
+    public Map<MethodSignature, ? extends CompletionItem> getMethods(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
-
-        FileObject fo = info.getSnapshot().getSource().getFileObject();
-        if (fo == null) {
-            return Collections.emptyMap();
-        }
-
-        // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
             return Collections.emptyMap();
@@ -143,17 +134,8 @@ public final class GroovyElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+    public Map<FieldSignature, ? extends CompletionItem> getFields(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise) {
-
-        FileObject fo = info.getSnapshot().getSource().getFileObject();
-        if (fo == null) {
-            return Collections.emptyMap();
-        }
-
-        // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (index == null) {
             return Collections.emptyMap();
