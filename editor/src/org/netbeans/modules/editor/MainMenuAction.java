@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor;
 
+import java.util.Collection;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -68,7 +69,9 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -79,7 +82,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author  Martin Roskanin
  */
-public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
+public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, LookupListener {
 
     public static final Icon BLANK_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/empty.gif", false);
     public boolean menuInitialized = false;
@@ -89,6 +92,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     private final boolean forceIcon;
 
     private Lookup.Result<KeyBindingSettings> kbs = null;
+    private Lookup.Result<ActionMap> globalActionMap = null;
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
@@ -174,17 +178,26 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         return null;
     }
     
-    
+    protected final ActionMap getContextActionMap() {
+        if (globalActionMap == null) {
+            globalActionMap = org.openide.util.Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+            globalActionMap.addLookupListener(WeakListeners.create(LookupListener.class, this, globalActionMap));
+        }
+
+        Collection<? extends ActionMap> am = globalActionMap.allInstances();
+        return am.size() > 0 ? am.iterator().next() : null;
+    }
+
     /** Sets the state of JMenuItem. Should be called from subclasses constructors
      * after their initialization is done.
      */
-    protected void setMenu(){
+    protected void setMenu() {
         if (kbs == null) {
             // needs to listen on Registry - resultChanged event is fired before
             // TopComponent is really focused - this causes problems in getComponent method
             Registry.addChangeListener(this);
             kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
-            kbs.addLookupListener(this);
+            kbs.addLookupListener(WeakListeners.create(LookupListener.class, this, kbs));
             kbs.allInstances();
         }
 

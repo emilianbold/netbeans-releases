@@ -7,7 +7,7 @@
         <folder name="text">
             <folder name="html">
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.api.html.lexer.HTMLTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.api.html.lexer.HtmlTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>

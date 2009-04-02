@@ -162,6 +162,8 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     public Component getCustomEditor() {
         if (customEditor == null) {
             initCustomEditor();
+        } else {
+
         }
         return customEditor;
     }

@@ -111,6 +111,11 @@ public final class PropertiesClient {
         File store;
         try {
             store = getPropertyFile(false);
+            if (store == null) {
+                // if no changes are made, the props.work does not exist
+                // so return the base prop-file - see #
+                store = getPropertyFile(true);
+            }
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());
         }
@@ -134,12 +139,12 @@ public final class PropertiesClient {
             if(base) {
                 return ((ParserSvnInfo) info).getBasePropertyFile();
             } else {
-                return ((ParserSvnInfo) info).getPropertyFile();                
+                return ((ParserSvnInfo) info).getPropertyFile();
             }
         } else {
             return SvnWcUtils.getPropertiesFile(file, base);
-        }         
-    }    
+        }
+    }
 
     /** Not implemented. */
     public Map getProperties(int revision) throws IOException {

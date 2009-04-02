@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import java.util.Map;
@@ -135,7 +136,7 @@ public class PHPFormatter implements Formatter {
 
     public void reformat(Context context, ParserResult info) {
         prettyPrint(context);
-        reindent(context, info, false);
+        astReformat(context, info);
     }
 
     public int indentSize() {
@@ -276,7 +277,7 @@ public class PHPFormatter implements Formatter {
         return balance;
     }
 
-    private boolean isInLiteral(BaseDocument doc, int offset) throws BadLocationException {
+    private boolean lineUnformattable(BaseDocument doc, int offset) throws BadLocationException {
         // TODO: Handle arrays better
         // %w(January February March April May June July
         //    August September October November December)
@@ -329,8 +330,7 @@ public class PHPFormatter implements Formatter {
 //                    }
 //                }
             } else {
-                // No ruby token -- leave the formatting alone!
-                // (Probably in an RHTML file on a line with no Ruby)
+                // No PHP token -- leave the formatting alone!
                 return true;
             }
         } else {
@@ -451,7 +451,7 @@ public class PHPFormatter implements Formatter {
         return false;
     }
 
-    private void prettyPrint(final Context context) {
+ private void prettyPrint(final Context context) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
@@ -467,8 +467,8 @@ public class PHPFormatter implements Formatter {
                 Source source = Source.create(file);
                 try {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            PHPParseResult result = (PHPParseResult) resultIterator.getParserResult();
+                        public void run(ResultIterator parameter) throws Exception {
+                            PHPParseResult result = (PHPParseResult) parameter.getParserResult();
                             result.getProgram().accept(wsTransformer);
                         }
                     });
@@ -496,7 +496,6 @@ public class PHPFormatter implements Formatter {
             }
         });
     }
-
     private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
         Document document = context.document();
         int startOffset = context.startOffset();
@@ -679,14 +678,14 @@ public class PHPFormatter implements Formatter {
                         if (ind != null) {
                             initialIndent = ind.intValue();
                         } else {
-                            initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                            initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
                         }
                     } else {
-                        initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                        initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
                     }
                 }
 
-                if (isInLiteral(doc, offset)) {
+                if (lineUnformattable(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting
                     indent = GsfUtilities.getLineIndent(doc, offset);
                 } else if (isEndIndent(doc, offset)) {
@@ -733,5 +732,107 @@ public class PHPFormatter implements Formatter {
         }
 
         return null;
+    }
+
+    private void astReformat(final Context context, ParserResult info) {
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+        document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
+
+        try {
+            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
+            final Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+
+            if (endOffset > doc.getLength()) {
+                endOffset = doc.getLength();
+            }
+
+            startOffset = Utilities.getRowStart(doc, startOffset);
+            final int firstLine = Utilities.getLineOffset(doc, startOffset);
+            final Map<Integer, Integer> indentLevels = new LinkedHashMap<Integer, Integer>();
+            final IndentLevelCalculator indentCalc = new IndentLevelCalculator(doc, indentLevels);
+            FileObject file = NavUtils.getFile(doc);
+            Source source = Source.create(file);
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    public void run(ResultIterator parameter) throws Exception {
+                        PHPParseResult result = (PHPParseResult) parameter.getParserResult();
+                        result.getProgram().accept(indentCalc);
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    int indentBias = 0;
+                    try {
+                        int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1);
+                        Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
+
+                        for (int point : indentLevels.keySet()) {
+                            int indentDelta = indentLevels.get(point);
+                            int lineNumber = Utilities.getLineOffset(doc, point);
+                            int rowStart = Utilities.getRowStart(doc, point);
+                            int firstNonWSBefore = Utilities.getFirstNonWhiteBwd(doc, point);
+
+                            if (firstNonWSBefore >= rowStart){
+                                lineNumber ++;
+                            }
+
+                            Integer lineDelta = indentDeltaByLine.get(lineNumber);
+                            indentDeltaByLine.put(lineNumber, lineDelta == null
+                                    ? indentDelta : lineDelta + indentDelta);
+                        }
+
+                        for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
+                            int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
+                            Integer lineDelta = indentDeltaByLine.get(i);
+
+                            if (lineDelta != null) {
+                                currentIndent += lineDelta;
+                                assert currentIndent >= 0 : "currentIndent < 0";
+                            }
+
+                            if (!lineUnformattable(doc, lineStart)) {
+                                int htmlSuggestion = 0;
+
+                                if (suggestedLineIndents != null) {
+                                    Integer rawSuggestion = suggestedLineIndents.get(i);
+                                    if (rawSuggestion != null) {
+                                        htmlSuggestion = rawSuggestion.intValue();
+                                    }
+                                }
+
+                                if (i == firstLine) {
+                                    indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion;
+                                }
+
+//                                System.err.println("lineDelta[" + i + "]=" + lineDelta);
+//                                System.err.println("htmlSuggestion[" + i + "]=" + htmlSuggestion);
+                                //TODO:
+                                if (lineStart >= context.startOffset() && lineStart <= context.endOffset()) {
+                                    int actualIndent = 0;
+
+                                    if (currentIndent + htmlSuggestion > indentBias) {
+                                        actualIndent = currentIndent + htmlSuggestion - indentBias;
+                                    }
+
+                                    GsfUtilities.setLineIndentation(doc, lineStart, actualIndent);
+                                }
+                            }
+                        }
+
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
     }
 }

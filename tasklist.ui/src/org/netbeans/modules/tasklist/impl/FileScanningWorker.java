@@ -63,11 +63,9 @@ import org.openide.util.Exceptions;
  */
 class FileScanningWorker implements Runnable {
     
-    private TaskCache cache;
     private TaskList taskList;
     private boolean isCancel = false;
     
-    private TaskManagerImpl.FileScannerProgress progress;
     private Set<FileTaskScanner> preparedScanners = new HashSet<FileTaskScanner>();
     
     private Iterator<FileObject> resourceIterator;
@@ -81,11 +79,9 @@ class FileScanningWorker implements Runnable {
     private final Object SLEEP_LOCK = new Object();
     
     /** Creates a new instance of Scanner */
-    public FileScanningWorker( TaskCache cache, TaskList taskList, TaskFilter filter, TaskManagerImpl.FileScannerProgress progress ) {
-        this.cache = cache;
+    public FileScanningWorker( TaskList taskList, TaskFilter filter ) {
         this.taskList = taskList;
         this.filter = filter;
-        this.progress = progress;
     }
 
     public void scan( Iterator<FileObject> resources, TaskFilter filter ) {
@@ -174,8 +170,6 @@ class FileScanningWorker implements Runnable {
                     return;
                 }
                 
-                progress.started();
-                
                 Set<FileTaskScanner> scannersToNotify = null;
                 ScanItem item = new ScanItem();
                 ScanMonitor monitor = ScanMonitor.getDefault();
@@ -248,9 +242,6 @@ class FileScanningWorker implements Runnable {
             atLeastOneProviderIsActive = true;
             scannedTasks.clear();
 
-            if( cache.isUpToDate( item.resource, scanner ) ) {
-                cache.getTasks( item.resource, scanner, scannedTasks );
-            } else {
                 List<? extends Task> newTasks = null;
                 try {
                     if( item.resource.isValid() )
@@ -259,13 +250,7 @@ class FileScanningWorker implements Runnable {
                     //don't let uncaught exceptions break the thread synchronization
                     Exceptions.printStackTrace( e );
                 }
-                if( null == newTasks ) {
-                    cache.getTasks( item.resource, scanner, scannedTasks );
-                } else {
                     scannedTasks.addAll( newTasks );
-                    cache.scanned( item.resource, scanner, scannedTasks );
-                }
-            }
 
             if( isCancel ) {
                 return false;
@@ -276,7 +261,6 @@ class FileScanningWorker implements Runnable {
     }
     
     private void cleanUp( Set<FileTaskScanner> scannersToNotify ) {
-        progress.finished();
         
         synchronized( SCAN_LOCK ) {
             resourceIterator = null;

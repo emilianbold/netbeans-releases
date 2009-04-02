@@ -505,27 +505,20 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         checkEventThread();
         final Cursor old = getCursor();
         expandButton.setEnabled(false);
-        scrollPane.getViewport().remove(tree);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        rp.post(new Runnable() {
-            public void run() {
-                int row = 0;
-                while (row < tree.getRowCount()) {
-                    tree.expandRow(row);
-                    row++;
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        scrollPane.setViewportView(tree);
-                        setCursor(old);
-                        expandButton.setEnabled(true);
-                        expandButton.setToolTipText(
-                            NbBundle.getMessage(RefactoringPanel.class, "HINT_collapseAll") // NOI18N
-                        );
-                        requestFocus();
-                    }
-                });
-            }});
+
+        int row = 0;
+        while (row < tree.getRowCount()) {
+            tree.expandRow(row);
+            row++;
+        }
+
+        setCursor(old);
+        expandButton.setEnabled(true);
+        expandButton.setToolTipText(
+            NbBundle.getMessage(RefactoringPanel.class, "HINT_collapseAll") // NOI18N
+        );
+        requestFocus();
     } 
 
     /* collapseAll nodes in the tree */
@@ -533,27 +526,20 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         checkEventThread();
         expandButton.setEnabled(false);
         final Cursor old = getCursor();
-        scrollPane.getViewport().remove(tree);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        rp.post(new Runnable() {
-            public void run() {
-                int row = tree.getRowCount() - 1;
-                while (row > 0) {
-                    tree.collapseRow(row);
-                    row--;
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        scrollPane.setViewportView(tree);
-                        setCursor(old);
-                        expandButton.setEnabled(true);
-                        expandButton.setToolTipText(
-                            NbBundle.getMessage(RefactoringPanel.class, "HINT_expandAll") // NOI18N
-                        );
-                        requestFocus();
-                    }
-                });
-            }});
+
+        int row = tree.getRowCount() - 1;
+        while (row > 0) {
+            tree.collapseRow(row);
+            row--;
+        }
+
+        setCursor(old);
+        expandButton.setEnabled(true);
+        expandButton.setToolTipText(
+            NbBundle.getMessage(RefactoringPanel.class, "HINT_expandAll") // NOI18N
+        );
+        requestFocus();
     }
     
     public void invalidateObject() {
@@ -692,8 +678,11 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             if (tree == null) {
                                 // add panel with appropriate content
                                 tree = new JTree(root);
+                                if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                                    tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                                }
                                 ToolTipManager.sharedInstance().registerComponent(tree);
-                                tree.setCellRenderer(new CheckRenderer(isQuery));
+                                tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
                                 String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
                                 tree.getAccessibleContext().setAccessibleDescription(s);
                                 tree.getAccessibleContext().setAccessibleName(s);

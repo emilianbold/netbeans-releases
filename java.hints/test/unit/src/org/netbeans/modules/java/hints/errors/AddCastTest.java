@@ -100,6 +100,11 @@ public class AddCastTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                             "package test; public class Test {void foo() { null = new |String(\"hello\"); }}");
     }
+
+    public void test161450() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import java.io.File; public class Test {void foo() { File f = new |File() }}");
+    }
     
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

@@ -28,7 +28,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jLabel1" alignment="0" pref="740" max="32767" attributes="2"/>
+          <Component id="jLabel1" alignment="0" pref="793" max="32767" attributes="2"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -44,8 +44,8 @@
                           <Component id="textPane" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                   </Group>
-                  <Component id="cliRadioButton" alignment="0" pref="728" max="32767" attributes="2"/>
-                  <Component id="downloadRadioButton" alignment="0" pref="728" max="32767" attributes="2"/>
+                  <Component id="cliRadioButton" alignment="0" pref="777" max="32767" attributes="2"/>
+                  <Component id="downloadRadioButton" alignment="0" pref="777" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

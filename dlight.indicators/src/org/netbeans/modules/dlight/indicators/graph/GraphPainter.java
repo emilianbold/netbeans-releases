@@ -41,13 +41,14 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import org.netbeans.modules.dlight.indicators.graph.Graph.AxisOrientation;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 
 /**
  * A delegate that is responsible for painting,
@@ -58,43 +59,26 @@ import org.netbeans.modules.dlight.indicators.graph.Graph.AxisOrientation;
  * with logic that is relevant to graph painting only.
  *
  * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
 //package-local
 class GraphPainter {
-    private static final int PIXELS_PER_SAMPLE = 5;
+    private static final int MAX_ALPHA = 255;
     private static final Stroke BALL_STROKE = new BasicStroke(1.0f);
-    private static final Stroke LINE_STROKE = new BasicStroke(3.0f);
+    private static final Stroke LINE_STROKE = new BasicStroke(GraphConfig.LINE_WIDTH);
 
-    private Color gridColor = GraphColors.GRID_COLOR;
-    private Color backgroundTopColor = GraphColors.GRADIENT_TOP_COLOR;
-    private Color backgroundBottomColor = GraphColors.GRADIENT_BOTTOM_COLOR;
-
+    private final LabelRenderer renderer;
     private final GraphDescriptor[] descriptors;
     private final int seriesCount;
 
     private CyclicArray<int[]> data;
     private final Object dataLock = new Object();
-    private boolean paintAll = true;
-
-    private int scale;
-
-    private int width;
-    private int height;
-
-    private int paintedDataCount = 0;
-    private int arrivedDataCount = 0;
-    private int dataWindowScroll = 0;
 
 //    private BufferedImage cachedImage;
 
-    private static final boolean TRACE = Boolean.getBoolean("PercentageGraph.trace");
-
-    public GraphPainter(int  scale, GraphDescriptor[] descriptors, int width, int height) {
-        //setBackground(new Color(128, 128, 128, 0)); // transparent
-        this.scale = scale;
+    public GraphPainter(LabelRenderer renderer, GraphDescriptor... descriptors) {
         this.descriptors = descriptors;
-        this.width = width;
-        this.height = height;
+        this.renderer = renderer;
         seriesCount = descriptors.length;
         data = new CyclicArray<int[]>(1000);
 //        initCacheImage();
@@ -110,161 +94,115 @@ class GraphPainter {
 //        cachedImage = newImage;
 //    }
 
-    public GraphPainter(int scale, GraphDescriptor... descriptors) {
-        this(scale, descriptors, 32, 32);
-    }
-
-    public void setGridColor(Color color) {
-        this.gridColor = color;
-    }
-
-    public void setBackgroundColor(Color color) {
-        this.backgroundBottomColor = color;
-    }
-
-    public void setSize(int width, int height) {
-        synchronized (dataLock) {
-            paintAll = true;
-            this.height = height;
-            this.width = width;
-            invalidate();
-//            initCacheImage();
-        }
-        if (TRACE) { System.err.printf("PercentareGraph.setSize %d %d\n", width, height); }
-    }
-
-    public void setUpperLimit(int newScale) {
-        if (newScale != scale) {
-            this.scale = newScale;
-            invalidate();
-        }
-    }
-
-    public int getUpperLimit() {
-        return scale;
-    }
-
-    public void invalidate() {
-        synchronized (dataLock) {
-            paintAll = true;
-            paintedDataCount = dataWindowScroll;
-        }
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public Color getBackgroundColor() {
-        return backgroundTopColor;
-    }
-
     public void addData(int... newData) {
-        if (getWidth() == 0) {
-            return;
-        }
         synchronized (dataLock) {
             if (newData.length != seriesCount) {
                 throw new IllegalArgumentException(
                         String.format("New data size %d differs from series count %d", //NOI18N
                         newData.length, seriesCount));
             }
-
-            if (data.add(newData.clone())) {
-                dataWindowScroll++;
-            }
-            arrivedDataCount++;
-            if (TRACE) {
-                System.err.printf("addData; size=%d capacity=%d width=%d dataWindowScroll=%d arrivedDataCount=%d paintedDataCount=%d\n",
-                        data.size(), data.capacity(), getWidth(), dataWindowScroll, arrivedDataCount, paintedDataCount);
-            }
+            data.add(newData.clone());
         }
      }
 
-    public void draw(Graphics g, int x, int y) {
-        drawImpl(g, x, y);
-//        Graphics g2 = cachedImage.getGraphics();
-//        updateGraphics(g2, 0, 0);
-//        g2.dispose();
-//        g.drawImage(cachedImage, x, y, null);
-    }
+//    public GraphDescriptor[] getDescriptors() {
+//        return descriptors.clone();
+//    }
 
-    private void drawImpl(Graphics g, int x, int y) {
-        int w = getWidth();
-        int h = getHeight();
+//    public int[] getLastData() {
+//        int[] last;
+//        synchronized (dataLock) {
+//            if (data.size() == 0) {
+//                last = new int[descriptors.length];
+//                for (int i = 0; i < last.length; i++) {
+//                    last[i] = 0;
+//                }
+//            } else {
+//                last = data.get(data.size()-1);
+//            }
+//        }
+//        return last;
+//    }
+
+// graph painting //////////////////////////////////////////////////////////////
+
+    /**
+     * Paints graph including background gradient and grid.
+     *
+     * @param g  graphics
+     * @param x  left coordinate of drawing area
+     * @param y  upper coordinate of drawing area
+     * @param w  width of drawing area
+     * @param h  height of drawing area
+     * @param ticks  whether to draw ticks on graph
+     */
+    public void paint(Graphics g, int scale, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
-            paintGrid(g, x, y, w, h);
-            paintGraph(g, x, y, w, h);
-        }
-    }
-
-    public GraphDescriptor[] getDescriptors() {
-        return descriptors.clone();
-    }
-
-    public int[] getLastData() {
-        int[] last;
-        synchronized (dataLock) {
-            if (data.size() == 0) {
-                last = new int[descriptors.length];
-                for (int i = 0; i < last.length; i++) {
-                    last[i] = 0;
-                }
-            } else {
-                last = data.get(data.size()-1);
+            if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
+                paintGrid(g, x, y, w, h, ticks);
+                paintGraph(g, scale, x, y, w, h);
             }
         }
-        return last;
-    }
-
-    /** gets grid size in pixels */
-    private int getGridSize() {
-        return 10;
-    }
-
-    /** Should be called under synchronized (dataLock) */
-    private int scrolled() {
-        if (paintedDataCount > data.size()) {
-            return paintedDataCount - data.size();
-        } else {
-            return 0;
-        }
-    }
-
-    private void paintGradient(Graphics g, int x, int y, int w, int h) {
-        Graphics2D g2 = (Graphics2D)g;
-
-        GradientPaint gradient = new GradientPaint(0, 0, backgroundTopColor, 0, height, backgroundBottomColor);
-        g2.setPaint(gradient);
-        g2.fillRect(x, y, w, h);
     }
 
     /**
-     * Paints the entire grid.
-     * Should be called under synchronized (dataLock)
+     * Paints background gradient.
      */
-    private void paintGrid(Graphics g, int x, int y, int w, int h) {
-        int gridSize = getGridSize();
-        g.setColor(gridColor);
-        int scrolled = PIXELS_PER_SAMPLE * scrolled();
-        int dx = (scrolled > 0) ? gridSize - scrolled%gridSize : 0;
-        for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
-            g.drawLine(gridX, y, gridX, y+h-1);
+    private static void paintGradient(Graphics g, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D)g;
+        Paint oldPaint = g2.getPaint();
+        GradientPaint gradient = new GradientPaint(0, 0, GraphConfig.GRADIENT_TOP_COLOR, 0, h, GraphConfig.GRADIENT_BOTTOM_COLOR);
+        g2.setPaint(gradient);
+        g2.fillRect(x, y, w, h);
+        g2.setPaint(oldPaint);
+    }
+
+    /**
+     * Paints background grid.
+     */
+    private void paintGrid(Graphics g, int x, int y, int w, int h, boolean ticks) {
+        // vertical lines
+        g.setColor(GraphConfig.GRID_COLOR);
+        int scrolled = GraphConfig.STEP_SIZE * (data.size() - w / GraphConfig.STEP_SIZE + 1);
+        int dx = (scrolled > 0) ? GraphConfig.GRID_SIZE - scrolled % GraphConfig.GRID_SIZE : 0;
+        for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
+            g.drawLine(gridX, y, gridX, y + h - 1);
         }
-        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
-            g.drawLine(x, gridY, x+w-1, gridY);
+        if (ticks) {
+            g.setColor(GraphConfig.BORDER_COLOR);
+            for (int gridX = x + dx; gridX < x + w; gridX += GraphConfig.GRID_SIZE) {
+                g.drawLine(gridX, y + h - 1, gridX, y + h - 5);
+            }
         }
-        g.setColor(GraphColors.BORDER_COLOR);
-        for (int gridX = x+dx; gridX < x+w; gridX += gridSize) {
-            g.drawLine(gridX, y+h-1, gridX, y+h-5);
+        // horizontal lines
+        paintHLine(g, x, x + w - 1, y + (int)(GraphConfig.FONT_SIZE / 2), MAX_ALPHA, ticks); // yes, font size affects how we paint grid
+        paintHLine(g, x, x + w - 1, y + h - 1, MAX_ALPHA, ticks);
+        paintHLines(g, x, y + 5, x + w - 1, y + h - 1, ticks);
+    }
+
+    /**
+     * Recursively paints horizontal grid lines.
+     */
+    private static void paintHLines(Graphics g, int x1, int y1, int x2, int y2, boolean ticks) {
+        if (y2 - y1 <= GraphConfig.GRID_SIZE) { return; }
+        int my = (y1 + y2) / 2; // middle y
+        paintHLine(g, x1, x2, my, map(y2 - y1, 3 * GraphConfig.GRID_SIZE / 2, 2 * GraphConfig.GRID_SIZE, 0, MAX_ALPHA), ticks);
+        if (2 * GraphConfig.GRID_SIZE <= y2 - y1) {
+            paintHLines(g, x1, y1, x2, my, ticks);
+            paintHLines(g, x1, my, x2, y2, ticks);
         }
-        for (int gridY = y+h-1; gridY >= 0; gridY -= gridSize) {
-            g.drawLine(x, gridY, x+4, gridY);
+    }
+
+    /**
+     * Paints single horizontal line of the grid.
+     */
+    private static void paintHLine(Graphics g, int x1, int x2, int y, int alpha, boolean ticks) {
+        g.setColor(transparent(GraphConfig.GRID_COLOR, alpha));
+        g.drawLine(x1, y, x2, y);
+        if (ticks) {
+            g.setColor(transparent(GraphConfig.BORDER_COLOR, alpha));
+            g.drawLine(x1, y, x1 + GraphConfig.GRID_SIZE / 2, y);
         }
     }
 
@@ -272,64 +210,133 @@ class GraphPainter {
      * Paints the entire graph.
      * Should be called under synchronized (dataLock)
      */
-    private void paintGraph(Graphics g, int left, int top, int width, int height) {
+    private void paintGraph(Graphics g, int scale, int x, int y, int w, int h) {
         Graphics2D g2 = ((Graphics2D)g);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Stroke oldStroke = g2.getStroke();
 
-        if (TRACE) { System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data); }
-        if (height < 1) {
-            return;
-        }
-        int sampleCount = Math.min(width / PIXELS_PER_SAMPLE, data.size()) - 1;
+        int sampleCount = Math.min(w / GraphConfig.STEP_SIZE, data.size()) - 1;
         if (0 < sampleCount) {
             int firstSample = Math.max(0, data.size() - sampleCount);
+            int effectiveHeight = (int)(h - GraphConfig.FONT_SIZE / 2);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 g2.setStroke(LINE_STROKE);
                 g2.setColor(descriptors[ser].getColor());
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 1; i < sampleCount; ++i) {
-                    int prevValue = data.get(firstSample + i - 1)[ser] * height / scale;
-                    int currValue = data.get(firstSample + i)[ser] * height / scale;
-                    g.drawLine(left + PIXELS_PER_SAMPLE * (i - 1) , top + height - 1 - prevValue,
-                               lastx = left + PIXELS_PER_SAMPLE * i, lasty = top + height - 1 - currValue);
+                    int prevValue = data.get(firstSample + i - 1)[ser] * effectiveHeight / scale;
+                    int currValue = data.get(firstSample + i)[ser] * effectiveHeight / scale;
+                    g.drawLine(x + GraphConfig.STEP_SIZE * (i - 1) , y + h - 2 - prevValue,
+                               lastx = x + GraphConfig.STEP_SIZE * i, lasty = y + h - 2 - currValue);
                 }
                 g2.setStroke(BALL_STROKE);
                 g2.setColor(Color.WHITE);
-                g2.fillOval(lastx - 2, lasty - 2, 4, 4);
+                g2.fillOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE  - 1, GraphConfig.BALL_SIZE  - 1);
                 g2.setColor(descriptors[ser].getColor());
-                g2.drawOval(lastx - 2, lasty - 2, 4, 4);
+                g2.drawOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE  - 1, GraphConfig.BALL_SIZE  - 1);
             }
         }
-        paintedDataCount = arrivedDataCount;
         g2.setStroke(oldStroke);
     }
 
-    public void drawAxis(Graphics g, AxisOrientation orientation, Dimension size) {
-        Graphics2D g2 = (Graphics2D)g;
+// axes painting ///////////////////////////////////////////////////////////////
+
+    /**
+     * Paints vertical axis (currently only labels).
+     *
+     * @param g  graphics
+     * @param x  left coordinate of drawing area
+     * @param y  upper coordinate of drawing area
+     * @param w  width of drawing area
+     * @param h  height of drawing area
+     * @param bg  background color
+     */
+    public void paintVerticalAxis(Graphics g, int x, int y, int w, int h, int scale, Color bg) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(bg);
+        g2.fillRect(x, y, w, h);
+
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setFont(g2.getFont().deriveFont(10f));
-        g2.setColor(GraphColors.TEXT_COLOR);
-        g2.drawString(Integer.toString(getUpperLimit()), 0, 10);
-        g2.drawString(Integer.toString(0), 0, (int)size.getHeight());
+        g2.setFont(g2.getFont().deriveFont(GraphConfig.FONT_SIZE));
+
+        FontMetrics fm = g2.getFontMetrics();
+        paintVLabel(g, scale, x + w - 1 - fm.getAscent() / 2, y + fm.getAscent() / 2, MAX_ALPHA, fm);
+        paintVLabels(g, x, w, y + fm.getAscent() / 2, y + h - 1, scale, 0, fm);
     }
 
-    /** for tracing/debugging purposes */
-    private static String toString(int[] a) {
-        if (a==null) {
-            return "null";
+    /**
+     * Recursively paints labels on vertical axis.
+     *
+     * @param g  graphics
+     * @param w  drawing area width
+     * @param y1  upper coordinate of drawing area (y1 &lt; y2)
+     * @param y2  lower coordinate of drawing area (y1 &lt; y2)
+     * @param v1  value corresponding to y1
+     * @param v2  value corresponding to y2
+     * @param fm  font metrics (used to calculate label width and height)
+     */
+    private void paintVLabels(Graphics g, int x, int w, int y1, int y2, int v1, int v2, FontMetrics fm) {
+        if (y2 - y1 <= 2 * fm.getAscent()) { return; }
+        int my = (y2 + y1) / 2; // middle y
+        int mv = (v1 + v2) / 2; // middle value
+        paintVLabel(g, mv, x + w - 1 - fm.getAscent() / 2, my,
+                map(y2 - y1, 5 * fm.getAscent() / 2, 3 * fm.getAscent(), 0, MAX_ALPHA), fm);
+        if (4 * fm.getAscent() <= y2 - y1) {
+            paintVLabels(g, x, w, y1, my, v1, mv, fm);
+            paintVLabels(g, x, w, my, y2, mv, v2, fm);
         }
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < a.length; i++) {
-            if (i > 0) {
-                sb.append(',');
-            }
-            sb.append(Integer.toString(a[i]));
-        }
-        sb.append(']');
-        return sb.toString();
     }
 
+    /**
+     * Paints label on vertical axis.
+     *
+     * @param g  graphics
+     * @param value  label value
+     * @param fm  font metrics (used to calculate label width and height)
+     * @param x  coordinate of right label edge
+     * @param y  coordinate of label middle line
+     */
+    private void paintVLabel(Graphics g, int value, int x, int y, int alpha, FontMetrics fm) {
+        String text = renderer == null? Integer.toString(value) : renderer.render(value);
+        int length = fm.stringWidth(text);
+        g.setColor(transparent(GraphConfig.TEXT_COLOR, alpha));
+        g.drawString(text, x - length, y + fm.getAscent() / 2);
+    }
+
+// common math /////////////////////////////////////////////////////////////////
+
+    /**
+     * Maps <code>value</code> from range <code>a..b</code> into <code>x..y</code>.
+     * Values less than <code>a</code> are mapped to <code>x</code>.
+     * Values greater than <code>b</code> are mapped to <code>y</code>.
+     *
+     * @param value  value to be mapped
+     * @param a  source range lower bound
+     * @param b  source range upper bound
+     * @param x  destination range lower bound
+     * @param y  destination range upper bound
+     * @return value mapped from range <code>a..b</code> into <code>x..y</code>
+     */
+    private static int map(int value, int a, int b, int x, int y) {
+        if (value <= a) {
+            return x;
+        } else if (value < b) {
+            return x + (value - a) * (y - x) / (b - a);
+        } else {
+            return y;
+        }
+    }
+
+    /**
+     * Returns a copy of passed color with adjusted alpha value.
+     *
+     * @param orig  original color
+     * @param alpha  new alpha value
+     * @return copy of color with adjusted alpha
+     */
+    private static Color transparent(Color orig, int alpha) {
+        return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), alpha);
+    }
 }

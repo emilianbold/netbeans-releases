@@ -1356,7 +1356,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
-                   <component uid="openesb"        version="5.0.7.${server.milestone.number}${server.build.number}.${openesb.build.number}"/>
+                   <component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
                    </create-bundle>
             </if>
             <if property="is.solaris.platform" value="true">	    
@@ -1377,7 +1377,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
-                       <component uid="openesb"        version="5.0.7.${server.milestone.number}${server.build.number}.${openesb.build.number}"/>
+                       <component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
                    </create-bundle>
             </if>
         </if>
@@ -1400,7 +1400,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
-            <component uid="openesb"       version="5.0.7.${server.milestone.number}${server.build.number}.${openesb.build.number}"/>
+            <component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
         </if>
 	<antcall target="convert-netbeans-bundle"/>
@@ -1715,7 +1715,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa"                version="${nb.full.version}"/>
             <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
             <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
-            <component uid="openesb"               version="5.0.7.${server.milestone.number}${server.build.number}.${openesb.build.number}"/>
+            <component uid="openesb"               version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam"                 version="5.0.7.${sjsas.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples"     version="1.0.${javaeesdk-samples.update.number}.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints"  version="1.0.${javaeesdk-blueprints.update.number}.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>

@@ -180,7 +180,11 @@ public class TaskCache {
 
     private static File urlToFile(URL url) {
         if ("file".equals(url.getProtocol())) {
-            return new File(url.getPath());
+            try {
+                return new File(url.toURI().getPath());
+            } catch (URISyntaxException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
 
         throw new IllegalStateException();

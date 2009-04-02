@@ -202,7 +202,7 @@ public final class DataTableMetadata {
          * Return column class
          * @return column class
          */
-        public Class getColumnClass() {
+        public Class<?> getColumnClass() {
             return columnClass;
         }
 

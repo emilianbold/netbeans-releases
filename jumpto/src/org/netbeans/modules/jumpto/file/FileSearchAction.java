@@ -158,7 +158,9 @@ public class FileSearchAction extends AbstractAction {
     }
     
     public void closeDialog() {
-        dialog.setVisible( false );
+        if (dialog != null){
+            dialog.setVisible( false );
+        }
         cleanup();
     }
     

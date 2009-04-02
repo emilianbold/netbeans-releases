@@ -46,6 +46,8 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 /**
  * An individual comment, consisting of a style, begin and end source
  * file position, the indention (column) of its first character, and its text.
+ *
+ * @since 0.43
  */
 public final class Comment {
     private Style style;
@@ -84,7 +86,7 @@ public final class Comment {
     /**
      * Define a new block comment from a string.  This comment does not
      * have source file positions.
-     * @param s textual content of help including comment separators
+     * @param s textual content of comment. With or without proper escaping
      * @return new comment
      */
     public static Comment create(String s) {
@@ -97,7 +99,7 @@ public final class Comment {
      * @param pos start position within source file
      * @param endPos end position within source file
      * @param indent indentation of comment
-     * @param text textual content of help including comment separators
+     * @param text textual content of comment. With or without proper escaping
      * @return new comment
      */
     public static Comment create(Style style, int pos, int endPos, int indent, String text) {
@@ -105,12 +107,23 @@ public final class Comment {
     }
     
     /**
+     * Define a comment, using specified style.
+     * @param style the style of comment
+     * @param indent indentation of comment
+     * @param text textual content of comment. With or without proper escaping
+     * @return new comment
+     */
+    public static Comment create(Style style, String text) {
+        return new Comment(style, NOPOS, NOPOS, NOPOS, text);
+    }
+
+    /**
      * Define a comment, using source file positions.
      * @param style the style of comment
      * @param pos start position within source file
      * @param endPos end position within source file
      * @param indent indentation of comment
-     * @param text textual content of help including comment separators
+     * @param text textual content of comment. With or without proper escaping
      */
     private Comment(Style style, int pos, int endPos, int indent, String text) {
         this.style = style;

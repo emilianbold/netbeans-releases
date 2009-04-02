@@ -43,9 +43,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
-import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.LocalVariable;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
@@ -60,7 +58,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -89,7 +86,9 @@ import org.openide.util.WeakListeners;
  */
 public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
-    
+
+    private static final String NO_DEBUG_INFO = "noDebugInfoWarning";
+
     private static boolean      verbose = 
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('l') >= 0);
@@ -244,7 +243,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 } else {
                     return arguments.toArray();
                 }
-            } else
+            } else if (NO_DEBUG_INFO == o) {
+                return new Object[0];
+            }
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
             return new Object [0];
@@ -354,6 +355,8 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (node instanceof String && ((String) node).startsWith("operationArguments")) { // NOI18N
                 // Performance, see issue #59058.
                 return Integer.MAX_VALUE;
+            } else if (NO_DEBUG_INFO == node) {
+                return 0;
             } else
                 throw new UnknownTypeException (node);
             } catch (VMDisconnectedException ex) {
@@ -374,6 +377,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         if (o instanceof JPDAClassType) return false;
         if (o instanceof Operation) return false;
         if (o == "lastOperations") return false;
+        if (o == NO_DEBUG_INFO) return true;
         if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
             return false;
         }
@@ -532,26 +536,32 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
     }
     
-    private org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables (
+    private Object[] getLocalVariables (
         final CallStackFrameImpl    callStackFrame, 
         final StackFrame            stackFrame,
         int                         from,
         int                         to
     ) {
-        org.netbeans.api.debugger.jpda.LocalVariable[] locals;
+        Object[] locals;
         try {
             locals = callStackFrame.getLocalVariables();
         } catch (AbsentInformationException aiex) {
-            locals = callStackFrame.getMethodArguments();
+            Object[] nodes = callStackFrame.getMethodArguments();
+            if (nodes == null) {
+                nodes = new Object[] {};
+            }
+            locals = new Object[nodes.length + 1];
+            System.arraycopy(nodes, 0, locals, 0, nodes.length);
+            locals[nodes.length] = NO_DEBUG_INFO;
         }
         if (locals == null) {
-            locals = new org.netbeans.api.debugger.jpda.LocalVariable[] {};
+            locals = new Object[] {};
         }
         int n = locals.length;
         to = Math.min(n, to);
         from = Math.min(n, from);
         if (from != 0 || to != n) {
-            org.netbeans.api.debugger.jpda.LocalVariable[] subLocals = new org.netbeans.api.debugger.jpda.LocalVariable[to - from];
+            Object[] subLocals = new Object[to - from];
             for (int i = from; i < to; i++) {
                 subLocals[i - from] = locals[i];
             }
@@ -608,17 +618,19 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     }
      */
     
-    private void updateVarListeners(org.netbeans.api.debugger.jpda.LocalVariable[] vars) {
+    private void updateVarListeners(Object[] vars) {
         varListeners = new PropertyChangeListener[vars.length];
         for (int i = 0; i < vars.length; i++) {
-            final org.netbeans.api.debugger.jpda.LocalVariable var = vars[i];
+            final Object var = vars[i];
             PropertyChangeListener l = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     fireNodeChanged(var);
                 }
             };
             varListeners[i] = l; // Hold it so that it does not get lost, till the array is updated.
-            ((AbstractVariable) var).addPropertyChangeListener(WeakListeners.propertyChange(l, var));
+            if (var instanceof AbstractVariable) {
+                ((AbstractVariable) var).addPropertyChangeListener(WeakListeners.propertyChange(l, var));
+            }
         }
     }
     
@@ -818,4 +830,5 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
         
     }
+
 }

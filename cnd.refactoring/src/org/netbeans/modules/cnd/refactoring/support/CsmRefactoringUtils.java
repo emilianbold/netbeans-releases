@@ -91,7 +91,7 @@ public final class CsmRefactoringUtils {
         Project p = FileOwnerQuery.getOwner(f);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < opened.length; i++) {
-            if (p == opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 return true;
             }
         }
@@ -270,9 +270,9 @@ public final class CsmRefactoringUtils {
 
     public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
-        while (decl instanceof CsmReference) {
-            decl = ((CsmReference)decl).getOwner();
-        }
+//        while (decl instanceof CsmReference) {
+//            decl = ((CsmReference)decl).getOwner();
+//        }
         if (CsmKindUtilities.isOffsetable(decl)) {
             return findInnerFileObject((CsmOffsetable)decl);
         }

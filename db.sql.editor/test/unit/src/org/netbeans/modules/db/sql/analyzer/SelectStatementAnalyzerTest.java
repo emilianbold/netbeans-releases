@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
@@ -50,6 +50,7 @@ import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
 import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
+import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -206,7 +207,7 @@ public class SelectStatementAnalyzerTest extends TestCase {
 
     private static SQLStatementKind doDetectKind(String sql) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
-        return SelectStatementAnalyzer.detectKind(hi.tokenSequence(SQLTokenId.language()));
+        return SQLStatementAnalyzer.analyzeKind(hi.tokenSequence(SQLTokenId.language()));
     }
 
     public static void assertCanAnalyze(String sql) throws IOException {

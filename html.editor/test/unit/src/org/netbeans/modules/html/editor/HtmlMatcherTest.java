@@ -41,10 +41,10 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
  */
 public class HtmlMatcherTest extends TestBase {
 
-    private static final HTMLBracesMatching MATCHER_FACTORY;
+    private static final HtmlBracesMatching MATCHER_FACTORY;
     static {
-        MATCHER_FACTORY = new HTMLBracesMatching();
-        HTMLBracesMatching.testMode = true;
+        MATCHER_FACTORY = new HtmlBracesMatching();
+        HtmlBracesMatching.testMode = true;
     }
     
     private Document document;

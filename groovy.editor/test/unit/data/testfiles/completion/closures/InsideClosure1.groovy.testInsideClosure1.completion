@@ -419,6 +419,9 @@ CLASS      Writer                                     null
 CLASS      XmlNodePrinter                             null
 CLASS      XmlParser                                  null
 CLASS      XmlSlurper                                 null
+FIELD      binding                                    Binding
+FIELD      class                                      Class
+FIELD      metaClass                                  MetaClass
 VARIABLE   it                                         Object
 KEYWORD    assert                                     null
 KEYWORD    boolean                                    null

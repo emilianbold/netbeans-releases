@@ -47,12 +47,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -301,17 +304,11 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             if (ref == null && mi != null) {
                 CsmFile target = getTargetFile();
                 if (target != null) {
-                    Collection<CsmMacro> macrosCollection = target.getMacros();
-                    List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection.size());
-                    for(CsmMacro macro : macrosCollection) {
-                        macros.add(macro);
-                    }
-                    ListIterator<CsmMacro> it = macros.listIterator(macros.size());
-                    while (it.hasPrevious()){
-                        CsmMacro macro = it.previous();
+                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(macroName, true, true, false);
+                    for (Iterator<CsmMacro> it = CsmSelect.getMacros(target, filter); it.hasNext();) {
+                        CsmMacro macro = it.next();
                         if (macro!=null && mi.startOffset == macro.getStartOffset()) {
                             ref = macro;
-                            break;
                         }
                     }
                     if (ref == null) {

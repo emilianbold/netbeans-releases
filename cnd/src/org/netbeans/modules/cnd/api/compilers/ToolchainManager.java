@@ -78,10 +78,6 @@ public abstract class ToolchainManager {
 
         String getDisplayName();
 
-        String getReleaseFile();
-
-        String getReleasePattern();
-
         String[] getFamily();
 
         String[] getPlatforms();
@@ -123,6 +119,8 @@ public abstract class ToolchainManager {
         Map<String, String> getDefaultLocations();
 
         DebuggerDescriptor getDebugger();
+
+        String getMakefileWriter();
     }
 
     public interface ToolDescriptor {

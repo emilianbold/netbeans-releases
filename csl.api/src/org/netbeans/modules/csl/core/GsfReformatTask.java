@@ -42,6 +42,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -131,13 +132,11 @@ public class GsfReformatTask implements ReformatTask {
     private class Lock implements ExtraLock {
 
         public void lock() {
-// XXX: parsingapi
-//            SourceAccessor.getINSTANCE().lockParser();
+            Utilities.acquireParserLock();
         }
 
         public void unlock() {
-// XXX: parsingapi
-//            SourceAccessor.getINSTANCE().unlockParser();
+            Utilities.releaseParserLock();
         }        
     }
 

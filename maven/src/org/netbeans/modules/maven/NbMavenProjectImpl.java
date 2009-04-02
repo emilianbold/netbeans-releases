@@ -550,25 +550,16 @@ public final class NbMavenProjectImpl implements Project {
         if (!test && getProjectDirectory().getFileObject("src/main/aspect") != null) { //NOI18N
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject("src/main/aspect")).getAbsolutePath()); //NOI18N
         }
-        //TODO groovy and scala stuff should probably end up in separate module's
-        //ClassPathProvider
-        //TODO the folder should be checked against the configuration of scala/groovy plugin.
-        String groovy = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
-        if (getProjectDirectory().getFileObject(groovy) != null) {
-            srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(groovy)).getAbsolutePath());
-        }
-        String scala = test ? "src/test/scala" : "src/main/scala"; //NOI18N
-        if (getProjectDirectory().getFileObject(scala) != null) {
-            srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(scala)).getAbsolutePath());
-        }
         
-        URI[] uris = new URI[srcs.size()];
+        URI[] uris = new URI[srcs.size() + 2];
         int count = 0;
         for (String str : srcs) {
             File fil = FileUtil.normalizeFile(new File(str));
             uris[count] = fil.toURI();
             count = count + 1;
         }
+        uris[uris.length - 2 ] = getScalaDirectory(test);
+        uris[uris.length - 1] = getGroovyDirectory(test);
         return uris;
     }
 
@@ -640,6 +631,23 @@ public final class NbMavenProjectImpl implements Project {
         return FileUtilities.getDirURI(getProjectDirectory(), prop);
     }
 
+    public URI getScalaDirectory(boolean test) {
+        //TODO hack, should be supported somehow to read this..
+        String prop = PluginPropertyUtils.getPluginProperty(getOriginalMavenProject(), "org.scala.tools",
+                "scala-maven-plugin", //NOI18N
+                "sourceDir", //NOI18N
+                "compile"); //NOI18N
+
+        prop = prop == null ? (test ? "src/test/scala" : "src/main/scala") : prop; //NOI18N
+
+        return FileUtilities.getDirURI(getProjectDirectory(), prop);
+    }
+
+    public URI getGroovyDirectory(boolean test) {
+        String prop = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
+        return FileUtilities.getDirURI(getProjectDirectory(), prop);
+    }
+
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
         @SuppressWarnings("unchecked")
@@ -661,7 +669,11 @@ public final class NbMavenProjectImpl implements Project {
             toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
-                    return !("java".equalsIgnoreCase(name)) && !("webapp".equalsIgnoreCase(name)) /*NOI18N*/ && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
+                    return !("java".equalsIgnoreCase(name)) && //NOI18N
+                           !("webapp".equalsIgnoreCase(name)) && //NOI18N
+                           !("groovy".equalsIgnoreCase(name)) && //NOI18N
+                           !("scala".equalsIgnoreCase(name)) //NOI18N
+                       && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
             })));
         }
@@ -786,6 +798,11 @@ public final class NbMavenProjectImpl implements Project {
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
+                    new RecommendedTemplates() {
+                        public String[] getRecommendedTypes() {
+                            return new String[] { "scala-classes" }; //NOI18N
+                        }
+                    }
                 });
         return staticLookup;
     }

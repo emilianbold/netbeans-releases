@@ -42,7 +42,7 @@ package org.netbeans.modules.html.editor.indent;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
@@ -50,12 +50,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.test.TestBase2;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -73,11 +73,11 @@ public class HtmlIndenterTest extends TestBase2 {
         AbstractIndenter.inUnitTestRun = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JspKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"), HTMLTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HtmlTokenId.language());
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, JavaTokenId.language());
     }
@@ -135,6 +135,31 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<html>\n    <body>\n\t<table>",
             "<html>\n    <body>\n        <table>", null);
+
+        // new line at the end used to cause NPE:
+        format(
+            "<a href=\"a\"><code>Validator</code></a>\n",
+            "<a href=\"a\"><code>Validator</code></a>\n", null);
+
+        // textarea is unformattable but within single line it should have no impact:
+        format(
+            "<p>\nA <a href=\"b\"><textarea>c</textarea></a>d\ne<textarea>f</textarea>g\nh\n</p>",
+            "<p>\n    A <a href=\"b\"><textarea>c</textarea></a>d\n    e<textarea>f</textarea>g\n    h\n</p>", null);
+
+        // unformattable content may contains other tags which should not be formatted:
+        format(
+            "<pre>\n       text\n          &quot;text2\n    <b>smth</b>\n</pre>",
+            "<pre>\n       text\n          &quot;text2\n    <b>smth</b>\n</pre>", null);
+
+        // unformattable content may contains other tags which should not be formatted:
+        format(
+            "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n  </pre>",
+            "<pre>\n       text\n          <textarea>text2\n    smth\n  </textarea>\n   text3\n</pre>", null);
+
+        // #161341
+        format(
+            "<!doctype html public \"unknown\">",
+            "<!doctype html public \"unknown\">", null);
     }
 
     public void testFormattingHTML() throws Exception {
@@ -228,6 +253,27 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "  <html\n     a=b\n       c=d>^",
             "  <html\n     a=b\n       c=d>\n      ^", null);
+
+        // #160646 - check that unneeded tags are eliminated but
+        // used to close tag with optional end:
+        insertNewline(
+            "  <p>\n  <table>\n  </table>^",
+            "  <p>\n  <table>\n  </table>\n  ^", null);
+
+        // #160651
+        insertNewline(
+            "<html>^<style>",
+            "<html>\n    ^<style>", null);
+
+        // #161105
+        insertNewline(
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>^</td>",
+            "<html><head><title>aa</title></head>\n    <body>\n        <table>\n            <tr>\n                <td><b>bold</b></td><td>\n                    ^\n                </td>", null);
+        // test that table within p does not get eliminated and if it does it is handled properly;
+        // there was a problem that eliminated p would try to close p tag at the end
+        insertNewline(
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text^",
+            "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text\n                        ^", null);
     }
 
 }

@@ -50,7 +50,6 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
@@ -69,8 +68,19 @@ public final class CompleteElementHandler {
 
     private final ParserResult info;
 
+    private final GroovyIndex index;
+
     private CompleteElementHandler(ParserResult info) {
         this.info = info;
+
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (fo != null) {
+            // FIXME index is broken when invoked on start
+            this.index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                    Collections.singleton(ClassPath.SOURCE), null, null));
+        } else {
+            index = null;
+        }
     }
 
     public static CompleteElementHandler forCompilationInfo(ParserResult info) {
@@ -113,7 +123,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = definition.getNode();
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
+                .getMethods(index, typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
 
         fillSuggestions(groovyItems, result);
 
@@ -142,8 +152,10 @@ public final class CompleteElementHandler {
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
                 .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
 
-        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+        if (source != null) {
+            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                    .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+        }
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
@@ -171,7 +183,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = definition.getNode();
 
         fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
-                .getFields(typeNode.getName(), prefix, anchor, leaf), result);
+                .getFields(index, typeNode.getName(), prefix, anchor, leaf), result);
 
         fillSuggestions(JavaElementHandler.forCompilationInfo(info)
                 .getFields(typeNode.getName(), prefix, anchor, leaf), result);
@@ -181,8 +193,10 @@ public final class CompleteElementHandler {
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
                 .getFields(typeNode.getName(), prefix, anchor), result);
 
-        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
+        if (source != null) {
+            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                    .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
+        }
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getFieldsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1), result);
@@ -199,16 +213,6 @@ public final class CompleteElementHandler {
     }
 
     private ClassDefinition loadDefinition(ClassNode node) {
-        // FIXME index is broken when invoked on start
-        FileObject fo = info.getSnapshot().getSource().getFileObject();
-        if (fo == null) {
-            return new ClassDefinition(node, null);
-        }
-
-        // FIXME parsing API
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE), null, null));
-
         if (index == null) {
             return new ClassDefinition(node, null);
         }

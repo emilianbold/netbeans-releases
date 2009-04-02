@@ -187,7 +187,7 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
             List<SourceGroup> sourceRoots = Utility.getSourceRoots(project);
             for (SourceGroup srcGrp : sourceRoots) {
                 FileObject rootFolder = srcGrp.getRootFolder();
-                File[] files = recursiveListFiles(FileUtil.toFile(rootFolder), new WSDLFileFilter());
+                List<File> files = getFilesFromNonBuildFolders(rootFolder, new WSDLFileFilter());
                 for (File file : files) {
                     FileObject fo = FileUtil.toFileObject(file);
                     keys.add(fo);

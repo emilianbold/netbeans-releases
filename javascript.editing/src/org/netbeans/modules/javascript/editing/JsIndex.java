@@ -380,7 +380,9 @@ public final class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                if (context.getSnapshot().getSource().getFileObject() != null) {
+                    searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

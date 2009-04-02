@@ -45,6 +45,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
@@ -364,13 +365,13 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
             List<SourceGroup> roots = Utility.getSourceRoots(wsdlProject);
             for (SourceGroup srcGrp : roots) {
                 FileObject rootFolder = srcGrp.getRootFolder();
-                File[] files = recursiveListFiles(FileUtil.toFile(rootFolder), new SchemaFileFilter());
+                List<File> files = getFilesFromNonBuildFolders(rootFolder, new SchemaFileFilter());
                 for (File file : files) {
-                    FileObject fo = FileUtil.toFileObject(file);
-                    ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
+                    FileObject fileobj = FileUtil.toFileObject(file);
+                    ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fileobj, false);
                     SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
                     if (schemaModel != null && schemaModel.getState() == Model.State.VALID && schemaModel.getSchema().getTargetNamespace() != null) {
-                        keys.add(fo);
+                        keys.add(fileobj);
                     }
                 }
             }

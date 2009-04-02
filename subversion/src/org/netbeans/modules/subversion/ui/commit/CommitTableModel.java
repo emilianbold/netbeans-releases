@@ -210,26 +210,7 @@ public class CommitTableModel extends AbstractTableModel {
 
     private void defaultCommitOptions() {
         boolean excludeNew = System.getProperty("netbeans.subversion.excludeNewFiles") != null; // NOI18N
-        commitOptions = new CommitOptions[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            SvnFileNode node = nodes[i];
-            File file = node.getFile();
-            if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
-                commitOptions[i] = CommitOptions.EXCLUDE;
-            } else {
-                switch (node.getInformation().getStatus()) {
-                case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
-                    break;
-                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-                    break;
-                default:
-                    commitOptions[i] = CommitOptions.COMMIT;
-                }
-            }
-        }
+        commitOptions = SvnUtils.createDefaultCommitOptions(nodes, excludeNew);
     }
 
     public SvnFileNode getNode(int row) {
@@ -238,18 +219,6 @@ public class CommitTableModel extends AbstractTableModel {
 
     public CommitOptions getOptions(int row) {
         return commitOptions[row];
-    }
-
-    private CommitOptions getDefaultCommitOptions(File file) {
-        if (file.isFile()) {
-            if (SvnUtils.getMimeType(file).startsWith("text")) {
-                return CommitOptions.ADD_TEXT;
-            } else {
-                return CommitOptions.ADD_BINARY;                
-            }
-        } else {
-            return CommitOptions.ADD_DIRECTORY;
-        }
     }
 
     private Set<SVNUrl> getRepositoryRoots() {

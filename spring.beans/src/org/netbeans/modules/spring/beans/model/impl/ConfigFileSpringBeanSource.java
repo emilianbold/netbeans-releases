@@ -141,6 +141,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         private final Document document;
         
         private static final String REF_SUFFIX = "-ref"; // NOI18N
+        private static final String NULL_PREFIX = "null_prefix";
 
         public DocumentParser(File file, Document document) {
             this.file = file;
@@ -157,13 +158,18 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
                 return;
             }
             NodeList childNodes = rootNode.getChildNodes();
+
+            // prefixesMap caches the prefixes for tag nemes
+            // see the issue 154518
+            Map<String, String> prefixesMap = new HashMap<String, String>();
+
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node node = childNodes.item(i);
                 String nodeName = node.getNodeName();
                 if(BeansElements.ALIAS.equals(nodeName)) {
                     parseAlias(node);
                 } else if (BeansElements.BEAN.equals(nodeName)) { 
-                    parseBean(node);
+                    parseBean(node, prefixesMap);
                 }
             }
         }
@@ -176,7 +182,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             }
         }
 
-        private void parseBean(Node node) {
+        private void parseBean(Node node, Map<String, String> prefixesMap) {
             String id = getTrimmedAttr(node, BeansAttributes.ID); 
             String name = getTrimmedAttr(node, BeansAttributes.NAME);
             List<String> names;
@@ -191,7 +197,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String factoryMethod = getTrimmedAttr(node, BeansAttributes.FACTORY_METHOD); 
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
-            Set<SpringBeanProperty> properties = parseBeanProperties(node);
+            Set<SpringBeanProperty> properties = parseBeanProperties(node, prefixesMap);
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, properties, location);
             if (id != null) {
                 addBeanID(id, bean);
@@ -202,7 +208,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             beans.add(bean);
         }
         
-        private Set<SpringBeanProperty> parseBeanProperties(Node node) {
+        private Set<SpringBeanProperty> parseBeanProperties(Node node, Map<String, String> prefixesMap) {
             Map<String, SpringBeanProperty> name2Properties = new HashMap<String, SpringBeanProperty>();
             NodeList nl = node.getChildNodes();
             for(int i=0; i < nl.getLength(); i++) {
@@ -216,7 +222,19 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             }
             
             // P Namespace items
-            String prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, ((Tag)node).getElementOffset());
+            String tagName = ((Tag)node).getTagName();
+            String prefix = prefixesMap.get(tagName);
+            if (prefix == null) {
+                prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, ((Tag)node).getElementOffset());
+                if (prefix == null) {
+                    // this is caching the case when prefix declaration is missing
+                    prefixesMap.put(tagName, NULL_PREFIX);
+                } else {
+                    prefixesMap.put(tagName, prefix);
+                }
+            } else if (NULL_PREFIX.equals(prefix)) {
+                prefix = null;
+            }
             if(prefix != null) {
                 NamedNodeMap attribs = node.getAttributes();
                 for(int i = 0; i < attribs.getLength(); i++) {

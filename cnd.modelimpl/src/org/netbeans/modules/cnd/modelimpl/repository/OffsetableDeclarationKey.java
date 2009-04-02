@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -72,13 +73,16 @@ final class OffsetableDeclarationKey extends OffsetableKey {
     private static int getSmartEndOffset(OffsetableDeclarationBase obj) {
         // #132865 ClassCastException in Go To Type -
         // ensure that members and non-members has different keys
-        if( obj instanceof CsmMember ) {
-            return obj.getEndOffset();
+        // also make sure that function and fake function has different keys
+        int result = obj.getEndOffset();
+        if( obj instanceof CsmMember) {
+            // do nothing
+        } else if ((obj instanceof FunctionImplEx) && (FunctionImplEx.class.equals(obj.getClass()))) {
+            result |= 0x80000000;
         } else {
-            int result = obj.getEndOffset();
             result |= 0x40000000;
-            return result;
         }
+        return result;
     }
 
     @Override

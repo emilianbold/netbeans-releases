@@ -46,23 +46,40 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.modules.debugger.jpda.ui.HistoryPanel;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
-public class EvaluatorTreeModel extends CachedChildrenTreeModel {
+public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeActionsProviderFilter {
 
     public static final String HISTORY_NODE =
-        "org/netbeans/modules/debugger/jpda/resources/field.gif";
+        "org/netbeans/modules/debugger/jpda/resources/history_node_16.png";
 
     public static final String HISTORY_ITEM =
-        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.gif";
+        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.png";
+
+    private final Action PASTE_TO_EVALUATOR = Models.createAction (
+        NbBundle.getBundle (EvaluatorTreeModel.class).getString ("CTL_PasteExprFromHistoryToEvaluator"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                CodeEvaluator.getInstance().pasteExpression(((ItemNode)nodes[0]).item.expr);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
 
@@ -159,6 +176,21 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
         for (int i = 0; i < ls.length; i++) {
             ls[i].modelChanged (ev);
         }
+    }
+
+    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (node instanceof ItemNode) {
+            CodeEvaluator.getInstance().pasteExpression(((ItemNode)node).item.expr);
+        } else {
+            original.performDefaultAction(node);
+        }
+    }
+
+    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (node instanceof ItemNode) {
+            return new Action[] {PASTE_TO_EVALUATOR};
+        }
+        return original.getActions(node);
     }
 
     // **************************************************************************

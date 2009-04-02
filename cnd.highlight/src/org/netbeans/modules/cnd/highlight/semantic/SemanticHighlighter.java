@@ -276,7 +276,7 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     // PhaseRunner
     public void run(Phase phase) {
-        if (phase == Phase.PARSED || phase == Phase.INIT) {
+        if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
             InterrupterImpl interrupter = new InterrupterImpl();
             try {
                 addCancelListener(interrupter);

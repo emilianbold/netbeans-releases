@@ -196,8 +196,7 @@ public class BugzillaQuery extends Query {
     }
 
     void remove() {
-        repository.removeQuery(this);
-        repository.getIssueCache().removeQuery(name);
+        repository.removeQuery(this);        
         fireQueryRemoved();
     }
 

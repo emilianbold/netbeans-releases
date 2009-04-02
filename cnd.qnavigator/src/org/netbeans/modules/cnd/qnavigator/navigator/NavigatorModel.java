@@ -55,7 +55,9 @@ import javax.swing.text.Caret;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -167,6 +169,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     private void update(final CsmFile csmFile, boolean force) {
         try {
+            if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+                return;
+            }
             if (busyListener != null) {
                 busyListener.busyStart();
             }
@@ -296,6 +301,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     public void projectParsingFinished(CsmProject project) {
+        projectLoaded(project);
     }
     
     public void projectParsingCancelled(CsmProject project) {

@@ -419,7 +419,7 @@ public class GdbProxy {
      */
     public void exec_interrupt() {
         if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (Utilities.isWindows()) {
+            if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 debugger.kill(18);
             } else {
                 debugger.kill(2);
@@ -584,6 +584,10 @@ public class GdbProxy {
 
     public void stack_list_arguments(int showValues, int low, int high) {
         engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
+    }
+
+    public void stack_list_arguments(int showValues) {
+        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
     }
 
     /**

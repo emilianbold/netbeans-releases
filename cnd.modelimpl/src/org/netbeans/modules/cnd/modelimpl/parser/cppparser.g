@@ -3073,6 +3073,7 @@ case_expression
 template_param_expression
     :
         lazy_expression[true, false]
+        {#template_param_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #template_param_expression);}
     ;
 
 cast_expression

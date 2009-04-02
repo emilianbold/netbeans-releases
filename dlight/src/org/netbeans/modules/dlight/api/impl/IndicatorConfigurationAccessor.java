@@ -45,5 +45,7 @@ public abstract class IndicatorConfigurationAccessor {
 
   public abstract IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration);
 
+  public abstract int getIndicatorPosition(IndicatorConfiguration configuration);
+
   public abstract List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration);
 }

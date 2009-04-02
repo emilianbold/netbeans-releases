@@ -56,7 +56,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
-import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
@@ -510,12 +509,11 @@ public final class MavenModelUtils {
 
     public static void updateLibraryScope(Project prj, POMModel model) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
-        Properties props = model.getProject().getProperties();
-        if (props != null) {
+        Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
+        if (wsDep != null) {
             WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
             if (wsStack != null) {
                 boolean isMetro = wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
-                Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
                 if (wsDep != null) {
                     String scope = wsDep.getScope();
                     if (isMetro) {
@@ -526,6 +524,13 @@ public final class MavenModelUtils {
                         if ("provided".equals(scope)) {
                             wsDep.setScope("compile"); //NOI18N
                         }
+                    }
+                }
+            } else { // wsStack is null
+                if (wsDep != null) {
+                    String scope = wsDep.getScope();
+                    if (scope == null || "compile".equals(scope)) { //NOI18N
+                        wsDep.setScope("provided"); //NOI18N
                     }
                 }
             }

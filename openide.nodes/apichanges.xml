@@ -46,6 +46,24 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="NodeOp.factory">
+        <api name="nodes"/>
+        <summary>Support for declarative Node registrations</summary>
+        <version major="7" minor="9"/>
+        <date day="1" month="4" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <p>
+            <a href="@TOP@/org/openide/nodes/NodeOp.html#factory">NodeOp.factory</a>
+            is new method, particularly useful from
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>
+            that allows declarative definition of a root node.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="NodeOp"/>
+        <issue number="161286"/>
+    </change>
     <change id="ChildFactory.Detachable">
         <api name="nodes"/>
         <summary>Adding ChildFactory.Detachable to allow ChildFactory implementations to

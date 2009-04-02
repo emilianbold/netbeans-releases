@@ -1434,6 +1434,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.log(Level.WARNING, url.toExternalForm(), ex);
                     }
                 }
+                firstRound = true;
                 LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
                 assignInternalURL(url);
                 refresh = false;
@@ -1893,7 +1894,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 viewDD = new DialogDescriptor(tabs, NbBundle.getMessage(Installer.class, "VIEW_DATA_TILTE"));
             }
             viewDD.setModal(true);
-            viewDD.setOptions(new Object[] { DialogDescriptor.CLOSED_OPTION  });
+            viewDD.setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION  });
             Dialog view = DialogDisplayer.getDefault().createDialog(viewDD);
             view.setVisible(true);
             return false;

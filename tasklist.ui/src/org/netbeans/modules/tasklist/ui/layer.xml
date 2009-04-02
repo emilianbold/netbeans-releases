@@ -81,11 +81,9 @@
     </folder>
     
     <folder name="Editors">
-<!--
-        <file name="org-netbeans-modules-tasklist-parser-TaskIndexerFactory.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.tasklist.parser.TaskIndexerFactory"/>
+        <file name="org-netbeans-modules-tasklist-impl-TaskIndexerFactory.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.tasklist.impl.TaskIndexerFactory"/>
         </file>
--->
     </folder>
 
 </filesystem>

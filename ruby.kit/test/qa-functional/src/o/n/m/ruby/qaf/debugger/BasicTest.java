@@ -44,6 +44,8 @@ import java.awt.Component;
 import javax.swing.JButton;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -63,6 +65,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -94,6 +97,19 @@ public class BasicTest extends JellyTestCase {
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        System.out.println("Found " + sessions.length + " running debugger sessions.");
+        for (Session session : sessions) {
+            System.out.println("Warning: killing dbg session: " + session);
+            session.kill();
+        }
+    }
+
+
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
 
@@ -131,6 +147,7 @@ public class BasicTest extends JellyTestCase {
         // wait for main.rb opened in editor
         EditorOperator eo = new EditorOperator("main.rb");  // NOI18N
         eo.replace("puts \"Hello World\"", "require 'date'\ndate1 = Date.today\ndate2 = Date.today\nputs date2");
+        ProjectSupport.waitScanFinished();
     }
 
     /** Test start of ruby debugger

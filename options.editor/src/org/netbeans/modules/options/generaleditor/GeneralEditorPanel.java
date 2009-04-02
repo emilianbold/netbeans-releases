@@ -338,6 +338,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldInitialComments.setEnabled (useCodeFolding);
         cbFoldInnerClasses.setEnabled (useCodeFolding);
         cbFoldJavadocComments.setEnabled (useCodeFolding);
-        cbFoldMethods.setEnabled (useCodeFolding);        
+        cbFoldMethods.setEnabled (useCodeFolding);
+        cbFoldTags.setEnabled(useCodeFolding);
     }
 }

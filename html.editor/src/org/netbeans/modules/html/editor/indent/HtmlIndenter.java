@@ -43,23 +43,23 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
 
-public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
+public class HtmlIndenter extends MarkupAbstractIndenter<HtmlTokenId> {
 
     private DTD dtd;
 
     public HtmlIndenter(Context context) {
-        super(HTMLTokenId.language(), context);
-        dtd = HTMLSyntaxSupport.get(getDocument()).getDTD();
+        super(HtmlTokenId.language(), context);
+        dtd = HtmlSyntaxSupport.get(getDocument()).getDTD();
         assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
     }
 
@@ -68,59 +68,59 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected boolean isWhiteSpaceToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.WS ||
-                (token.id() == HTMLTokenId.TEXT && token.text().toString().trim().length() == 0);
+    protected boolean isWhiteSpaceToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.WS ||
+                (token.id() == HtmlTokenId.TEXT && token.text().toString().trim().length() == 0);
     }
 
     @Override
-    protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_OPEN ||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE"));
+    protected boolean isOpenTagNameToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.TAG_OPEN ||
+                (token.id() == HtmlTokenId.DECLARATION && token.text().toString().toUpperCase().startsWith("<!DOCTYPE"));
     }
 
     @Override
-    protected boolean isCloseTagNameToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_CLOSE;
+    protected boolean isCloseTagNameToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.TAG_CLOSE;
     }
 
     @Override
-    protected boolean isStartTagSymbol(Token<HTMLTokenId> token) {
-        return (token.id() == HTMLTokenId.TAG_OPEN_SYMBOL && token.text().toString().equals("<"));
+    protected boolean isStartTagSymbol(Token<HtmlTokenId> token) {
+        return (token.id() == HtmlTokenId.TAG_OPEN_SYMBOL && token.text().toString().equals("<"));
     }
 
     @Override
-    protected boolean isStartTagClosingSymbol(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
+    protected boolean isStartTagClosingSymbol(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.TAG_OPEN_SYMBOL &&
                 token.text().toString().equals("</");
     }
 
     @Override
-    protected boolean isEndTagSymbol(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
+    protected boolean isEndTagSymbol(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.TAG_CLOSE_SYMBOL &&
                 token.text().toString().equals(">");
     }
 
     @Override
-    protected boolean isEndTagClosingSymbol(Token<HTMLTokenId> token) {
-        return (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
+    protected boolean isEndTagClosingSymbol(Token<HtmlTokenId> token) {
+        return (token.id() == HtmlTokenId.TAG_CLOSE_SYMBOL &&
                 token.text().toString().equals("/>")) ||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith(">"));
+                (token.id() == HtmlTokenId.DECLARATION && token.text().toString().startsWith(">"));
     }
 
     @Override
-    protected boolean isTagArgumentToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.ARGUMENT;
+    protected boolean isTagArgumentToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.ARGUMENT;
     }
 
     @Override
-    protected boolean isBlockCommentToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.BLOCK_COMMENT;
+    protected boolean isBlockCommentToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.BLOCK_COMMENT;
     }
 
     @Override
-    protected boolean isTagContentToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TEXT;
+    protected boolean isTagContentToken(Token<HtmlTokenId> token) {
+        return token.id() == HtmlTokenId.TEXT;
     }
 
     @Override
@@ -150,7 +150,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         return elem.isEmpty();
     }
 
-    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
+    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "textarea"}; //NOI18N
     
     @Override
     protected boolean isTagContentUnformattable(String tagName) {
@@ -192,7 +192,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected boolean isPreservedLine(Token<HTMLTokenId> token, IndenterContextData<HTMLTokenId> context) {
+    protected boolean isPreservedLine(Token<HtmlTokenId> token, IndenterContextData<HtmlTokenId> context) {
         if (isBlockCommentToken(token)) {
             String comment = token.text().toString().trim();
             if (!comment.startsWith("<!--") && !comment.startsWith("-->")) {
@@ -203,7 +203,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HTMLTokenId> ts) 
+    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HtmlTokenId> ts)
             throws BadLocationException {
         int index = ts.index();
         boolean found = false;
@@ -231,7 +231,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         return indent;
     }
 
-    private boolean isOpeningTag(JoinedTokenSequence<HTMLTokenId> ts) {
+    private boolean isOpeningTag(JoinedTokenSequence<HtmlTokenId> ts) {
         int index = ts.index();
         boolean found = false;
         while (ts.moveNext()) {
@@ -248,17 +248,17 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
+    protected boolean isForeignLanguageStartToken(Token<HtmlTokenId> token, JoinedTokenSequence<HtmlTokenId> ts) {
         return isOpenTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script")) && isOpeningTag(ts);
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script")) && isOpeningTag(ts);
     }
 
     @Override
-    protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
+    protected boolean isForeignLanguageEndToken(Token<HtmlTokenId> token, JoinedTokenSequence<HtmlTokenId> ts) {
         return isCloseTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script"));
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script"));
     }
 
 }

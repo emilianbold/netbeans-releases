@@ -42,12 +42,16 @@ package org.netbeans.modules.subversion;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -104,10 +108,10 @@ public class ApiTest extends NbTestCase {
                 workDir,
                 username,
                 password,
-                true);
+                false);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 3); // two folders + metadata
+        assertEquals(3, workDir.list().length); // two folders + metadata
 
         org.netbeans.modules.subversion.api.Subversion.checkoutRepositoryFolder(
                 TestUtilities.formatFileURL(repoDir),
@@ -115,10 +119,10 @@ public class ApiTest extends NbTestCase {
                 workDir,
                 username,
                 password,
-                true);
+                false);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 3); // two folders + metadata
+        assertEquals(3, workDir.list().length); // two folders + metadata
 
         FileUtils.deleteRecursively(workDir);
         org.netbeans.modules.subversion.api.Subversion.checkoutRepositoryFolder(
@@ -127,14 +131,65 @@ public class ApiTest extends NbTestCase {
                 workDir,
                 username,
                 password,
+                false);
+
+        assertTrue(workDir.exists());
+        assertEquals(1, workDir.list().length); // one folder
+
+    }
+
+    public void testCheckoutLocalLevel() throws MalformedURLException, SVNClientException {
+        FileUtils.deleteRecursively(workDir);
+        TestKit.mkdirs(repoDir, "testCheckoutLocalLevelfolder1/folder2/folder3");
+        String url = TestUtilities.formatFileURL(repoDir) + "/testCheckoutLocalLevelfolder1/folder2";
+
+        org.netbeans.modules.subversion.api.Subversion.checkoutRepositoryFolder(
+                url,
+                new String[0],
+                workDir,
+                username,
+                password,
+                true,
                 true);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 2); // one folder + metadata
+        String[] files = workDir.list();
+        assertEquals(2, files.length); // one folder + metadata
 
+        String s = null;
+        for (String f : files) {
+            if(f.equals("folder3")) {
+                s = f;
+                break;
+            }
+        }
+        assertEquals("folder3", s);
     }
-    
-    
 
+    public void testMkdirMalformed() throws SVNClientException, IOException {
+        MalformedURLException mue = null;
+        try {
+            org.netbeans.modules.subversion.api.Subversion.mkdir("crap", "", "", "creating dir");
+        } catch (MalformedURLException e) {
+            mue = e;
+        }
+        assertNotNull(mue);
+    }
+
+    public void testMkdir() throws SVNClientException, IOException {
+        String url1 = TestUtilities.formatFileURL(repoDir) + "/foldertestMkdir";
+        org.netbeans.modules.subversion.api.Subversion.mkdir(
+                url1,
+                "", "", "creating dir");
+        ISVNInfo info = TestKit.getSVNInfo(url1);
+        assertNotNull(info);
+
+        String url2 = TestUtilities.formatFileURL(repoDir) + "/foldertestMkdir/foldertestMkdir2";
+        org.netbeans.modules.subversion.api.Subversion.mkdir(
+                url2,
+                "", "", "creating dir");
+        info = TestKit.getSVNInfo(url2);
+        assertNotNull(info);
+    }
 
 }

@@ -52,6 +52,7 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 public abstract class IndicatorConfiguration {
 
     private IndicatorMetadata metadata;
+    private final int position;
     private final List<VisualizerConfiguration> visualizerConfigurations;
 
 
@@ -62,10 +63,20 @@ public abstract class IndicatorConfiguration {
     /**
      * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
      * @param metadata metadata to create Indicator configuration for
+     * @param position indicator position
+     */
+    public IndicatorConfiguration(IndicatorMetadata metadata, int position) {
+        this.metadata = metadata;
+        this.position = position;
+        visualizerConfigurations = new ArrayList<VisualizerConfiguration>();
+    }
+
+    /**
+     * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
+     * @param metadata metadata to create Indicator configuration for
      */
     public IndicatorConfiguration(IndicatorMetadata metadata) {
-        this.metadata = metadata;
-        visualizerConfigurations = new ArrayList<VisualizerConfiguration>();
+        this(metadata, 0);
     }
 
     /**
@@ -96,6 +107,14 @@ public abstract class IndicatorConfiguration {
     }
 
     /**
+     * Returns indicator position
+     * @return indicator position
+     */
+    protected final int getIndicatorPosition() {
+        return position;
+    }
+
+    /**
      * Returns  a list of {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} used
      * by the indicator as a configuration of Detailed View which will be opened by clicking on the
      * indicator created on the base of this configuration
@@ -110,6 +129,11 @@ public abstract class IndicatorConfiguration {
         @Override
         public IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration) {
             return configuration.getIndicatorMetadata();
+        }
+
+        @Override
+        public int getIndicatorPosition(IndicatorConfiguration configuration) {
+            return configuration.getIndicatorPosition();
         }
 
         @Override

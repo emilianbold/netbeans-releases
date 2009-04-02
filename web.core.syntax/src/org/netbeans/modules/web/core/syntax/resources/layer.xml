@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="Preferences">
-                    <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
+                    <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
@@ -140,13 +140,13 @@ made subject to such option by the copyright holder.
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForJsp"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JSPKit"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForJsp"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="Popup">
@@ -170,7 +170,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                     <file name="JavaHyperlinkProvider.instance">
@@ -182,9 +182,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-JSPParserFactory.instance" />
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance" />
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance" />
+                <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">
@@ -197,9 +197,12 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-el">
+                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance"/>
+            </folder>
             <folder name="x-tag">
                 <folder name="Preferences">
-                    <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
+                    <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
@@ -215,6 +218,7 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
                 <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
@@ -263,20 +267,20 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForTag"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JSPKit"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForTag"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                     <file name="JavaHyperlinkProvider.instance">
@@ -288,8 +292,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance" />
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance" />
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
             </folder>
         </folder>
     </folder>
@@ -303,4 +307,3 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 </filesystem>
-

@@ -73,7 +73,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
     
     private ProgressHandle handle;
-    private CommandLineOutputHandler out;
     private Process process;
     private Process preProcess;
     
@@ -126,10 +125,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         actionStatesAtStart();
         handle.start();
         processInitialMessage();
+        CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
         try {
             BuildExecutionSupport.registerRunningItem(item);
-
-            out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
 
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);

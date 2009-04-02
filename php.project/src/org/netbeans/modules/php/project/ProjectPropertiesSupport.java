@@ -160,8 +160,12 @@ public final class ProjectPropertiesSupport {
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
         FileObject sources = project.getSourcesDirectory();
         if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
+            // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
             File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
-            return FileUtil.toFileObject(resolved);
+            if (resolved.exists()) {
+                return FileUtil.toFileObject(resolved);
+            }
+            return sources.getFileObject(subdirectoryPath);
         }
         return sources;
     }
@@ -260,6 +264,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return <code>true</code> if upload is direct (and not using a temporary file); default is <code>false</code>.
+     */
+    public static boolean isRemoteUploadDirectly(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY, false);
+    }
+
+    /**
      * @return remote upload or <code>null</code>.
      */
     public static PhpProjectProperties.UploadFiles getRemoteUpload(PhpProject project) {
@@ -294,33 +305,66 @@ public final class ProjectPropertiesSupport {
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         List<String> locals = PhpProjectUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        int size = remotes.size();
-        if (size != locals.size()) {
-            // something is wrong...
-            return Collections.emptyList();
-        }
-        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(size);
-        for (int i = 0; i < size; ++i) {
+        int remotesSize = remotes.size();
+        int localsSize = locals.size();
+        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
+        for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
             if (PhpProjectUtils.hasText(remotePath)) {
-                FileObject subDir = getSourceSubdirectory(project, locals.get(i));
-                if (subDir != null && subDir.isValid()) {
-                    paths.add(Pair.of(remotePath, FileUtil.toFile(subDir).getAbsolutePath()));
+                // if user has only 1 path and local == sources => property is not stored at all!
+                String l = ""; // NOI18N
+                if (i < localsSize) {
+                    l = locals.get(i);
+                }
+                String localPath = null;
+                File local = new File(l);
+                if (local.isAbsolute()) {
+                    if (local.isDirectory()) {
+                        localPath = local.getAbsolutePath();
+                    }
+                } else {
+                    FileObject subDir = getSourceSubdirectory(project, l);
+                    if (subDir != null && subDir.isValid()) {
+                        localPath = FileUtil.toFile(subDir).getAbsolutePath();
+                    }
+                }
+
+                if (localPath != null) {
+                    paths.add(Pair.of(remotePath, localPath));
                 }
             }
         }
         return paths;
     }
 
-    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
-        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
-        if (originalPathMapping.isEmpty()) {
-            return Collections.emptyList();
+    /**
+     * @return instance of Pair<String, String> or null
+     */
+    private static Pair<String, String> getCopySupportPair(PhpProject project) {
+        Pair<String, String> copySupportPair = null;
+        if (ProjectPropertiesSupport.isCopySourcesEnabled(project)) {
+            File copyTarget = ProjectPropertiesSupport.getCopySourcesTarget(project);
+            if (copyTarget != null && copyTarget.exists()) {
+                FileObject copySourceFo = ProjectPropertiesSupport.getSourcesDirectory(project);
+                File copySource = FileUtil.toFile(copySourceFo);
+                if (copySource != null && copySource.exists()) {
+                    copySupportPair = Pair.of(copyTarget.getAbsolutePath(), copySource.getAbsolutePath());
+                }
+            }
         }
+        return copySupportPair;
+    }
+
+    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
+        Pair<String, String> copySupportPair = getCopySupportPair(project);
+        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
         List<Pair<String, String>> encodedPathMapping = new ArrayList<Pair<String, String>>(originalPathMapping.size());
         try {
             for (Pair<String, String> pathMapping : originalPathMapping) {
                 encodedPathMapping.add(getEncodedDebugPathPair(pathMapping));
+            }
+            if (copySupportPair != null) {
+                encodedPathMapping.add(getEncodedDebugPathPair(copySupportPair));
             }
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);

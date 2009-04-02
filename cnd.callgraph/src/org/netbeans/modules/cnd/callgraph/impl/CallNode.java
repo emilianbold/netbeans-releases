@@ -71,6 +71,15 @@ public class CallNode extends AbstractNode {
     }
 
     @Override
+    public String getShortDescription() {
+        if (isCalls) {
+            return object.getCallee().getDescription();
+        } else {
+            return object.getCaller().getDescription();
+        }
+    }
+
+    @Override
     public String getHtmlDisplayName() {
         String displayName;
         if (isCalls) {

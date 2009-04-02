@@ -90,4 +90,8 @@ public class GdbVersionPeculiarity {
             return "";
         }
     }
+
+    public boolean isSupported() {
+        return (version >= 6.6) || (platform == PlatformTypes.PLATFORM_MACOSX && version >= 6.3);
+    }
 }
