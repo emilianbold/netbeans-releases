@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.openide.text.ActiveEditorDrop;
@@ -96,7 +96,7 @@ public class GetProperty implements ActiveEditorDrop {
         if (accept) {
             String body = createBody();
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -149,7 +149,7 @@ public class GetProperty implements ActiveEditorDrop {
             String fqcn = implicitTypes[i];
             res.add(new BeanDescr(id, fqcn));
         }
-        PageInfo.BeanData[] bd = JSPPaletteUtilities.getAllBeans(targetComponent);
+        PageInfo.BeanData[] bd = JspPaletteUtilities.getAllBeans(targetComponent);
         for (int i = 0; i < bd.length; i++) {
             BeanData beanData = bd[i];
             res.add(new BeanDescr(beanData.getId(), beanData.getClassName()));

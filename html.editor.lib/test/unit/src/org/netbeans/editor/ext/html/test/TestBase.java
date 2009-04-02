@@ -41,13 +41,13 @@
 
 package org.netbeans.editor.ext.html.test;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 
 /**
  * Common ancestor for all test classes.
@@ -63,9 +63,9 @@ public class TestBase extends NbTestCase {
     }
 
     protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
-        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HTMLKit.class).getContentType());
-        doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
+        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HtmlKit.class).getContentType());
+        doc.putProperty(Language.class, HtmlTokenId.language()); //hack for LanguageManager - shoudl be removed
         
         return doc;
     }

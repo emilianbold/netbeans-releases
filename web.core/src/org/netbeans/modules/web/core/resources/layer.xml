@@ -311,7 +311,7 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
-                <file name="org-netbeans-modules-web-core-palette-JSPPaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>

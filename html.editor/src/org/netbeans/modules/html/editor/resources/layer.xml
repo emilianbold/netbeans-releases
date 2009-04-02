@@ -109,14 +109,14 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <folder name="Preferences">
-                    <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml" />
+                    <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
                 
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
                 
                 <folder name="BracesMatchers">
-                    <file name="org-netbeans-modules-html-editor-HTMLBracesMatching.instance">
+                    <file name="org-netbeans-modules-html-editor-HtmlBracesMatching.instance">
                         <attr name="position" intvalue="50"/>
                     </file>
                 </folder>
@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 
@@ -169,8 +169,8 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HTMLKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HTMLKit"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HtmlKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HtmlKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 

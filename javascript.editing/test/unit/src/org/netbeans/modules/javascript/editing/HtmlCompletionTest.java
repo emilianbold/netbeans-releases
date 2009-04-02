@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
@@ -66,7 +66,7 @@ public class HtmlCompletionTest extends JsTestBase {
         super.setUp();
 
         try {
-            TestLanguageProvider.register(HTMLTokenId.language());
+            TestLanguageProvider.register(HtmlTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
@@ -76,7 +76,7 @@ public class HtmlCompletionTest extends JsTestBase {
     public BaseDocument getDocument(String s, final String mimeType, final Language language) {
         BaseDocument doc = super.getDocument(s, mimeType, language);
         doc.putProperty("mimeType", "text/html");
-        doc.putProperty(org.netbeans.api.lexer.Language.class, HTMLTokenId.language());
+        doc.putProperty(org.netbeans.api.lexer.Language.class, HtmlTokenId.language());
 
         return doc;
     }

@@ -6,20 +6,20 @@ options {
     USER_CHAR_STREAM = true;
 }
 
-PARSER_BEGIN(CSSParser)
+PARSER_BEGIN(CssParser)
 
 package org.netbeans.modules.css.parser;
 
 import java.util.*;
 
-public class CSSParser {
+public class CssParser {
 
     private ArrayList<ParseException> errors = new ArrayList<ParseException>();
 
-    public CSSParser() {
+    public CssParser() {
        this((CharStream) null);
        // change manager to our patched one:
-       token_source = new PatchedCSSParserTokenManager(null);
+       token_source = new PatchedCssParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -28,7 +28,7 @@ public class CSSParser {
 
 }
 
-PARSER_END(CSSParser)
+PARSER_END(CssParser)
 
 //TOKEN_MGR_DECLS :
 

@@ -53,17 +53,17 @@ public class CssParserTest extends TestBase {
     }
 
     private SimpleNode parse(String source) throws ParseException {
-        CSSParser parser = new CSSParser();
-        CSSParserTokenManager tokenManager = new CSSParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        CssParser parser = new CssParser();
+        CssParserTokenManager tokenManager = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
         parser.ReInit(tokenManager);
 
         return parser.styleSheet();
     }
 
     private static boolean isErrorNode(SimpleNode node) {
-        return node.kind() == CSSParserTreeConstants.JJTERROR_SKIPBLOCK ||
-                node.kind() == CSSParserTreeConstants.JJTERROR_SKIPDECL ||
-                node.kind() == CSSParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE;
+        return node.kind() == CssParserTreeConstants.JJTERROR_SKIPBLOCK ||
+                node.kind() == CssParserTreeConstants.JJTERROR_SKIPDECL ||
+                node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE;
     }
 
     /** returns number of error nodes underneath the node. */

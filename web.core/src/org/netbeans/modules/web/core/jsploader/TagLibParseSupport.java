@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -134,7 +134,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     }
 
     /** Gets the tag library data relevant for the editor. */
-    public JSPColoringData getJSPColoringData() {
+    public JspColoringData getJSPColoringData() {
         // #120530 - do not start parsing
         return getJSPColoringData(false);
     }
@@ -150,13 +150,13 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         return null;
     }
     
-    JSPColoringData getJSPColoringData(boolean prepare) {
+    JspColoringData getJSPColoringData(boolean prepare) {
         if (jspColoringDataRef != null) {
             Object o = jspColoringDataRef.get();
             if (o != null)
-                return (JSPColoringData)o;
+                return (JspColoringData)o;
         }
-        JSPColoringData jcd = new JSPColoringData(this);
+        JspColoringData jcd = new JspColoringData(this);
         jspColoringDataRef = new WeakReference(jcd);
         if (prepare) {
             prepare();

@@ -68,7 +68,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
+import org.netbeans.modules.web.core.palette.JspPaletteFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
@@ -533,7 +533,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) 
             {
                 try {
-                    PaletteController pc = JSPPaletteFactory.getPalette();
+                    PaletteController pc = JspPaletteFactory.getPalette();
                     instanceContent.add(pc);
                 } 
                 catch (IOException ioe) {

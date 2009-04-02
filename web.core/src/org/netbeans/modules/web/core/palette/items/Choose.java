@@ -43,7 +43,7 @@ package org.netbeans.modules.web.core.palette.items;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 /**
@@ -64,10 +64,10 @@ public class Choose implements ActiveEditorDrop {
         ChooseCustomizer c = new ChooseCustomizer(this, targetComponent);
         boolean accept = c.showDialog();
         if (accept) {
-            String prefix = JSPPaletteUtilities.findJstlPrefix(targetComponent);
+            String prefix = JspPaletteUtilities.findJstlPrefix(targetComponent);
             String body = createBody(prefix);
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -83,7 +83,7 @@ public class Choose implements ActiveEditorDrop {
     
     private String generateChooseBody(String prefix) {
         StringBuffer sb = new StringBuffer();
-        sb.append("<"+prefix+":when test=\""+JSPPaletteUtilities.CARET+"\">\n</"+prefix+":when>\n");  //NOI18N
+        sb.append("<"+prefix+":when test=\""+JspPaletteUtilities.CARET+"\">\n</"+prefix+":when>\n");  //NOI18N
         for (int i = 1; i < whens; i++)
             sb.append("<"+prefix+":when test=\"\">\n</"+prefix+":when>\n"); // NOI18N
         

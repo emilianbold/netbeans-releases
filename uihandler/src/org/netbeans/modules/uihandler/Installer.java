@@ -1434,6 +1434,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.log(Level.WARNING, url.toExternalForm(), ex);
                     }
                 }
+                firstRound = true;
                 LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
                 assignInternalURL(url);
                 refresh = false;
