@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
@@ -53,23 +54,22 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.util.NoContentPanel;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byText;
     final ExpandablePanel byDetails;
     final ExpandablePanel byPeople;
     final ExpandablePanel byLastChange;
-    private JComponent tableComponent;
     private QueryController controller;
     private static final Color ERROR_COLOR = new Color(153,0,0);
     private Color defaultTextColor;
@@ -84,7 +84,6 @@ public class QueryPanel extends javax.swing.JPanel {
         nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
         defaultTextColor = noContentLabel.getForeground();
 
-        this.tableComponent = tableComponent;
         tablePanel.add(tableComponent);
 
         JTree tv = new JTree();
@@ -340,7 +339,6 @@ public class QueryPanel extends javax.swing.JPanel {
         versionLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.versionLabel.text")); // NOI18N
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         versionList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -354,7 +352,6 @@ public class QueryPanel extends javax.swing.JPanel {
         statusLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.statusLabel.text")); // NOI18N
 
         jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane3.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         statusList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -368,7 +365,6 @@ public class QueryPanel extends javax.swing.JPanel {
         resolutionLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.resolutionLabel.text")); // NOI18N
 
         jScrollPane4.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane4.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         priorityList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -382,7 +378,6 @@ public class QueryPanel extends javax.swing.JPanel {
         priorityLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.priorityLabel.text")); // NOI18N
 
         jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         resolutionList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -396,7 +391,6 @@ public class QueryPanel extends javax.swing.JPanel {
         componentLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.componentLabel.text")); // NOI18N
 
         jScrollPane6.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane6.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         componentList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -407,7 +401,6 @@ public class QueryPanel extends javax.swing.JPanel {
         jScrollPane6.setViewportView(componentList);
 
         jScrollPane7.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane7.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         productList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -421,7 +414,6 @@ public class QueryPanel extends javax.swing.JPanel {
         severityLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.severityLabel.text")); // NOI18N
 
         jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane8.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         severityList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
@@ -436,13 +428,10 @@ public class QueryPanel extends javax.swing.JPanel {
         byDetailsPanelLayout.setHorizontalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byDetailsPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(byDetailsPanelLayout.createSequentialGroup()
-                        .add(22, 22, 22)
-                        .add(productLabel))
-                    .add(byDetailsPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(productLabel)
+                    .add(jScrollPane7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(componentLabel)
@@ -451,7 +440,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(versionLabel)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(34, 34, 34)
+                .add(18, 18, 18)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(statusLabel)
                     .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -460,48 +449,36 @@ public class QueryPanel extends javax.swing.JPanel {
                     .add(resolutionLabel)
                     .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(priorityLabel)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jScrollPane4)
+                    .add(priorityLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(severityLabel)
                     .add(jScrollPane8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(37, 37, 37))
+                .addContainerGap())
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(productLabel)
+                    .add(componentLabel)
+                    .add(versionLabel)
+                    .add(statusLabel)
+                    .add(resolutionLabel)
+                    .add(priorityLabel)
+                    .add(severityLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
-                            .add(severityLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jScrollPane8))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
-                            .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(priorityLabel)
-                                .add(resolutionLabel)
-                                .add(statusLabel))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jScrollPane4)
-                                .add(jScrollPane5)
-                                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
-                    .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(byDetailsPanelLayout.createSequentialGroup()
-                            .add(componentLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jScrollPane6))
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
-                            .add(versionLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jScrollPane2))
-                        .add(byDetailsPanelLayout.createSequentialGroup()
-                            .add(productLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                    .add(jScrollPane8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -625,7 +602,7 @@ public class QueryPanel extends javax.swing.JPanel {
             tableHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(tableHeaderPanelLayout.createSequentialGroup()
                 .add(tableSummaryLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 603, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 677, Short.MAX_VALUE)
                 .add(filterLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -645,7 +622,7 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableFieldsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(tableFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -710,7 +687,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
+                .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -730,16 +707,16 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byLastChangeLabel)
                 .addContainerGap())
-            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
-            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
+            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byDetailsLabel)
                 .addContainerGap())
-            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byPeopleLabel)
                 .addContainerGap())
-            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
             .add(urlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         criteriaPanelLayout.setVerticalGroup(
@@ -792,7 +769,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(idTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 191, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(gotoIssueButton)
-                .addContainerGap(417, Short.MAX_VALUE))
+                .addContainerGap(474, Short.MAX_VALUE))
         );
         gotoPanelLayout.setVerticalGroup(
             gotoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -821,7 +798,7 @@ public class QueryPanel extends javax.swing.JPanel {
                         .add(saveChangesButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cancelChangesButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 96, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 255, Short.MAX_VALUE)
                         .add(saveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel7)
@@ -914,7 +891,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 426, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 524, Short.MAX_VALUE)
                         .add(refreshCheckBox)
                         .add(18, 18, 18)
                         .add(lastRefreshLabel)
@@ -1073,13 +1050,13 @@ public class QueryPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane3 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane4 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane5 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane6 = new javax.swing.JScrollPane();
+    final javax.swing.JScrollPane jScrollPane2 = new HackedScrollPane();
+    final javax.swing.JScrollPane jScrollPane3 = new HackedScrollPane();
+    final javax.swing.JScrollPane jScrollPane4 = new HackedScrollPane();
+    final javax.swing.JScrollPane jScrollPane5 = new HackedScrollPane();
+    final javax.swing.JScrollPane jScrollPane6 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new javax.swing.JScrollPane();
-    final javax.swing.JScrollPane jScrollPane8 = new javax.swing.JScrollPane();
+    final javax.swing.JScrollPane jScrollPane8 = new HackedScrollPane();
     final javax.swing.JButton keywordsButton = new javax.swing.JButton();
     final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel keywordsLabel = new javax.swing.JLabel();
@@ -1310,4 +1287,15 @@ public class QueryPanel extends javax.swing.JPanel {
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
+
+    static class HackedScrollPane extends JScrollPane {
+        @Override
+        public Dimension getPreferredSize() {
+            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            Dimension dim = super.getPreferredSize();
+            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            return dim;
+        }
+    }
+
 }
