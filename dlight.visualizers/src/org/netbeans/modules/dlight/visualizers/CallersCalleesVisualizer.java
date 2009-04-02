@@ -60,15 +60,16 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.CallersCalleesVisualizer;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
@@ -185,13 +186,11 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         //throw new UnsupportedOperationException("Not yet implemented");
         ExplorerManager manager = getExplorerManager();
         if (manager == null) {
-            System.out.println("RETURN NO ExplorerManager defined");
             return;
         }
         //get selected
         Node[] selectedNodes = manager.getSelectedNodes();
         if (selectedNodes == null || selectedNodes.length == 0) {
-            System.out.println("ACHTUNG!! NULL SELECION!!");
             return;
         }
         Node selectedNode = selectedNodes[0];
@@ -422,9 +421,8 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         private final FunctionCall functionCall;
 
         public GoToSourceAction(FunctionCall functionCall) {
-            super("Go To Source");//NOI18N
+            super(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCall = functionCall;
-
         }
 
         public void actionPerformed(ActionEvent e) {

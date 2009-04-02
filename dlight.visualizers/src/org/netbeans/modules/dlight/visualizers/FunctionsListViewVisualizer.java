@@ -462,7 +462,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private final FunctionCallNode functionCallNode;
 
         public GoToSourceAction(FunctionCallNode functionCallNode) {
-            super("Go To Source");//NOI18N
+            super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = functionCallNode;
 
         }
