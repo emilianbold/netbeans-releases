@@ -111,7 +111,7 @@ public class SourceRoots {
 //        }
 
         addUnknownRoots(GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP, projectRoot, result, "grails-app");
-        addUnknownRoots(GrailsSources.KNOWN_FOLDERS_IN_TEST, projectRoot, result, "test");
+        addUnknownRoots(GrailsSources.KNOWN_OR_IGNORED_FOLDERS_IN_TEST, projectRoot, result, "test");
     }
 
     private static void addUnknownRoots(Collection<String> alreadyKnown,
