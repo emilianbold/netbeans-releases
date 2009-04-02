@@ -31,7 +31,7 @@ package org.netbeans.modules.ruby.rhtml.editor;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -69,7 +69,7 @@ public class RhtmlKitTest extends RubyTestBase {
             // Already registered?
         }
         try {
-            TestLanguageProvider.register(HtmlTokenId.language());
+            TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }

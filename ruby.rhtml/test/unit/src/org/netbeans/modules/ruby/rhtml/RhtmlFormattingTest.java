@@ -29,7 +29,7 @@ package org.netbeans.modules.ruby.rhtml;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -56,7 +56,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
             // Already registered?
         }
         try {
-            TestLanguageProvider.register(HtmlTokenId.language());
+            TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
