@@ -48,7 +48,6 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -81,12 +80,9 @@ public class HgHookImpl extends HgHook {
         if(context.getFiles().length == 0) {
 
             if (selectedRepository != null) {
-                Project singleProject = BugtrackingOwnerSupport.getMainOrSingleProject();
-                if (singleProject != null) {
-                    BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                            singleProject,
-                            selectedRepository);
-                }
+                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
+                        selectedRepository);
             }
 
             LOG.warning("calling hg beforeCommit for zero files");               // NOI18N

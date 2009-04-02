@@ -293,10 +293,38 @@ public class BugtrackingOwnerSupport {
                : null;        //not a Kenai project repository
     }
 
-    public void setLooseAssociation(Project project, Repository repository) {
-        FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                BugtrackingUtil.getLargerContext(project),
-                repository);
+    public void setLooseAssociation(ContextType contextType, Repository repository) {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        File context = null;
+
+        switch (contextType) {
+            case MAIN_PROJECT_ONLY:
+                Project mainProject = projects.getMainProject();
+                if (mainProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainProject);
+                }
+                break;
+            case MAIN_OR_SINGLE_PROJECT:
+                Project mainOrSingleProject = getMainOrSingleProject();
+                if (mainOrSingleProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainOrSingleProject);
+                }
+                break;
+            case ALL_PROJECTS:
+                context = BugtrackingUtil.getContextFromProjects();
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                context = BugtrackingUtil.getLargerContext();
+            default:
+                assert false;
+                break;
+        }
+
+        if (context != null) {
+            FileToRepoMappingStorage.getInstance().setLooseAssociation(
+                    context,
+                    repository);
+        }
     }
 
     public void setLooseAssociation(File file, Repository repository) {
