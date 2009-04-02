@@ -83,6 +83,7 @@ public enum CssTokenId implements TokenId {
     
     EOF("default"),
     S("whitespace_comment"),
+    COMMENT("whitespace_comment"),
     MSE("ms_expression"),
     LBRACE("brace"),
     RBRACE("brace"),

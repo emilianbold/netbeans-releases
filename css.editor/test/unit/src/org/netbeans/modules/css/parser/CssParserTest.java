@@ -83,6 +83,7 @@ public class CssParserTest extends TestBase {
     }
 
     private void assertNoErrors(SimpleNode node) {
+        Assert.assertNotNull(node);
         List<SimpleNode> errors = getErrors(node);
         if(errors.size() > 0) {
             StringBuffer buf = new StringBuffer();
@@ -103,15 +104,10 @@ public class CssParserTest extends TestBase {
     }
 
     public void testParseComment() throws ParseException {
-        SimpleNode node = parse("h1 { /* comment */ }");
-        Assert.assertNotNull(node);
-        assertNoErrors(node);
-    }
-
-    public void testParseComment2() throws ParseException {
-        SimpleNode node = parse("h1 { color: /* comment */ red; }");
-        Assert.assertNotNull(node);
-        assertNoErrors(node);
+        assertNoErrors(parse("h1 { /* comment */ }"));
+        assertNoErrors(parse("h1 { color: /* comment */ red; }"));
+        assertNoErrors(parse("h1 /* c */ { /* c2 */ color: red; }"));
+        assertNoErrors(parse("/* c */ h1 {  color: red; } /* c2 */"));
     }
 
     private void check(String source) throws ParseException {
@@ -159,7 +155,6 @@ public class CssParserTest extends TestBase {
         check("h1 { @@@: rgb(@@@); }");
         check("span[hello=@@@][@@@]{}");
 
-//        check("EXAMPLE { /* @@@ */ }");//fails
         check("p.@@@:first-letter {color: @@@}");
 
 //        check("h1 {color: #@@@}");//fails
@@ -167,5 +162,9 @@ public class CssParserTest extends TestBase {
 
 //        check("media TV{ @@@ { } }");//fails
         check("@page:left{margin-left:@@@;}");
+    }
+
+    public void testTemplatingInComment() throws ParseException {
+        check("EXAMPLE { /* @@@ */ }");
     }
 }

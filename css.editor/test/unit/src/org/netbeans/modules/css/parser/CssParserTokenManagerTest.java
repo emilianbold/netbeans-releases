@@ -63,15 +63,12 @@ public class CssParserTokenManagerTest {
 
     @Test
     public void basic() {
-        String source = "/* comment */";
+        String source = "h1 { color : red; /* comment */ }";
         CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
-
         org.netbeans.modules.css.parser.Token token = null;
         do {
             token = tm.getNextToken();
-
-            System.out.println(token + "; kind = " + CssParserConstants.tokenImage[token.kind]);
-
+//            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");
             if(token == null) {
                 break;
             }
