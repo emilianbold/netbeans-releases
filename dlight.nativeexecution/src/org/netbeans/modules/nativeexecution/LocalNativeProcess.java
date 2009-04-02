@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.text.ParseException;
@@ -79,24 +82,32 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         isMacOS = Utilities.isMac();
     }
 
-    // TODO: For now cygwin is the ONLY tested environment on Windows!
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
 
+        Process proc = null;
+        InputStream is = null;
+        InputStream es = null;
+        OutputStream os = null;
+        boolean interrupted = isInterrupted();
+
         if (Utilities.isWindows() && shell == null) {
-            throw new IOException("CYGWIN currently is the ONLY supported env on Windows."); // NOI18N
+            throw new IOException("CYGWIN/MSYS are currently required on Windows."); // NOI18N
         }
 
-        final String workingDirectory = info.getWorkingDirectory(true);
-        final File wdir =
-                workingDirectory == null ? null : new File(workingDirectory);
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
 
-        final ProcessBuilder pb;
+        if (workingDirectory != null) {
+            workingDirectory = new File(workingDirectory).getAbsolutePath();
+            if (isWindows) {
+                workingDirectory = WindowsSupport.getInstance().normalizePath(workingDirectory);
+            }
+        }
 
         final MacroMap env = info.getEnvVariables();
 
-        pb = new ProcessBuilder(shell, "-s"); // NOI18N
-
+        // Setup LD_PRELOAD to load unbuffer library...
         if (info.isUnbuffer()) {
             String unbufferPath = null; // NOI18N
             String unbufferLib = null; // NOI18N
@@ -119,7 +130,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
                     String ldPreloadEnv;
                     String ldLibraryPathEnv;
-                    
+
                     if (isWindows) {
                         ldLibraryPathEnv = "PATH"; // NOI18N
                         ldPreloadEnv = "LD_PRELOAD"; // NOI18N
@@ -134,12 +145,12 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                     String ldPreload = env.get(ldPreloadEnv);
 
                     if (isMacOS || isWindows) {
-                        // TODO: FIXME (?) For Mac and Windows just put unbuffer 
+                        // TODO: FIXME (?) For Mac and Windows just put unbuffer
                         // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
                         // Reason: no luck to make it work using PATH ;(
                         ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                                 unbufferPath + "/" + unbufferLib; // NOI18N
-                        
+
                         if (isWindows) {
                             ldPreload = WindowsSupport.getInstance().normalizePath(ldPreload);
                         }
@@ -165,52 +176,72 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             }
         }
 
+        // On windows add /bin to PATH in case cygwin is not in
+        // the Path environment variable ...
         if (isWindows) {
             env.put("PATH", "/bin:$PATH"); // NOI18N
         }
 
-        Process pr = null;
-
         try {
-            pr = pb.start();
-        } catch (IOException ex) {
-            Logger.getInstance().warning(ex.getMessage());
-            throw ex;
-        }
+            final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
 
-        process = pr;
-
-        processOutput = process.getInputStream();
-        processError = process.getErrorStream();
-        processInput = process.getOutputStream();
-
-        processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
-        processInput.flush();
-
-        EnvWriter ew = new EnvWriter(processInput);
-        ew.write(env);
-
-
-        if (wdir != null) {
-            String dir = wdir.toString();
-            
-            if (isWindows) {
-                dir = WindowsSupport.getInstance().normalizePath(dir);
+            if (isInterrupted()) {
+                throw new InterruptedException();
             }
-            
-            processInput.write(("cd \"" + dir + "\"\n").getBytes()); // NOI18N
+
+            try {
+                proc = pb.start();
+            } catch (InterruptedIOException ex) {
+                throw new InterruptedException();
+            } catch (IOException ex) {
+            }
+
+            is = proc.getInputStream();
+            es = proc.getErrorStream();
+            os = proc.getOutputStream();
+
+            os.write("/bin/echo $$\n".getBytes()); // NOI18N
+            os.flush();
+
+            EnvWriter ew = new EnvWriter(os);
+            ew.write(env);
+
+            if (workingDirectory != null) {
+                os.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
+            }
+
+            String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+
+            if (isWindows) {
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+            }
+
+            os.write(cmd.getBytes());
+            os.flush();
+
+            readPID(is);
+        } catch (InterruptedException ex) {
+            interrupted = true;
+        } catch (InterruptedIOException ex) {
+            interrupted = true;
         }
 
-        String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+        if (proc == null || interrupted || isInterrupted()) {
 
-        if (isWindows) {
-            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+            if (proc != null) {
+                proc.destroy();
+            }
+
+            process = null;
+            processError = new ByteArrayInputStream(new byte[0]);
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processInput = new ByteArrayOutputStream();
+        } else {
+            process = proc;
+            processError = es;
+            processInput = os;
+            processOutput = is;
         }
-
-        processInput.write(cmd.getBytes());
-        processInput.flush();
-
-        readPID(processOutput);
     }
 
     @Override
@@ -230,11 +261,55 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public final int waitResult() throws InterruptedException {
-        return process.waitFor();
+        if (process == null) {
+            throw new InterruptedException();
+        }
+
+        /*
+         * Why not just process.waitResult()...
+         * This is to avoid a problem with short-running tasks, when
+         * this Thread (that waits for process' termination) doesn't see
+         * that it has been interrupted....
+         * TODO: describe situation in details... 
+         */
+
+        int result = -1;
+
+//        // Get lock on process not to take it on every itteration
+//        // (in process.exitValue())
+//
+//        synchronized (process) {
+        // Why this synchronized is commented-out..
+        // This is because ProcessReaper is also synchronized on this...
+        // And it should be able to react on process' termination....
+
+        while (true) {
+            // This sleep is to avoid lost interrupted exception...
+            try {
+                Thread.sleep(200);
+            // 200 - to make this check not so often...
+            // actually, to avoid the problem 1 is OK.
+            } catch (InterruptedException ex) {
+                throw ex;
+            }
+
+            try {
+                result = process.exitValue();
+            } catch (IllegalThreadStateException ex) {
+                continue;
+            }
+
+            break;
+        }
+//        }
+
+        return result;
     }
 
     @Override
-    public void cancel() {
-        process.destroy();
+    protected final void cancel() {
+        if (process != null) {
+            process.destroy();
+        }
     }
 }
