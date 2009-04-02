@@ -68,7 +68,7 @@ public class DefinitionsNode extends SectionContainerNode{
     public DefinitionsNode(SectionView view, Definitions definitions) {
         super(Children.LEAF);
         setDisplayName(NbBundle.getMessage(DefinitionsNode.class,
-                "TITLE_GLOBAL_CUSTOMIZATION"));
+                "LBL_GLOBAL_CUSTOMIZATION"));
     }
     
      public String getPanelId() {
