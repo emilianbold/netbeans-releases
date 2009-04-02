@@ -176,7 +176,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     private boolean used = false;
     public final void reindent() {
-        if (used) {
+        if (used && DEBUG) {
             System.err.println("WARNING: indentation task cannot be reused! is this ok?");
             //IllegalStateException x = new IllegalStateException("indentation task cannot be reused");
             //Exceptions.printStackTrace(x);
