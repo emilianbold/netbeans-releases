@@ -278,7 +278,7 @@ public final class NbMavenProjectImpl implements Project {
         } catch (Exception x) {
             // oh well..
             //NOPMD
-            }
+        }
         return null;
     }
 
