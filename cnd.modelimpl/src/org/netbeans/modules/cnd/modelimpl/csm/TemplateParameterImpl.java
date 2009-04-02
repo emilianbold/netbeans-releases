@@ -105,7 +105,11 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     public boolean equals(Object obj) {
         if (obj instanceof TemplateParameterImpl) {
             if (this.getName().equals(((TemplateParameterImpl)obj).getName())){
-                return scope != null && scope.equals(((TemplateParameterImpl)obj).scope);
+                if(scope != null) {
+                    return scope.equals(((TemplateParameterImpl)obj).scope);
+                } else {
+                    return ((TemplateParameterImpl)obj).scope == null;
+                }
             }
         }
         return false;
