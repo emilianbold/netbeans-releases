@@ -92,18 +92,18 @@ public final class ExecUtil {
   }
 
   private static List<Integer> runScript(String script, String params) {
-    log.finest("Run script " + script + " " + params);
+    log.finest("Run script " + script + " " + params);//NOI18N
     List<Integer> res = new ArrayList<Integer>();
 
-    File scriptFile = InstalledFileLocator.getDefault().locate("bin/" + script, null, false);
+    File scriptFile = InstalledFileLocator.getDefault().locate("bin/" + script, null, false);//NOI18N
 
     if (scriptFile == null) {
-      log.severe("Script " + script + " not found!");
+      log.severe("Script " + script + " not found!");//NOI18N
       return Collections.emptyList();
     }
 
     try {
-      Process process = Runtime.getRuntime().exec("/bin/sh " + scriptFile.getAbsolutePath() + " " + params);
+      Process process = Runtime.getRuntime().exec("/bin/sh " + scriptFile.getAbsolutePath() + " " + params);//NOI18N
 
       InputStream is = process.getInputStream();
       InputStreamReader reader = new InputStreamReader(Channels.newInputStream(Channels.newChannel(is)));
@@ -112,7 +112,7 @@ public final class ExecUtil {
       StringBuilder sb = new StringBuilder();
 
       while ((c = reader.read()) != -1) {
-        if (c == '\n') {
+        if (c == '\n') {//NOI18N
           res.add(Integer.parseInt(sb.toString().trim()));
           sb = new StringBuilder();
         } else {

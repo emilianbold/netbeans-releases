@@ -48,6 +48,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
  */
 public class FunctionCallImpl extends FunctionCall {
 
+    private String fileName;
+    private String sourceFile;
     private final Map<FunctionMetric, Object> metrics;
 
     public FunctionCallImpl(
@@ -56,6 +58,44 @@ public class FunctionCallImpl extends FunctionCall {
         super(function);
         this.metrics = metrics;
     }
+
+    public FunctionCallImpl(
+        final Function function, long offset,
+        final Map<FunctionMetric, Object> metrics) {
+        super(function, offset);
+        this.metrics = metrics;
+    }
+
+
+    public void setFileName(String fileName){
+        this.fileName = fileName;
+    }
+
+    public String getFileName(){
+        return fileName;
+    }
+
+    public void setSourceFile(String sourceFile){
+        this.sourceFile = sourceFile;
+    }
+
+    public boolean hasSourceFileDefined(){
+        return sourceFile != null;
+    }
+
+    public String getSourceFile(){
+        return sourceFile;
+    }
+
+    @Override
+    public String getDisplayedName() {
+        if (fileName == null || !hasOffset()){
+            return super.getDisplayedName();
+        }
+        return getFunction().getName() + ", " +  fileName + ":" + getOffset();//NOI18N
+    }
+
+
 
     public Object getMetricValue(FunctionMetric metric) {
         return metrics.get(metric);

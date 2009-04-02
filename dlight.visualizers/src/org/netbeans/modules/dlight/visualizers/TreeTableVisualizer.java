@@ -99,7 +99,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     private JButton refresh;
     private final TreeTableVisualizerConfiguration configuration;
     private final DefaultTreeModel treeModel;
-    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");
+    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");////NOI18N
     private JPanel mainPanel = null;
     private TreeModelImpl treeModelImpl;
     private TableModelImpl tableModelImpl;
@@ -867,14 +867,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                             }
                         }
                     }, "insight getDisplayName.. "); // NOI18N
-                    return "...";
+                    return "...";//NOI18N
 
                 } else {
                     result = nodeObject.toString();
                 }
                 return result;
             }
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         public String getIconBase(Object node) {
@@ -890,7 +890,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 return ((TreeTableNode) treeNode.getUserObject()).getValue() + "";
             }
 
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         void fireNodeModelChanged(final Object node) {
