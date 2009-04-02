@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -348,9 +349,14 @@ public class MakeActionProvider implements ActionProvider {
                         cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
-                        String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
-                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), message, title, JOptionPane.ERROR_MESSAGE);
+                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                        message, title, JOptionPane.ERROR_MESSAGE);
+                            }
+                        });
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
