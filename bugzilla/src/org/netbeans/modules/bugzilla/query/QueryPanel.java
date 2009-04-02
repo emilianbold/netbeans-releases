@@ -274,8 +274,10 @@ public class QueryPanel extends javax.swing.JPanel {
         peopleLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.peopleLabel.text")); // NOI18N
 
         bugAssigneeCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.bugAssigneeCheckBox.text")); // NOI18N
+        bugAssigneeCheckBox.setOpaque(false);
 
         reporterCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.reporterCheckBox.text")); // NOI18N
+        reporterCheckBox.setOpaque(false);
         reporterCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reporterCheckBoxActionPerformed(evt);
@@ -283,8 +285,10 @@ public class QueryPanel extends javax.swing.JPanel {
         });
 
         ccCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ccCheckBox.text")); // NOI18N
+        ccCheckBox.setOpaque(false);
 
         commenterCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.commenterCheckBox.text")); // NOI18N
+        commenterCheckBox.setOpaque(false);
 
         peopleComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
