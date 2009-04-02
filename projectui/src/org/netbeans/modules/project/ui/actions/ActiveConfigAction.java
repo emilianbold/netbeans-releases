@@ -175,7 +175,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             });
         } else {
             final DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
-            if (pcp.hasCustomizer()) {
+            if (pcp != null && pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
             EventQueue.invokeLater(new Runnable() {

@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
@@ -69,9 +70,15 @@ public class RootNode extends BaseNode {
 
     /**
      * Gets the singleton instance.
-     * 
+     *            
      * @return the singleton instance
      */
+    @ServicesTabNodeRegistration(
+        name="Databases",
+        displayName="org.netbeans.modules.db.resources.Bundle#RootNode_DISPLAYNAME",
+        iconResource="org/netbeans/modules/db/resources/database.gif",
+        position=101
+    )
     public static RootNode instance() {
         if (instance == null) { 
             NodeDataLookup lookup = new NodeDataLookup();
