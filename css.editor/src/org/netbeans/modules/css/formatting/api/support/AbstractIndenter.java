@@ -828,7 +828,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                     lastLineWithContinue = l;
                 } else {
-                    if (inContinue) {
+                    // if we are in CONTINUE mode and there is PRESERVE_INDENTATION then
+                    // do not abort CONTINUE; for example when there is comment within
+                    // multiline statement then comment will PRESERVE_INDENTATION
+                    if (inContinue && ic.getType() != IndentCommand.Type.PRESERVE_INDENTATION) {
                         List<IndentCommand> listToAddTo = commands;
                         assert lastLineWithContinue != null;
                         if (l.index - lastLineWithContinue.index > 1) {

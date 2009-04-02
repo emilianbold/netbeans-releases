@@ -151,6 +151,15 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase1() throws Exception {
+        //#160344
+        reformatFileContents("testfiles/case001.css", new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase2() throws Exception {
+        reformatFileContents("testfiles/case002.css", new IndentPrefs(4,4));
+    }
+
     public void testFormattingNetBeansCSS() throws Exception {
         reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
     }
@@ -176,6 +185,14 @@ public class CssIndenterTest extends TestBase {
         insertNewline("a{^}", "a{\n    ^\n}", null);
         insertNewline("a{\n/**/^\n}", "a{\n/**/\n^\n}", null);
         insertNewline("a{\n     /*^comment\n     */\n}", "a{\n     /*\n     ^comment\n     */\n}", null);
+
+        //#160344
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^bbb\nccc*/ ;}",
+                "xxxxxh2 { color:aqua /* aaa\n                     ^bbb\nccc*/ ;}", null);
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^*/ ;}",
+                "xxxxxh2 { color:aqua /* aaa\n              ^*/ ;}", null);
     }
 
 }

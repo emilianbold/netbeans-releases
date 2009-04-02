@@ -59,6 +59,13 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     private Stack<CssStackItem> stack = null;
     private int preservedLineIndentation = -1;
+    /**
+     * Model inComment state as a flag independent on stack of CssStackItem
+     * to handle properly case like multiline comment within CSS value. In such
+     * a case indenter should stay in CONTINUE state regardless of comments and
+     * comments should in addition get PRESERVE_INDENTATION command.
+     */
+    private boolean inComment = false;
 
     public CssIndenter(Context context) {
         super(CssTokenId.language(), context);
@@ -82,6 +89,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
     @Override
     protected void reset() {
         stack = new Stack<CssStackItem>();
+        inComment = false;
     }
 
     @Override
@@ -250,28 +258,28 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         end = commentEndOffset;
                     }
                     if (start > end) {
-                        assert !isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
+                        assert !inComment : "token="+token.text()+" start="+start+" end="+end;
                         // do nothing
                     } else if (start == ts.offset()) {
                         if (end < commentEndOffset) {
                             // if comment ends on next line put formatter to IN_COMMENT state
-                            blockStack.push(new CssStackItem(StackItemState.IN_COMMENT));
+                            inComment = true;
                             int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
                             preservedLineIndentation = start - lineStart;
                         }
                     } else if (end == commentEndOffset) {
-                        String text = getDocument().getText(start, end-start).trim();
+                        String text = getDocument().getText(start, end-start+1).trim();
                         if (!text.startsWith("*/")) {
                             // if line does not start with '*/' then treat it as unformattable
                             IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
                             ic.setFixedIndentSize(preservedLineIndentation);
                             iis.add(ic);
                         }
-                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
-                        blockStack.pop();
+                        assert inComment : "token="+token.text()+" start="+start+" end="+end;
+                        inComment = false;
                         preservedLineIndentation = -1;
                     } else {
-                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
+                        assert inComment : "token="+token.text()+" start="+start+" end="+end;
                         IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
                         ic.setFixedIndentSize(preservedLineIndentation);
                         iis.add(ic);
@@ -306,7 +314,6 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
         IN_RULE,
         IN_VALUE,
         RULE_FINISHED,
-        IN_COMMENT,
         ;
     }
 
