@@ -55,10 +55,11 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
         <description>
             <p>
-            <a href="@TOP@/org/openide/nodes/NodeOp.html#factory">NodeOp.factory</a>
-            is new method, particularly useful from
-            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>
-            that allows declarative definition of a root node.
+            <a href="@TOP@/org/openide/nodes/NodeOp.html">NodeOp.factory</a>
+            is new 
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layer</a>
+            based factory method
+            to allow declarative definition of a root node into the UI.
             </p>
         </description>
         <class package="org.openide.nodes" name="NodeOp"/>
