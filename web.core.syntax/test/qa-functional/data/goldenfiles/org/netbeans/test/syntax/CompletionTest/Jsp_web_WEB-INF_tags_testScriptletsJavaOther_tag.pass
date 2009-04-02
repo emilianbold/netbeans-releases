@@ -2,7 +2,7 @@
 boolean equals (Object obj )
 Object getAttribute (String name )
 Enumeration getAttributeNames ()
-Class <?> getClass ()
+Class  getClass ()
 long getCreationTime ()
 String getId ()
 long getLastAccessedTime ()

@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.html.HtmlTokenContext;
 
 /**
 * Syntax for JSP files. This is a MultiSyntax consisting of three slave syntaxes:
@@ -641,7 +641,7 @@ System.out.println("helpstate " + helpHostStateInfo.getState() + ", prescan=" + 
 //System.out.println("returnuju (1) " + null + " at " + offset);            
                         return null;
                     }  
-                    if (returnedTokenID.getNumericID() == HTMLTokenContext.BLOCK_COMMENT_ID && isXMLSyntax() )
+                    if (returnedTokenID.getNumericID() == HtmlTokenContext.BLOCK_COMMENT_ID && isXMLSyntax() )
                         canBe = DELIMCHECK_NO;
                     else{
                         // find out if the token could contain a starting symbol for JspTag or Java

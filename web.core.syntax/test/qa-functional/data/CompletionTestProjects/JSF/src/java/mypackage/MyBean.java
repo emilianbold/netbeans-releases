@@ -20,6 +20,7 @@ public class MyBean {
     }
     
     private String name;
+    private boolean noErrors;
 
     public String getName() {
         return name;
@@ -32,5 +33,12 @@ public class MyBean {
     public String doSome(){
         return null;
     }
-    
+
+    public boolean isNoErrors(){
+        return noErrors;
+    }
+
+    public void setIsNoErrors(boolean newValue){
+        noErrors = newValue;
+    }
 }

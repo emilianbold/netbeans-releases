@@ -64,7 +64,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
-import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
+import org.netbeans.modules.web.core.palette.JspPaletteFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -317,7 +317,7 @@ public class JspEditorWarmUpTask implements Runnable{
                 // #45934 - initialize palette here to make first-time 
                 // JSP opening faster
                 try {
-                    JSPPaletteFactory.getPalette();
+                    JspPaletteFactory.getPalette();
                 } catch (IOException e) {
                     LOG.log(Level.INFO, "Palette per-initialization failed", e);
                 }

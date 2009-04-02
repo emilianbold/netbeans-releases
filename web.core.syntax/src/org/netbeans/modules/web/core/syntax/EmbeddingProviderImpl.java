@@ -68,7 +68,7 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
             return Collections.emptyList();
         }
 
-        SimplifiedJSPServlet gen = new SimplifiedJSPServlet(snapshot, doc);
+        SimplifiedJspServlet gen = new SimplifiedJspServlet(snapshot, doc);
         
         try {
             gen.process();
