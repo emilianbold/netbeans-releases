@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     </apidefs>
 
     <changes>
-        <change id="ServiceTabProcessor">
+        <change id="ServicesTabProcessor">
             <api name="api"/>
             <summary>Annotation to register Nodes into Services tab</summary>
             <version major="1" minor="15"/>
@@ -58,8 +58,8 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Use <a href="@TOP@/org/netbeans/api/core/ide/ServiceTabNodeRegistration.html">
-                    ServiceTabNodeRegistration</a> to register your nodes
+                    Use <a href="@TOP@/org/netbeans/api/core/ide/ServicesTabNodeRegistration.html">
+                    ServicesTabNodeRegistration</a> to register your nodes
                     into <em>Services</em> in the IDE.
                 </p>
             </description>
