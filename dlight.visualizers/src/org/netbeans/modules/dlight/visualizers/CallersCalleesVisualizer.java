@@ -302,7 +302,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                syncFillDataTask.cancel(true);
+                return;
             }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
@@ -310,25 +310,34 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
                     return dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
                 }
             }, "Sync CallersCallesVisualizer");//NOI18N
-            try {
-                final List<FunctionCall> list = syncFillDataTask.get();
-
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-                        update(list);
-                    }
-                });
-            } catch (ExecutionException ex) {
-            } catch (InterruptedException e) {
-            }
-
         }
+        try {
+            final List<FunctionCall> list = syncFillDataTask.get();
+            synchronized (syncFillInLock) {
+                syncFillDataTask = null;
+            }
+            final boolean isEmptyConent = list == null || list.isEmpty();
+            UIThread.invoke(new Runnable() {
+
+                public void run() {
+                    setContent(isEmptyConent);
+                    if (isEmptyConent) {
+                        return;
+                    }
+                    update(list);
+                }
+            });
+        } catch (ExecutionException ex) {
+        } catch (InterruptedException e) {
+            synchronized(syncFillInLock){
+                if (syncFillDataTask != null){
+                    //syncFillDataTask.cancel(true);TODO: uncomment when ERPrint will be ready
+                    syncFillDataTask = null;
+                }
+            }
+        }
+
+
     }
 
     private void update(List<FunctionCall> list) {
@@ -368,7 +377,8 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         super.removeNotify();
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                syncFillDataTask.cancel(true);
+                //syncFillDataTask.cancel(true);TODO:uncomment when Er_PRint Will be REady
+                syncFillDataTask = null;
             }
         }
     }
@@ -394,7 +404,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return;
             }
-            FunctionCall functionCall = ((FunctionCallTreeTableNode)nodeObject).getDeligator();
+            FunctionCall functionCall = ((FunctionCallTreeTableNode) nodeObject).getDeligator();
             SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                 return;

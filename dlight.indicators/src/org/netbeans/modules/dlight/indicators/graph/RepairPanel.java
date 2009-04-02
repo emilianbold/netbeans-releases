@@ -67,10 +67,10 @@ public class RepairPanel extends JPanel {
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.TOP);
         label.setForeground(GraphConfig.TEXT_COLOR);
-        label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Tex")));//NOI18N
+        label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text")));//NOI18N
         add(label);
         add(Box.createVerticalStrut(MARGIN));
-        button = new JButton(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Tex"));//NOI18N
+        button = new JButton(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text"));//NOI18N
         button.setAlignmentX(0.5f);
         button.addActionListener(action);
         add(button);

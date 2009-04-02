@@ -271,6 +271,11 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         return 0;
     }
 
+    public void refresh() {
+        asyncFillModel();
+    }
+
+
     private void asyncFillModel() {
         synchronized (queryLock) {
             if (task != null) {
