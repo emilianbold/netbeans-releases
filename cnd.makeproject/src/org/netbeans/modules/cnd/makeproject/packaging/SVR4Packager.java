@@ -225,6 +225,10 @@ public class SVR4Packager implements PackagerDescriptor {
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
             bw.write("\n"); // NOI18N     
+            for (String addInfo : packagingConfiguration.getAdditionalInfo().getValue()) {
+                bw.write("echo \"i " + addInfo + "\" >> $PROTOTYPEFILE\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
             List<String> dirList = findUndefinedDirectories(packagingConfiguration);
             for (String dir : dirList) {
                 bw.write("echo \"");// NOI18N
