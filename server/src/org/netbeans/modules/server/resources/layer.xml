@@ -43,16 +43,6 @@ made subject to such option by the copyright holder.
 -->
 
 <filesystem>
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="ServerRegistry3.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.server.ui.node.RootNode.getInstance"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.server.ui.node.RootNode"/>
-                <attr name="position" intvalue="400"/>
-            </file>
-       </folder>
-    </folder>
-    
     <folder name="Menu">
         <folder name="Tools">
             <file name="ServerManagerAction3.instance">

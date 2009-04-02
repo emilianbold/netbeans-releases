@@ -20,6 +20,7 @@ if [ "$action" = "build" ]; then
     testmodule autoupdate.services
     testmodule autoupdate.ui
     testmodule core.execution
+    testmodule core.ide
     testmodule core.kit
     testmodule core.multiview
     testmodule core.output2
@@ -31,6 +32,7 @@ if [ "$action" = "build" ]; then
     testmodule java.api.common
     testmodule java.freeform
     testmodule java.j2seplatform
+    testmodule java.j2seproject
     testmodule java.platform
     testmodule java.project
     testmodule javahelp

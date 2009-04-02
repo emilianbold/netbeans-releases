@@ -279,16 +279,23 @@ final class MIMESupport extends Object {
         }
 
         public String getMIMEType(String... withinMIMETypes) {
-            String type = mimeType;
-
-            if (type == null) {
-                type = resolveMIME(withinMIMETypes);
-                if (!type.equals("content/unknown") || withinMIMETypes.length == 0) { //NOI18N
-                    mimeType = type;
+            String resolvedMimeType = mimeType;
+            if (resolvedMimeType == null) {
+                resolvedMimeType = resolveMIME(withinMIMETypes);
+                if (resolvedMimeType == null) {
+                    // fallback for xml files to be recognized e.g. in platform without any MIME resolver registered
+                    if (getExt().toLowerCase().equals("xml")) {  //NOI18N
+                        resolvedMimeType = "text/xml"; // NOI18N
+                    } else {
+                        // general fallback
+                        resolvedMimeType = "content/unknown"; // NOI18N
+                    }
+                } else if (withinMIMETypes.length == 0) {
+                    // cache resolved MIME type only for unrestricted query
+                    mimeType = resolvedMimeType;
                 }
             }
-
-            return type;
+            return resolvedMimeType;
         }
 
         /** Decides whether given MIMEResolver is capable to resolve at least
@@ -346,11 +353,7 @@ final class MIMESupport extends Object {
 
                 fixIt = null;
             }
-            // fallback for xml files to be recognized e.g. in platform without any MIME resolver registered
-            if (getExt().toLowerCase().equals("xml")) {
-                return "text/xml"; // NOI18N
-            }
-            return "content/unknown"; // NOI18N
+            return retVal;
         }
 
         public java.util.Date lastModified() {

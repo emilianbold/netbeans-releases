@@ -414,8 +414,7 @@ public class CreateElementTest extends HintsTestBase {
 
         Document doc = ec.openDocument();
 
-        CreateElement ce = new CreateElement();
-        List<Fix> fixes = ce.analyze(info, offset);
+        List<Fix> fixes = CreateElement.analyze(info, offset);
         Set<String> real = new HashSet<String>();
 
         for (Fix f : fixes) {

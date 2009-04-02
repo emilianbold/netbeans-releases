@@ -202,11 +202,9 @@ public class JellyTestCase extends NbTestCase {
                 }
             }
             // send thread dump to log
-            PrintWriter w = JemmyProperties.getCurrentOutput().getErrput();
-            if (w != null) {
-                w.println("thread dump just after screen capture:");
-                w.println(threadDump());
-            }
+            PrintStream w = getLog();
+            w.println("thread dump just after screen capture:");
+            w.println(threadDump());
             // XML dump is performed when test fails and in dependency on system property
             if (dumpScreen) {
                 try {
