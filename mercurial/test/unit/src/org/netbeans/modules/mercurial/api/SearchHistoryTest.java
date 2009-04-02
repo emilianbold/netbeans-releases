@@ -138,7 +138,7 @@ public class SearchHistoryTest extends AbstractHgTest {
         }
         write(file, content.toString());
 
-        boolean showing = Mercurial.showFileHistory(file.getAbsolutePath(), 100);
+        boolean showing = Mercurial.showFileHistory(file, 100);
         assertTrue(showing);
 
         JDialog d = new JDialog((JFrame)null, "Close dialog");
