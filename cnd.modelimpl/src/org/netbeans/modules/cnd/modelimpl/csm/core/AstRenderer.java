@@ -71,6 +71,9 @@ public class AstRenderer {
     }
 
     public void render(AST root) {
+//        if (file.getAbsolutePath().toString().endsWith("shared.h")) {
+//            int i = 10;
+//        }
         render(root, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
     }
 
@@ -86,15 +89,7 @@ public class AstRenderer {
                     render(token, currentNamespace, container);
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
-                    NamespaceDefinitionImpl ns;
-                    // #147376 Strange navigator behavior in header
-                    NamespaceDefinitionImpl existent = NamespaceDefinitionImpl.findNamespaceDefionition(container, token);
-                    if (existent == null) {
-                        ns = new NamespaceDefinitionImpl(token, file, currentNamespace);
-                        container.addDeclaration(ns);
-                    } else {
-                        ns = existent;
-                    }
+                    NamespaceDefinitionImpl ns = NamespaceDefinitionImpl.findOrCreateNamespaceDefionition(container, token, currentNamespace, file);
                     render(token, (NamespaceImpl) ns.getNamespace(), ns);
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:

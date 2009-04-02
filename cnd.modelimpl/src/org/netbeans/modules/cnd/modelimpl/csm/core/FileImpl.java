@@ -1320,6 +1320,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return uids;
     }
 
+    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, name);
+        CsmUID<CsmOffsetableDeclaration> anUid = null;
+        try {
+            declarationsLock.readLock().lock();
+            anUid = declarations.get(key);
+            sortedDeclarations = null;
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        if (anUid != null && UIDUtilities.getEndOffset(anUid) != endOffset) {
+            anUid = null;
+        }
+        return UIDCsmConverter.UIDtoDeclaration(anUid);
+    }
+
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
@@ -1763,7 +1779,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             name = declaration.getName();
         }
 
-        private OffsetSortedKey(int offset, String name) {
+        private OffsetSortedKey(int offset, CharSequence name) {
             start = offset;
             this.name = NameCache.getManager().getString(name);
         }
@@ -1791,6 +1807,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             hash = 37 * hash + this.start;
             hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "OffsetSortedKey: " + this.name + "[" + this.start; // NOI18N
         }
 
         public void write(DataOutput output) throws IOException {
@@ -1841,6 +1862,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             hash = 37 * hash + this.start;
             hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "NameSortedKey: " + this.name + "[" + this.start; // NOI18N
         }
 
         public static NameSortedKey getStartKey(CharSequence name) {

@@ -58,12 +58,14 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmTemplate, SelectImpl.FilterableMembers {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmTemplate, SelectImpl.FilterableMembers,
+        DeclarationsContainer {
 
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
@@ -675,6 +677,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return templateDescriptor != null;
     }
 
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
+        CsmUID<? extends CsmOffsetableDeclaration> out = null;
+        synchronized (members) {
+            out = UIDUtilities.findExistingUIDInList(members, start, end, name);
+        }
+        if (out == null) {
+            // check friends
+            synchronized (friends) {
+                out = UIDUtilities.findExistingUIDInList(friends, start, end, name);
+            }
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+
     private void addMember(CsmMember member, boolean global) {
         if (global) {
             RepositoryUtils.put(member);
@@ -683,6 +699,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         assert uid != null;
         synchronized (members) {
             members.add(uid);
+//            UIDUtilities.insertIntoSortedUIDList(uid, members);
         }
     }
 
@@ -694,6 +711,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         assert uid != null;
         synchronized (friends) {
             friends.add(uid);
+//            UIDUtilities.insertIntoSortedUIDList(uid, friends);
         }
     }
 
