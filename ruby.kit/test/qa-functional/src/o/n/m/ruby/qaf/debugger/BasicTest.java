@@ -101,9 +101,10 @@ public class BasicTest extends JellyTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        Session[] sesions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sesions) {
-            System.out.println("Warning: Killing dbg session: " + session);
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        System.out.println("Found " + sessions.length + " running debugger sessions.");
+        for (Session session : sessions) {
+            System.out.println("Warning: killing dbg session: " + session);
             session.kill();
         }
     }

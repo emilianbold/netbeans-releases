@@ -1624,6 +1624,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         boolean onlyWhitespaceFollows = (Boolean) result[4];
         
         Token<?extends PHPTokenId> token = ts.token();
+
+        if (token == null){ // Issue #151886
+            return false;
+        }
+
         Token<?extends PHPTokenId> previousToken = ts.movePrevious() ? ts.token() : null;
 
         // Check if we are inside a comment

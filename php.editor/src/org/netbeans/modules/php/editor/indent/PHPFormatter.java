@@ -790,9 +790,14 @@ public class PHPFormatter implements Formatter {
 
                         for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
                             int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
-                            if (!lineUnformattable(doc, lineStart)) {
-                                Integer lineDelta = indentDeltaByLine.get(i);
+                            Integer lineDelta = indentDeltaByLine.get(i);
 
+                            if (lineDelta != null) {
+                                currentIndent += lineDelta;
+                                assert currentIndent >= 0 : "currentIndent < 0";
+                            }
+
+                            if (!lineUnformattable(doc, lineStart)) {
                                 int htmlSuggestion = 0;
 
                                 if (suggestedLineIndents != null) {
@@ -800,11 +805,6 @@ public class PHPFormatter implements Formatter {
                                     if (rawSuggestion != null) {
                                         htmlSuggestion = rawSuggestion.intValue();
                                     }
-                                }
-
-                                if (lineDelta != null) {
-                                    currentIndent += lineDelta;
-                                    assert currentIndent >= 0;
                                 }
 
                                 if (i == firstLine) {

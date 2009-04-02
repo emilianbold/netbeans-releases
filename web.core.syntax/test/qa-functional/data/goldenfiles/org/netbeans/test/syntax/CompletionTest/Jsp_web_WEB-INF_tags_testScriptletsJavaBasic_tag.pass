@@ -54,7 +54,7 @@ byte[] getBytes (Charset charset )
 byte[] getBytes (String charsetName )
 void getBytes (int srcBegin , int srcEnd
 void getChars (int srcBegin , int srcEnd
-Class <?> getClass ()
+Class  getClass ()
 int hashCode ()
 int indexOf (String str )
 int indexOf (int ch )
