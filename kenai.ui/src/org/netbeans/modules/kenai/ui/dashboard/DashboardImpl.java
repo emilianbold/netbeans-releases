@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -199,6 +200,21 @@ public final class DashboardImpl extends Dashboard {
                 this.login.removePropertyChangeListener(userListener);
             }
             this.login = login;
+            
+            if (login==null) {
+                //remove private project from dashboard
+                //private projects are visible only for
+                //authenticated user who is member of this project
+                Iterator<ProjectHandle> ph = allProjects.iterator();
+                while (ph.hasNext()) {
+                    final ProjectHandle next = ph.next();
+                    if (next.isPrivate()) {
+                        removeProjectsFromModel(Collections.singletonList(next));
+                        ph.remove();
+                    }
+                    storeAllProjects();
+                }
+            }
             memberProjects.clear();
             memberProjectsLoaded = false;
             userNode.set(login, !allProjects.isEmpty());
