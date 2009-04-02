@@ -66,6 +66,7 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar.setVisible(false);
         error.setText(ex.getMessage());
         error.setVisible(true);
+        password.requestFocus();
     }
 
     public void showProgress() {
@@ -152,6 +153,12 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
+        password.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                passwordFocusGained(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -234,6 +241,11 @@ public class LoginPanel extends javax.swing.JPanel {
     private void registerMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerMouseExited
         register.setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_registerMouseExited
+
+    private void passwordFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_passwordFocusGained
+        password.setSelectionStart(0);
+        password.setSelectionEnd(password.getPassword().length);
+    }//GEN-LAST:event_passwordFocusGained
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
