@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,14 +40,55 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<?xml-stylesheet type="text/xml" href="../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org-netbeans-modules-websvc-saas-ui-nodes-SaasServicesRootNode.instance">
-                <attr name="position" intvalue="210"/>
-            </file>
-        </folder>
-    </folder>
-</filesystem>
+<apichanges>
+    <apidefs>
+        <apidef name="api">Core IDE API</apidef>
+    </apidefs>
+
+    <changes>
+        <change id="ServiceTabProcessor">
+            <api name="api"/>
+            <summary>Annotation to register Nodes into Services tab</summary>
+            <version major="1" minor="15"/>
+            <date day="1" month="4" year="2009"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Use <a href="@TOP@/org/netbeans/api/core/ide/ServiceTabNodeRegistration.html">
+                    ServiceTabNodeRegistration</a> to register your nodes
+                    into <em>Services</em> in the IDE.
+                </p>
+            </description>
+            <issue number="161286"/>
+        </change>
+    </changes>
+
+    <!-- Now the surrounding HTML text and document structure: -->
+
+    <htmlcontents>
+        <!-- Generated from apichanges.xml -->
+        <head>
+            <title>Change History for the Core IDE API</title>
+            <link rel="stylesheet" href="prose.css" type="text/css"/>
+        </head>
+        <body>
+
+            <p class="overviewlink"><a href="@org-netbeans-core-ide@/overview-summary.html">Overview</a></p>
+
+            <h1>Introduction</h1>
+            <p>This document lists changes made to the <a href="@org-netbeans-core-ide@/overview-summary.html">Core IDE API</a>.</p>
+
+            <!-- The actual lists of changes, as summaries and details: -->
+            <hr/>
+            <standard-changelists module-code-name="org.netbeans.core.ide/1"/>
+            <hr/>
+            <p>@FOOTER@</p>
+
+        </body>
+    </htmlcontents>
+
+</apichanges>
