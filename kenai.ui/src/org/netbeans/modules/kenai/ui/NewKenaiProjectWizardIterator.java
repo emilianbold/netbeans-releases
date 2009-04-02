@@ -220,7 +220,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();
         try {
             KenaiProject project = Kenai.getDefault().getProject(newPrjName);
-            Dashboard.getDefault().addProject(new ProjectHandleImpl(project));
+            Dashboard.getDefault().addProject(new ProjectHandleImpl(project), true);
             set.add(new CreatedProjectInfo(project, newPrjScmLocal));
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);

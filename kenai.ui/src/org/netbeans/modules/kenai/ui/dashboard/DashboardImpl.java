@@ -216,14 +216,17 @@ public final class DashboardImpl extends Dashboard {
     /**
      * Add a Kenai project to the Dashboard.
      * @param project
-     * @see ActionsFactory.getOpenNonMemberProjectAction
+     * @param isMemberProject
      */
-    public void addProject( ProjectHandle project ) {
+    public void addProject( ProjectHandle project, boolean isMemberProject ) {
         synchronized( LOCK ) {
             if( allProjects.contains(project) )
                 return;
 
             ignoredProjectIds.remove(project.getId());
+            if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
+                memberProjects.add(project);
+            }
             storeIgnoredProjects();
             allProjects.add(project);
             storeAllProjects();
