@@ -203,7 +203,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             BaseDocument doc = Utils.getDocument(cc, fileObject);
             AstPath path = new AstPath(root, caret, doc);
 
-            GroovyRefactoringElement ctx = new GroovyRefactoringElement((ModuleNode) root, path.leaf(), fileObject);
+            GroovyRefactoringElement ctx = new GroovyRefactoringElement(cc, (ModuleNode) root, path.leaf(), fileObject);
             if (ctx.getSimpleName() == null) {
                 return;
             }
@@ -249,7 +249,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             ASTNode root = AstUtilities.getRoot(info);
             if (root != null) {
                 // FIXME parsing API
-                GroovyRefactoringElement fileCtx = new GroovyRefactoringElement((ModuleNode) root, root,
+                GroovyRefactoringElement fileCtx = new GroovyRefactoringElement(info, (ModuleNode) root, root,
                         info.getSnapshot().getSource().getFileObject());
                 ui = createRefactoringUI(fileCtx, info);
             }
