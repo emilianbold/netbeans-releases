@@ -181,6 +181,26 @@ public class RemoteClient implements Cancellable {
         cancelled = false;
     }
 
+    public boolean exists(TransferFile file) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Checking whether file %s exists", file));
+        cdBaseRemoteDirectory();
+        boolean exists = remoteClient.exists(file.getParentRelativePath(), file.getName());
+        LOGGER.fine(String.format("Exists: %b", exists));
+        return exists;
+    }
+
+    public boolean rename(TransferFile from, TransferFile to) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Moving file from %s to %s", from, to));
+        cdBaseRemoteDirectory();
+        boolean success = remoteClient.rename(from.getRelativePath(), to.getRelativePath());
+        LOGGER.fine(String.format("Success: %b", success));
+        return success;
+    }
+
     public Set<TransferFile> prepareUpload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToUpload != null;
