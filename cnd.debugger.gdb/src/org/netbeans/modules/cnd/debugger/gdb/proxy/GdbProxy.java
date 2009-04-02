@@ -659,6 +659,18 @@ public class GdbProxy {
         return engine.sendCommandEx("whatis " + symbol); // NOI18N
     }
 
+    public static enum HandleAction {
+        nostop, stop, print, noprint, pass, nopass
+    };
+
+    public void handle(String signal, HandleAction action) {
+        engine.sendCommand("handle " + signal + " " + action); // NOI18N
+    }
+
+    public void sugnal(String signal) {
+        engine.sendCommand("signal " + signal); // NOI18N
+    }
+
     /**
      * Send "-gdb-exit" to the debugger
      * This command forces gdb to exit immediately.
