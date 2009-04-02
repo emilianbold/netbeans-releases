@@ -435,7 +435,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             }
 
             PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
-            if (editor != null && value != null && !(value + "").trim().equals("")) {
+            if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
                 editor.setValue(value);
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
             }

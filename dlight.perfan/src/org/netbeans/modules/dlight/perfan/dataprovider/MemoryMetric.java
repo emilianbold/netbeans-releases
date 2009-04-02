@@ -45,8 +45,8 @@ import org.openide.util.NbBundle;
 
 public class MemoryMetric {
 
-    public static final FunctionMetric LeakBytesMetric = fm("i.bleak", Integer.class); // NOI18N
-    public static final FunctionMetric LeaksCountMetric = fm("i.leak", Integer.class); // NOI18N
+    public static final FunctionMetric LeakBytesMetric = fm("e.bleak", Integer.class); // NOI18N
+    public static final FunctionMetric LeaksCountMetric = fm("e.leak", Integer.class); // NOI18N
 
     static private FunctionMetric fm(String id, Class clazz) {
         return FunctionMetricsFactory.getInstance().getFunctionMetric(

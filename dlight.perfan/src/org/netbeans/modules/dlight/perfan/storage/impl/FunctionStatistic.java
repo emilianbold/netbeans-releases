@@ -37,34 +37,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.spi.support;
-
-import org.netbeans.modules.dlight.visualizers.spi.AdvancedTableViewVisualizerActionsProvider;
-import org.netbeans.modules.dlight.visualizers.api.*;
-import javax.swing.Action;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
 /**
  *
  * @author mt154047
  */
-public final class GoToSourceActionProvider implements AdvancedTableViewVisualizerActionsProvider{
+public final class FunctionStatistic {
+    private static final String SOURCE_FILE_INFO = "Source File:";//NOI18N
+    private final String sourceFile;
 
-    public boolean hasActions(DataRow row){
-        return false;
+    public FunctionStatistic(String[] toParse) {
+        for (String str : toParse){
+            if (str!= null && str.trim().startsWith(SOURCE_FILE_INFO)){
+                str = str.trim();
+                sourceFile = str.substring(SOURCE_FILE_INFO.length(), str.length()).trim();
+                return;
+            }
+        }
+        sourceFile = null;
     }
 
-    public Action[] getActions(DataRow row) {
-
-        //we should find the proper implementator which can provide
-        //ask if there are some services which can provide this info
-        throw new UnsupportedOperationException("Not supported yet.");
+    public String getSourceFile(){
+        return sourceFile;
     }
 
-    public AdvancedTableViewVisualizerActionsProvider getProviderFor(AdvancedTableViewVisualizerConfiguration configuration) {
-        //try to find someone who can give the information about source line
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return this;
-    }
 
 }
