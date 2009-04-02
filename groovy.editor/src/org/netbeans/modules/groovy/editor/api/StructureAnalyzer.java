@@ -72,6 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -398,15 +399,21 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     private static class GroovyStructureItem implements StructureItem {
+
         private final AstElement node;
+
         private final ElementKind kind;
+
         private final ParserResult info;
+
+        @NullAllowed
         private final BaseDocument doc;
 
         private GroovyStructureItem(AstElement node, ParserResult info) {
             this.node = node;
             this.kind = node.getKind();
             this.info = info;
+            // FIXME true or false ?
             this.doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         }
 
@@ -502,15 +509,21 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         public long getPosition() {
-            OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
-            LOG.log(Level.FINEST, "getPosition(), start: " + range.getStart());
-            return (long) range.getStart();
+            if (doc != null) {
+                OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
+                LOG.log(Level.FINEST, "getPosition(), start: {0}", range.getStart());
+                return (long) range.getStart();
+            }
+            return 0;
         }
 
         public long getEndPosition() {
-            OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
-            LOG.log(Level.FINEST, "getEndPosition(), end: " + range.getEnd());
-            return (long) range.getEnd();
+            if (doc != null) {
+                OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
+                LOG.log(Level.FINEST, "getEndPosition(), end: {0}", range.getEnd());
+                return (long) range.getEnd();
+            }
+            return 0;
         }
 
         @Override
