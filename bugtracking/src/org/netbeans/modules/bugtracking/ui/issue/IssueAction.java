@@ -44,12 +44,10 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,14 +85,9 @@ public class IssueAction extends SystemAction {
             repository = givenRepository;
             repositoryGiven = true;
         } else {
-            Repository suggestedRepository = null;
-            File context = BugtrackingUtil.getLargerContext();
-            if (context != null) {
-                suggestedRepository = FileToRepoMappingStorage.getInstance()
-                                      .getRepository(context);
-            }
-
-            repository = suggestedRepository;
+            repository = BugtrackingOwnerSupport.getInstance()
+                         .getRepository(BugtrackingOwnerSupport.ContextType
+                                        .SELECTED_FILE_AND_ALL_PROJECTS);
             repositoryGiven = false;
         }
 
