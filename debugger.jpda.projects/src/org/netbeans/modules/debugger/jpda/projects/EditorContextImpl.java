@@ -1142,25 +1142,19 @@ public class EditorContextImpl extends EditorContext {
     private CompilationController getPreferredCompilationController(FileObject fo, JavaSource js) throws IOException {
         CompilationController preferredCI;
         if (fo != null) {
+            if (JavaSource.forFileObject(fo) == null) {
+                // No JavaSource, we can not ask for a compilation controller
+                return null;
+            }
             JavaSourceUtil.Handle handle;
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
             }
-            if (handle == null) {
-                try {
-                    handle = JavaSourceUtil.createControllerHandle(fo, handle);
-                    synchronized (sourceHandles) {
-                        sourceHandles.put(js, handle);
-                    }
-                } catch (Exception ex) {
-                    // ignore Exception since createControllerHandle(fo, handle) may get null JavaSource
-                }
+            handle = JavaSourceUtil.createControllerHandle(fo, handle);
+            synchronized (sourceHandles) {
+                sourceHandles.put(js, handle);
             }
-            if (handle != null) {
-                preferredCI = (CompilationController) handle.getCompilationController();
-            } else {
-                preferredCI = null;
-            }
+            preferredCI = (CompilationController) handle.getCompilationController();
         } else {
             preferredCI = null;
         }

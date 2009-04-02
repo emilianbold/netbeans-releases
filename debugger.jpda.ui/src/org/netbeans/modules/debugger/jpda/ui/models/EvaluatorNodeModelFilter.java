@@ -123,6 +123,9 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             return ((EvaluatorTreeModel.SpecialNode)node).getIconBase();
         }
         if (node instanceof Variable) {
+            if (node == CodeEvaluator.getResult()) {
+                return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
+            }
             return WatchesNodeModel.WATCH;
         }
         return original.getIconBaseWithExtension(node);
@@ -133,9 +136,10 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             return ((EvaluatorTreeModel.SpecialNode)node).getIconBase();
         }
         if (node instanceof Variable) {
-            if (node instanceof Variable) {
-                return WatchesNodeModel.WATCH;
+            if (node == CodeEvaluator.getResult()) {
+                return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
             }
+            return WatchesNodeModel.WATCH;
         }
         return original.getIconBase(node);
     }

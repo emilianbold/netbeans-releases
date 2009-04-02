@@ -264,6 +264,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return <code>true</code> if upload is direct (and not using a temporary file); default is <code>false</code>.
+     */
+    public static boolean isRemoteUploadDirectly(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY, false);
+    }
+
+    /**
      * @return remote upload or <code>null</code>.
      */
     public static PhpProjectProperties.UploadFiles getRemoteUpload(PhpProject project) {

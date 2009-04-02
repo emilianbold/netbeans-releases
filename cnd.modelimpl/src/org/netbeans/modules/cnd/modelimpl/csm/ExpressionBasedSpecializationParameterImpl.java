@@ -55,17 +55,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -74,30 +69,28 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nick Krasilnikov
  */
-public class ExpressionBasedSpecializationParameterImpl extends OffsetableDeclarationBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
+public class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
 
     private final CharSequence expression;
-    private CsmUID<CsmScope> scope;
 
-    ExpressionBasedSpecializationParameterImpl(CsmExpressionStatement expression, CsmScope scope, CsmFile file, int start, int end) {
+    public ExpressionBasedSpecializationParameterImpl(CsmExpressionStatement expression, CsmFile file, int start, int end) {
         super(file, start, end);
         this.expression = NameCache.getManager().getString(expression.getText());
     }
 
-    public Kind getKind() {
-        return Kind.SPECIALIZATION_PARAMETER;
+    public ExpressionBasedSpecializationParameterImpl(String expression, CsmFile file, int start, int end) {
+        super(file, start, end);
+        this.expression = NameCache.getManager().getString(expression);
     }
 
-    public CharSequence getQualifiedName() {
+    @Override
+    public CharSequence getText() {
         return expression;
     }
 
-    public CharSequence getName() {
-        return expression;
-    }
-
-    public CsmScope getScope() {
-        return scope == null? null : scope.getObject();
+    @Override
+    public String toString() {
+        return expression.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -107,13 +100,11 @@ public class ExpressionBasedSpecializationParameterImpl extends OffsetableDeclar
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(expression, output);
-        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
     }
 
     public ExpressionBasedSpecializationParameterImpl(DataInput input) throws IOException {
         super(input);
         this.expression = PersistentUtils.readUTF(input, NameCache.getManager());
-        this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 
 }

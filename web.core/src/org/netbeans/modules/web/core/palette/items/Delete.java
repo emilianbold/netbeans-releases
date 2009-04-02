@@ -44,7 +44,7 @@ package org.netbeans.modules.web.core.palette.items;
 import java.util.ResourceBundle;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
 
@@ -92,10 +92,10 @@ public class Delete implements ActiveEditorDrop {
     public boolean handleTransfer(JTextComponent targetComponent) {
         boolean accept = stmt.customize(targetComponent, displayName, stmtLabel, stmtACSN, stmtACSD);
         if (accept) {
-            String prefix = JSPPaletteUtilities.findSqlPrefix(targetComponent);
+            String prefix = JspPaletteUtilities.findSqlPrefix(targetComponent);
             String body = createBody(prefix);
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -107,9 +107,9 @@ public class Delete implements ActiveEditorDrop {
         variable = stmt.getVariable();
         dataSource = stmt.getDataSource();
         if (variable.equals("")) {// NOI18N
-            variable = JSPPaletteUtilities.CARET;
+            variable = JspPaletteUtilities.CARET;
         } else if (dataSource.equals("")) {// NOI18N
-            dataSource = JSPPaletteUtilities.CARET;
+            dataSource = JspPaletteUtilities.CARET;
         }
         String strVariable = " var=\"\"";  //NOI18N
         if (variable.length() > 0) {

@@ -144,7 +144,7 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
-			<test/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
@@ -221,14 +221,15 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-                <friend>org.netbeans.modules.web.core</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
-                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.web.core</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <package>org.netbeans.editor.ext.html</package>
                 <package>org.netbeans.editor.ext.html.dtd</package>
+                <package>org.netbeans.editor.ext.html.javadoc</package>
                 <package>org.netbeans.editor.ext.html.parser</package>
             </friend-packages>
         </data>

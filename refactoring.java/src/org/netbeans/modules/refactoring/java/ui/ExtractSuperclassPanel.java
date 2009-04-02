@@ -148,7 +148,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
         // send renderer for the third column ("Make Abstract") to make the checkbox:
         // 1. hidden for elements that are not methods
         // 2. be disabled for static methods
-        membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer());
+        membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable));
         // set background color of the scroll pane to be the same as the background
         // of the table
         scrollPane.setBackground(membersTable.getBackground());

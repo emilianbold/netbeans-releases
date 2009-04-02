@@ -215,7 +215,7 @@ public abstract class AttributeValueSupport {
 
         /** Allows subclasses to override the default title. */
         protected String completionTitle() {
-            return NbBundle.getMessage(JSPKit.class, "CTL_JSP_Completion_Title");
+            return NbBundle.getMessage(JspKit.class, "CTL_JSP_Completion_Title");
         }
 
         /** Builds List of completion items.

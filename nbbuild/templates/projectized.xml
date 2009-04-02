@@ -172,6 +172,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <fileset dir="${nb_all}/libs.javacimpl/external">
                 <include name="*javac*.jar"/>
             </fileset>
+            <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
+                <include name="*.jar"/>
+            </fileset>
         </pathconvert>
         <condition property="bootclasspath.mac" value="${retouche.javac}">
             <and>

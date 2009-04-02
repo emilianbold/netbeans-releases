@@ -1651,6 +1651,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
 
             assert (context != null);
+            boolean resolveGlobalContext = false;
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
                 updateResolveTypesInFunction(offset, context, match);
@@ -1660,7 +1661,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_CLASS_METHODS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             } else {
-
+                resolveGlobalContext = true;
+            }
+            if (resolveGlobalContext || (match && CsmContextUtilities.isInInitializerList(context, offset))) {
                 // resolve global context as well
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;

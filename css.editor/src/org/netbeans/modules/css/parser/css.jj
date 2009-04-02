@@ -7,23 +7,23 @@
     USER_CHAR_STREAM = true;
 }
 
-PARSER_BEGIN(CSSParser)
+PARSER_BEGIN(CssParser)
 
 package org.netbeans.modules.css.parser;
 
 import java.util.*;
 
-public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
-  protected JJTCSSParserState jjtree = new JJTCSSParserState();
+public class CssParser/*@bgen(jjtree)*/implements CssParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
+  protected JJTCssParserState jjtree = new JJTCssParserState();
 
 /*@egen*/
 
     private ArrayList<ParseException> errors = new ArrayList<ParseException>();
 
-    public CSSParser() {
+    public CssParser() {
        this((CharStream) null);
        // change manager to our patched one:
-       token_source = new PatchedCSSParserTokenManager(null);
+       token_source = new PatchedCssParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -32,7 +32,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants/*@egen*
 
 }
 
-PARSER_END(CSSParser)
+PARSER_END(CssParser)
 
 //TOKEN_MGR_DECLS :
 

@@ -44,12 +44,12 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -57,7 +57,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HTMLAutoCompletion;
+import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -75,29 +75,29 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     //not used. HTMLKit coveres this functionality
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        HTMLAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
+        HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
         if ('>' != ch) {
             return false;
         }
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
+        TokenSequence<HtmlTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HtmlTokenId.language());
         if (ts == null) {
             return false;
         }
         ts.move(caretOffset);
         boolean found = false;
         while (ts.movePrevious()) {
-            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+            if (ts.token().id() == HtmlTokenId.TAG_OPEN_SYMBOL) {
                 found = true;
                 break;
             }
-            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
-                ts.token().id() != HTMLTokenId.OPERATOR &&
-                ts.token().id() != HTMLTokenId.VALUE &&
-                ts.token().id() != HTMLTokenId.VALUE_CSS &&
-                ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
-                ts.token().id() != HTMLTokenId.WS &&
-                ts.token().id() != HTMLTokenId.TAG_CLOSE &&
-                ts.token().id() != HTMLTokenId.TAG_OPEN) {
+            if (ts.token().id() != HtmlTokenId.ARGUMENT &&
+                ts.token().id() != HtmlTokenId.OPERATOR &&
+                ts.token().id() != HtmlTokenId.VALUE &&
+                ts.token().id() != HtmlTokenId.VALUE_CSS &&
+                ts.token().id() != HtmlTokenId.VALUE_JAVASCRIPT &&
+                ts.token().id() != HtmlTokenId.WS &&
+                ts.token().id() != HtmlTokenId.TAG_CLOSE &&
+                ts.token().id() != HtmlTokenId.TAG_OPEN) {
                 break;
             }
         }
@@ -127,16 +127,16 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     //not used. HTMLKit coveres this functionality
     @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
+        TokenSequence<HtmlTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HtmlTokenId.language());
         if (ts == null) {
             return -1;
         }
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
+        if (ts.moveNext() && ts.token().id() == HtmlTokenId.TAG_OPEN_SYMBOL &&
                 ts.token().text().toString().equals("</")) {
-            if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
+            if (ts.moveNext() && ts.token().id() == HtmlTokenId.TAG_CLOSE) {
                 closingTagName = ts.token().text().toString();
                 end = ts.offset()+ts.token().text().length();
                 ts.movePrevious();
@@ -147,10 +147,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             return  -1;
         }
         boolean foundOpening = false;
-        if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
+        if (ts.token().id() == HtmlTokenId.TAG_CLOSE_SYMBOL &&
                 ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
-                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                if (ts.token().id() == HtmlTokenId.TAG_OPEN) {
                     if (ts.token().text().toString().equals(closingTagName)) {
                         foundOpening = true;
                     }
@@ -184,12 +184,12 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
-        TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
+        TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
             Token token = ts.token();
 
-            if(token.id() == HTMLTokenId.TEXT) {
+            if(token.id() == HtmlTokenId.TEXT) {
                 int from = ts.offset();
                 int to = from + token.text().length();
 

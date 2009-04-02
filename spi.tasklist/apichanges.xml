@@ -72,6 +72,24 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="indexing_api" >
+        <api name="TaskListSPI"/>
+        <summary>Task List implementation uses Indexing API to cache scanned tasks.</summary>
+        <version major="1" minor="4"/>
+        <date day="31" month="3" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility/>
+        <description>
+            <p>
+             Task List implementation uses Indexing API to persist tasks created
+             by FileTaskScanners. If a file hasn't changed since the last scan
+             then the tasks associated with that file are loaded from cache to improve
+             Task List performance. Therefore task's ActionListener isn't available when
+             the task is restored from cache. Task providers must switch to PushTaskScanner
+             if ActionListener is required to be available at all times.
+            </p>
+        </description>
+    </change>
     <change id="api_review" >
         <api name="TaskListSPI"/>
         <summary>API changes to reflect the results of API inception review.</summary>

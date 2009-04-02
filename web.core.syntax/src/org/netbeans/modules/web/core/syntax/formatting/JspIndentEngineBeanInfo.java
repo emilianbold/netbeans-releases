@@ -46,7 +46,7 @@ import java.util.MissingResourceException;
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +84,7 @@ public class JspIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
 
     protected String getString(String key) {
         try {
-            return NbBundle.getMessage(JSPKit.class,key);
+            return NbBundle.getMessage(JspKit.class,key);
         } catch (MissingResourceException e) {
             try {
                 return NbBundle.getMessage(JavaIndentEngine.class,key);

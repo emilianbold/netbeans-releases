@@ -43,7 +43,7 @@ package org.netbeans.modules.web.core.palette.items;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -67,10 +67,10 @@ public class ForEach implements ActiveEditorDrop {
         ForEachCustomizer c = new ForEachCustomizer(this, targetComponent);
         boolean accept = c.showDialog();
         if (accept) {
-            String prefix = JSPPaletteUtilities.findJstlPrefix(targetComponent);
+            String prefix = JspPaletteUtilities.findJstlPrefix(targetComponent);
             String body = createBody(prefix);
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -80,9 +80,9 @@ public class ForEach implements ActiveEditorDrop {
 
     private String createBody(String prefix) {
         if (variable.equals("")) {  // NOI18N
-            variable = JSPPaletteUtilities.CARET;
+            variable = JspPaletteUtilities.CARET;
         } else if (collection.equals("")) {  // NOI18N
-            collection = JSPPaletteUtilities.CARET;
+            collection = JspPaletteUtilities.CARET;
         }
         String strVariable = " var=\"" + variable + "\""; // NOI18N
         String strCollection = " items=\"" + collection + "\""; // NOI18N

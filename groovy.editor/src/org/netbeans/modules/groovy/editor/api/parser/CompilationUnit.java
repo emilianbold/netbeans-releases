@@ -125,6 +125,11 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             }
 
             try {
+                // if it is a groovy file it is useless to load it with java
+                // at least until VirtualSourceProvider will do te job ;)
+                if (getClassLoader().getResourceLoader().loadGroovySource(name) != null) {
+                    return null;
+                }
                 Task<CompilationController> task = new Task<CompilationController>() {
                     public void run(CompilationController controller) throws Exception {
                         TypeElement typeElement = controller.getElements().getTypeElement(name);

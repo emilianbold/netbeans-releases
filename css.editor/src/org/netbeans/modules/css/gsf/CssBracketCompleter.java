@@ -54,7 +54,7 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
@@ -98,12 +98,12 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //handle curly bracket skipping
             //if there is a matching opening bracket and there is no opened unpaired bracket before
             //then just skip the typed char
-            TokenSequence<CSSTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
             if (ts != null) {
                 ts.move(dot);
                 if (ts.moveNext()) {
                     //ts is already positioned
-                    if (ts.token().id() == CSSTokenId.RBRACE) {
+                    if (ts.token().id() == CssTokenId.RBRACE) {
                         //skip it
                         caret.setDot(dot + 1);
                         return true;
@@ -128,12 +128,12 @@ public class CssBracketCompleter implements KeystrokeHandler {
         if (ch == '\'' || ch == '"') {
             //handle quotations
 
-            TokenSequence<CSSTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
             if (ts != null) {
                 int diff = ts.move(dot);
                 if (ts.moveNext()) {
                     Token t = ts.token();
-                    if (t.id() == CSSTokenId.STRING) {
+                    if (t.id() == CssTokenId.STRING) {
                         //we are in or at a string
                         char front = t.text().charAt(diff);
                         if (front == ch) {
@@ -156,7 +156,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                 while (ts.movePrevious()) {
                     Token t = ts.token();
                     if (t.text().charAt(0) == ch) {
-                        if (t.id() == CSSTokenId.STRING || t.id() == CSSTokenId.STRING1 || t.id() == CSSTokenId.STRING2) {
+                        if (t.id() == CssTokenId.STRING || t.id() == CssTokenId.STRING1 || t.id() == CssTokenId.STRING2) {
                             //no unmatched quotation mark
                             break;
                         } else {
@@ -164,7 +164,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                             return false;
                         }
                     }
-                    if (t.id() == CSSTokenId.LBRACE || t.id() == CSSTokenId.RBRACE || t.id() == CSSTokenId.SEMICOLON) {
+                    if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMICOLON) {
                         //break the loop, not quotation found - we can complete
                         break;
                     }

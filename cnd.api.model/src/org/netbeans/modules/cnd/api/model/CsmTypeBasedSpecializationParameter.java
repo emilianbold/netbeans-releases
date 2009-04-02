@@ -54,7 +54,19 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Template specialization parameter based on type.
  *
+ * Template specialization parameter could be based on expressions and types.
+ * This is second one.
+ * Z<int> z;
+ * int is specialization parameter based on type.
+ *
  * @author Nick Krasilnikov
  */
 public interface CsmTypeBasedSpecializationParameter extends CsmSpecializationParameter, CsmType {
+
+    /**
+     * Returns type the parameter is based on.
+     *
+     * @return type
+     */
+    CsmType getType();
 }

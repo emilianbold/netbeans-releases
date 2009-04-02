@@ -42,7 +42,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 
 /**
  *
@@ -50,12 +50,12 @@ import org.netbeans.modules.css.lexer.api.CSSTokenId;
  */
 public class LexerUtils {
 
-    public static TokenSequence getCssTokenSequence(Document doc, int offset) {
+    public static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
         
         //if we are at the border of the tokensequence then,
         //try to look ahead
-        TokenSequence ts = tokenSequenceList(hi, offset, false);
+        TokenSequence<CssTokenId> ts = tokenSequenceList(hi, offset, false);
             
         //and back
         if(ts == null) {
@@ -91,15 +91,16 @@ public class LexerUtils {
         
 
     }
-    
-    private static TokenSequence tokenSequenceList(TokenHierarchy hi, int offset, boolean backwardBias) {
+
+    @SuppressWarnings("unchecked")
+    private static TokenSequence<CssTokenId> tokenSequenceList(TokenHierarchy hi, int offset, boolean backwardBias) {
         List<TokenSequence> tsl = hi.embeddedTokenSequences(offset, backwardBias);
         if (tsl.size() > 0) {
             TokenSequence ts = tsl.get(tsl.size() - 1);
-            if (ts.language() != CSSTokenId.language()) {
+            if (ts.language() != CssTokenId.language()) {
                 return null;
             } else {
-                return ts;
+                return (TokenSequence<CssTokenId>)ts;
             }
         }
         return null;

@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.PathConverter;
+import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -67,7 +68,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static String dorunScript;
     private final static boolean isWindows;
     private final static boolean isMacOS;
-    private final static PathConverter pathConverter;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -98,8 +98,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
         }
         
-        pathConverter = new PathConverter();
-
         dorunScript = runScript;
     }
 
@@ -163,11 +161,38 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         ProcessBuilder pb = new ProcessBuilder(command);
 
-        if (isWindows && wDir != null) {
+        if ((isWindows || isMacOS) && wDir != null) {
             pb.directory(new File(wDir));
         }
 
-        MacroMap env = info.getEnvVariables();
+        final MacroMap env = info.getEnvVariables();
+
+        // setup DISPLAY variable for MacOS...
+        if (isMacOS) {
+            ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
+            Process p1 = pb1.start();
+            int status = -1;
+
+            try {
+                status = p1.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            String display = null;
+
+            if (status == 0) {
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(p1.getInputStream()));
+                display = br.readLine();
+
+            }
+
+            if (display == null || "".equals(display)) { // NOI18N
+                display = ":0.0"; // NOI18N
+            }
+
+            pb.environment().put("DISPLAY", display); // NOI18N
+        }
 
         if (!env.isEmpty()) {
             // TODO: FIXME (?)
@@ -176,7 +201,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             if (isWindows) {
                 String path = env.get("PATH"); // NOI18N
-                env.put("PATH", pathConverter.normalizeAll(path)); // NOI18N
+                env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
             }
 
             File envFile = new File(envFileName);
@@ -198,15 +223,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     @Override
     public void cancel() {
         sendSignal(9);
-    };
+    }
 
     private synchronized int sendSignal(int signal) {
         int result = 1;
-        
+
         try {
             ProcessBuilder pb;
             List<String> command = new ArrayList<String>();
-            
+
             if (isWindows) {
                 String shell = HostInfoUtils.getShell(new ExecutionEnvironment());
                 command.add(shell);
@@ -217,7 +242,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 command.add("-" + signal); // NOI18N
                 command.add("" + getPID()); // NOI18N
             }
-            
+
             pb = new ProcessBuilder(command);
             Process killProcess = pb.start();
             result = killProcess.waitFor();

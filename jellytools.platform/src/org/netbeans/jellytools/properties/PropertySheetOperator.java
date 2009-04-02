@@ -148,7 +148,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @see #MODE_PROPERTIES_OF_MULTIPLE_OBJECTS
      */
     public PropertySheetOperator(int mode, String objectName) {
-        this(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_GlobalProperties",
+        this(Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", "CTL_FMT_GlobalProperties",
                               new Object[]{new Integer(mode), objectName}));
     }
     

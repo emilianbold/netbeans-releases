@@ -44,7 +44,7 @@ package org.netbeans.test.web.core.syntax;
 import java.io.PrintStream;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.html.HTMLSyntax;
+import org.netbeans.editor.ext.html.HtmlSyntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.junit.NbTestCase;
 
@@ -57,7 +57,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 public class JspMultiSyntaxTest extends NbTestCase {
     
     //it's static since the junit creates a new instance of this class for each test method
-    private static Jsp11Syntax syntax = new Jsp11Syntax(new HTMLSyntax(), new JavaSyntax());
+    private static Jsp11Syntax syntax = new Jsp11Syntax(new HtmlSyntax(), new JavaSyntax());
     
     public JspMultiSyntaxTest() {
         super("jspmultisyntaxtest");

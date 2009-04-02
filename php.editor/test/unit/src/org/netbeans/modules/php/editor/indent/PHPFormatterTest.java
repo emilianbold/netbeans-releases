@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -60,7 +60,7 @@ public class PHPFormatterTest extends PHPTestBase {
         super.setUp();
 
         try {
-            TestLanguageProvider.register(HTMLTokenId.language());
+            TestLanguageProvider.register(HtmlTokenId.language());
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }
@@ -73,6 +73,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testContinuedExpression() throws Exception{
         reformatFileContents("testfiles/formatting/continued_expression.php");
+    }
+
+    public void testContinuedExpression2() throws Exception{
+        reformatFileContents("testfiles/formatting/continued_expression2.php");
     }
 
     public void testIfelseNobrackets() throws Exception{
@@ -93,6 +97,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testSubsequentQuotes() throws Exception{
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
+    }
+
+    public void testMultilineString() throws Exception{
+        reformatFileContents("testfiles/formatting/multiline_string.php");
     }
 
     public void test161049() throws Exception{
