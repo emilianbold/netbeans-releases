@@ -89,9 +89,12 @@ public class HgHookImpl extends HgHook {
             return null;
         }
 
-        BugtrackingOwnerSupport.getInstance().setFirmAssociations(
-                context.getFiles(),
-                panel.getSelectedRepository());
+        Repository selectedRepository = panel.getSelectedRepository();
+        if (selectedRepository != null) {
+            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+                    context.getFiles(),
+                    selectedRepository);
+        }
 
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
