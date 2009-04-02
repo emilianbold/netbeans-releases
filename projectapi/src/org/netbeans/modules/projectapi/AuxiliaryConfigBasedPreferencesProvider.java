@@ -95,6 +95,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         }
         
         AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(p);
+        assert p.getLookup() != null : p;
         AuxiliaryProperties ap = p.getLookup().lookup(AuxiliaryProperties.class);
         
         target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, ac, ap, shared)));

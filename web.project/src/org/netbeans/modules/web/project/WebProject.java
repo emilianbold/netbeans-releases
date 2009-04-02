@@ -57,7 +57,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -185,7 +184,7 @@ public final class WebProject implements Project, AntProjectListener {
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
-    private final Lookup lookup;
+    private Lookup lookup;
     private final ProjectWebModule webModule;
     private final CopyOnSaveSupport css;
     private final ArtifactCopyOnSaveSupport artifactSupport;
@@ -473,7 +472,7 @@ public final class WebProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
         Lookup base = Lookups.fixed(new Object[] {            
@@ -528,6 +527,7 @@ public final class WebProject implements Project, AntProjectListener {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
         });
+        lookup = base;
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     

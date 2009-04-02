@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="SourcesHelper-Project-constructor">
+            <api name="general"/>
+            <summary>Added <code>SourcesHelper</code> constructor accepting <code>Project</code></summary>
+            <version major="1" minor="31"/>
+            <date day="27" month="3" year="2009"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    The new constructor enables simplified control flow.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="SourcesHelper"/>
+            <issue number="146852"/>
+        </change>
         
         <change id="antbasedprojectregistration">
             <api name="general"/>
