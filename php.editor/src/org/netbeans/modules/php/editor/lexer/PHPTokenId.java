@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -295,7 +295,7 @@ public enum PHPTokenId implements TokenId {
                 LanguagePath languagePath, InputAttributes inputAttributes) {
             PHPTokenId id = token.id();
             if (id == T_INLINE_HTML) {
-                return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                return LanguageEmbedding.create(HtmlTokenId.language(), 0, 0, true);
             }
             else if (id == PHPDOC_COMMENT) {
                 return LanguageEmbedding.create(PHPDocCommentTokenId.language(), 0, 0);

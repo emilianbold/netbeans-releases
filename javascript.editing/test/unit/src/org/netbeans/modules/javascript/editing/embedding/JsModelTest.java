@@ -44,11 +44,11 @@ package org.netbeans.modules.javascript.editing.embedding;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript.editing.AstUtilities;
@@ -82,7 +82,7 @@ public class JsModelTest extends JsTestBase {
             // Already registered?
         }
         try {
-            TestLanguageProvider.register(HTMLTokenId.language());
+            TestLanguageProvider.register(HtmlTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
@@ -111,13 +111,13 @@ public class JsModelTest extends JsTestBase {
 
     private Snapshot getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
         String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
-        String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
+        String HTML_MIME_TYPE = HtmlKit.HTML_MIME_TYPE;
 
         Language lexerLanguage;
         String mimeType;
         if (relFilePath.endsWith(".html")) {
             mimeType = HTML_MIME_TYPE;
-            lexerLanguage = HTMLTokenId.language();
+            lexerLanguage = HtmlTokenId.language();
         } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
             mimeType = RHTML_MIME_TYPE;
             lexerLanguage = RhtmlTokenId.language();
@@ -465,13 +465,13 @@ public class JsModelTest extends JsTestBase {
 //        // HACK -- events don't seem to get fired synchronously... I've tried
 //        // EventQueue.invokeLater, overriding runInEq, and some other tricks
 //        // but without success. For now, access it directly
-//        history.testHelperNotifyToken(false, HTMLTokenId.STYLE);
-//        history.testHelperNotifyToken(true, HTMLTokenId.STYLE);
+//        history.testHelperNotifyToken(false, HtmlTokenId.STYLE);
+//        history.testHelperNotifyToken(true, HtmlTokenId.STYLE);
 //
-//        assertTrue(history.wasModified(HTMLTokenId.STYLE));
-//        assertTrue(!history.wasModified(HTMLTokenId.TEXT));
-//        assertTrue(!history.wasModified(HTMLTokenId.SCRIPT));
-//        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
+//        assertTrue(history.wasModified(HtmlTokenId.STYLE));
+//        assertTrue(!history.wasModified(HtmlTokenId.TEXT));
+//        assertTrue(!history.wasModified(HtmlTokenId.SCRIPT));
+//        assertTrue(!history.wasModified(HtmlTokenId.VALUE_JAVASCRIPT));
 //
 //        // Assert the translated source model is correctly updated
 //        assertTrue(ts instanceof JsTranslatedSource);
@@ -497,14 +497,14 @@ public class JsModelTest extends JsTestBase {
 //        // HACK -- events don't seem to get fired synchronously... I've tried
 //        // EventQueue.invokeLater, overriding runInEq, and some other tricks
 //        // but without success. For now, access it directly
-//        history.testHelperNotifyToken(true, HTMLTokenId.SCRIPT);
-//        history.testHelperNotifyToken(true, HTMLTokenId.TEXT);
+//        history.testHelperNotifyToken(true, HtmlTokenId.SCRIPT);
+//        history.testHelperNotifyToken(true, HtmlTokenId.TEXT);
 //
 //
-//        assertTrue(history.wasModified(HTMLTokenId.TEXT)); // The \n before the script
-//        assertTrue(history.wasModified(HTMLTokenId.SCRIPT));
-//        assertTrue(!history.wasModified(HTMLTokenId.STYLE));
-//        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
+//        assertTrue(history.wasModified(HtmlTokenId.TEXT)); // The \n before the script
+//        assertTrue(history.wasModified(HtmlTokenId.SCRIPT));
+//        assertTrue(!history.wasModified(HtmlTokenId.STYLE));
+//        assertTrue(!history.wasModified(HtmlTokenId.VALUE_JAVASCRIPT));
 //
 //        // Assert the translated source model is correctly updated
 //        assertTrue(ts instanceof JsTranslatedSource);

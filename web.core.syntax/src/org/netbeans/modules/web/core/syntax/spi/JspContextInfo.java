@@ -121,7 +121,7 @@ public abstract class JspContextInfo {
         return instance;
     }
     
-    public abstract JSPColoringData getJSPColoringData(FileObject fo);
+    public abstract JspColoringData getJSPColoringData(FileObject fo);
     
     public abstract JspParserAPI.ParseResult getCachedParseResult(FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceReload);
     

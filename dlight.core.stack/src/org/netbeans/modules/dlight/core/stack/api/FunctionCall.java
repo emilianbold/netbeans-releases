@@ -55,6 +55,10 @@ public abstract class FunctionCall{
     this.offset = offset;
   }
 
+  public String getDisplayedName(){
+    return getFunction().getName();
+  }
+  
   public final Function getFunction() {
     return function;
   }

@@ -487,12 +487,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private final void checkGdbVersion() {
         if (!versionPeculiarity.isSupported()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                                "ERR_UnsupportedVersion", gdbVersion))); // NOI18N
-                }
-            });
+            warn(false, NbBundle.getMessage(GdbDebugger.class, "ERR_UnsupportedVersion", gdbVersion));  // NOI18N
         }
     }
 
@@ -1697,17 +1692,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (reason.equals("shlib-event")) { // NOI18N
                 checkSharedLibs();
             } else if (reason.equals("signal-received")) { // NOI18N
-                // see IZ:160393 - inform user about signals
-                warn(false, NbBundle.getMessage(GdbDebugger.class, "ERR_SignalReceived", map.get("signal-name")));
-                if (getState() == State.RUNNING) {
-                    String tid = map.get("thread-id"); // NOI18N
-                    if (tid != null && !tid.equals(currentThreadID)) {
-                        currentThreadID = tid;
-                    }
-                    sig = map.get("signal-name"); // NOI18N
-                    gdb.stack_list_frames();
-                    setStopped();
-                }
+                signalReceived(map);
             } else if (reason.equals("function-finished") && dlopenPending) { // NOI18N
                 dlopenPending = false;
                 checkSharedLibs(); // Windows (after non-user -exec-finish after non-user breakpoint in dlopen)
@@ -1727,6 +1712,43 @@ public class GdbDebugger implements PropertyChangeListener {
         } else {
             gdb.stack_list_frames();
             setStopped();
+        }
+    }
+
+    private void signalReceived(Map<String, String> map) {
+        String signal = map.get("signal-name"); // NOI18N
+        if (getState() == State.RUNNING) {
+            String tid = map.get("thread-id"); // NOI18N
+            if (tid != null && !tid.equals(currentThreadID)) {
+                currentThreadID = tid;
+            }
+            sig = signal; // NOI18N
+            gdb.stack_list_frames();
+            setStopped();
+        }
+        
+        String STOP = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_STOP");
+        String CONTINUE = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_CONTINUE");
+        String PASS = NbBundle.getMessage(GdbDebugger.class, "TXT_PASS_CONTINUE");
+        // see IZ:160393 - inform user about signals
+        NotifyDescriptor nd = new NotifyDescriptor(
+                NbBundle.getMessage(GdbDebugger.class, "ERR_SignalReceived", map.get("signal-name"), map.get("signal-meaning")), // NOI18N
+                NbBundle.getMessage(GdbDebugger.class, "LBL_SignalReceived"),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new String[]{STOP,CONTINUE,PASS},
+                STOP
+                );
+        Object res = DialogDisplayer.getDefault().notify(nd);
+        if (res == STOP) {
+            // we stop anyway
+            gdb.handle(signal, GdbProxy.HandleAction.nopass);
+        } else if (res == CONTINUE) {
+            gdb.handle(signal, GdbProxy.HandleAction.nopass);
+            gdb.exec_continue();
+        } else if (res == PASS) {
+            gdb.handle(signal, GdbProxy.HandleAction.pass);
+            gdb.exec_continue();
         }
     }
 

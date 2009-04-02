@@ -1824,7 +1824,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
     String title = getString("TITLE_Configure");
     String msg = getString("MSG_Configure_Compiler_Sets", execEnv.toString());
-    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, title, msg);
+    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
 private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed

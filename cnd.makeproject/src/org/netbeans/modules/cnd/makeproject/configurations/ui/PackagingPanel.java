@@ -70,6 +70,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private MakeConfiguration conf;
     private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
     private PackagingInfoPanel packagingInfoPanel = null;
+    private PackagingAdditionalInfoPanel packagingAdditionalInfoPanel = null;
     private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
 
@@ -88,7 +89,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         String type = packagingConfiguration.getType().getValue();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
-            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(
+                    packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration),
+                    packagingAdditionalInfoPanel = new PackagingAdditionalInfoPanel(packagingConfiguration.getAdditionalInfo().getValue(), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         } else {
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
@@ -113,7 +116,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         //  See IZ 142846
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int width = ((int) dim.getWidth() / 10) * 6;
-        setPreferredSize(new Dimension(width, 500));
+        setPreferredSize(new Dimension(width, 600));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -139,6 +142,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 newList.add(elem);
             }
             packagingConfiguration.getInfo().setValue(newList);
+            // Additional info
+            packagingConfiguration.getAdditionalInfo().setValue(packagingAdditionalInfoPanel.getListData());
         }
 
         packagingConfiguration.getFiles().setValue(new ArrayList<PackagerFileElement>(packagingFilesPanel.getListData()));

@@ -83,9 +83,13 @@ public final class MetaElementHandler {
         Class clz;
 
         try {
+            // FIXME should be loaded by classpath classloader
             clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return Collections.emptyMap();
+        } catch (NoClassDefFoundError err) {
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
             return Collections.emptyMap();
         }
 
@@ -113,9 +117,13 @@ public final class MetaElementHandler {
         Class clz;
 
         try {
+            // FIXME should be loaded by classpath classloader
             clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
             LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return Collections.emptyMap();
+        } catch (NoClassDefFoundError err) {
+            LOG.log(Level.FINEST, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
             return Collections.emptyMap();
         }
 

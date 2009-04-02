@@ -97,6 +97,14 @@ public final class PerfanDataStorage extends DataStorage {
         return erprint.getHotFunctions(metrics, limit, true);
     }
 
+    public String[] getTopFunctions(String command, Metrics metrics, int limit) {
+        return erprint.getHotFunctions(command, metrics, limit, true);
+    }
+
+    public FunctionStatistic getFunctionStatistic(String function){
+        return erprint.getFunctionStatistic(function, true);
+    }
+
     public ExperimentStatistics fetchSummaryData() {
         return erprint.getExperimentStatistics(true);
     }

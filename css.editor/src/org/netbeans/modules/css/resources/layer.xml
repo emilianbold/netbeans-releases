@@ -6,10 +6,10 @@
         <folder name="text">
             <folder name="x-css">
                 <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CSSLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssLanguage"/>
                 </file>
                 <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CSSStructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssStructureScanner"/>
                 </file>
             </folder>
         </folder>
@@ -21,7 +21,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.css.lexer.api.CSSTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.css.lexer.api.CssTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 

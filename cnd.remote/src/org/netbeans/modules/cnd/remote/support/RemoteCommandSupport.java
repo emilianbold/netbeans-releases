@@ -127,10 +127,12 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 setExitStatus(rc);
             } catch (InterruptedException ie) {
                 interrupted = true;
-                // don't log it, it's quite normal
+                // log just for information, it's quite normal
+                log.log(Level.FINEST, "Interrupted", ie);
             } catch (InterruptedIOException ie) {
                 interrupted = true;
-                // don't log it, it's quite normal
+                // log just for information, it's quite normal
+                log.log(Level.FINEST, "Interrupted", ie);
             } catch (IOException ex) {
                 log.warning("IO failure during running " + cmd);
 //            } finally {

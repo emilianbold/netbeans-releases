@@ -42,8 +42,13 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -143,11 +148,44 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
             if (endOfFirstLine < node.getEndOffset()){
                 addIndentLevel(endOfFirstLine + 1, continuationIndentSize);
-                addIndentLevel(node.getEndOffset(), -1 * continuationIndentSize);
+
+                // if the last line of the expression is only a closing brace(s)
+                // do not indent it. E.g.
+                // foo($a1,
+                //     $a2,
+                // ); // - this line should not be indented
+                TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+                int end = node.getEndOffset();
+
+                if (ts != null){
+                    ts.move(node.getEndOffset());
+
+                    do {
+                        ts.movePrevious();
+                        
+                    } while (indentContinuationWithinStatement_skipToken(ts.token()));
+
+                    end = firstNonWSBwd(doc, ts.offset() + ts.token().length());
+                }
+
+                addIndentLevel(end, -1 * continuationIndentSize);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static boolean indentContinuationWithinStatement_skipToken(Token token){
+        if (token.id() == PHPTokenId.PHP_SEMICOLON){
+            return true;
+        }
+
+        if (token.id() == PHPTokenId.PHP_TOKEN){
+            if (")".equals(token.text())){ //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     private void indentListOfStatements(List<Statement> stmts) {

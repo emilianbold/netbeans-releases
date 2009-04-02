@@ -44,7 +44,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.test.TestBase;
@@ -55,7 +55,7 @@ import org.netbeans.junit.MockServices;
  * @author tomslot
  */
 public class SyntaxTreeTest extends TestBase {
-    private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
+    private static final LanguagePath languagePath = LanguagePath.get(HtmlTokenId.language());
     
     public SyntaxTreeTest(){
         super("SyntaxTreeTest");

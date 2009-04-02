@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -62,7 +62,7 @@ public class HtmlLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language getLexerLanguage() {
-        return HTMLTokenId.language();
+        return HtmlTokenId.language();
     }
 
     @Override

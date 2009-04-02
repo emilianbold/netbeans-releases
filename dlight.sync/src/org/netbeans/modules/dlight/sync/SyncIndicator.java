@@ -127,8 +127,8 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             });
         } else {
             final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" :
-                "<html><center>Invalid</center></html>");
+                "<html><center>Will show data on the next run</center></html>" ://NOI18N
+                "<html><center>Invalid</center></html>");//NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {

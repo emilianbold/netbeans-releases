@@ -128,7 +128,7 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
 
-    /**
+     /**
      * Creates specialization parameter based on expression.
      *
      * @param expression - string with expression
@@ -136,9 +136,13 @@ public abstract class CsmInstantiationProvider {
      * @param start - start offset
      * @param end - end offset
      * @return specialization parameter
-     */
+      */
     public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end);
-    
+    /**
+     * returns instantiated text if possible to resolve all instantiation mappings
+     */
+    public abstract CharSequence getInstantiatedText(CsmType type);
+
     //
     // Implementation of the default provider
     //
@@ -162,6 +166,7 @@ public abstract class CsmInstantiationProvider {
             return template;
         }
 
+
         @Override
         public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
             return null;
@@ -170,6 +175,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
             return null;
+        }
+
+        @Override
+        public CharSequence getInstantiatedText(CsmType type) {
+            return type.getText();
         }
     }
 }
