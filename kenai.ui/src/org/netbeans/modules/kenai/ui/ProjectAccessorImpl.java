@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,9 +52,12 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.mercurial.api.Mercurial;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -73,6 +77,22 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
             for (KenaiProject prj : kenai.getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
+                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
+                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                        try {
+                            Subversion.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
+                        try {
+                            Mercurial.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                }
             }
             return l;
         } catch (KenaiException ex) {
