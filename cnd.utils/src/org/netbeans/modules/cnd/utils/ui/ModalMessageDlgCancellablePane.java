@@ -51,11 +51,13 @@ import org.openide.util.NbBundle;
 class ModalMessageDlgCancellablePane extends javax.swing.JPanel {
 
     private final Cancellable cancellable;
+    private final String message;
 
     /** Creates new form ModalMessageDlg */
     /* package-local*/
     ModalMessageDlgCancellablePane(String message, Cancellable cancellable) {
         this.cancellable = cancellable;
+        this.message = message;
         initComponents();
         lblMessage.setText(message);
     }
@@ -105,9 +107,16 @@ class ModalMessageDlgCancellablePane extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        cancellable.cancel();
         lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_Cancelling"));
         btnCancel.setEnabled(false);
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                if (!cancellable.cancel()) {
+                    lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_CancelFailed", message));
+                }
+            }
+        }, ModalMessageDlg.class.getSimpleName() + " cancellation thread"); //NOI18N
+        thread.start();
 }//GEN-LAST:event_btnCancelActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;

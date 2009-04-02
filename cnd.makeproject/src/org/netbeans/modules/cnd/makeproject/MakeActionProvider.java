@@ -118,6 +118,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -251,15 +252,9 @@ public class MakeActionProvider implements ActionProvider {
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
         final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
 
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
-            private Thread thread;
-            public void run() {
-                thread = Thread.currentThread();
-                // Add actions to do
-                if (cancelled.get()) {
-                    return;
-                }
+        CancellableTask actionWorker = new CancellableTask() {
+            @Override
+            protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 if (command.equals(COMMAND_BATCH_BUILD)) {
                     BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
@@ -282,18 +277,11 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
-            public boolean cancel() {
-                cancelled.set(true);
-                if (thread != null) {
-                    thread.interrupt();
-                }
-                return true;
-            }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void runActionWorker(ExecutionEnvironment exeEnv, ModalMessageDlg.CancellableTask actionWorker) {
+    private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
@@ -306,32 +294,23 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
-            private Thread thread;
-            public void run() {
-                thread = Thread.currentThread();
+        CancellableTask actionWorker = new CancellableTask() {
+            @Override
+            protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
             }
-            public boolean cancel() {
-                cancelled.set(true);
-                if (thread != null) {
-                    thread.interrupt();
-                }
-                return true;
-            }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final ModalMessageDlg.CancellableTask actionWorker) {
-        ModalMessageDlg.CancellableTask csmWorker;
+    private static void invokeRemoteHostAction(final ServerRecord record, final CancellableTask actionWorker) {
+        CancellableTask wrapper;
         if (!record.isDeleted() && record.isOnline()) {
-            csmWorker = actionWorker;
+            wrapper = actionWorker;
         } else {
             String message;
             int res = JOptionPane.NO_OPTION;
@@ -351,11 +330,12 @@ public class MakeActionProvider implements ActionProvider {
                 return;
             }
             // start validation phase
-            csmWorker = new ModalMessageDlg.CancellableTask() {
+            wrapper = new CancellableTask() {
+                @Override
                 public boolean cancel() {
                     return actionWorker.cancel();
                 }
-                public void run() {
+                public void runImpl() {
                     try {
                         if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
                             ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
@@ -381,7 +361,7 @@ public class MakeActionProvider implements ActionProvider {
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongCancellableTask(mainWindow, csmWorker, null, title, msg);
+        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
     class BatchConfigurationSelector implements ActionListener {
@@ -1357,4 +1337,28 @@ public class MakeActionProvider implements ActionProvider {
         }
         return bundle.getString(s);
     }
+
+    private abstract static class CancellableTask implements Runnable, Cancellable {
+
+        protected abstract void runImpl();
+
+        public final void run() {
+            thread = Thread.currentThread();
+            if (!cancelled.get()) {
+                runImpl();
+            }
+        }
+
+        public boolean cancel() {
+            cancelled.set(true);
+            if (thread != null) { // we never set it back to null => no sync
+                thread.interrupt();
+            }
+            return true;
+        }
+
+        private volatile Thread thread;
+        protected final AtomicBoolean cancelled = new AtomicBoolean(false);
+    }
+
 }
