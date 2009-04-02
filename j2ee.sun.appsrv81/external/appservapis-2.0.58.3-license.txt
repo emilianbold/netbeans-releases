@@ -1,6 +1,6 @@
 Name: appservapis
 Version: 2.0.58.3
-Description: compilation support API library for Glassfish and SJSAS 
+Description: compilation support API library for Glassfish and SJSAS
 License: CDDL-GPL-2-CP
 Origin: https://glassfish.dev.java.net/
 Comment: allows separate compilation of NetBeans and GlassFish

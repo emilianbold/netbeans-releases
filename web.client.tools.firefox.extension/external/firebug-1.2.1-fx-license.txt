@@ -2,7 +2,7 @@ Name: Firebug
 Version: 1.2.1
 Description: FireBug for Mozilla Firefox
 License: BSD
-OSR: 9906 
+OSR: 9906
 Origin: http://www.getfirebug.com
 Files: firebug-1.2.1-fx.xpi
 Comment: 
