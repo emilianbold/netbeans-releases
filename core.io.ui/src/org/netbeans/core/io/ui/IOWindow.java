@@ -50,7 +50,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -570,13 +572,24 @@ public final class IOWindow implements IOContainer.Provider {
             }
         }
 
+        private JComponent[] getTabs() {
+            if (singleTab != null) {
+                return new JComponent[] {singleTab};
+            }
+
+            JComponent[] tabs = new JComponent[pane.getTabCount()];
+            for (int i = 0; i < pane.getTabCount(); i++) {
+                tabs[i] = (JComponent) pane.getComponentAt(i);
+            }
+            return tabs;
+        }
+
         private void closeOtherTabs() {
             assert pane.getParent() == this;
             JComponent sel = getSelectedTab();
-            for (int i = 0; i < pane.getTabCount(); i++) {
-                JComponent comp = (JComponent) pane.getComponentAt(0);
-                if (comp != sel) {
-                    removeTab(comp);
+            for (JComponent tab : getTabs()) {
+                if (tab != sel) {
+                    removeTab(tab);
                 }
             }
         }
