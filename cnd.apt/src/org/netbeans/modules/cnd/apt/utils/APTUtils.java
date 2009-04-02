@@ -99,7 +99,8 @@ public class APTUtils {
         if (_token instanceof APTBaseToken) {
             _token.setTextID(CharSequenceKey.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
-            // no need to set text in comment token
+            // no need to set text in comment token, but set text len
+            ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
             // no need to set text in comment token
         } else {
