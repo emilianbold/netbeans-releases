@@ -136,7 +136,6 @@ public final class DynamicElementHandler {
             return Collections.<String>emptyList();
         }
 
-
         GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(f,
                 Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 

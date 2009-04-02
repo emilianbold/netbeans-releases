@@ -46,8 +46,8 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.HTMLKit;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.html.editor.HtmlKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 
 /**
  * Common ancestor for all test classes.
@@ -67,9 +67,9 @@ public class TestBase extends NbTestCase {
     }
 
     protected BaseDocument createDocument() {
-        BaseKit kit = BaseKit.getKit(HTMLKit.class);
+        BaseKit kit = BaseKit.getKit(HtmlKit.class);
         System.out.println("KIT = " + kit);
-        NbEditorDocument doc = new NbEditorDocument(JSPKit.class);
+        NbEditorDocument doc = new NbEditorDocument(JspKit.class);
         doc.putProperty(PROP_MIME_TYPE, "text/x-jsp");
         
         return doc;

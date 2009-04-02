@@ -58,7 +58,7 @@ import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -76,36 +76,30 @@ public class JspUtils {
      * the JSP parser result.
      */
     public static TokenHierarchy<CharSequence> createJspTokenHierarchy(Snapshot jspSnapshot) {
-        String mimeType = jspSnapshot.getMimeType();
-
-        assert mimeType.equals(JSPKit.JSP_MIME_TYPE) ||
-               mimeType.equals(JSPKit.TAG_MIME_TYPE) ||
-               mimeType.equals("text/x-facelet+x-jsp") : "Unexpected MIME type " + mimeType; // NOI18N
+        InputAttributes inputAttributes = new InputAttributes();
 
         FileObject fo = jspSnapshot.getSource().getFileObject();
-        if(fo == null) {
-            //error
-            throw new IllegalArgumentException("Given snapshot is not filebased!"); //NOI18N
+        if (fo != null) {
+            //try to obtain jsp coloring info for file based snapshots
+        JspColoringData data = getJSPColoringData(fo);
+
+            if (data == null) {
+                //error
+                throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
+            }
+
+            JspParseData jspParseData = new JspParseData((Map<String, String>) data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());
+            inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
+
         }
 
-        JSPColoringData data = getJSPColoringData(fo);
-
-        if(data == null) {
-            //error
-            throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
-        }
-
-        JspParseData jspParseData = new JspParseData((Map<String,String>)data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());
-        InputAttributes inputAttributes = new InputAttributes();
-        inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
-        
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(
                 jspSnapshot.getText(),
                 true,
                 JspTokenId.language(),
                 Collections.EMPTY_SET,
                 inputAttributes);
-        
+
         return th;
     }
 
@@ -147,9 +141,9 @@ public class JspUtils {
     /**
      * @param fo A FileObject representing a JSP like file.
      */
-    public static JSPColoringData getJSPColoringData (FileObject fo) {
+    public static JspColoringData getJSPColoringData (FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        JSPColoringData result = null; 
+        JspColoringData result = null;
         if (fo != null && fo.isValid()){
             JspContextInfo context = JspContextInfo.getContextInfo (fo);
             if (context != null)

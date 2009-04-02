@@ -39,40 +39,39 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
 import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 public class JspIndenterTest extends TestBase2 {
@@ -86,50 +85,32 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
-    private Lookup projectsLookup;
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
-        assert p.lookupAll(AntBasedProjectType.class) != null;
-        projectsLookup = p;
-
-        ClassLoader l = MockLookup.class.getClassLoader();
-        MockLookup.setLookup(
-                Lookups.fixed(testLanguageProvider),
-                Lookups.metaInfServices(l),
-                Lookups.singleton(l), projectsLookup);
-
+        MockLookup.setInstances(new TestClassPathProvider(createClassPaths()), testLanguageProvider);
         initParserJARs();
-        copyWebProjectJarsTo(new File(getDataDir(), "FormattingProject/lib"));
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
         // init TestLanguageProvider
         assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
 
-        TestLanguageProvider.register(CSSTokenId.language());
-        TestLanguageProvider.register(HTMLTokenId.language());
+        TestLanguageProvider.register(CssTokenId.language());
+        TestLanguageProvider.register(HtmlTokenId.language());
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), new JspEmbeddingProvider.Factory());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JspKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), new JspEmbeddingProvider.Factory());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
-
-        FileObject fo = getTestFile("FormattingProject");
-        Project webProject = ProjectManager.getDefault().findProject(fo);
-        assert webProject != null : "cannot load project for "+fo.getPath();
-
     }
 
     @Override
@@ -162,56 +143,79 @@ public class JspIndenterTest extends TestBase2 {
         return true;
     }
 
+    private Map<String, ClassPath> createClassPaths() throws Exception {
+        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
+        ClassPath cp = createServletAPIClassPath();
+        cps.put(ClassPath.COMPILE, cp);
+        return cps;
+    }
+
+    private class TestClassPathProvider implements ClassPathProvider {
+        private Map<String, ClassPath> map;
+        public TestClassPathProvider(Map<String, ClassPath> map) {
+            this.map = map;
+        }
+
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (map != null) {
+                return map.get(type);
+            } else {
+                return null;
+            }
+        }
+    }
+
+
     public void testFormattingCase001() throws Exception {
-        reformatFileContents("FormattingProject/web/case001.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case001.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase002() throws Exception {
-        reformatFileContents("FormattingProject/web/case002.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case002.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase003() throws Exception {
-        reformatFileContents("FormattingProject/web/case003.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case003.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase004() throws Exception {
-        reformatFileContents("FormattingProject/web/case004.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case004.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase005() throws Exception {
-        reformatFileContents("FormattingProject/web/case005.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case005.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase006() throws Exception {
-        reformatFileContents("FormattingProject/web/case006.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case006.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase007() throws Exception {
-        reformatFileContents("FormattingProject/web/case007.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case007.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingCase008() throws Exception {
-        reformatFileContents("FormattingProject/web/case008.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/case008.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {
-        reformatFileContents("FormattingProject/web/issue121102.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue121102.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue129778() throws Exception {
-        reformatFileContents("FormattingProject/web/issue129778.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue129778.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue89174() throws Exception {
-        reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue89174.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue160098() throws Exception {
-        reformatFileContents("FormattingProject/web/issue160098.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue160098.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue160103() throws Exception {
-        reformatFileContents("FormattingProject/web/issue160103.jsp",new IndentPrefs(4,4));
+        reformatFileContents("testfilesformatting/issue160103.jsp",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {

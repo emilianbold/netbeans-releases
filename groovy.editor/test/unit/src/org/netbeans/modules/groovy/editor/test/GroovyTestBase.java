@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,40 +141,13 @@ public class GroovyTestBase extends CslTestBase {
     }
 
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
-//        if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.CodeCompletionTest")) {
-//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
-//            if (getName().contains("Closure")) {
-//                map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-//                    FileUtil.toFileObject(getDataFile("/testfiles/completion/closures")) }));
-//            } else {
-//                map.put(ClassPath.SOURCE, createSourcePath());
-//            }
-//            map.put(ClassPath.BOOT, createBootClassPath());
-//            map.put(ClassPath.COMPILE, createCompilePath());
-//            return map;
-//        } else if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.MethodCompletionTest")) {
-//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
-//            map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-//                FileUtil.toFileObject(getDataFile("/testfiles/completion/method")) }));
-//            map.put(ClassPath.BOOT, createBootClassPath());
-//            map.put(ClassPath.COMPILE, createCompilePath());
-//            return map;
-//        } else if (getClass().getName().equals("org.netbeans.modules.groovy.editor.api.completion.NewVarsTest")) {
-//            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
-//            map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-//                FileUtil.toFileObject(getDataFile("/testfiles/completion/newvars")) }));
-//            map.put(ClassPath.BOOT, createBootClassPath());
-//            map.put(ClassPath.COMPILE, createCompilePath() );
-//            return map;
+        Map<String, ClassPath> map = new HashMap<String, ClassPath>();
+        map.put(ClassPath.BOOT, createBootClassPath());
+        map.put(ClassPath.COMPILE, createCompilePath());
         if (getClass().getName().startsWith("org.netbeans.modules.groovy.editor.api.completion")) {
-            Map<String, ClassPath> map = new HashMap<String, ClassPath>();
             map.put(ClassPath.SOURCE, createSourcePath());
-            map.put(ClassPath.BOOT, createBootClassPath());
-            map.put(ClassPath.COMPILE, createCompilePath());
-            return map;
-        } else {
-            return null;
         }
+        return map;
     }
 
     private static ClassPath createBootClassPath() {

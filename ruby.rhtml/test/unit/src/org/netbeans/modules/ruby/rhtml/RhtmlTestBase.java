@@ -35,7 +35,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
@@ -98,7 +98,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
 //            // Already registered?
 //        }
 //        try {
-//            TestLanguageProvider.register(HTMLTokenId.language());
+//            TestLanguageProvider.register(HtmlTokenId.language());
 //        } catch (IllegalStateException ise) {
 //            // Already registered?
 //        }

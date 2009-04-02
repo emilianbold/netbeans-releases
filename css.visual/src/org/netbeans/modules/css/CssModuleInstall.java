@@ -46,7 +46,7 @@
 
 package org.netbeans.modules.css;
 
-import org.netbeans.modules.css.visual.ui.preview.CSSTCController;
+import org.netbeans.modules.css.visual.ui.preview.CssTCController;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -58,6 +58,6 @@ public class CssModuleInstall extends ModuleInstall {
 
     //static, will hold the singleton reference forever but I cannot reasonably 
     //hook to gsf to be able to free this once last css component closes
-    private static final CSSTCController windowController = CSSTCController.getDefault();
+    private static final CssTCController windowController = CssTCController.getDefault();
     
 }

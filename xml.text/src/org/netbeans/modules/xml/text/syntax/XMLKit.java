@@ -57,8 +57,10 @@ import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
 import org.netbeans.editor.*;
+import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.*;
 
+import org.netbeans.modules.xml.text.XmlCommentHandler;
 import org.netbeans.modules.xml.text.completion.NodeSelector;
 
 
@@ -152,6 +154,7 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         Action[] actions = new Action[] {
             new XMLCommentAction(),
             new XMLUncommentAction(),
+            new ToggleBlockCommentAction(new XmlCommentHandler()),
             new TestAction(),
         };
         return TextAction.augmentList(super.createActions(), actions);
