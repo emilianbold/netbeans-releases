@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -75,6 +76,13 @@ public final class RootNode extends AbstractNode {
         setIconBaseWithExtension(SERVERS_ICON);
     }
 
+    @ServicesTabNodeRegistration(
+        name = "servers",
+        displayName = "org.netbeans.modules.server.ui.node.Bundle#Server_Registry_Node_Name",
+        shortDescription = "org.netbeans.modules.server.ui.node.Bundle#Server_Registry_Node_Short_Description",
+        iconResource = "org/netbeans/modules/server/ui/resources/servers.png",
+        position = 400
+    )
     public static synchronized RootNode getInstance() {
         if (node == null) {
             ChildFactory factory = new ChildFactory();

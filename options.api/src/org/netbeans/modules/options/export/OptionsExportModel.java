@@ -488,6 +488,7 @@ public final class OptionsExportModel {
                 } catch (IOException ex) {
                     Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(OptionsExportModel.class, "OptionsExportModel.invalid.zipfile", source));
                     Exceptions.printStackTrace(ex);
+                    relativePaths = Collections.emptyList();
                 }
             } else {
                 // userdir

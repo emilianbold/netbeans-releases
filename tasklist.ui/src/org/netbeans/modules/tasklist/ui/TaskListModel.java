@@ -95,7 +95,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     public String getColumnName(int column) {
         switch( column ) {
             case COL_GROUP: //group icon
-                return " "; //NOI18N
+                return ""; //NOI18N
             case COL_DESCRIPTION:
                 return NbBundle.getMessage( TaskListModel.class, "LBL_COL_Description" ); //NOI18N
             case COL_FILE:
