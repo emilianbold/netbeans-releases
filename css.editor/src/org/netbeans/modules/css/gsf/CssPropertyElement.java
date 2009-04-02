@@ -45,7 +45,7 @@ import org.netbeans.modules.css.editor.Property;
  *
  * @author marekfukala
  */
-public class CssPropertyElement extends CSSElement {
+public class CssPropertyElement extends CssElement {
 
     private Property property;
     

@@ -40,6 +40,7 @@
 package o.n.m.ruby.qaf.platform;
 
 import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
@@ -54,6 +55,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,8 +73,9 @@ public class GemsTest extends JellyTestCase {
     public void setUp() throws Exception {
         super.setUp();
         rgm = getPlatformManager();
-        if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
-            new JProgressBarOperator(rgm).waitComponentShowing(false);
+        JProgressBar jpb = JProgressBarOperator.findJProgressBar(rgm.getContentPane());
+        if (jpb != null) {
+            new JProgressBarOperator(jpb).waitComponentShowing(false);
         }
         JComboBoxOperator jcbo = new JComboBoxOperator(rgm);
         assertTrue(jcbo.getSelectedItem().toString().contains("JRuby")); //NOI18N
@@ -163,6 +166,7 @@ public class GemsTest extends JellyTestCase {
         //Close
         String closeLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.gems.Bundle", "CTL_Close");
         JButtonOperator close = new JButtonOperator(gemInst, closeLabel);
+        close.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 120000);
         close.push();
         if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
             JProgressBarOperator barOp = new JProgressBarOperator(rgm);
@@ -198,10 +202,7 @@ public class GemsTest extends JellyTestCase {
             barOp.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);
             barOp.waitComponentShowing(false);
         }
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ex) {
-        }
+        sleep(1500);
         jtpo.selectPage(1);
         assertTrue(jtpo.getTitleAt(1).contains("17"));
     }
@@ -220,5 +221,13 @@ public class GemsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(GemsTest.class).enableModules(".*").clusters("ruby")); //NOI18N
+    }
+
+    private void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

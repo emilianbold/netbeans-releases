@@ -8,7 +8,7 @@ public class SimpleNode implements Node {
     protected Node[] children;
     protected int id;
     protected Object value;
-    protected CSSParser parser;
+    protected CssParser parser;
     protected Token firstToken;
     protected Token lastToken;
     private String image;
@@ -17,7 +17,7 @@ public class SimpleNode implements Node {
         id = i;
     }
 
-    public SimpleNode(CSSParser p, int i) {
+    public SimpleNode(CssParser p, int i) {
         this(i);
         parser = p;
     }
@@ -124,7 +124,7 @@ public class SimpleNode implements Node {
     toString(String), otherwise overriding toString() is probably all
     you need to do. */
     public String toString(boolean addImage) {
-        return CSSParserTreeConstants.jjtNodeName[id] 
+        return CssParserTreeConstants.jjtNodeName[id]
                 + " [" 
                 + startOffset()
                 + " - " 

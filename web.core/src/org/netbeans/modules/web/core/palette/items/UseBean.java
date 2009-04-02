@@ -43,7 +43,7 @@ package org.netbeans.modules.web.core.palette.items;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -73,11 +73,11 @@ public class UseBean implements ActiveEditorDrop {
 
     public boolean handleTransfer(JTextComponent targetComponent) {
         UseBeanCustomizer c = new UseBeanCustomizer(this, targetComponent);
-        boolean accept = c.showDialog(JSPPaletteUtilities.getAllBeans(targetComponent));
+        boolean accept = c.showDialog(JspPaletteUtilities.getAllBeans(targetComponent));
         if (accept) {
             String body = createBody();
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }

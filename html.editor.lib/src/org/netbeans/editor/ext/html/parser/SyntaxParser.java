@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -140,8 +140,8 @@ public final class SyntaxParser {
         this.parserTask = null;
         this.doc = null;
         this.parsedElements = EMPTY_ELEMENTS_LIST;
-        this.languagePath = LanguagePath.get(HTMLTokenId.language());
-        this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
+        this.languagePath = LanguagePath.get(HtmlTokenId.language());
+        this.hi = TokenHierarchy.create(source, HtmlTokenId.language());
     }
     
     private SyntaxParser(Document document, LanguagePath languagePath) {
@@ -345,7 +345,7 @@ public final class SyntaxParser {
     private int state;
     private int start;
     private TokenSequence ts;
-    private Token<HTMLTokenId> token;
+    private Token<HtmlTokenId> token;
     private List<SyntaxElement> elements;
     
     private boolean openTag = true;
@@ -359,7 +359,7 @@ public final class SyntaxParser {
     //PENDING: we do not handle incomplete tokens yet - should be added
     private List<SyntaxElement> parseDocument() throws BadLocationException {
         elements = new ArrayList<SyntaxElement>();
-        List<TokenSequence<HTMLTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
+        List<TokenSequence<HtmlTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         state = S_INIT;
         start = -1;
         attr_keys = new ArrayList<Token>();
@@ -369,7 +369,7 @@ public final class SyntaxParser {
             ts = _ts;
             while (ts.moveNext()) {
                 token = ts.token();
-                HTMLTokenId id = token.id();
+                HtmlTokenId id = token.id();
 
                 switch (state) {
                     case S_INIT:
