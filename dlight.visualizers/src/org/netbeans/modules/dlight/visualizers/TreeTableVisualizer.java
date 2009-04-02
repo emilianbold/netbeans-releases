@@ -214,14 +214,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-
                 task.cancel(true);
-
+                task = null;
             }
         }
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
                 syncFillDataTask.cancel(true);
+                syncFillDataTask = null;
             }
         }
         if (timerHandler != null) {
@@ -489,7 +489,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                syncFillDataTask.cancel(true);
+                return;
+            //syncFillDataTask.cancel(true);
             }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<T>>() {
 
@@ -497,28 +498,37 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                     return dataProvider.getTableView(columns, null, Integer.MAX_VALUE);
                 }
             }, "Sync TreeTableVisualizer model fill " + configuration.getID()); // NOI18N
-            try {
-                final List<T> list = syncFillDataTask.get();
-                //if we have emptyContent here should
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
+        }
+        try {
+            final List<T> list = syncFillDataTask.get();
+            synchronized (syncFillInLock) {
+                syncFillDataTask = null;
+            }
+            //if we have emptyContent here should
+            final boolean isEmptyConent = list == null || list.isEmpty();
+            UIThread.invoke(new Runnable() {
 
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-
-                        updateList(list);
+                public void run() {
+                    setContent(isEmptyConent);
+                    if (isEmptyConent) {
+                        return;
                     }
-                });
-            } catch (ExecutionException ex) {
+
+                    updateList(list);
+                }
+            });
+        } catch (ExecutionException ex) {
 //                Thread.currentThread().
             } catch (InterruptedException ex1) {
-                //              Thread.currentThread().interrupt();
+            synchronized (syncFillInLock) {
+                if (syncFillDataTask != null) {
+                    //syncFillDataTask.cancel(true);TODO: uncomment when ErPRint is ready
+                    syncFillDataTask = null;
+                }
             }
-
         }
+
+
     }
 
     protected void updateList(List<T> list) {
@@ -605,6 +615,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (!isShown() || !isShowing()) {
             return 0;
         }
+
         syncFillModel(configuration.getMetadata().getColumns());
         return 0;
     }
@@ -634,6 +645,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (isShown) {
             return;
         }
+
         isShown = isShowing();
         // Fill model only in case we are really became visible ...
         if (isShown) {
@@ -641,7 +653,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             asyncFillModel(configuration.getMetadata().getColumns());
         }
 
+    }
 
+    public void refresh() {
+        asyncFillModel(configuration.getMetadata().getColumns());
     }
 
     public void componentHidden(ComponentEvent e) {

@@ -166,6 +166,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 }
             }
         }
+        session.cleanVisualizers();
 
         sessions.remove(session);
         notifySessionRemoved(session);
@@ -266,6 +267,15 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     private Visualizer openVisualizer(String toolName, final VisualizerConfiguration configuration) {
         Visualizer visualizer = null;
+        //Check if we have already instance in the session:
+        if (activeSession.hasVisualizer(toolName, configuration.getID())){
+            visualizer = activeSession.getVisualizer(toolName, configuration.getID());
+            visualizer.refresh();
+            VisualizerContainer container = visualizer.getDefaultContainer();
+            container.addVisualizer(toolName, visualizer);
+            container.showup();
+            return visualizer;
+        }
 
         /*
          * Two conditions should be met in order to create and open visualizer:
@@ -352,9 +362,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         VisualizerContainer container = visualizer.getDefaultContainer();
         container.addVisualizer(toolName, visualizer);
         container.showup();
-
-        activeSession.addVisualizer(visualizer);
-
+        activeSession.putVisualizer(toolName, configuration.getID(), visualizer);
         return visualizer;
     }
 

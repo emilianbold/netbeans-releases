@@ -144,6 +144,9 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     }
 
     public void setContent(String toolName, JComponent viewComponent) {
+        if (currentToolName != null && currentToolName.equals(toolName)){
+            return;//DO NOTHING
+        }
         currentToolName = toolName;
 //        if (visualizerComponents.get(toolName) == null) {//no component - add new one
 //            tabbedPane.addTab(toolName, viewComponent);
@@ -162,6 +165,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 //        }
 //
 //        visualizerComponents.put(toolName, view);
+        //if we have it already DO NOT REMOVE - REUSE
         this.performanceMonitorViewsArea.removeAll();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.performanceMonitorViewsArea.add(viewComponent);
