@@ -82,6 +82,12 @@ public final class GroovyIndex {
         this.querySupport = querySupport;
     }
 
+    /**
+     * Get the index. Use wisely multiple calls are expensive.
+     *
+     * @param roots
+     * @return
+     */
     public static GroovyIndex get(Collection<FileObject> roots) {
         try {
             return new GroovyIndex(QuerySupport.forRoots(

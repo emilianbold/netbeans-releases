@@ -35,7 +35,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.SyntaxElement;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
@@ -67,7 +67,7 @@ public class JspFoldManager implements FoldManager {
     private Preferences prefs;
 
     public JspFoldManager() {
-        prefs = MimeLookup.getLookup(JSPKit.JSP_MIME_TYPE).lookup(Preferences.class);
+        prefs = MimeLookup.getLookup(JspKit.JSP_MIME_TYPE).lookup(Preferences.class);
     }
 
     protected FoldOperation getOperation() {
