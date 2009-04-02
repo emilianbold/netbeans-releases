@@ -94,12 +94,12 @@ public class SearchHistoryTest extends NbTestCase {
         f = new File(System.getProperty("data.root.dir") + "/testShowFileHistory.file");
         
         // folder
-        showing = Subversion.showFileHistory(f.getParentFile().getAbsolutePath(), 1);
+        showing = Subversion.showFileHistory(f.getParentFile(), 1);
         assertFalse(showing);
 
         // unversioned file
         f.createNewFile();
-        showing = Subversion.showFileHistory(f.getAbsolutePath(), 1);
+        showing = Subversion.showFileHistory(f, 1);
         assertFalse(showing);
 
         // AWT
@@ -107,7 +107,7 @@ public class SearchHistoryTest extends NbTestCase {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    Subversion.showFileHistory(file.getAbsolutePath(), 1);
+                    Subversion.showFileHistory(file, 1);
                     fail("AWT test failed");
                 } catch (AssertionError err) {
                     
@@ -151,7 +151,7 @@ public class SearchHistoryTest extends NbTestCase {
         }
         TestKit.write(file, content.toString());
 
-        boolean showing = Subversion.showFileHistory(file.getAbsolutePath(), 100);
+        boolean showing = Subversion.showFileHistory(file, 100);
         assertTrue(showing);
 
         JDialog d = new JDialog((JFrame)null, "Close dialog");

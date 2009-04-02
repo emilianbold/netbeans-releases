@@ -70,7 +70,7 @@ import org.openide.util.Lookup;
  *
  *  XXX: Needs to filter out indentical stacktrace hashes
  *
-* @author Petr Hrebejk, Jan Stola
+* @author Petr Hrebejk, Jan Stola, Tomas Stupka
  */
 public class StackTraceSupport {
 
@@ -83,13 +83,8 @@ public class StackTraceSupport {
     public static void findAndOpen(String text) {
         List<StackTracePosition> st = StackTraceSupport.find(text);
         for (StackTracePosition stp : st) {
-            final StackTraceElement ste = stp.getStackTraceElements()[0];
-            String path = ste.getClassName();
-            int index = path.indexOf('$');
-            if (index != -1) {
-                path = path.substring(0, index);
-            }
-            path = path.replace(".", "/") + ".java"; // XXX .java ???
+            StackTraceElement ste = stp.getStackTraceElements()[0];
+            String path = getPath(ste);
             open(path, ste.getLineNumber() - 1); // XXX -1 ???
             break;
         }
@@ -98,12 +93,21 @@ public class StackTraceSupport {
     public static void findAndShowHistory(String text) {
         List<StackTracePosition> st = StackTraceSupport.find(text);
         for (StackTracePosition stp : st) {
-            final StackTraceElement ste = stp.getStackTraceElements()[0];
-            String path = ste.getClassName();
-            path = path.replace(".", "/") + ".java"; // XXX .java ???
+            StackTraceElement ste = stp.getStackTraceElements()[0];
+            String path = getPath(ste);
             openSearchHistory(path, ste.getLineNumber() - 1); // XXX -1 ???
             break;
         }
+    }
+
+    private static String getPath(StackTraceElement ste ) {
+        String path = ste.getClassName();
+        int index = path.indexOf('$');
+        if (index != -1) {
+            path = path.substring(0, index);
+        }
+        path = path.replace(".", "/") + ".java"; // XXX .java ???
+        return path;
     }
 
     public static List<StackTracePosition> find(String text) {
