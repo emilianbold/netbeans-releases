@@ -873,7 +873,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
-        private boolean isDeclaration;
+        private final boolean isDeclaration;
         private List<ParamStr> params = new ArrayList<ParamStr>();
         private List excs = new ArrayList();
         private int modifiers;
