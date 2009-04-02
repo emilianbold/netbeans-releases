@@ -472,7 +472,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     protected final void asyncFillModel(final List<Column> columns) {
         synchronized (queryLock) {
-            if (task != null) {
+            if (task != null && !task.isDone() && !task.isCancelled()){
+                return;//
+            }
+            if (task != null && !task.isDone()) {
                 task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
