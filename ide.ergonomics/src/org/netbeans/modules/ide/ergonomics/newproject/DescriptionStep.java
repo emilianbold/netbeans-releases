@@ -240,6 +240,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     }
                     return; // give up
                 }
+                Logger.getLogger(DescriptionStep.class.getName()).info("Forcing refresh"); // NOI18N
+                // force refresh for the filesystem
+                FoDFileSystem.getInstance().refresh();
+                Logger.getLogger(DescriptionStep.class.getName()).info("Done with refresh"); // NOI18N
             }
         }
         iterator.initialize (wd);
