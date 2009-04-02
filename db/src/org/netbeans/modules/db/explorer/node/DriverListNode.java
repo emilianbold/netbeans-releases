@@ -55,7 +55,7 @@ import org.openide.util.ImageUtilities;
  */
 public class DriverListNode extends BaseNode {
     private static final String NAME = "Drivers";
-    private static final String ICONBASE = null;
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
     private static final String FOLDER = "DriverList"; //NOI18N
 
     /** 

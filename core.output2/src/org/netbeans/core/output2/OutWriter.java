@@ -212,7 +212,7 @@ class OutWriter extends PrintWriter {
             lineStart = -1;
             lineLength = 0;
         }
-        if (owner != null && owner.hasStreamClosed()) {
+        if (owner != null && owner.isStreamClosed()) {
             owner.setStreamClosed(false);
             lines.fire();
         }
@@ -250,9 +250,6 @@ class OutWriter extends PrintWriter {
         if (storage != null) {
             storage.dispose();
             storage = null;
-        }
-        if (lines != null) {
-            lines.clear();
         }
         if (Controller.LOG) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
         owner = null;
