@@ -239,4 +239,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#134182 : missed const in function parameter
         performTest("iz134182.cc");
     }
+
+    public void testIZ156696() throws Exception {
+        // IZ#156696 : model miss extern property if declaration statement has two objects
+        performTest("iz156696.cc");
+    }
 }

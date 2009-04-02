@@ -987,15 +987,27 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isReference() {
-            return originalType.isReference() || instantiatedType.isReference();
+            if(originalType != instantiatedType) {
+                return originalType.isReference() || instantiatedType.isReference();
+            } else {
+                return originalType.isReference();
+            }
         }
 
         public boolean isPointer() {
-            return originalType.isPointer() || instantiatedType.isPointer();
+            if(originalType != instantiatedType) {
+                return originalType.isPointer() || instantiatedType.isPointer();
+            } else {
+                return originalType.isPointer();
+            }
         }
 
         public boolean isConst() {
-            return originalType.isConst() || instantiatedType.isConst();
+            if(originalType != instantiatedType) {
+                return originalType.isConst() || instantiatedType.isConst();
+            } else {
+                return originalType.isConst();
+            }
         }
 
         public boolean isBuiltInBased(boolean resolveTypeChain) {
