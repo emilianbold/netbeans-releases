@@ -75,7 +75,7 @@ public class CssLexerTest extends TestBase {
         assertTrue(ts.moveNext());
         assertEquals("/* c */", ts.token().text().toString());
         assertEquals(CssTokenId.COMMENT, ts.token().id());
-        assertEquals("whitespace_comment", ts.token().id().primaryCategory());
+        assertEquals("comment", ts.token().id().primaryCategory());
 
         assertTrue(ts.moveNext());
         assertEquals(";", ts.token().text().toString());
