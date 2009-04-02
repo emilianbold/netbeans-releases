@@ -232,6 +232,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         boolean preservePermissions = Boolean.parseBoolean(getValue(PhpProjectProperties.REMOTE_PERMISSIONS));
         preservePermissionsCheckBox.setSelected(preservePermissions);
+
+        boolean uploadDirectly = Boolean.parseBoolean(getValue(PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY));
+        uploadDirectlyCheckBox.setSelected(uploadDirectly);
     }
 
     @Override
