@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor.api.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
@@ -69,11 +70,11 @@ public class GroovyParserResult extends ParserResult {
     private GroovyParser.Sanitize sanitized;
     private ErrorCollector errorCollector;  // keep track of pending errors (if any)
 
-    GroovyParserResult(GroovyParser parser, Snapshot snapshot, AstRootElement rootElement,
+    GroovyParserResult(GroovyParser parser, Snapshot snapshot, ModuleNode rootNode,
             ErrorCollector errorCollector) {
         super(snapshot);
         this.parser = parser;
-        this.rootElement = rootElement;
+        this.rootElement = new AstRootElement(snapshot.getSource().getFileObject(), this, rootNode);
         this.errorCollector = errorCollector;
     }
 

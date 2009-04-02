@@ -132,7 +132,7 @@ public class StructureAnalyzer implements StructureScanner {
         AstPath path = new AstPath();
         path.descend(root);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
-        scan(root, path, null, null, null);
+        scan(result, root, path, null, null, null);
         path.ascend();
 
         // Process fields
@@ -149,7 +149,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 // Add unique fields
                 for (FieldNode field : names.values()) {
-                    AstFieldElement co = new AstFieldElement(field);
+                    AstFieldElement co = new AstFieldElement(result, field);
                     //co.setIn(AstUtilities.getClassOrModuleName(clz));
                     co.setIn(clz.getFqn());
 
@@ -184,10 +184,10 @@ public class StructureAnalyzer implements StructureScanner {
         return analysisResult;
     }
 
-    private void scan(ASTNode node, AstPath path, String in, Set<String> includes, AstElement parent) {
+    private void scan(GroovyParserResult result, ASTNode node, AstPath path, String in, Set<String> includes, AstElement parent) {
 
         if (node instanceof ClassNode) {
-            AstClassElement co = new AstClassElement(node);
+            AstClassElement co = new AstClassElement(result, node);
             co.setFqn(((ClassNode) node).getName());
 
             if (parent != null) {
@@ -211,7 +211,7 @@ public class StructureAnalyzer implements StructureScanner {
                 assignments.add((FieldNode) node);
             }
         } else if (node instanceof MethodNode) {
-            AstMethodElement co = new AstMethodElement(node);
+            AstMethodElement co = new AstMethodElement(result, node);
             methods.add(co);
             co.setIn(in);
 
@@ -237,7 +237,7 @@ public class StructureAnalyzer implements StructureScanner {
 
         for (ASTNode child : list) {
             path.descend(child);
-            scan(child, path, in, includes, parent);
+            scan(result, child, path, in, includes, parent);
             path.ascend();
         }
     }
@@ -502,13 +502,13 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         public long getPosition() {
-            OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
             LOG.log(Level.FINEST, "getPosition(), start: " + range.getStart());
             return (long) range.getStart();
         }
 
         public long getEndPosition() {
-            OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
             LOG.log(Level.FINEST, "getEndPosition(), end: " + range.getEnd());
             return (long) range.getEnd();
         }
