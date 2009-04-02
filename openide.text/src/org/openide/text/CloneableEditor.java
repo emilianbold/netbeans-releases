@@ -356,6 +356,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     LOG.log(Level.INFO,"Failed to open document",exc);
                 }
                 kit = k;
+                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " -- CloneableEditor.DoInitialize.initNonVisual"
+                + " name:" + getName()
+                + " SET kit:" + kit
+                + " Thread:[" + Thread.currentThread().getName() + "]");
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE,"DoInitialize.initNonVisual doc and kit are set"
@@ -380,7 +385,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private void initCustomEditor() {
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initCustomEditor"
-            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
+            + " name:" + getName()
+            + " Thread:[" + Thread.currentThread().getName() + "]" + " ENTER");
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
                 sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
@@ -473,7 +479,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return false;
             }
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)");
+            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)"
+            + " kit:" + kit
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             tmp.setEditorKit(kit);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
@@ -481,7 +489,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument RETURN TRUE");
+            + " -- CloneableEditor.DoInitialize.initDocument"
+            + " RETURN TRUE"
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             return true;
         }
         
@@ -498,7 +508,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initVisual"
-            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
+            + " name:" + getName()
+            + " ENTER"
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             if (LOG.isLoggable(Level.FINE)) {
                 /*Exception ex = new Exception();
                 StringWriter sw = new StringWriter(500);
