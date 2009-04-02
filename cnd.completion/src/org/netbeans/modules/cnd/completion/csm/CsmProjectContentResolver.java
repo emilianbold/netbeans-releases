@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * help class to resolve content of the project
@@ -545,7 +546,7 @@ public final class CsmProjectContentResolver {
                 CsmFunction fun = (CsmFunction) decl;
                 if (fromUnnamedNamespace || CsmBaseUtilities.isFileLocalFunction(fun)) {
                     if (decl.getName().length() != 0 && matchName(decl.getName(), strPrefix, match)) {
-                        out.put(fun.getSignature().toString(), fun);
+                        out.put(fun.getSignature(), fun);
                     }
                 }
             } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
@@ -1123,7 +1124,7 @@ public final class CsmProjectContentResolver {
                             qname = member.getQualifiedName();
                             if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
                                 // Fix for IZ#139784: last unnamed enum overrides previous ones
-                                qname = new StringBuilder(qname).append('$').append(++unnamedEnumCount).toString();
+                                qname = CharSequenceKey.create(new StringBuilder(qname).append('$').append(++unnamedEnumCount));
                             }
                         }
                         // do not replace inner objects by outer ones
