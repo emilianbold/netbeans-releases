@@ -40,14 +40,17 @@ package org.netbeans.modules.php.dbgp;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.api.Pair;
 import org.openide.filesystems.FileObject;
@@ -78,11 +81,16 @@ abstract class URIMapper {
         MultiMapper mergedMapper = new MultiMapper();
         for (Pair<String, String> pair : pathMapping) {
             //1. mapper provided by user via project UI if any
+            pair = encodedPathMappingPair(pair);
             String uriPath = pair.first;
             String filePath = pair.second;
             if (uriPath.length() > 0 && filePath.length() > 0) {
                 if (!uriPath.startsWith("file:")) {//NOI18N
-                    uriPath = "file:" + uriPath;//NOI18N
+                    if (!uriPath.startsWith("/")) {
+                        uriPath = "file:/" + uriPath;//NOI18N
+                    } else {
+                        uriPath = "file:" + uriPath;//NOI18N
+                    }
                 }
                 if (!uriPath.endsWith("/")) {//NOI18N
                     uriPath += "/";//NOI18N
@@ -225,8 +233,25 @@ abstract class URIMapper {
 
             this.baseSourceFolder = baseSourceFolder;
             this.baseWebServerURI = baseWebServerURI;
-
+            boolean isLoggable = LOGGER.isLoggable(Level.FINE);
+            if (isLoggable) {
+                if (!FILE_SCHEME.equals(baseWebServerURI.getScheme())) {
+                    LOGGER.fine("Unexpected scheme: "+baseWebServerURI.toString());//NOI18N
+                }
+                if (baseWebServerURI.getPath() == null) {
+                    LOGGER.fine("URI.getPath() == null: "+baseWebServerURI.toString());//NOI18N
+                }
+                if (baseWebServerURI.getPath() == null) {
+                    LOGGER.fine("URI.getPath() == null: "+baseWebServerURI.toString());//NOI18N
+                } else if (!baseWebServerURI.getPath().endsWith("/")) {
+                    LOGGER.fine("Not \"/\" at the end of URI.getPath(): "+baseWebServerURI.toString());//NOI18N
+                }
+                if (!baseWebServerURI.isAbsolute()) {
+                    LOGGER.fine("URI not absolute: "+baseWebServerURI.toString());//NOI18N
+                }
+            }
             assert FILE_SCHEME.equals(baseWebServerURI.getScheme());
+            assert baseWebServerURI.getPath() != null;//NOI18N
             assert baseWebServerURI.getPath().endsWith("/") : baseWebServerURI.getPath();//NOI18N
             assert baseWebServerURI.isAbsolute();
             this.baseSourceURI = baseSourceFolder.toURI();
@@ -321,4 +346,32 @@ abstract class URIMapper {
                 webServerBaseURI.getPath(),webServerBaseURI.getFragment(),
                 includeHostPart, webServerBase.exists() && webServerBase.isDirectory());
     }
+
+    private static Pair<String, String> encodedPathMappingPair(Pair<String, String> pathMapping)  {
+        String resName = pathMapping.first;
+        resName = resName.replace('\\', '/');//NOI18N
+        final String[] elements = resName.split("/"); // NOI18N
+        final StringBuilder sb = new StringBuilder(200);
+        for (int i = 0; i < elements.length; i++) {
+            String element = elements[i];
+            boolean skip = false;
+            if (i == 0 && element.length() == 2 && element.charAt(1) == ':') {//NOI18N
+                skip = true;
+            }
+            if (!skip) {
+                try {
+                    element = URLEncoder.encode(element, "UTF-8"); // NOI18N
+                    element = element.replace("+", "%20"); // NOI18N
+                } catch (UnsupportedEncodingException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            sb.append(element);
+            if (i < elements.length - 1) {
+                sb.append('/');
+            }
+        }
+        return Pair.of(sb.toString(), pathMapping.second);//NOI18N
+    }
+
 }
