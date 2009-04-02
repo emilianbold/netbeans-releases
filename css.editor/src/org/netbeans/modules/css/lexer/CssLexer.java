@@ -42,6 +42,7 @@ package org.netbeans.modules.css.lexer;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTokenManager;
 import org.netbeans.modules.css.parser.PatchedCssParserTokenManager;
 import org.netbeans.modules.css.parser.TokenMgrError;
@@ -61,6 +62,8 @@ public final class CssLexer implements Lexer<CssTokenId> {
     private final TokenFactory<CssTokenId> tokenFactory;
     private CssParserTokenManager tokenManager;
     private LexerRestartInfo<CssTokenId> lexerRestartInfo;
+
+    private static final int JCCTOKEN_TO_TOKENID_INDEX_DIFF = CssParserConstants.LBRACE - CssTokenId.LBRACE.ordinal();
 
     public Object state() {
         return lexerState;
@@ -90,26 +93,28 @@ public final class CssLexer implements Lexer<CssTokenId> {
             //looks like we successfully obtained a token
             if (token.image.length() > 0) {
 
-                int array_index = token.kind;
-
+                int idx = token.kind;
+                int diff = 0;
                 //hack - enum member to int conversion
-                //see the SACParserConstants indexes
-                if (array_index == 0 || array_index == 1) {
-                    //EOF or S tokens
-                    //no change, jj token indexes match lexer token indexes
-                    //        } else if(array_index == 3) {
-                    //            //COMMENT
-                    //            array_index = 2;
-                } else if (array_index == 4) {
-                    array_index = 2; 
-                } else {
-                    //the rest of tokens 
-                    array_index -= 5;
+                switch(idx) {
+                    case CssParserConstants.EOF:
+                    case CssParserConstants.S:
+                        break; //EOF and S tokens, maps properly
+                    case CssParserConstants.COMMENT:
+                        diff = idx - CssTokenId.COMMENT.ordinal();
+                        break; 
+                    case CssParserConstants.MSE:
+                        diff = idx - CssTokenId.MSE.ordinal();
+                        break;
+                    default:
+                        diff = JCCTOKEN_TO_TOKENID_INDEX_DIFF; //others
                 }
+
+                idx -= diff;
 
                 //return netbeans lexer's token based on the type of the obtained javacc token
                 //all info like the image and offset will be got from the lexer input
-                return tokenFactory.createToken(CssTokenId.values()[array_index]);
+                return tokenFactory.createToken(CssTokenId.values()[idx]);
             }
 
         } catch (TokenMgrError tme) {
@@ -125,56 +130,8 @@ public final class CssLexer implements Lexer<CssTokenId> {
             return null;
         }
 
-
-
-//        int actChar;
-//
-//        while (true) {
-//            actChar = input.read();
-//
-//            if (actChar == LexerInput.EOF) {
-//                if (input.readLengthEOF() == 1) {
-//                    return null; //just EOL is read
-//                } else {
-//                    //there is something else in the buffer except EOL
-//                    //we will return last token now
-//                    input.backup(1); //backup the EOL, we will return null in next nextToken() call
-//                    break;
-//                }
-//            }
-//
-//            switch (lexerState) {
-//            }
-//            
-//            
-//        } // end of while(offset...)
-//
-//        /** At this stage there's no more text in the scanned buffer.
-//         * Scanner first checks whether this is completely the last
-//         * available buffer.
-//         */
-//        switch (lexerState) {
-//            case 0:
-//                if (input.readLength() == 0) {
-//                    return null;
-//                }
-//                break;
-////            case ISI_TEXT:
-////                return token(CssTokenId.STYLE);
-//
-//        }
-//
-//        return null;
     }
 
-//    private Token<CssTokenId> token(CssTokenId tokenId) {
-//        if (input.readLength() == 0) {
-//            System.out.println("Found zero length token: ");
-//        }
-//        System.out.println("[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
-//
-//        return tokenFactory.createToken(tokenId);
-//    }
     public void release() {
         tokenManager = null;
     }

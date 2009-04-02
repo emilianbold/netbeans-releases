@@ -37,8 +37,10 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.css.editor.lexer;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
@@ -61,6 +63,23 @@ public class CssLexerTest extends TestBase {
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
                 CssTokenId.language());
+    }
+
+    //http://www.netbeans.org/issues/show_bug.cgi?id=161642
+    public void testIssue161642() throws Exception {
+        String input = "/* c */;";
+        TokenHierarchy th = TokenHierarchy.create(input, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertTrue(ts.moveNext());
+        assertEquals("/* c */", ts.token().text().toString());
+        assertEquals(CssTokenId.COMMENT, ts.token().id());
+        assertEquals("whitespace_comment", ts.token().id().primaryCategory());
+
+        assertTrue(ts.moveNext());
+        assertEquals(";", ts.token().text().toString());
+        assertEquals(CssTokenId.SEMICOLON, ts.token().id());
     }
 
 }
