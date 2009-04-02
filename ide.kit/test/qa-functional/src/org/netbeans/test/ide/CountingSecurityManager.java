@@ -386,8 +386,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     @Override
     public void checkDelete(String file) {
         if (mode == Mode.CHECK_WRITE && acceptFileWrite(file)) {
-            setCnt(getCnt() + 1);
-            pw.println("checkDelete: " + file);
+            int c = getCnt() + 1;
+            setCnt(c);
+            if (c < 9999) { // #161646
+                pw.println("checkDelete: " + file);
+            }
         }
     }
     

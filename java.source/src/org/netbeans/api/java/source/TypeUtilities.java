@@ -43,6 +43,7 @@ package org.netbeans.api.java.source;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import java.util.List;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 /**Various utilities related to the {@link TypeMirror}s.
@@ -68,11 +69,21 @@ public final class TypeUtilities {
      * @param t1 cast from type
      * @param t2 cast to type
      * @return true if and only if type t1 can be cast to t2 without a compile time error
+     * @throws IllegalArgumentException if the 't1' is of {@link TypeKind#EXECUTABLE EXACUTABLE},
+     *         {@link TypeKind#PACKAGE PACKAGE}, {@link TypeKind#NONE NONE}, or {@link TypeKind#OTHER OTHER} kind
      * 
      * @since 0.6
      */
     public boolean isCastable(TypeMirror t1, TypeMirror t2) {
-        return Types.instance(info.impl.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
+        switch(t1.getKind()) {
+            case EXECUTABLE:
+            case PACKAGE:
+            case NONE:
+            case OTHER:
+                throw new IllegalArgumentException();
+            default:
+                return Types.instance(info.impl.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
+        }
     }
     
     /**
