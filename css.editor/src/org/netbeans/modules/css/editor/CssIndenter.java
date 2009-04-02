@@ -77,13 +77,11 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     @Override
     protected boolean isWhiteSpaceToken(Token<CssTokenId> token) {
-        String text = token.text().toString().trim();
-        return token.id() == CssTokenId.S && !text.startsWith("/*") && !text.endsWith("*/");
+        return token.id() == CssTokenId.S;
     }
 
     private boolean isCommentToken(Token<CssTokenId> token) {
-        String text = token.text().toString().trim();
-        return token.id() == CssTokenId.S && text.startsWith("/*") && text.endsWith("*/");
+        return token.id() == CssTokenId.COMMENT;
     }
 
     @Override

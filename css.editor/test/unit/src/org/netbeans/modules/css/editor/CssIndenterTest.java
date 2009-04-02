@@ -193,6 +193,11 @@ public class CssIndenterTest extends TestBase {
         insertNewline(
                 "xxxxxh2 { color:aqua /* aaa^*/ ;}",
                 "xxxxxh2 { color:aqua /* aaa\n              ^*/ ;}", null);
+
+        //#161642
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^*/;}",
+                "xxxxxh2 { color:aqua /* aaa\n              ^*/;}", null);
     }
 
 }
