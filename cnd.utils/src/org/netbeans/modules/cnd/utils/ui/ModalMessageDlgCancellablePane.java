@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.utils.ui;
 
+import javax.swing.SwingUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -112,7 +113,13 @@ class ModalMessageDlgCancellablePane extends javax.swing.JPanel {
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 if (!cancellable.cancel()) {
-                    lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_CancelFailed", message));
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (ModalMessageDlgCancellablePane.this.isVisible()) {
+                                lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_CancelFailed", message));
+                            }
+                        }
+                    });
                 }
             }
         }, ModalMessageDlg.class.getSimpleName() + " cancellation thread"); //NOI18N
