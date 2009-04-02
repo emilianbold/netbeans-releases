@@ -75,20 +75,23 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public SvnHookContext beforeCommit(SvnHookContext context) throws IOException {
+        Repository selectedRepository = panel.getSelectedRepository();
+
         if(context.getFiles().length == 0) {
 
-            Project singleProject = BugtrackingOwnerSupport.getMainOrSingleProject();
-            if (singleProject != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        singleProject,
-                        panel.getSelectedRepository());
+            if (selectedRepository != null) {
+                Project singleProject = BugtrackingOwnerSupport.getMainOrSingleProject();
+                if (singleProject != null) {
+                    BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                            singleProject,
+                            selectedRepository);
+                }
             }
 
             LOG.warning("calling svn beforeCommit for zero files");               // NOI18N
             return null;
         }
 
-        Repository selectedRepository = panel.getSelectedRepository();
         if (selectedRepository != null) {
             BugtrackingOwnerSupport.getInstance().setFirmAssociations(
                     context.getFiles(),
