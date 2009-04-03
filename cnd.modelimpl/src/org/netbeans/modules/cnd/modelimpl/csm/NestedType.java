@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -121,7 +122,8 @@ public class NestedType extends TypeImpl {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
             CsmObject obj;
             if (ip instanceof InstantiationProviderImpl) {
-                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), parent);
+                Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
+                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver);
             } else {
                 obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile());
             }
