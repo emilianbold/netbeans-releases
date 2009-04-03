@@ -28,8 +28,6 @@
 |org.netbeans.modules.dlight.kit|D-Light|Profiling
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby
-|org.netbeans.modules.soa.kit|SOA|SOA
-|org.netbeans.modules.xml.kit|XML Schema and WSDL|SOA
 |org.netbeans.modules.team.kit|Team|Team
 |org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE
 |org.netbeans.modules.identity.kit|Identity|Web & Java EE
