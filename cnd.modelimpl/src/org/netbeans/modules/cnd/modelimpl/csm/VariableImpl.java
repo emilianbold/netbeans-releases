@@ -71,7 +71,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    private final boolean _extern;
+    private boolean _extern;
     private ExpressionBase initExpr;
 
     /** Creates a new instance of VariableImpl 
@@ -229,6 +229,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     public boolean isExtern() {
         return _extern;
+    }
+
+    public void setExtern(boolean _extern) {
+        this._extern = _extern;
     }
 
     public boolean isConst() {

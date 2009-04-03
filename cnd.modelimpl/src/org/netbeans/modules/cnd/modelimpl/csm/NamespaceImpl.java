@@ -392,6 +392,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return true;
     }
 
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
+        throw new UnsupportedOperationException();
+    }
+
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
         boolean unnamed = !ProjectBase.canRegisterDeclaration(declaration);
         // allow to register any enum

@@ -222,7 +222,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 
         @Override
         public String toString() {
-            return "FilterToken: " + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
+            return "FilterToken: " + type + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
         }
     }
 

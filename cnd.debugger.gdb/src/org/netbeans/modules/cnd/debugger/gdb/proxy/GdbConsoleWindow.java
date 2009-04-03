@@ -70,6 +70,8 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
     private GdbProxy gdbProxy;
     private JScrollBar scrollBar;
     private static GdbConsoleWindow instance = null;
+
+    private final Object textLock = new String("Console text lock"); // NOI18N
     
     /** Creates new GdbConsoleWindow */
     private GdbConsoleWindow(GdbDebugger debugger, GdbProxy gdbProxy) {
@@ -208,14 +210,16 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
             debuggerCommand.addItem(command);
         }
     }
-    
+
     /**
      * Adds messages to console
      *
      * @param message - a message
      */
     public void add(String message) {
-        debuggerLog.append(message);
+        synchronized (textLock) {
+            debuggerLog.append(message);
+        }
         // Scroll down to show last message
         try {
             SwingUtilities.invokeLater(new Runnable() {

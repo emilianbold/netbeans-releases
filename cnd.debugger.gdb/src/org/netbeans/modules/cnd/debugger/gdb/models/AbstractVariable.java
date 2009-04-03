@@ -1004,7 +1004,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
             assert ev.getNewValue() instanceof AbstractVariable;
             AbstractVariable av = (AbstractVariable) ev.getNewValue();
-            if (av != this && av.getFullName().equals(getFullName())) {
+            if (av.getFullName().equals(getFullName())) {
                 if (av instanceof AbstractField) {
                     final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
                     RequestProcessor.getDefault().post(new Runnable() {

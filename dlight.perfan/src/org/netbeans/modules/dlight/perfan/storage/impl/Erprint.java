@@ -218,6 +218,28 @@ public final class Erprint {
         return result;
     }
 
+    public String[] getHotFunctions(String command, Metrics metrics, int limit, boolean restart) {
+        String[] result = null;
+        synchronized (lock) {
+            restart(restart);
+            setMetrics(metrics.mspec);
+            setSortBy(metrics.msort);
+            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
+            result = exec(command, limit); // NOI18N
+            erOutputProcessor.setFilterType(FilterType.noFiltering);
+        }
+        return result;
+    }
+
+    public FunctionStatistic getFunctionStatistic(String functionName, boolean restart){
+        FunctionStatistic result = null;
+        synchronized (lock) {
+            restart(restart);
+            result = new FunctionStatistic(exec("fsingle " + functionName, Integer.MAX_VALUE)); // NOI18N
+        }
+        return result;
+    }
+
     String[] getCallersCallees(int limit) {
         String[] ccOut = exec("callers-callees", limit); // NOI18N
         // TODO: process output
