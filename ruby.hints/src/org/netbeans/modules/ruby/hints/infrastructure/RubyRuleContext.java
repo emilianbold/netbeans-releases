@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.hints.infrastructure;
 
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 

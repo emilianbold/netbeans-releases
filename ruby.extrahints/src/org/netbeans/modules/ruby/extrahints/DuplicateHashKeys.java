@@ -45,12 +45,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.HashNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -134,10 +134,10 @@ public class DuplicateHashKeys extends RubyAstRule {
     }
 
     private CharSequence getKeyString(Node keyNode) {
-        if (keyNode.nodeId == NodeType.SYMBOLNODE) {
+        if (keyNode.getNodeType() == NodeType.SYMBOLNODE) {
             //return ":"+((INameNode)keyNode).getName(); // NOI18N
             return ((INameNode)keyNode).getName();
-        } else if (keyNode.nodeId == NodeType.STRNODE) {
+        } else if (keyNode.getNodeType() == NodeType.STRNODE) {
             return ((StrNode)keyNode).getValue();
         }
 
