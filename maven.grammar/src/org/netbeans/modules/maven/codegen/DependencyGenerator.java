@@ -121,6 +121,7 @@ public class DependencyGenerator implements CodeGenerator {
             String scope = ret[3];
             String type = ret[4];
             String classifier = ret[5];
+            int newPos = -1;
             try {
                 model.startTransaction();
                 pos = component.getCaretPosition();
@@ -136,10 +137,12 @@ public class DependencyGenerator implements CodeGenerator {
                     dep.setClassifier(classifier);
                     container.addDependency(dep);
                 }
-                pos = dep.getModel().getAccess().findPosition(dep.getPeer());
-                component.setCaretPosition(pos);
+                newPos = dep.getModel().getAccess().findPosition(dep.getPeer());
             } finally {
                 model.endTransaction();
+            }
+            if (newPos != -1) {
+                component.setCaretPosition(newPos);
             }
         }
     }
