@@ -44,7 +44,6 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.util.NbBundle;

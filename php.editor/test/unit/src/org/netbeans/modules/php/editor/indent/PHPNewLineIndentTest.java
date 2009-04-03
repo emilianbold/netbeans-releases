@@ -42,7 +42,7 @@ package org.netbeans.modules.php.editor.indent;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
@@ -94,7 +94,7 @@ public class PHPNewLineIndentTest extends PHPTestBase {
         super.setUp();
 
         try {
-            TestLanguageProvider.register(HtmlTokenId.language());
+            TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }
