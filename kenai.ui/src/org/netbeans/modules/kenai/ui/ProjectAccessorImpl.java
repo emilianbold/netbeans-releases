@@ -141,18 +141,26 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getOpenWikiAction(ProjectHandle project) {
-        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.WIKI);
-        if (wiki.length==1) {
-            return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+        try {
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.WIKI);
+            if (wiki.length == 1) {
+                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+            }
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
         }
         return null;
     }
 
     @Override
     public ActionListener getOpenDownloadsAction(ProjectHandle project) {
-        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.DOWNLOADS);
-        if (wiki.length==1) {
-            return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+        try {
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.DOWNLOADS);
+            if (wiki.length == 1) {
+                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+            }
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
         }
         return null;
     }

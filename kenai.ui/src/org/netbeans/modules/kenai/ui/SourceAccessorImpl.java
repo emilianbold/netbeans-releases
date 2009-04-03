@@ -95,7 +95,11 @@ public class SourceAccessorImpl extends SourceAccessor {
         }
         KenaiFeature features[] = null;
         if (project != null) {
-            features = project.getFeatures(Type.SOURCE);
+            try {
+                features = project.getFeatures(Type.SOURCE);
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         for (KenaiFeature feature : features) {
             SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);

@@ -56,6 +56,7 @@ public final class ProgressSupport {
     /** Utility field holding list of ProgressListeners. */
     private final List<ProgressListener> progressListenerList = new ArrayList<ProgressListener>();
     private int counter;
+    private boolean deterministic;
 
     public synchronized void addProgressListener(ProgressListener listener) {
         progressListenerList.add(listener);
@@ -77,6 +78,7 @@ public final class ProgressSupport {
      */
     public void fireProgressListenerStart(Object source, int type, int count) {
         counter = -1;
+        deterministic = count > 0;
         ProgressEvent event = new ProgressEvent(source, ProgressEvent.START, type, count);
         ProgressListener[] listeners = getListenersCopy();
         for (ProgressListener listener : listeners) {
@@ -102,7 +104,19 @@ public final class ProgressSupport {
     /** Notifies all registered listeners about the event.
      */
     public void fireProgressListenerStep(Object source, int count) {
-        counter = count;
+        if (deterministic) {
+            if (count < 0) {
+                deterministic = false;
+            }
+            counter = count;
+        } else {
+            if (count > 0) {
+                deterministic = true;
+                counter = -1;
+            } else {
+                counter = count;
+            }
+        }
         ProgressEvent event = new ProgressEvent(source, ProgressEvent.STEP, 0, count);
         ProgressListener[] listeners = getListenersCopy();
         for (ProgressListener listener : listeners) {
@@ -116,7 +130,10 @@ public final class ProgressSupport {
     /** Notifies all registered listeners about the event.
      */
     public void fireProgressListenerStep(Object source) {
-        fireProgressListenerStep(source, counter+1);
+        if (deterministic) {
+            ++counter;
+        }
+        fireProgressListenerStep(source, counter);
     }
     /** Notifies all registered listeners about the event.
      */

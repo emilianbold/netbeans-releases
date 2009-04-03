@@ -394,7 +394,8 @@ public class FileStatusCache {
                 // unversioned resource is expected getSingleStatus()
                 // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
                 // instead of throwing exception
-                if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
+                if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false
+                        && !SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
                     // missing or damaged entries
                     // or ignored file
                     SvnClientExceptionHandler.notifyException(e, false, false);

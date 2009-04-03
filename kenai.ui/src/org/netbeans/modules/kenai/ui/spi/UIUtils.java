@@ -220,6 +220,7 @@ public final class UIUtils {
             loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
         }
         d.pack();
+        d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
 

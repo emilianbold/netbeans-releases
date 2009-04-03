@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -128,5 +127,19 @@ public final class IndexResult {
             }
         }
         return cachedFile;
+    }
+
+    /**
+     * @since 1.9
+     */
+    public String getRelativePath() {
+        return spi.getSourceName();
+    }
+
+    /**
+     * @since 1.9
+     */
+    public URL getRoot() {
+        return root;
     }
 }
