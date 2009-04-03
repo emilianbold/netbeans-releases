@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.html.editor.test;
 
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -63,7 +63,7 @@ public class TestBase extends CslTestBase {
     protected BaseDocument createDocument() {
         NbEditorDocument doc = new NbEditorDocument(HtmlKit.HTML_MIME_TYPE);
         doc.putProperty(PROP_MIME_TYPE, HtmlKit.HTML_MIME_TYPE);
-        doc.putProperty(Language.class, HtmlTokenId.language());
+        doc.putProperty(Language.class, HTMLTokenId.language());
         return doc;
     }
 
