@@ -40,3 +40,4 @@
 |org.netbeans.modules.websvc.kit|Web Services|Web & Java EE|enterprise
 |org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications|websvccommon
 |org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications|webcommon
+|org.netbeans.modules.websvc.metro.model|Configuration model for metro.xml file|Web Services Interoperability|enterprise
