@@ -101,7 +101,6 @@ public abstract class BugtrackingController {
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         support.addPropertyChangeListener(l);
-        fireDataChanged();
     }
 
     /**
