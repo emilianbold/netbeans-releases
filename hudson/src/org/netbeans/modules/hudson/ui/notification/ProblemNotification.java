@@ -41,21 +41,19 @@ package org.netbeans.modules.hudson.ui.notification;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.CharConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.xml.XMLUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Build failed or was unstable.
@@ -67,28 +65,22 @@ class ProblemNotification implements ActionListener {
     final HudsonJob job;
     private final int build;
     private final boolean failed;
-    private final boolean running;
     private Notification notification;
 
-    ProblemNotification(HudsonJob job, int build, boolean failed, boolean running) {
+    ProblemNotification(HudsonJob job, int build, boolean failed) {
         this.job = job;
         this.build = build;
         this.failed = failed;
-        this.running = running;
     }
 
     private String getTitle() {
-        try {
-            return XMLUtil.toElementContent(job.getDisplayName()) + " #" + build +
-                    (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
-        } catch (CharConversionException ex) {
-            Exceptions.printStackTrace(ex);
-            return "";
-        }
+        // XXX use HudsonJobBuild.getDisplayName
+        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.title.failed" : "ProblemNotification.title.unstable",
+                job.getDisplayName(), build);
     }
 
     private String getDescription() {
-        return failed ? "The build failed." : "Some tests failed."; // XXX I18N
+        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.description.failed" : "ProblemNotification.description.unstable");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -98,7 +90,15 @@ class ProblemNotification implements ActionListener {
                     new ShowBuildConsole(b).actionPerformed(e);
                 } else if (b.getMavenModules().isEmpty()) {
                     new ShowFailures(b).actionPerformed(e);
-                } // XXX for Maven moduleset, not obvious which module had failing builds
+                } else {
+                    for (HudsonMavenModuleBuild module : b.getMavenModules()) {
+                        switch (module.getColor()) {
+                        case yellow:
+                        case yellow_anime:
+                            new ShowFailures(module).actionPerformed(e);
+                        }
+                    }
+                }
                 break;
             }
         }
@@ -109,7 +109,7 @@ class ProblemNotification implements ActionListener {
     }
 
     private Icon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true);
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true); // NOI18N
     }
 
     void add() {
@@ -138,7 +138,7 @@ class ProblemNotification implements ActionListener {
     }
 
     public @Override String toString() {
-        return "ProblemNotification[" + job.getName() + "#" + build + "]";
+        return "ProblemNotification[" + job.getName() + "#" + build + "]"; // NOI18N
     }
 
 }

@@ -62,4 +62,9 @@ public class ProjectHandleImpl extends ProjectHandle {
     public KenaiProject getKenaiProject() {
         return prj;
     }
+
+    @Override
+    public boolean isPrivate() {
+        return prj.isPrivate();
+    }
 }

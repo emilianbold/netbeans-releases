@@ -125,7 +125,7 @@ public class HgConfigFiles {
         hgrc = loadRepoHgrcFile(file);
     }
 
-    public Exception getException () {
+    public IOException getException () {
         return initException;
     }
  

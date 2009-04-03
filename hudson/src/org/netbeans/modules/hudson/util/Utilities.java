@@ -77,8 +77,8 @@ public class Utilities {
      * @throws IllegalArgumentException if there is some other URI problem, or a slash
      */
     public static String uriEncode(String segment) {
-        if (segment.contains("/")) {
-            throw new IllegalArgumentException("cannot contain a slash: " + segment);
+        if (segment.contains("/")) { // NOI18N
+            throw new IllegalArgumentException("cannot contain a slash: " + segment); // NOI18N
         }
         try {
             return new URI(null, segment, null).toASCIIString();
@@ -92,7 +92,7 @@ public class Utilities {
      */
     public static String uriDecode(String string) {
         String d = URI.create(string).getPath();
-        if (d.contains("/")) {
+        if (d.contains("/")) { // NOI18N
             throw new IllegalArgumentException(d);
         }
         return d;

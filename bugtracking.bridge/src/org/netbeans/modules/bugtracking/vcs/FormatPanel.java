@@ -43,9 +43,9 @@
  * Created on Jan 9, 2009, 5:12:31 PM
  */
 
-package org.netbeans.modules.bugtracking.vcshooks;
+package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 
 /**
  *

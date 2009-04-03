@@ -106,7 +106,7 @@ public class InstanceDialog extends DialogDescriptor {
                 try {
                     URL u = new URL(panel.getUrl());
                     HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
-                    String sVersion = connection.getHeaderField("X-Hudson");
+                    String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
                     connection.disconnect();
                     if (sVersion == null) {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
