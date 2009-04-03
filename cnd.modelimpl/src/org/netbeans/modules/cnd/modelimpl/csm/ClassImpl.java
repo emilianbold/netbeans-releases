@@ -698,8 +698,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         CsmUID<CsmMember> uid = UIDCsmConverter.declarationToUID(member);
         assert uid != null;
         synchronized (members) {
-//            members.add(uid);
-            UIDUtilities.insertIntoSortedUIDList(uid, members);
+            members.add(uid);
+//            UIDUtilities.insertIntoSortedUIDList(uid, members);
         }
     }
 
@@ -710,8 +710,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         CsmUID<CsmFriend> uid = UIDCsmConverter.declarationToUID(friend);
         assert uid != null;
         synchronized (friends) {
-//            friends.add(uid);
-            UIDUtilities.insertIntoSortedUIDList(uid, friends);
+            friends.add(uid);
+//            UIDUtilities.insertIntoSortedUIDList(uid, friends);
         }
     }
 

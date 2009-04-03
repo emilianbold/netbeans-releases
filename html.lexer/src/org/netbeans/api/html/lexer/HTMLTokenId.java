@@ -60,7 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author Jan Lahoda, Miloslav Metelka, Marek Fukala
  */
-public enum HtmlTokenId implements TokenId {
+public enum HTMLTokenId implements TokenId {
     
     /** HTML text */
     TEXT("text"), 
@@ -106,33 +106,33 @@ public enum HtmlTokenId implements TokenId {
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
     
-    HtmlTokenId(String primaryCategory) {
+    HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
-    private static final Language<HtmlTokenId> language = new LanguageHierarchy<HtmlTokenId>() {
+    private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
         @Override
-        protected Collection<HtmlTokenId> createTokenIds() {
-            return EnumSet.allOf(HtmlTokenId.class);
+        protected Collection<HTMLTokenId> createTokenIds() {
+            return EnumSet.allOf(HTMLTokenId.class);
         }
         
         @Override
-        protected Map<String,Collection<HtmlTokenId>> createTokenCategories() {
-            //Map<String,Collection<HtmlTokenId>> cats = new HashMap<String,Collection<HtmlTokenId>>();
+        protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
+            //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
             // Additional literals being a lexical error
             //cats.put("error", EnumSet.of());
             return null;
         }
         
         @Override
-        protected Lexer<HtmlTokenId> createLexer(LexerRestartInfo<HtmlTokenId> info) {
+        protected Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
             return new HtmlLexer(info);
         }
         
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
-        Token<HtmlTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             String mimeType = null;
             switch(token.id()) {
                 // BEGIN TOR MODIFICATIONS
@@ -204,7 +204,7 @@ public enum HtmlTokenId implements TokenId {
      *
      * @return non-null LanguageDescription
      */
-    public static Language<HtmlTokenId> language() {
+    public static Language<HTMLTokenId> language() {
         return language;
     }
     

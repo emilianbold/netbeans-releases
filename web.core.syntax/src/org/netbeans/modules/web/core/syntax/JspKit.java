@@ -62,7 +62,7 @@ import java.beans.*;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -538,7 +538,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
-                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HtmlTokenId.language());
+                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
                 HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(htmlInJSPPath);
 
                 if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {

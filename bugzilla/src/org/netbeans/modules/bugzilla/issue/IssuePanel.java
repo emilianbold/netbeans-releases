@@ -44,7 +44,6 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,8 +71,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -1279,13 +1278,11 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
         if (isNew) {
-            File largerContext = BugtrackingUtil.getLargerContext();
-            if (largerContext != null) {
-                BugzillaRepository repository = issue.getRepository();
-                if (repository != null) {
-                    FileToRepoMappingStorage.getInstance()
-                            .setLooseAssociation(largerContext, repository);
-                }
+            BugzillaRepository repository = issue.getRepository();
+            if (repository != null) {
+                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                        BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
+                        null);
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed

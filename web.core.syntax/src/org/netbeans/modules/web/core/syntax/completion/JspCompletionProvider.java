@@ -46,7 +46,7 @@ import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -217,7 +217,7 @@ public class JspCompletionProvider implements CompletionProvider {
         doc.readLock();
         try {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HtmlTokenId.language(), adjustedOffset);
+            TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
             if(tokenSequence != null) {
                 tokenSequence.move(adjustedOffset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
@@ -225,7 +225,7 @@ public class JspCompletionProvider implements CompletionProvider {
                 }
                 
                 Token tokenItem = tokenSequence.token();
-                if(tokenSequence.embedded() == null && tokenItem.id() == HtmlTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+                if(tokenSequence.embedded() == null && tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
                     hideCompletion();
                 }
             }
