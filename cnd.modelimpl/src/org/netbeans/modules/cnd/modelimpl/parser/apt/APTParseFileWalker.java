@@ -189,13 +189,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
 
         SimpleOffsetableImpl pos = getOffsetable(define.getToken());
-        List bodyTokens = define.getBody();
+        List<APTToken> bodyTokens = define.getBody();
         APTToken last;
         String body = "";
         if (bodyTokens.isEmpty()) {
             last = define.getName();
         } else {
-            last = (APTToken) bodyTokens.get(bodyTokens.size() - 1);
+            last = bodyTokens.get(bodyTokens.size() - 1);
             //APTToken start = (APTToken) bodyTokens.get(0);
             // FIXUP (performance/memory). For now:
             // 1) nobody uses macros.getText
