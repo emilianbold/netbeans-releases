@@ -743,7 +743,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         Cancellable c = new Cancellable() {
             public boolean cancel() {
-                task.cancel();
+                if(task != null) {
+                    task.cancel();
+                }
                 return true;
             }
         };
