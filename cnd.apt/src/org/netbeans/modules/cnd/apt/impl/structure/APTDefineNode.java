@@ -127,10 +127,10 @@ public final class APTDefineNode extends APTMacroBaseNode
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
             if (bodyTokens != null){
-                ((ArrayList)bodyTokens).trimToSize();
+                ((ArrayList<?>)bodyTokens).trimToSize();
             }
             if (params != null){
-                ((ArrayList)params).trimToSize();
+                ((ArrayList<?>)params).trimToSize();
             }
             return false;
         } else {
