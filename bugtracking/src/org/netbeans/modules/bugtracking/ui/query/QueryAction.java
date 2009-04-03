@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,12 +44,10 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -78,10 +76,9 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(Query query) {
-        File context = BugtrackingUtil.getLargerContext();
-        Repository repository = (context != null)
-                                ? FileToRepoMappingStorage.getInstance().getRepository(context)
-                                : null;
+        Repository repository = BugtrackingOwnerSupport.getInstance()
+                                .getRepository(BugtrackingOwnerSupport.ContextType
+                                               .SELECTED_FILE_AND_ALL_PROJECTS) ;
         openQuery(query, repository);
     }
 
