@@ -158,8 +158,9 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         if (buildJar.isSelected()) {
             Element aa = (Element) publishers.appendChild(doc.createElement("hudson.tasks.ArtifactArchiver")); // NOI18N
             aa.appendChild(doc.createElement("artifacts")). // NOI18N
-                    // XXX consider including lib/ subdir too
-                    appendChild(doc.createTextNode("dist/*.jar")); // NOI18N
+                    appendChild(doc.createTextNode("dist/")); // NOI18N
+            aa.appendChild(doc.createElement("excludes")). // NOI18N
+                    appendChild(doc.createTextNode("dist/javadoc/")); // NOI18N
             aa.appendChild(doc.createElement("latestOnly")). // NOI18N
                     appendChild(doc.createTextNode("true")); // NOI18N
         }
