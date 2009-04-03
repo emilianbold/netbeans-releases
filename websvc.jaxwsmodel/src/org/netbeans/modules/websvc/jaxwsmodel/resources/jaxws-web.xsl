@@ -79,6 +79,7 @@ made subject to such option by the copyright holder.
                                         sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
                                         resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
                                         destdir="${{build.generated.sources.dir}}/jax-ws"
+                                        verbose="true"
                                         xendorsed = "true"
                                         keep="true"
                                         genwsdl="true"
@@ -91,6 +92,7 @@ made subject to such option by the copyright holder.
                                         sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
                                         resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
                                         destdir="${{build.generated.sources.dir}}/jax-ws"
+                                        verbose="true"
                                         keep="true"
                                         genwsdl="true"
                                         sei="{$seiclass}">
