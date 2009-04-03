@@ -133,7 +133,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         
         extraLookupContent[0] = repository;
         
-        DEFAULT_LOOKUP.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
+        SourceUtilsTestUtil.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
         
         SourceUtilsTestUtil2.disableLocks();
     }
@@ -162,7 +162,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         lookupContent[3] = JavaDataLoader.findObject(JavaDataLoader.class, true);
         
         setLookup(lookupContent, SourceUtilsTestUtil.class.getClassLoader());
-        
+
         IndexUtil.setCacheFolder(FileUtil.toFile(cache));
     }
 
