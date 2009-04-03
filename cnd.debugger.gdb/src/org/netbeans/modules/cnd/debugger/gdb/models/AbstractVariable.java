@@ -135,6 +135,17 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         tinfo = null;
         type = "";
         value = "";
+        emptyFields();
+    }
+
+    private void emptyFields() {
+        int i, k = fields.length;
+        for (i=0; i < k; i++) {
+            Field field = fields[i];
+            if (field instanceof PropertyChangeListener) {
+                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (PropertyChangeListener)field);
+            }
+        }
         fields = new Field[0];
     }
 
@@ -310,7 +321,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     public synchronized void setModifiedValue(String value) {
         this.value = value;
         if (fields.length > 0) {
-            fields = new Field[0];
+            emptyFields();
             derefValue = null;
             if (value.length() > 0) {
                 expandChildren();
