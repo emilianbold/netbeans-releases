@@ -54,6 +54,7 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
         
         initComponents();
+        docTextArea.setBackground(getBackground());
         
         remove(packagingHeaderOuterPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -75,6 +76,7 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(additionalInfoPanel, gridBagConstraints);
     }
 
