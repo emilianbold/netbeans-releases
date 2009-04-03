@@ -45,11 +45,10 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.modules.loadgenerator.api.EngineManager;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.openide.nodes.AbstractNode;
@@ -61,7 +60,6 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -78,7 +76,9 @@ public class ManagerNode extends AbstractNode implements LookupListener {
   private ManagerNode(final Children children) {
     super(children);
   }
-  
+
+  @ServicesTabNodeRegistration(name="LOADGEN", displayName="#ManagerNode_Title",
+      iconResource="org/netbeans/modules/loadgenerator/images/loadgen.png", position=533)
   synchronized public static final ManagerNode getInstance() {
     //    EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
     //    Children children = new Children.Array();
@@ -107,7 +107,7 @@ public class ManagerNode extends AbstractNode implements LookupListener {
   
   @Override
   public String getName() {
-    return NbBundle.getMessage(ManagerNode.class, "ManagerNode_ID"); // NOI18N
+    return "LOADGEN";
   }
   
   @Override
@@ -122,7 +122,7 @@ public class ManagerNode extends AbstractNode implements LookupListener {
   
   @Override
   public synchronized Image getIcon(int i) {
-    return ImageUtilities.loadImage(NbBundle.getMessage(this.getClass(), "ManagerNode_Icon")); // NOI18N
+    return ImageUtilities.loadImage("org/netbeans/modules/loadgenerator/images/loadgen.png");
   }
   
   public void setEngineLookup(Lookup.Result<Engine> lookup) {

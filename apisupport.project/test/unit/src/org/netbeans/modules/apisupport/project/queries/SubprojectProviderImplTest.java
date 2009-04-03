@@ -86,6 +86,7 @@ public class SubprojectProviderImplTest extends TestBase {
             "projectapi",
             "projectuiapi",
         });
+        checkSubprojects("openide.util", new String[] {});
     }
     
     public void testExternalSubprojects() throws Exception {

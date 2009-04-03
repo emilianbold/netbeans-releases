@@ -53,6 +53,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.spi.project.support.rake.SourcesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -65,20 +66,17 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
     private static final String BUILD_DIR_PROP = "${" + RailsProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + RailsProjectProperties.DIST_DIR + "}";    //NOI18N
 
+    private final Project project;
     private final RakeProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private Sources delegate;
-    
-    /**
-     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
-     */
-    private boolean externalRootsRegistered;    
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
-    public RailsSources(RakeProjectHelper helper, PropertyEvaluator evaluator,
+    public RailsSources(Project project, RakeProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
+        this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
@@ -120,7 +118,7 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
     }
 
     private Sources initSources() {    
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -141,15 +139,7 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
         }        
         sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
         sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {                
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
 

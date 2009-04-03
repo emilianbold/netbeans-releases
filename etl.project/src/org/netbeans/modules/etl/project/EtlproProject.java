@@ -23,7 +23,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -53,7 +52,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.etl.project.ui.EtlproLogicalViewProvider;
@@ -133,7 +131,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
                 new String[]{"${src.dir}/*.java"}, // NOI18N
                 new String[]{"${build.classes.dir}/*.class"} // NOI18N
                 );
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
         /*String nbBundle1 = mLoc.t("BUND711: EJB Module");
         String nbBundle2 = mLoc.t("BUND712: Source Packages");
         String webModuleLabel = nbBundle1.substring(15); //NOI18N
@@ -147,12 +145,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
 
         sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/ null, null);
         sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/ null, null);
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return Lookups.fixed(new Object[]{
             new Info(),
             aux,
