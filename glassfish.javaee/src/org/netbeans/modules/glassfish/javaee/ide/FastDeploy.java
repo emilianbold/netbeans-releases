@@ -62,9 +62,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -100,28 +98,21 @@ public class FastDeploy extends IncrementalDeployment {
     public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, final File dir) {
         final String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
         String contextRoot = null;
-        if (ModuleType.WAR.equals(module.getModuleType())) {
-            try {
-                ContextRootConfiguration contextRootConfig = configuration.getLookup().lookup(ContextRootConfiguration.class);
-                contextRoot = contextRootConfig.getContextRoot();
-            } catch (ConfigurationException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Unable to read context-root for " + moduleName, ex);
-                contextRoot = moduleName;
-            }
-        }
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-       final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
+        final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
+        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance()));
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
         try {
             restart = HttpMonitorHelper.synchronizeMonitor(commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
-                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
-                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
-                     "modules/org-netbeans-modules-schema2beans.jar");
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
         } catch (IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
@@ -138,10 +129,10 @@ public class FastDeploy extends IncrementalDeployment {
                 }
             });
             commonSupport.restartServer(restartObject);
-            return progressObject;
+            return updateCRObject;
         } else {
             commonSupport.deploy(progressObject, dir, moduleName);
-            return progressObject;
+            return updateCRObject;
         }
     }
     
@@ -156,6 +147,9 @@ public class FastDeploy extends IncrementalDeployment {
                 (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, (Hk2TargetModuleID) targetModuleID,
                 CommandType.REDEPLOY, false);
+        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm,
+                (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance()));
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
         try {
@@ -192,7 +186,7 @@ public class FastDeploy extends IncrementalDeployment {
                 }
             });
             commonSupport.restartServer(restartObject);
-            return progressObject;
+            return updateCRObject;
         } else {
             if (hasChanges) {
                 commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
@@ -200,7 +194,7 @@ public class FastDeploy extends IncrementalDeployment {
                 progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
                         NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));
             }
-            return progressObject;
+            return updateCRObject;
         }
     }
     

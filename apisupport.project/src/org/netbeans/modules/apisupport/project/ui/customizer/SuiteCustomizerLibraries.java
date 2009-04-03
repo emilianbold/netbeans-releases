@@ -42,9 +42,12 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.CardLayout;
+import javax.swing.Action;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.image.ComponentColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -71,6 +74,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -94,6 +98,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.swing.outline.Outline;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -109,6 +114,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
 
 /**
@@ -124,6 +130,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     static boolean TEST = false;
     private LibrariesChildren libChildren;
     private boolean extClustersLoaded;
+    private AbstractNode realRoot;
+    private AbstractNode waitRoot;
 
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -133,19 +141,30 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         initComponents();
         initAccessibility();
         manager = new ExplorerManager();
+        waitRoot = new AbstractNode(new Children.Array() {
+
+            @Override
+            protected Collection<Node> initCollection() {
+                return Collections.singleton((Node) new WaitNode());
+            }
+        });
+        waitRoot.setName(getMessage("LBL_ModuleListClusters"));
+        waitRoot.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
+        manager.setRootContext(waitRoot);
         refresh();
 
         view.setProperties(new Node.Property[] { ENABLED_PROP_TEMPLATE, ORIGIN_PROP_TEMPLATE });
-        view.setRootVisible(false);
-        view.setDefaultActionAllowed(false);
-        // col widths: 60%, 10%, 30%
-        // XXX TTV is clumsy, rewrite to Outline (without Nodes) or OutlineView
-        Dimension dim = view.getPreferredSize();
-        int firstW = 80 * dim.width / 100,
-            secW = 5 * dim.width / 100;
-//        view.setTableColumnPreferredWidth(0, firstW);
-        view.setTableColumnPreferredWidth(0, secW);
-        view.setTableColumnPreferredWidth(1, dim.width - firstW - secW);
+        Outline outline = view.getOutline();
+        outline.setRootVisible(false);
+        outline.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        TableColumn col = outline.getColumnModel().getColumn(1);
+        col.setMinWidth(25);
+        col.setMaxWidth(200);
+        col.setPreferredWidth(70);
+        col = outline.getColumnModel().getColumn(2);
+        col.setMinWidth(25);
+        col.setMaxWidth(300);
+        col.setPreferredWidth(130);
 
         suiteProps.getBrandingModel().addChangeListener(this);
         suiteProps.addPropertyChangeListener(new PropertyChangeListener() {
@@ -306,13 +325,19 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return new ClusterNode(ci, moduleCh);
     }
 
+    private final class WaitNode extends AbstractNode {
+        public WaitNode() {
+            super(Children.LEAF);
+            setDisplayName(CustomizerComponentFactory.WAIT_VALUE);
+        }
+    }
+
     private void initNodes() {
         if (libChildren == null) {
             libChildren = new LibrariesChildren();
-            AbstractNode n = new AbstractNode(libChildren);
-            n.setName(getMessage("LBL_ModuleListClusters"));
-            n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
-            manager.setRootContext(n);
+            realRoot = new AbstractNode(libChildren);
+            realRoot.setName(getMessage("LBL_ModuleListClusters"));
+            realRoot.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         }
     }
 
@@ -452,7 +477,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         javaPlatformCombo = new javax.swing.JComboBox();
         javaPlatformButton = new javax.swing.JButton();
         filler = new javax.swing.JLabel();
-        view = new org.openide.explorer.view.TreeTableView();
+        view = new org.openide.explorer.view.OutlineView();
         viewLabel = new javax.swing.JLabel();
         buttonsPanel = new javax.swing.JPanel();
         resolveButtonPanel = new javax.swing.JPanel();
@@ -557,14 +582,14 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         add(filler, gridBagConstraints);
 
         view.setBorder(javax.swing.UIManager.getBorder("ScrollPane.border"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(view, gridBagConstraints);
-
+        
         viewLabel.setLabelFor(view);
         org.openide.awt.Mnemonics.setLocalizedText(viewLabel, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_PlatformModules")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -644,6 +669,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
         if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            manager.setRootContext(waitRoot);
             store();    // restore the same enablement of clusters for new platform
             getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
             updateJavaPlatformEnabled();
@@ -735,7 +761,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private javax.swing.JButton removeButton;
     private javax.swing.JButton resolveButton;
     private javax.swing.JPanel resolveButtonPanel;
-    private org.openide.explorer.view.TreeTableView view;
+    private org.openide.explorer.view.OutlineView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
     
@@ -848,8 +874,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED
     }
 
-    // TODO C.P separate model from nodes, together with TreeTable --> Outline 
+    private static final SystemAction[] NO_ACTIONS = new SystemAction[0];
+
     abstract class Enabled extends AbstractNode {
+
         private EnabledState state;
 
         Enabled(Children ch, boolean enabled) {
@@ -863,6 +891,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             setSheet(s);
             setIconBaseWithExtension(
                     isLeaf() ? NbModuleProject.NB_PROJECT_ICON_PATH : SuiteProject.SUITE_ICON_PATH);
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return null;
+        }
+
+        @Override
+        public SystemAction[] getActions() {
+            return NO_ACTIONS;
         }
 
         public void setEnabled(boolean s) {
@@ -1112,7 +1150,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
             Children ch = node.getChildren();
-            // TODO C.P bugfix - new empty app shows all platform nodes checked for a while
             Logger logger = Logger.getLogger(EnabledProp.class.getName());
             if (ch == Children.LEAF) {
                 logger.log(Level.FINE, "Node '" + node.getName() + "' is LEAF, enabled=" + node.isEnabled());
@@ -1515,7 +1552,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
         
-        for (Node cluster : getExplorerManager().getRootContext().getChildren().getNodes()) {
+        for (Node cluster : libChildren.getNodes()) {
             if (cluster instanceof ClusterNode) {
                 ClusterNode e = (ClusterNode) cluster;
                 if (e.isEnabled()) {
@@ -1536,18 +1573,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
-                if (! fi.isEmpty()) {
-                    String key = fi.warning[0];
-                    String[] args = new String[fi.warning.length - 1];
-                    System.arraycopy(fi.warning, 1, args, 0, args.length);
-                    category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
-                    resolveFixInfo = fi;
-                    resolveButton.setEnabled(fi.fixable);
-                    cl.last(resolveButtonPanel);
-                } else {
-                    category.setErrorMessage(null);
-                    cl.first(resolveButtonPanel);
+                try {
+                    CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
+                    if (!fi.isEmpty()) {
+                        String key = fi.warning[0];
+                        String[] args = new String[fi.warning.length - 1];
+                        System.arraycopy(fi.warning, 1, args, 0, args.length);
+                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                        resolveFixInfo = fi;
+                        resolveButton.setEnabled(fi.fixable);
+                        cl.last(resolveButtonPanel);
+                    } else {
+                        category.setErrorMessage(null);
+                        cl.first(resolveButtonPanel);
+                    }
+                } finally {
+                    manager.setRootContext(realRoot);
                 }
             }
         });

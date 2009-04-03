@@ -94,8 +94,8 @@
  <answer id="arch-usecases">
   <p>
    <usecase id="services-tab-node" name="Register Node in Services tab">
-        Use <a href="@TOP@/org/netbeans/api/core/ide/ServiceTabNodeRegistration.html">
-        ServiceTabNodeRegistration</a> to register your nodes into <em>Services</em> in the IDE.
+        Use <a href="@TOP@/org/netbeans/api/core/ide/ServicesTabNodeRegistration.html">
+        ServicesTabNodeRegistration</a> to register your nodes into <em>Services</em> in the IDE.
    </usecase>
   </p>
  </answer>
@@ -115,8 +115,8 @@
  <answer id="arch-what">
   <api name="core.ide" category="stable" group="java" type="export">
   Right now this module provides handy
-  <a href="@TOP@/org/netbeans/api/core/ide/ServiceTabNodeRegistration.html">
-    ServiceTabNodeRegistration</a>
+  <a href="@TOP@/org/netbeans/api/core/ide/ServicesTabNodeRegistration.html">
+    ServicesTabNodeRegistration</a>
     accompanied with few UI elements.
   </api>
  </answer>

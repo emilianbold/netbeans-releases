@@ -47,6 +47,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -538,9 +539,12 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        getDepListModel().removeDependencies(NbCollections.checkedListByCopy(Arrays.asList(dependencyList.getSelectedValues()), ModuleDependency.class, true));
-        if (dependencyList.getModel().getSize() > 0) {
-            dependencyList.setSelectedIndex(0);
+        List<ModuleDependency> deps = NbCollections.checkedListByCopy(Arrays.asList(dependencyList.getSelectedValues()), ModuleDependency.class, false);
+        if (deps.size() > 0) {
+            getDepListModel().removeDependencies(deps);
+            if (dependencyList.getModel().getSize() > 0) {
+                dependencyList.setSelectedIndex(0);
+            }
         }
         dependencyList.requestFocusInWindow();
     }//GEN-LAST:event_removeModuleDependency
