@@ -39,5 +39,13 @@ small-icon
 End cursor position = 305
 [<jsp:body><html></|, < /jsp:body >, <jsp:body><html></jsp:body>, 383]
 < /jsp:body >
-</html>
+</html >
 End cursor position = 411
+[<jsp:directive.attribute fragment="|"/>, true, <jsp:directive.attribute fragment="true"/>, 484]
+false
+true
+End cursor position = 524
+[<jsp:directive.tag isELIgnored="|"/>, false, <jsp:directive.tag isELIgnored="false"/>, 581]
+false
+true
+End cursor position = 619
