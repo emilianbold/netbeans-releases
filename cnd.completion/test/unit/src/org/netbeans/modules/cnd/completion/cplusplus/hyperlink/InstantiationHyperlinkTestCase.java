@@ -161,4 +161,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz147518_2.cpp", 21, 8, "iz147518_2.cpp", 13, 5);
         performTest("iz147518_2.cpp", 24, 25, "iz147518_2.cpp", 16, 5);
     }
+
+    public void test161875() throws Exception {
+        // IZ#161875 : Regression on specializations with forward classes
+        performTest("iz161875.cpp", 7, 7, "iz161875.cpp", 3, 5);
+    }
+
 }
