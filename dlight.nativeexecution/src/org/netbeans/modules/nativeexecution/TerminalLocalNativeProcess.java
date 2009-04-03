@@ -47,6 +47,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static boolean isMacOS;
     private final InputStream processOutput;
     private final InputStream processError;
-    private final OutputStream processInput;
     private final String pidFileName;
     private final Process termProcess;
 
@@ -97,7 +97,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
             }
         }
-        
+
         dorunScript = runScript;
     }
 
@@ -110,7 +110,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             processError = new ByteArrayInputStream(
                     "unable to start process in an external terminal - dorun script not found".getBytes()); // NOI18N
             processOutput = new ByteArrayInputStream(new byte[0]);
-            processInput = null;
             pidFileName = null;
             termProcess = null;
             return;
@@ -211,11 +210,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             fos.close();
         }
 
-        termProcess = pb.start();
+        Process terminalProcess = null;
 
-        processOutput = new ByteArrayInputStream(new byte[0]);
+        try {
+            terminalProcess = pb.start();
+        } catch (IOException ex) {
+            termProcess = null;
+            processError = new ByteArrayInputStream(ex.getMessage().getBytes());
+            processOutput = new ByteArrayInputStream(new byte[]{32});
+            return;
+        }
+
+        termProcess = terminalProcess;
+
+//        String message = "Start " + commandLine + " in " + // NOI18N
+//                terminalInfo.getTerminalProfile(terminal).getID() + "... "; // NOI18N
+
+        String message = " "; // NOI18N
+        processOutput = new ByteArrayInputStream(message.getBytes());
         processError = termProcess.getErrorStream();
-        processInput = null;
 
         waitPID();
     }
@@ -227,7 +240,17 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private synchronized int sendSignal(int signal) {
         int result = 1;
+        int pid = -1;
 
+        try {
+            pid = getPID();
+        } catch (IllegalThreadStateException ex) {
+        }
+
+        if (pid < 0) {
+            return -1;
+        }
+        
         try {
             ProcessBuilder pb;
             List<String> command = new ArrayList<String>();
@@ -248,6 +271,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             result = killProcess.waitFor();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        } catch (InterruptedIOException ex) {
+            Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -261,7 +286,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         try {
             pid = getPID();
-        } catch (IllegalStateException ex) {
+        } catch (IllegalThreadStateException ex) {
         }
 
         if (pid < 0) {
@@ -299,6 +324,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 Thread.sleep(500);
             }
+        } catch (InterruptedIOException ex) {
+            throw new InterruptedException();
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {
         }
@@ -308,7 +335,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public OutputStream getOutputStream() {
-        return processInput;
+        return null;
     }
 
     @Override
@@ -333,30 +360,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private void waitPID() {
         File realPidFile = new File(pidFileName); // NOI18N
 
-        while (true) {
+        while (!isInterrupted()) {
             if (realPidFile.exists() && realPidFile.length() > 0) {
                 try {
                     InputStream pidIS = new FileInputStream(realPidFile);
                     readPID(pidIS);
                     pidIS.close();
                     break;
+                } catch (InterruptedException ex) {
+                    interrupt();
+                } catch (InterruptedIOException ex) {
+                    interrupt();
                 } catch (IOException ex) {
-                    return;
                 }
             }
 
-            if (isFinished() || Thread.currentThread().isInterrupted()) {
-                // TODO: Not very good idea...
-                // use readPID(null) to initiate ERROR state...
-                readPID(null);
-                return;
+            if (isFinished()) {
+                interrupt();
             }
 
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 }

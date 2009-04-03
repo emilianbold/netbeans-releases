@@ -4,6 +4,7 @@ License: GPL-2-CP
 Description: Javac Compiler Implementation
 OSR: 6273
 Origin: https://jdk7.dev.java.net/
+Source: http://hg.netbeans.org/main/nb-javac/
 
 The GNU General Public License (GPL)
 Version 2, June 1991

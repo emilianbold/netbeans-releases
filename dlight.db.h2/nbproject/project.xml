@@ -50,8 +50,7 @@
             </test-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/h2.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/h2.jar</binary-origin>
+                <runtime-relative-path>ext/h2-1.0.79.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

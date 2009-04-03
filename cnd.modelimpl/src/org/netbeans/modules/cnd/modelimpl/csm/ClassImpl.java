@@ -89,7 +89,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern,
+        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
@@ -279,7 +279,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 }
                             } else {
                                 try {
-                                    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
+                                    addMember(new MethodImpl<CsmMethod>(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                                 } catch (AstRendererException e) {
                                     DiagnosticExceptoins.register(e);
                                 }
@@ -318,7 +318,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             }
                         } else {
                             try {
-                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility, !isRenderingLocalContext(),!isRenderingLocalContext()),!isRenderingLocalContext());
+                                addMember(new MethodDDImpl<CsmMethod>(token, ClassImpl.this, curentVisibility, !isRenderingLocalContext(),!isRenderingLocalContext()),!isRenderingLocalContext());
                             } catch (AstRendererException e) {
                                 DiagnosticExceptoins.register(e);
                             }
@@ -698,8 +698,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         CsmUID<CsmMember> uid = UIDCsmConverter.declarationToUID(member);
         assert uid != null;
         synchronized (members) {
-            members.add(uid);
-//            UIDUtilities.insertIntoSortedUIDList(uid, members);
+//            members.add(uid);
+            UIDUtilities.insertIntoSortedUIDList(uid, members);
         }
     }
 
@@ -710,8 +710,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         CsmUID<CsmFriend> uid = UIDCsmConverter.declarationToUID(friend);
         assert uid != null;
         synchronized (friends) {
-            friends.add(uid);
-//            UIDUtilities.insertIntoSortedUIDList(uid, friends);
+//            friends.add(uid);
+            UIDUtilities.insertIntoSortedUIDList(uid, friends);
         }
     }
 
@@ -726,7 +726,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @SuppressWarnings("unchecked")
     public Collection<CsmScopeElement> getScopeElements() {
-        return (Collection) getMembers();
+        return (Collection<CsmScopeElement>) (Collection<?>) getMembers();
     }
 
     @Override

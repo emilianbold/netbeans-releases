@@ -55,7 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiErrorMessage;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -332,8 +332,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     private String getErrorMessage(KenaiException kex, String prepend) {
         String errMsg = null;
-        if (kex instanceof KenaiErrorMessage) {
-            KenaiErrorMessage kem = (KenaiErrorMessage) kex;
+        if (kex instanceof KenaiException) {
+            KenaiException kem = (KenaiException) kex;
             Map<String,String> errMap = kem.getErrors();
             StringBuffer sb = new StringBuffer();
             if (prepend != null) {
