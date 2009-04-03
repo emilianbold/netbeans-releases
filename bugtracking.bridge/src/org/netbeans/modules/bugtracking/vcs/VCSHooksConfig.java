@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.vcshooks;
+package org.netbeans.modules.bugtracking.vcs;
 
 import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;

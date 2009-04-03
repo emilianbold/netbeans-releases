@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -201,7 +202,7 @@ public interface ProjectHudsonJobCreatorFactory {
          * @return error message for {@link ProjectHudsonJobCreator#error} in case {@link #prepareSCM} is null
          */
         public static ConfigurationStatus noSCMError() {
-            return ConfigurationStatus.withError("The project does not use any supported version control system."); // XXX I18N
+            return ConfigurationStatus.withError(NbBundle.getMessage(ProjectHudsonJobCreatorFactory.class, "ProjectHudsonJobCreatorFactory.no_vcs"));
         }
 
         /**
@@ -210,11 +211,11 @@ public interface ProjectHudsonJobCreatorFactory {
          */
         public static void addLogRotator(Document configXml) {
             Element lr = (Element) configXml.getDocumentElement().appendChild(
-                    configXml.createElement("logRotator"));
-            lr.appendChild(configXml.createElement("daysToKeep")).
-                    appendChild(configXml.createTextNode("-1"));
-            lr.appendChild(configXml.createElement("numToKeep")).
-                    appendChild(configXml.createTextNode("1"));
+                    configXml.createElement("logRotator")); // NOI18N
+            lr.appendChild(configXml.createElement("daysToKeep")). // NOI18N
+                    appendChild(configXml.createTextNode("-1")); // NOI18N
+            lr.appendChild(configXml.createElement("numToKeep")). // NOI18N
+                    appendChild(configXml.createTextNode("1")); // NOI18N
         }
 
     }

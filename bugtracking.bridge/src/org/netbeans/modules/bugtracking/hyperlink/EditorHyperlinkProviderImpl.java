@@ -56,6 +56,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,8 +100,10 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         }
         if(file == null) return;
         
-        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
         if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
 
         class IssueDisplayer implements Runnable {
             private Issue issue = null;

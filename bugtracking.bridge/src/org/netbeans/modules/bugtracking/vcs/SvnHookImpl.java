@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.vcshooks;
+package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,7 +53,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
-import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
@@ -191,7 +191,7 @@ public class SvnHookImpl extends SvnHook {
                 }
             }
             if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
             }
             panel = new HookPanel(repos, repoToSelect);
         }

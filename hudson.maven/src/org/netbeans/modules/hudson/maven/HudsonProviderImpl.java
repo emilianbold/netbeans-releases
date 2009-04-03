@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectHudsonProvider.class, position=100)
 public class HudsonProviderImpl extends ProjectHudsonProvider {
 
-    private static final String HUDSON_SYSTEM = "hudson";
+    private static final String HUDSON_SYSTEM = "hudson"; // NOI18N
 
     static boolean TEST;
 

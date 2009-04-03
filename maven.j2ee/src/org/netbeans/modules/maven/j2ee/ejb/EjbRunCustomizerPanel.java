@@ -88,7 +88,12 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         String[] ids = Deployment.getDefault().getServerInstanceIDs(new Object[]{J2eeModule.EJB});
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
-        col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc != null && sc.getServerInstanceId() != null) {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
+        } else {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        }
         for (int i = 0; i < ids.length; i++) {
             Wrapper wr = new Wrapper(ids[i]);
             col.add(wr);

@@ -278,7 +278,8 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         if (!force) {
             if (component instanceof JComboBox) {
-                currentValue  = ((JComboBox)component).getSelectedItem().toString();
+                Object value = ((JComboBox)component).getSelectedItem();
+                currentValue  = (value == null) ? "" : value.toString(); // NOI18N
             } else if (component instanceof JTextField) {
                 currentValue = ((JTextField)component).getText();
             }

@@ -81,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Visual configuration of {@link CreateJob}.
@@ -128,24 +129,24 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         descriptor.setValid(false);
         notifications.clearMessages();
         if (instance == null) {
-            notifications.setInformationMessage("Pick a Hudson server to create a job on."); // XXX I18N
+            notifications.setInformationMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.pick_server"));
             return;
         }
         Project p = selectedProject();
         if (p == null) {
-            notifications.setInformationMessage("Pick a project to create a job for."); // XXX I18N
+            notifications.setInformationMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.pick_project"));
             return;
         }
         if (creator == null) {
-            notifications.setErrorMessage("The IDE does not know how to set up a job for this project."); // XXX I18N
+            notifications.setErrorMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.unknown_project_type"));
             return;
         }
         if (takenNames.contains(name())) {
-            notifications.setErrorMessage("This name is taken. Pick another."); // XXX I18N
+            notifications.setErrorMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.name_taken"));
             return;
         }
         if (ProjectHudsonProvider.getDefault().findAssociation(p) != null) {
-            notifications.setWarningMessage("This project already seems to be associated with a Hudson job."); // XXX I18N
+            notifications.setWarningMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.already_associated"));
         }
         ConfigurationStatus status = creator.status();
         if (status.getErrorMessage() != null) {

@@ -114,9 +114,9 @@ public class TestMethodNode extends AbstractNode {
                                       "MSG_TestMethodFailed_time"};     //NOI18N
         setDisplayName(
                 testcase.getTimeMillis() < 0
-                ? NbBundle.getMessage(getClass(),
+                ? NbBundle.getMessage(TestMethodNode.class,
                                       noTimeKeys[status],testcase.getName())
-                : NbBundle.getMessage(getClass(),
+                : NbBundle.getMessage(TestMethodNode.class,
                                       timeKeys[status],testcase.getName(),
                                       new Float(testcase.getTimeMillis()/1000f)));
     }
@@ -147,13 +147,13 @@ public class TestMethodNode extends AbstractNode {
         }
 
         if (cause != null) {
-            buf.append(NbBundle.getMessage(getClass(),
+            buf.append(NbBundle.getMessage(TestMethodNode.class,
                     DisplayNameMapper.getCauseKey(status), cause));
         } else {
             buf.append(testcase.getTimeMillis() < 0
-                    ? NbBundle.getMessage(getClass(),
+                    ? NbBundle.getMessage(TestMethodNode.class,
                     DisplayNameMapper.getNoTimeKey(status))
-                    : NbBundle.getMessage(getClass(),
+                    : NbBundle.getMessage(TestMethodNode.class,
                     DisplayNameMapper.getTimeKey(status),
                     new Float(testcase.getTimeMillis() / 1000f)));
         }

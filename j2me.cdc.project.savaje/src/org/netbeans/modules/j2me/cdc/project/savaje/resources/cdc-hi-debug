@@ -3,15 +3,20 @@
     <target name="-pre-cdc-hi-debug" if="cdc-hi-platform.trigger"/>
 
     <target name="-cdc-hi-debug" if="cdc-hi-platform.trigger">
-        <echo message="Debug for CDC VM is not supported now, application will be only executed"/>
-        <exec executable="${{platform.home}}/bin/emulator">
-          <arg value="-cp"/>
-          <arg value="${{basedir}}/${{dist.dir}}/${{dist.jar}}"/>
-          <arg value="-Xdevice:${{platform.device}}"/>
-          <arg value="${{run.cmd.options}}"/>
-          <arg value="-Xmain:${{main.class}}"/>
-          <arg value="${{application.args}}"/>
-        </exec>
+        <taskdef name="freePortRetriever" classname="org.netbeans.modules.j2me.cdc.project.savaje.FreePortRetriever" classpath="${{libs.savaje-ant-utils.classpath}}"/>
+        <freePortRetriever debuggerPortProperty="active.debug.port" />
+        <parallel>
+            <exec executable="${{platform.home}}/bin/emulator">
+              <arg value="-cp"/>
+              <arg value="${{basedir}}/${{dist.dir}}/${{dist.jar}}"/>
+              <arg value="-Xdevice:${{platform.device}}"/>
+              <arg value="-Xmain:${{main.class}}"/>
+              <arg value="-Xrunjdwp:transport=dt_socket,address=${{active.debug.port}},server=y,suspend=y"/>
+              <arg value="-Xdebug"/>
+            </exec>
+            <property name="debug.delay" value="500"/>
+            <nb-mobility-debug address="${{active.debug.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="30000" period="2000"/>
+        </parallel>
     </target>
 
     <target name="-post-cdc-hi-debug" if="cdc-hi-platform.trigger"/>

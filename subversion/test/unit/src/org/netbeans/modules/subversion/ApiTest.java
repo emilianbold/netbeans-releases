@@ -47,12 +47,12 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  *
@@ -80,9 +80,11 @@ public class ApiTest extends NbTestCase {
 
         dataRootDir = new File(System.getProperty("data.root.dir"));
         repoDir = new File(dataRootDir, "repo");
+        FileUtils.deleteRecursively(repoDir);
         TestKit.initRepo(repoDir, workDir);
 
         System.setProperty("svnClientAdapterFactory", "commandline");
+        System.setProperty("netbeans.user", dataRootDir.getAbsolutePath());
     }
     
     @Override
@@ -190,6 +192,30 @@ public class ApiTest extends NbTestCase {
                 "", "", "creating dir");
         info = TestKit.getSVNInfo(url2);
         assertNotNull(info);
+    }
+
+    public void testCommit() throws SVNClientException, IOException {
+        File folder = new File(workDir, "testCommitFolder");
+        folder.mkdirs();
+        TestKit.svnimport(repoDir, folder);
+
+        ISVNStatus s = TestKit.getSVNStatus(folder);
+        assertEquals(SVNStatusKind.NORMAL, s.getTextStatus());
+
+        File file = new File(folder, "file");
+        file.createNewFile();
+        TestKit.add(file);
+        s = TestKit.getSVNStatus(file);
+        assertEquals(SVNStatusKind.ADDED, s.getTextStatus());
+
+        Subversion.getInstance().versionedFilesChanged();
+        SvnUtils.refreshParents(folder);
+        Subversion.getInstance().getStatusCache().refreshRecursively(folder);
+
+        org.netbeans.modules.subversion.api.Subversion.commit(new File[] {folder}, "", "", "msg");
+        s = TestKit.getSVNStatus(file);
+        assertEquals(SVNStatusKind.NORMAL, s.getTextStatus());
+
     }
 
 }
