@@ -156,12 +156,10 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
             throw ex;
         } catch (RuntimeException re) {
             // turn other throwables into class not found ex.
-            clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + re.toString());  // NOI18N
-            clazzException.initCause(re);
+            clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + re.toString(), re);  // NOI18N
             throw (ClassNotFoundException) clazzException;
         } catch (LinkageError le) {
-            clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + le.toString());  // NOI18N
-            clazzException.initCause(le);
+            clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + le.toString(), le);  // NOI18N
             throw (ClassNotFoundException) clazzException;
         }
     }
