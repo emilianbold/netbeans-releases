@@ -106,6 +106,14 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void afterDelete(final File file) {
         Mercurial.LOG.fine("afterDelete " + file);
         if (file == null) return;
+        // we don't care about ignored files
+        // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
+        if(HgUtils.isIgnored(file, false)) {
+            if (Mercurial.LOG.isLoggable(Level.FINER)) {
+                Mercurial.LOG.log(Level.FINE, "skipping afterDelete(): File: {0} is ignored", new Object[] {file.getAbsolutePath()}); // NOI18N
+            }
+            return;
+        }
         Mercurial hg = Mercurial.getInstance();
         final File root = hg.getRepositoryRoot(file);
         rp.post(new Runnable() {
@@ -215,8 +223,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void fileMovedImpl(final File from, final File to) {
         if (from == null || to == null || !to.exists()) return;
         if (to.isDirectory()) return;
-        
-        reScheduleRefresh(100, from.getParentFile());
+
+        File parent = from.getParentFile();
+        // There is no point in refreshing the cache for ignored files.
+        if (parent != null && !HgUtils.isIgnored(parent, false)) {
+            reScheduleRefresh(100, parent);
+        }
     }
     
     public boolean beforeCreate(final File file, boolean isDirectory) {
