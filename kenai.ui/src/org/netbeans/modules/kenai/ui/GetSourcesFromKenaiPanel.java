@@ -348,11 +348,15 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (NotifyDescriptor.OK_OPTION.equals(option)) {
             KenaiProject selProject[] = browsePanel.getSelectedProjects();
             if (null != selProject && selProject.length > 0) {
-                KenaiFeature features[] = selProject[0].getFeatures(Type.SOURCE);
-                for (KenaiFeature feature : features) {
-                    KenaiFeatureListItem item = new KenaiFeatureListItem(selProject[0], feature);
-                    comboModel.addElement(item);
-                    comboModel.setSelectedItem(item);
+                try {
+                    KenaiFeature features[] = selProject[0].getFeatures(Type.SOURCE);
+                    for (KenaiFeature feature : features) {
+                        KenaiFeatureListItem item = new KenaiFeatureListItem(selProject[0], feature);
+                        comboModel.addElement(item);
+                        comboModel.setSelectedItem(item);
+                    }
+                } catch (KenaiException kenaiException) {
+                    Exceptions.printStackTrace(kenaiException);
                 }
             }
         }
@@ -443,13 +447,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     if (myProjectsIter != null) {
                         while (myProjectsIter.hasNext() ) {
                             final KenaiProject project = myProjectsIter.next();
-                            KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                            for (final KenaiFeature feature : features) {
-                                EventQueue.invokeLater(new Runnable() {
-                                    public void run() {
-                                        addElement(new KenaiFeatureListItem(project, feature));
-                                    }
-                                });
+                            try {
+                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
+                                for (final KenaiFeature feature : features) {
+                                    EventQueue.invokeLater(new Runnable() {
+
+                                        public void run() {
+                                            addElement(new KenaiFeatureListItem(project, feature));
+                                        }
+                                    });
+                                }
+                            } catch (KenaiException kenaiException) {
+                                Exceptions.printStackTrace(kenaiException);
                             }
                         }
                     }
@@ -489,9 +498,13 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     if (projects != null) {
                         while (projects.hasNext() ) {
                             KenaiProject project = projects.next();
-                            KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                            for (KenaiFeature feature : features) {
-                                addElement(new KenaiFeatureListItem(project, feature));
+                            try {
+                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
+                                for (KenaiFeature feature : features) {
+                                    addElement(new KenaiFeatureListItem(project, feature));
+                                }
+                            } catch (KenaiException kenaiException) {
+                                Exceptions.printStackTrace(kenaiException);
                             }
                         }
                     }
