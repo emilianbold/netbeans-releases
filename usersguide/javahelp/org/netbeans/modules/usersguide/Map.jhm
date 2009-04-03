@@ -473,4 +473,8 @@
 <!--Services window menu item-->
 <mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="pending.html" />
 
+
+<!--Collaboration csh topics-->
+<mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
+<mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
 </map>
