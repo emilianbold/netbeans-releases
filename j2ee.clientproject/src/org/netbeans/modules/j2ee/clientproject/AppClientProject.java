@@ -54,12 +54,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -115,7 +113,6 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -294,18 +291,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String configFilesLabel = NbBundle.getMessage(AppClientLogicalViewProvider.class, "LBL_Node_ConfFiles"); //NOI18N
-        
-        //sourcesHelper.addPrincipalSourceRoot("${"+AppClientProjectProperties.SOURCE_ROOT+"}", ejbModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+AppClientProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null); // NOI18N
-        
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
@@ -325,7 +310,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),

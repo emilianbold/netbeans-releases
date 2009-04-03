@@ -62,13 +62,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -116,7 +114,6 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
@@ -400,19 +397,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String ejbModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Node_EJBModule"); //NOI18N
-        String configFilesLabel = org.openide.util.NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
-        
-        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SOURCE_ROOT+"}", ejbModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
-        
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
@@ -437,7 +421,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                 QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
                 QuerySupport.createSourceLevelQuery(evaluator()),
-                new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                new EjbJarSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                         EjbJarProjectProperties.META_INF),
                 QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),

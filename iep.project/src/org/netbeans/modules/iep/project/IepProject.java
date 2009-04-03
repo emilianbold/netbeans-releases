@@ -29,14 +29,11 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.iep.project.ui.customizer.IepProjectCustomizerProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -59,7 +56,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -131,7 +127,7 @@ public final class IepProject implements Project, AntProjectListener {
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IepProjectLogicalViewProvider.class, "LBL_Node_Sources"); //NOI18N
 
@@ -142,11 +138,7 @@ public final class IepProject implements Project, AntProjectListener {
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", 
                 org.netbeans.modules.xml.catalogsupport.ProjectConstants.SOURCES_TYPE_XML,
                 srcJavaLabel, /*XXX*/null, null);
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
