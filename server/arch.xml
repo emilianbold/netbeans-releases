@@ -70,6 +70,13 @@ Microsystems, Inc. All Rights Reserved.
    <api group="java" name="CommonServerPropertiesAPI" type="export" category="devel" url="@TOP@org/netbeans/api/server/properties/package-summary.html"/>
    to do that. This support API is not mandatory for clients to use in any way.
   </p>
+  <p>
+      <api group="layer" name="ServersNodeActions" type="export" category="devel">
+                By registering actions to <code>Servers/Actions</code> you
+                can extend the list of popup actions on Servers node in
+                Services tab.
+      </api>
+  </p>
  </answer>
 
 

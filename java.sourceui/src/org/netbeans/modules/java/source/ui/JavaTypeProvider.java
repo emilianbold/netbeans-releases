@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.java.source.ui;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -58,11 +57,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -70,6 +66,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -279,49 +278,47 @@ public class JavaTypeProvider implements TypeProvider {
             }
 
         } else {
-            for(final CacheItem ci : cache) {
-                @SuppressWarnings("unchecked")
-                final Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(
-                            textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                        );
-                for (ElementHandle<TypeElement> name : names) {
-                    JavaTypeDescription td = new JavaTypeDescription(ci, name);
-                    types.add(td);
-                    if (isCanceled) {
-                        return;
+            ClassIndexManager.getDefault().addClassIndexManagerListener(new ClassIndexManagerListener() {
+
+                public void classIndexAdded(ClassIndexManagerEvent event) {
+                    synchronized (JavaTypeProvider.this) {
+                        JavaTypeProvider.this.notify();
                     }
                 }
-            }
-            if (types.isEmpty() && scanInProgress) {
-                try {
-                    ClassPath cPath = ClassPathSupport.createClassPath(new URL[0]);
-                    ClasspathInfo cInfo = ClasspathInfo.create(cPath, cPath, cPath);
-                    JavaSource src = JavaSource.create(cInfo);
-                    Future<Void> f = src.runWhenScanFinished(new Task<CompilationController>() {
-                        public void run(CompilationController parameter) throws Exception {
-                            LOGGER.fine("Restarting search...");
-                            res.setMessage(null);
-                        }
-                    }, false);
-                    f.get();
-                    cache = null;
-                    cpInfo = null;
-                    computeTypeNames(context, res);
-                    return;
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
 
-            if ( isCanceled ) {
-                return;
-            }
+                public void classIndexRemoved(ClassIndexManagerEvent event) {
+                }
+            });
+            do {
+                for(final CacheItem ci : cache) {
+                    @SuppressWarnings("unchecked")
+                    final Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(
+                                textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
+                            );
+                    for (ElementHandle<TypeElement> name : names) {
+                        JavaTypeDescription td = new JavaTypeDescription(ci, name);
+                        types.add(td);
+                        if (isCanceled) {
+                            return;
+                        }
+                    }
+                }
+                if (types.isEmpty() && scanInProgress) {
+                    try {
+                        synchronized (JavaTypeProvider.this) {
+                            this.wait(2000);
+                        }
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                if ( isCanceled ) {
+                    return;
+                }
+                scanInProgress = SourceUtils.isScanInProgress();
+            } while (scanInProgress && types.isEmpty());
         }
-        
         if ( !isCanceled ) {            
             // Sorting is now done on the Go To Tpe dialog side
             // Collections.sort(types);
