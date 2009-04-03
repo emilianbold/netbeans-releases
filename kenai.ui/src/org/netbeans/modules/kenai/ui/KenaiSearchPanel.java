@@ -71,7 +71,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiErrorMessage;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -304,7 +304,7 @@ public class KenaiSearchPanel extends JPanel {
                 String searchPattern = searchTextField.getText();
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiErrorMessage em) {
+                } catch (KenaiException em) {
                     if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
@@ -320,9 +320,6 @@ public class KenaiSearchPanel extends JPanel {
                     } else {
                         Exceptions.printStackTrace(em);
                     }
-                } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-                    // XXX show some error to user
                 }
                 if (projectsIterator != null && projectsIterator.hasNext()) {
                     // XXX createModel
@@ -407,18 +404,18 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
-                    //TODO: remove me as soon as projects.json?full=true is 
-                    //implemented on kenai.com
-                    project.getDescription();
-                    //end of TODO
                     if (PanelType.OPEN.equals(panelType)) {
                         addElement(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
-                        KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
-                        for (KenaiFeature repo : repos) {
-                            if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
-                                addElement(new KenaiProjectSearchInfo(project, repo, pattern));
+                        try {
+                            KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
+                            for (KenaiFeature repo : repos) {
+                                if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
+                                    addElement(new KenaiProjectSearchInfo(project, repo, pattern));
+                                }
                             }
+                        } catch (KenaiException kenaiException) {
+                            Exceptions.printStackTrace(kenaiException);
                         }
                     }
                     Thread.yield();

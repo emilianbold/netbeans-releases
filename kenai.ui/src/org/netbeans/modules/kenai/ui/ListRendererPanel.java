@@ -61,6 +61,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,9 +85,12 @@ public class ListRendererPanel extends javax.swing.JPanel {
         descPanel.add(projectDescLabel, BorderLayout.CENTER);
 
         projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
-        projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
-        tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
-
+        try {
+            projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
+            tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
+        }
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
             descPanel.setBackground(jlist.getSelectionBackground());

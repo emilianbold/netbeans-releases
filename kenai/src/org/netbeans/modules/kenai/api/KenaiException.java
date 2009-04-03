@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.kenai.api;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.codeviation.pojson.PojsonLoad;
+
 /**
- * General exception thrown by the Kenai framework.
  *
- * @author Maros Sandor
+ * @author Jan Becicka
  */
-public class KenaiException extends Exception {
+public class KenaiException extends IOException {
+    private String errorResponse;
+    private String status;
+    private HashMap<String,String> errors;
 
     public KenaiException(String msg) {
         super(msg);
@@ -54,11 +63,60 @@ public class KenaiException extends Exception {
         super(cause);
     }
 
-    public KenaiException(String message, Throwable cause) {
+    public KenaiException(String message, Throwable cause, String errorResponse) {
         super(message, cause);
+        this.errorResponse = errorResponse;
     }
 
-    public KenaiException() {
+    public KenaiException(String message, String errorResponse) {
+        super(message);
+        this.errorResponse = errorResponse;
+    }
+    
+    public <T> T getKenaiError(Class<T> clazz) {
+        PojsonLoad load = PojsonLoad.create();
+        return load.load(errorResponse, clazz);
     }
 
+    private void fillErrorData() {
+        PojsonLoad load =PojsonLoad.create();
+        try {
+            final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
+            status = (String) toCollections.get("status");
+            errors = (HashMap<String, String>) toCollections.get("errors");
+        } catch (IOException ex) {
+            Logger.getLogger(KenaiException.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+
+
+    /**
+     * get error response as string
+     * @return
+     */
+    public String getAsString() {
+        return errorResponse;
+    }
+
+    /**
+     * get status according to
+     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * @return
+     */
+    public String getStatus() {
+        if (status==null)
+            fillErrorData();
+        return status;
+    }
+
+    /**
+     * get errors according to
+     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * @return
+     */
+    public Map<String,String> getErrors() {
+        if (errors==null)
+            fillErrorData();
+        return errors;
+    }
+}
