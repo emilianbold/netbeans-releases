@@ -112,9 +112,9 @@ public class KenaiRepository extends BugzillaRepository {
                 // XXX what if user already mail address?
                 String user = KenaiUtil.getKenaiUser();
                 if(user == null) {
-                    user = "";
+                    user = "";                                                  // NOI18N
                 }
-                String userMail = user + "@"+ host; // NOI18N
+                String userMail = user + "@"+ host;                             // NOI18N
                 url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
 
                 myIssues =
