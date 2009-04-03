@@ -51,7 +51,7 @@ public interface HudsonView {
     /**
      * Default all view name
      */
-    public static final String ALL_VIEW = "All";
+    public static final String ALL_VIEW = "All"; // NOI18N
     
     
     /**

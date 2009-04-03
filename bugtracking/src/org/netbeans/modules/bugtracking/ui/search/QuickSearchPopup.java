@@ -104,10 +104,12 @@ public class QuickSearchPopup extends javax.swing.JPanel
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
+        hintLabel.setVisible(false);
+        hintSep.setVisible(false);
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(comboBar, this));
-        rp = new RequestProcessor("", 1); // XXX throughput 1 ???
+        rp = new RequestProcessor("", 1); // NOI18N // XXX throughput 1 ???
 
         updateStatusPanel();
     }
@@ -216,7 +218,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     private void searchLocalIssues() {
         String criteria = comboBar.getCommand().getText().trim();
-        if(criteria.equals("")) {
+        if(criteria.equals("")) { // NOI18N
             rModel.setContent(null);
             return;
         }
@@ -509,7 +511,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         boolean shouldBeVisible = false;
 
         boolean isInProgress = evalTask != null;
-        searchingSep.setVisible(isInProgress);
+        searchingSep.setVisible(isInProgress && (rModel.getSize() > 0));
         searchingLabel.setVisible(isInProgress);
         shouldBeVisible = shouldBeVisible || isInProgress;
 

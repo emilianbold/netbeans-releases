@@ -163,6 +163,11 @@ public final class KenaiProject {
         return data.tags;
     }
 
+    public synchronized boolean isPrivate() {
+        fetchDetailsIfNotAvailable();
+        return data.private_hidden;
+    }
+
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     /**

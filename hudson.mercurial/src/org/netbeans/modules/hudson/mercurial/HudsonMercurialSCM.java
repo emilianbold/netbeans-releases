@@ -77,18 +77,18 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (source == null) {
             return null;
         }
-        if (!source.isAbsolute() || "file".equals(source.getScheme())) {
+        if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
             LOG.log(Level.FINE, "{0} is a local file location", source);
             return null;
         }
         return new Configuration() {
             public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
-                Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm"));
-                configXmlSCM.setAttribute("class", "hudson.plugins.mercurial.MercurialSCM");
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(source.toString()));
-                configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode(""));
-                configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true"));
+                Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm")); // NOI18N
+                configXmlSCM.setAttribute("class", "hudson.plugins.mercurial.MercurialSCM"); // NOI18N
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(source.toString())); // NOI18N
+                configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode("")); // NOI18N
+                configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true")); // NOI18N
                 Helper.addTrigger(doc);
             }
         };
@@ -101,15 +101,15 @@ public class HudsonMercurialSCM implements HudsonSCM {
     }
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
-        if (!"hg".equals(Helper.xpath("kind", changeSet))) {
+        if (!"hg".equals(Helper.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
-        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job);
+        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job); // NOI18N
         if (repo == null) {
             LOG.log(Level.FINE, "No known repo location for {0}", job);
             return null;
         }
-        if (!"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) {
+        if (!"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) { // NOI18N
             LOG.log(Level.FINE, "Need hgweb to show changes from {0}", repo);
             return null;
         }
@@ -119,16 +119,16 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 this.itemXML = xml;
             }
             public String getUser() {
-                return Helper.xpath("author/fullName", itemXML);
+                return Helper.xpath("author/fullName", itemXML); // NOI18N
             }
             public String getMessage() {
-                return Helper.xpath("msg", itemXML);
+                return Helper.xpath("msg", itemXML); // NOI18N
             }
             public Collection<? extends HudsonJobChangeFile> getFiles() {
-                if ("true".equals(Helper.xpath("merge", itemXML))) {
+                if ("true".equals(Helper.xpath("merge", itemXML))) { // NOI18N
                     return Collections.emptySet();
                 }
-                final String node = Helper.xpath("node", itemXML);
+                final String node = Helper.xpath("node", itemXML); // NOI18N
                 class HgFile implements HudsonJobChangeFile {
                     final String path;
                     final EditType editType;
@@ -147,23 +147,23 @@ public class HudsonMercurialSCM implements HudsonSCM {
                     }
                 }
                 List<HgFile> files = new ArrayList<HgFile>();
-                NodeList nl = itemXML.getElementsByTagName("addedPath");
+                NodeList nl = itemXML.getElementsByTagName("addedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.add));
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.add)); // NOI18N
                 }
-                nl = itemXML.getElementsByTagName("modifiedPath");
+                nl = itemXML.getElementsByTagName("modifiedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.edit));
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.edit)); // NOI18N
                 }
-                nl = itemXML.getElementsByTagName("deletedPath");
+                nl = itemXML.getElementsByTagName("deletedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.delete));
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.delete)); // NOI18N
                 }
                 return files;
             }
         }
         List<HgItem> items = new ArrayList<HgItem>();
-        NodeList nl = changeSet.getElementsByTagName("item");
+        NodeList nl = changeSet.getElementsByTagName("item"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             items.add(new HgItem((Element) nl.item(i)));
         }
@@ -181,7 +181,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
     }
     private static URI getDefaultPull(URI repository, HudsonJob job) {
         assert repository.toString().endsWith("/");
-        URI hgrc = repository.resolve(".hg/hgrc");
+        URI hgrc = repository.resolve(".hg/hgrc"); // NOI18N
         String defaultPull = null;
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(HudsonMercurialSCM.class.getClassLoader()); // #141364
@@ -193,11 +193,11 @@ public class HudsonMercurialSCM implements HudsonSCM {
             InputStream is = cb.url(hgrc.toURL()).connection().getInputStream();
             try {
                 Ini ini = new Ini(is);
-                Ini.Section section = ini.get("paths");
+                Ini.Section section = ini.get("paths"); // NOI18N
                 if (section != null) {
-                    defaultPull = section.get("default-pull");
+                    defaultPull = section.get("default-pull"); // NOI18N
                     if (defaultPull == null) {
-                        defaultPull = section.get("default");
+                        defaultPull = section.get("default"); // NOI18N
                     }
                 }
             } finally {
@@ -219,10 +219,10 @@ public class HudsonMercurialSCM implements HudsonSCM {
             LOG.log(Level.FINE, "{0} does not specify paths.default or default-pull", hgrc);
             return null;
         }
-        if (!defaultPull.endsWith("/")) {
-            defaultPull += "/";
+        if (!defaultPull.endsWith("/")) { // NOI18N
+            defaultPull += "/"; // NOI18N
         }
-        if (defaultPull.startsWith("/") || defaultPull.startsWith("\\")) {
+        if (defaultPull.startsWith("/") || defaultPull.startsWith("\\")) { // NOI18N
             LOG.log(Level.FINE, "{0} looks like a local file location", defaultPull);
             return new File(defaultPull).toURI();
         } else {

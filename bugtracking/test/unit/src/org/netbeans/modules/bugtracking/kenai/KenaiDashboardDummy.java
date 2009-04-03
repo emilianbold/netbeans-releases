@@ -235,6 +235,11 @@ public class KenaiDashboardDummy extends javax.swing.JFrame implements PropertyC
         public String getDisplayName() {
             return p.getDisplayName();
         }
+
+        @Override
+        public boolean isPrivate() {
+            return false;
+        }
         
     }
 

@@ -55,6 +55,7 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -130,7 +131,9 @@ public class ViewAction extends ContextAction {
                     if (hcf.getException() == null) {
                         hcf.setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
                     } else {
-                        Mercurial.LOG.log(Level.WARNING, null, hcf.getException());
+                        Mercurial.LOG.log(Level.WARNING, ViewAction.class.getName() + ": Cannot set hgk property"); // NOI18N
+                        Mercurial.LOG.log(Level.INFO, null, hcf.getException());
+                        HgModuleConfig.notifyParsingError();
                     }
                 } else {
                     logger.outputInRed(

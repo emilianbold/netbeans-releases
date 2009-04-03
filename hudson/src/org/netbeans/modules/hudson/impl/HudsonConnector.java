@@ -102,7 +102,7 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1");
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -153,12 +153,12 @@ public class HudsonConnector {
             return Collections.emptySet();
         }
         List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
-        NodeList buildDetails = docBuild.getElementsByTagName("build"); // HUDSON-3267: might be root elt
+        NodeList buildDetails = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
         for (int i = 0; i < buildDetails.getLength(); i++) {
             Element build = (Element) buildDetails.item(i);
-            int number = Integer.parseInt(Utilities.xpath("number", build));
-            boolean building = Boolean.valueOf(Utilities.xpath("building", build));
-            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build));
+            int number = Integer.parseInt(Utilities.xpath("number", build)); // NOI18N
+            boolean building = Boolean.valueOf(Utilities.xpath("building", build)); // NOI18N
+            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build)); // NOI18N
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
@@ -230,7 +230,7 @@ public class HudsonConnector {
                             
                             if (e.getNodeType() == Node.ELEMENT_NODE) {
                                 if (e.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                                    cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view);
+                                    cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
                                 }
                             }
                         }
@@ -272,7 +272,7 @@ public class HudsonConnector {
                         } catch (IllegalArgumentException x) {
                             Exceptions.attachMessage(x,
                                     "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
-                                    color + "' among " + Arrays.toString(Color.values()));
+                                    color + "' among " + Arrays.toString(Color.values())); // NOI18N
                             Exceptions.printStackTrace(x);
                             job.putProperty(JOB_COLOR, Color.red_anime);
                         }
@@ -322,7 +322,7 @@ public class HudsonConnector {
                         continue;
                     }
                     
-                    if (null != cache.get(v.getName() + "/" + job.getName()))
+                    if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                         job.addView(v);
                 }
                 
@@ -338,7 +338,7 @@ public class HudsonConnector {
         
         try {
 
-            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson");
+            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersionImpl(sVersion);
             }

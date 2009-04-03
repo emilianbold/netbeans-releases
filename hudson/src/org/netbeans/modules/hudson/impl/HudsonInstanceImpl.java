@@ -422,7 +422,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
 
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonJobBuild build) {
-        return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() {
+        return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() { // NOI18N
             public RemoteFileSystem call() throws Exception {
                 return new RemoteFileSystem(build);
             }
@@ -430,7 +430,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
 
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonMavenModuleBuild module) {
-        return getFileSystemFromCache(artifacts, module.getBuild().getJob().getName() + "/" + module.getBuild().getNumber() + "/" + module.getName(),
+        return getFileSystemFromCache(artifacts, module.getBuild().getJob().getName() + "/" + // NOI18N
+                module.getBuild().getNumber() + "/" + module.getName(), // NOI18N
                 new Callable<RemoteFileSystem>() {
             public RemoteFileSystem call() throws Exception {
                 return new RemoteFileSystem(module);

@@ -56,6 +56,7 @@ import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -89,9 +90,9 @@ public class FormLoginConnectionAuthenticator extends JPanel {
         public void prepareRequest(URLConnection conn, URL home) {
             if (COOKIES.containsKey(home)) {
                 for (String cookie : COOKIES.get(home)) {
-                    String cookieBare = cookie.replaceFirst(";.*", "");
+                    String cookieBare = cookie.replaceFirst(";.*", ""); // NOI18N
                     LOGGER.log(Level.FINER, "Setting cookie {0} for {1}", new Object[] {cookieBare, conn.getURL()});
-                    conn.setRequestProperty("Cookie",cookieBare);
+                    conn.setRequestProperty("Cookie", cookieBare); // NOI18N
                 }
             }
         }
@@ -104,7 +105,7 @@ public class FormLoginConnectionAuthenticator extends JPanel {
                 panel.userField.setText(username);
             }
             panel.locationField.setText(home.toString());
-            DialogDescriptor dd = new DialogDescriptor(panel, "Log in to Hudson"); // XXX I18N
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FormLoginConnectionAuthenticator.class, "FormLoginConnectionAuthenticator.log_in"));
             if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
@@ -114,11 +115,11 @@ public class FormLoginConnectionAuthenticator extends JPanel {
             panel.passField.setText("");
             try {
                 Map<String,List<String>> responseHeaders = new HashMap<String,List<String>>();
-                new ConnectionBuilder().url(new URL(home, "j_acegi_security_check")).
-                        postData(("j_username=" + URLEncoder.encode(username, "UTF-8") + "&j_password=" +
-                                  URLEncoder.encode(password, "UTF-8")).getBytes("UTF-8")).
+                new ConnectionBuilder().url(new URL(home, "j_acegi_security_check")). // NOI18N
+                        postData(("j_username=" + URLEncoder.encode(username, "UTF-8") + "&j_password=" + // NOI18N
+                                  URLEncoder.encode(password, "UTF-8")).getBytes("UTF-8")). // NOI18N
                         collectResponseHeaders(responseHeaders).connection();
-                List<String> cookies = responseHeaders.get("Set-Cookie");
+                List<String> cookies = responseHeaders.get("Set-Cookie"); // NOI18N
                 if (cookies == null) {
                     LOGGER.log(Level.FINE, "No cookies set from authentication to {0}", home);
                     return null;

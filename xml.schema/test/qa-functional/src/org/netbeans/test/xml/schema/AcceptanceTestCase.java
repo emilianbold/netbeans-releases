@@ -455,6 +455,25 @@ public class AcceptanceTestCase extends JellyTestCase {
         endTest();
     }
 
+    protected void WaitDialogClosed( String sName )
+    {
+      JDialogOperator jdApplyProgress = new JDialogOperator( sName );
+      int iCount = 0;
+      while( 10 > iCount++ )
+      {
+        try
+        {
+          jdApplyProgress.waitClosed( );
+          return;
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "Apply timeout?" );
+        }
+      }
+      fail( "Apply design pattern asked for too long time." );
+    }
+
     // Apply design pattern for schema    
     // 1. Call popup menu for node represents our schema in project tree
     // 2. Change design pattern options and apply them to schema
@@ -490,8 +509,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         // Press Finish button in wizard
         opWizard.finish();
         // Wait progress
-        JDialogOperator jdApplyProgress = new JDialogOperator( "Applying Design Pattern" );
-        jdApplyProgress.waitClosed( );
+        WaitDialogClosed( "Applying Design Pattern" );
         // Waiting till UI make all required background actions
         Helpers.waitNoEvent();
         // Getting schema view file tab

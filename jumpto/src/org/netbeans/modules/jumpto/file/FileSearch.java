@@ -147,7 +147,7 @@ public class FileSearch {
             return isSearchWorker;
         }
                
-        return prefix == null || !newPrefix.startsWith(prefix.toLowerCase());   //Clearly wrong
+        return prefix == null || !newPrefix.equals(prefix);
     }
     
     public void newSearchResults( List<FileDescription> files ) {

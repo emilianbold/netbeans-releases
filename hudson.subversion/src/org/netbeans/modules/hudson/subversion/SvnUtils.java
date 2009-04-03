@@ -69,7 +69,7 @@ public class SvnUtils {
         return parseCheckout(dir, null);
     }
     static Info parseCheckout(URL dir, HudsonJob job) throws IOException {
-        URL svnEntries = new URL(dir, ".svn/entries");
+        URL svnEntries = new URL(dir, ".svn/entries"); // NOI18N
         ConnectionBuilder cb = new ConnectionBuilder();
         if (job != null) {
             cb = cb.job(job);

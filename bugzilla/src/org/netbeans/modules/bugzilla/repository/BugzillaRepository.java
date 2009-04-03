@@ -233,9 +233,9 @@ public class BugzillaRepository extends Repository {
             }
         };
 
-        if(keywords.length == 1 && isNumber(keywords[0])) {
+        if(keywords.length == 1 && isInteger(keywords[0])) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = BugzillaUtil.getTaskData(this, keywords[0]);
+            TaskData taskData = BugzillaUtil.getTaskData(this, keywords[0], false);
             if(taskData != null) {
                 BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
                 issues.add(issue); // we don't cache this issues
@@ -339,11 +339,13 @@ public class BugzillaRepository extends Repository {
         return taskRepository != null ? taskRepository.getUrl() : null;
     }
 
-    private boolean isNumber(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            if(!Character.isDigit(str.charAt(i))) return false;
+    private boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
         }
-        return true;
+        return false;
     }
 
     public BugzillaExecutor getExecutor() {

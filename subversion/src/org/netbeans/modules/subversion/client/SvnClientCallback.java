@@ -41,10 +41,13 @@
 package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
+import java.net.PasswordAuthentication;
 import javax.swing.JButton;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -179,6 +182,20 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return null;
     }
 
+    private void getKenaiAuthData(VCSKenaiSupport kenaiSupport) {
+        final String urlString = url.toString();
+        
+        PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(urlString);
+        if(pa == null) {
+            return;
+        }
+        String user = pa.getUserName();
+        char[] psswd = pa.getPassword();
+
+        username = user != null ? user : "";
+        password = psswd != null ? new String(psswd) : "";
+    }
+
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
         dialogDescriptor.setValid(false);     
@@ -187,31 +204,36 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         dialog.setVisible(true);
     }    
     
-    private void getAuthData() {
-        String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");                 // NOI18N
+    private void getAuthData() {        
+        VCSKenaiSupport kenaiSupport = Subversion.getInstance().getKenaiSupport();
+        if(kenaiSupport != null && kenaiSupport.isKenai(url.toString())) {
+            getKenaiAuthData(kenaiSupport);
+        } else {
+            String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");                 // NOI18N
 
-        Repository repository = new Repository(title);            
-        repository.selectUrl(url, true);
-        
-        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));           // NOI18N                    
-        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),          // NOI18N                    
-                                        new HelpCtx(this.getClass()),
-                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")},     // NOI18N
-                                        retryButton);
-                
+            Repository repository = new Repository(title);
+            repository.selectUrl(url, true);
 
-        boolean ret = (option == retryButton);
-        if(ret) {                 
-            RepositoryConnection rc = repository.getSelectedRC();
-            username = rc.getUsername();
-            password = rc.getPassword();                      
-            // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
-            //adapter.setUsername(username);
-            //adapter.setPassword(password);
-            if(rc.getSavePassword()) {
-                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+            JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));           // NOI18N
+            Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),          // NOI18N
+                                            new HelpCtx(this.getClass()),
+                                            new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")},     // NOI18N
+                                            retryButton);
+
+
+            boolean ret = (option == retryButton);
+            if(ret) {
+                RepositoryConnection rc = repository.getSelectedRC();
+                username = rc.getUsername();
+                password = rc.getPassword();
+                // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
+                //adapter.setUsername(username);
+                //adapter.setPassword(password);
+                if(rc.getSavePassword()) {
+                    SvnModuleConfig.getDefault().insertRecentUrl(rc);
+                }
             }
-        }                
+        }
     }
 
     public boolean promptUser(String arg0, String arg1, boolean arg2) {

@@ -77,16 +77,12 @@ public class ProblemNotificationController {
             LOG.log(Level.FINER, "{0} has status {1}", new Object[] {job, color});
             switch (color) {
             case red:
-                n = new ProblemNotification(job, build, true, false);
-                break;
             case red_anime:
-                n = new ProblemNotification(job, build, true, true);
+                n = new ProblemNotification(job, build, true);
                 break;
             case yellow:
-                n = new ProblemNotification(job, build, false, false);
-                break;
             case yellow_anime:
-                n = new ProblemNotification(job, build, false, true);
+                n = new ProblemNotification(job, build, false);
                 break;
             default:
                 n = null;
