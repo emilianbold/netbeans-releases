@@ -133,6 +133,16 @@ public class HtmlCompletionQueryTest extends TestBase {
     public void testCompleteTagAttributeValues() throws BadLocationException {
         assertCompletedText("<div align=\"|\"", "center", "<div align=\"center|\"");
         assertCompletedText("<div align=\"ce|\"", "center", "<div align=\"center|\"");
+
+        //regression test - issue #161852
+        assertCompletedText("<div align=\"|\"", "left", "<div align=\"left|\"");
+
+        //test single quote
+        assertCompletedText("<div align='|'", "center", "<div align='center'|");
+
+        //test values cc without quotation
+        assertCompletedText("<div align=|", "left", "<div align=left|");
+        assertCompletedText("<div align=ri|", "right", "<div align=right|");
     }
 
     public void testCharacterReferences() throws BadLocationException {
