@@ -62,13 +62,13 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
@@ -185,13 +185,11 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         //throw new UnsupportedOperationException("Not yet implemented");
         ExplorerManager manager = getExplorerManager();
         if (manager == null) {
-            System.out.println("RETURN NO ExplorerManager defined");
             return;
         }
         //get selected
         Node[] selectedNodes = manager.getSelectedNodes();
         if (selectedNodes == null || selectedNodes.length == 0) {
-            System.out.println("ACHTUNG!! NULL SELECION!!");
             return;
         }
         Node selectedNode = selectedNodes[0];
@@ -303,7 +301,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                syncFillDataTask.cancel(true);
+                return;
             }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
@@ -311,25 +309,34 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
                     return dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
                 }
             }, "Sync CallersCallesVisualizer");//NOI18N
-            try {
-                final List<FunctionCall> list = syncFillDataTask.get();
-
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-                        update(list);
-                    }
-                });
-            } catch (ExecutionException ex) {
-            } catch (InterruptedException e) {
-            }
-
         }
+        try {
+            final List<FunctionCall> list = syncFillDataTask.get();
+            synchronized (syncFillInLock) {
+                syncFillDataTask = null;
+            }
+            final boolean isEmptyConent = list == null || list.isEmpty();
+            UIThread.invoke(new Runnable() {
+
+                public void run() {
+                    setContent(isEmptyConent);
+                    if (isEmptyConent) {
+                        return;
+                    }
+                    update(list);
+                }
+            });
+        } catch (ExecutionException ex) {
+        } catch (InterruptedException e) {
+            synchronized(syncFillInLock){
+                if (syncFillDataTask != null){
+                    //syncFillDataTask.cancel(true);TODO: uncomment when ERPrint will be ready
+                    syncFillDataTask = null;
+                }
+            }
+        }
+
+
     }
 
     private void update(List<FunctionCall> list) {
@@ -369,7 +376,8 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         super.removeNotify();
         synchronized (syncFillInLock) {
             if (syncFillDataTask != null) {
-                syncFillDataTask.cancel(true);
+                //syncFillDataTask.cancel(true);TODO:uncomment when Er_PRint Will be REady
+                syncFillDataTask = null;
             }
         }
     }
@@ -395,7 +403,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
             if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
                 return;
             }
-            FunctionCall functionCall = ((FunctionCallTreeTableNode)nodeObject).getDeligator();
+            FunctionCall functionCall = ((FunctionCallTreeTableNode) nodeObject).getDeligator();
             SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                 return;
@@ -422,9 +430,8 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         private final FunctionCall functionCall;
 
         public GoToSourceAction(FunctionCall functionCall) {
-            super("Go To Source");//NOI18N
+            super(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCall = functionCall;
-
         }
 
         public void actionPerformed(ActionEvent e) {

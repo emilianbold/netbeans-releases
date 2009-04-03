@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="ProjectLibraries">
-                <attr name="include" stringvalue="config/org-netbeans-api-project-libraries/Libraries/.*\.xml"/>
+                <attr name="include" stringvalue="config/org-netbeans-api-project-libraries/Libraries/.*\.xml|build\.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.project.libraries.Bundle#ProjectLibraries.Options.Export.displayName"/>
             </file>
         </folder>

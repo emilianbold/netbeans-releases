@@ -60,7 +60,7 @@ public class DebugScript  extends RunScript {
                 run();
             }
         } else {
-            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true, ProjectPropertiesSupport.getEncodedDebugPathMapping(provider.getProject()));
+            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true, ProjectPropertiesSupport.getDebugPathMapping(provider.getProject()));
         }
     }
 

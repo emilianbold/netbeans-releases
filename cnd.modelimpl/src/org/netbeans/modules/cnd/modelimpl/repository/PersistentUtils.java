@@ -547,7 +547,7 @@ public class PersistentUtils {
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return;
         }
-        assert handler == SPECIALIZATION_PARAMETERS_LIST;
+        assert handler == SPECIALIZATION_PARAMETERS_LIST : "unexpected handler " + handler;
         readSpecializationParametersList(params, input);
     }
 

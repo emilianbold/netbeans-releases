@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.modelutil.NbCsmPaintComponent;
 
 /**
@@ -155,8 +155,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
 
     public final static class NbFileLocalFunctionResultItem extends FileLocalFunctionResultItem {
         
-        public NbFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
-            super(fun, substituteExp, priority, isDeclaration);
+        public NbFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration, boolean instantiateTypes) {
+            super(fun, substituteExp, priority, isDeclaration, instantiateTypes);
         }        
 
         @Override
@@ -168,8 +168,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbGlobalFunctionResultItem extends GlobalFunctionResultItem {
         
-        public NbGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
-            super(fun, substituteExp, priority, isDeclaration);
+        public NbGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration, boolean instantiateTypes) {
+            super(fun, substituteExp, priority, isDeclaration, instantiateTypes);
         }        
 
         @Override
@@ -181,8 +181,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbMethodResultItem extends MethodResultItem{
         
-        public NbMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
-            super(mtd, substituteExp, priority, isDeclaration);
+        public NbMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration, boolean instantiateTypes) {
+            super(mtd, substituteExp, priority, isDeclaration, instantiateTypes);
         }        
 
         @Override
@@ -194,8 +194,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbConstructorResultItem extends ConstructorResultItem{
         
-        public NbConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
-            super(ctr, substituteExp, priority, isDeclaration);
+        public NbConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration, boolean instantiateTypes) {
+            super(ctr, substituteExp, priority, isDeclaration, instantiateTypes);
         }
 
         @Override

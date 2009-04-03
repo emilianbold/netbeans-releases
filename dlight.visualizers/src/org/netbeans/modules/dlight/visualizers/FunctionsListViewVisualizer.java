@@ -157,9 +157,20 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return VisualizerTopComponentTopComponent.getDefault();
     }
 
+    public void refresh() {
+        asyncFillModel();
+    }
+
+
+
     private void asyncFillModel() {
         synchronized (queryLock) {
-            if (task != null) {
+            //should I cancel here?
+            //Maybe I should not ask if I am already in process??
+            if (task != null && !task.isDone() && !task.isCancelled()){
+                return;//
+            }
+            if (task != null && !task.isDone()) {
                 task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
@@ -167,17 +178,21 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 public Boolean call() {
                     synchronized (dpQueryLock) {
                         if (queryDataTask != null) {
-                            queryDataTask.cancel(true);
+                            return Boolean.TRUE;
+                            //queryDataTask.cancel(true);
                         }
                         queryDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
 
                             public List<FunctionCall> call() throws Exception {
                                 return dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
                             }
-                        }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+                        }, "FunctionsListViewVisualizer Async dataProvider.gteFuncsiontsList from provider  load for " + configuration.getID() + " from main table " + configuration.getMetadata().getName()); // NOI18N
                     }
                     try {
                         final List<FunctionCall> list = queryDataTask.get();
+                        synchronized (dpQueryLock) {
+                            queryDataTask = null;
+                        }
                         final boolean isEmptyConent = list == null || list.isEmpty();
                         UIThread.invoke(new Runnable() {
 
@@ -190,15 +205,21 @@ public class FunctionsListViewVisualizer extends JPanel implements
                                 updateList(list);
                             }
                         });
-                        return Boolean.valueOf(true);
+                        return Boolean.TRUE;
                     } catch (ExecutionException ex) {
                         Thread.currentThread().interrupt();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
+                        synchronized (dpQueryLock) {
+                            if (queryDataTask!= null){
+                                //queryDataTask.cancel(true);TODO: uncomment when ErPrint is ready
+                                queryDataTask = null;
+                            }
+                        }
                     }
                     return Boolean.valueOf(false);
                 }
-            }, "FunctionsListViewVisualizert Async data load for " + configuration.getID()); // NOI18N
+            }, "FunctionsListViewVisualizert Async data load for " + configuration.getID() + " from main table " + configuration.getMetadata().getName()); // NOI18N
         }
     }
 
@@ -320,11 +341,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
         synchronized (queryLock) {
             if (task != null) {
                 task.cancel(true);
+                task = null;
             }
         }
         synchronized (dpQueryLock) {
             if (queryDataTask != null) {
-                queryDataTask.cancel(true);
+                //queryDataTask.cancel(true);TODO: uncomment when ErPrint is ready
+                queryDataTask = null;
             }
         }
 
@@ -448,7 +471,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            return functionCall.getFunction().getName() + (functionCall.hasOffset() ? ("+0x" + functionCall.getOffset()) : "");//NOI18N
+            return functionCall.getDisplayedName();//functionCall.getFunction().getName() + (functionCall.hasOffset() ? ("+0x" + functionCall.getOffset()) : "");//NOI18N
         }
 
         @Override
@@ -462,7 +485,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private final FunctionCallNode functionCallNode;
 
         public GoToSourceAction(FunctionCallNode functionCallNode) {
-            super("Go To Source");//NOI18N
+            super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = functionCallNode;
 
         }
@@ -488,7 +511,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
 
             PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
-            if (editor != null && value != null && !(value + "").trim().equals("")) {
+            if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
                 editor.setValue(value);
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
             }

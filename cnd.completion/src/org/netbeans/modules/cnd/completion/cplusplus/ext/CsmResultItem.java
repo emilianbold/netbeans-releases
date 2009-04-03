@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -79,6 +78,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -207,9 +208,14 @@ public abstract class CsmResultItem implements CompletionItem {
         ((CsmPaintComponent) renderComponent).paintComponent(g);
     }
 
-    protected static CharSequence getTypeName(CsmType typ) {
-//        return typ.format(false);
-        return typ.getText();
+    protected static String getTypeName(CsmType type, boolean instantiateTypes) {
+        CharSequence text;
+        if (instantiateTypes) {
+            text = CsmInstantiationProvider.getDefault().getInstantiatedText(type);
+        } else {
+            text = type.getText();
+        }
+        return text.toString();
     }
 
     /**
@@ -678,7 +684,7 @@ public abstract class CsmResultItem implements CompletionItem {
             super(fld, priotity);
             this.fldName = fld.getName();
             this.modifiers = convertCsmModifiers(fld);
-            this.typeName = getTypeName(fld.getType());
+            this.typeName = getTypeName(fld.getType(), false);
             this.typeColor = getTypeColor(fld.getType());
         }
 
@@ -727,8 +733,8 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class FileLocalFunctionResultItem extends MethodResultItem {
 
-        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
-            super(mtd, substituteExp, priotity, isDeclaration);
+        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration, boolean instantiateTypes) {
+            super(mtd, substituteExp, priotity, isDeclaration, instantiateTypes);
         }
 
         @Override
@@ -739,8 +745,8 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public static class GlobalFunctionResultItem extends MethodResultItem {
 
-        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
-            super(mtd, substituteExp, priotity, isDeclaration);
+        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration, boolean instantiateTypes) {
+            super(mtd, substituteExp, priotity, isDeclaration, instantiateTypes);
         }
 
         @Override
@@ -807,9 +813,9 @@ public abstract class CsmResultItem implements CompletionItem {
         private CharSequence typeName;
         private Color typeColor;
 
-        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
-            super(mtd, substituteExp, priotity, isDeclaration);
-            typeName = CsmResultItem.getTypeName(mtd.getReturnType());
+        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration, boolean instantiateTypes) {
+            super(mtd, substituteExp, priotity, isDeclaration, instantiateTypes);
+            typeName = CsmResultItem.getTypeName(mtd.getReturnType(), instantiateTypes);
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
         }
 
@@ -867,7 +873,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
-        private boolean isDeclaration;
+        private final boolean isDeclaration;
         private List<ParamStr> params = new ArrayList<ParamStr>();
         private List excs = new ArrayList();
         private int modifiers;
@@ -876,7 +882,7 @@ public abstract class CsmResultItem implements CompletionItem {
         private int varArgIndex = -1;
         private final CharSequence mtdName;
 
-        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration, boolean instantiateTypes) {
             super(ctr, priority);
             this.ctr = ctr;
             this.substituteExp = substituteExp;
@@ -899,10 +905,8 @@ public abstract class CsmResultItem implements CompletionItem {
                     params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
                 } else {
-                    // XXX may be need full name as the first param
-                    // FIXUP: too expensive to call getClassifier here!
-                    String strFullName = type.getText().toString();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter) prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    String typeName = getTypeName(type, instantiateTypes);
+                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }

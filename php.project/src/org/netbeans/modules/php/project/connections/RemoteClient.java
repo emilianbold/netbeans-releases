@@ -47,14 +47,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.php.project.connections.spi.RemoteClient.PathInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -84,6 +86,8 @@ public class RemoteClient implements Cancellable {
     private static final String LOCAL_TMP_OLD_SUFFIX = ".old~"; // NOI18N
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
+
+    private static enum Operation { UPLOAD, DOWNLOAD, DELETE };
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
@@ -175,6 +179,26 @@ public class RemoteClient implements Cancellable {
 
     public void reset() {
         cancelled = false;
+    }
+
+    public boolean exists(TransferFile file) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Checking whether file %s exists", file));
+        cdBaseRemoteDirectory();
+        boolean exists = remoteClient.exists(file.getParentRelativePath(), file.getName());
+        LOGGER.fine(String.format("Exists: %b", exists));
+        return exists;
+    }
+
+    public boolean rename(TransferFile from, TransferFile to) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Moving file from %s to %s", from, to));
+        cdBaseRemoteDirectory();
+        boolean success = remoteClient.rename(from.getRelativePath(), to.getRelativePath());
+        LOGGER.fine(String.format("Success: %b", success));
+        return success;
     }
 
     public Set<TransferFile> prepareUpload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
@@ -357,7 +381,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(fileName, true));
+                    transferFailed(transferInfo, file, getOperationFailureMessage(Operation.UPLOAD, fileName));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
@@ -451,13 +475,8 @@ public class RemoteClient implements Cancellable {
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
-                    StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
-                    if (file.getRelativePath() != TransferFile.CWD) {
-                        relativePath.append(TransferFile.SEPARATOR);
-                        relativePath.append(file.getRelativePath());
-                    }
-                    String relPath = relativePath.toString();
-                    for (RemoteFile child : remoteClient.listFiles(new PathInfo(baseRemoteDirectory, relPath))) {
+                    String relPath = getRemoteRelativePath(file);
+                    for (RemoteFile child : remoteClient.listFiles()) {
                         if (isVisible(child)) {
                             LOGGER.fine("File " + child + " added to download queue");
                             queue.offer(TransferFile.fromRemoteFile(child, baseRemoteDirectory, relPath));
@@ -601,7 +620,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(file.getName(), false));
+                    transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     boolean deleted = tmpLocalFile.delete();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
@@ -673,6 +692,104 @@ public class RemoteClient implements Cancellable {
         return new File(localFile, transferFile.getRelativePath(true));
     }
 
+    public Set<TransferFile> prepareDelete(FileObject baseLocalDirectory, FileObject... filesToDelete) throws RemoteException {
+        LOGGER.fine("Preparing files to delete => calling prepareUpload because in fact the same operation is done");
+        return prepareUpload(baseLocalDirectory, filesToDelete);
+    }
+
+    public TransferInfo delete(Set<TransferFile> filesToDelete) throws RemoteException {
+        assert filesToDelete != null;
+        assert filesToDelete.size() > 0 : "At least one file to upload must be specified";
+
+        ensureConnected();
+
+        final long start = System.currentTimeMillis();
+        TransferInfo transferInfo = new TransferInfo();
+
+        try {
+            // first, remove all the files
+            //  then remove _empty_ directories (motivation is to prevent data loss; somebody else could upload some file there)
+            Set<TransferFile> files = getFiles(filesToDelete);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Only files: %s => %s", filesToDelete, files));
+            }
+            delete(transferInfo, files);
+
+            Set<TransferFile> dirs = getDirectories(filesToDelete);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Only dirs: %s => %s", filesToDelete, dirs));
+            }
+            delete(transferInfo, dirs);
+
+            assert filesToDelete.size() == files.size() + dirs.size() : String.format("%s does not match files and dirs: %s %s", filesToDelete, files, dirs);
+        } finally {
+            transferInfo.setRuntime(System.currentTimeMillis() - start);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(transferInfo.toString());
+            }
+        }
+        return transferInfo;
+    }
+
+    private void delete(TransferInfo transferInfo, Set<TransferFile> filesToDelete) {
+        for (TransferFile file : filesToDelete) {
+            if (cancelled) {
+                LOGGER.fine("Delete cancelled");
+                break;
+            }
+
+            try {
+                deleteFile(transferInfo, file);
+            } catch (IOException exc) {
+                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                continue;
+            } catch (RemoteException exc) {
+                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                continue;
+            }
+        }
+    }
+
+    private void deleteFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
+        boolean success = false;
+        cdBaseRemoteDirectory();
+        if (file.isDirectory()) {
+            // folder => try to delete it but it can fail (most probably when it's not empty)
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Deleting directory: " + file);
+            }
+            success = remoteClient.deleteDirectory(file.getRelativePath());
+            LOGGER.fine("Folder deleted: " + success);
+        } else {
+            // file => simply delete it
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Deleting file: " + file);
+            }
+
+            success = remoteClient.deleteFile(file.getRelativePath());
+            LOGGER.fine("File deleted: " + success);
+        }
+
+        if (success) {
+            transferSucceeded(transferInfo, file);
+        } else {
+            String msg = null;
+            if (!remoteClient.exists(file.getParentRelativePath(), file.getName())) {
+                msg = NbBundle.getMessage(RemoteClient.class, "MSG_FileNotExists", file.getName());
+            } else {
+                // maybe non empty dir?
+                if (file.isDirectory()
+                        && cdBaseRemoteDirectory(file.getParentRelativePath(), false)
+                        && remoteClient.listFiles().size() > 0) {
+                    msg = NbBundle.getMessage(RemoteClient.class, "MSG_FolderNotEmpty", file.getName());
+                } else {
+                    msg = getOperationFailureMessage(Operation.DELETE, file.getName());
+                }
+            }
+            transferFailed(transferInfo, file, msg);
+        }
+    }
+
     private void transferSucceeded(TransferInfo transferInfo, TransferFile file) {
         transferInfo.addTransfered(file);
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -719,10 +836,24 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private String getUploadDownloadFailureMessage(String fileName, boolean upload) {
+    private String getOperationFailureMessage(Operation operation, String fileName) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
-            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_CannotUploadFile" : "MSG_CannotDownloadFile", fileName);
+            String key = null;
+            switch (operation) {
+                case UPLOAD:
+                    key = "MSG_CannotUploadFile"; // NOI18N
+                    break;
+                case DOWNLOAD:
+                    key = "MSG_CannotDownloadFile"; // NOI18N
+                    break;
+                case DELETE:
+                    key = "MSG_CannotDeleteFile"; // NOI18N
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown operation type: " + operation);
+            }
+            message = NbBundle.getMessage(RemoteClient.class, key, fileName);
         }
         return message;
     }
@@ -891,6 +1022,44 @@ public class RemoteClient implements Cancellable {
             return fileName;
         }
         return fileName.substring(0, index);
+    }
+
+    private String getRemoteRelativePath(TransferFile file) {
+        StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
+        if (file.getRelativePath() != TransferFile.CWD) {
+            relativePath.append(TransferFile.SEPARATOR);
+            relativePath.append(file.getRelativePath());
+        }
+        return relativePath.toString();
+    }
+
+    private Set<TransferFile> getFiles(Set<TransferFile> all) {
+        Set<TransferFile> files = new HashSet<TransferFile>();
+        for (TransferFile file : all) {
+            if (file.isFile()) {
+                files.add(file);
+            }
+        }
+        return files;
+    }
+
+    private Set<TransferFile> getDirectories(Set<TransferFile> all) {
+        // we need to get longest paths first to be able to delete directories properly
+        //  (e.g. to have [a/b, a] and not [a, a/b])
+        Set<TransferFile> dirs = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
+            private final String SEPARATOR = Pattern.quote(TransferFile.SEPARATOR);
+            public int compare(TransferFile o1, TransferFile o2) {
+                int cmp = o2.getRelativePath().split(SEPARATOR).length - o1.getRelativePath().split(SEPARATOR).length;
+                // do not miss any item
+                return cmp != 0 ? cmp : 1;
+            }
+        });
+        for (TransferFile file : all) {
+            if (file.isDirectory()) {
+                dirs.add(file);
+            }
+        }
+        return dirs;
     }
 
     /**

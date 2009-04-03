@@ -334,6 +334,10 @@ public final class ProjectPropertiesSupport {
                 }
             }
         }
+        Pair<String, String> copySupportPair = getCopySupportPair(project);
+        if (copySupportPair != null) {
+            paths.add(copySupportPair);
+        }
         return paths;
     }
 
@@ -353,39 +357,6 @@ public final class ProjectPropertiesSupport {
             }
         }
         return copySupportPair;
-    }
-
-    public static List<Pair<String, String>> getEncodedDebugPathMapping(PhpProject project) {
-        Pair<String, String> copySupportPair = getCopySupportPair(project);
-        List<Pair<String, String>> originalPathMapping = getDebugPathMapping(project);
-        List<Pair<String, String>> encodedPathMapping = new ArrayList<Pair<String, String>>(originalPathMapping.size());
-        try {
-            for (Pair<String, String> pathMapping : originalPathMapping) {
-                encodedPathMapping.add(getEncodedDebugPathPair(pathMapping));
-            }
-            if (copySupportPair != null) {
-                encodedPathMapping.add(getEncodedDebugPathPair(copySupportPair));
-            }
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return encodedPathMapping;
-    }
-
-    private static Pair<String, String> getEncodedDebugPathPair(Pair<String, String> pathMapping) throws UnsupportedEncodingException {
-        String resName = pathMapping.first;
-        final String[] elements = resName.split("/"); // NOI18N
-        final StringBuilder sb = new StringBuilder(200);
-        for (int i = 0; i < elements.length; i++) {
-            String element = elements[i];
-            element = URLEncoder.encode(element, "UTF-8"); // NOI18N
-            element = element.replace("+", "%20"); // NOI18N
-            sb.append(element);
-            if (i < elements.length - 1) {
-                sb.append('/');
-            }
-        }
-        return Pair.of(sb.toString(), pathMapping.second);//NOI18N
     }
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {

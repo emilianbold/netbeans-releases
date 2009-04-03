@@ -44,6 +44,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -77,7 +78,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<SessionStateListener> sessionStateListeners = null;
     private List<DataStorage> storages = null;
     private List<DataCollector> collectors = null;
-    private List<Visualizer> visualizers = null;
+    private Map<String, Map<String, Visualizer>> visualizers = null;
     private SessionState state;
     private final int sessionID;
     private String description = null;
@@ -129,6 +130,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
     public DLightSessionContext getSessionContext() {
         return sessionContext;
+    }
+
+    void cleanVisualizers() {
+        visualizers.clear();
+        visualizers = null;
     }
 
     List<ExecutionContext> getExecutionContexts() {
@@ -200,14 +206,50 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return state == SessionState.RUNNING;
     }
 
-    void addVisualizer(Visualizer visualizer) {
+    boolean hasVisualizer(String toolName, String visualizerID){
+        if (visualizers == null || !visualizers.containsKey(toolName)) {
+            return false;
+        }
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        return toolVisualizers.containsKey(visualizerID);
+    }
+
+    List<Visualizer> getVisualizers(){
+        if (visualizers == null){
+            return null;
+        }
+        List<Visualizer> result = new ArrayList<Visualizer>();
+        for (String toolName: visualizers.keySet()){
+            Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+            for (String visID : toolVisualizers.keySet()){
+                result.add(toolVisualizers.get(visID));
+            }
+        }
+        return result;
+
+    }
+
+    Visualizer getVisualizer(String toolName, String visualizerID){
+        if (visualizers == null || !visualizers.containsKey(toolName)) {
+            return null;
+        }
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        return toolVisualizers.get(visualizerID);
+    }
+
+    Visualizer putVisualizer(String toolName, String id, Visualizer visualizer) {
         if (visualizers == null) {
-            visualizers = new ArrayList<Visualizer>();
+            visualizers = new HashMap<String, Map<String, Visualizer>>();
         }
 
-        if (!visualizers.contains(visualizer)) {
-            visualizers.add(visualizer);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        if (toolVisualizers == null){
+            toolVisualizers = new HashMap<String, Visualizer>();
+            visualizers.put(toolName, toolVisualizers);
         }
+        Visualizer oldVis = toolVisualizers.put(id,  visualizer);
+        return oldVis;
+    
     }
 
     public void revalidate() {
@@ -451,9 +493,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
     }
 
-    List<Visualizer> getVisualizers() {
-        return visualizers;
-    }
+
+
+    
+
 
     // Proxy method to contexts
     public void addExecutionContextListener(ExecutionContextListener listener) {

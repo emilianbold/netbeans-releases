@@ -70,8 +70,8 @@ public class FileObj extends BaseFileObj {
     private boolean realLastModifiedCached;
 
 
-    FileObj(final FileNaming name) {
-        super(name);
+    FileObj(final File file, final FileNaming name) {
+        super(file, name);
         setLastModified(System.currentTimeMillis());        
     }
 

@@ -105,6 +105,6 @@ public final class CallersCalleesVisualizerConfiguration extends TreeTableVisual
 
     @Override
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:stack");
+        return DataModelSchemeProvider.getInstance().getScheme("model:stack");//NOI18N
     }
 }
