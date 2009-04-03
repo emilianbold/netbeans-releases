@@ -40,7 +40,7 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.util.List;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyTestBase;

@@ -51,33 +51,32 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArgsCatNode;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.AssignableNode;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.Colon3Node;
-import org.jruby.nb.ast.ConstNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.IScopingNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.MultipleAsgnNode;
-import org.jruby.nb.ast.NewlineNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.VCallNode;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.jruby.util.ByteList;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArgsCatNode;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.AssignableNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.Colon3Node;
+import org.jrubyparser.ast.ConstNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.IScopingNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.MultipleAsgnNode;
+import org.jrubyparser.ast.NewlineNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.VCallNode;
+import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Modifier;
@@ -426,7 +425,7 @@ public class AstUtilities {
     }
 
     private static void addRequires(Node node, Set<String> requires) {
-        if (node.nodeId == NodeType.FCALLNODE) {
+        if (node.getNodeType() == NodeType.FCALLNODE) {
             // A method call
             String name = getName(node);
 
@@ -443,7 +442,7 @@ public class AstUtilities {
                         // For dynamically computed strings, we have n instanceof DStrNode
                         // but I can't handle these anyway
                         if (n instanceof StrNode) {
-                            ByteList require = ((StrNode)n).getValue();
+                            String require = ((StrNode)n).getValue();
 
                             if ((require != null) && (require.length() > 0)) {
                                 requires.add(require.toString());
@@ -452,8 +451,8 @@ public class AstUtilities {
                     }
                 }
             }
-        } else if (node.nodeId == NodeType.MODULENODE || node.nodeId == NodeType.CLASSNODE ||
-                node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+        } else if (node.getNodeType() == NodeType.MODULENODE || node.getNodeType() == NodeType.CLASSNODE ||
+                node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
             // Only look for require statements at the top level
             return;
         }
@@ -471,7 +470,7 @@ public class AstUtilities {
     /** Locate the method of the given name and arity */
     public static MethodDefNode findMethod(Node node, String name, Arity arity) {
         // Recursively search for methods or method calls that match the name and arity
-        if ((node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) &&
+        if ((node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) &&
             getName(node).equals(name)) {
             Arity defArity = Arity.getDefArity(node);
 
@@ -503,7 +502,7 @@ public class AstUtilities {
         while (it.hasNext()) {
             Node node = it.next();
 
-            if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+            if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
                 return (MethodDefNode)node;
             }
         }
@@ -533,7 +532,7 @@ public class AstUtilities {
             Iterator<Node> it = path.leafToRoot();
             while (it.hasNext()) {
                 Node n = it.next();
-                switch (n.nodeId) {
+                switch (n.getNodeType()) {
                 case DEFNNODE:
                 case DEFSNODE:
                 case CLASSNODE:
@@ -553,7 +552,7 @@ public class AstUtilities {
         if (method == null) {
             method = path.leafParent();
 
-            if (method.nodeId == NodeType.NEWLINENODE) {
+            if (method.getNodeType() == NodeType.NEWLINENODE) {
                 method = path.leafGrandParent();
             }
 
@@ -585,7 +584,7 @@ public class AstUtilities {
         // the current method/class/module
         Node candidate = null;
         for (Node curr : path) {
-            switch (curr.nodeId) {
+            switch (curr.getNodeType()) {
             //case BLOCKNODE:
             case ITERNODE:
                 candidate = curr;
@@ -605,11 +604,11 @@ public class AstUtilities {
     public static MethodDefNode findMethod(AstPath path) {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr.nodeId == NodeType.DEFNNODE || curr.nodeId == NodeType.DEFSNODE) {
+            if (curr.getNodeType() == NodeType.DEFNNODE || curr.getNodeType() == NodeType.DEFSNODE) {
                 return (MethodDefNode)curr;
             }
-            if (curr.nodeId == NodeType.CLASSNODE || curr.nodeId == NodeType.SCLASSNODE ||
-                    curr.nodeId == NodeType.MODULENODE) {
+            if (curr.getNodeType() == NodeType.CLASSNODE || curr.getNodeType() == NodeType.SCLASSNODE ||
+                    curr.getNodeType() == NodeType.MODULENODE) {
                 break;
             }
         }
@@ -635,7 +634,7 @@ public class AstUtilities {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
             // XXX What about SClassNodes?
-            if (curr.nodeId == NodeType.CLASSNODE || curr.nodeId == NodeType.MODULENODE) {
+            if (curr.getNodeType() == NodeType.CLASSNODE || curr.getNodeType() == NodeType.MODULENODE) {
                 return (IScopingNode)curr;
             }
         }
@@ -644,9 +643,9 @@ public class AstUtilities {
     }
 
     public static boolean isCall(Node node) {
-        return node.nodeId == NodeType.FCALLNODE ||
-                node.nodeId == NodeType.VCALLNODE ||
-                node.nodeId == NodeType.CALLNODE;
+        return node.getNodeType() == NodeType.FCALLNODE ||
+                node.getNodeType() == NodeType.VCALLNODE ||
+                node.getNodeType() == NodeType.CALLNODE;
     }
     
     public static String getCallName(Node node) {
@@ -713,8 +712,8 @@ public class AstUtilities {
                 }
 
                 // Rest args
-                if (an.getRestArgNode() != null) {
-                    String name = an.getRestArgNode().getName();
+                if (an.getRest() != null) {
+                    String name = an.getRest().getName();
 
                     if (!namesOnly) {
                         name = "*" + name;
@@ -725,8 +724,8 @@ public class AstUtilities {
                 
 
                 // Block args
-                if (an.getBlockArgNode() != null) {
-                    String name = an.getBlockArgNode().getName();
+                if (an.getBlock() != null) {
+                    String name = an.getBlock().getName();
 
                     if (!namesOnly) {
                         name = "&" + name;
@@ -770,7 +769,7 @@ public class AstUtilities {
      * index of the parameter that contains it.
      */
     public static int findArgumentIndex(Node node, int offset) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case FCALLNODE: {
             Node argsNode = ((FCallNode)node).getArgsNode();
             if (argsNode == null) {
@@ -803,7 +802,7 @@ public class AstUtilities {
                 return getConstantArgs(acn) + index;
             }
 
-            ISourcePosition pos = node.getPosition();
+            SourcePosition pos = node.getPosition();
 
             if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
                 return getConstantArgs(acn);
@@ -825,7 +824,7 @@ public class AstUtilities {
                     if (child.isInvisible()) {
                         continue;
                     }
-                    if (child.nodeId == NodeType.HASHNODE) {
+                    if (child.getNodeType() == NodeType.HASHNODE) {
                         // Invalid offsets - the hashnode often has the wrong offset
                         OffsetRange range = AstUtilities.getRange(child);
                         if ((offset <= range.getEnd()) &&
@@ -835,7 +834,7 @@ public class AstUtilities {
 
                         prevEnd = range.getEnd();
                     } else {
-                        ISourcePosition pos = child.getPosition();
+                        SourcePosition pos = child.getPosition();
                         if ((offset <= pos.getEndOffset()) &&
                                 ((offset >= prevEnd) || (offset >= pos.getStartOffset()))) {
                             return index;
@@ -847,13 +846,13 @@ public class AstUtilities {
                 }
 
                 // Caret -inside- empty parentheses?
-                ISourcePosition pos = node.getPosition();
+                SourcePosition pos = node.getPosition();
 
                 if ((offset > pos.getStartOffset()) && (offset < pos.getEndOffset())) {
                     return 0;
                 }
             } else {
-                ISourcePosition pos = node.getPosition();
+                SourcePosition pos = node.getPosition();
 
                 if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
                     return 0;
@@ -956,7 +955,7 @@ public class AstUtilities {
     }
 
     private static Node findBySignature(Node node, String signature, String name, boolean[] lookingForMethod) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case INSTASGNNODE:
             if (name.charAt(0) == '@') {
                 String n = getName(node);
@@ -1108,7 +1107,7 @@ public class AstUtilities {
 
     /** Return true iff the given node contains the given offset */
     public static boolean containsOffset(Node node, int offset) {
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
 
         return ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset()));
     }
@@ -1121,20 +1120,20 @@ public class AstUtilities {
             return OffsetRange.NONE;
         }
 
-        if (node.nodeId == NodeType.NOTNODE) {
-            ISourcePosition pos = node.getPosition();
+        if (node.getNodeType() == NodeType.NOTNODE) {
+            SourcePosition pos = node.getPosition();
             // "unless !(x < 5)" gives a not-node with wrong offsets - starts
             // with ! but doesn't include the closing )
             List<Node> list = node.childNodes();
             if (list != null && list.size() > 0) {
                 Node first = list.get(0);
-                if (first.nodeId == NodeType.NEWLINENODE) {
+                if (first.getNodeType() == NodeType.NEWLINENODE) {
                     OffsetRange range = getRange(first);
                     return new OffsetRange(pos.getStartOffset(), range.getEnd());
                 }
             } 
             return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-        } else if (node.nodeId == NodeType.HASHNODE) {
+        } else if (node.getNodeType() == NodeType.HASHNODE) {
             // Workaround for incorrect JRuby AST offsets for hashnodes :
             //   render :action => 'list'
             // has wrong argument offsets, which we want to correct.
@@ -1146,13 +1145,13 @@ public class AstUtilities {
                 int end = list.get(list.size()-1).getPosition().getEndOffset();
                 return new OffsetRange(start, end);
             } else {
-                ISourcePosition pos = node.getPosition();
+                SourcePosition pos = node.getPosition();
                 return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
             }
-        } else if (node.nodeId == NodeType.NILNODE) {
+        } else if (node.getNodeType() == NodeType.NILNODE) {
             return OffsetRange.NONE;
         } else {
-            ISourcePosition pos = node.getPosition();
+            SourcePosition pos = node.getPosition();
             try {
                 return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
             } catch (Throwable t) {
@@ -1177,7 +1176,7 @@ public class AstUtilities {
         }
         assert node instanceof INameNode : node;
 
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
         OffsetRange range =
             new OffsetRange(pos.getStartOffset(),
                 pos.getStartOffset() + getName(node).length());
@@ -1228,7 +1227,7 @@ public class AstUtilities {
      *  We want ONLY the actual call/operator name. So compute that on our own.
      */
     public static OffsetRange getCallRange(Node node) {
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
         int start = pos.getStartOffset();
         int end = pos.getEndOffset();
         assert isCall(node);
@@ -1264,7 +1263,7 @@ public class AstUtilities {
         if (node instanceof MethodDefNode) {
             for (Node child : node.childNodes()) {
                 if (child instanceof ConstNode) {
-                    ISourcePosition pos = child.getPosition();
+                    SourcePosition pos = child.getPosition();
                     int end = pos.getEndOffset();
                     int start;
 
@@ -1299,7 +1298,7 @@ public class AstUtilities {
         // the case (e.g. node length != "alias ".length + old.length+new.length+1).
         // In this case I could go peeking in the source buffer to see where the
         // spaces are - between alias and the first word or between old and new. XXX.
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
 
         int newStart = pos.getStartOffset() + 6; // 6: "alias ".length()
 
@@ -1317,7 +1316,7 @@ public class AstUtilities {
         // the case (e.g. node length != "alias ".length + old.length+new.length+1).
         // In this case I could go peeking in the source buffer to see where the
         // spaces are - between alias and the first word or between old and new. XXX.
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
 
         int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
 
@@ -1702,7 +1701,7 @@ public class AstUtilities {
                     if (astOffset == -1) {
                         return;
                     }
-                    org.jruby.nb.ast.MethodDefNode method = AstUtilities.findMethodAtOffset(root, astOffset);
+                    org.jrubyparser.ast.MethodDefNode method = AstUtilities.findMethodAtOffset(root, astOffset);
                     if (method == null) {
                         // It's possible the user had the caret on a line
                         // that includes a method that isn't actually inside
@@ -1800,7 +1799,7 @@ public class AstUtilities {
                         boolean appendClassName = true;
                         while (it.hasNext()) {
                             Node node = it.next();
-                            if (node.nodeId == NodeType.FCALLNODE) {
+                            if (node.getNodeType() == NodeType.FCALLNODE) {
                                 FCallNode fc = (FCallNode)node;
                                 // Possibly a test node
                                 // See http://github.com/rails/rails/commit/f74ba37f4e4175d5a1b31da59d161b0020b58e94
@@ -1821,10 +1820,10 @@ public class AstUtilities {
                                     }
                                     buildShouldaMethod(desc, shouldaMethodName, true);
                                 }
-                            } else if (node.nodeId == NodeType.CLASSNODE && appendClassName) {
+                            } else if (node.getNodeType() == NodeType.CLASSNODE && appendClassName) {
                                 String className = getClassNameForShoulda((IScopingNode) node);
                                 buildShouldaMethod(className, shouldaMethodName, false);
-                            } else if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+                            } else if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
                                 testName[0] = getName(node);
                                 return;
                             }
@@ -1896,7 +1895,7 @@ public class AstUtilities {
                 // For dynamically computed strings, we have n instanceof DStrNode
                 // but I can't handle these anyway
                 if (n instanceof StrNode) {
-                    ByteList descBl = ((StrNode) n).getValue();
+                    String descBl = ((StrNode) n).getValue();
 
                     if ((descBl != null) && (descBl.length() > 0)) {
                         // No truncation? See 138259
@@ -1931,7 +1930,7 @@ public class AstUtilities {
                         return;
                     }
 
-                    org.jruby.nb.ast.Node method =
+                    org.jrubyparser.ast.Node method =
                             AstUtilities.findMethod(root, methodName, Arity.UNKNOWN);
 
                     if (method != null) {
@@ -1947,10 +1946,10 @@ public class AstUtilities {
         return offset[0];
     }
     
-    /** Collect nodes of the given types (node.nodeId==NodeType.x) under the given root */
+    /** Collect nodes of the given types (node.getNodeType()==NodeType.x) under the given root */
     public static void addNodesByType(Node root, NodeType[] nodeIds, List<Node> result) {
         for (int i = 0; i < nodeIds.length; i++) {
-            if (root.nodeId == nodeIds[i]) {
+            if (root.getNodeType() == nodeIds[i]) {
                 result.add(root);
                 break;
             }
@@ -1996,7 +1995,7 @@ public class AstUtilities {
       while_loop:
         while (it.hasNext()) {
             Node n = it.next();
-            switch (n.nodeId) {
+            switch (n.getNodeType()) {
             //case BLOCKNODE:
             case ITERNODE:
                 leaf = n;
@@ -2160,7 +2159,7 @@ public class AstUtilities {
 
     /** Helper for {@link #findExitPoints}. */
     private static void findNonLastExitPoints(final Node node, final Set<? super Node> exits) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
             case RETURNNODE:
             case YIELDNODE:
                 exits.add(node);

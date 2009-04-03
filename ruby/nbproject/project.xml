@@ -14,6 +14,7 @@
                         <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
+                <!--
                 <dependency>
                     <code-name-base>org.jruby</code-name-base>
                     <build-prerequisite/>
@@ -23,6 +24,7 @@
                         <specification-version>0.114</specification-version>
                     </run-dependency>
                 </dependency>
+                -->
                 <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
@@ -48,6 +50,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.jrubyparser</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

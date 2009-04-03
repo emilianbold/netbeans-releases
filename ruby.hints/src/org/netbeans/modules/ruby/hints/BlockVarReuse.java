@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.IterNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.IterNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.EditRegions;
@@ -102,13 +102,13 @@ public class BlockVarReuse extends RubyAstRule {
         Node node = context.node;
         ParserResult info = context.parserResult;
 
-        if (node.nodeId == NodeType.ITERNODE) {
+        if (node.getNodeType() == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child.nodeId == NodeType.LOCALASGNNODE) {
+                if (child.getNodeType() == NodeType.LOCALASGNNODE) {
 
                     OffsetRange range = AstUtilities.getNameRange(child);
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
@@ -166,19 +166,19 @@ public class BlockVarReuse extends RubyAstRule {
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
-            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (node.nodeId == NodeType.ARGSNODE) {
+            } else if (node.getNodeType() == NodeType.ARGSNODE) {
                 isParameter = true;
             }
 
@@ -190,12 +190,12 @@ public class BlockVarReuse extends RubyAstRule {
                 }
 
                 // Skip inline method defs
-                if (child.nodeId == NodeType.DEFNNODE || child.nodeId == NodeType.DEFSNODE) {
+                if (child.getNodeType() == NodeType.DEFNNODE || child.getNodeType() == NodeType.DEFSNODE) {
                     continue;
                 }
 
                 // Skip SOME blocks:
-                if (child.nodeId == NodeType.ITERNODE) {
+                if (child.getNodeType() == NodeType.ITERNODE) {
                     // Skip only the block which the fix is applying to;
                     // the local variable could be aliased in other blocks as well
                     // and we need to keep the program correct!

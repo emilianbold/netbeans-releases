@@ -1,7 +1,7 @@
 A:CLASS:[]:ESCAPED{A}:
-  condition:METHOD:[PUBLIC]:ESCAPED{condition}<font color='#777777'> : ESCAPED{Fixnum, String, Float, _unknown_}</font>:
-  condition2:METHOD:[PUBLIC]:ESCAPED{condition2}<font color='#777777'> : ESCAPED{String, _unknown_}</font>:
-  condition3:METHOD:[PUBLIC]:ESCAPED{condition3}<font color='#777777'> : ESCAPED{Fixnum, String, Float, _unknown_}</font>:
+  condition:METHOD:[PUBLIC]:ESCAPED{condition}<font color='#777777'> : ESCAPED{Fixnum, String, Float, Unknown}</font>:
+  condition2:METHOD:[PUBLIC]:ESCAPED{condition2}<font color='#777777'> : ESCAPED{String, Unknown}</font>:
+  condition3:METHOD:[PUBLIC]:ESCAPED{condition3}<font color='#777777'> : ESCAPED{Fixnum, String, Float, Unknown}</font>:
   method_as_exit_point:METHOD:[PUBLIC]:ESCAPED{method_as_exit_point}:
   simple_array:METHOD:[PUBLIC]:ESCAPED{simple_array}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   simple_int:METHOD:[PUBLIC]:ESCAPED{simple_int}<font color='#777777'> : ESCAPED{Fixnum}</font>:
