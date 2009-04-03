@@ -1012,7 +1012,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         if (srcLevel != null) {
             boolean srcLevelOK = Double.parseDouble(srcLevel) >= requiredVersion;
             if (!srcLevelOK) {
-                System.out.println("required = "+requiredVersion);
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongSrcLevel", String.valueOf(requiredVersion)));
                 return false;
             }

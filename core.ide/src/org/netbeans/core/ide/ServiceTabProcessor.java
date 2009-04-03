@@ -79,7 +79,7 @@ public class ServiceTabProcessor extends LayerGeneratingProcessor {
             if (!"".equals(reg.shortDescription())) {
                 f.bundlevalue("shortDescription", reg.shortDescription());
             }
-            f.intvalue("position", reg.position());
+            f.position(reg.position());
             f.write();
         }
         return true;

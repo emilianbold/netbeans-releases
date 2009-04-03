@@ -88,6 +88,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 
 /** Checks consistency of System File System contents.
  */
@@ -182,6 +183,14 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 "Keymaps/Emacs/D-BACK_QUOTE.shadow".equals(fo.getPath())
             ) {
                 // #46753
+                continue;
+            }
+            if (
+                "Services/Browsers/FirefoxBrowser.settings".equals(fo.getPath()) ||
+                "Services/Browsers/MozillaBrowser.settings".equals(fo.getPath()) ||
+                "Services/Browsers/NetscapeBrowser.settings".equals(fo.getPath())
+            ) {
+                // #161784
                 continue;
             }
             

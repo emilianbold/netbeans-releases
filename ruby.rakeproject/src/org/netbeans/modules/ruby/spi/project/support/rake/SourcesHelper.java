@@ -62,7 +62,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton;
 import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupport;
 import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportEvent;
 import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener;
@@ -126,7 +125,8 @@ public final class SourcesHelper {
             return type;
         }
     }
-    
+
+    private final Project prj;
     private final RakeProjectHelper project;
     private final PropertyEvaluator evaluator;
     private final List<SourceRoot> principalSourceRoots = new ArrayList<SourceRoot>();
@@ -148,7 +148,8 @@ public final class SourcesHelper {
      * @param project an Ant project helper
      * @param evaluator a way to evaluate Ant properties used to define source locations
      */
-    public SourcesHelper(RakeProjectHelper project, PropertyEvaluator evaluator) {
+    public SourcesHelper(Project prj, RakeProjectHelper project, PropertyEvaluator evaluator) {
+        this.prj = prj;
         this.project = project;
         this.evaluator = evaluator;
     }
@@ -221,7 +222,7 @@ public final class SourcesHelper {
     }
     
     private Project getProject() {
-        return RakeBasedProjectFactorySingleton.getProjectFor(project);
+        return prj;
     }
     
     /**
@@ -247,13 +248,6 @@ public final class SourcesHelper {
      * Calling this method causes the helper object to hold strong references to the
      * current external roots, which helps a project satisfy the requirements of
      * {@link FileOwnerQuery#EXTERNAL_ALGORITHM_TRANSIENT}.
-     * </p>
-     * <p>
-     * You may <em>not</em> call this method inside the project's constructor, as
-     * it requires the actual project to exist and be registered in {@link ProjectManager}.
-     * Typically you would use {@link org.openide.util.Mutex#postWriteRequest} to run it
-     * later, if you were creating the helper in your constructor, since the project construction
-     * normally occurs in read access.
      * </p>
      * @param algorithm an external root registration algorithm as per
      *                  {@link FileOwnerQuery#markExternalOwner}

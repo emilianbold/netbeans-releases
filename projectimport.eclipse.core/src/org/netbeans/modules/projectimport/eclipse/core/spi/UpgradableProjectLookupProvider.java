@@ -40,22 +40,33 @@
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectOpenHookImpl;
 import org.netbeans.modules.projectimport.eclipse.core.UpgradableProject;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-// registered separately in j2se and web modules, but could use @LookupProvider.Registration
+// registered separately in j2se and web modules, otherwise could use @LookupProvider.Registration
 final public class UpgradableProjectLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project p = baseContext.lookup(Project.class);
         assert p != null;
-        UpgradableProject up = new UpgradableProject(p);
+        if (ProjectUtils.getPreferences(p, UpgradableProjectLookupProvider.class, true).
+                get("project", null) == null) { // NOI18N
+            // Shortcut, the normal case:
+            return Lookup.EMPTY;
+        } else {
+            // Keep as separate method to try to delay class initialization:
+            return upgradeLookup(p);
+        }
+    }
+
+    private static Lookup upgradeLookup(Project p) {
         return Lookups.fixed(
-            up,
-            new ProjectOpenHookImpl(p, up));
+            new UpgradableProject(p),
+            new ProjectOpenHookImpl());
     }
 
 }

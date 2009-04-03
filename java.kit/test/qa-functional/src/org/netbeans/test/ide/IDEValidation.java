@@ -163,7 +163,17 @@ public class IDEValidation extends JellyTestCase {
     
     
     public void testWriteAccess() throws Exception {
-        CountingSecurityManager.assertCounts("No writes during startup", 0);
+        String msg = "No writes during startup.\n" +
+            "Writing any files to disk during start is inefficient and usualy unnecessary.\n" +
+            "Consider using declarative registration in your layer.xml file, or delaying\n" +
+            "the initialization of the whole subsystem till it is really used.\n" +
+            "In case it is necessary to perform the write, you can modify the\n" +
+            "'allowed-file-write.txt' file in ide.kit module. More details at\n" +
+            "http://wiki.netbeans.org/FitnessViaWhiteAndBlackList";
+
+        CountingSecurityManager.assertCounts(msg, 0);
+        // disable further collecting of
+        CountingSecurityManager.initialize("non-existent", CountingSecurityManager.Mode.CHECK_READ, null);
     }
 
     /** Test creation of java project. 
