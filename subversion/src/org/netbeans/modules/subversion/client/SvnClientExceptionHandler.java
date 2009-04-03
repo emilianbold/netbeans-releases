@@ -621,6 +621,11 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
                msg.indexOf("is not a working copy") > -1;                                   // NOI18N
     }
+
+    public static boolean isTooOldClientForWC(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("this client is too old") > -1;                                   // NOI18N
+    }
     
     public static boolean isWrongURLInRevision(String msg) {        
         msg = msg.toLowerCase();
@@ -756,7 +761,7 @@ public class SvnClientExceptionHandler {
             String msg = getCustomizedMessage(ex);  
             if(msg == null) {
                 if(ex instanceof SVNClientException) {
-                    msg = parseExceptionMessage((SVNClientException) ex);    
+                    msg = parseExceptionMessage((SVNClientException) ex);
                 } else {
                     msg = ex.getMessage();                        
                 }                
@@ -797,6 +802,10 @@ public class SvnClientExceptionHandler {
         String msg = ex.getMessage();
         msg = msg.replace("svn: warning: ", "");
         msg = msg.replace("svn: ", "");
+        if (isTooOldClientForWC(msg)) {
+            // add an additional message for old clients
+            msg += NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OldClient");    // NOI18N
+        }
         return msg;
     }
 

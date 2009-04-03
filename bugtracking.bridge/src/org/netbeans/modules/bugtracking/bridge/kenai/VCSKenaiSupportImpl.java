@@ -43,8 +43,9 @@ import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
@@ -57,8 +58,6 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     private final Set<String> kenaiUrls = new HashSet<String>();
 
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
-
     @Override
     public boolean isKenai(String url) {
         synchronized(kenaiUrls) {
@@ -67,13 +66,9 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
             }
         }
         boolean ret = false;
-//        try {
-//            ret = KenaiProject.forRepository(url) != null;
-//        } catch (KenaiException ex) { }
-
-        // XXX need query on kenai forRepository might take too long
-        Matcher m = repositoryPattern.matcher(url);
-        ret = m.matches();
+        try {
+            ret = KenaiProject.forRepository(url) != null;
+        } catch (KenaiException ex) { }
 
         if(ret) {
             synchronized(kenaiUrls) {

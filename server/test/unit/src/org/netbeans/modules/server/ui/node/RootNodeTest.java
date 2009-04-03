@@ -37,78 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.server.ui.node;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.codeviation.pojson.PojsonLoad;
+import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author Jan Becicka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class KenaiErrorMessage extends KenaiException {
-    private String errorResponse;
-    private String status;
-    private HashMap<String,String> errors;
+public class RootNodeTest extends NbTestCase {
 
-    public KenaiErrorMessage(String message, Throwable cause, String errorResponse) {
-        super(message, cause);
-        this.errorResponse = errorResponse;
+    public RootNodeTest(String s) {
+        super(s);
     }
 
-    public KenaiErrorMessage(String message, String errorResponse) {
-        super(message);
-        this.errorResponse = errorResponse;
-    }
-    
-    public <T> T getKenaiError(Class<T> clazz) {
-        PojsonLoad load = PojsonLoad.create();
-        return load.load(errorResponse, clazz);
-    }
+    public void testGetActions() throws Exception {
+        RootNode rn = RootNode.getInstance();
+        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
+        assertNotNull("Folder for actions precreated", fo);
+        fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+        Action[] arr = rn.getActions(true);
+        assertEquals("Two actions found", 2, arr.length);
+        MyAction a = MyAction.get(MyAction.class);
 
-    private void fillErrorData() {
-        PojsonLoad load =PojsonLoad.create();
-        try {
-            final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
-            status = (String) toCollections.get("status");
-            errors = (HashMap<String, String>) toCollections.get("errors");
-        } catch (IOException ex) {
-            Logger.getLogger(KenaiErrorMessage.class.getName()).log(Level.SEVERE, null, ex);
+        if (a != arr[0] && a != arr[1]) {
+            fail("My action shall be present in the node context actions: " + arr[0] + " 2nd: " + arr[1]);
         }
     }
 
+    public static final class MyAction extends CallableSystemAction {
+        @Override
+        public void performAction() {
+        }
 
-    /**
-     * get error response as string
-     * @return
-     */
-    public String getAsString() {
-        return errorResponse;
-    }
+        @Override
+        public String getName() {
+            return "My";
+        }
 
-    /**
-     * get status according to
-     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
-     */
-    public String getStatus() {
-        if (status==null)
-            fillErrorData();
-        return status;
-    }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
 
-    /**
-     * get errors according to
-     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
-     */
-    public Map<String,String> getErrors() {
-        if (errors==null)
-            fillErrorData();
-        return errors;
     }
 }
