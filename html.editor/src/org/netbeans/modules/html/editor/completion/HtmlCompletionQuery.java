@@ -607,10 +607,10 @@ public class HtmlCompletionQuery {
             return new ArrayList(0);
         }
         List result = new ArrayList(values.size());
+        if(quotationChar != null) {
+            offset++; //shift the offset after the quotation
+        }
         for (Iterator i = values.iterator(); i.hasNext();) {
-            if(quotationChar != null) {
-                offset++; //shift the offset after the quotation
-            }
             result.add(HtmlCompletionItem.createAttributeValue(((DTD.Value) i.next()).getName(), offset));
         }
         return result;
