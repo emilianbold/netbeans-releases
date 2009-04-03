@@ -27,6 +27,24 @@
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='Servers']/folder[@name='Actions']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Servers</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">Actions</xsl:attribute>
+                <xsl:apply-templates mode="actions"/>
+            </xsl:element>
+        </xsl:element>
+        <xsl:call-template 
+            name="actions-definition"
+        >
+            <xsl:with-param
+                name="originalFile"
+                select="file/attr[@name='originalFile']"
+            />
+        </xsl:call-template>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Services']/folder[@name='AntBasedProjectTypes']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Ergonomics</xsl:attribute>
@@ -128,6 +146,61 @@
 
     <xsl:template match="attr" mode="attach-types">
         <xsl:copy-of select="."/>
+    </xsl:template>
+
+
+    <!-- actions -->
+    <xsl:template match="file" mode="actions">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:if test="@url">
+                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+            </xsl:if>
+            <xsl:apply-templates mode="actions"/>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr[@name='delegate']" mode="actions">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">delegate</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.FeatureAction.create</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr" mode="actions">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+
+    <xsl:template name="actions-definition">
+        <xsl:param name="originalFile"/>
+        <xsl:call-template name="actions-definition-impl">
+            <xsl:with-param name="path" select="$originalFile/@stringvalue"/>
+            <xsl:with-param name="query" select="'filesystem'"/>
+        </xsl:call-template>
+    </xsl:template>
+
+    <xsl:template name="actions-definition-impl">
+        <xsl:param name="path"/>
+        <xsl:param name="query"/>
+        <xsl:variable name="category" select="substring-before($path,'/')"/>
+        <xsl:choose>
+            <xsl:when test="$category">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="$category"/>
+                    </xsl:attribute>
+                    <xsl:call-template name="actions-definition-impl">
+                        <xsl:with-param name="path" select="substring-after($path,'/')"/>
+                    </xsl:call-template>
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates
+                    select="//filesystem/folder[@name='Actions']/descendant::file[@name=$path]"
+                    mode="actions"
+                />
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <!-- project type -->
