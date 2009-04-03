@@ -54,13 +54,11 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -164,8 +162,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         lookupContent[3] = JavaDataLoader.findObject(JavaDataLoader.class, true);
         
         setLookup(lookupContent, SourceUtilsTestUtil.class.getClassLoader());
-
-        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new JavaCustomIndexer.Factory());
 
         IndexUtil.setCacheFolder(FileUtil.toFile(cache));
     }
