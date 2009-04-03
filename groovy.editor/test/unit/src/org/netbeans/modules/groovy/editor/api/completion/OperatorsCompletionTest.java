@@ -41,7 +41,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author Petr Hejl
+ * @author schmidtm
  */
 import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
@@ -54,13 +54,13 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class DuplicatesCompletionTest extends GroovyTestBase {
+public class OperatorsCompletionTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/duplicates/";
+    String TEST_BASE = "testfiles/completion/operators/";
 
-    public DuplicatesCompletionTest(String testName) {
+    public OperatorsCompletionTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -76,19 +76,39 @@ public class DuplicatesCompletionTest extends GroovyTestBase {
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/duplicates")) }));
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/operators")) }));
         return map;
     }
 
-    public void testDuplicates1() throws Exception {
-        checkCompletion(TEST_BASE + "b/B.groovy", "class B extends A^ {", true);
+    public void testSafeNavigation1() throws Exception {
+        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        x?.b^", true);
     }
 
-    public void testDuplicates2() throws Exception {
-        checkCompletion(TEST_BASE + "c/C.groovy", "class C extends a.A^ {", true);
+    public void testSafeNavigation2() throws Exception {
+        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        this?.a^", true);
     }
 
-    public void testDuplicates3() throws Exception {
-        checkCompletion(TEST_BASE + "d/D.groovy", "class D extends java.util.A^ {", true);
+    public void testSafeNavigation3() throws Exception {
+        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        r?.t^", true);
+    }
+
+    public void testSafeNavigation4() throws Exception {
+        checkCompletion(TEST_BASE + "SafeNavigation2.groovy", "        \"\"?.^", true);
+    }
+
+    public void testMethodClosure1() throws Exception {
+        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        x.&b^", true);
+    }
+
+    public void testMethodClosure2() throws Exception {
+        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        this.&a^", true);
+    }
+
+    public void testMethodClosure3() throws Exception {
+        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        r.&t^", true);
+    }
+
+    public void testMethodClosure4() throws Exception {
+        checkCompletion(TEST_BASE + "MethodClosure2.groovy", "        \"\".&^", true);
     }
 }
