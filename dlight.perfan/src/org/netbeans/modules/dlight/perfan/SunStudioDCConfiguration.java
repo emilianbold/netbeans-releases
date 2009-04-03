@@ -82,6 +82,14 @@ public final class SunStudioDCConfiguration
         new Column(TimeMetric.SyncWaitCallInclusive.getMetricID(),
             TimeMetric.SyncWaitCallInclusive.getMetricValueClass(),
             TimeMetric.SyncWaitCallInclusive.getMetricDisplayedName(), null);
+    public static final Column c_eSync =
+        new Column(TimeMetric.SyncWaitTimeExclusive.getMetricID(),
+            TimeMetric.SyncWaitTimeExclusive.getMetricValueClass(),
+            TimeMetric.SyncWaitTimeExclusive.getMetricDisplayedName(), null);
+    public static final Column c_eSyncn =
+        new Column(TimeMetric.SyncWaitCallExclusive.getMetricID(),
+            TimeMetric.SyncWaitCallExclusive.getMetricValueClass(),
+            TimeMetric.SyncWaitCallExclusive.getMetricDisplayedName(), null);
     public static final Column c_leakCount =
         new Column(MemoryMetric.LeaksCountMetric.getMetricID(),
             MemoryMetric.LeaksCountMetric.getMetricValueClass(),
@@ -129,7 +137,7 @@ public final class SunStudioDCConfiguration
 
     public static final DataTableMetadata getSyncTableMetadata(Column... columns) {
         return getTableMetadata("SunStudioSyncDetailedData", // NOI18N
-                columns, Arrays.asList(c_iSync, c_iSyncn));
+                columns, Arrays.asList(c_iSync, c_iSyncn, c_eSync, c_eSyncn));
     }
 
     public static final DataTableMetadata getCPUTableMetadata(Column... columns) {

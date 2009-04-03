@@ -365,6 +365,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentQmakeConfiguration = ((MakeConfiguration) currentConf).getQmakeConfiguration();
         } else if (element.equals(QT_DEFS_LIST_ELEMENT)) {
             currentList = currentQmakeConfiguration.getCustomDefs().getValue();
+        } else if (element.equals(PACK_ADDITIONAL_INFOS_LIST_ELEMENT)) {
+            currentList = currentPackagingConfiguration.getAdditionalInfo().getValue();
         }
     }
 
@@ -790,6 +792,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getQmakeSpec().setValue(getString(currentText));
             }
+        } else if (element.equals(PACK_ADDITIONAL_INFOS_LIST_ELEMENT)) {
+            currentList = null;
         }
     }
 

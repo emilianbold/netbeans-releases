@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.execution;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -48,9 +49,9 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 public final class ValidationStatus {
 
     private final static ValidationStatus validStatus =
-            new ValidationStatus(true, true, "OK", null); // NOI18N
+            new ValidationStatus(true, true, NbBundle.getMessage(ValidationStatus.class, "ValidationStatus.Valid"), null); // NOI18N
     private final static ValidationStatus initialStatus =
-            new ValidationStatus(false, false, "Initial", null); // NOI18N
+            new ValidationStatus(false, false, NbBundle.getMessage(ValidationStatus.class, "ValidationStatus.Initial"), null); // NOI18N
     private final boolean isDefined;
     private final boolean isValid;
     private final String reason;

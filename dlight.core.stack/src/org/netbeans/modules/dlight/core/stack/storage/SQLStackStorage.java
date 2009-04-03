@@ -465,6 +465,13 @@ public final class SQLStackStorage {
         }
 
         @Override
+        public String getDisplayedName() {
+            return getFunction().getName() + (hasOffset() ?  ("+0x" + getOffset()) : "");
+        }
+
+
+
+        @Override
         public Object getMetricValue(FunctionMetric metric) {
             return metrics.get(metric);
         }
