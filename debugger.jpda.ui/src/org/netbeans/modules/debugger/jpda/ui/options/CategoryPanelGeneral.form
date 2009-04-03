@@ -16,7 +16,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="stopOnExceptionsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -32,8 +32,9 @@
                       </Group>
                   </Group>
                   <Component id="applyCodeChangesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="openDebuggerConsoleCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="104" max="-2" attributes="0"/>
+              <EmptySpace pref="104" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -53,7 +54,9 @@
                   <Component id="stepsResumeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="stepsResumeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="184" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="openDebuggerConsoleCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="153" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,6 +107,13 @@
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="new javax.swing.DefaultComboBoxModel(new String[] { org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, &quot;CategoryPanelGeneral.stepsResumeCB.allThreads&quot;), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, &quot;CategoryPanelGeneral.stepsResumeCB.currentThread&quot;) })" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="openDebuggerConsoleCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelGeneral.openDebuggerConsoleCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
