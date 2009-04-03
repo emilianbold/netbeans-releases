@@ -127,7 +127,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
-            getFile().addMacro(createMacro((APTDefine) apt));
+            MacroImpl macro = createMacro((APTDefine) apt);
+            if (macro != null) {
+                getFile().addMacro(macro);
+            }
         }
     }
 
@@ -170,6 +173,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     private MacroImpl createMacro(APTDefine define) {
+        if (!define.isValid()) {
+            return null;
+        }
 
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();

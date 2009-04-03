@@ -132,6 +132,10 @@ public final class APTDefineNode extends APTMacroBaseNode
             if (params != null){
                 ((ArrayList<?>)params).trimToSize();
             }
+            if (state == BEFORE_MACRO_NAME) {
+                // macro without name
+                state = ERROR;
+            }
             return false;
         } else {
             switch (state) {
