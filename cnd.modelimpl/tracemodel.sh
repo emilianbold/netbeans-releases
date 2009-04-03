@@ -117,6 +117,7 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/modules/org-openide-text.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-windows.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-editor-mimelookup.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-awt.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar

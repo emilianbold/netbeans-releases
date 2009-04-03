@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -290,6 +291,52 @@ public class UIDUtilities {
             return (name2 == null) ? 1 : 0;
         } else { // name1 == null
             return (name2 == null) ? 0 : -1;
+        }
+    }
+
+    public static <T extends CsmOffsetableDeclaration> CsmUID<T> findExistingUIDInList(List<CsmUID<T>> list, int start, int end, CharSequence name) {
+        CsmUID<T> out = null;
+        // look for the object with the same start position and the same name
+        // TODO: for now we are in O(n), but better to be O(ln n) speed
+        for (int i = list.size() - 1; i >= 0; i--) {
+            CsmUID<T> csmUID = list.get(i);
+            int startOffset = UIDUtilities.getStartOffset(csmUID);
+            if (startOffset == start && end == UIDUtilities.getEndOffset(csmUID) && name.equals(UIDUtilities.getName(csmUID))) {
+                out = csmUID;
+                break;
+            } else if (startOffset < start) {
+                break;
+            }
+        }
+        return out;
+    }
+
+    public static <T extends CsmOffsetableDeclaration> void insertIntoSortedUIDList(CsmUID<T> uid, List<CsmUID<T>> list) {
+        int start = UIDUtilities.getStartOffset(uid);
+        // start from the last, because most of the time we are in append, not insert mode
+        boolean lessThanOthers = false;
+        for (int pos = list.size() - 1; pos >= 0; pos--) {
+            CsmUID<T> currUID = list.get(pos);
+            int i = UIDUtilities.compareWithinFile(currUID, uid);
+            if (i <= 0) {
+                if (i == 0) {
+                    list.set(pos, uid);
+                } else {
+                    list.add(pos + 1, uid);
+                }
+                return;
+            } else if (UIDUtilities.getStartOffset(currUID) < start) {
+                break;
+            } else {
+                lessThanOthers = true;
+            }
+        }
+        if (!list.isEmpty() && lessThanOthers) {
+            // insert as the first
+            list.add(0, uid);
+        } else {
+            // add as the last
+            list.add(uid);
         }
     }
 

@@ -234,6 +234,15 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    public boolean deleteDirectory(String pathname) throws RemoteException {
+        try {
+            return ftpClient.removeDirectory(pathname);
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Error while deleting file " + pathname, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotDeleteFile", pathname), ex, getReplyString());
+        }
+    }
+
     public boolean rename(String from, String to) throws RemoteException {
         try {
             return ftpClient.rename(from, to);
@@ -243,23 +252,25 @@ public class FtpClient implements RemoteClient {
         }
     }
 
-    public List<RemoteFile> listFiles(PathInfo pathInfo) throws RemoteException {
+    public List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
+        String pwd = null;
         try {
-            FTPFile[] files = ftpClient.listFiles();
+            pwd = ftpClient.printWorkingDirectory();
+            FTPFile[] files = ftpClient.listFiles(pwd);
             result = new ArrayList<RemoteFile>(files.length);
             for (FTPFile f : files) {
                 // #142682
                 if (f == null) {
                     // hmm, really weird...
-                    LOGGER.fine("NULL returned for listing of " + pathInfo);
+                    LOGGER.fine("NULL returned for listing of " + pwd);
                     continue;
                 }
                 result.add(new RemoteFileImpl(f));
             }
         } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "Error while listing files for " + pathInfo, ex);
-            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotListFiles", pathInfo.getFullPath()), ex, getReplyString());
+            LOGGER.log(Level.FINE, "Error while listing files for " + pwd, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotListFiles", pwd), ex, getReplyString());
         }
         return result;
     }
@@ -306,6 +317,22 @@ public class FtpClient implements RemoteClient {
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while setting permissions for " + path, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotSetPermissions", path), ex, getReplyString());
+        }
+    }
+
+    public boolean exists(String parent, String name) throws RemoteException {
+        try {
+            ftpClient.changeWorkingDirectory(parent);
+            for (RemoteFile file : listFiles()) {
+                if (file.getName().equals(name)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException ex) {
+            String fullPath = parent + "/" + name; // NOI18N
+            LOGGER.log(Level.FINE, "Error while checking existence of " + fullPath, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotCheckFileExistence", fullPath), ex, getReplyString());
         }
     }
 

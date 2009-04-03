@@ -74,21 +74,23 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
- * V59 - NB 7.0
+ * V60 - NB 6.7
+ *   PACK_ADDITIONAL_INFOS_LIST_ELEMENT
+ * V59 (?) - NB 6.7
  *   QT_QMAKE_SPEC_ELEMENT
- * V58 - NB 7.0
+ * V58 - NB 6.7
  *   CCOMPILERTOOL_ELEMENT2
  *   CCCOMPILERTOOL_ELEMENT2
  *   INCLUDE_DIRECTORIES_ELEMENT2
  *   PATH_ELEMENT
- * V57 - NB 7.0
+ * V57 - NB 6.7
  *   new attributs for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
- * V56 - NB 7.0
+ * V56 - NB 6.7
  *   Dont write ITEM_ELEMENT (item configuration) if default values
- * V55 - NB 7.0
+ * V55 - NB 6.7
  *   DISK_FOLDER_ELEMENT
  *   ITEM_NAME_ELEMENT
- * V54 - NB 7.0
+ * V54 - NB 6.7
  *   Qt settings are persisted:
  *   QT_ELEMENT
  *   QT_DESTDIR_ELEMENT
@@ -100,9 +102,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  *   QT_RCC_DIR_ELEMENT
  *   QT_UI_DIR_ELEMENT
  *   QT_DEFS_LIST_ELEMENT
- * V53 - NB 7.0
+ * V53 - NB 6.7
  *   New configuration types: 4 (QT_APPLICATION), 5 (QT_DYNAMIC_LIBRARY), 6 (QT_STATIC_LIBRARY)
- * V52 - NB 7.0
+ * V52 - NB 6.7
  *   ASSEMBLER_REQUIRED_ELEMENT
  * V51 - NB 6.5
  *   Now storing package type as name and not as int
@@ -173,7 +175,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 58;
+    public final static int CURRENT_VERSION = 60;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -315,6 +317,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_FILE_LIST_ELEMENT = "packFileListElem"; // NOI18N
     protected final static String PACK_INFOS_LIST_ELEMENT = "packInfoList"; // NOI18NP
     protected final static String PACK_INFO_LIST_ELEMENT = "packInfoListElem"; // NOI18NP
+    protected final static String PACK_ADDITIONAL_INFOS_LIST_ELEMENT = "packAddInfosListElem"; // NOI18NP
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
     // Qt-related
     protected final static String QT_ELEMENT = "qt"; // NOI18N
@@ -842,6 +845,9 @@ public abstract class CommonConfigurationXMLCodec
                         });
             }
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
+            if (!packagingConfiguration.getAdditionalInfo().getValue().isEmpty()) {
+                writeList(xes, PACK_ADDITIONAL_INFOS_LIST_ELEMENT, packagingConfiguration.getAdditionalInfo().getValue());
+            }
         }
         xes.elementClose(PACK_ELEMENT);
     }

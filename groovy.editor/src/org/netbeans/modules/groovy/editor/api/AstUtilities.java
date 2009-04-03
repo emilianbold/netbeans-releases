@@ -80,6 +80,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
@@ -160,6 +161,7 @@ public class AstUtilities {
             return new OffsetRange(start, end);
     }
 
+    @NonNull
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
 
         // Warning! The implicit class and some other nodes has line/column numbers below 1

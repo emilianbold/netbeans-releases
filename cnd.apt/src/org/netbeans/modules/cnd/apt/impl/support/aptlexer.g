@@ -307,6 +307,11 @@ tokens {
         return APTUtils.createAPTToken(type);
     }
 
+    @Override
+    protected void setTokenText(Token _token, char buf[], int start, int count) {
+        APTUtils.setTokenText((APTToken)_token, buf, start, count);
+    }
+
     public void traceIn(String rname) {
         traceDepth ++;
         traceIndent();
@@ -460,6 +465,7 @@ tokens {
         setPreprocPending(false);
     }
 
+    @Override
     protected APTToken makeToken(int t) {
         if (isOnlyPreproc() && isPreprocPossible()) {
            // do not create token if lexer builds light stream

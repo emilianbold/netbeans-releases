@@ -96,10 +96,10 @@ public abstract class BaseFileObj extends FileObject {
 
 
     protected BaseFileObj(final File file) {
-        this(NamingFactory.fromFile(new FileInfo(file)));
+        this(file, NamingFactory.fromFile(file));
     }
     
-    protected BaseFileObj(final FileNaming name) {
+    protected BaseFileObj(final File file, final FileNaming name) {
         this.fileName = name;
         versioningWeakListener = (FileChangeListener) WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
         addFileChangeListener(versioningWeakListener);

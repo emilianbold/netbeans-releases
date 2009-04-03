@@ -87,8 +87,9 @@ public final class FolderObj extends BaseFileObj {
     /**
      * Creates a new instance of FolderImpl
      */
-    public FolderObj(final FileNaming name) {
-        super(name);
+    public FolderObj(final File file, final FileNaming name) {
+        super(file, name);
+        //valid = true;
     }
 
     public final boolean isFolder() {
@@ -388,9 +389,9 @@ public final class FolderObj extends BaseFileObj {
                     if (!(new FileInfo(f).isConvertibleToFileObject())) {
                         final BaseFileObj fakeInvalid;
                         if (child.isFile()) {
-                            fakeInvalid = new FileObj(child);
+                            fakeInvalid = new FileObj(f, child);
                         } else {
-                            fakeInvalid = new FolderObj(child);
+                            fakeInvalid = new FolderObj(f, child);
                         }
 
                         fakeInvalid.setValid(false);
