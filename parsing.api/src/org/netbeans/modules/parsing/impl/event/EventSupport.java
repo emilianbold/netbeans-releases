@@ -322,7 +322,9 @@ public final class EventSupport {
                         source = Source.create(doc);
                     }
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
+                        final EventSupport eventSupport = SourceAccessor.getINSTANCE().getEventSupport(source);
+                        eventSupport.k24 = false;
+                        eventSupport.resetState(true, -1, -1);
                     }                   
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
