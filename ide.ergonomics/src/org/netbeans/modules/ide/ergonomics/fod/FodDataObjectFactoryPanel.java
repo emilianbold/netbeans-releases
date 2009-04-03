@@ -52,10 +52,15 @@ import org.openide.filesystems.FileObject;
  */
 final class FodDataObjectFactoryPanel extends javax.swing.JPanel {
     /** Creates new form OpeningProjectPanel */
-    public FodDataObjectFactoryPanel(ProgressHandle handle, FileObject fo) {
+    public FodDataObjectFactoryPanel(ProgressHandle handle, FileObject fo, String msg) {
         initComponents();
         progressPanel.add(BorderLayout.CENTER, ProgressHandleFactory.createProgressComponent(handle));
-        fileName.setText(fo.getPath());
+        if (fo != null) {
+            fileName.setText(fo.getPath());
+        }
+        if (msg != null) {
+            actionName.setText(msg);
+        }
     }
     
     /** This method is called from within the constructor to

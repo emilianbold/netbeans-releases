@@ -1,6 +1,6 @@
 Name: Dojo
 Version: 1.2.1
-Description: JavaScript Library 
+Description: JavaScript Library
 License: MIT
 OSR: 
 Origin: http://dojotoolkit.org

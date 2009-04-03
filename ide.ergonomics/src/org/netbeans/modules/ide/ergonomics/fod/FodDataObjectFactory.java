@@ -164,7 +164,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
                 Frame[] arr = JFrame.getFrames();
                 final Frame mainWindow = arr.length > 0 ? arr[0] : null;
                 dialog = new JDialog(mainWindow, NbBundle.getMessage(FodDataObjectFactory.class, "CAP_Opening_File"), true);
-                dialog.getContentPane().add(new FodDataObjectFactoryPanel(handle, fo));
+                dialog.getContentPane().add(new FodDataObjectFactoryPanel(handle, fo, null));
                 dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
                 dialog.pack();
                 dialog.setBounds(Utilities.findCenterBounds(dialog.getPreferredSize()));
