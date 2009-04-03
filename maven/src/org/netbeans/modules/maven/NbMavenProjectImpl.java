@@ -278,7 +278,7 @@ public final class NbMavenProjectImpl implements Project {
         } catch (Exception x) {
             // oh well..
             //NOPMD
-            }
+        }
         return null;
     }
 
@@ -633,7 +633,7 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI getScalaDirectory(boolean test) {
         //TODO hack, should be supported somehow to read this..
-        String prop = PluginPropertyUtils.getPluginProperty(project, "org.scala.tools",
+        String prop = PluginPropertyUtils.getPluginProperty(getOriginalMavenProject(), "org.scala.tools",
                 "scala-maven-plugin", //NOI18N
                 "sourceDir", //NOI18N
                 "compile"); //NOI18N
