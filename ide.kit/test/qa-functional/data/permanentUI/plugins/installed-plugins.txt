@@ -1,45 +1,45 @@
-||Codebase||Display name||Category
-|org.netbeans.modules.versioning.system.cvss|CVS|Base IDE
-|org.netbeans.modules.db.kit|Database|Base IDE
-|org.netbeans.modules.hudson|Hudson|Base IDE
-|org.netbeans.modules.ide.branding.kit|IDE Branding|Base IDE
-|org.netbeans.modules.ide.kit|IDE Platform|Base IDE
-|org.netbeans.modules.localhistory|Local History|Base IDE
-|org.netbeans.modules.mercurial|Mercurial|Base IDE
-|org.netbeans.modules.subversion|Subversion|Base IDE
-|org.netbeans.modules.cnd.kit|C/C++|C/C++
-|org.netbeans.modules.timers|Timers API|Developing NetBeans
-|org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy
-|org.netbeans.modules.ant.kit|Ant|Java
-|org.netbeans.modules.form.kit|GUI Builder|Java
-|org.netbeans.modules.hibernate|Hibernate|Java
-|org.netbeans.modules.java.kit|Java|Java
-|org.netbeans.modules.debugger.jpda.ui|Java Debugger|Java
-|org.netbeans.modules.j2ee.persistence.kit|Java Persistence|Java
-|org.netbeans.modules.profiler|Java Profiler|Java
-|org.netbeans.modules.maven.kit|Maven|Java
-|org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java
-|org.netbeans.modules.spring.beans|Spring Beans|Java
-|org.netbeans.libs.commons_codec|Commons Codec Integration|Libraries
-|org.netbeans.modules.mobility.kit|Mobility|Mobility
-|org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility
-|org.netbeans.modules.maven.search|Maven Quick Search Bridge|null
-|org.netbeans.modules.php.kit|PHP|PHP
-|org.netbeans.modules.dlight.kit|D-Light|Profiling
-|org.netbeans.modules.core.kit|RCP Platform|RCP Platform
-|org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby
-|org.netbeans.modules.soa.kit|SOA|SOA
-|org.netbeans.modules.xml.kit|XML Schema and WSDL|SOA
-|org.netbeans.modules.team.kit|Team|Team
-|org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE
-|org.netbeans.modules.identity.kit|Identity|Web & Java EE
-|org.netbeans.modules.j2ee.kit|Java EE|Web & Java EE
-|org.netbeans.modules.web.jsf.kit|JSF|Web & Java EE
-|org.netbeans.modules.websvc.restkit|RESTful Web Services|Web & Java EE
-|org.netbeans.modules.spring.webmvc|Spring Web MVC|Web & Java EE
-|org.netbeans.modules.web.struts|Struts|Web & Java EE
-|org.netbeans.modules.web.kit|Web Applications|Web & Java EE
-|org.netbeans.modules.websvc.kit|Web Services|Web & Java EE
-|org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications
-|org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications
-|org.netbeans.modules.websvc.metro.model|Configuration model for metro.xml file|Web Services Interoperability
+||Codebase||Display name||Category||Cluster
+|org.netbeans.modules.versioning.system.cvss|CVS|Base IDE|ide
+|org.netbeans.modules.db.kit|Database|Base IDE|ide
+|org.netbeans.modules.hudson|Hudson|Base IDE|ide
+|org.netbeans.modules.ide.branding.kit|IDE Branding|Base IDE|nb
+|org.netbeans.modules.ide.kit|IDE Platform|Base IDE|ide
+|org.netbeans.modules.localhistory|Local History|Base IDE|ide
+|org.netbeans.modules.mercurial|Mercurial|Base IDE|ide
+|org.netbeans.modules.subversion|Subversion|Base IDE|ide
+|org.netbeans.modules.cnd.kit|C/C++|C/C++|cnd
+|org.netbeans.modules.timers|Timers API|Developing NetBeans|apisupport
+|org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy|groovy
+|org.netbeans.modules.ant.kit|Ant|Java|java
+|org.netbeans.modules.form.kit|GUI Builder|Java|java
+|org.netbeans.modules.hibernate|Hibernate|Java|java
+|org.netbeans.modules.java.kit|Java|Java|java
+|org.netbeans.modules.debugger.jpda.ui|Java Debugger|Java|java
+|org.netbeans.modules.j2ee.persistence.kit|Java Persistence|Java|java
+|org.netbeans.modules.profiler|Java Profiler|Java|profiler
+|org.netbeans.modules.maven.kit|Maven|Java|java
+|org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
+|org.netbeans.modules.spring.beans|Spring Beans|Java|java
+|org.netbeans.libs.commons_codec|Commons Codec Integration|Libraries|ide
+|org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
+|org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
+|org.netbeans.modules.maven.search|Maven Quick Search Bridge|null|java
+|org.netbeans.modules.php.kit|PHP|PHP|php
+|org.netbeans.modules.dlight.kit|D-Light|Profiling|dlight
+|org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
+|org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
+|org.netbeans.modules.soa.kit|SOA|SOA|soa
+|org.netbeans.modules.xml.kit|XML Schema and WSDL|SOA|xml
+|org.netbeans.modules.team.kit|Team|Team|ide
+|org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE|enterprise
+|org.netbeans.modules.identity.kit|Identity|Web & Java EE|identity
+|org.netbeans.modules.j2ee.kit|Java EE|Web & Java EE|enterprise
+|org.netbeans.modules.web.jsf.kit|JSF|Web & Java EE|enterprise
+|org.netbeans.modules.websvc.restkit|RESTful Web Services|Web & Java EE|enterprise
+|org.netbeans.modules.spring.webmvc|Spring Web MVC|Web & Java EE|enterprise
+|org.netbeans.modules.web.struts|Struts|Web & Java EE|enterprise
+|org.netbeans.modules.web.kit|Web Applications|Web & Java EE|enterprise
+|org.netbeans.modules.websvc.kit|Web Services|Web & Java EE|enterprise
+|org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications|websvccommon
+|org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications|webcommon
+|org.netbeans.modules.websvc.metro.model|Configuration model for metro.xml file|Web Services Interoperability|enterprise
