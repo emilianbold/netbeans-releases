@@ -58,11 +58,11 @@ public class BugzillaConnector extends BugtrackingConnector {
     private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
     }
 
     public String getTooltip() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
     }
     
     @Override
