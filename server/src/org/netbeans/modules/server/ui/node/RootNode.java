@@ -58,8 +58,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 public final class RootNode extends AbstractNode {
 
@@ -95,7 +97,7 @@ public final class RootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {SystemAction.get(AddServerInstanceAction.class)};
+        return Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
     }
 
     private static class ChildFactory extends org.openide.nodes.ChildFactory<ServerInstance> implements ChangeListener {

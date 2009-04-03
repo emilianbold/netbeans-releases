@@ -141,7 +141,7 @@ public final class WindowsSupport {
         }
 
         if (path.charAt(1) != ':') {
-            return path;
+            return path.replaceAll("\\\\", "/"); // NOI18N
         }
 
         char driveLetter = path.charAt(0);

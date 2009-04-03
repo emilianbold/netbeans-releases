@@ -1,5 +1,5 @@
 {
-name:issues
+name:bugzilla
 description:Bugzilla issue tracking system
 type:issues
 display_name:Bugzilla
