@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -218,8 +219,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             os.write(cmd.getBytes());
             os.flush();
-
-            readPID(is);
         } catch (InterruptedException ex) {
             interrupted = true;
         } catch (InterruptedIOException ex) {
@@ -227,7 +226,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 
         if (proc == null || interrupted || isInterrupted()) {
-
             if (proc != null) {
                 proc.destroy();
             }
@@ -236,11 +234,18 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processError = new ByteArrayInputStream(new byte[0]);
             processOutput = new ByteArrayInputStream(new byte[0]);
             processInput = new ByteArrayOutputStream();
-        } else {
-            process = proc;
-            processError = es;
-            processInput = os;
-            processOutput = is;
+            return;
+        }
+
+        process = proc;
+        processError = es;
+        processInput = os;
+        processOutput = is;
+
+        try {
+            readPID(processOutput);
+        } catch (InterruptedException ex) {
+            interrupt();
         }
     }
 
