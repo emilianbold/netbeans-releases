@@ -40,31 +40,17 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
-/**
- *
- */
 public class ProjectOpenHookImpl extends ProjectOpenedHook{
 
     private static final RequestProcessor PROJ_OPEN_HOOK_RESYNCHRONIZER = new RequestProcessor("Eclipse.Resynchronizer"); // NOI18N
     private static RequestProcessor.Task currentTask;
     
-    private UpgradableProject upgradable;
-    private Project project;
-    
-    private static final Logger LOG =
-            Logger.getLogger(ProjectOpenHookImpl.class.getName());
-    
-    public ProjectOpenHookImpl(Project project, UpgradableProject upgradable) {
-        this.upgradable = upgradable;
-        this.project = project;
-    }
+    public ProjectOpenHookImpl() {}
     
     @Override
     protected synchronized void projectOpened() {

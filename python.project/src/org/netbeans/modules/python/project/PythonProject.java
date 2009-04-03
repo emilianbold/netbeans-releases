@@ -101,7 +101,7 @@ public PythonProject()
                 logicalView, // Logical view if project implementation
                 new PythonOpenedHook(), //Called by project framework when project is opened (closed)
                 new PythonProjectXmlSavedHook(),  //Called when project.xml changes
-                new PythonSources(helper,evaluator,sourceRoots,testRoots),    //Python source grops - used by package view, factories, refactoring, ...
+                new PythonSources(this, helper,evaluator,sourceRoots,testRoots),    //Python source grops - used by package view, factories, refactoring, ...
                 new PythonProjectOperations(this),  //move, rename, copy of project
                 new RecommendedTemplatesImpl(this.updateHelper), // Recommended Templates
                 new PythonCustomizerProvider(this),     //Project custmoizer

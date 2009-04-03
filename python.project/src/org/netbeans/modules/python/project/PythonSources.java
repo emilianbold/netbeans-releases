@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -24,7 +25,8 @@ import org.openide.util.Mutex;
  * @author Tomas Zezula
  */
 public class PythonSources implements Sources, ChangeListener, PropertyChangeListener {
-    
+
+    private final Project project;
     private final ChangeSupport changeSupport;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -32,14 +34,15 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
     private final SourceRoots testRoots;
     private Sources delegate;
     private SourcesHelper sourcesHelper;
-    private boolean externalRootsRegistered;
 
-    public PythonSources (final AntProjectHelper helper, final PropertyEvaluator eval,
+    public PythonSources(final Project project, final AntProjectHelper helper, final PropertyEvaluator eval,
             final SourceRoots sources, final SourceRoots tests) {
+        assert project != null;
         assert helper != null;
         assert eval != null;
         assert sources != null;
         assert tests != null;
+        this.project = project;
         this.helper = helper;
         this.evaluator = eval;
         this.sourceRoots = sources;
@@ -71,18 +74,10 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
     }    
     
     private Sources initSources() {
-        this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
+        sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
         register(sourceRoots);
         register(testRoots);
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {                
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return this.sourcesHelper.createSources();
     }
 

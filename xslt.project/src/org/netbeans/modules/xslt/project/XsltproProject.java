@@ -28,7 +28,6 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -239,7 +238,7 @@ public class XsltproProject implements Project, AntProjectListener {
                 new String[] {"${src.dir}/*.java"}, // NOI18N
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(XsltproProject.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(XsltproProject.class, "LBL_Node_Sources"); //NOI18N
         
@@ -250,11 +249,7 @@ public class XsltproProject implements Project, AntProjectListener {
 //        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
         
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
         return Lookups.fixed(new Object[] {
             new Info(),

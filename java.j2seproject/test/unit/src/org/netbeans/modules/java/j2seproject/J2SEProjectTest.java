@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core.spi;
+package org.netbeans.modules.java.j2seproject;
 
+import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.projectimport.eclipse.core.ProjectOpenHookImpl;
-import org.netbeans.modules.projectimport.eclipse.core.UpgradableProject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
-// registered separately in j2se and web modules, otherwise could use @LookupProvider.Registration
-final public class UpgradableProjectLookupProvider implements LookupProvider {
+public class J2SEProjectTest extends NbTestCase {
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project p = baseContext.lookup(Project.class);
-        assert p != null;
-        if (ProjectUtils.getPreferences(p, UpgradableProjectLookupProvider.class, true).
-                get("project", null) == null) { // NOI18N
-            // Shortcut, the normal case:
-            return Lookup.EMPTY;
-        } else {
-            // Keep as separate method to try to delay class initialization:
-            return upgradeLookup(p);
-        }
+    public J2SEProjectTest(String n) {
+        super(n);
     }
 
-    private static Lookup upgradeLookup(Project p) {
-        return Lookups.fixed(
-            new UpgradableProject(p),
-            new ProjectOpenHookImpl());
+    /**
+     * Regarding projectimport.eclipse.core subpatch in #146582.
+     */
+    public void testGetLookup() throws Exception {
+        MockLookup.setLayersAndInstances(new J2SEProjectType());
+        clearWorkDir();
+        Project p = ProjectManager.getDefault().findProject(J2SEProjectGenerator.createProject(
+                getWorkDir(), "test", null, null, null).getProjectDirectory());
+        assertNotNull(p.getLookup().lookup(AuxiliaryConfiguration.class));
+        Callable<?> call = p.getLookup().lookup(Callable.class);
+        assertNotNull(call);
+        assertTrue(call.call() instanceof AuxiliaryConfiguration);
+    }
+
+    @LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
+    public static class TestLookupProvider implements LookupProvider {
+
+        public Lookup createAdditionalLookup(Lookup lkp) {
+            Project p = lkp.lookup(Project.class);
+            assertNotNull(p);
+            Lookup base = p.getLookup();
+            assertNotNull(base);
+            final AuxiliaryConfiguration aux = base.lookup(AuxiliaryConfiguration.class);
+            assertNotNull(aux);
+            return Lookups.singleton(new Callable<AuxiliaryConfiguration>() {
+                public AuxiliaryConfiguration call() throws Exception {
+                    return aux;
+                }
+            });
+        }
+
     }
 
 }
