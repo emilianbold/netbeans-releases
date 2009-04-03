@@ -103,7 +103,9 @@ public class SvgcoreSettings {
     }
 
     final void setCurrentSnippet(String currentSnippet) {
-        prefs.put(PROP_CURRENT_SNIPPET, currentSnippet);
+        if (currentSnippet != null){
+            prefs.put(PROP_CURRENT_SNIPPET, currentSnippet);
+        }
     }
 
     

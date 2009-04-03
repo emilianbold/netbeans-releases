@@ -298,9 +298,6 @@ public class WebJaxWsLookupProvider implements LookupProvider {
             if (fromWsdlServicesLength>0) {
                 extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N              
             }
-            if (!isJsr109 && servicesLength > fromWsdlServicesLength) {
-                extension.addDependency("-post-compile", "wsgen-service-compile"); //NOI18N
-            }
         }
     }
     private void changeJaxWsExtension(
@@ -335,11 +332,6 @@ public class WebJaxWsLookupProvider implements LookupProvider {
             extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
         } else if (!extensionCreated) {
             extension.removeDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
-        }
-        if (!isJsr109 && servicesLength > fromWsdlServicesLength) {
-            extension.addDependency("-post-compile", "wsgen-service-compile"); //NOI18N
-        } else if (!extensionCreated) {
-            extension.removeDependency("-post-compile", "wsgen-service-compile"); //NOI18N
         }
     }
     
@@ -393,6 +385,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                 extension.removeDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
                 extension.removeDependency("-do-compile", "wsimport-service-compile"); //NOI18N
                 extension.removeDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N
+                extension.removeDependency("-post-compile", "wsgen-service-compile"); //NOI18N
                 ProjectManager.getDefault().saveProject(prj);
             }
         }
