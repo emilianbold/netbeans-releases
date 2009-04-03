@@ -47,6 +47,7 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -371,7 +372,8 @@ public final class Kenai {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public synchronized Collection<KenaiProject> getMyProjects() throws KenaiException {
-        assert auth!=null:"you must login to get my projects";
+        if (auth==null)
+            return Collections.emptyList();
         if (myProjects!=null)
             return myProjects;
         return getMyProjects(true);
@@ -384,14 +386,15 @@ public final class Kenai {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public synchronized Collection<KenaiProject> getMyProjects(boolean forceServerReload) throws KenaiException {
-        assert auth!=null:"you must login to get my projects";
+        if (auth==null)
+            return Collections.emptyList();
         if (forceServerReload==false) {
-            return getMyProjects();
+                return getMyProjects();
+            }
+            Collection<ProjectData> prjs = impl.getMyProjects();
+            myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
+            return myProjects;
         }
-        Collection<ProjectData> prjs = impl.getMyProjects();
-        myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
-        return myProjects;
-    }
 
 
     Collection<KenaiProject> loadProjects() {

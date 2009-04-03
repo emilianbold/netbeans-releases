@@ -74,6 +74,12 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      */
     public abstract String getDisplayName();
 
+    /**
+     * Is this project private?
+     * @return 
+     */
+    public abstract boolean isPrivate();
+
     public final void addPropertyChangeListener( PropertyChangeListener l ) {
         changeSupport.addPropertyChangeListener(l);
     }

@@ -84,7 +84,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     
     public void putProperty(String name, Object o) {
         if (o == null) {
-            throw new NullPointerException("putProperty: " + name);
+            throw new NullPointerException("putProperty: " + name); // NOI18N
         }
         properties.putProperty(name, o);
     }
@@ -193,9 +193,9 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
                 new HudsonJobProperty(JOB_URL,
                         NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Url"),
                         NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url")),
-                new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE,
-                        "Watched", // XXX I18N
-                        "Whether you wish to be notified of failures in this job.") { // XXX I18N
+                new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE, // NOI18N
+                        NbBundle.getMessage(HudsonJobImpl.class, "HudsonJobImpl.watched"),
+                        NbBundle.getMessage(HudsonJobImpl.class, "HudsonJobImpl.watched_desc")) {
                     public Boolean getValue() {
                         return isSalient();
                     }

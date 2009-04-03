@@ -151,7 +151,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = BugzillaConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = "Repository with the same name alreay exists"; // XXX bundle me
+                    errorMessage = "Issue tracker with the same name alreay exists"; // XXX bundle me
                     return false;
                 }
             }
@@ -173,7 +173,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = "Repository with the same url already exists"; // XXX bundle me
+                    errorMessage = "Issue tracker with the same url already exists"; // XXX bundle me
                     return false;
                 }
             }

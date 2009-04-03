@@ -273,6 +273,8 @@ public class components extends GeneralXMLTest {
         );
       prn.select( );
 
+      Sleep( 15000 );
+
       // Open
       prn.performPopupAction( "Open" );
 
