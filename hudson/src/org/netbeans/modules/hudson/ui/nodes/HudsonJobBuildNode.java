@@ -55,6 +55,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -67,7 +68,7 @@ class HudsonJobBuildNode extends AbstractNode {
     public HudsonJobBuildNode(HudsonJobBuild build) {
         super(makeChildren(build), Lookups.singleton(build));
         setName(Integer.toString(build.getNumber()));
-        setDisplayName("#" + build.getNumber());
+        setDisplayName(NbBundle.getMessage(HudsonJobBuildNode.class, "HudsonJobBuildNode.displayName", build.getNumber()));
         Color effectiveColor;
         if (build.isBuilding()) {
             effectiveColor = build.getJob().getColor();

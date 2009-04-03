@@ -62,6 +62,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEProjectSharability;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -108,9 +109,9 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             return Helper.noSCMError();
         }
         if (!shar.isSharable()) {
-            String msg = "Global libraries should be copied to a dedicated libraries folder."; // XXX I18N
+            String msg = NbBundle.getMessage(JobCreator.class, "JobCreator.copy_message");
             JButton button = new JButton();
-            Mnemonics.setLocalizedText(button, "&Copy Libraries..."); // XXX I18N
+            Mnemonics.setLocalizedText(button, NbBundle.getMessage(JobCreator.class, "JobCreator.copy_label"));
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     shar.makeSharable();
@@ -125,17 +126,17 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
     public void removeChangeListener(ChangeListener listener) {}
 
     public Document configure() throws IOException {
-        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         Element projectE = doc.getDocumentElement();
         List<String> targets = new ArrayList<String>();
         if (runTests.isSelected()) {
-            targets.add("test");
+            targets.add("test"); // NOI18N
         }
         if (buildJar.isSelected()) {
-            targets.add("jar");
+            targets.add("jar"); // NOI18N
         }
         if (buildJavadoc.isSelected()) {
-            targets.add("javadoc");
+            targets.add("javadoc"); // NOI18N
         }
         StringBuilder targetsS = new StringBuilder();
         for (String target : targets) {
@@ -144,35 +145,35 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             }
             targetsS.append(target);
         }
-        Element ant = (Element) projectE.appendChild(doc.createElement("builders")).
-                appendChild(doc.createElement("hudson.tasks.Ant"));
-        ant.appendChild(doc.createElement("targets")).
+        Element ant = (Element) projectE.appendChild(doc.createElement("builders")). // NOI18N
+                appendChild(doc.createElement("hudson.tasks.Ant")); // NOI18N
+        ant.appendChild(doc.createElement("targets")). // NOI18N
                 appendChild(doc.createTextNode(targetsS.toString()));
         if (runTests.isSelected()) {
-            ant.appendChild(doc.createElement("properties")).
-                    appendChild(doc.createTextNode("ignore.failing.tests=true"));
+            ant.appendChild(doc.createElement("properties")). // NOI18N
+                    appendChild(doc.createTextNode("ignore.failing.tests=true")); // NOI18N
         }
-        Element publishers = (Element) projectE.appendChild(doc.createElement("publishers"));
+        Element publishers = (Element) projectE.appendChild(doc.createElement("publishers")); // NOI18N
         // XXX use appropriate properties from project evaluator where possible
         if (buildJar.isSelected()) {
-            Element aa = (Element) publishers.appendChild(doc.createElement("hudson.tasks.ArtifactArchiver"));
-            aa.appendChild(doc.createElement("artifacts")).
+            Element aa = (Element) publishers.appendChild(doc.createElement("hudson.tasks.ArtifactArchiver")); // NOI18N
+            aa.appendChild(doc.createElement("artifacts")). // NOI18N
                     // XXX consider including lib/ subdir too
-                    appendChild(doc.createTextNode("dist/*.jar"));
-            aa.appendChild(doc.createElement("latestOnly")).
-                    appendChild(doc.createTextNode("true"));
+                    appendChild(doc.createTextNode("dist/*.jar")); // NOI18N
+            aa.appendChild(doc.createElement("latestOnly")). // NOI18N
+                    appendChild(doc.createTextNode("true")); // NOI18N
         }
         if (buildJavadoc.isSelected()) {
-            publishers.appendChild(doc.createElement("hudson.tasks.JavadocArchiver")).
-                    appendChild(doc.createElement("javadocDir")).
-                    appendChild(doc.createTextNode("dist/javadoc"));
+            publishers.appendChild(doc.createElement("hudson.tasks.JavadocArchiver")). // NOI18N
+                    appendChild(doc.createElement("javadocDir")). // NOI18N
+                    appendChild(doc.createTextNode("dist/javadoc")); // NOI18N
         }
         if (runTests.isSelected()) {
-            publishers.appendChild(doc.createElement("hudson.tasks.junit.JUnitResultArchiver")).
-                    appendChild(doc.createElement("testResults")).
-                    appendChild(doc.createTextNode("build/test/results/TEST-*.xml"));
+            publishers.appendChild(doc.createElement("hudson.tasks.junit.JUnitResultArchiver")). // NOI18N
+                    appendChild(doc.createElement("testResults")). // NOI18N
+                    appendChild(doc.createTextNode("build/test/results/TEST-*.xml")); // NOI18N
         }
-        for (String dummy : new String[] {"actions", "buildWrappers"}) {
+        for (String dummy : new String[] {"actions", "buildWrappers"}) { // NOI18N
             projectE.appendChild(doc.createElement(dummy));
         }
         scm.configure(doc);

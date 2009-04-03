@@ -241,7 +241,7 @@ public class HudsonManagerImpl extends HudsonManager {
     public static String simplifyServerLocation(String name, boolean forKey) {
         // http://deadlock.netbeans.org/hudson/ => deadlock.netbeans.org_hudson
         String display = name.replaceFirst("https?://", "").replaceFirst("/$", "");
-        return forKey ? display.replaceAll("[/:]", "_") : display;
+        return forKey ? display.replaceAll("[/:]", "_") : display; // NOI18N
     }
     
     private void removeInstanceDefinition(HudsonInstanceImpl instance) {

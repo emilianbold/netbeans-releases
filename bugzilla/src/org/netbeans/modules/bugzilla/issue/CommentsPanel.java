@@ -60,6 +60,8 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -194,6 +196,10 @@ public class CommentsPanel extends JPanel {
 
     private void setupTextPane(JTextPane textPane, String comment) {
         StyledDocument doc = textPane.getStyledDocument();
+        Caret caret = textPane.getCaret();
+        if (caret instanceof DefaultCaret) {
+            ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
 
         // Stack traces
         List<StackTraceSupport.StackTracePosition> stacktraces = StackTraceSupport.find(comment);
