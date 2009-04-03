@@ -52,30 +52,53 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.type.GoToTypeAction;
+import org.netbeans.modules.jumpto.type.Models;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 /**
  *
  * @author Andrei Badea, Petr Hrebejk
  */
-public class FileSearchAction extends AbstractAction {
+public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
+
+    /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
     
+    private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
+    private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
+    private Worker running;
+    private RequestProcessor.Task task;
     private Dialog dialog;
     private JButton openBtn;
     private FileSearchPanel panel;
+    private Dimension initialDimension;
     
     public FileSearchAction() {
         super( NbBundle.getMessage(FileSearchAction.class, "CTL_FileSearchAction") );
@@ -89,56 +112,165 @@ public class FileSearchAction extends AbstractAction {
         return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
     
-    
-    
     public void actionPerformed(ActionEvent arg0) {
-    
+        FileDescription typeDescriptor = getSelectedFile();
+        if (typeDescriptor != null) {
+            typeDescriptor.open();
+        }
+    }
+
+    // Implementation of content provider --------------------------------------
+
+
+    public ListCellRenderer getListCellRenderer( JList list ) {
+        return new FileDescription.Renderer( list );
+    }
+
+
+    public void setListModel( FileSearchPanel panel, String text ) {
+        if (openBtn != null) {
+            openBtn.setEnabled (false);
+        }
+        if ( running != null ) {
+            running.cancel();
+            task.cancel();
+            running = null;
+        }
+
+        if ( text == null ) {
+            panel.setModel(EMPTY_LIST_MODEL);
+            return;
+        }
+
+        boolean exact = text.endsWith(" "); // NOI18N
+
+        text = text.trim();
+
+        if ( text.length() == 0) {
+            panel.setModel(EMPTY_LIST_MODEL);
+            return;
+        }
+
+        int wildcard = GoToTypeAction.containsWildCard(text);
+        QuerySupport.Kind nameKind;
+
+        if (exact) {
+            //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
+            nameKind = QuerySupport.Kind.EXACT;
+        }
+        else if (wildcard != -1) {
+            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+            text = wildcards2regexp(text);
+        }
+        else if ((GoToTypeAction.isAllUpper(text) && text.length() > 1) || GoToTypeAction.isCamelCase(text)) {
+            nameKind = QuerySupport.Kind.CAMEL_CASE;
+        }
+        else {
+            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
+        }
+
+        // Compute in other thread
+
+        synchronized( this ) {
+            running = new Worker(text , nameKind, panel.getCurrentProject());
+            task = rp.post( running, 220);
+            if ( panel.time != -1 ) {
+                LOGGER.fine( "Worker posted after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );
+            }
+        }
+    }
+
+    public void closeDialog() {
+        dialog.setVisible( false );
+        cleanup();
+    }
+
+    public boolean hasValidContent () {
+        return this.openBtn != null && this.openBtn.isEnabled();
+    }
+
+    // Private methods ---------------------------------------------------------
+
+    private FileDescription getSelectedFile() {
+        FileDescription result = null;
+//        try {
+            panel = new FileSearchPanel(this, findCurrentProject());
+            dialog = createDialog(panel);
+
+//            Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+//            String initSearchText = null;
+//            if (arr.length > 0) {
+//                EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+//                if (ec != null) {
+//                    JEditorPane[] openedPanes = ec.getOpenedPanes ();
+//                    if (openedPanes != null) {
+//                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(openedPanes [0]);
+//                        if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
+//                            panel.setInitialText(initSearchText);
+//                        }
+//                    }
+//                }
+//            }
+
+            dialog.setVisible(true);
+            result = panel.getSelectedFile();
+
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ex);
+//        }
+        return result;
+    }
+
+   private Dialog createDialog( final FileSearchPanel panel) {
         openBtn = new JButton();
-        openBtn.setEnabled( false );
         Mnemonics.setLocalizedText(openBtn, NbBundle.getMessage(FileSearchAction.class, "CTL_Open"));
-        JButton selectInPrjBtn = null;
+        openBtn.getAccessibleContext().setAccessibleDescription(openBtn.getText());
+        openBtn.setEnabled( false );
         
-        Object[] buttons;
-        buttons = new Object[] { openBtn, DialogDescriptor.CANCEL_OPTION};
+        final Object[] buttons = new Object[] { openBtn, DialogDescriptor.CANCEL_OPTION };
         
         String title = NbBundle.getMessage(FileSearchAction.class, "MSG_FileSearchDlgTitle");
-        panel = new FileSearchPanel(this);
-        DialogDescriptor d = new DialogDescriptor(panel, title, true, buttons, openBtn, DialogDescriptor.DEFAULT_ALIGN, null, new DialogButtonListener(panel));
-        d.setClosingOptions(new Object[] {openBtn, DialogDescriptor.CANCEL_OPTION});
-        dialog = DialogDisplayer.getDefault().createDialog(d);
-        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FileSearchAction.class, "AN_FileSearchDialog"));
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSearchAction.class, "AD_FileSearchDialog"));
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                panel,
+                title,
+                true,
+                buttons,
+                openBtn,
+                DialogDescriptor.DEFAULT_ALIGN,
+                HelpCtx.DEFAULT_HELP, 
+                new DialogButtonListener(panel));
+        dialogDescriptor.setClosingOptions(buttons);
+
+        Dialog d = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        d.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FileSearchAction.class, "AN_FileSearchDialog"));
+        d.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSearchAction.class, "AD_FileSearchDialog"));
                 
         // Set size
-        dialog.setPreferredSize( new Dimension(  FileSearchOptions.getWidth(),
+        d.setPreferredSize( new Dimension(  FileSearchOptions.getWidth(),
                                                  FileSearchOptions.getHeight() ) );
         
         // Center the dialog after the size changed.
         Rectangle r = Utilities.getUsableScreenBounds();
         int maxW = (r.width * 9) / 10;
         int maxH = (r.height * 9) / 10;
-        Dimension dim = dialog.getPreferredSize();
+        Dimension dim = d.getPreferredSize();
         dim.width = Math.min(dim.width, maxW);
         dim.height = Math.min(dim.height, maxH);
-        dialog.setBounds(Utilities.findCenterBounds(dim));
-                
-        dialog.addWindowListener(new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
+        initialDimension = dim;
+        d.setBounds(Utilities.findCenterBounds(dim));
+        d.addWindowListener(new WindowAdapter() {
+            public @Override void windowClosed(WindowEvent e) {
                 cleanup();
             }
         });
-        
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                dialog.setVisible(true);
-            }
-        } );
+
+        return d;
     }
     
     /** For original of this code look at:
      *  org.netbeans.modules.project.ui.actions.ActionsUtil
      */
-    public static Project findCurrentProject( ) {
+    private static Project findCurrentProject( ) {
         Lookup lookup = Utilities.actionsGlobalContext();
 
         // Maybe the project is in the lookup
@@ -154,35 +286,170 @@ public class FileSearchAction extends AbstractAction {
             }
         }
         
-        return null;
+       return OpenProjects.getDefault().getMainProject();
     }
     
-    public void closeDialog() {
-        if (dialog != null){
-            dialog.setVisible( false );
-        }
-        cleanup();
-    }
-    
-    JButton getOpenButton() {
-        return openBtn;
-    }
+//    JButton getOpenButton() {
+//        return openBtn;
+//    }
 
     private void cleanup() {
-        
-        FileSearchOptions.flush();
-        
-        if (panel != null ) { // Closing event for some reson sent twice
-            panel.cleanup();
-            panel = null;
-        }
-        
-        if (dialog != null ) { // Closing event for some reson sent twice
+        //System.out.println("CLEANUP");
+        //Thread.dumpStack();
+
+        if ( dialog != null ) { // Closing event for some reson sent twice
+
+            // Save dialog size only when changed
+            final int currentWidth = dialog.getWidth();
+            final int currentHeight = dialog.getHeight();
+            if (initialDimension != null && (initialDimension.width != currentWidth || initialDimension.height != currentHeight)) {
+                FileSearchOptions.setHeight(currentHeight);
+                FileSearchOptions.setWidth(currentWidth);
+            }
+            initialDimension = null;
+            // Clean caches
             dialog.dispose();
-            dialog = null;
+            this.dialog = null;
+            //GoToTypeAction.this.cache = null;
             
+            FileSearchOptions.flush();
         }
     }
+
+    private static String wildcards2regexp(String pattern) {
+        return pattern.replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ); //NOI18N
+    }
+
+    // Private classes ---------------------------------------------------------
+
+
+
+    private class Worker implements Runnable {
+
+        private volatile boolean isCanceled = false;
+
+        private final String text;
+        private final QuerySupport.Kind searchType;
+        private final Project currentProject;
+        private final long createTime;
+
+        public Worker(String text, QuerySupport.Kind searchType, Project currentProject) {
+            this.text = text;
+            this.searchType = searchType;
+            this.currentProject = currentProject;
+            this.createTime = System.currentTimeMillis();
+            LOGGER.fine( "Worker for " + text + ", " + searchType + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );
+       }
+
+        public void run() {
+
+            LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+
+            final List<? extends FileDescription> files = getFileNames( text );
+            if ( isCanceled ) {
+                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                return;
+            }
+            final ListModel model = Models.fromList(files);
+//            if (typeFilter != null) {
+//                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+//            }
+//            final ListModel fmodel = model;
+//            if ( isCanceled ) {
+//                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+//                return;
+//            }
+
+            if ( !isCanceled && model != null ) {
+                LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        panel.setModel(model);
+                        if (openBtn != null && !files.isEmpty()) {
+                            openBtn.setEnabled (true);
+                        }
+                    }
+                });
+            }
+
+
+        }
+
+        public void cancel() {
+            if ( panel.time != -1 ) {
+                LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+            }
+            synchronized (this) {
+                isCanceled = true;
+            }
+        }
+
+        private List<? extends FileDescription> getFileNames(String text) {
+            Collection<? extends FileObject> roots = QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList());
+            try {
+                QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
+                Collection<? extends IndexResult> results = q.query(panel.isCaseSensitive() ? FileIndexer.FIELD_NAME : FileIndexer.FIELD_CASE_INSENSITIVE_NAME, text, searchType);
+                ArrayList<FileDescription> files = new ArrayList<FileDescription>();
+                for(IndexResult r : results) {
+                    FileObject file = r.getFile();
+                    Project project = FileOwnerQuery.getOwner(file);
+                    boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
+                    FileDescription fd = new FileDescription(
+                        file,
+                        r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
+                        project,
+                        preferred
+                    );
+                    files.add(fd);
+                    LOGGER.finer("Found: " + file.getPath() + ", project=" + project + ", currentProject=" + currentProject + ", preferred=" + preferred);
+                }
+                Collections.sort(files, new FileDescription.FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
+                return files;
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+                return Collections.<FileDescription>emptyList();
+            }
+
+
+//            // TODO: Search twice, first for current project, then for all projects
+//            List<TypeDescriptor> items;
+//            // Multiple providers: merge results
+//            items = new ArrayList<TypeDescriptor>(128);
+//            String[] message = new String[1];
+//            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
+//            TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+//            if (typeProviders == null) {
+//                typeProviders = Lookup.getDefault().lookupAll(TypeProvider.class);
+//            }
+//            for (TypeProvider provider : typeProviders) {
+//                if (isCanceled) {
+//                    return null;
+//                }
+//                current = provider;
+//                long start = System.currentTimeMillis();
+//                try {
+//                    LOGGER.fine("Calling TypeProvider: " + provider);
+//                    provider.computeTypeNames(context, result);
+//                } finally {
+//                    current = null;
+//                }
+//                long delta = System.currentTimeMillis() - start;
+//                LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
+//
+//            }
+//            if ( !isCanceled ) {
+//                //time = System.currentTimeMillis();
+//                Collections.sort(items, new TypeComparator());
+//                panel.setWarning(message[0]);
+//                //sort += System.currentTimeMillis() - time;
+//                //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
+//                return items;
+//            }
+//            else {
+//                return null;
+//            }
+        }
+    } // End of Worker class
     
     private class DialogButtonListener implements ActionListener {
         
@@ -194,7 +461,7 @@ public class FileSearchAction extends AbstractAction {
         
         public void actionPerformed(ActionEvent e) {       
             if ( e.getSource() == openBtn) {
-                panel.openSelectedItems();
+                panel.setSelectedFile();
             }
         }
         

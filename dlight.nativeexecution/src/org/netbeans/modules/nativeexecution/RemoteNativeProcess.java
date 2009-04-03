@@ -50,7 +50,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             if (session == null) {
                 throw new IOException("Unable to create remote session!"); // NOI18N
             }
-            
+
             try {
                 cs = execCommand(session, HostInfoUtils.getShell(execEnv) + " -s"); // NOI18N
             } catch (JSchException ex) {
@@ -72,14 +72,17 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             EnvWriter ew = new EnvWriter(cs.in);
             ew.write(envVars);
-            
+
             cs.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
             cs.in.flush();
         }
 
         cstreams = cs;
-        
-        readPID(cs.out);
+        try {
+            readPID(cs.out);
+        } catch (InterruptedException ex) {
+            interrupt();
+        }
     }
 
     @Override
@@ -107,7 +110,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {
-                // skip
+                interrupt();
+                throw ex;
             }
         }
 
@@ -115,15 +119,12 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
         return exitValue.intValue();
     }
-    private static final Object cancelLock = new Object();
 
     @Override
     public void cancel() {
-        synchronized (cancelLock) {
-            if (cstreams.channel != null && cstreams.channel.isConnected()) {
-                cstreams.channel.disconnect();
+        if (cstreams.channel != null && cstreams.channel.isConnected()) {
+            cstreams.channel.disconnect();
 //                NativeTaskSupport.kill(execEnv, 9, getPID());
-            }
         }
     }
 

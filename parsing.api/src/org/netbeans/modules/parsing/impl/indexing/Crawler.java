@@ -54,10 +54,19 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
  */
 public abstract class Crawler {
 
+    /**
+     *
+     * @param root
+     * @param checkTimeStamps
+     * @param mimeTypesToCheck The set of mime types that the <code>Crawler</code> should check.
+     *   Can be <code>null</code> in which case all mime types will be checked.
+     *
+     * @throws java.io.IOException
+     */
     protected Crawler (final URL root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
         this.root = root;
         this.timeStamps = checkTimeStamps ? TimeStamps.forRoot(root) : null;
-        this.mimeTypesToCheck = mimeTypesToCheck != null ? mimeTypesToCheck : PathRecognizerRegistry.getDefault().getMimeTypes();
+        this.mimeTypesToCheck = mimeTypesToCheck;
     }
 
 //    public final synchronized String getDigest () throws IOException {
