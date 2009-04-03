@@ -244,7 +244,6 @@ public final class ReferencesSupport {
             TokenItem<CppTokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
 
         // fast check, if possible
-        int[] idFunBlk = null;
         CsmObject csmItem = null;
         // macros have max priority in file
         List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
@@ -315,6 +314,7 @@ public final class ReferencesSupport {
             }
         }
         if (csmItem == null) {
+            int[] idFunBlk = null;
             try {
                 if (doc instanceof BaseDocument) {
                     idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock((BaseDocument) doc, offset);
