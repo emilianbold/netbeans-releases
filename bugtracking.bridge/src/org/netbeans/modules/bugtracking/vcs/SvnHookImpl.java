@@ -52,7 +52,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
@@ -75,9 +74,24 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public SvnHookContext beforeCommit(SvnHookContext context) throws IOException {
+        Repository selectedRepository = panel.getSelectedRepository();
+
         if(context.getFiles().length == 0) {
+
+            if (selectedRepository != null) {
+                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
+                        selectedRepository);
+            }
+
             LOG.warning("calling svn beforeCommit for zero files");               // NOI18N
             return null;
+        }
+
+        if (selectedRepository != null) {
+            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+                    context.getFiles(),
+                    selectedRepository);
         }
 
         File file = context.getFiles()[0];
@@ -175,21 +189,13 @@ public class SvnHookImpl extends SvnHook {
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         if(context.getFiles().length == 0) {
             LOG.warning("creating svn hook component for zero files");          // NOI18N
-            Repository repoToSelect = null;
-            File largerContext = BugtrackingUtil.getContextFromProjects();
-            if (largerContext != null) {
-                repoToSelect = FileToRepoMappingStorage.getInstance().getRepository(largerContext);
-            }
+            Repository repoToSelect
+                    = BugtrackingOwnerSupport.getInstance()
+                      .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
             panel = new HookPanel(repos, repoToSelect);
         } else {
             File file = context.getFiles()[0];
             Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
-            if (repoToSelect == null) {
-                File largerContext = BugtrackingUtil.getLargerContext(file);
-                if (largerContext != null) {
-                    repoToSelect = FileToRepoMappingStorage.getInstance().getRepository(largerContext);
-                }
-            }
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
             }

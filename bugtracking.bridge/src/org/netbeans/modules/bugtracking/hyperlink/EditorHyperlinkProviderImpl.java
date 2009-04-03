@@ -56,7 +56,6 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
