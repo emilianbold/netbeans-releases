@@ -46,7 +46,7 @@ import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
@@ -59,7 +59,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
-        dtd = HTMLSyntaxSupport.get(getDocument()).getDTD();
+        dtd = HtmlSyntaxSupport.get(getDocument()).getDTD();
         assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
     }
 
@@ -76,7 +76,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
         return token.id() == HTMLTokenId.TAG_OPEN ||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE"));
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().toUpperCase().startsWith("<!DOCTYPE"));
     }
 
     @Override
@@ -150,7 +150,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         return elem.isEmpty();
     }
 
-    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
+    private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "textarea"}; //NOI18N
     
     @Override
     protected boolean isTagContentUnformattable(String tagName) {
@@ -203,7 +203,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HTMLTokenId> ts) 
+    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HTMLTokenId> ts)
             throws BadLocationException {
         int index = ts.index();
         boolean found = false;
@@ -250,15 +250,15 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
         return isOpenTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script")) && isOpeningTag(ts);
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script")) && isOpeningTag(ts);
     }
 
     @Override
     protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
         return isCloseTagNameToken(token) &&
-                (token.text().toString().toLowerCase().equals("style") ||
-                 token.text().toString().toLowerCase().equals("script"));
+                (token.text().toString().equalsIgnoreCase("style") ||
+                 token.text().toString().equalsIgnoreCase("script"));
     }
 
 }

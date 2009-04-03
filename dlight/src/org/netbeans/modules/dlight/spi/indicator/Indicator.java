@@ -38,13 +38,20 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
+import java.awt.Cursor;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
@@ -67,11 +74,16 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  *
  * @param <T> configuration indicator can be built on the base of
  */
-public abstract class Indicator<T extends IndicatorConfiguration> {
+public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener, ChangeListener {
 
+    private static final int PADDING = 2;
+    private final Object lock = new Object();
     private final IndicatorMetadata metadata;
+    private final int position;
     private String toolName;
     private final List<IndicatorActionListener> listeners;
+    private final TickerListener tickerListener;
+    private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
 
 
     static {
@@ -89,11 +101,93 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
         this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
+        this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
+        tickerListener = new TickerListener() {
+            public void tick() {
+                Indicator.this.tick();
+            }
+        };
 
     }
 
+    protected abstract void repairNeeded(boolean needed);
+
+    private void setRepairActionProviderFor(IndicatorRepairActionProvider repairActionProvider){
+        this.indicatorRepairActionProvider = repairActionProvider;
+        indicatorRepairActionProvider.addChangeListener(this);
+        repairNeeded(true);
+    }
+
+    public final int getPosition() {
+        return position;
+    }
+
+    protected final IndicatorRepairActionProvider getRepairActionProvider(){
+        return indicatorRepairActionProvider;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider){
+            return;
+        }
+        boolean needRepair = indicatorRepairActionProvider.needRepair();
+        if (!needRepair){
+            indicatorRepairActionProvider.removeChangeListener(this);
+        }
+        repairNeeded(indicatorRepairActionProvider.needRepair());
+    }
+
+
+
+    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case RUNNING:
+                targetStarted(source);
+                return;
+            case FAILED:
+                targetFinished(source);
+                return;
+            case TERMINATED:
+                targetFinished(source);
+                return;
+            case DONE:
+                targetFinished(source);
+                return;
+            case STOPPED:
+                targetFinished(source);
+                return;
+        }
+    }
+
+    private void targetStarted(DLightTarget target) {
+        synchronized (lock) {
+            IndicatorTickerService.getInstance().subsribe(tickerListener);
+        }
+    }
+
+    protected abstract void tick();
+
+    private void targetFinished(DLightTarget target) {
+        synchronized (lock) {
+            IndicatorTickerService.getInstance().unsubscribe(tickerListener);
+        }
+    }
+
     private void initMouseListener() {
-        getComponent().addMouseListener(new MouseAdapter() {
+        final JComponent component = getComponent();
+        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+        component.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                component.setBorder(BorderFactory.createEtchedBorder());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+            }
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -172,43 +266,48 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
     private static class IndicatorAccessorImpl extends IndicatorAccessor {
 
         @Override
-        public void setToolName(Indicator ind, String toolName) {
+        public void setToolName(Indicator<?> ind, String toolName) {
             ind.setToolName(toolName);
         }
 
         @Override
-        public List<Column> getMetadataColumns(Indicator indicator) {
+        public List<Column> getMetadataColumns(Indicator<?> indicator) {
             return indicator.getMetadataColumns();
         }
 
         @Override
-        public String getMetadataColumnName(Indicator indicator, int idx) {
+        public String getMetadataColumnName(Indicator<?> indicator, int idx) {
             return indicator.getMetadataColumnName(idx);
         }
 
         @Override
-        public List<VisualizerConfiguration> getVisualizerConfigurations(Indicator indicator) {
+        public List<VisualizerConfiguration> getVisualizerConfigurations(Indicator<?> indicator) {
             return indicator.getVisualizerConfigurations();
         }
 
         @Override
-        public void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+        public void addIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l) {
             indicator.addIndicatorActionListener(l);
         }
 
         @Override
-        public void removeIndicatorActionListener(Indicator indicator, IndicatorActionListener l) {
+        public void removeIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l) {
             indicator.removeIndicatorActionListener(l);
         }
 
         @Override
-        public String getToolName(Indicator ind) {
+        public String getToolName(Indicator<?> ind) {
             return ind.toolName;
         }
 
         @Override
-        public void initMouseListener(Indicator indicator) {
+        public void initMouseListener(Indicator<?> indicator) {
             indicator.initMouseListener();
+        }
+
+        @Override
+        public void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider) {
+            indicator.setRepairActionProviderFor(repairActionProvider);
         }
     }
 

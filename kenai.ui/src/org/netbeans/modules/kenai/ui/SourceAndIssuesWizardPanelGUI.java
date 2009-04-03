@@ -52,6 +52,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -95,11 +97,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     // {0} - hg or svn
     // {1} - project name
     // {2} - repository name
-    private static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}";
+    static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}";
 
     // names used in repository name preview
     private static final String HG_REPO_NAME =  "hg";
-    private static final String SVN_REPO_NAME = "svn";
+    static final String SVN_REPO_NAME = "svn";
 
     // {0} - project name
     // {1} - repository name
@@ -117,10 +119,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String EXT_ISSUES_ITEM = "External";
     private static final String NO_ISSUES_ITEM = "None";
 
-    private static final String SVN_DEFAULT_NAME = "subversion";
+    static final String SVN_DEFAULT_NAME = "subversion";
     private static final String HG_DEFAULT_NAME = "mercurial";
 
     private static final int PANEL_HEIGHT = 110;
+
+    private boolean localFolderPathEdited = false;
 
     // will be used for KenaiException messages
     private String criticalMessage = null;
@@ -149,18 +153,21 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         DocumentListener updatingDocListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
+                updateRepoPath();
             }
             public void removeUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
+                updateRepoPath();
             }
             public void changedUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
+                updateRepoPath();
             }
         };
 
         repoNameTextField.getDocument().addDocumentListener(updatingDocListener);
         repoNameTextField.getDocument().addDocumentListener(firingDocListener);
-        localRepoFolderTextField.getDocument().addDocumentListener(firingDocListener);
+        localFolderTextField.getDocument().addDocumentListener(firingDocListener);
         repoUrlTextField.getDocument().addDocumentListener(firingDocListener);
         issuesUrlTextField.getDocument().addDocumentListener(firingDocListener);
 
@@ -214,9 +221,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     }
                 } else { // no services available
                     someServicesFound = false;
-                    // XXX from bundle
-                    repoModel.addElement("<No repository available>");
-                    issuesModel.addElement("<No issue tracking available>");
+                    repoModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
+                            "SourceAndIssuesWizardPanelGUI.noRepoAvailable"));
+                    issuesModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
+                            "SourceAndIssuesWizardPanelGUI.noIssuesAvailable"));
                 }
 
                 if (!repoList.isEmpty()) {
@@ -298,6 +306,14 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoNamePreviewLabel.setText(message);
     }
 
+    private void updateRepoPath() {
+        if (!localFolderPathEdited) {
+            String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
+            setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                    MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+        }
+    }
+
     // XXX should check whether user did some edit in the field also
     private void setDefaultRepoName() {
         if (Utilities.SVN_REPO.equals(getRepoType()) &&
@@ -335,7 +351,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoNameTextField = new JTextField();
         localRepoFolderLabel = new JLabel();
         repoNamePreviewLabel = new JLabel();
-        localRepoFolderTextField = new JTextField();
+        localFolderTextField = new JTextField();
         localFolderBrowseButton = new JButton();
         spacerPanel = new JPanel();
         repoUrlLabel = new JLabel();
@@ -500,7 +516,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 8, 16, 0);
         add(repoNamePreviewLabel, gridBagConstraints);
 
-        localRepoFolderTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderTextField.text")); // NOI18N
+        localFolderTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.text")); // NOI18N
+        localFolderTextField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                localFolderTextFieldKeyTyped(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -508,7 +529,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
-        add(localRepoFolderTextField, gridBagConstraints);
+        add(localFolderTextField, gridBagConstraints);
 
         localFolderBrowseButton.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.text")); // NOI18N
         localFolderBrowseButton.addActionListener(new ActionListener() {
@@ -613,6 +634,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 showRepoOnKenaiGUI();
                 setDefaultRepoName();
                 updateRepoNamePreview();
+                updateRepoPath();
             } else if (Utilities.EXT_REPO.equals(selObject.getService().getName())) {
                 showExtRepoGUI();
             } 
@@ -627,7 +649,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private void localFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_localFolderBrowseButtonActionPerformed
 
         JFileChooser chooser = new JFileChooser();
-        File uFile = new File(localRepoFolderTextField.getText());
+        File uFile = new File(localFolderTextField.getText());
         if (uFile.exists()) {
             chooser.setCurrentDirectory(FileUtil.normalizeFile(uFile));
         }
@@ -635,7 +657,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File selFile = chooser.getSelectedFile();
-            localRepoFolderTextField.setText(selFile.getAbsolutePath());
+            localFolderTextField.setText(selFile.getAbsolutePath());
+            localFolderPathEdited = true;
         }
 
         panel.fireChangeEvent();
@@ -661,6 +684,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     }//GEN-LAST:event_issuesComboBoxActionPerformed
 
+    private void localFolderTextFieldKeyTyped(KeyEvent evt) {//GEN-FIRST:event_localFolderTextFieldKeyTyped
+        localFolderPathEdited = true;
+    }//GEN-LAST:event_localFolderTextFieldKeyTyped
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel downloadsLabel;
     private JLabel featuresDescLabel;
@@ -672,8 +699,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private JTextField issuesUrlTextField;
     private JSeparator itSeparator;
     private JButton localFolderBrowseButton;
+    private JTextField localFolderTextField;
     private JLabel localRepoFolderLabel;
-    private JTextField localRepoFolderTextField;
     private JLabel mListsLabel;
     private JLabel noIssueTrackingDescLabel;
     private JLabel noneRepoDescLabel;
@@ -840,11 +867,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }
 
     private void setRepoLocal(String localPath) {
-        localRepoFolderTextField.setText(localPath);
+        localFolderTextField.setText(localPath);
     }
 
     private String getRepoLocal() {
-        return localRepoFolderTextField.getText();
+        return localFolderTextField.getText();
     }
 
     private void setIssuesType(String issues) {
@@ -898,7 +925,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         hideNoRepoGUI();
         int h1 = repoNameTextField.getPreferredSize().height + 8;
         int h2 = repoNamePreviewLabel.getPreferredSize().height + 16;
-        int h3 = localRepoFolderTextField.getPreferredSize().height;
+        int h3 = localFolderTextField.getPreferredSize().height;
         int spacerHeight = PANEL_HEIGHT - (h1 + h2 + h3) - 1; // -1 is the "Special constant"
         repoSpacerPanel.setPreferredSize(new Dimension(10, spacerHeight));
         revalidate();
@@ -914,7 +941,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         repoNameTextField.setVisible(show);
         repoNamePreviewLabel.setVisible(show);
         localRepoFolderLabel.setVisible(show);
-        localRepoFolderTextField.setVisible(show);
+        localFolderTextField.setVisible(show);
         localFolderBrowseButton.setVisible(show);
     }
 

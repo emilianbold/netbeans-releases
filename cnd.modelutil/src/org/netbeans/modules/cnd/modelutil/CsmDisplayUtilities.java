@@ -90,7 +90,10 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class CsmDisplayUtilities {
-    
+
+    private CsmDisplayUtilities() {
+    }
+
     public static String getContextLineHtml(CsmFile csmFile, final int stToken, final int endToken, boolean tokenInBold) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
         StyledDocument stDoc = null;
@@ -113,6 +116,29 @@ public class CsmDisplayUtilities {
                     endOffset = -1;
                 }
                 displayText = getLineHtml(startLine, endLine, stOffset, endOffset, doc);
+            } catch (BadLocationException ex) {
+                // skip
+            }
+        }
+        return displayText;
+    }
+
+    public static String getContextLine(CsmFile csmFile, final int stToken, final int endToken) {
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        StyledDocument stDoc = null;
+        try {
+            stDoc = ces.openDocument();
+        } catch (IOException iOException) {
+            // skip
+        }
+
+        String displayText = null;
+        if (stDoc instanceof BaseDocument) {
+            BaseDocument doc = (BaseDocument) stDoc;
+            try {
+                int startLine = Utilities.getRowFirstNonWhite(doc, stToken);
+                int endLine = Utilities.getRowLastNonWhite(doc, endToken) + 1;
+                displayText = doc.getText(startLine, endLine - startLine);
             } catch (BadLocationException ex) {
                 // skip
             }
@@ -188,8 +214,15 @@ public class CsmDisplayUtilities {
             tooltipText = getHtmlizedString("DSC_EnumeratorTooltip", enmtr.getName(), enmtr.getEnumeration().getQualifiedName()); // NOI18N
         } else if (CsmKindUtilities.isField(item)) {
             CharSequence fieldName = ((CsmField) item).getName();
-            CharSequence displayClassName = ((CsmField) item).getContainingClass().getQualifiedName();
-            tooltipText = getHtmlizedString("DSC_FieldTooltip", fieldName, displayClassName, ((CsmField) item).getText()); // NOI18N
+            CsmClass containingClass = ((CsmField) item).getContainingClass();
+            CharSequence displayClassName = containingClass.getQualifiedName();
+            CharSequence classKind = "class";//NOI18N
+            if (containingClass.getKind() == CsmDeclaration.Kind.STRUCT) {
+                classKind = "struct"; //NOI18N
+            } else if (containingClass.getKind() == CsmDeclaration.Kind.UNION) {
+                classKind = "union"; // NOI18N
+            }
+            tooltipText = getHtmlizedString("DSC_FieldTooltip", fieldName, classKind, displayClassName, ((CsmField) item).getText()); // NOI18N
         } else if (CsmKindUtilities.isParamVariable(item)) {
             CharSequence varName = ((CsmParameter) item).getName();
             tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, ((CsmParameter) item).getText()); // NOI18N
@@ -283,8 +316,8 @@ public class CsmDisplayUtilities {
         return getString(key, htmlize(value1), htmlize(value2));
     }
 
-    private static String getHtmlizedString(String key, CharSequence value1, CharSequence value2, CharSequence value3) {
-        return getString(key, htmlize(value1), htmlize(value2), htmlize(value3));
+    private static String getHtmlizedString(String key, CharSequence value1, CharSequence value2, CharSequence value3, CharSequence value4) {
+        return getString(key, htmlize(value1), htmlize(value2), htmlize(value3), htmlize(value4));
     }
 
     private static String getString(String key, CharSequence value) {
@@ -295,8 +328,8 @@ public class CsmDisplayUtilities {
         return NbBundle.getMessage(CsmDisplayUtilities.class, key, value1, value2);
     } 
     
-    private static String getString(String key, CharSequence value1, CharSequence value2, CharSequence value3) {
-        return NbBundle.getMessage(CsmDisplayUtilities.class, key, value1, value2, value3);
+    private static String getString(String key, CharSequence value1, CharSequence value2, CharSequence value3, CharSequence value4) {
+        return NbBundle.getMessage(CsmDisplayUtilities.class, key, new Object[] {value1, value2, value3, value4});
     } 
     
     private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");// NOI18N

@@ -62,19 +62,13 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         checkDim = new Dimension(old.width, old.height - 5);
     }
     
-    public CheckRenderer(boolean isQuery) {
+    public CheckRenderer(boolean isQuery, Color background) {
         setLayout(null);
         if (isQuery) {
             check = null;
         } else {
             add(check = new JCheckBox());
-            Color c = UIManager.getColor("Tree.textBackground"); //NOI18N
-            if (c == null) {
-                //May be null on GTK L&F
-                c = Color.WHITE;
-            }
-            check.setBackground(c); // NOI18N
-            Dimension dim = check.getPreferredSize();
+            check.setBackground(background);
             check.setPreferredSize(checkDim);
         }
     }

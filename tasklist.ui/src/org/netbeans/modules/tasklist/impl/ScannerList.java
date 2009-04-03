@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.openide.util.Lookup;
@@ -76,12 +77,25 @@ public final class ScannerList <T>  {
     private ScannerList( Class<T> clazz ) {
         this.clazz = clazz;
     }
-    
+
     public static ScannerList<FileTaskScanner> getFileScannerList() {
         if( null == fileInstance ) {
             fileInstance = new ScannerList<FileTaskScanner>( FileTaskScanner.class );
         }
         return fileInstance;
+    }
+
+    public static List<FileTaskScanner> getFileScanners(TaskFilter filter) {
+        if( null == fileInstance ) {
+            fileInstance = new ScannerList<FileTaskScanner>( FileTaskScanner.class );
+        }
+        ArrayList<FileTaskScanner> result = new ArrayList<FileTaskScanner>(fileInstance.scanners.size());
+        for( FileTaskScanner scanner : fileInstance.getScanners() ) {
+            if( filter.isEnabled(scanner) ) {
+                result.add( scanner );
+            }
+        }
+        return result;
     }
     
     public static ScannerList<PushTaskScanner> getPushScannerList() {
@@ -90,12 +104,12 @@ public final class ScannerList <T>  {
         }
         return pushInstance;
     }
-    
+
     public List<? extends T> getScanners() {
         init();
         return scanners;
     }
-    
+
 //    private Class<? extends T> getCheckedClass() {
 //        return T.class;
 //    }

@@ -73,6 +73,7 @@ public class CndLexerUnitTest extends NbTestSuite {
         addTestSuite(DoxygenLexerTestCase.class);
         addTestSuite(PreprocLexerTestCase.class);
         addTestSuite(EscapeLineTestCase.class);
+        addTestSuite(MakefileLexerTestCase.class);
     }
 
     public static Test suite() {

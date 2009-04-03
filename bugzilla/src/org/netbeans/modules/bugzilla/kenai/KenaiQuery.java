@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
@@ -56,6 +57,10 @@ public class KenaiQuery extends BugzillaQuery {
         this.product = product;
         this.predefinedQuery = predefined;
         controller = createControler(repository, this, urlParameters);
+        boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
+        }
     }
 
     @Override

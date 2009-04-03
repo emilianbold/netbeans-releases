@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -66,6 +67,7 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.xml.XMLUtil;
 
 /**
  * Implementation of NotificationDisplayer which shows new Notifications as
@@ -94,6 +96,11 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         if( null == detailsAction )
             throw new NullPointerException("detailsAction cannot be null."); //NOI18N
 
+        try {
+            detailsText = XMLUtil.toElementContent(detailsText);
+        } catch( CharConversionException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
         JComponent detailsComp1 = createDetails( detailsText, detailsAction );
         JComponent detailsComp2 = createDetails( detailsText, detailsAction );
 
@@ -119,6 +126,11 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         if( null == priority )
             throw new NullPointerException("priority cannot be null."); //NOI18N
 
+        try {
+            title = XMLUtil.toElementContent(title);
+        } catch( CharConversionException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
         JComponent titleComp = createTitle(title);
         JComponent balloon = createContent( icon, titleComp, balloonDetails, n );
         balloon.setBorder(BorderFactory.createEmptyBorder(8, 5, 0, 0));

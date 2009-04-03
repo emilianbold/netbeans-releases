@@ -49,7 +49,7 @@ public class TimerTaskExecutionServiceTest {
      */
     @Test
     public void testRegisterTimerTask() {
-        System.out.println("registerTimerTask");
+        System.out.println("registerTimerTask");//NOI18N
         int count = 1200;
         final List<Worker> workers = new ArrayList<Worker>();
         final List<Future> tasks = Collections.synchronizedList(new ArrayList<Future>());
@@ -64,7 +64,7 @@ public class TimerTaskExecutionServiceTest {
 
             public void run() {
                 for (Worker worker : workers) {
-                    tasks.add(DLightExecutorService.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));
+                    tasks.add(DLightExecutorService.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));//NOI18N
                 }
             }
         };
@@ -102,9 +102,9 @@ public class TimerTaskExecutionServiceTest {
      */
 //    @Test
     public void testUnregisterTimerTask() {
-        System.out.println("unregisterTimerTask");
+        System.out.println("unregisterTimerTask");//NOI18N
         // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        fail("The test case is a prototype.");//NOI18N
     }
 
     private static class Worker implements Runnable {
@@ -115,7 +115,7 @@ public class TimerTaskExecutionServiceTest {
         }
 
         public void run() {
-            System.out.println("Hello from " + id);
+            System.out.println("Hello from " + id);//NOI18N
         }
 
     }

@@ -51,15 +51,14 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectHudsonProvider.class, position=1000)
 public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
 
-    private static final String SERVER = "server"; // NOI18N
-    private static final String JOB = "job"; // NOI18N
+    private static final String KEY = "builder"; // NOI18N
 
     public Association findAssociation(Project project) {
         // XXX is using shared metadata appropriate? server may or may not be public...
         Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
-        String server = prefs.get(SERVER, null);
-        if (server != null) {
-            return new Association(server, prefs.get(JOB, null));
+        String url = prefs.get(KEY, null);
+        if (url != null) {
+            return Association.fromString(url);
         } else {
             return null;
         }
@@ -68,15 +67,9 @@ public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
     public boolean recordAssociation(Project project, Association assoc) {
         Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
         if (assoc != null) {
-            prefs.put(SERVER, assoc.getServerUrl());
-            if (assoc.getJobName() != null) {
-                prefs.put(JOB, assoc.getJobName());
-            } else {
-                prefs.remove(JOB);
-            }
+            prefs.put(KEY, assoc.toString());
         } else {
-            prefs.remove(SERVER);
-            prefs.remove(JOB);
+            prefs.remove(KEY);
         }
         return true;
     }

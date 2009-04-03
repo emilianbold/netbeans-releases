@@ -43,16 +43,24 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -260,6 +268,47 @@ public class TemplateUtils {
         }
         return res;
     }
+
+    public static List<CsmSpecializationParameter> getSpecializationParameters(AST ast, CsmFile file, CsmScope scope, boolean global) {
+        assert (ast != null);
+        List<CsmSpecializationParameter> res = new ArrayList<CsmSpecializationParameter>();
+        AST start;
+        for (start = ast.getFirstChild(); start != null; start = start.getNextSibling()) {
+            if (start.getType() == CPPTokenTypes.LESSTHAN) {
+                start = start.getNextSibling();
+                break;
+            }
+        }
+        if (start != null) {
+            AST ptr = null;
+            AST type = null;
+            for (AST child = start; child != null; child = child.getNextSibling()) {
+                switch (child.getType()) {
+                    case CPPTokenTypes.CSM_PTR_OPERATOR:
+                        ptr = child;
+                        break;
+                    case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                    case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                        type = child;
+                        break;
+                    case CPPTokenTypes.CSM_EXPRESSION:
+                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope),
+                                file, OffsetableBase.getStartOffset(child), OffsetableBase.getEndOffset(child)));
+                        break;
+                    case CPPTokenTypes.COMMA:
+                    case CPPTokenTypes.GREATERTHAN:
+                        if (type != null) {
+                            res.add(new TypeBasedSpecializationParameterImpl(TypeFactory.createType(type, file, ptr, 0, scope),
+                                    file, OffsetableBase.getStartOffset(type), OffsetableBase.getEndOffset(type)));
+                        }
+                        type = null;
+                        ptr = null;
+                        break;
+                }
+            }
+        }
+        return res;
+    }
     
     public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
         if (!(type instanceof TypeImpl)) {            
@@ -274,11 +323,13 @@ public class TemplateUtils {
         // Check instantiation parameters
         if (type.isInstantiation()) {
             TypeImpl typeImpl = (TypeImpl) type;
-            List<CsmType> params = typeImpl.getInstantiationParams();
-            for (CsmType instParam : params) {
-                CsmType newType = checkTemplateType(instParam, scope);
-                if (newType != instParam) {
-                    params.set(params.indexOf(instParam), newType);
+            List<CsmSpecializationParameter> params = typeImpl.getInstantiationParams();
+            for (CsmSpecializationParameter instParam : params) {
+                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
+                    CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope);
+                    if (newType != instParam) {
+                        params.set(params.indexOf(instParam), new TypeBasedSpecializationParameterImpl(newType));
+                    }
                 }
             }
         }
@@ -306,6 +357,21 @@ public class TemplateUtils {
         
         return type;
     }
+
+    public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
+        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+        while(inst != null) {
+            newMapping.putAll(inst.getMapping());
+            CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
+            if(decl instanceof CsmInstantiation) {
+                inst = (CsmInstantiation) decl;
+            } else {
+                break;
+            }
+        }
+        return newMapping;
+    }
+
 
     private TemplateUtils() {
     }

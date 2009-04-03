@@ -40,14 +40,11 @@ package org.netbeans.modules.dlight.cpu.impl;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.BorderFactory;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
-import org.netbeans.modules.dlight.indicators.graph.GraphColors;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
@@ -58,17 +55,17 @@ import org.openide.util.NbBundle;
  */
 public class CpuIndicatorPanel {
 
-    private static final Color COLOR_SYS = GraphColors.COLOR_1;
-    private static final Color COLOR_USR = GraphColors.COLOR_3;
-    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
-    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
+    private static final Color COLOR_SYS = GraphConfig.COLOR_1;
+    private static final Color COLOR_USR = GraphConfig.COLOR_3;
+    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.system"));//NOI18N
+    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.user"));//NOI18N
 
     private final PercentageGraph graph;
     private final GraphPanel<PercentageGraph, Legend> panel;
 
-    /*package*/ CpuIndicatorPanel(CpuIndicator indicator) {
-        graph = createGraph(indicator);
-        panel = new GraphPanel(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+    /*package*/ CpuIndicatorPanel() {
+        graph = createGraph();
+        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
     }
 
     public GraphPanel getPanel() {
@@ -79,24 +76,15 @@ public class CpuIndicatorPanel {
         return NbBundle.getMessage(CpuIndicatorPanel.class, "indicator.title"); // NOI18N
     }
 
-    private static PercentageGraph createGraph(final CpuIndicator indicator) {
+    private static PercentageGraph createGraph() {
         PercentageGraph graph = new PercentageGraph(SYS_DESCRIPTOR, USR_DESCRIPTOR);
-        graph.setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
-        graph.setMinimumSize(new Dimension(80, 60));
-        graph.setPreferredSize(new Dimension(80, 60));
-        graph.getVerticalAxis().setMinimumSize(new Dimension(30, 60));
-        graph.getVerticalAxis().setPreferredSize(new Dimension(30, 60));
-
-        MouseListener ml = new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    indicator.fireActionPerformed();
-                }
-            }
-        };
-        graph.addMouseListener(ml);
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
+        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setMinimumSize(graphSize);
+        graph.setPreferredSize(graphSize);
+        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(axisSize);
+        graph.getVerticalAxis().setPreferredSize(axisSize);
         return graph;
     }
 

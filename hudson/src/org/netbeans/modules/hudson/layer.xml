@@ -19,13 +19,4 @@
             </file>
         </folder>
     </folder>
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org-netbeans-modules-hudson-ui-nodes-HudsonRootNode.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.hudson.ui.nodes.HudsonRootNode"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.hudson.ui.nodes.HudsonRootNode.getDefault"/>
-                <attr name="position" intvalue="488"/>
-            </file>
-        </folder>     
-    </folder>
 </filesystem>

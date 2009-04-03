@@ -177,13 +177,13 @@ public final class NamingFactory {
 
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
         FileNaming retVal;
-        
+
         final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
         Reference ref = (Reference) (value instanceof Reference ? value : null);
         ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
         final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-        
+
         if (!ignoreCache && cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
             retVal = cachedElement;
         } else {
@@ -192,7 +192,7 @@ public final class NamingFactory {
 
             final boolean isList = (value instanceof List);
             if ((!ignoreCache && cachedElement != null) || isList) {
-                // List impl.                
+                // List impl.
                 if (isList) {
                     ((List) value).add(refRetVal);
                 } else {
@@ -201,7 +201,7 @@ public final class NamingFactory {
                     NamingFactory.nameMap.put(retVal.getId(), l);
                 }
             } else {
-                // Reference impl.                
+                // Reference impl.
                 Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
                 if (ignoreCache && r != null) {
                     FileName original = (FileName)r.get();
@@ -210,9 +210,9 @@ public final class NamingFactory {
                         for (Iterator childrenIt = children.iterator(); childrenIt.hasNext();) {
                             FileNaming child = (FileNaming) childrenIt.next();
                             remove(child, null);
-                        }                        
+                        }
                     }
-                }                
+                }
             }
         }
 
@@ -270,7 +270,6 @@ public final class NamingFactory {
                  type = FileType.file;
             }            
         }
-        
         switch(type) {
             case file:
                 retVal = new FileName(parentName, f);
@@ -281,5 +280,4 @@ public final class NamingFactory {
         }
         return retVal;
     }
-
 }

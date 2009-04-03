@@ -43,7 +43,7 @@ package org.netbeans.modules.web.core.palette.items;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -66,10 +66,10 @@ public class If implements ActiveEditorDrop {
         IfCustomizer c = new IfCustomizer(this, targetComponent);
         boolean accept = c.showDialog();
         if (accept) {
-            String prefix = JSPPaletteUtilities.findJstlPrefix(targetComponent);
+            String prefix = JspPaletteUtilities.findJstlPrefix(targetComponent);
             String body = createBody(prefix);
             try {
-                JSPPaletteUtilities.insert(body, targetComponent);
+                JspPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -79,7 +79,7 @@ public class If implements ActiveEditorDrop {
 
     private String createBody(String prefix) {
         if(condition.equals("")) { // NOI18N
-            condition = JSPPaletteUtilities.CARET;
+            condition = JspPaletteUtilities.CARET;
         }
         String strCondition = " test=\"" + condition + "\""; // NOI18N
         

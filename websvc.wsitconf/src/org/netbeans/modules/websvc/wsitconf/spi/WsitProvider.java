@@ -88,18 +88,20 @@ public abstract class WsitProvider {
     public boolean isWsitSupported() {
         // check if the FI or TX class exists - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
-        if ((txFO != null)) {
-            return true;
-        }
-        J2eePlatform j2eePlatform = ServerUtils.getJ2eePlatform(project);
-        if (j2eePlatform != null) {
-            Collection<WSStack> wsStacks = (Collection<WSStack>)
-                    j2eePlatform.getLookup().lookupAll(WSStack.class);
-            for (WSStack stack : wsStacks) {
-                if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
-                    return true;
+        if ((sgs != null) && (sgs.length > 0)) {
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
+            if ((txFO != null)) {
+                return true;
+            }
+            J2eePlatform j2eePlatform = ServerUtils.getJ2eePlatform(project);
+            if (j2eePlatform != null) {
+                Collection<WSStack> wsStacks = (Collection<WSStack>)
+                        j2eePlatform.getLookup().lookupAll(WSStack.class);
+                for (WSStack stack : wsStacks) {
+                    if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                        return true;
+                    }
                 }
             }
         }

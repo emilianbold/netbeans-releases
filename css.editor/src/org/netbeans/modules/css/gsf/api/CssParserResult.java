@@ -54,20 +54,17 @@ public class CssParserResult extends ParserResult {
 
     private SimpleNode root;
     private List<Error> errors;
+
+    private boolean invalidated = false;
     
     public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
         super(snapshot);
-
-        if(root == null) {
-            throw new NullPointerException("root cannot be null!");
-        }
-
         this.root = root;
         this.errors = errors;
     }
     
     public SimpleNode root() {
-        if(root == null) {
+        if(invalidated) {
             throw new IllegalStateException("The CssParserResult already invalidated!");
         }
         return root;
@@ -75,7 +72,7 @@ public class CssParserResult extends ParserResult {
 
     @Override
     public List<? extends Error> getDiagnostics() {
-        if(root == null) {
+        if(invalidated) {
             throw new IllegalStateException("The CssParserResult already invalidated!");
         }
         return errors;
@@ -83,6 +80,7 @@ public class CssParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
+//        invalidated = true;
 //        root = null;
 //        errors = null;
     }

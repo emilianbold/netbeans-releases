@@ -100,7 +100,7 @@ public class PropertyModel {
 
             //parse media groups list
             String mediaGroups = st.nextToken();
-            ArrayList<String> mediaGroupsList = new ArrayList();
+            ArrayList<String> mediaGroupsList = new ArrayList<String>();
             StringTokenizer st3 = new StringTokenizer(mediaGroups, ","); //NOI18N
             while (st3.hasMoreTokens()) {
                 mediaGroupsList.add(st3.nextToken());

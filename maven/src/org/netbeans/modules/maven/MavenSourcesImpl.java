@@ -46,11 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,11 +72,9 @@ import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of Sources interface for maven projects.
@@ -90,6 +86,13 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String TYPE_OTHER = "Resources"; //NOI18N
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
     public static final String TYPE_GEN_SOURCES = "GeneratedSources"; //NOI18N
+    public static final String TYPE_GROOVY = "groovy"; //NOI18N
+    public static final String TYPE_SCALA = "scala"; //NOI18N
+
+    public static final String NAME_GROOVYSOURCE = "81GroovySourceRoot"; //NOI18N
+    public static final String NAME_GROOVYTESTSOURCE = "82GroovyTestSourceRoot"; //NOI18N
+    public static final String NAME_SCALASOURCE = "91ScalaSourceRoot"; //NOI18N
+    public static final String NAME_SCALATESTSOURCE = "92ScalaTestSourceRoot"; //NOI18N
     public static final String NAME_PROJECTROOT = "ProjectRoot"; //NOI18N
     public static final String NAME_XDOCS = "XDocs"; //NOI18N
     public static final String NAME_SOURCE = "1SourceRoot"; //NOI18N
@@ -103,6 +106,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private Map<File, SourceGroup> genSrcGroup;
     private Map<File, OtherGroup> otherMainGroups;
     private Map<File, OtherGroup> otherTestGroups;
+    private Map<String, SourceGroup> groovyGroup;
+    private Map<String, SourceGroup> scalaGroup;
+
     
     private final Object lock = new Object();
     
@@ -115,45 +121,46 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         genSrcGroup = new TreeMap<File, SourceGroup>();
         otherMainGroups = new TreeMap<File, OtherGroup>();
         otherTestGroups = new TreeMap<File, OtherGroup>();
+        groovyGroup = new TreeMap<String, SourceGroup>();
+        scalaGroup = new TreeMap<String, SourceGroup>();
+
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges(true);
+                    checkChanges(true, true);
                 }
             }
         });
     }
     
-    private void checkChanges(boolean synchronous) {
+    private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {
         boolean changed = false;
         synchronized (lock) {
             MavenProject mp = project.getOriginalMavenProject();
-            if (mp != null) {
-                FileObject folder = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
-                changed = changed | checkJavaGroupCache(folder, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
-                folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
-                changed = changed | checkJavaGroupCache(folder, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
-                changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
+            FileObject folder = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
+            changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"), javaGroup);
+            folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
+            changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"), javaGroup);
+            changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
+            //groovy
+            folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(false));
+            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_GroovySources"), groovyGroup);
+            folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(true));
+            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYTESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_GroovySources"), groovyGroup);
+            //scala
+            folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(false));
+            changed = changed | checkSourceGroupCache(folder, NAME_SCALASOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_ScalaSources"), scalaGroup);
+            folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(true));
+            changed = changed | checkSourceGroupCache(folder, NAME_SCALATESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_ScalaSources"), scalaGroup);
+
+            if (checkAlsoNonJavaStuff) {
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(true), true);
-            } else {
-                changed = true;
-                checkJavaGroupCache(null, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
-                checkJavaGroupCache(null, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
-                checkGeneratedGroupsCache(null);
-                checkOtherGroupsCache(null, true);
-                checkOtherGroupsCache(null, false);
             }
         }
         if (changed) {
-            if (synchronous) {
+            if (fireChanges) {
                 fireChange();
-            } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        fireChange();
-                    }
-                });
             }
         }
     }
@@ -189,8 +196,8 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(str)) {
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
             synchronized (lock) {
-                // don't fire event synchronously..
-                checkChanges(false);
+                // don't fire event at all..
+                checkChanges(false, false);
                 toReturn.addAll(javaGroup.values());
             }
             SourceGroup[] grp = new SourceGroup[toReturn.size()];
@@ -226,6 +233,29 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             grp = toReturn.toArray(grp);
             return grp;
         }
+        if (TYPE_GROOVY.equals(str)) {
+            List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
+            synchronized (lock) {
+                // don't fire event synchronously..
+                checkChanges(false, false);
+                toReturn.addAll(groovyGroup.values());
+            }
+            SourceGroup[] grp = new SourceGroup[toReturn.size()];
+            grp = toReturn.toArray(grp);
+            return grp;
+        }
+        if (TYPE_SCALA.equals(str)) {
+            List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
+            synchronized (lock) {
+                // don't fire event synchronously..
+                checkChanges(false, false);
+                toReturn.addAll(scalaGroup.values());
+            }
+            SourceGroup[] grp = new SourceGroup[toReturn.size()];
+            grp = toReturn.toArray(grp);
+            return grp;
+        }
+
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(str)) {
             return getOrCreateResourceSourceGroup(false);
         }
@@ -266,13 +296,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         return new SourceGroup[0];
     }
     
+
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
-    private boolean checkJavaGroupCache(FileObject root, String name, String displayName) {
-        SourceGroup group = javaGroup.get(name);
+    private boolean checkSourceGroupCache(FileObject root, String name, String displayName, Map<String, SourceGroup> groups) {
+        SourceGroup group = groups.get(name);
         if (root == null && group != null) {
-            javaGroup.remove(name);
+            groups.remove(name);
             return true;
         }
         if (root == null) {
@@ -281,17 +312,18 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         boolean changed = false;
         if (group == null) {
             group = GenericSources.group(project, root, name, displayName, null, null);
-            javaGroup.put(name, group);
+            groups.put(name, group);
             changed = true;
         } else {
             if (!group.getRootFolder().equals(root)) {
                 group = GenericSources.group(project, root, name, displayName, null, null);
-                javaGroup.put(name, group);
+                groups.put(name, group);
                 changed = true;
             }
         }
         return changed;
     }
+
 
     private boolean checkGeneratedGroupsCache(URI[] uris) {
         boolean changed = false;
@@ -410,7 +442,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         if (folder != null) {
             folder.mkdirs();
             FileUtil.refreshFor(folder);
-            checkChanges(false);
+            checkChanges(false, true);
             FileObject fo = FileUtil.toFileObject(folder);
             assert fo != null;
             SourceGroup[] grps = getSourceGroups(type);

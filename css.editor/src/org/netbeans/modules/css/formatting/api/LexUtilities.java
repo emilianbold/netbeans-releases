@@ -74,6 +74,7 @@ public class LexUtilities {
     }
 
     /** Find given language token sequence (in case it's embedded in something else at the top level */
+    @SuppressWarnings( "unchecked" )
     public static <T extends TokenId>  TokenSequence<T> getTokenSequence(TokenHierarchy<Document> th, int offset, Language<T> language) {
         TokenSequence<T> ts = th.tokenSequence(language);
 
@@ -82,9 +83,9 @@ public class LexUtilities {
             // First try with backward bias true
             List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
-            for (TokenSequence t : list) {
+            for (TokenSequence<?> t : list) {
                 if (t.language() == language) {
-                    ts = t;
+                    ts = (TokenSequence<T>)t;
 
                     break;
                 }
@@ -93,9 +94,9 @@ public class LexUtilities {
             if (ts == null) {
                 list = th.embeddedTokenSequences(offset, false);
 
-                for (TokenSequence t : list) {
+                for (TokenSequence<?> t : list) {
                     if (t.language() == language) {
-                        ts = t;
+                        ts = (TokenSequence<T>)t;
 
                         break;
                     }
@@ -238,6 +239,7 @@ public class LexUtilities {
         return t;
     }
 
+    @SuppressWarnings( "unchecked" )
     public static <T1 extends TokenId> List<TokenSequence<T1>> getEmbeddedTokenSequences(BaseDocument doc, Language<T1> language, int start, int end) {
         TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
         List<LanguagePath> lps = new ArrayList<LanguagePath>();
@@ -275,7 +277,7 @@ public class LexUtilities {
             TokenSequence<T1> ts =tss.get(i);
 
             List<TokenSequenceWrapper<T1>> tss2 = new ArrayList<TokenSequenceWrapper<T1>>();
-            tss2.add(new TokenSequenceWrapper(ts, false));
+            tss2.add(new TokenSequenceWrapper<T1>(ts, false));
 
             // try to find additional token sequences which comprise this language block:
             for (int j=i+1; j<tss.size(); j++) {
@@ -288,8 +290,8 @@ public class LexUtilities {
                 // check whether current token sequence is continuation of previous one:
                 TokenSequence<T1> tsVirtual = LexUtilities.getVirtualTokens(virtualSource, prev.offset()+prev.token().length(), next.offset(), ts.language());
                 if (tsVirtual != null) {
-                    tss2.add(new TokenSequenceWrapper(tsVirtual, true));
-                    tss2.add(new TokenSequenceWrapper(next, false));
+                    tss2.add(new TokenSequenceWrapper<T1>(tsVirtual, true));
+                    tss2.add(new TokenSequenceWrapper<T1>(next, false));
                     i++;
                 } else {
                     break;

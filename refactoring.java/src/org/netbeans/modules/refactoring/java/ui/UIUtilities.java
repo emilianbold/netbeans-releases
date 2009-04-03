@@ -43,14 +43,8 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -170,36 +164,29 @@ public final class UIUtilities {
     /** Table cell renderer for boolean values (a little more advanced that the
      * standard one). Enables hiding the combo box in case the value is <code>null</code>
      * rather than <code>Boolean.TRUE</code> or <code>Boolean.FALSE</code>
-     * and disables the combo box for read-only cells to give a better visual feedback
+     * or in case of read-only cells to give a better visual feedback
      * that the cells cannot be edited.
      */
-    public static class BooleanTableCellRenderer extends JCheckBox implements TableCellRenderer {
-        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-        private final JLabel emptyLabel = new JLabel();
+    public static class BooleanTableCellRenderer implements TableCellRenderer {
+        private final TableCellRenderer checkbox;
+        private final TableCellRenderer label;
 
-	public BooleanTableCellRenderer() {
-	    super();
-	    setHorizontalAlignment(JLabel.CENTER);
-            setBorderPainted(true);
-            emptyLabel.setBorder(noFocusBorder);
-            emptyLabel.setOpaque(true);
-	}
+	public BooleanTableCellRenderer(JTable jt) {
+            this(jt.getDefaultRenderer(String.class), jt.getDefaultRenderer(Boolean.class));
+        }
+
+	private BooleanTableCellRenderer(TableCellRenderer label, TableCellRenderer checkbox) {
+            this.checkbox = checkbox;
+            this.label = label;
+        }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JComponent result;
-            if (value == null) {
-                result = emptyLabel;
-            } else {
-                setSelected(((Boolean)value).booleanValue());
-                setEnabled(table.getModel().isCellEditable(row, column));
-                result = this;
-            }
-
-            result.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-            result.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-            result.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : noFocusBorder); // NOI18N
-            
-            return result;
+            TableCellRenderer rend = value == null || !table.getModel().isCellEditable(row, column)
+                    ? label : checkbox;
+            // reset value in case the cell is not editable
+            value = value != null && rend == label ? null : value;
+            Component comp = rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            return comp;
         }
     }
 }

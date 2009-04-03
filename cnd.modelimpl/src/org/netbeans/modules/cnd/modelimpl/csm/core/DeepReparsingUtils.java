@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -349,12 +348,9 @@ public final class DeepReparsingUtils {
                 invalidateFileAndPreprocState(project, incl);
             }
         }
-        boolean progress = false;
         try {
-            if (topParents.size() > 5) {
-                ParserQueue.instance().onStartAddingProjectFiles(project);
-                progress = true;
-            }
+            // send notifications
+            ParserQueue.instance().onStartAddingProjectFiles(project);
             for (CsmFile parent : topParents) {
                 if (parent.getProject() == project) {
                     FileImpl parentImpl = (FileImpl) parent;
@@ -364,9 +360,8 @@ public final class DeepReparsingUtils {
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
         } finally {
-            if (progress) {
-                ParserQueue.instance().onEndAddingProjectFiles(project);
-            }
+            // send notifications
+            ParserQueue.instance().onEndAddingProjectFiles(project);
         }
     }
 

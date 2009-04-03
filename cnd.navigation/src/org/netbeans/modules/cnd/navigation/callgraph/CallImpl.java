@@ -103,4 +103,12 @@ public class CallImpl implements Call {
     public String getHtmlDisplayName() {
         return CsmReferenceSupport.getContextLineHtml(reference, true).toString();
     }
+
+    public String getDescription() {
+        CharSequence ret = CsmReferenceSupport.getContextLine(reference);
+        if (ret != null) {
+            return ret.toString();
+        }
+        return null;
+    }
 }

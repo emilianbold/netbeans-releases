@@ -164,6 +164,24 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <include name="*javac*.jar"/>
             </fileset>
         </path>
+        <!-- Define bootcp for Mac, in order to compile retouche based tests in project which need modified javac -->
+        <pathconvert property="retouche.javac">
+            <fileset dir="${nb_all}/libs.javacapi/external">
+                <include name="*javac*.jar"/>
+            </fileset>
+            <fileset dir="${nb_all}/libs.javacimpl/external">
+                <include name="*javac*.jar"/>
+            </fileset>
+            <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
+                <include name="*.jar"/>
+            </fileset>
+        </pathconvert>
+        <condition property="bootclasspath.mac" value="${retouche.javac}">
+            <and>
+                <os family="mac"/>
+                <istrue value="${requires.nb.javac}"/>
+            </and>
+        </condition>
         <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     </target>
 

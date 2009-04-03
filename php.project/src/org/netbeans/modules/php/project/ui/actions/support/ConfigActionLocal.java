@@ -199,7 +199,7 @@ class ConfigActionLocal extends ConfigAction {
             final URL url = CommandUtils.urlForContext(project, context);
             assert url != null;
 
-            preShowUrl();
+            preShowUrl(context);
 
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
@@ -221,6 +221,7 @@ class ConfigActionLocal extends ConfigAction {
         } catch (StopDebuggingException exc) {
             return;
         }
+        preShowUrl(context);
         debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), url);
     }
 
@@ -252,8 +253,6 @@ class ConfigActionLocal extends ConfigAction {
 
     void debugFile(final FileObject selectedFile, final URL debugUrl) {
         assert selectedFile != null;
-
-        preShowUrl();
 
         Runnable runnable = new Runnable() {
             public void run() {
@@ -301,7 +300,7 @@ class ConfigActionLocal extends ConfigAction {
         }
     }
 
-    protected void preShowUrl() {
+    protected void preShowUrl(Lookup context) {
         // hook for subclasses
     }
 
@@ -313,7 +312,7 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
         Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
-        dbgStarter.start(project, initDebuggingCallable, debuggedFile, false, ProjectPropertiesSupport.getEncodedDebugPathMapping(project));
+        dbgStarter.start(project, initDebuggingCallable, debuggedFile, false, ProjectPropertiesSupport.getDebugPathMapping(project));
     }
 
     private void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {

@@ -320,6 +320,12 @@ public abstract class CreateClassFix implements Fix {
             if (this.simpleName != other.simpleName && (this.simpleName == null || !this.simpleName.equals(other.simpleName))) {
                 return false;
             }
+
+            // return true for class with empty ctor and class w/o ctor
+            if((this.argumentTypeMirrors == null || this.argumentTypeMirrors.isEmpty()) && (other.argumentTypeMirrors == null || other.argumentTypeMirrors.isEmpty())) {
+                return true;
+            }
+
             if (this.argumentTypeMirrors != other.argumentTypeMirrors && (this.argumentTypeMirrors == null || !this.argumentTypeMirrors.equals(other.argumentTypeMirrors))) {
                 return false;
             }
@@ -333,7 +339,6 @@ public abstract class CreateClassFix implements Fix {
             hash = 53 * hash + (this.targetSourceRoot != null ? this.targetSourceRoot.hashCode() : 0);
             hash = 53 * hash + (this.packageName != null ? this.packageName.hashCode() : 0);
             hash = 53 * hash + (this.simpleName != null ? this.simpleName.hashCode() : 0);
-            hash = 53 * hash + (this.argumentTypeMirrors != null ? this.argumentTypeMirrors.hashCode() : 0);
             return hash;
         }
 

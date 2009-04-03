@@ -61,7 +61,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.AbstractFormatLayer;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.FormatWriter;
-import org.netbeans.editor.ext.html.HTMLFormatter;
+import org.netbeans.editor.ext.html.HtmlFormatter;
 import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 
-public class JspFormatter extends HTMLFormatter {
+public class JspFormatter extends HtmlFormatter {
     private JavaFormatter jFormatter;
     
     private static final Logger LOGGER = Logger.getLogger(JspFormatter.class.getName());

@@ -189,12 +189,16 @@ public class RemotePathMap implements PathMap {
             }
         }
 
-        // check if local path is mirrored by remote path
-        if (validateMapping(execEnv, lpath, lpath)) {
-            synchronized (map) {
-                map.put(lpath, lpath);
+        try {
+            // check if local path is mirrored by remote path
+            if (validateMapping(execEnv, lpath, lpath)) {
+                synchronized (map) {
+                    map.put(lpath, lpath);
+                }
+                return true;
             }
-            return true;
+        } catch (InterruptedException ex) {
+            return false;
         }
 
         if (fixMissingPaths) {
@@ -259,7 +263,9 @@ public class RemotePathMap implements PathMap {
                 REMOTE_PATH_MAP + ExecutionEnvironmentFactory.getHostKey(execEnv), newValue);
     }
 
-    static boolean validateMapping(ExecutionEnvironment exexEnv, String rpath, String lpath) {
+    private static boolean validateMapping(ExecutionEnvironment exexEnv, 
+            String rpath, String lpath) throws InterruptedException {
+
         if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).isWindows()) {
             File path = new File(lpath);
             if (path.exists() && path.isDirectory()) {
@@ -272,8 +278,16 @@ public class RemotePathMap implements PathMap {
                         String validationLine = Double.toString(Math.random());
                         out.write(validationLine);
                         out.close();
-                        if (0 == RemoteCommandSupport.run(exexEnv, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
+                        String cmd = "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine; // NOI18N
+                        if (!Boolean.getBoolean("emulate.remote.cmd.hangup")) { // VK: a safe way to test error recovery - no risk of pushing bad changes :)
+                            cmd = String.format("bash -c \"%s\"", cmd); //NOI18N
+                        }
+                        RemoteCommandSupport rcs = new RemoteCommandSupport(exexEnv, cmd); // NOI18N
+                        if (rcs.run() == 0) {
                             return true;
+                        }
+                        if (rcs.isCancelled() || rcs.isInterrupted()) {
+                            throw new InterruptedException();
                         }
                     }
                 } catch (IOException ex) {

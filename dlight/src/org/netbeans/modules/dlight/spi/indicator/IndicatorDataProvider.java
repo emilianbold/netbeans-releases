@@ -119,7 +119,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
   }
 
   protected final void notifyIndicators(List<DataRow> data) {
-    for (Indicator l : listeners) {
+    for (Indicator<?> l : listeners) {
       l.updated(data);
     }
   }

@@ -65,6 +65,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1733,12 +1734,14 @@ private boolean selectTool(JTextField tf) {
     class MyDevHostListCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
+            label.setText(execEnv.isLocal() ? "localhost" : //NOI18N
+                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
             if (index == cacheManager.getDefaultHostIndex()) {
-                JLabel label = (JLabel) comp;
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
-            return comp;
+            return label;
         }
     }
 
@@ -1821,7 +1824,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
     String title = getString("TITLE_Configure");
     String msg = getString("MSG_Configure_Compiler_Sets", execEnv.toString());
-    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, title, msg);
+    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
 private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed

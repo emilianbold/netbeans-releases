@@ -181,6 +181,14 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    void opened() {
+        repository.scheduleForRefresh(getID());
+    }
+
+    void closed() {
+        repository.stopRefreshing(getID());
+    }
+
     @Override
     public String getDisplayName() {
         return data.isNew() ?
@@ -403,7 +411,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-//        assert !taskData.isPartial(); XXX doesn't work with simple search
+        assert !taskData.isPartial(); 
         data = taskData;
         attributes = null; // reset
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
@@ -747,7 +755,11 @@ public class BugzillaIssue extends Issue {
             }
             when = d;
             // XXX check for NULL
-            who = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            String author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            if ((author == null) || author.trim().equals("")) { // NOI18N
+                author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getValue();
+            }
+            who = author;
             number = Long.parseLong(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER).getValues().get(0));// XXX value or values?
             text = a.getMappedAttribute(TaskAttribute.COMMENT_TEXT).getValue();
         }
@@ -796,7 +808,11 @@ public class BugzillaIssue extends Issue {
             date = d;
             filename = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME).getValue();
             desc = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION).getValues().get(0);// XXX value or values?
-            author = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            String who = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            if ((who == null) || (who.trim().equals(""))) { // NOI18N
+                who = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getValue();
+            }
+            author = who;
             contentType = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE).getValue();
             isDeprected = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_DEPRECATED).getValue();
             isPatch = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH).getValue();

@@ -57,7 +57,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,6 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -140,6 +138,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
+        panel.refreshCheckBox.addActionListener(this);
         panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
@@ -206,16 +205,29 @@ public class QueryController extends BugtrackingController implements DocumentLi
         postPopulate(urlParameters);
     }
 
-    void addNotify() {
+    protected void addNotify() {
+        boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+        if(autoRefresh) {
+            scheduleForRefresh();
+        }
         if(query.isSaved() && !query.wasRun()) {
             onRefresh();
         }
     }
 
-    void removeNotify() {
+    protected void removeNotify() {
         onCancelChanges();
         if(task != null) {
             task.cancel();
+        }
+        if(query.isSaved()) {
+            repository.stopRefreshing(query);
+        }
+    }
+
+    protected void scheduleForRefresh() {
+        if(query.isSaved()) {
+            repository.scheduleForRefresh(query);
         }
     }
 
@@ -290,7 +302,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void populate(final String urlParameters) {
-        Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+        }
         try {
             BugzillaCommand cmd = new BugzillaCommand() {
                 @Override
@@ -322,17 +336,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
 
                     panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-                    panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+                    if(query.isSaved()) {
+                        final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+                        panel.refreshCheckBox.setSelected(autoRefresh);
+                    }
                 }
             };
             repository.getExecutor().execute(cmd);
         } finally {
-            Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
+            if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+                Bugzilla.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            }
         }
     }
 
@@ -418,6 +433,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
+        } else if (e.getSource() == panel.refreshCheckBox) {
+            onAutoRefresh();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {
                 onGotoIssue();
@@ -535,6 +552,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
+        panel.refreshCheckBox.setVisible(true);
     } 
 
     private String getLastRefresh() throws MissingResourceException {
@@ -696,6 +714,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     remove();
                 }
             });
+        }
+    }
+
+    private void onAutoRefresh() {
+        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
+        BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
+        if(autoRefresh) {
+            scheduleForRefresh();
+        } else {
+            repository.stopRefreshing(query);
         }
     }
     

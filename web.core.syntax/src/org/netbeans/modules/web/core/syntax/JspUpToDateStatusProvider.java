@@ -48,7 +48,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.openide.loaders.DataObject;
@@ -80,7 +80,7 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
         //listen to parser results
         DataObject documentDO = NbEditorUtilities.getDataObject(document);
         if(documentDO != null && documentDO.isValid()) {
-            JSPColoringData jspcd = JspUtils.getJSPColoringData(documentDO.getPrimaryFile());
+            JspColoringData jspcd = JspUtils.getJSPColoringData(documentDO.getPrimaryFile());
             //jspcd.addPropertyChangeListener(this);
             if(jspcd != null) {
                 jspcd.addPropertyChangeListener(WeakListeners.propertyChange(this, jspcd));
@@ -93,12 +93,12 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
         }
     }
     
-    //the property changes are fired via JSPColoringData by TagLibParseSupport
+    //the property changes are fired via JspColoringData by TagLibParseSupport
     public void propertyChange(PropertyChangeEvent evt) {
         Boolean newValue = (Boolean)evt.getNewValue();
-        if(JSPColoringData.PROP_PARSING_IN_PROGRESS.equals(evt.getPropertyName()) && newValue.booleanValue())
+        if(JspColoringData.PROP_PARSING_IN_PROGRESS.equals(evt.getPropertyName()) && newValue.booleanValue())
             setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
-        if(JSPColoringData.PROP_PARSING_SUCCESSFUL.equals(evt.getPropertyName()))
+        if(JspColoringData.PROP_PARSING_SUCCESSFUL.equals(evt.getPropertyName()))
             setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
     }
     

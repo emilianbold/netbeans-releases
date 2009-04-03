@@ -408,7 +408,13 @@ public final class GeneratorUtilities {
         assert name.length() > 0;
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
         StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        boolean isBooleanType = false;
+        if (type instanceof DeclaredType) {
+            isBooleanType = copy.getElements().getTypeElement("java.lang.Boolean").equals(((DeclaredType) type).asElement()); // NOI18N
+        } else {
+            isBooleanType = type.getKind() == TypeKind.BOOLEAN;
+        }
+        sb.insert(0, isBooleanType ? "is" : "get"); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }

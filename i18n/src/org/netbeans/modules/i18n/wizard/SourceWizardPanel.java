@@ -61,6 +61,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
+import org.netbeans.modules.i18n.FilteredNode;
 import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.awt.Mnemonics;
@@ -240,10 +241,18 @@ final class SourceWizardPanel extends JPanel {
   
         // Selects source data objects which could be i18n-ized.
         try {
+            FilteredNode.NodeFilter HIDDEN_FOLDERS_FILTER = new FilteredNode.NodeFilter() {
+
+                public boolean acceptNode(Node node) {
+                    if (node.getName().startsWith("."))
+                        return false;
+                    return true;
+                }
+            };
             Node[] selectedNodes= NodeOperation.getDefault().select(
                 Util.getString("LBL_SelectSources"),                    //NOI18N
                 Util.getString("LBL_Filesystems"),                      //NOI18N
-                SelectorUtils.sourcesNode(prj, SelectorUtils.ALL_FILTER),
+                SelectorUtils.sourcesNode(prj, HIDDEN_FOLDERS_FILTER),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
                         if (nodes == null || nodes.length == 0) {

@@ -52,7 +52,7 @@ import org.openide.ErrorManager;
 /**This class is used during the analysis of the HTML code.
  *
  * It is an element of the dynamically created chain of other SyntaxElements.
- * The access to it is done through the HTMLSyntaxSupport, which also takes
+ * The access to it is done through the HtmlSyntaxSupport, which also takes
  * care of dynamically extending it when needed.
  *
  * @author  Petr Nejedly
@@ -76,14 +76,14 @@ public class SyntaxElement {
     
     private SyntaxElement previous;
     private SyntaxElement next;
-    private HTMLSyntaxSupport sup;
+    private HtmlSyntaxSupport sup;
     
     int offset;
     int length;
     int type;
     
     /** Creates new SyntaxElement */
-    public SyntaxElement(HTMLSyntaxSupport sup, int from, int to, int type ) {
+    public SyntaxElement(HtmlSyntaxSupport sup, int from, int to, int type ) {
         this.offset = from;
         this.length = to-from;
         this.type = type;
@@ -176,7 +176,7 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( HTMLSyntaxSupport sup, int from, int to,
+        public Declaration( HtmlSyntaxSupport sup, int from, int to,
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
@@ -216,7 +216,7 @@ public class SyntaxElement {
     public static class Named extends SyntaxElement {
         String name;
         
-        public Named( HTMLSyntaxSupport sup, int from, int to, int type, String name ) {
+        public Named( HtmlSyntaxSupport sup, int from, int to, int type, String name ) {
             super( sup, from, to, type );
             this.name = name;
         }
@@ -234,11 +234,11 @@ public class SyntaxElement {
         private List<TagAttribute> attribs;
         private boolean empty = false;
         
-        public Tag(HTMLSyntaxSupport sup, int from, int to, String name, List<TagAttribute> attribs) {
+        public Tag(HtmlSyntaxSupport sup, int from, int to, String name, List<TagAttribute> attribs) {
             this(sup, from, to, name, attribs, false);
         }
         
-        public Tag(HTMLSyntaxSupport sup, int from, int to, String name, List attribs, boolean isEmpty ) {
+        public Tag(HtmlSyntaxSupport sup, int from, int to, String name, List attribs, boolean isEmpty ) {
             super( sup, from, to, TYPE_TAG, name );
             this.attribs = attribs;
             this.empty = isEmpty;

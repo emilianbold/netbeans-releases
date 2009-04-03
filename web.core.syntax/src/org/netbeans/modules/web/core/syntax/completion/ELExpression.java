@@ -362,7 +362,7 @@ public class ELExpression {
                 }
                 
                 if (methodName.startsWith("is")){ //NOI18N
-                    getPropertyName(methodName, 2);
+                    return getPropertyName(methodName, 2);
                 }
                 
                 if (isDefferedExecution()){

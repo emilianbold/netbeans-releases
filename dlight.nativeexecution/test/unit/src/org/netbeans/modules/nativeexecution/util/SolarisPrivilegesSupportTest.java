@@ -55,8 +55,8 @@ public class SolarisPrivilegesSupportTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", "");
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
+        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs); // NOI18N
     }
 
     @AfterClass

@@ -767,9 +767,11 @@ public final class TreeUtilities {
             scan(node.getBlock(), s);
             for (CatchTree ct : node.getCatches()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
-                for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();)
-                    if (info.getTypes().isSubtype(it.next(), t))
-                        it.remove();
+                if (t.getKind() != TypeKind.ERROR) {
+                    for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();)
+                        if (info.getTypes().isSubtype(it.next(), t))
+                            it.remove();
+                }
             }
             p.addAll(s);
             scan(node.getCatches(), p);
@@ -782,9 +784,11 @@ public final class TreeUtilities {
             scan(node.getBody(), s);
             for (ExpressionTree et : node.getThrows()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), et));
-                for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();)
-                    if (info.getTypes().isSubtype(it.next(), t))
-                        it.remove();
+                if (t.getKind() != TypeKind.ERROR) {
+                    for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();)
+                        if (info.getTypes().isSubtype(it.next(), t))
+                            it.remove();
+                }
             }
             p.addAll(s);
             return null;

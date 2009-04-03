@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -91,7 +90,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
     }
 
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
-        GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(project, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(project, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 
         kind = adjustKind(kind, textForQuery);
         

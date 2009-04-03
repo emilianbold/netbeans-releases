@@ -111,16 +111,18 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getPreludeRunTimeDDCatalog"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
-                <!--file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance" url="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
+                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getEE6RunTimeDDCatalog"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
-                </file-->
+                </file>
             </folder>
             <folder name="GrammarQueryManagers">
-                <!--file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
+                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
                     <attr name="position" intvalue="350"/>
-                </file-->
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getEE6RunTimeDDCatalog"/>
+                </file>
                 <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog.getPreludeRunTimeDDCatalog"/>
                     <attr name="position" intvalue="375"/>
                 </file>
             </folder> <!-- GrammarQueryManagers -->

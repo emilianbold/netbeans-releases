@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.masterfs;
 
+import java.io.File;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
 import java.net.URL;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 
 /**
  * Implements URLMapper for MasterFileSystem.
@@ -64,5 +67,11 @@ public final class MasterURLMapper extends URLMapper {
 
     public URL getURL(final FileObject fo, final int type) {
         return delegate.getURL(fo, type);
-    }        
+    }
+
+    /** Used through reflection in org.openide.filesystems.URLMapper to speed up
+     * conversion from File to FileObject. */
+    private static FileObject toFileObject(File file) {
+        return FileBasedFileSystem.getFileObject(file, FileObjectFactory.Caller.ToFileObject);
+    }
 }

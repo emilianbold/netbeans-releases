@@ -87,7 +87,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        fireTableValueChangedChanged(evt.getSource(), null);
+        fireTableValueChanged(evt.getNewValue(), null);
     }
     
     public Object[] getChildren(Object o, int from, int to) throws UnknownTypeException {
@@ -191,7 +191,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         }
     }
     
-    private void fireTableValueChangedChanged(Object node, String propertyName) {
+    private void fireTableValueChanged(Object node, String propertyName) {
         for (ModelListener l : listeners) {
             l.modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
         }

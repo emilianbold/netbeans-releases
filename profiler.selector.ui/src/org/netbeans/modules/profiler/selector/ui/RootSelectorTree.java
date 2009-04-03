@@ -141,6 +141,9 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     public List<SelectionTreeBuilder.Type> getBuilderTypes() {
+//      **** useful for testing *******
+//      return Collections.EMPTY_LIST;
+//      *******************************
         class TypeEntry {
 
             SelectionTreeBuilder.Type type;

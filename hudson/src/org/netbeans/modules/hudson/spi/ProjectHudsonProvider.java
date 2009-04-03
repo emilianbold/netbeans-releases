@@ -42,9 +42,12 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Lookup;
 
 /**
@@ -125,11 +128,11 @@ public abstract class ProjectHudsonProvider {
          */
         public Association(String serverURL, String jobName) throws IllegalArgumentException {
             URI.create(serverURL); // check syntax
-            if (!serverURL.endsWith("/")) {
-                throw new IllegalArgumentException(serverURL + " must end in a slash");
+            if (!serverURL.endsWith("/")) { // NOI18N
+                throw new IllegalArgumentException(serverURL + " must end in a slash"); // NOI18N
             }
             if (jobName != null && (jobName.length() == 0 || !jobName.trim().equals(jobName))) {
-                throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName);
+                throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName); // NOI18N
             }
             this.serverURL = serverURL;
             this.jobName = jobName;
@@ -162,22 +165,31 @@ public abstract class ProjectHudsonProvider {
             if (obj == null || !(obj instanceof Association)) {
                 return false;
             }
-            Association other = (Association) obj;
-            if (!serverURL.equals(other.serverURL)) {
-                return false;
-            }
-            if (jobName == null ? other.jobName != null : !jobName.equals(other.jobName)) {
-                return false;
-            }
-            return true;
+            return toString().equals(obj.toString());
         }
 
         public @Override int hashCode() {
-            int hash = serverURL.hashCode();
-            if (jobName != null) {
-                hash = hash ^ jobName.hashCode();
+            return toString().hashCode();
+        }
+
+        /**
+         * URL of either job or server root.
+         */
+        public @Override String toString() {
+            return jobName != null ? serverURL + "job/" + Utilities.uriEncode(jobName) + "/" : serverURL; // NOI18N
+        }
+
+        /**
+         * Inverse of {@link #toString}.
+         * @return an association based on parsing a Hudson job or root URL, or null
+         */
+        public static Association fromString(String s) {
+            Matcher m = Pattern.compile("(https?://.+?/)(?:job/([^/]+)/?)?").matcher(s); // NOI18N
+            if (!m.matches()) {
+                return null;
             }
-            return hash;
+            String jobNameRaw = m.group(2);
+            return new Association(m.group(1), jobNameRaw != null ? Utilities.uriDecode(jobNameRaw) : null);
         }
 
     }
