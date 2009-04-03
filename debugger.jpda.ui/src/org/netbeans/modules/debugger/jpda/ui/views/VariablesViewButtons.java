@@ -94,9 +94,9 @@ public class VariablesViewButtons {
         Icon icon = ImageUtilities.loadImageIcon(iconPath, false);
         final JButton button = new JButton(icon);
         // ensure small size, just for the icon
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8); // [TODO]
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         button.setPreferredSize(size);
-        button.setMargin(new Insets(0, 0, 0, 0));
+        button.setMargin(new Insets(1, 1, 1, 1));
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         return button;
@@ -107,9 +107,9 @@ public class VariablesViewButtons {
         boolean isSelected = isButtonSelected(id);
         final JToggleButton toggleButton = new JToggleButton(icon, isSelected);
         // ensure small size, just for the icon
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8); // [TODO]
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         toggleButton.setPreferredSize(size);
-        toggleButton.setMargin(new Insets(0, 0, 0, 0));
+        toggleButton.setMargin(new Insets(1, 1, 1, 1));
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
         return toggleButton;

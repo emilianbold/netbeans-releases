@@ -370,6 +370,10 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             Exceptions.printStackTrace(e);
             return ;
         }
+        if (rp == null) {
+            // Debugger is finishing
+            return ;
+        }
         rp.post(new Runnable() {
             public void run() {
                 String frame = null;
@@ -683,19 +687,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         private Reference<JPDAThread> tr;
         // currently waiting / running refresh task
         // there is at most one
-        private RequestProcessor rp;
         private RequestProcessor.Task task;
         private boolean shouldExpand = false;
         
         public ThreadStateUpdater(JPDAThread t) {
             this.tr = new WeakReference(t);
-            try {
-                JPDADebugger debugger = (JPDADebugger) t.getClass().getMethod("getDebugger").invoke(t);
-                Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
-                rp = s.lookupFirst(null, RequestProcessor.class);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
             ((Customizer) t).addPropertyChangeListener(WeakListeners.propertyChange(this, t));
         }
 
