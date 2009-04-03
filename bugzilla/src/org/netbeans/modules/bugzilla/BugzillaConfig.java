@@ -56,13 +56,13 @@ import org.openide.util.NbPreferences;
 public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
-    private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from"; // XXX
-    private static final String REPO_NAME           = "bugzilla.repository_";
-    private static final String QUERY_NAME          = "bugzilla.query_";
-    private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";
-    private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";
-    private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";
-    private static final String DELIMITER           = "<=>";
+    private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
+    private static final String REPO_NAME           = "bugzilla.repository_";           // NOI18N
+    private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
+    private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
+    private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
+    private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
+    private static final String DELIMITER           = "<=>";                            // NOI18N
 
     private BugzillaConfig() { }
 
@@ -152,8 +152,8 @@ public class BugzillaConfig {
     }
 
     public BugzillaRepository getRepository(String repoName) {
-        String repoString = getPreferences().get(REPO_NAME + repoName, "");
-        if(repoString.equals("")) {
+        String repoString = getPreferences().get(REPO_NAME + repoName, "");     // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
@@ -208,6 +208,6 @@ public class BugzillaConfig {
     }
 
     public String getLastChangeFrom() {
-        return getPreferences().get(LAST_CHANGE_FROM, "");
+        return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
     }
 }

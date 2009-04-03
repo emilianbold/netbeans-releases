@@ -74,8 +74,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         try {
             KenaiFeature[] features = project.getFeatures(Type.ISSUES);
             for (KenaiFeature f : features) {
-                if (!f.getName().equals("bz") &&
-                        !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
+                if (!f.getName().equals("bz") &&   // NOI18N
+                        !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505 // NOI18N
                 {
                     return null;
                 }
@@ -87,7 +87,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     return null;
                 }
                 String url = location.substring(0, idx);
-                if (url.startsWith("http:")) { // XXX hack???                    // NOI18N
+                if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
                     url = "https" + url.substring(4);                           // NOI18N
                 }
                 String productParamUrl = null;
@@ -133,8 +133,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 user = KenaiUtil.getKenaiUser();
                 psswd = KenaiUtil.getKenaiPassword();
             } else {
-                user = "";                                                      
-                psswd = "";
+                user = "";                                                      // NOI18N
+                psswd = "";                                                     // NOI18N
             }
 
             for (KenaiRepository kr : repos) {

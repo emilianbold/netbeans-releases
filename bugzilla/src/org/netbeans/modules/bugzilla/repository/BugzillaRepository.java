@@ -102,10 +102,10 @@ public class BugzillaRepository extends Repository {
         this();
         name = repoName;
         if(user == null) {
-            user = "";
+            user = "";                                                          // NOI18N
         }
         if(password == null) {
-            password = "";
+            password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
@@ -181,22 +181,22 @@ public class BugzillaRepository extends Repository {
 
     public String getUsername() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c != null ? c.getUserName() : "";
+        return c != null ? c.getUserName() : ""; // NOI18N
     }
 
     public String getPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c != null ? c.getPassword() : "";
+        return c != null ? c.getPassword() : ""; // NOI18N
     }
 
     public String getHttpUsername() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
-        return c != null ? c.getUserName() : "";
+        return c != null ? c.getUserName() : ""; // NOI18N
     }
 
     public String getHttpPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
-        return c != null ? c.getPassword() : "";
+        return c != null ? c.getPassword() : ""; // NOI18N
     }
 
     public Issue getIssue(final String id) {
@@ -392,10 +392,10 @@ public class BugzillaRepository extends Repository {
                         ids = new HashSet<String>(issuesToRefresh);
                     }
                     if(ids.size() == 0) {
-                        Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {name});
+                        Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {name}); // NOI18N
                         return;
                     }
-                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids});
+                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
                     GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(BugzillaRepository.this, ids, new IssuesCollector());
                     getExecutor().execute(cmd);
                     scheduleIssueRefresh();
@@ -414,11 +414,11 @@ public class BugzillaRepository extends Repository {
                         queries = new HashSet<BugzillaQuery>(queriesToRefresh);
                     }
                     if(queries.size() == 0) {
-                        Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name});
+                        Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
                         return;
                     }
                     for (BugzillaQuery q : queries) {
-                        Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name});
+                        Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
                         QueryController qc = q.getController();
                         qc.onRefresh();
                     }
@@ -432,18 +432,18 @@ public class BugzillaRepository extends Repository {
 
     private void scheduleIssueRefresh() {
         int delay = BugzillaConfig.getInstance().getIssueRefreshInterval();
-        Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay});
+        Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
         refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     private void scheduleQueryRefresh() {
         int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
-        Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay});
+        Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     public void scheduleForRefresh(String id) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, name});
+        Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, name}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.add(id);
         }
@@ -451,14 +451,14 @@ public class BugzillaRepository extends Repository {
     }
 
     public void stopRefreshing(String id) {
-        Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, name});
+        Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, name}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.remove(id);
         }
     }
 
     public void scheduleForRefresh(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), name});
+        Bugzilla.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), name}); // NOI18N
         synchronized(queriesToRefresh) {
             queriesToRefresh.add(query);
         }
@@ -466,7 +466,7 @@ public class BugzillaRepository extends Repository {
     }
 
     public void stopRefreshing(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), name});
+        Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), name}); // NOI18N
         synchronized(queriesToRefresh) {
             queriesToRefresh.remove(query);
         }
@@ -475,7 +475,7 @@ public class BugzillaRepository extends Repository {
     private class IssuesCollector extends TaskDataCollector {
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
-            Bugzilla.LOG.log(Level.FINE, "refreshed issue {0} - {1}", new Object[] {name, id});
+            Bugzilla.LOG.log(Level.FINE, "refreshed issue {0} - {1}", new Object[] {name, id}); // NOI18N
             try {
                 getIssueCache().setIssueData(id, taskData);
             } catch (IOException ex) {
@@ -487,7 +487,7 @@ public class BugzillaRepository extends Repository {
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + name);
+            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + name); // NOI18N
         }
         return refreshProcessor;
     }
