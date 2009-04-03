@@ -51,11 +51,11 @@ import org.netbeans.modules.visualweb.ejb.actions.ExportAllEjbDataSourcesAction;
 import org.netbeans.modules.visualweb.ejb.actions.ImportEjbDataSourceAction;
 import java.awt.Image;
 import javax.swing.Action;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -65,14 +65,19 @@ import org.openide.util.actions.SystemAction;
  *
  * @author cao
  */
-
+@ServicesTabNodeRegistration(
+    name="visualweb-ejb",
+    displayName="#ENTERPRISE_JAVA_BEANS",
+    shortDescription="#ENTERPRISE_JAVA_BEANS_SHORT_DESC",
+    iconResource="org/netbeans/modules/visualweb/ejb/resources/ejb_modul_project.png",
+    position=300)
 public class EjbRootNode extends AbstractNode {
     
     public EjbRootNode() {
         super( new EjbRootNodeChildren() );
         
         // Set FeatureDescriptor stuff:
-        setName( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS") );
+        setName("visualweb-ejb"); // NOI18N
         setDisplayName( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS") );
         setShortDescription( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS_SHORT_DESC") );
     }
