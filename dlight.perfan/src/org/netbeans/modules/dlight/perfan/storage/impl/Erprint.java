@@ -107,7 +107,7 @@ public final class Erprint {
         if (log.isLoggable(Level.FINEST)) {
             descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
         }
-        
+
         descr = descr.outProcessorFactory(new InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -272,11 +272,11 @@ public final class Erprint {
     }
 
     private static class FilteredInputProcessor implements InputProcessor {
-        // Buffer must be synchronized, because it could be accessed
+        // Buffer must be synchronized, because it caould be accessed
         // from several threads (example: one thread - onTimer, another one -
         // user clicks on indicator)
         // The problem may appear when one thread gets buffer, while another one
-        // cleans it... 
+        // cleans it...
 
         private final Object lock = new String(FilteredInputProcessor.class.getName());
         private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
@@ -351,7 +351,7 @@ public final class Erprint {
             buffer.clear();
             this.doneSignal = doneSignal;
             // null - a special case. This means that er_print process has
-            // changed. So, prompt will be fetched again.... 
+            // changed. So, prompt will be fetched again....
             if (doneSignal == null) {
                 prompt = null;
             }

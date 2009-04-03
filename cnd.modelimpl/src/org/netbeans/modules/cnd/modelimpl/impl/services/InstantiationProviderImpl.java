@@ -112,7 +112,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return Instantiation.getInstantiatedText(type);
     }
 
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, Resolver resolver) {
+    private CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, Resolver resolver) {
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
             // check that all params are resolved
@@ -198,7 +198,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 }
             }
-            if (specialization == null && classifier instanceof ForwardClass) {
+            if (specialization == null && isClassForward(classifier)) {
                 // try to find specialization of class forward
                 CsmClass cls = (CsmClass) classifier;
                 CsmProject proj = contextFile.getProject();
@@ -241,7 +241,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
         // TODO : update
 
-        CsmClassifier bestSpecialization = cls;
+        CsmClassifier bestSpecialization = null;
        
         if (!specializations.isEmpty()) {
             int bestMatch = 0;
@@ -356,6 +356,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             iteration--;
         }
         return false;
+    }
+
+    private boolean isClassForward(CsmClassifier cls) {
+        while (CsmKindUtilities.isInstantiation(cls)) {
+            CsmOffsetableDeclaration decl = ((CsmInstantiation) cls).getTemplateDeclaration();
+            if (CsmKindUtilities.isClassifier(cls)) {
+                cls = (CsmClassifier) decl;
+            } else {
+                break;
+            }
+        }
+        return ForwardClass.isForwardClass(cls);
     }
 
     @Override
