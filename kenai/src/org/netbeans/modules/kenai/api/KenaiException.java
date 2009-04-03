@@ -60,11 +60,11 @@ public class KenaiException extends IOException {
     }
 
     public KenaiException(Throwable cause) {
-        super(cause);
+        super();
     }
 
     public KenaiException(String message, Throwable cause, String errorResponse) {
-        super(message, cause);
+        super(message);
         this.errorResponse = errorResponse;
     }
 
