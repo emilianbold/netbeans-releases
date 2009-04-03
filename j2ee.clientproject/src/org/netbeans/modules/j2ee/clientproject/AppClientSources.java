@@ -54,6 +54,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -70,20 +71,18 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private static final String BUILD_DIR_PROP = "${" + AppClientProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + AppClientProjectProperties.DIST_DIR + "}";    //NOI18N
 
+    private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private SourcesHelper sourcesHelper;
     private Sources delegate;
-    /**
-     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
-     **/
-    private boolean externalRootsRegistered;    
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
-    AppClientSources(AntProjectHelper helper, PropertyEvaluator evaluator,
+    AppClientSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
+        this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
@@ -118,7 +117,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     }
 
     private Sources initSources() {        
-        sourcesHelper = new SourcesHelper(helper, evaluator);
+        sourcesHelper = new SourcesHelper(project, helper, evaluator);
         register(sourceRoots);
         register(testRoots);
         
@@ -129,15 +128,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
         sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
         sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
 

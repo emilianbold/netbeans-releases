@@ -309,16 +309,23 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * other than TableModelEvent.UPDATE - the ProxyTableModel should never,
      * ever fire structural changes - only the tree model is allowed to do
      * that. */
-    public void tableChanged(TableModelEvent e) {
-        assert SwingUtilities.isEventDispatchThread();
+    public void tableChanged(final TableModelEvent e) {
         //The *ONLY* time we should see events here is due to user
         //data entry.  The ProxyTableModel should never change out
         //from under us - all structural changes happen through the
         //table model.
         assert (e.getType() == TableModelEvent.UPDATE) : "Table model should only fire " +
             "updates, never structural changes";
-        
-        fireTableChange (translateEvent(e));
+
+        if( SwingUtilities.isEventDispatchThread() ) {
+            fireTableChange (translateEvent(e));
+        } else {
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    tableChanged(e);
+                }
+            });
+        }
     }
     
     /** Process a change event from the user-supplied tree model.

@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -159,6 +160,10 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
                 File jar = project.getHelper().resolveFile(pieces[i]);
                 Project owner = FileOwnerQuery.getOwner(jar.toURI());
                 if (owner != null) {
+                    if (ProjectUtils.getInformation(owner).getName().equals("org.netbeans.modules.apisupport.harness")) {
+                        // cp.extra=${nb_all}/apisupport.harness/external/openjdk-javac-6-b12.jar is not a real dep
+                        continue;
+                    }
                     s.add(owner);
                 }
             }
