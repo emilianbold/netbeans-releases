@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -114,7 +114,7 @@ public enum RhtmlTokenId implements TokenId {
                                   LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case HTML:
-                    return LanguageEmbedding.create(HtmlTokenId.language(), 0, 0, true);
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case RUBY_EXPR:
                 case RUBY:
                     return LanguageEmbedding.create(RubyTokenId.language(), 0, 0, false);

@@ -44,7 +44,7 @@ package org.netbeans.api.jsp.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -135,7 +135,7 @@ public enum JspTokenId implements TokenId {
         Token<JspTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:
-                    return LanguageEmbedding.create(HtmlTokenId.language(), 0, 0, true);
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case EL:
                     //lexer infrastructure workaround - need to adjust skiplenghts in case of short token
                     int startSkipLength = token.length() > 2 ? 2 : token.length();
