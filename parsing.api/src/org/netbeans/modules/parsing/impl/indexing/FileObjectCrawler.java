@@ -48,7 +48,6 @@ import java.util.Set;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -78,27 +77,32 @@ public class FileObjectCrawler extends Crawler {
     protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
         if (files != null) {
-            collect (files, root, result, supportedMimeTypes, supportedMimeTypes.toArray(new String[supportedMimeTypes.size()]));
+            collect(files, root, result, supportedMimeTypes);
         } else {
-            collect (root.getChildren(), root, result, supportedMimeTypes, supportedMimeTypes.toArray(new String[supportedMimeTypes.size()]));
+            collect(root.getChildren(), root, result, supportedMimeTypes);
         }
         return result;
     }
 
     private void collect (FileObject[] fos, FileObject root,
             final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes,
-            final String [] supportedMimeTypesAsArray) {
+            final Set<? extends String> supportedMimeTypes) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
             if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
                 continue;
             }
             if (fo.isFolder()) {
-                collect(fo.getChildren(), root, cache, supportedMimeTypes, supportedMimeTypesAsArray);
+                collect(fo.getChildren(), root, cache, supportedMimeTypes);
             } else {
-                final String mime = FileUtil.getMIMEType(fo, supportedMimeTypesAsArray);
-                if (mime != null && supportedMimeTypes.contains(mime)) {
+                final String mime = fo.getMIMEType();
+                boolean ignore = "content/unknown".equals(mime); //NOI18N
+
+                if (!ignore && supportedMimeTypes != null) {
+                    ignore = !supportedMimeTypes.contains(mime);
+                }
+
+                if (!ignore) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
                         indexable = new LinkedList<Indexable>();

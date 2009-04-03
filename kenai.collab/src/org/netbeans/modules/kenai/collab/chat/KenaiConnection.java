@@ -312,7 +312,11 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiProject prj) {
-         return prj.getFeatures(KenaiService.Type.CHAT)[0].getName();
+        try {
+            return prj.getFeatures(KenaiService.Type.CHAT)[0].getName();
+        } catch (KenaiException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     //TODO: my projects does not work so far

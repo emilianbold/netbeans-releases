@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -70,7 +71,6 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
     public JavadocForBinaryQueryPlatformImplTest(java.lang.String testName) {
         super(testName);
         MockLookup.setInstances(
-                new JavaPlatformProviderImpl(),
                 new ArchiveURLMapper(),
                 new JavadocForBinaryQueryPlatformImpl(),
                 new MasterURLMapper());
@@ -90,18 +90,10 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         return dir;
     }
 
-    @RandomlyFails
+
     public void testQuery() throws Exception {
         JavaPlatform platform = JavaPlatform.getDefault();
-        
         ClassPath cp = platform.getBootstrapLibraries();
-        ClassPath.Entry entry = cp.entries().iterator().next();
-        URL url = entry.getURL();
-        if (FileUtil.getArchiveFile(url) != null) {
-            url = FileUtil.getArchiveFile(url);
-        }
-        File root = new File(url.getFile());
-        
         FileObject pfo = cp.getRoots()[0];
         URL u = URLMapper.findURL(pfo, URLMapper.EXTERNAL);
         URL urls[] = JavadocForBinaryQuery.findJavadoc(u).getRoots();
