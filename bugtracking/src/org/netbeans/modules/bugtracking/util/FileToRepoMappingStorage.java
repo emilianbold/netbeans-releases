@@ -55,7 +55,7 @@ import static java.util.logging.Level.WARNING;
  *
  * @author Marian Petras
  */
-public class FileToRepoMappingStorage {
+class FileToRepoMappingStorage {
 
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage"); //NOI18N
 
