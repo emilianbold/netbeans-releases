@@ -84,6 +84,7 @@ import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.EnhancedFix;
@@ -184,7 +185,10 @@ public class HintsTestBase extends NbTestCase {
 //        FileObject cache = workFO.createFolder("cache");
         
         packageRoot = FileUtil.createFolder(sourceRoot, DATA_EXTENSION);
-        
+
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
+                    new JavaCustomIndexer.Factory()});
+
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
         
         String testPackagePath = testDataExtension();

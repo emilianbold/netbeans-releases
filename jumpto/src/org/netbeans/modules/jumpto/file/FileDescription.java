@@ -51,8 +51,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -67,18 +65,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** Contains interesting information about file found in the search.
  *
@@ -86,15 +79,13 @@ import org.openide.util.Utilities;
  */
 public class FileDescription {
 
-    static long time;
+//    static long time;
     
     public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileDescription.class, "TXT_SearchingOtherProjects"); // NOI18N
     
-    private File file; // The file 
-    private Project project; // Project the file belongs to
-    private SourceGroup sourceGroup; // The source group
-    
-    private FileObject fileObject;
+    private final FileObject fileObject;
+    private final String relativePath;
+    private final Project project; // Project the file belongs to
     
     private Icon icon;
     private String projectName;
@@ -103,15 +94,15 @@ public class FileDescription {
     
     private static final String EMPTY_STRING = ""; // NOI18N
     
-    public FileDescription(File file, Project project, SourceGroup sourceGroup, boolean prefered) {
-        this.file = file;
+    public FileDescription(FileObject file, String relativePath, Project project, boolean prefered) {
+        this.fileObject = file;
+        this.relativePath = relativePath;
         this.project = project;
-        this.sourceGroup = sourceGroup;
         this.prefered = prefered;
     }
        
     public String getName() {
-        return file.getName(); // NOI18N
+        return fileObject.getNameExt(); // NOI18N
     }
     
     public synchronized Icon getIcon() {
@@ -126,7 +117,7 @@ public class FileDescription {
     }
     
     public String getRelativePath() {
-        return " (" + FileUtil.getRelativePath(sourceGroup.getRootFolder(), getFileObject().getParent() ) + ")";
+        return relativePath;
     }
     
     public synchronized String getProjectName() {
@@ -143,39 +134,39 @@ public class FileDescription {
         return projectIcon;
     }
     
-    public synchronized boolean isVisible() {
-        
-        long t = System.currentTimeMillis();
-        
-        if ( fileObject == null ) {
-            fileObject = FileUtil.toFileObject(file);
-        }
-        boolean visible = fileObject == null ? false : VisibilityQuery.getDefault().isVisible(fileObject);
-        if ( !visible ) {
-            addTime( t ); 
-            return false;
-        }
-        
-        // XXX PERF needs to cache parents.        
-        while( fileObject.getParent() != null ) {
-            fileObject = fileObject.getParent();
-            if ( fileObject.equals(sourceGroup.getRootFolder() ) ) {
-                addTime( t );
-                return true;
-            }
-            if ( !VisibilityQuery.getDefault().isVisible(fileObject)  ) {
-                addTime( t );
-                return false;
-            }
-        }
-        addTime( t );
-        return true;
-    }
-    
-    private void addTime( long t ) {
-//        time += System.currentTimeMillis() - t;
-//        System.out.println("isVisible time " + time);
-    }
+//    public synchronized boolean isVisible() {
+//
+//        long t = System.currentTimeMillis();
+//
+//        if ( fileObject == null ) {
+//            fileObject = FileUtil.toFileObject(file);
+//        }
+//        boolean visible = fileObject == null ? false : VisibilityQuery.getDefault().isVisible(fileObject);
+//        if ( !visible ) {
+//            addTime( t );
+//            return false;
+//        }
+//
+//        // XXX PERF needs to cache parents.
+//        while( fileObject.getParent() != null ) {
+//            fileObject = fileObject.getParent();
+//            if ( fileObject.equals(sourceGroup.getRootFolder() ) ) {
+//                addTime( t );
+//                return true;
+//            }
+//            if ( !VisibilityQuery.getDefault().isVisible(fileObject)  ) {
+//                addTime( t );
+//                return false;
+//            }
+//        }
+//        addTime( t );
+//        return true;
+//    }
+//
+//    private void addTime( long t ) {
+////        time += System.currentTimeMillis() - t;
+////        System.out.println("isVisible time " + time);
+//    }
     
     public void open() {
         
@@ -199,7 +190,7 @@ public class FileDescription {
     }
     
     public FileObject getFileObject() {        
-        return FileUtil.toFileObject(file);        
+        return fileObject;
     }
     
     private DataObject getDataObject() {
@@ -243,7 +234,7 @@ public class FileDescription {
             }
             
             // File name
-            int cmpr = compareStrings( o1.file.getName(), o2.file.getName(), caseSensitive );            
+            int cmpr = compareStrings( o1.getName(), o2.getName(), caseSensitive );
             if ( cmpr != 0 ) {
                 return cmpr;
             }
@@ -255,7 +246,7 @@ public class FileDescription {
             }
             
             // Relative location
-            cmpr = compareStrings( o1.file.getPath(), o2.file.getPath(), caseSensitive );            
+            cmpr = compareStrings( o1.getRelativePath(), o2.getRelativePath(), caseSensitive );
                         
             return cmpr;
            
@@ -357,7 +348,7 @@ public class FileDescription {
                                     Math.abs(bgColorDarker.getBlue() - 35) );
         }
         
-        public Component getListCellRendererComponent( JList list,
+        public @Override Component getListCellRendererComponent( JList list,
                                                        Object value,
                                                        int index,
                                                        boolean isSelected,
@@ -395,7 +386,7 @@ public class FileDescription {
                 jlName.setText(fd.getName());
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
-                jlPath.setText(fd.getRelativePath());
+                jlPath.setText(fd.getRelativePath().length() > 0 ? " (" + fd.getRelativePath() + ")" : " ()"); //NOI18N
                 jlPrj.setText(fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
                 if ( !isSelected ) {

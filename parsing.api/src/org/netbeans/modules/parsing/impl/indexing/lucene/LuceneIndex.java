@@ -277,7 +277,7 @@ public class LuceneIndex implements IndexImpl {
     private volatile IndexReader reader; //Cache, do not use this directly, use getReader
     private volatile boolean closed;
 
-    private final LMListener lmListener = new LMListener();
+    private static final LMListener lmListener = new LMListener();
 
     //@GuardedBy (this)
     private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
