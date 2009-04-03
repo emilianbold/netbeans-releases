@@ -103,14 +103,6 @@ public class CompletionUtilities {
         return CsmContextUtilities.findFileLocalVariables(context);
     }
 
-    public static List<CsmVariable> findGlobalVariables(Document doc, int offset) {
-        CsmProject prj = CsmUtilities.getCsmProject(doc);
-        if (prj == null) {
-            return null;
-        }
-        return CsmContextUtilities.findGlobalVariables(prj);
-    }
-
     // TODO: think if we need it?
     public static CsmClass findClassOnPosition(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
@@ -158,7 +150,7 @@ public class CompletionUtilities {
 
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false);
+                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false, false);
                 if (result != null && result.getItems().size() > 0) {
                     List<CsmObject> filter = getAssociatedObjects(result.getItems(), searchFuncsOnly);
                     CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getItems().get(0));
@@ -166,7 +158,7 @@ public class CompletionUtilities {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind] - 1);
                         if (endOfMethod > -1) {
-                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false);
+                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
                             if (resultx != null && resultx.getItems().size() > 0) {
                                 return getAssociatedObject(resultx.getItems().get(0));
                             }

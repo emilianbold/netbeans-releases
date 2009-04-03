@@ -61,7 +61,7 @@ public final class AutosTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "AutosTopComponent";
+    private static final String PREFERRED_ID = "AutosTopComponent"; // NOI18N
 
     private final AutosTableModel model = new AutosTableModel();
 
@@ -119,15 +119,15 @@ public final class AutosTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(AutosTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof AutosTopComponent) {
             return (AutosTopComponent)win;
         }
         Logger.getLogger(AutosTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID +  // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior.");  // NOI18N
         return getDefault();
     }
 
@@ -163,7 +163,7 @@ public final class AutosTopComponent extends TopComponent {
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return "1";
+            return "1";  // NOI18N
         }
     }
 
@@ -185,7 +185,7 @@ public final class AutosTopComponent extends TopComponent {
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0");  // NOI18N
         // TODO store your settings
     }
     Object readProperties(java.util.Properties p) {

@@ -101,18 +101,9 @@ public class BasicTest extends JellyTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        System.out.println("Found " + sessions.length + " running debugger sessions.");
-        for (Session session : sessions) {
-            System.out.println("Warning: killing dbg session: " + session);
-            session.kill();
-        }
     }
-
-
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
-
 
     /** Test Ruby Application
      * - open new project wizard
@@ -219,6 +210,17 @@ public class BasicTest extends JellyTestCase {
         });
         if (finishDebugSessionButton.isShowing()) {
             finishDebugSessionButton.waitComponentShowing(false);
+        }
+    }
+
+    /** Test kill outstanding debugger sessions
+     */
+    public void testKillOutstandingSessions() throws Exception {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        System.out.println("Found " + sessions.length + " outstanding debugger sessions.");
+        for (Session session : sessions) {
+            System.out.println("WARNING: killing dbg session: " + session);
+            session.kill();
         }
     }
 }

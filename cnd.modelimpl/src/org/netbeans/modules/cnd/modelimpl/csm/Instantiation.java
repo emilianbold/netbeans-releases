@@ -814,7 +814,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
 
-    private static class Type implements CsmType, Resolver.SafeClassifierProvider, SafeTemplateBasedProvider {
+    private static class Type implements CsmType, Resolver.SafeClassifierProvider, Resolver.SafeTemplateBasedProvider {
         protected final CsmType originalType;
         protected final CsmInstantiation instantiation;
         protected final CsmType instantiatedType;
@@ -876,9 +876,31 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return instantiatedType.getClassifierText().toString() + TypeImpl.getInstantiationText(this);
         }
 
+        private CharSequence getInstantiatedText() {
+            return getTextImpl(true);
+        }
+
         public CharSequence getText() {
+            return getTextImpl(false);
+        }
+        
+        private CharSequence getTextImpl(boolean instantiate) {
             if (originalType instanceof TypeImpl) {
-                return ((TypeImpl)originalType).decorateText(getClassifierText(), this, false, null);
+                // try to instantiate original classifier
+                CsmClassifier classifier = null;
+                if (instantiate) {
+                    classifier = getClassifier();
+                    if (classifier != null) {
+                        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, getContainingFile());
+                    }
+                }
+                CharSequence clsText;
+                if (classifier == null || CsmKindUtilities.isInstantiation(classifier)) {
+                    clsText = getClassifierText();
+                } else {
+                    clsText = classifier.getName();
+                }
+                return ((TypeImpl)originalType).decorateText( clsText, this, false, null);
             }
             if (originalType instanceof NestedType) {
                 return ((NestedType)originalType).getOwnText();
@@ -965,15 +987,27 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isReference() {
-            return originalType.isReference() || instantiatedType.isReference();
+            if(originalType != instantiatedType) {
+                return originalType.isReference() || instantiatedType.isReference();
+            } else {
+                return originalType.isReference();
+            }
         }
 
         public boolean isPointer() {
-            return originalType.isPointer() || instantiatedType.isPointer();
+            if(originalType != instantiatedType) {
+                return originalType.isPointer() || instantiatedType.isPointer();
+            } else {
+                return originalType.isPointer();
+            }
         }
 
         public boolean isConst() {
-            return originalType.isConst() || instantiatedType.isConst();
+            if(originalType != instantiatedType) {
+                return originalType.isConst() || instantiatedType.isConst();
+            } else {
+                return originalType.isConst();
+            }
         }
 
         public boolean isBuiltInBased(boolean resolveTypeChain) {
@@ -1188,6 +1222,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public InstantiationUID(DataInput input) throws IOException {
             this.ref = null;
+        }
+    }
+
+    public static CharSequence getInstantiatedText(CsmType type) {
+        if (type instanceof Type) {
+            return ((Type)type).getInstantiatedText();
+        } else {
+            return type.getText();
         }
     }
 

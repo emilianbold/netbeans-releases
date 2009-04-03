@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
+import java.awt.Cursor;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
@@ -174,6 +175,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     private void initMouseListener() {
         final JComponent component = getComponent();
+        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 

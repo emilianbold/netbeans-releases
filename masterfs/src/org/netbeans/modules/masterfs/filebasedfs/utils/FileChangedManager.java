@@ -93,12 +93,6 @@ public class FileChangedManager extends SecurityManager {
         return retval;
     }    
 
-    public void setExists(FileInfo fileInfo) {
-        Integer id = fileInfo.getID();
-        remove(id);
-        put(id, fileInfo.exists());
-    }
-
     public boolean exists(File file) {
         boolean retval = file.exists();
         Integer id = getKey(file);

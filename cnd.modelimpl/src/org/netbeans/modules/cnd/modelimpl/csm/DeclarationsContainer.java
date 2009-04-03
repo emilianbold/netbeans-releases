@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
- * @author  marek.fukala@sun.com
+ *
+ * @author Vladimir Voskresensky
  */
-public class CssLexerTest extends TestBase {
-
-    public CssLexerTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
-    }
-
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
-                CssTokenId.language());
-    }
-
+public interface DeclarationsContainer {
+    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name);
 }

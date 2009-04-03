@@ -78,11 +78,13 @@ public enum CssTokenId implements TokenId {
      * rgb
      * identifier
      * function
-     * whitespace_comment
+     * whitespace
+     * comment
      */
     
     EOF("default"),
-    S("whitespace_comment"),
+    S("whitespace"),
+    COMMENT("comment"),
     MSE("ms_expression"),
     LBRACE("brace"),
     RBRACE("brace"),
@@ -104,8 +106,8 @@ public enum CssTokenId implements TokenId {
     URL("url"),
     URI("url"),
     GENERATED("default"),
-    CDO("whitespace_comment"),
-    CDC("whitespace_comment"),
+    CDO("whitespace"),
+    CDC("whitespace"),
     INCLUDES("operator"),
     DASHMATCH("operator"),
     IMPORT_SYM("keyword"),

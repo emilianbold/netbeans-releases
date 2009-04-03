@@ -47,13 +47,21 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,13 +71,21 @@ import org.openide.filesystems.FileObject;
 public abstract class AstElement extends GroovyElement {
 
     protected final ASTNode node;
+
+    protected final GroovyParserResult info;
+
     protected List<AstElement> children;
+
     protected String name;
+
     protected Set<Modifier> modifiers;
+
     protected String in;
+
     protected String signature;
     
-    public AstElement(ASTNode node) {
+    public AstElement(GroovyParserResult info, ASTNode node) {
+        this.info = info;
         this.node = node;
     }
     
@@ -166,15 +182,19 @@ public abstract class AstElement extends GroovyElement {
     public FileObject getFileObject() {
         return null;
     }
-    
+
+    public GroovyParserResult getParseResult() {
+        return info;
+    }
+
     public String getMimeType() {
         return GroovyTokenId.GROOVY_MIME_TYPE;
     }
     
 
-    public static AstElement create(ASTNode node) {
+    public static AstElement create(GroovyParserResult info, ASTNode node) {
         if (node instanceof MethodNode) {
-            return new AstMethodElement(node);
+            return new AstMethodElement(info, node);
         }
         return null;
     }
@@ -184,4 +204,42 @@ public abstract class AstElement extends GroovyElement {
         return getKind() + "<" + getName() + ">";
     }
 
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        GroovyParserResult parserResult = AstUtilities.getParseResult(result);
+        // FIXME resolve handle
+        Element object = ElementHandleSupport.resolveHandle(parserResult, ElementHandleSupport.createHandle(result, this));
+
+        if (object instanceof AstElement) {
+             BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
+             if (doc != null) {
+                AstElement astElement = (AstElement) object;
+                OffsetRange range = AstUtilities.getRange(astElement.getNode(), doc);
+                return LexUtilities.getLexerOffsets(parserResult, range);
+             }
+             return OffsetRange.NONE;
+        } else if (object != null) {
+            Logger logger = Logger.getLogger(AstElement.class.getName());
+            logger.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
+        } else {
+            if (getNode() != null) {
+                BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
+                if (doc != null) {
+                    OffsetRange astRange = AstUtilities.getRange(getNode(), doc);
+                    if (astRange != OffsetRange.NONE) {
+                        GroovyParserResult oldInfo = info;
+                        if (oldInfo == null) {
+                            oldInfo = parserResult;
+                        }
+                        return LexUtilities.getLexerOffsets(oldInfo, astRange);
+                    } else {
+                        return OffsetRange.NONE;
+                    }
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
 }

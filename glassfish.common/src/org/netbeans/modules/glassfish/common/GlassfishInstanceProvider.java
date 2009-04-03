@@ -54,6 +54,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -83,7 +84,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         new String[] {"/GlassFishEE6/Instances"},
                         "GlassFish v3", "org.glassfish.v3ee6.installRoot",
                         "GlassFish v3 Domain",
-                        "Presonal GlassFish v3 Domain",
+                        "Personal GlassFish v3 Domain",
                         "GlassFish_v3", "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",
                         "last-v3ee6-install-root",
@@ -118,7 +119,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             singleton = new GlassfishInstanceProvider(uriFragments, instanceDirs,
                     "GlassFish v3 Prelude", "org.glassfish.v3.installRoot",
                         "GlassFish v3 Prelude Domain",
-                        "Presonal GlassFish v3 Prelude Domain",
+                        "Personal GlassFish v3 Prelude Domain",
                         "GlassFish_v3_Prelude", "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
                         "last-install-root", new String[0],
@@ -576,7 +577,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                 f.getCanonicalPath());
                         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
                                 f.getCanonicalPath() + File.separator + "glassfish");
-                        if (f.canWrite()) {
+                        if (Utils.canWrite(f)) { // f.canWrite()) {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultDomainName);
                             ip.put(GlassfishModule.HTTPPORT_ATTR,
                                     Integer.toString(8080));

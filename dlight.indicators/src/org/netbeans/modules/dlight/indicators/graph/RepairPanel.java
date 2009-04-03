@@ -47,6 +47,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -61,15 +62,15 @@ public class RepairPanel extends JPanel {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
-        label = new JLabel("<html><center>Indicator needs special access rights. To fix the problem click</center></html>");
+        label = new JLabel("<html><center>" + NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text") + "</center></html>");//NOI18N
         label.setAlignmentX(0.5f);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.TOP);
         label.setForeground(GraphConfig.TEXT_COLOR);
-        label.setToolTipText("Indicator needs special access rights. To fix the problem click \"Repair\" button");
+        label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text")));//NOI18N
         add(label);
         add(Box.createVerticalStrut(MARGIN));
-        button = new JButton("Repair...");
+        button = new JButton(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text"));//NOI18N
         button.setAlignmentX(0.5f);
         button.addActionListener(action);
         add(button);

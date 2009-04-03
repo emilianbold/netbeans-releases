@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
  * Common for FileImpl and NamespaceImpl
  * @author Vladimir Kvasihn
  */
-public interface MutableDeclarationsContainer extends CsmObject {
+public interface MutableDeclarationsContainer extends CsmObject, DeclarationsContainer {
 
     void addDeclaration(CsmOffsetableDeclaration declaration);
 
