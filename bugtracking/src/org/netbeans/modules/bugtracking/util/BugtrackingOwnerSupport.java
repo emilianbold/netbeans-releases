@@ -84,7 +84,8 @@ public class BugtrackingOwnerSupport {
     public enum ContextType {
         MAIN_PROJECT_ONLY,
         MAIN_OR_SINGLE_PROJECT,
-        ALL_PROJECTS
+        ALL_PROJECTS,
+        SELECTED_FILE_AND_ALL_PROJECTS,
     }
 
     public Repository getRepository(ContextType context) {
@@ -105,6 +106,9 @@ public class BugtrackingOwnerSupport {
                 break;
             case ALL_PROJECTS:
                 return getRepository(projects.getOpenProjects());
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                return getRepositoryForContext(BugtrackingUtil.getLargerContext(),
+                                               false);
             default:
                 assert false;
                 break;
@@ -200,6 +204,11 @@ public class BugtrackingOwnerSupport {
         return getRepositoryForContext(context, issueId, askIfUnknown);
     }
 
+    private Repository getRepositoryForContext(File context,
+                                               boolean askIfUnknown) {
+        return getRepositoryForContext(context, null, askIfUnknown);
+    }
+
     private Repository getRepositoryForContext(File context, String issueId,
                                                boolean askIfUnknown) {
         Repository repo;
@@ -284,10 +293,38 @@ public class BugtrackingOwnerSupport {
                : null;        //not a Kenai project repository
     }
 
-    public void setLooseAssociation(Project project, Repository repository) {
-        FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                BugtrackingUtil.getLargerContext(project),
-                repository);
+    public void setLooseAssociation(ContextType contextType, Repository repository) {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        File context = null;
+
+        switch (contextType) {
+            case MAIN_PROJECT_ONLY:
+                Project mainProject = projects.getMainProject();
+                if (mainProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainProject);
+                }
+                break;
+            case MAIN_OR_SINGLE_PROJECT:
+                Project mainOrSingleProject = getMainOrSingleProject();
+                if (mainOrSingleProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainOrSingleProject);
+                }
+                break;
+            case ALL_PROJECTS:
+                context = BugtrackingUtil.getContextFromProjects();
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                context = BugtrackingUtil.getLargerContext();
+            default:
+                assert false;
+                break;
+        }
+
+        if (context != null) {
+            FileToRepoMappingStorage.getInstance().setLooseAssociation(
+                    context,
+                    repository);
+        }
     }
 
     public void setLooseAssociation(File file, Repository repository) {

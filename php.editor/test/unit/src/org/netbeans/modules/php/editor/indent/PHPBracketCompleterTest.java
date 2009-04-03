@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.indent;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
@@ -77,7 +77,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         super.setUp();
 
         try {
-            TestLanguageProvider.register(HtmlTokenId.language());
+            TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }

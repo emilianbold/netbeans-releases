@@ -42,7 +42,7 @@
 package org.netbeans.editor.ext.html;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
@@ -79,7 +79,7 @@ public class HtmlLexerFormatter extends TagBasedLexerFormatter {
             JoinedTokenSequence.moveNext();
 	    Token token = JoinedTokenSequence.token();
                     
-	    if (token.id() == HtmlTokenId.TAG_CLOSE_SYMBOL &&
+	    if (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
 		    !token.text().toString().endsWith("/>")){ //NOI18N
 
                 while (JoinedTokenSequence.movePrevious()){
@@ -107,7 +107,7 @@ public class HtmlLexerFormatter extends TagBasedLexerFormatter {
         JoinedTokenSequence.moveNext();
         boolean thereAreMoreTokens = true;
         
-        while (thereAreMoreTokens && JoinedTokenSequence.token().id() != HtmlTokenId.TAG_CLOSE_SYMBOL){
+        while (thereAreMoreTokens && JoinedTokenSequence.token().id() != HTMLTokenId.TAG_CLOSE_SYMBOL){
             thereAreMoreTokens &= JoinedTokenSequence.moveNext();
         }
         
@@ -124,12 +124,12 @@ public class HtmlLexerFormatter extends TagBasedLexerFormatter {
     
     @Override protected boolean isClosingTag(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
         Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
-	return token != null && token.id() == HtmlTokenId.TAG_CLOSE;
+	return token != null && token.id() == HTMLTokenId.TAG_CLOSE;
     }
     
     @Override protected boolean isOpeningTag(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
         Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
-	return token != null && token.id() == HtmlTokenId.TAG_OPEN;
+	return token != null && token.id() == HTMLTokenId.TAG_OPEN;
     }
     
     @Override protected String extractTagName(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset){
@@ -148,7 +148,7 @@ public class HtmlLexerFormatter extends TagBasedLexerFormatter {
 	do{
 	    thereAreMoreTokens = JoinedTokenSequence.movePrevious();
 	}
-	while(thereAreMoreTokens && JoinedTokenSequence.token().id() != HtmlTokenId.TAG_OPEN_SYMBOL);
+	while(thereAreMoreTokens && JoinedTokenSequence.token().id() != HTMLTokenId.TAG_OPEN_SYMBOL);
 	
 	if (thereAreMoreTokens){
             int r = JoinedTokenSequence.offset();
@@ -184,7 +184,7 @@ public class HtmlLexerFormatter extends TagBasedLexerFormatter {
     @Override protected boolean isUnformattableToken(JoinedTokenSequence JoinedTokenSequence, int tagTokenOffset) {
 	Token token = getTokenAtOffset(JoinedTokenSequence, tagTokenOffset);
         
-	if (token.id() == HtmlTokenId.BLOCK_COMMENT){
+	if (token.id() == HTMLTokenId.BLOCK_COMMENT){
 	    return true;
 	}
 	
