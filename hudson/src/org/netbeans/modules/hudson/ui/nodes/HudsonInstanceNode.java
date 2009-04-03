@@ -85,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class HudsonInstanceNode extends AbstractNode {
     
-    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/instance.png";
+    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/instance.png"; // NOI18N
     
     private HudsonInstanceImpl instance;
     private InstanceNodeChildren children;
@@ -126,13 +126,14 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         boolean pers = instance.isPersisted();
-        return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") +
-                instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") +
-                (alive ? (version ? "" : " <font color=\"#A40000\">" +
+        return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") + // NOI18N
+                instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") + // NOI18N
+                (alive ? (version ? "" : " <font color=\"#A40000\">" + // NOI18N
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
-                HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
+                HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" + // NOI18N
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
-                (!pers ? " <font color='!controlShadow'>(from open project)</font>" : ""); // XXX I18N
+                (!pers ? " <font color='!controlShadow'>" + // NOI18N
+                NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.from_open_project") + "</font>" : "");
     }
     
     @Override
@@ -280,12 +281,12 @@ public class HudsonInstanceNode extends AbstractNode {
         public JMenuItem getPopupPresenter() {
             class Menu extends JMenu implements DynamicMenuContent {
                 {
-                    setText("View"); // XXX I18N
+                    setText(NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.view"));
                 }
                 public JComponent[] getMenuPresenters() {
                     removeAll();
                     String selectedView = instance.prefs().get(SELECTED_VIEW, null);
-                    JRadioButtonMenuItem item = new JRadioButtonMenuItem("All"); // XXX I18N
+                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.all_view"));
                     item.setSelected(selectedView == null);
                     item.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {

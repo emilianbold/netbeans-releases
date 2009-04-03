@@ -53,11 +53,14 @@ public class HyperlinkerTest extends NbTestCase {
         assertEquals("null", String.valueOf(logger.findHyperlink("some random text...")));
         assertEquals("pom.xml:4:-1:stupid error", String.valueOf(logger.findHyperlink("/hudson/work/jobs/myprj/workspace/pom.xml:5: stupid error")));
         assertEquals("src/X.java:-1:-1:uncompilable", String.valueOf(logger.findHyperlink("[javac] /w/jobs/myprj/workspace/src/X.java: warning: uncompilable")));
+        assertEquals("src/X.java:-1:-1:uncompilable", String.valueOf(logger.findHyperlink(
+                "  [javac] /w/jobs/myprj/workspace/src/X.java: warning: uncompilable")));
         assertEquals("src/main/java/p/C.java:17:19:[deprecation] toURL() in java.io.File has been deprecated",
                 String.valueOf(logger.findHyperlink("[WARNING] /w/jobs/myprj/workspace/src/main/java/p/C.java:[18,20] " +
                 "[deprecation] toURL() in java.io.File has been deprecated")));
         assertEquals("http://nowhere.net/", String.valueOf(logger.findHyperlink("http://nowhere.net/")));
         assertEquals("null", String.valueOf(logger.findHyperlink("see http://nowhere.net/ for more")));
+        assertEquals("pom.xml:4:-1:stupid error", String.valueOf(logger.findHyperlink("/hudson/workspace/myprj/pom.xml:5: stupid error"))); // slave WS
     }
 
 }

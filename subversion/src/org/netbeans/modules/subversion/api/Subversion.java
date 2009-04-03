@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -58,6 +59,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
@@ -67,7 +69,6 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -344,6 +345,8 @@ public class Subversion {
             }
         }
 
+        boolean notVersionedYet = localFolder.exists() && !SvnUtils.isManaged(localFolder);
+
         CheckoutAction.performCheckout(
                 svnUrl,
                 client,
@@ -358,12 +361,12 @@ public class Subversion {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
 
-        // XXX shouldn't be done after every chcekout...
-        getSubversion().versionedFilesChanged();
-        SvnUtils.refreshParents(localFolder);
-        // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-        getSubversion().getStatusCache().refreshRecursively(localFolder);
-
+        if(!notVersionedYet) {
+            getSubversion().versionedFilesChanged();
+            SvnUtils.refreshParents(localFolder);
+            getSubversion().getStatusCache().refreshRecursively(localFolder);
+        }
+        
         return true;
     }
 
@@ -441,10 +444,11 @@ public class Subversion {
                         SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                         return;
                     }
-                    CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, null);
+                    CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, Collections.<SvnHook>emptyList() );
                 }
             };
-            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")).waitFinished(); // NOI18N
+
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
@@ -471,10 +475,9 @@ public class Subversion {
      * @param lineNumber requested line number to fix on
      * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
      */
-    public static boolean showFileHistory (final String path, final int lineNumber) {
+    public static boolean showFileHistory (final File file, final int lineNumber) {
         assert !EventQueue.isDispatchThread();
-
-        final File file = FileUtil.normalizeFile(new File(path));
+        
         if (!file.exists()) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
             return false;

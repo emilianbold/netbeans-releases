@@ -49,6 +49,7 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -65,7 +66,7 @@ public class ShowChanges extends AbstractAction implements Runnable {
     private final HudsonJobBuild build;
 
     public ShowChanges(HudsonJobBuild build) {
-        super("Show Changes"); // XXX I18N
+        super(NbBundle.getMessage(ShowChanges.class, "ShowChanges.label"));
         this.build = build;
     }
 
@@ -74,7 +75,7 @@ public class ShowChanges extends AbstractAction implements Runnable {
     }
 
     public void run() {
-        String name = build.getJob().getDisplayName() + " #" + build.getNumber() + " changes"; // XXX I18N
+        String name = NbBundle.getMessage(ShowChanges.class, "ShowChanges.title", build.getDisplayName());
         InputOutput io = IOProvider.getDefault().getIO(name, new Action[0]);
         io.select();
         OutputWriter out = io.getOut();
@@ -114,7 +115,7 @@ public class ShowChanges extends AbstractAction implements Runnable {
             }
         }
         if (first) {
-            out.println("No changes."); // XXX I18N
+            out.println(NbBundle.getMessage(ShowChanges.class, "ShowChanges.no_changes"));
         }
         out.close();
         err.close();

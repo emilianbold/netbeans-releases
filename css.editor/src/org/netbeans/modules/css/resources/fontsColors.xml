@@ -59,7 +59,8 @@ made subject to such option by the copyright holder.
      * identifier
      * function
      * unknown
-     * whitespace_comment
+     * whitespace
+     * comment
      -->
     
     <fontcolor name="default" default="default"/>
@@ -73,8 +74,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="number" default="number"/>
     <fontcolor name="identifier" default="identifier"/>
     <fontcolor name="unknown" default="error"/>
-    <!-- whitespaces including comments -->
-    <fontcolor  name="whitespace_comment" default="comment"/>
+    <fontcolor  name="whitespace" default="default"/>
+    <fontcolor  name="comment" default="comment"/>
 
     <!-- GSF colors - taken from ruby editor -->
     <!--"semantic" highlighting:-->

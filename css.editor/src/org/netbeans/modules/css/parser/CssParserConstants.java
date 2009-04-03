@@ -13,7 +13,9 @@ public interface CssParserConstants {
   /** RegularExpression Id. */
   int S = 1;
   /** RegularExpression Id. */
-  int MSE = 4;
+  int COMMENT = 4;
+  /** RegularExpression Id. */
+  int MSE = 6;
   /** RegularExpression Id. */
   int LBRACE = 8;
   /** RegularExpression Id. */
@@ -166,19 +168,19 @@ public interface CssParserConstants {
   /** Lexical state. */
   int DEFAULT = 0;
   /** Lexical state. */
-  int MS_EXPRESSION = 1;
+  int IN_COMMENT = 1;
   /** Lexical state. */
-  int COMMENT = 2;
+  int MS_EXPRESSION = 2;
 
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
     "<S>",
     "\"/*\"",
+    "<token of kind 3>",
+    "\"*/\"",
     "\"expression(\"",
     "\")\"",
-    "<token of kind 5>",
-    "\"*/\"",
     "<token of kind 7>",
     "\"{\"",
     "\"}\"",

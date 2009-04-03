@@ -197,9 +197,13 @@ public class BugtrackingUtil {
         int gap = LayoutStyle.getSharedInstance().getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
         panel.add(bar);
-        panel.add(Box.createVerticalStrut(100));
-        Issue issue = null;
+        panel.add(Box.createVerticalStrut(gap));
         ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
+        JLabel hintLabel = new JLabel(bundle.getString("MSG_SelectIssueHint")); // NOI18N
+        hintLabel.setEnabled(false);
+        panel.add(hintLabel);
+        panel.add(Box.createVerticalStrut(70));
+        Issue issue = null;
 
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N

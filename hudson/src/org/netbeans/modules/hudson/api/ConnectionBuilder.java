@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -173,7 +174,7 @@ public final class ConnectionBuilder {
      */
     public URLConnection connection() throws IOException {
         if (url == null) {
-            throw new IllegalArgumentException("You must call the url method!");
+            throw new IllegalArgumentException("You must call the url method!"); // NOI18N
         }
         URLConnection conn = url.openConnection();
         RETRY: while (true) {
@@ -216,8 +217,8 @@ public final class ConnectionBuilder {
             // Workaround for JDK bug #6810084; HttpURLConnection.setInstanceFollowRedirects does not work.
             case HttpURLConnection.HTTP_MOVED_PERM:
             case HttpURLConnection.HTTP_MOVED_TEMP:
-                URL redirect = new URL(conn.getHeaderField("Location"));
-                if (!"delay=0sec".equals(curr.getQuery()) && !Utilities.compareObjects(curr.getQuery(), redirect.getQuery())) {
+                URL redirect = new URL(conn.getHeaderField("Location")); // NOI18N
+                if (!"delay=0sec".equals(curr.getQuery()) && !Utilities.compareObjects(curr.getQuery(), redirect.getQuery())) { // NOI18N
                     LOG.warning("Warning: possibly incorrect redirect from " + curr + " to " + redirect); // #160508
                 }
                 conn = redirect.openConnection();
@@ -233,8 +234,8 @@ public final class ConnectionBuilder {
                         }
                     }
                 }
-                IOException x = new IOException("403 on " + url);
-                Exceptions.attachLocalizedMessage(x, "Must log in to access " + url); // XXX I18N
+                IOException x = new IOException("403 on " + url); // NOI18N
+                Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(ConnectionBuilder.class, "ConnectionBuilder.log_in", url));
                 throw x;
             case HttpURLConnection.HTTP_NOT_FOUND:
                 throw new FileNotFoundException(curr.toString());
@@ -242,7 +243,7 @@ public final class ConnectionBuilder {
                 break RETRY;
             default:
                 // XXX are there other legitimate response codes?
-                throw new IOException("Server rejected connection to " + curr + " with code " + responseCode);
+                throw new IOException("Server rejected connection to " + curr + " with code " + responseCode); // NOI18N
             }
         }
         return conn;
@@ -257,7 +258,7 @@ public final class ConnectionBuilder {
         if (c instanceof HttpURLConnection) {
             return (HttpURLConnection) c;
         } else {
-            throw new IOException("Not an HTTP connection: " + c);
+            throw new IOException("Not an HTTP connection: " + c); // NOI18N
         }
     }
 
