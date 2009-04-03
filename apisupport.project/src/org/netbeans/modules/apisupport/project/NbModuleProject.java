@@ -58,7 +58,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -179,7 +178,7 @@ public final class NbModuleProject implements Project {
         }
         FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(
                 eval,from.toArray(new String[0]), to.toArray(new String[0]));
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, eval);
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, eval);
         // Temp build dir is always internal; NBM build products go elsewhere, but
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
@@ -204,11 +203,7 @@ public final class NbModuleProject implements Project {
                     /* XXX should schema incl. display name? */entry.getKey().getNameExt(), null, null);
         }
         // #56457: support external source roots too.
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         lookup = createLookup(new Info(), aux, helper, fileBuilt, sourcesHelper);
     }
 
