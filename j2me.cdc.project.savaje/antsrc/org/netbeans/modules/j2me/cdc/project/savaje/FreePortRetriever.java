@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.gsf.testrunner.api;
+
+package org.netbeans.modules.j2me.cdc.project.savaje;
+
+// IMPORTANT! You need to compile this class against ant.jar. So add the
+// JAR ide5/ant/lib/ant.jar from your IDE installation directory (or any
+// other version of Ant you wish to use) to your classpath. Or if
+// writing your own build target, use e.g.:
+// <classpath>
+//     <pathelement location="${ant.home}/lib/ant.jar"/>
+// </classpath>
+
+import java.io.IOException;
+import java.net.Socket;
+import org.apache.tools.ant.*;
+import org.openide.util.Exceptions;
 
 /**
- * Enums for representing status of a test case or suite.
- * 
- * @author Erno Mononen
+ * @author suchys
  */
-public enum Status {
-
-    PASSED("00CC00"), PENDING("800080"), FAILED("FF0000"), ERROR("FF0000"), ABORTED("D69D29"); //NOI18N
+public class FreePortRetriever extends Task {
     
-    private final String displayColor;
+    //for debugger
+    private String debuggerPortProperty;
 
-    private Status(String displayColor) {
-        this.displayColor = displayColor;
-    }
     
+    public void execute() throws BuildException {
+        try {
+            getProject().setProperty(debuggerPortProperty, Integer.toString(determineFreePort()));
+        } catch (IOException ex) {
+            throw new BuildException("Can not get free port");
+        }
+    }
     /**
-     * @return the html display color for this status.
+     * Finds a free port to be used for listening for debugger connection.
+     * @return free port number
+     * @throws IOException
      */
-    public String getHtmlDisplayColor() {
-        return displayColor;
+    private int determineFreePort() throws IOException {
+        Socket sock = new Socket();
+        sock.bind(null);
+        int port = sock.getLocalPort();
+        sock.close();
+        return port;
     }
 
-    /**
-     * @return true if the given status represents a failure or an error.
-     */
-    static boolean isFailure(Status status) {
-        return FAILED.compareTo(status) <= 0;
+    public String getDebuggerPortProperty() {
+        return debuggerPortProperty;
+    }
+
+    public void setDebuggerPortProperty(String debuggerPortProperty) {
+        this.debuggerPortProperty = debuggerPortProperty;
     }
 }
