@@ -132,8 +132,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane = new JEditorPane();
         historyPanel = new HistoryPanel();
 
-        historyToggleButton.setMargin(new Insets(2, 3, 2, 3));
-        historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
         dropDownButton = createDropDownButton();
@@ -332,21 +330,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        historyToggleButton = new javax.swing.JToggleButton();
         editorScrollPane = new javax.swing.JScrollPane();
         separatorPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
         evaluateButton = new javax.swing.JButton();
         emptyPanel = new javax.swing.JPanel();
-
-        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/eval_history.png"))); // NOI18N
-        historyToggleButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.historyToggleButton.text")); // NOI18N
-        historyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Show_History")); // NOI18N
-        historyToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                historyToggleButtonActionPerformed(evt);
-            }
-        });
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -371,11 +359,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
         rightPanel.setLayout(new java.awt.GridBagLayout());
 
-        evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.gif"))); // NOI18N
+        evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.png"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
-        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 20));
+        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 22));
         evaluateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 evaluateButtonActionPerformed(evt);
@@ -405,24 +393,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         evaluate();
     }//GEN-LAST:event_evaluateButtonActionPerformed
 
-    private void historyToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyToggleButtonActionPerformed
-        boolean toggled = historyToggleButton.isSelected();
-        if (toggled) {
-            // show history
-            editorScrollPane.setViewportView(historyPanel);
-        } else {
-            // show editor pane
-            editorScrollPane.setViewportView(codePane);
-        }
-        computeEvaluationButtonState();
-    }//GEN-LAST:event_historyToggleButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane editorScrollPane;
     private javax.swing.JPanel emptyPanel;
     private javax.swing.JButton evaluateButton;
-    private javax.swing.JToggleButton historyToggleButton;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JPanel separatorPanel;
     // End of variables declaration//GEN-END:variables
