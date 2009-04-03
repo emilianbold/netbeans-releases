@@ -53,7 +53,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -75,8 +74,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.NbBundle;
@@ -464,13 +463,9 @@ final class QueryTopComponent extends TopComponent
 
         assert query.getRepository() != null;
 
-        File context = BugtrackingUtil.getLargerContext();
-        if (context == null) {
-            return;
-        }
-
-        FileToRepoMappingStorage.getInstance()
-                .setLooseAssociation(context, query.getRepository());
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
+                query.getRepository());
     }
 
     public void notifyData(Issue issue) {
