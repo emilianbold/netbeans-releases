@@ -230,14 +230,14 @@ public class IPSPackager implements PackagerDescriptor {
 
             bw.write("# Create manifest file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("CONTROL_FILE=${TMPDIR}/manifest\n"); // NOI18N
-            bw.write("rm -f ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("MANIFEST=${TMPDIR}/manifest\n"); // NOI18N
+            bw.write("rm -f ${MANIFEST}\n"); // NOI18N
             bw.write("\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
 
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "# header" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "# header" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
             for (PackagerInfoElement elem : infoList) {
                 String value = elem.getValue();
@@ -245,31 +245,31 @@ public class IPSPackager implements PackagerDescriptor {
                 int j = value.indexOf("\\n"); // NOI18N
                 while (j >= 0) {
                     if (i == 0) {
-                        bw.write("echo \'" + elem.getName() + ": " + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                        bw.write("echo \'" + elem.getName() + ": " + value.substring(i, j) + "\' >> ${MANIFEST}\n"); // NOI18N
                     } else {
-                        bw.write("echo \'" + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                        bw.write("echo \'" + value.substring(i, j) + "\' >> ${MANIFEST}\n"); // NOI18N
                     }
                     i = j + 2;
                     j = value.indexOf("\\n", i); // NOI18N
                 }
                 if (i < value.length()) {
                     if (i == 0) {
-                        bw.write("echo \'name=\"" + elem.getName() + "\" value=\"" + value.substring(i) + "\"\' >> ${CONTROL_FILE}\n"); // NOI18N
+                        bw.write("echo \'name=\"" + elem.getName() + "\" value=\"" + value.substring(i) + "\"\' >> ${MANIFEST}\n"); // NOI18N
                     } else {
-                        bw.write("echo \'" + value.substring(i) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                        bw.write("echo \'" + value.substring(i) + "\' >> ${MANIFEST}\n"); // NOI18N
                     }
                 }
             }
 
             for (String addInfo : packagingConfiguration.getAdditionalInfo().getValue()) {
-                bw.write("echo \"" + addInfo + "\" >> ${CONTROL_FILE}\n"); // NOI18N
+                bw.write("echo \"" + addInfo + "\" >> ${MANIFEST}\n"); // NOI18N
             }
 
             // Directories
             bw.write("\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "# directories" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "# directories" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
             List<String> dirList = findUndefinedDirectories(packagingConfiguration);
             for (String dir : dirList) {
                 bw.write("echo \"");// NOI18N
@@ -279,7 +279,7 @@ public class IPSPackager implements PackagerDescriptor {
                 bw.write("group=" + MakeOptions.getInstance().getDefGroup() + " "); // NOI18N
                 bw.write("path=" + dir); // NOI18N
                 bw.write("\""); // NOI18N
-                bw.write(" >> ${CONTROL_FILE}\n"); // NOI18N
+                bw.write(" >> ${MANIFEST}\n"); // NOI18N
 
             }
             for (PackagerFileElement elem : fileList) {
@@ -295,15 +295,15 @@ public class IPSPackager implements PackagerDescriptor {
                     bw.write("group=" + elem.getGroup() + " "); // NOI18N
                     bw.write("path=" + path); // NOI18N
                     bw.write("\""); // NOI18N
-                    bw.write(" >> ${CONTROL_FILE}\n"); // NOI18N
+                    bw.write(" >> ${MANIFEST}\n"); // NOI18N
                 }
             }
 
             // Files
             bw.write("\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "# files" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "# files" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String path = packagingConfiguration.expandMacros(elem.getTo());
@@ -315,15 +315,15 @@ public class IPSPackager implements PackagerDescriptor {
                     bw.write("group=" + elem.getGroup() + " "); // NOI18N
                     bw.write("path=" + path); // NOI18N
                     bw.write("\""); // NOI18N
-                    bw.write(" >> ${CONTROL_FILE}\n"); // NOI18N
+                    bw.write(" >> ${MANIFEST}\n"); // NOI18N
                 }
             }
 
             // Links
             bw.write("\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "# links" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("echo \'" + "#" + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "# links" + "\' >> ${MANIFEST}\n"); // NOI18N
+            bw.write("echo \'" + "#" + "\' >> ${MANIFEST}\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
                 if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String path = packagingConfiguration.expandMacros(elem.getTo());
@@ -332,11 +332,29 @@ public class IPSPackager implements PackagerDescriptor {
                     bw.write("path=" + path + " "); // NOI18N
                     bw.write("target=" + packagingConfiguration.expandMacros(elem.getFrom())); // NOI18N
                     bw.write("\""); // NOI18N
-                    bw.write(" >> ${CONTROL_FILE}\n"); // NOI18N
+                    bw.write(" >> ${MANIFEST}\n"); // NOI18N
                 }
             }
 
+            bw.write("\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("mkdir -p  " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("cd \"${TMPDIR}\"\n"); // NOI18N
+            bw.write("for i in *; do cd \"${TOP}\"; rm -rf " + packagingConfiguration.getOutputValue() + "/$i; done" + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("mv ${TMPDIR}/* " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+
+            bw.write("\n"); // NOI18N
             bw.write("echo IPS: " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+//            bw.write("echo To publish:" + "\n"); // NOI18N
+//            bw.write("echo cd " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+//            bw.write("echo eval 'pkgsend -s \"http://localhost:80\" open srm@1.2.9'" + "\n"); // NOI18N
+//            bw.write("echo pkgsend -s \"http://localhost:80\" include manifest" + "\n"); // NOI18N
+//            bw.write("echo pkgsend -s \"http://localhost:80\" close" + "\n"); // NOI18N
             bw.write("\n"); // NOI18N
         }
     }
