@@ -565,17 +565,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return getValue();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof AbstractVariable &&
-                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
     public String getName() {
         return name;
     }
