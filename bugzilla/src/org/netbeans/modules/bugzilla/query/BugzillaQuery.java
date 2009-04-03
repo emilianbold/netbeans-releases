@@ -175,9 +175,7 @@ public class BugzillaQuery extends Query {
                     }
                     obsoleteIssues.removeAll(issues);
 
-                    if(!isSaved()) {
-                        queryIssues.addAll(issues);
-                    }
+                    queryIssues.addAll(issues);
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
                     repository.getExecutor().execute(dataCmd);
                     ret[0] = dataCmd.hasFailed();
