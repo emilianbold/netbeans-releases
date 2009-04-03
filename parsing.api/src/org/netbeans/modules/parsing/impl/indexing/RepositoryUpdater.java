@@ -307,9 +307,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         FileObject fo = fe.getFile();
         URL root = null;
 
-        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) &&
-            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes())
-        ) {
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
@@ -391,7 +389,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             for(JTextComponent jtc : components) {
                 Document d = jtc.getDocument();
                 FileObject f = NbEditorUtilities.getFileObject(d);
-                if (f != null && isMonitoredMimeType(f, PathRecognizerRegistry.getDefault().getMimeTypes())) {
+                if (f != null) {
                     URL root = getOwningSourceRoot(f);
                     if (root != null) {
                         long version = DocumentUtilities.getDocumentVersion(d);
@@ -442,7 +440,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Document document = e.getDocument();
 
         FileObject f = NbEditorUtilities.getFileObject(document);
-        if (f != null && isMonitoredMimeType(f, PathRecognizerRegistry.getDefault().getMimeTypes())) {
+        if (f != null) {
             URL root = getOwningSourceRoot(f);
             if (root != null) {
                 if (activeDocument == document) {
@@ -602,10 +600,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return null;
     }
 
-    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
-        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
-        return mimeType != null && mimeTypes.contains(mimeType);
-    }
+// we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
+//    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
+//        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
+//        return mimeType != null && mimeTypes.contains(mimeType);
+//    }
 
     enum State {CREATED, STARTED, INITIAL_SCAN_RUNNING, ACTIVE, STOPPED};
 

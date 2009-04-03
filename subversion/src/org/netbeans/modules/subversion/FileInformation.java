@@ -47,6 +47,7 @@ import java.util.*;
 import java.io.Serializable;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -298,7 +299,9 @@ public class FileInformation implements Serializable {
             entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
         } catch (SVNClientException e) {
             // at least log the exception
-            Subversion.LOG.log(Level.INFO, null, e);
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                Subversion.LOG.log(Level.INFO, null, e);
+            }
         }
     }    
 

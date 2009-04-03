@@ -281,8 +281,8 @@ public class UIDUtilities {
         }
         // by name
         CharSequence name1 = getName(d1);
-        CharSequence name2 = getName(d1);
-        if (name1 instanceof Comparable) {
+        CharSequence name2 = getName(d2);
+        if (name1 instanceof Comparable<?>) {
             @SuppressWarnings("unchecked")
             Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
             return o1.compareTo(name2);

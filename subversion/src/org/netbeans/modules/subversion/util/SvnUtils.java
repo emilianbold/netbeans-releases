@@ -68,6 +68,7 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SubversionVCS;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
@@ -244,6 +245,15 @@ public class SvnUtils {
      */
     public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
         return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
+    }
+
+    public static File getTopManagedFolder(File file) {
+        File topManaged = file;
+        while (file != null && isManaged(file)) {
+            topManaged = file;
+            file = file.getParentFile();
+        }
+        return topManaged;
     }
 
     /**
@@ -448,7 +458,12 @@ public class SvnUtils {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -530,7 +545,12 @@ public class SvnUtils {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -597,7 +617,12 @@ public class SvnUtils {
                 }
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -871,7 +896,9 @@ public class SvnUtils {
         try {
             url = getRepositoryUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
             return null;
         }
         return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());
