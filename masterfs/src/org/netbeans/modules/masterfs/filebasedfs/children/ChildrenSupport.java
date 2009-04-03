@@ -172,11 +172,11 @@ public final class ChildrenSupport {
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
 
-        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, fInfo) : null;
+        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child) : null;
         if (retval != null) {
             addChild(folderName, retval);
         } else {
-            FileName fChild = new FileName(folderName, fInfo) {
+            FileName fChild = new FileName(folderName, child) {
                 public boolean isDirectory() {
                     return false;
                 }
@@ -204,7 +204,7 @@ public final class ChildrenSupport {
             for (int i = 0; i < children.length; i++) {
                 final FileInfo fInfo = new FileInfo(children[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
-                    FileNaming child = NamingFactory.fromFile(folderName, fInfo);
+                    FileNaming child = NamingFactory.fromFile(folderName, children[i]);
                     newChildren.add(child);
                 }
             }

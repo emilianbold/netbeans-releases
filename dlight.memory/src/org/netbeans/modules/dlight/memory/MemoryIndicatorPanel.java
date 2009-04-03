@@ -23,7 +23,7 @@ import org.openide.util.NbBundle;
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
     private static final int BINARY_ORDER = 1024;
     private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};
+    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
 
     private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
     private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Legend createLegend() {
-        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.singletonMap(MAX_HEAP_DETAIL_ID, "Max:"));
+        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.singletonMap(MAX_HEAP_DETAIL_ID, NbBundle.getMessage(MemoryIndicatorPanel.class, "MemoryTool.Legend.Max")));//NOI18N
         legend.updateDetail(MAX_HEAP_DETAIL_ID, formatValue(0));
         return legend;
     }

@@ -32,8 +32,8 @@ public final class CallersCalleesVisualizerFactory implements VisualizerFactory<
         provider instanceof StackDataProvider) {
       return new CallersCalleesVisualizer((StackDataProvider)provider, configuration);
     }
-    throw new IllegalStateException("Trying to create CallersCallees Visualizer " +
-        "using incorrect VisualizerConfiguration and/or DataProvider object");
+    throw new IllegalStateException("Trying to create CallersCallees Visualizer " +//NOI18N
+        "using incorrect VisualizerConfiguration and/or DataProvider object");//NOI18N
   }
 
 

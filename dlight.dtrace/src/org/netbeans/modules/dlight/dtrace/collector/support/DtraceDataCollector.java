@@ -318,7 +318,7 @@ public final class DtraceDataCollector
         try {
             if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
                 return ValidationStatus.invalidStatus(
-                        "dtrace is supported on SunOS only"); // NOI18N
+                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
             }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (ConnectException ex) {
@@ -360,7 +360,7 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    "No privileges support for " + execEnv.toString()); // NOI18N
+                NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
