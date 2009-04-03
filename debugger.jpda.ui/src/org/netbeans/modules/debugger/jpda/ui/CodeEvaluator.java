@@ -130,6 +130,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public CodeEvaluator() {
         initComponents();
         codePane = new JEditorPane();
+        codePane.setMinimumSize(new Dimension(0,0));
         historyPanel = new HistoryPanel();
 
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
@@ -166,6 +167,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public void pasteExpression(String expr) {
         codePane.setText(expr);
+        if (!isOpened()) {
+            open();
+        }
+        requestActive();
     }
 
     private JButton createDropDownButton() {
@@ -339,6 +344,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         setLayout(new java.awt.GridBagLayout());
 
         editorScrollPane.setBorder(null);
+        editorScrollPane.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -350,7 +356,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         separatorPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
         separatorPanel.setMaximumSize(new java.awt.Dimension(1, 32767));
-        separatorPanel.setMinimumSize(new java.awt.Dimension(1, 10));
+        separatorPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
@@ -376,6 +382,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
 
+        emptyPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         emptyPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
