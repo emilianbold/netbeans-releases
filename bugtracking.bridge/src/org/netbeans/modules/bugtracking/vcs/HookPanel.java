@@ -43,7 +43,7 @@
  * Created on Nov 11, 2008, 3:32:39 PM
  */
 
-package org.netbeans.modules.bugtracking.vcshooks;
+package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
