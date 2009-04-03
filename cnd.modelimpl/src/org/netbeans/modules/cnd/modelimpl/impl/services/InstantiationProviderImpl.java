@@ -367,7 +367,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 break;
             }
         }
-        return cls instanceof ForwardClass;
+        return ForwardClass.isForwardClass(cls);
     }
 
     @Override
