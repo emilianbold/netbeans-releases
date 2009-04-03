@@ -58,4 +58,5 @@ public class ProjectData {
     public LicenceData [] licenses;
     public FeatureData [] features;
     public String tags;
+    public boolean private_hidden;
 }

@@ -56,6 +56,7 @@ import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -136,8 +137,8 @@ class SubversionHyperlink implements OutputListener {
                     BufferedReader r = new BufferedReader(new InputStreamReader(is));
                     String line;
                     while ((line = r.readLine()) != null) {
-                        if (line.equals("  <li><a href=\"../\">..</a></li>")) {
-                            module = module.replaceFirst("/[^/]+$", "");
+                        if (line.equals("  <li><a href=\"../\">..</a></li>")) { // NOI18N
+                            module = module.replaceFirst("/[^/]+$", ""); // NOI18N
                             continue STRIP;
                         }
                     }
@@ -159,7 +160,7 @@ class SubversionHyperlink implements OutputListener {
         if (rev == 0) {
             r = new StringReader("");
         } else {
-            InputStream is = new URL(repo + "/!svn/ver/" + rev + path).openStream();
+            InputStream is = new URL(repo + "/!svn/ver/" + rev + path).openStream(); // NOI18N
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 FileUtil.copy(is, baos);
@@ -168,9 +169,9 @@ class SubversionHyperlink implements OutputListener {
                 is.close();
             }
         }
-        String mimeType = "text/plain"; // XXX use FileUtil.getMIMETypeExtensions
+        String mimeType = "text/plain"; // NOI18N // XXX use FileUtil.getMIMETypeExtensions
         String name = path;
-        String title = path.replaceFirst(".+/", "") + " #" + rev;
+        String title = NbBundle.getMessage(SubversionHyperlink.class, "SubversionHyperlink.title", path.replaceFirst(".+/", ""), rev);
         return StreamSource.createSource(name, title, mimeType, r);
     }
 

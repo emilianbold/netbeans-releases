@@ -48,6 +48,7 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Node which displays the artifacts for a build.
@@ -69,7 +70,7 @@ class HudsonArtifactsNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return "Artifacts"; // XXX I18N
+        return NbBundle.getMessage(HudsonArtifactsNode.class, "HudsonArtifactsNode.displayName");
     }
 
     private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();

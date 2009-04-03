@@ -51,24 +51,24 @@ public class HudsonXmlApiConstants {
     private HudsonXmlApiConstants() {}
     
     // XML API Suffix
-    public static final String XML_API_URL ="api/xml";
+    public static final String XML_API_URL ="api/xml"; // NOI18N
     
     // Hudson Instance Element
-    public static final String XML_API_VIEW_ELEMENT = "view";
-    public static final String XML_API_JOB_ELEMENT = "job";
-    public static final String XML_API_NAME_ELEMENT = "name";
-    public static final String XML_API_URL_ELEMENT = "url";
-    public static final String XML_API_COLOR_ELEMENT = "color";
+    public static final String XML_API_VIEW_ELEMENT = "view"; // NOI18N
+    public static final String XML_API_JOB_ELEMENT = "job"; // NOI18N
+    public static final String XML_API_NAME_ELEMENT = "name"; // NOI18N
+    public static final String XML_API_URL_ELEMENT = "url"; // NOI18N
+    public static final String XML_API_COLOR_ELEMENT = "color"; // NOI18N
     
     // Hudson Job Elements
-    public static final String XML_API_DESCRIPTION_ELEMENT = "description";
-    public static final String XML_API_DISPLAY_NAME_ELEMENT = "displayName";
-    public static final String XML_API_BUILDABLE_ELEMENT = "buildable";
-    public static final String XML_API_INQUEUE_ELEMENT = "inQueue";
-    public static final String XML_API_LAST_BUILD_ELEMENT = "lastBuild";
-    public static final String XML_API_LAST_STABLE_BUILD_ELEMENT = "lastStableBuild";
-    public static final String XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT = "lastSuccessfulBuild";
-    public static final String XML_API_LAST_FAILED_BUILD_ELEMENT = "lastFailedBuild";
-    public static final String XML_API_LAST_COMPLETED_BUILD_ELEMENT = "lastCompletedBuild";
+    public static final String XML_API_DESCRIPTION_ELEMENT = "description"; // NOI18N
+    public static final String XML_API_DISPLAY_NAME_ELEMENT = "displayName"; // NOI18N
+    public static final String XML_API_BUILDABLE_ELEMENT = "buildable"; // NOI18N
+    public static final String XML_API_INQUEUE_ELEMENT = "inQueue"; // NOI18N
+    public static final String XML_API_LAST_BUILD_ELEMENT = "lastBuild"; // NOI18N
+    public static final String XML_API_LAST_STABLE_BUILD_ELEMENT = "lastStableBuild"; // NOI18N
+    public static final String XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT = "lastSuccessfulBuild"; // NOI18N
+    public static final String XML_API_LAST_FAILED_BUILD_ELEMENT = "lastFailedBuild"; // NOI18N
+    public static final String XML_API_LAST_COMPLETED_BUILD_ELEMENT = "lastCompletedBuild"; // NOI18N
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.css.parser;
-
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.api.project.Project;
+import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 
 /**
- * @author  marek.fukala@sun.com
+ * @author Jan Becicka
  */
-public class CssLexerTest extends TestBase {
+public final class ShareMenuAction implements ActionListener {
 
-    public CssLexerTest(String name) {
-        super(name);
+    public void actionPerformed(ActionEvent e) {
+        Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (n.length>0) {
+            if (n[0].getLookup().lookup(Project.class)!=null) {
+                ShareAction.actionPerformed(n[0]);
+                return;
+            }
+        }
+        
+        ShareAction.actionPerformed((Node) null);
     }
-
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
-    }
-
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
-                CssTokenId.language());
-    }
-
 }

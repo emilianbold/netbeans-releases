@@ -61,6 +61,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputEvent;
@@ -101,8 +102,9 @@ class Hyperlinker {
         PlainLoggerLogic(HudsonJob job, String jobName) {
             this.job = job;
             // XXX support Windows build servers (using backslashes)
-            hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + jobName +
-                "\\E/workspace/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)");
+            String jobNameQ = Pattern.quote(jobName);
+            hyperlinkable = Pattern.compile("\\s*(?:\\[.+\\] )?/.+/(?:jobs/" + jobNameQ + "/workspace|workspace/" + jobNameQ + // NOI18N
+                    ")/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)"); // NOI18N
         }
         OutputListener findHyperlink(String line) {
             try {
@@ -198,13 +200,13 @@ class Hyperlinker {
                         // XXX #159829: consider aligning local line number with remote line number somehow
                     }
                     if (f == null) {
-                        StatusDisplayer.getDefault().setStatusText("Looking for " + path + "..."); // XXX I18N
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.looking_for", path));
                         f = job.getRemoteWorkspace().findResource(path);
                         LOG.log(Level.FINE, "Tried to find remote file at {0} using {1}", new Object[] {f, path});
                     }
                     if (f == null) {
                         if (force) {
-                            StatusDisplayer.getDefault().setStatusText("No file " + path + " found in remote workspace."); // XXX I18N
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.not_found", path));
                             Toolkit.getDefaultToolkit().beep();
                         }
                         return;

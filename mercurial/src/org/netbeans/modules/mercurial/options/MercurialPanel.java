@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.options;
 
+import java.io.IOException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
@@ -261,8 +262,13 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
-        if(!initialUserName.equals(userNameTextField.getText()))
-            HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+        if(!initialUserName.equals(userNameTextField.getText())) {
+            try {
+                HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+            } catch (IOException ex) {
+                HgModuleConfig.notifyParsingError();
+            }
+        }
         HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
 	Mercurial.getInstance().checkVersion();
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());

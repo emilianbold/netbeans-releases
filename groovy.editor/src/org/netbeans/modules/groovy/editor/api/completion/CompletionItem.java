@@ -424,7 +424,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             // This is an artificial, new ElementHandle which has no real
             // equivalent in the AST. It's used to match the one passed to super.document()
-            methodElement = new AstMethodElement(new ASTNode(), clz, method, isGDK);
+            methodElement = new AstMethodElement(null, new ASTNode(), clz, method, isGDK);
         }
 
         public MetaMethod getMethod() {

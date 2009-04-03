@@ -49,6 +49,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -70,18 +71,18 @@ public class ShowFailures extends AbstractAction implements Runnable {
     private final String displayName;
 
     public ShowFailures(HudsonJobBuild build) {
-        this(build.getJob(), build.getUrl(), build.getJob().getDisplayName() + " #" + build.getNumber()); // XXX I18N
+        this(build.getJob(), build.getUrl(), build.getDisplayName());
     }
 
     public ShowFailures(HudsonMavenModuleBuild module) {
-        this(module.getBuild().getJob(), module.getUrl(), module.getDisplayName() + " #" + module.getBuild().getNumber()); // XXX I18N
+        this(module.getBuild().getJob(), module.getUrl(), module.getBuildDisplayName());
     }
 
     private ShowFailures(HudsonJob job, String url, String displayName) {
         this.job = job;
         this.url = url;
         this.displayName = displayName;
-        putValue(NAME, "Show Test Failures"); // XXX I18N
+        putValue(NAME, NbBundle.getMessage(ShowFailures.class, "ShowFailures.label"));
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -98,7 +99,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 int insideCase;
                 private void prepareOutput() {
                     if (io == null) {
-                        String title = displayName + " Test Failures"; // XXX I18N
+                        String title = NbBundle.getMessage(ShowFailures.class, "ShowFailures.title", displayName);
                         io = IOProvider.getDefault().getIO(title, new Action[0]);
                         io.select();
                     }
@@ -119,8 +120,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 public @Override void endElement(String uri, String localName, String qName) throws SAXException {
                     if (qName.equals("errorStackTrace") || (insideCase == 0 && qName.matches("stdout|stderr"))) { // NOI18N
                         prepareOutput();
-                        OutputWriter w = qName.equals("stdout") ? io.getOut() : io.getErr();
-                        for (String line : buf.toString().split("\r\n?|\n")) {
+                        OutputWriter w = qName.equals("stdout") ? io.getOut() : io.getErr(); // NOI18N
+                        for (String line : buf.toString().split("\r\n?|\n")) { // NOI18N
                             hyperlinker.handleLine(line, w);
                         }
                         buf = null;
