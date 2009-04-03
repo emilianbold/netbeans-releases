@@ -67,7 +67,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     PropertyChangeSupport changeSupport;
     private boolean ignoreCommandChanges = false;
 
-    public static String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed";
+    public static String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed"; // NOI18N
 
     public QuickSearchComboBar(JPanel caller) {
         this.caller = caller;
@@ -207,6 +207,10 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         if (list.getModel().getSize() > 0) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    JList l = displayer.getList();
+                    if (l.getSelectedIndex() == -1) { // Issue 161447
+                        l.setSelectedIndex(l.getModel().getSize()-1);
+                    }
                     displayer.invoke();
                 }
             });
@@ -248,12 +252,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
     static Color getPopupBorderColor () {
-        Color shadow = UIManager.getColor("controlShadow");
+        Color shadow = UIManager.getColor("controlShadow"); // NOI18N
         return shadow != null ? shadow : Color.GRAY;
     }
 
     static Color getTextBackground () {
-        Color textB = UIManager.getColor("TextPane.background");
+        Color textB = UIManager.getColor("TextPane.background"); // NOI18N
         return textB != null ? textB : Color.WHITE;
     }
 

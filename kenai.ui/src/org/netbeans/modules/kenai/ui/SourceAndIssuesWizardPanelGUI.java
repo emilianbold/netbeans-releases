@@ -97,11 +97,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     // {0} - hg or svn
     // {1} - project name
     // {2} - repository name
-    private static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}";
+    static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}";
 
     // names used in repository name preview
     private static final String HG_REPO_NAME =  "hg";
-    private static final String SVN_REPO_NAME = "svn";
+    static final String SVN_REPO_NAME = "svn";
 
     // {0} - project name
     // {1} - repository name
@@ -119,7 +119,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String EXT_ISSUES_ITEM = "External";
     private static final String NO_ISSUES_ITEM = "None";
 
-    private static final String SVN_DEFAULT_NAME = "subversion";
+    static final String SVN_DEFAULT_NAME = "subversion";
     private static final String HG_DEFAULT_NAME = "mercurial";
 
     private static final int PANEL_HEIGHT = 110;

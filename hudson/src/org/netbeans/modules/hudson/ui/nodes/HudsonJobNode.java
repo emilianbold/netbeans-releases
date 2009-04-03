@@ -57,6 +57,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -146,10 +147,10 @@ public class HudsonJobNode extends AbstractNode {
         case blue_anime:
         case grey_anime:
         case aborted_anime:
-            htmlDisplayName += " <font color='!controlShadow'>(running)</font>"; // XXX I18N
+            htmlDisplayName += " <font color='!controlShadow'>" + NbBundle.getMessage(HudsonJobNode.class, "HudsonJobNode.running") + "</font>";
         }
         if (job.isInQueue()) {
-            htmlDisplayName += " <font color='!controlShadow'>(in queue)</font>"; // XXX I18N
+            htmlDisplayName += " <font color='!controlShadow'>" + NbBundle.getMessage(HudsonJobNode.class, "HudsonJobNode.in_queue") + "</font>";
         }
         fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }

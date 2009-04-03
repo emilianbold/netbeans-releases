@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 import javax.swing.Timer;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -203,7 +204,15 @@ public class DocumentPreprocessor implements PropertyChangeListener {
             } catch (PreprocessorException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            repaintDocument(doc);
+            if (SwingUtilities.isEventDispatchThread()){
+                repaintDocument(doc);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        repaintDocument(doc);
+                    }
+                });
+            }
         }
     }
 

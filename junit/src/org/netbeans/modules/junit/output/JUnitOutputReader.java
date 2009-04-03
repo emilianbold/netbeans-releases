@@ -576,7 +576,13 @@ final class JUnitOutputReader {
             }else{
                 report.update(testSession.getReport(lastSuiteTime));
             }
-            manager.displayReport(testSession, report, true);
+            switch(state){
+                case SUITE_STARTED:
+                case TESTCASE_STARTED:
+                    report.setAborted(true);
+                default:
+                    manager.displayReport(testSession, report, true);
+            }
             report = null;
             lastSuiteTime = 0;
         }

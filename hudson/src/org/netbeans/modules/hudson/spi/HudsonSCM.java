@@ -52,6 +52,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -119,11 +120,11 @@ public interface HudsonSCM {
          */
         public static void addTrigger(Document configXml) {
             Element root = configXml.getDocumentElement();
-            root.appendChild(configXml.createElement("triggers")). // XXX reuse existing <triggers> if found
-                    appendChild(configXml.createElement("hudson.triggers.SCMTrigger")).
-                    appendChild(configXml.createElement("spec")).
+            root.appendChild(configXml.createElement("triggers")). // NOI18N // XXX reuse existing <triggers> if found
+                    appendChild(configXml.createElement("hudson.triggers.SCMTrigger")). // NOI18N
+                    appendChild(configXml.createElement("spec")). // NOI18N
                     // XXX pretty arbitrary but seems like a decent first guess
-                    appendChild(configXml.createTextNode("@hourly"));
+                    appendChild(configXml.createTextNode("@hourly")); // NOI18N
         }
 
         /**
@@ -142,7 +143,7 @@ public interface HudsonSCM {
          * @param path a path, probably somehow repo-relative
          */
         public static void noteWillShowDiff(String path) {
-            StatusDisplayer.getDefault().setStatusText("Loading diff for " + path + "..."); // XXX I18N
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(HudsonSCM.class, "HudsonSCM.loading_diff", path));
         }
 
         /**
@@ -159,7 +160,7 @@ public interface HudsonSCM {
                         // XXX reuse the same TC
                         DiffTopComponent tc = new DiffTopComponent(view);
                         tc.setName(path);
-                        tc.setDisplayName("Diffing " + path.replaceFirst(".+/", "")); // XXX I18N
+                        tc.setDisplayName(NbBundle.getMessage(HudsonSCM.class, "HudsonSCM.diffing", path.replaceFirst(".+/", "")));
                         tc.open();
                         tc.requestActive();
                     } catch (IOException x) {

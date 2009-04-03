@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -76,6 +78,9 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
+    private Node activeNode;
+    private boolean isShareExistingFolder;
+
 
     public static final String PROP_PRJ_NAME = "projectName";
     public static final String PROP_PRJ_TITLE = "projectTitle";
@@ -87,12 +92,22 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_SCM_LOCAL = "projectSCMLocal";
     public static final String PROP_ISSUES = "projectIssues";
     public static final String PROP_ISSUES_URL = "projectIssuesUrl";
+    public static final String PROP_AUTO_COMMIT = "projectIssuesUrl";
 
     // special values when no features are created
     public static final String NO_REPO = "none";
     public static final String NO_ISSUES = "none";
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai");
+
+    NewKenaiProjectWizardIterator(Node activatedNode) {
+        this.activeNode = activatedNode;
+        isShareExistingFolder = true;
+    }
+
+    NewKenaiProjectWizardIterator() {
+        isShareExistingFolder = false;
+    }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
@@ -110,6 +125,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         String newPrjIssues = (String) wizard.getProperty(PROP_ISSUES);
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
+        boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
 
         // Create project
         try {
@@ -196,14 +212,32 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
                     PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
                     if (passwdAuth != null) {
+                        final File localFile = new File(newPrjScmLocal);
                         if (Utilities.SVN_REPO.equals(featureService)) {
-
-                            Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[] {"."}, new File(newPrjScmLocal),
-                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+                            if (isShareExistingFolder) {
+                                String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
+                                String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
+                                    final String remoteDir = scmLoc.toASCIIString().concat("/" + dirName);
+                                try {
+                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                                } catch (IOException io) {
+                                    Exceptions.printStackTrace(io);
+                                }
+                                Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."},localFile,
+                                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
+                                if (autoCommit) {
+                                    handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                                    "NewKenaiProject.progress.repositoryCommit"));
+                                    Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                                }
+                            } else {
+                                Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[]{"."},localFile,
+                                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+                            }
 
                         } else if (Utilities.HG_REPO.equals(featureService)) {
 
-                            Mercurial.cloneRepository(scmLoc.toASCIIString(), new File(newPrjScmLocal), "", "", "",
+                            Mercurial.cloneRepository(scmLoc.toASCIIString(),localFile, "", "", "",
                                 passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
 
                         }
@@ -396,10 +430,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[]{
-            new NameAndLicenseWizardPanel(),
-            new SourceAndIssuesWizardPanel()
-        };
+        if (isShareExistingFolder) {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(activeNode)
+                    };
+
+        } else {
+            return new WizardDescriptor.Panel[]{
+                        new NameAndLicenseWizardPanel(),
+                        new SourceAndIssuesWizardPanel()
+                    };
+        }
     }
 
 }

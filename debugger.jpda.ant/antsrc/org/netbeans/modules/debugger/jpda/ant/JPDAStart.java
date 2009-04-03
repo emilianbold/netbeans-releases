@@ -59,6 +59,8 @@ import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -306,6 +308,15 @@ public class JPDAStart extends Task implements Runnable {
                         int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
                         Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
                         portArg.setValue (port);
+                        // Since some users have badly configured host addresses,
+                        // perform a check for the address and use "localhost"
+                        // if the address can not be resolved: (see http://www.netbeans.org/issues/show_bug.cgi?id=154974)
+                        String host = address.substring(0, address.indexOf (':'));
+                        try {
+                            InetAddress.getByName(host);
+                        } catch (UnknownHostException uhex) {
+                            address = "localhost:" + port; // NOI18N
+                        } catch (SecurityException  se) {}
                     } catch (Exception e) {
                         // ignore
                     }

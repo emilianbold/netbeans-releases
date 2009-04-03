@@ -50,6 +50,7 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.openide.util.Exceptions;
 
 /**
  * a ui wrapper for server instances..
@@ -58,9 +59,16 @@ import org.netbeans.modules.maven.model.pom.Properties;
 public class Wrapper {
 
     private String id;
+    private String sessionServerId;
 
     public Wrapper(String serverid) {
         id = serverid;
+    }
+
+    public Wrapper(String serverid, String sessionServerId) {
+        this(serverid);
+        assert ExecutionChecker.DEV_NULL.equals(serverid);
+        this.sessionServerId = sessionServerId;
     }
 
     public String getServerInstanceID() {
@@ -77,7 +85,18 @@ public class Wrapper {
     @Override
     public String toString() {
         if (ExecutionChecker.DEV_NULL.equals(id)) {
-            return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Server");
+            if (sessionServerId != null) {
+                ServerInstance si = Deployment.getDefault().getServerInstance(sessionServerId);
+                String dn = sessionServerId;
+                try {
+                    dn = si.getDisplayName();
+                } catch (InstanceRemovedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Permanent_Server", dn);
+            } else {
+                return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Server");
+            }
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(id);
         if (si != null) {
@@ -87,7 +106,7 @@ public class Wrapper {
                 Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
             }
         }
-        return "";
+        return id;
     }
 
     static Wrapper findWrapperByType(String serverId, JComboBox combo) {

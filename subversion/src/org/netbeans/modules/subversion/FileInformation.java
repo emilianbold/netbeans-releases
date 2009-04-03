@@ -237,9 +237,6 @@ public class FileInformation implements Serializable {
     private static final String STATUS_VERSIONED_DELETEDLOCALLY_EXT = "E"; // NOI18N
     private static final String STATUS_VERSIONED_ADDEDLOCALLY_EXT = "A"; // NOI18N
 
-    // for debuging purposes
-    private final Exception origin;
-
     /**
      * For deserialization purposes only.
      */ 
@@ -247,7 +244,6 @@ public class FileInformation implements Serializable {
         status = 0;
         propStatus = 0;
         isDirectory = false;
-        origin = new RuntimeException("allocated at:"); // NOI18N
     }
 
     private FileInformation(int status, int propStatus, ISVNStatus entry, boolean isDirectory) {
@@ -255,7 +251,6 @@ public class FileInformation implements Serializable {
         this.propStatus = propStatus;
         this.entry = entry;
         this.isDirectory = isDirectory;
-        origin = new RuntimeException("allocated at:"); // NOI18N
     }
 
     FileInformation(int status, ISVNStatus entry) {
