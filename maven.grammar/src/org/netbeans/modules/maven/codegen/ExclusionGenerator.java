@@ -93,7 +93,7 @@ public class ExclusionGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(ExclusionGenerator.class, "NAME_Profile");
+        return NbBundle.getMessage(ExclusionGenerator.class, "NAME_Exclusion");
     }
 
     public void invoke() {
