@@ -51,6 +51,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -58,14 +59,15 @@ import org.openide.util.ChangeSupport;
 
 class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
 
+    private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourcesHelper sourcesHelper;
-    private boolean externalRootsRegistered;
 
-    EarSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    EarSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator) {
+        this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         initSources(); // have to register external build roots eagerly
@@ -85,19 +87,11 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     }
 
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(helper, evaluator);
+        sourcesHelper = new SourcesHelper(project, helper, evaluator);
         String configFilesLabel = org.openide.util.NbBundle.getMessage(EarSources.class, "LBL_Node_ConfigBase"); //NOI18N
         sourcesHelper.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
         // XXX add build dir too?
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
 

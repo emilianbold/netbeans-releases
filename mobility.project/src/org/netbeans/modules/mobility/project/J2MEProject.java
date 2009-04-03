@@ -77,7 +77,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -435,7 +434,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux) {
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, helper.getStandardPropertyEvaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, helper.getStandardPropertyEvaluator());
         sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), null, null); //NOI18N
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), null, null); //NOI18N
         final SubprojectProvider spp = refHelper.createSubprojectProvider();

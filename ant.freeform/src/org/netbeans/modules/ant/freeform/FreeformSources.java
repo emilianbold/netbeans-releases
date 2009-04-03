@@ -84,7 +84,7 @@ final class FreeformSources implements Sources, AntProjectListener {
     }
     
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(project.helper(), project.evaluator());
+        SourcesHelper h = new SourcesHelper(project, project.helper(), project.evaluator());
         Element genldata = project.getPrimaryConfigurationData();
         Element foldersE = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersE != null) {
@@ -119,11 +119,7 @@ final class FreeformSources implements Sources, AntProjectListener {
                 }
             }
         }
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return h.createSources();
     }
     
