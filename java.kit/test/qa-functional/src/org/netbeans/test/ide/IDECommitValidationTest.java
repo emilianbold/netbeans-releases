@@ -49,7 +49,6 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.ide.CountingSecurityManager.Mode;
@@ -60,7 +59,7 @@ import org.netbeans.test.ide.CountingSecurityManager.Mode;
  *
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
-public class IDECommitValidationTest extends JellyTestCase {
+public class IDECommitValidationTest extends IDEValidation {
 
     /** Need to be defined because of JUnit */
     public IDECommitValidationTest(String name) {
@@ -69,7 +68,7 @@ public class IDECommitValidationTest extends JellyTestCase {
     
     public static Test suite() throws IOException {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            IDEValidation.class
+            IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
         /* XXX: Enable as soon as there are no warnings during start
                 and exceptions are not that common
@@ -94,8 +93,8 @@ public class IDECommitValidationTest extends JellyTestCase {
         
         /* too easy to break:
         conf = conf.addTest("testReflectionUsage");
-        conf = conf.addTest("testWriteAccess");
          */
+        conf = conf.addTest("testWriteAccess");
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");
