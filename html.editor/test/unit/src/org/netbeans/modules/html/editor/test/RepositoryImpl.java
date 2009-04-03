@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.html.editor.test;
 
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -71,7 +71,7 @@ public class RepositoryImpl extends Repository {
             FileSystem htmlFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/mf-layer.xml"));
             FileSystem htmlEditotFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
             FileSystem htmlEditorLibFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
-            FileSystem lexerLayerFS = new XMLFileSystem(HtmlTokenId.class.getClassLoader().getResource("org/netbeans/lib/html/lexer/layer.xml"));
+            FileSystem lexerLayerFS = new XMLFileSystem(HTMLTokenId.class.getClassLoader().getResource("org/netbeans/lib/html/lexer/layer.xml"));
             FileSystem cssEditorFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/css/resources/layer.xml"));
             FileSystem jsEditorFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/javascript/editing/layer.xml"));
             return new MultiFileSystem(new FileSystem[] { writeFs, lexerLayerFS, htmlFs, 

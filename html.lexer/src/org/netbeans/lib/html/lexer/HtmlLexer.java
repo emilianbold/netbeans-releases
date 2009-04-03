@@ -46,7 +46,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -63,7 +63,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @version 1.00
  */
 
-public final class HtmlLexer implements Lexer<HtmlTokenId> {
+public final class HtmlLexer implements Lexer<HTMLTokenId> {
     
     private static final Logger LOGGER = Logger.getLogger(HtmlLexer.class.getName());
     private static final boolean LOG = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
@@ -72,7 +72,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
     
     private final LexerInput input;
     
-    private final TokenFactory<HtmlTokenId> tokenFactory;
+    private final TokenFactory<HTMLTokenId> tokenFactory;
     
     class CompoundState {
         private int lexerState;
@@ -204,7 +204,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
     
-    public HtmlLexer(LexerRestartInfo<HtmlTokenId> info) {
+    public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         if (info.state() == null) {
@@ -308,7 +308,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
     }
     
     
-    public Token<HtmlTokenId> nextToken() {
+    public Token<HTMLTokenId> nextToken() {
         int actChar;
         
         while (true) {
@@ -351,7 +351,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             lexerState = INIT;
                             input.backup(1);
                             if(input.readLength() > 0) { //is there any text before & or < ???
-                                return token(HtmlTokenId.TEXT);
+                                return token(HTMLTokenId.TEXT);
                             }
                             break;
                     }
@@ -359,24 +359,24 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     
                 case ISI_ERROR:      // DONE
                     lexerState = INIT;
-                    return token(HtmlTokenId.ERROR);
+                    return token(HTMLTokenId.ERROR);
                     
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
                     if( isAZ( actChar ) ) {   // <'a..Z'
                         lexerState = ISI_TAG;
                         if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                             input.backup(1);
-                            return token(HtmlTokenId.TAG_OPEN_SYMBOL);
+                            return token(HTMLTokenId.TAG_OPEN_SYMBOL);
                         } 
                         break;
                     }
                     switch( actChar ) {
                         case '/':               // ETAGO - </
                             lexerState = ISA_SLASH;
-                            return token(HtmlTokenId.TAG_OPEN_SYMBOL);
+                            return token(HTMLTokenId.TAG_OPEN_SYMBOL);
                         case '>':               // Empty start tag <>, RELAXED
                             lexerState = INIT;
-                            return token(HtmlTokenId.TAG_CLOSE_SYMBOL);
+                            return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '!':
                             lexerState = ISA_SGML_ESCAPE;
                             break;
@@ -395,7 +395,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     switch( actChar ) {
                         case '>':               // Empty end tag </>, RELAXED
                             lexerState = INIT;
-                            return token(HtmlTokenId.TAG_CLOSE_SYMBOL);
+                            return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         default:                // Part of text, e.g. </3, </'\n', RELAXED
                             lexerState = ISI_TEXT;
                             input.backup(1);
@@ -408,7 +408,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = ISP_ENDTAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.TAG_CLOSE);
+                        return token(HTMLTokenId.TAG_CLOSE);
                     }
                     break;
                     
@@ -421,7 +421,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     switch( actChar ) {
                         case '>':               // Closing of endtag, e.g. </H6 _>_
                             lexerState = INIT;
-                            return token(HtmlTokenId.TAG_CLOSE_SYMBOL);
+                            return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '<':               // next tag, e.g. </H6 _<_, RELAXED
                             lexerState = INIT;
                             input.backup(1);
@@ -438,7 +438,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = ISP_ENDTAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.WS);
+                        return token(HTMLTokenId.WS);
                     }
                     break;
                     
@@ -456,7 +456,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         if(equals(STYLE, input.readText(), true, true)) {
                             lexerEmbeddingState = ISI_STYLE;
                         }
-                        return token(HtmlTokenId.TAG_OPEN);
+                        return token(HTMLTokenId.TAG_OPEN);
                     }
                     break;
                     
@@ -486,7 +486,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                                     break;
                             }
 
-                            return token(HtmlTokenId.TAG_CLOSE_SYMBOL);
+                            return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '<':
                             lexerState = INIT;
                             input.backup(1);
@@ -503,7 +503,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.WS);
+                        return token(HTMLTokenId.WS);
                     }
                     
                 case ISI_TAG_SLASH:
@@ -511,7 +511,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         case '>':
                             lexerEmbeddingState = INIT; //possibly cancel 'in script' if empty tag found
                             lexerState = INIT;
-                            return token(HtmlTokenId.TAG_CLOSE_SYMBOL);
+                            return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         default:
                             lexerState = ISI_ERROR;
                             input.backup(1);
@@ -538,7 +538,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
                                 //the script has a body
-                                return token(HtmlTokenId.SCRIPT);
+                                return token(HTMLTokenId.SCRIPT);
                             } else {
                                 break;
                             }
@@ -566,7 +566,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
                                 //the script has a body
-                                return token(HtmlTokenId.STYLE);
+                                return token(HTMLTokenId.STYLE);
                             } else {
                                 break;
                             }
@@ -582,7 +582,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         input.backup(1);
                         jsAttributeName = isJavascriptEventHandlerName(input.readText()) ? input.readText().toString() : null;
                         cssAttributeName = isStyleAttributeName(input.readText()) ? input.readText().toString() : null;
-                        return token(HtmlTokenId.ARGUMENT);
+                        return token(HTMLTokenId.ARGUMENT);
                     }
                     break;
                     
@@ -607,7 +607,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             break;
                         case '=':
                             lexerState = ISP_EQ;
-                            return token(HtmlTokenId.OPERATOR);
+                            return token(HTMLTokenId.OPERATOR);
                         default:
                             lexerState = ISI_ERROR;
                             input.backup(1);
@@ -620,7 +620,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = ISP_ARG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.WS);
+                        return token(HTMLTokenId.WS);
                     }
                     break;
                     
@@ -652,7 +652,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = ISP_EQ;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.WS);
+                        return token(HTMLTokenId.WS);
                     }
                     break;
                     
@@ -665,15 +665,15 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         input.backup(1);
                         if (jsAttributeName != null) {
                             jsAttributeName = null;
-                            return token(HtmlTokenId.VALUE_JAVASCRIPT);
+                            return token(HTMLTokenId.VALUE_JAVASCRIPT);
                         }
                         jsAttributeName = null;
                          if (cssAttributeName != null) {
                             cssAttributeName = null;
-                            return token(HtmlTokenId.VALUE_CSS);
+                            return token(HTMLTokenId.VALUE_CSS);
                         }
                         cssAttributeName = null;
-                        return token(HtmlTokenId.VALUE);
+                        return token(HTMLTokenId.VALUE);
                     }
                     break;
                     
@@ -683,15 +683,15 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             lexerState = ISP_TAG_X;
                             if (jsAttributeName != null) {
                                 jsAttributeName = null;
-                                return token(HtmlTokenId.VALUE_JAVASCRIPT);
+                                return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
                             jsAttributeName = null;
                             if (cssAttributeName != null) {
                                 cssAttributeName = null;
-                                return token(HtmlTokenId.VALUE_CSS);
+                                return token(HTMLTokenId.VALUE_CSS);
                             }
                             cssAttributeName = null;
-                            return token(HtmlTokenId.VALUE);
+                            return token(HTMLTokenId.VALUE);
                             
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
 //                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
@@ -705,7 +705,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
 //                            } else {
 //                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
 //                                    input.backup(1);
-//                                    return token(HtmlTokenId.VALUE);
+//                                    return token(HTMLTokenId.VALUE);
 //                                }
 //                            }
                     }
@@ -717,15 +717,15 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             lexerState = ISP_TAG_X;
                             if (jsAttributeName != null) {
                                 jsAttributeName = null;
-                                return token(HtmlTokenId.VALUE_JAVASCRIPT);
+                                return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
                             jsAttributeName = null;
                             if (cssAttributeName != null) {
                                 cssAttributeName = null;
-                                return token(HtmlTokenId.VALUE_CSS);
+                                return token(HTMLTokenId.VALUE_CSS);
                             }
                             cssAttributeName = null;
-                            return token(HtmlTokenId.VALUE);
+                            return token(HTMLTokenId.VALUE);
 
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
 //                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
@@ -739,7 +739,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
 //                            } else {
 //                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
 //                                    input.backup(1);
-//                                    return token(HtmlTokenId.VALUE);
+//                                    return token(HTMLTokenId.VALUE);
 //                                }
 //                            }
                     }
@@ -784,7 +784,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         case '\n':
                             //leave the some state - we are still in an HTML comment,
                             //we just need to create a token for each line.
-                            return token(HtmlTokenId.BLOCK_COMMENT);
+                            return token(HTMLTokenId.BLOCK_COMMENT);
                     }
                     break;
                     
@@ -803,7 +803,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     switch( actChar ) {
                         case '>':
                             lexerState = INIT;
-                            return token(HtmlTokenId.BLOCK_COMMENT);
+                            return token(HTMLTokenId.BLOCK_COMMENT);
                         default:
                             lexerState = ISI_HTML_COMMENT;
                             input.backup(2); //backup everything except the first comma
@@ -816,7 +816,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         lexerState = ISI_SGML_DECL_WS;
                         if(input.readLength() > 1) {
                             input.backup(1); //backup the whitespace
-                            return token(HtmlTokenId.DECLARATION);
+                            return token(HTMLTokenId.DECLARATION);
                         }
                         break;
                     }
@@ -824,11 +824,11 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         case '>':
                             if(input.readLength() > 1) {
                                 input.backup(1); //backup the '<' char
-                                return token(HtmlTokenId.DECLARATION);
+                                return token(HTMLTokenId.DECLARATION);
                             } else {
                                 //just the symbol read - return it as a part of declaration
                                 lexerState = INIT;
-                                return token(HtmlTokenId.DECLARATION);
+                                return token(HTMLTokenId.DECLARATION);
                             }
                         
                     }
@@ -842,13 +842,13 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                             } else {
                                 if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                                     input.backup(1);
-                                    return token(HtmlTokenId.DECLARATION);
+                                    return token(HTMLTokenId.DECLARATION);
                                 }
                             }
                     } else if(!Character.isWhitespace(actChar)) {
                         lexerState = ISI_SGML_DECL;
                         input.backup(1);
-                        return token(HtmlTokenId.WS);
+                        return token(HTMLTokenId.WS);
                     }
                     break;
                     
@@ -873,7 +873,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                 case ISA_SGML_COMMENT_DASH:
                     if( actChar == '-' ) {
                         lexerState = ISI_SGML_DECL;
-                        return token(HtmlTokenId.SGML_COMMENT);
+                        return token(HTMLTokenId.SGML_COMMENT);
                     } else {
                         lexerState = ISI_SGML_COMMENT;
                         input.backup(1);
@@ -901,7 +901,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                         if( actChar != ';' ) {
                             input.backup(1);
                         }
-                        return token(HtmlTokenId.CHARACTER);
+                        return token(HTMLTokenId.CHARACTER);
                     }
                     break;
                     
@@ -916,7 +916,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     }
                     if( isAZ( actChar ) ) {
                         lexerState = lexerSubState;
-                        return token(HtmlTokenId.ERROR);
+                        return token(HTMLTokenId.ERROR);
                     }
                     lexerState = lexerSubState;
                     input.backup(1);
@@ -928,7 +928,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         if( actChar != ';' )
                             input.backup(1);
-                        return token(HtmlTokenId.CHARACTER);
+                        return token(HTMLTokenId.CHARACTER);
                     }
                     break;
                     
@@ -943,7 +943,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     lexerState = lexerSubState;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return token(HtmlTokenId.ERROR);       // error on previous "&#x" sequence
+                        return token(HTMLTokenId.ERROR);       // error on previous "&#x" sequence
                     }
                     break;
                     
@@ -956,7 +956,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         if( actChar != ';' )
                             input.backup(1);
-                        return token(HtmlTokenId.CHARACTER);
+                        return token(HTMLTokenId.CHARACTER);
                     }
                     break;
             }
@@ -978,17 +978,17 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
-                return token(HtmlTokenId.TEXT);
+                return token(HTMLTokenId.TEXT);
                 
             case ISA_REF:
             case ISA_REF_HASH:
-                if( lexerSubState == ISI_TEXT ) return token(HtmlTokenId.TEXT);
-                else return token(HtmlTokenId.VALUE);
+                if( lexerSubState == ISI_TEXT ) return token(HTMLTokenId.TEXT);
+                else return token(HTMLTokenId.VALUE);
                 
             case ISI_HTML_COMMENT:
             case ISA_HTML_COMMENT_DASH:
             case ISI_HTML_COMMENT_WS:
-                return token(HtmlTokenId.BLOCK_COMMENT);
+                return token(HTMLTokenId.BLOCK_COMMENT);
                 
             case ISI_TAG:
                 lexerState = ISP_TAG_X;
@@ -999,61 +999,61 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
                 if(equals(STYLE, input.readText(), true, true)) {
                     lexerEmbeddingState = ISI_STYLE;
                 }
-                return token(HtmlTokenId.TAG_OPEN);
+                return token(HTMLTokenId.TAG_OPEN);
             case ISI_ENDTAG:
-                return token(HtmlTokenId.TAG_CLOSE);
+                return token(HTMLTokenId.TAG_CLOSE);
                 
             case ISI_ARG:
-                return token(HtmlTokenId.ARGUMENT);
+                return token(HTMLTokenId.ARGUMENT);
                 
             case ISI_ERROR:
-                return token(HtmlTokenId.ERROR);
+                return token(HTMLTokenId.ERROR);
                 
             case ISP_ARG_WS:
             case ISP_TAG_WS:
             case ISP_ENDTAG_WS:
             case ISP_EQ_WS:
-                return token(HtmlTokenId.WS);
+                return token(HTMLTokenId.WS);
                 
             case ISP_ARG_X:
             case ISP_TAG_X:
             case ISP_ENDTAG_X:
             case ISP_EQ:
-                return token(HtmlTokenId.WS);
+                return token(HTMLTokenId.WS);
                 
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
                 if (jsAttributeName != null) {
-                    return token(HtmlTokenId.VALUE_JAVASCRIPT);
+                    return token(HTMLTokenId.VALUE_JAVASCRIPT);
                 }
                 if (cssAttributeName != null) {
-                    return token(HtmlTokenId.VALUE_CSS);
+                    return token(HTMLTokenId.VALUE_CSS);
                 }
-                return token(HtmlTokenId.VALUE);
+                return token(HTMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
             case ISI_SGML_DECL_WS:  
-                return token(HtmlTokenId.DECLARATION);
+                return token(HTMLTokenId.DECLARATION);
                 
             case ISI_SGML_COMMENT:
             case ISA_SGML_COMMENT_DASH:
-                return token(HtmlTokenId.SGML_COMMENT);
+                return token(HTMLTokenId.SGML_COMMENT);
                 
             case ISI_REF_NAME:
             case ISI_REF_DEC:
             case ISA_REF_X:
             case ISI_REF_HEX:
-                return token(HtmlTokenId.CHARACTER);
+                return token(HTMLTokenId.CHARACTER);
             case ISI_SCRIPT_CONTENT:
             case ISI_SCRIPT_CONTENT_ENDTAG:
             case ISI_SCRIPT_CONTENT_AFTER_LT:
-                return token(HtmlTokenId.SCRIPT);
+                return token(HTMLTokenId.SCRIPT);
             case ISI_STYLE_CONTENT:
             case ISI_STYLE_CONTENT_ENDTAG:
             case ISI_STYLE_CONTENT_AFTER_LT:
-                return token(HtmlTokenId.STYLE);
+                return token(HTMLTokenId.STYLE);
                 
                 
         }
@@ -1067,7 +1067,7 @@ public final class HtmlLexer implements Lexer<HtmlTokenId> {
         return null;
     }
     
-    private Token<HtmlTokenId> token(HtmlTokenId tokenId) {
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
         if(LOG) {
             if(input.readLength() == 0) {
                 LOGGER.log(Level.INFO, "Found zero length token: ");

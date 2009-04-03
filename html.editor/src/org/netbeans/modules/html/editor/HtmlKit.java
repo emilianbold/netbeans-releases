@@ -68,7 +68,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
@@ -130,7 +130,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         //listen on the HTML parser and recolor after changes
-//        LanguagePath htmlLP = LanguagePath.get(HtmlTokenId.language());
+//        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
 //        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
 
@@ -341,7 +341,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             if (lastChar == '>') {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
-                    if (languagePath.innerLanguage() == HtmlTokenId.language()) {
+                    if (languagePath.innerLanguage() == HTMLTokenId.language()) {
                         HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(languagePath);
 
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
