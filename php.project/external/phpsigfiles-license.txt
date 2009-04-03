@@ -5,7 +5,7 @@ License: CDDL-GPL-2-CP
 OSR: None
 Origin: http://www.netbeans.org
 Source: http://www.netbeans.org
-
+Files: phpsigfiles.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
