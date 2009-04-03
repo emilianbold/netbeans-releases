@@ -81,6 +81,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * This class tries to match the AST expression to bytecode. The result
@@ -153,7 +154,12 @@ class AST2Bytecode {
                         String methodNameInBytecode = null;
                         if (constantPool != null) {
                             int constantPoolIndex = ((bytecodes[from+1] & 0xFF) << 8) + (bytecodes[from+2] & 0xFF);
-                            methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                            try {
+                                methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                            } catch (IndexOutOfBoundsException ioobex) {
+                                ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
+                                Exceptions.printStackTrace(ioobex);
+                            }
                         }
                         int pos = (int) sp.getStartPosition(cu, node);
                         EditorContext.Position startPosition =
@@ -245,7 +251,13 @@ class AST2Bytecode {
                                     opcode = bytecodes[next] & 0xFF;
                                     if (isMethodCall(opcode)) {
                                         int constantPoolIndex = ((bytecodes[next+1] & 0xFF) << 8) + (bytecodes[next+2] & 0xFF);
-                                        methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                                        try {
+                                            methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                                        } catch (IndexOutOfBoundsException ioobex) {
+                                            ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
+                                            Exceptions.printStackTrace(ioobex);
+                                            break;
+                                        }
                                         if (methodNameInBytecode.equals(methodName)) {
                                             break;
                                         } else {
