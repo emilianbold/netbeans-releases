@@ -75,6 +75,14 @@ Contributor(s): Andrei Badea
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -179,7 +187,7 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
                 <friend>org.netbeans.modules.spring.beans</friend>
-		<friend>org.netbeans.modules.csl.api</friend>
+                <friend>org.netbeans.modules.csl.api</friend>
                 <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.symbol</package>
                 <package>org.netbeans.spi.jumpto.type</package>

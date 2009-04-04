@@ -559,8 +559,13 @@ public abstract class AbstractRefactoring {
         
         public void step(ProgressEvent event) {
             if (progressStep < 0) {
-                progressStep = (float) PLUGIN_STEPS / event.getCount();
-                fireProgressListenerStep(PLUGIN_STEPS*pluginsWithProgress.size());
+                int size = event.getCount();
+                if (size > 0) {
+                    progressStep = (float) PLUGIN_STEPS / size;
+                    fireProgressListenerStep(PLUGIN_STEPS*pluginsWithProgress.size());
+                } else {
+                    fireProgressListenerStep();
+                }
             } else {
                 current = current + progressStep;
                 fireProgressListenerStep((int) current) ;

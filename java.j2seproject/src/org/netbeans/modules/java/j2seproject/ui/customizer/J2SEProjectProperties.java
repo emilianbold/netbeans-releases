@@ -59,7 +59,6 @@ import java.util.Vector;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -91,15 +90,13 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -401,31 +398,49 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {                   
-            if (regenerateBuild) {
-                saveLibrariesLocation();
-                // Store properties 
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                    public Void run() throws IOException {
-                        storeProperties();
-                        //Delete COS mark
-                        if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
-                            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR));
-                            if (buildClasses != null) {
-                                FileObject mark = buildClasses.getFileObject(COS_MARK);
-                                if (mark != null) {
-                                    final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-                                    assert ap != null;
-                                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
-                                }
+        try {
+            if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
+                & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                //Back up build-impl.xml
+                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                if (buildImpl  != null) {
+                    final String name = buildImpl.getName();
+                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+                    if (oldBackup != null) {
+                        oldBackup.delete();
+                    }
+                    FileLock lock = buildImpl.lock();
+                    try {
+                        buildImpl.rename(lock, name, backupext);
+                    } finally {
+                        lock.releaseLock();
+                    }
+                }
+            }            
+            saveLibrariesLocation();
+            // Store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    storeProperties();
+                    //Delete COS mark
+                    if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                        FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR));
+                        if (buildClasses != null) {
+                            FileObject mark = buildClasses.getFileObject(COS_MARK);
+                            if (mark != null) {
+                                final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                                assert ap != null;
+                                ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
                             }
                         }
-                        return null;
                     }
-                });
-                // and save the project
-                ProjectManager.getDefault().saveProject(project);
-            }
+                    return null;
+                }
+            });
+            // and save the project
+            ProjectManager.getDefault().saveProject(project);
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
@@ -434,32 +449,7 @@ public class J2SEProjectProperties {
             ErrorManager.getDefault().notify( ex );
         }
     }
-
-    void checkModified () {
-        regenerateBuild = true;
-        if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-            & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-            if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
-                //Delete user modified build-impl.xml
-                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                final FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                if (fo != null) {
-                    try {
-                        fo.delete();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            else {
-                regenerateBuild = false;
-            }
-        }
-    }
-    //where
-    private volatile boolean regenerateBuild;
-
+        
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
         try {
             String str = SHARED_LIBRARIES_MODEL.getText(0, SHARED_LIBRARIES_MODEL.getLength()).trim();
@@ -633,18 +623,7 @@ public class J2SEProjectProperties {
         additionalProperties.put(propertyName, propertyValue);
     }
     
-    private static boolean showModifiedMessage (String title) {
-        String message = NbBundle.getMessage(J2SEProjectProperties.class,"TXT_Regenerate");
-        JButton regenerateButton = new JButton (NbBundle.getMessage(J2SEProjectProperties.class,"CTL_RegenerateButton"));
-        regenerateButton.setDefaultCapable(true);
-        regenerateButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEProjectProperties.class,"AD_RegenerateButton"));
-        NotifyDescriptor d = new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE);
-        d.setTitle(title);
-        d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-        d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});        
-        return DialogDisplayer.getDefault().notify(d) == regenerateButton;
-    }
-    
+        
     //Hotfix of the issue #70058
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
     private static String encodeBoolean (boolean value, Integer kind) {
