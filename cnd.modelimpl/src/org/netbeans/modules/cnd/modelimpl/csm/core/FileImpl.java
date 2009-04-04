@@ -170,6 +170,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
+    private Set<CsmUID<CsmInclude>> brokenIncludes = new LinkedHashSet<CsmUID<CsmInclude>>(0);
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
     private final Set<ErrorDirectiveImpl> errors = createErrors();
     private final ReadWriteLock errorsLock = new ReentrantReadWriteLock();
@@ -633,6 +634,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             includesLock.writeLock().lock();
             RepositoryUtils.remove(includes);
+            brokenIncludes.clear();
             includes = createIncludes();
         } finally {
             includesLock.writeLock().unlock();
@@ -1027,12 +1029,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lastParsed;
     }
 
-    public void addInclude(IncludeImpl includeImpl) {
+    public void addInclude(IncludeImpl includeImpl, boolean broken) {
         CsmUID<CsmInclude> inclUID = RepositoryUtils.put((CsmInclude)includeImpl);
         assert inclUID != null;
         try {
             includesLock.writeLock().lock();
             includes.add(inclUID);
+            if (broken) {
+                brokenIncludes.add(inclUID);
+            } else {
+                brokenIncludes.remove(inclUID);
+            }
         } finally {
             includesLock.writeLock().unlock();
         }
@@ -1132,6 +1139,26 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             includesLock.readLock().unlock();
         }
         return out;
+    }
+
+    public Collection<CsmInclude> getBrokenIncludes() {
+        Collection<CsmInclude> out;
+        try {
+            includesLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToIncludes(brokenIncludes);
+        } finally {
+            includesLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    public boolean hasBrokenIncludes() {
+        try {
+            includesLock.readLock().lock();
+            return !brokenIncludes.isEmpty();
+        } finally {
+            includesLock.readLock().unlock();
+        }
     }
 
     public boolean hasDeclarations() {
@@ -1622,6 +1649,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             includesLock.readLock().lock();
             factory.writeUIDCollection(this.includes, output, false);
+            factory.writeUIDCollection(this.brokenIncludes, output, false);
         } finally {
             includesLock.readLock().unlock();
         }
@@ -1661,6 +1689,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readOffsetSortedToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
+        factory.readUIDCollection(this.brokenIncludes, input);
         factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());

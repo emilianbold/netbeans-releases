@@ -329,7 +329,23 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return Collections.<CsmInclude>emptyList();
     }
-    
+
+    @Override
+    public boolean hasBrokenIncludes(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).hasBrokenIncludes();
+        }
+        return false;
+    }
+
+    @Override
+    public Collection<CsmInclude> getBrokenIncludes(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getBrokenIncludes();
+        }
+        return Collections.<CsmInclude>emptyList();
+    }
+
     private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
         public int compare(CsmOffsetable o1, CsmOffsetable o2) {
             int diff = o1.getStartOffset() - o2.getStartOffset();
