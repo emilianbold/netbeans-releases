@@ -760,7 +760,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         File file = nativeFile.getFile();
-        int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
+        FileImpl.FileType fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
 
@@ -978,21 +978,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final boolean isSourceFile(NativeFileItem nativeFile) {
-        int type = getFileType(nativeFile);
-        return type == FileImpl.SOURCE_CPP_FILE || type == FileImpl.SOURCE_C_FILE || type == FileImpl.SOURCE_FILE;
-    //return nativeFile.getSystemIncludePaths().size()>0;
+        FileImpl.FileType type = getFileType(nativeFile);
+        return FileImpl.isSourceFileType(type);
     }
 
-    protected static int getFileType(NativeFileItem nativeFile) {
+    protected static FileImpl.FileType getFileType(NativeFileItem nativeFile) {
         switch (nativeFile.getLanguage()) {
             case C:
-                return FileImpl.SOURCE_C_FILE;
+                return FileImpl.FileType.SOURCE_C_FILE;
             case CPP:
-                return FileImpl.SOURCE_CPP_FILE;
+                return FileImpl.FileType.SOURCE_CPP_FILE;
             case C_HEADER:
-                return FileImpl.HEADER_FILE;
+                return FileImpl.FileType.HEADER_FILE;
             default:
-                return FileImpl.UNDEFINED_FILE;
+                return FileImpl.FileType.UNDEFINED_FILE;
         }
     }
 
@@ -1132,7 +1131,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (disposing) {
                 return null;
             }
-            FileImpl csmFile = findFile(new File(file.toString()), FileImpl.HEADER_FILE, preprocHandler, false, null, null);
+            FileImpl csmFile = findFile(new File(file.toString()), FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
             APTFile aptLight = getAPTLight(csmFile);
 
@@ -1592,11 +1591,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             if (preprocHandler != null) {
-                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
+                return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
             }
         }
         // if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
-        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
+        return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
@@ -1614,14 +1613,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             if (preprocHandler != null) {
-                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
+                return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
             }
         }
         // if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
-        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
+        return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
-    protected final FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
+    protected final FileImpl findFile(File file, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = getFile(file);
         if (impl == null){
@@ -1630,7 +1629,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return impl;
     }
 
-    private FileImpl findFileImpl(File file, int fileType, APTPreprocHandler preprocHandler,
+    private FileImpl findFileImpl(File file, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = null;
         synchronized (fileContainerLock) {
@@ -1649,9 +1648,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()) {
+        if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
             impl.setSourceFile();
-        } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()) {
+        } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
             impl.setHeaderFile();
         }
         if (initial != null) {
@@ -1684,7 +1683,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         public APTPreprocHandler preprocHandler;
     }
 
-    private FileAndHandler createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile, int fileType) {
+    private FileAndHandler createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile, FileImpl.FileType fileType) {
         APTPreprocHandler preprocHandler = null;
         File file = buf.getFile();
         FileImpl impl = getFile(file);

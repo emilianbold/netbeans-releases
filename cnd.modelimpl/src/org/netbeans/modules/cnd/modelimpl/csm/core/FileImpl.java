@@ -108,6 +108,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
+    public static enum FileType {
+        UNDEFINED_FILE,
+        SOURCE_FILE,
+        SOURCE_C_FILE,
+        SOURCE_CPP_FILE,
+        HEADER_FILE,
+    };
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -187,7 +194,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         BEING_PARSED
     }
     private volatile State state;
-    private int fileType = UNDEFINED_FILE;
+    private FileType fileType = FileType.UNDEFINED_FILE;
     private final Object stateLock = new Object();
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     private long lastParsed = Long.MIN_VALUE;
@@ -216,7 +223,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     private static Hook hook = null;
 
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, NativeFileItem nativeFileItem) {
+    public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -262,30 +269,40 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public boolean isSourceFile() {
-        return fileType == SOURCE_FILE || fileType == SOURCE_C_FILE || fileType == SOURCE_CPP_FILE;
+    public final boolean isSourceFile() {
+        return isSourceFileType(fileType);
+    }
+
+    public static boolean isSourceFileType(FileType fileType) {
+        switch (fileType) {
+            case SOURCE_CPP_FILE:
+            case SOURCE_C_FILE:
+            case SOURCE_FILE:
+                return true;
+        }
+        return false;
     }
 
     public boolean isCppFile() {
-        return fileType == SOURCE_CPP_FILE;
+        return fileType == FileType.SOURCE_CPP_FILE;
     }
 
     /*package local*/ void setSourceFile() {
-        if (!(fileType == SOURCE_C_FILE || fileType == SOURCE_CPP_FILE)) {
-            fileType = SOURCE_FILE;
+        if (!(fileType == FileType.SOURCE_C_FILE || fileType == FileType.SOURCE_CPP_FILE)) {
+            fileType = FileType.SOURCE_FILE;
         }
     }
 
     public boolean isHeaderFile() {
-        return fileType == HEADER_FILE;
+        return fileType == FileType.HEADER_FILE;
     }
 
     /*package local*/ void setHeaderFile() {
-        if (fileType == UNDEFINED_FILE) {
-            fileType = HEADER_FILE;
+        if (fileType == FileType.UNDEFINED_FILE) {
+            fileType = FileType.HEADER_FILE;
         }
     }
-
+    
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
     public APTLanguageFilter getLanguageFilter(APTPreprocHandler.State ppState) {
         FileImpl startFile = ppState == null ? null : ProjectBase.getStartFile(ppState);
@@ -293,9 +310,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return startFile.getLanguageFilter(null);
         } else {
             String lang;
-            if (fileType == SOURCE_CPP_FILE) {
+            if (fileType == FileType.SOURCE_CPP_FILE) {
                 lang = APTLanguageSupport.GNU_CPP;
-            } else if (fileType == SOURCE_C_FILE) {
+            } else if (fileType == FileType.SOURCE_C_FILE) {
                 lang = APTLanguageSupport.GNU_C;
             } else {
                 lang = APTLanguageSupport.GNU_CPP;
@@ -362,7 +379,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         long time;
         synchronized (stateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
-                System.err.printf("file %s has %d handlers, state %s and stateRef %s\n", getAbsolutePath(), handlers.size(), state, stateRef.get()); // NOI18N
+                System.err.printf("file %s is %s, has %d handlers, state %s and stateRef %s\n", getAbsolutePath(), fileType, handlers.size(), state, stateRef.get()); // NOI18N
             }
             switch (stateRef.get()) {
                 case INITIAL:
@@ -1616,7 +1633,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
         //output.writeUTF(state.toString());
-        output.writeInt(fileType);
+        output.writeByte(fileType.ordinal());
 
         // not null UID
         assert this.projectUID != null;
@@ -1647,7 +1664,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
-        fileType = input.readInt();
+        fileType = FileType.values()[input.readByte()];
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
