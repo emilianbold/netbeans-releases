@@ -109,7 +109,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
     private String getUrl() {
         String url = panel.urlField.getText().trim();
-        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url; // NOI18N
     }
 
     private String getName() {
@@ -141,7 +141,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.validateButton.setEnabled(false);
 
         String name = panel.nameField.getText().trim();
-        if(name.equals("")) {
+        if(name.equals("")) { // NOI18N
             errorMessage = "Missing name"; // XXX bundle me
             return false;
         }
@@ -158,7 +158,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         }
 
         String url = getUrl();
-        if(url.equals("")) {
+        if(url.equals("")) { // NOI18N
             errorMessage = "Missing URL"; // XXX bundle me
             return false;
         }
@@ -218,8 +218,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                     if(c != null) {
                         String httpUser = c.getUserName();
                         String httpPsswd = c.getPassword();
-                        if(httpUser != null && !httpUser.equals("") &&
-                           httpPsswd != null && !httpPsswd.equals(""))
+                        if(httpUser != null && !httpUser.equals("") &&          // NOI18N
+                           httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
                         {
                             panel.httpCheckBox.setSelected(true);
                             panel.httpUserField.setText(httpUser);
@@ -270,7 +270,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c); // NOI18N
         JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
         panel.progressPanel.removeAll();
         panel.progressPanel.add(comp, BorderLayout.CENTER);
@@ -281,7 +281,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
                 panel.enableFields(false);
-                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
+                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
                 try {
                     repository.resetRepository(); // reset mylyns caching
                     TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
@@ -296,7 +296,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     repository.getExecutor().execute(cmd, false);
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
-                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null.");
+                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
                             errorMessage = "Validation failed."; // XXX bundle me
                         } else {
                             errorMessage = cmd.getErrorMessage();
