@@ -44,11 +44,15 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.DeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -140,8 +144,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                         ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) 
-                                ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext())
-                                : ClassImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
+                                ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext(), ClassImpl.this)
+                                : ClassImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext(), ClassImpl.this);
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass,!isRenderingLocalContext());
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -631,8 +635,33 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         leftBracketPos = initLeftBracketPos(ast);
     }
 
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-        ClassImpl impl = new ClassImpl(null, ast, file);
+    protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
+        ClassImpl out = null;
+        if (container != null) {
+            CharSequence name = CharSequenceKey.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+            name = (name == null) ? CharSequenceKey.empty() : name;
+            int start = getStartOffset(ast);
+            int end = getEndOffset(ast);
+            CsmOffsetableDeclaration existing = container.findExistingDeclaration(start, end, name);
+            if (existing instanceof ClassImpl) {
+                out = (ClassImpl) existing;
+//                System.err.printf("found existing %s in %s\n", existing, container); // NOI18N
+//            } else {
+//                System.err.printf("not found %s [%d-%d] in %s\n", name, start, end, container); // NOI18N
+            }
+        }
+        return out;
+    }
+    
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
+        ClassImpl impl = findExistingClassImplInContainer(container, ast);
+        if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
+            // not our instance
+            impl = null;
+        }
+        if (impl == null) {
+            impl = new ClassImpl(null, ast, file);
+        }
         impl.init(scope, ast, register);
         return impl;
     }
