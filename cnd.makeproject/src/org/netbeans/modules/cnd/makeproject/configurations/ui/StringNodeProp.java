@@ -47,6 +47,7 @@ public class StringNodeProp extends PropertySupport<String> {
 
     private StringConfiguration stringConfiguration;
     private String def = null;
+    private boolean canWrite = true;
 
     public StringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
         super(txt1, String.class, txt2, txt3, true, true);
@@ -101,5 +102,14 @@ public class StringNodeProp extends PropertySupport<String> {
     public void setDefaultValue(String def) {
         this.def = def;
         stringConfiguration.setDefaultValue(def);
+    }
+
+    @Override
+    public boolean canWrite() {
+        return canWrite;
+    }
+
+    public void setCanWrite(boolean v) {
+        canWrite = v;
     }
 }

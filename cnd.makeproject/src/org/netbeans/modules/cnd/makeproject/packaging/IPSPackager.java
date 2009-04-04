@@ -76,8 +76,8 @@ public class IPSPackager implements PackagerDescriptor {
 
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "description", "Package description ...", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "name", packagingConfiguration.getOutputName(), false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "description", "Package description ...", false, true)); // NOI18N
 
         return infoList;
     }
@@ -85,8 +85,8 @@ public class IPSPackager implements PackagerDescriptor {
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
-//        entryComboBox.add("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
-//        entryComboBox.add("CLASSES"); // NOI18N
+        entryComboBox.add("name"); // NOI18N
+        entryComboBox.add("description"); // NOI18N
 //        entryComboBox.add("DESC"); // NOI18N
 //        entryComboBox.add("EMAIL"); // NOI18N
 //        entryComboBox.add("HOTLINE"); // NOI18N
@@ -119,7 +119,7 @@ public class IPSPackager implements PackagerDescriptor {
     }
 
     public String getDefaultTool() {
-        return "pkgsend"; // NOI18N
+        return ""; // NOI18N
     }
 
     public boolean isOutputAFolder() {
