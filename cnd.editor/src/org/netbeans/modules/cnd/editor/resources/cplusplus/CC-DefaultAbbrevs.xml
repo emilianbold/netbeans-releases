@@ -142,7 +142,15 @@ ${CLS}::~${CLS}() {
 ]]>
         </code>
     </codetemplate>       
-    
+
+    <codetemplate abbreviation="fcom">
+        <code>
+<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}// </editor-fold>
+]]>
+        </code>
+    </codetemplate>
+
     <codetemplate abbreviation="tr"><code><![CDATA[true]]></code></codetemplate> 
     <codetemplate abbreviation="fa"><code><![CDATA[false]]></code></codetemplate> 
     <codetemplate abbreviation="pe"><code><![CDATA[protected ]]></code></codetemplate> 
