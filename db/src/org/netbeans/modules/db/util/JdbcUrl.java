@@ -209,7 +209,7 @@ public class JdbcUrl extends HashMap<String, String> {
     }
 
     private MalformedURLException createMalformedURLException() {
-        return new MalformedURLException(getMessage("ERR_InvalidURL", getUrlTemplate()));
+        return new MalformedURLException(NbBundle.getMessage (JdbcUrl.class, "ERR_InvalidURL", getUrlTemplate()));
     }
 
     private boolean isOptionalStart(String component) {
@@ -351,10 +351,6 @@ public class JdbcUrl extends HashMap<String, String> {
             // Move past the static text in the URL string
             skipStaticText(buf, component);
         }
-    }
-    
-    private static String getMessage(String key, String ... values) {
-        return NbBundle.getMessage(JdbcUrl.class, key, values);
     }
     
     private void extractUrlComponents() {

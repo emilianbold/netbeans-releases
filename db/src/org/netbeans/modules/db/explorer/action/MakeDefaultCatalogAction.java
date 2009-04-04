@@ -47,6 +47,7 @@ import org.netbeans.modules.db.explorer.node.CatalogNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -58,7 +59,7 @@ public class MakeDefaultCatalogAction extends BaseAction {
 
     @Override
     public String getName() {
-        return bundle().getString("MakeDefaultCatalog"); // NOI18N
+        return NbBundle.getMessage (MakeDefaultCatalogAction.class, "MakeDefaultCatalog"); // NOI18N
     }
 
     @Override

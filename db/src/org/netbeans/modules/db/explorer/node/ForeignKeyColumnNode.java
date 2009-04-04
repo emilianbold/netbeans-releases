@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -52,6 +52,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -77,6 +78,7 @@ public class ForeignKeyColumnNode extends BaseNode {
     private final MetadataElementHandle<ForeignKeyColumn> keyColumnHandle;
     private final DatabaseConnection connection;
 
+    @SuppressWarnings("unchecked")
     private ForeignKeyColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
@@ -164,7 +166,7 @@ public class ForeignKeyColumnNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_Column"); //NOI18N
+        return NbBundle.getMessage (ForeignKeyColumnNode.class, "ND_Column"); //NOI18N
     }
 
     @Override
