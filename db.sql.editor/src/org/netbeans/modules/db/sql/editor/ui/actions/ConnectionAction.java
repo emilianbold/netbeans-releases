@@ -166,6 +166,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             String accessibleName = NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
             combo.getAccessibleContext().setAccessibleName(accessibleName);
             combo.getAccessibleContext().setAccessibleDescription(accessibleName);
+            combo.setPreferredSize (new Dimension (Math.min (combo.getPreferredSize ().width, 400), combo.getPreferredSize ().height));
 
             add(combo, BorderLayout.CENTER);
 

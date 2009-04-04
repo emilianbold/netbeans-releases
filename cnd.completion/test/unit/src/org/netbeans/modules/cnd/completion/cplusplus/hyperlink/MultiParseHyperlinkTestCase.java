@@ -37,35 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.util;
-
-import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Vladimir Voskresensky
  */
-public interface BugzillaConstants {
-    public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced"; //NOI18N
-    public static final String URL_BUG_IDS = IBugzillaConstants.URL_BUGLIST + "?bug_id="; //NOI18N
-    public static final String QUERY_COLUMN_LIST = "&columnlist=bug_severity%2Cpriority%2Cbug_status%2Cresolution%2Cshort_desc%2Cchangeddate"; //NOI18N
+public class MultiParseHyperlinkTestCase extends HyperlinkBaseTestCase {
+    public MultiParseHyperlinkTestCase(String testName) {
+        super(testName);
+    }
 
-    public static final String MY_ISSUES_PARAMETERS_FORMAT =
-            "&product={0}" +                                                    // NOI18N
-            "&bug_status=UNCONFIRMED" +                                         // NOI18N
-            "&bug_status=NEW" +                                                 // NOI18N
-            "&bug_status=ASSIGNED" +                                            // NOI18N
-            "&bug_status=REOPENED" +                                            // NOI18N
-            "&emailassigned_to1=1" +                                            // NOI18N
-            "&emailreporter1=1" +                                               // NOI18N
-            "&emailtype1=exact" +                                               // NOI18N
-            "&email1={1}";                                                      // NOI18N
+    @Override
+    protected void setUp() throws Exception {
+        // check multiparse in one thread mode for stability
+        System.setProperty("cnd.modelimpl.parser.threads", "1");
+        System.setProperty("parser.log.parse", "true");
+        super.setUp();
+    }
 
-    public static final String ALL_ISSUES_PARAMETERS =
-            "&product={0}" +                                                    // NOI18N
-            "&bug_status=UNCONFIRMED" +                                         // NOI18N
-            "&bug_status=NEW" +                                                 // NOI18N
-            "&bug_status=ASSIGNED" +                                            // NOI18N
-            "&bug_status=REOPENED";                                             // NOI18N
-
+    public void testIZ157907() throws Exception {
+        // IZ#151881: Unresolved ids in #ifdef and #ifndef
+        performTest("source.c", 5, 10, "shared.h", 12, 9);
+        performTest("source.cpp", 5, 10, "shared.h", 10, 9);
+    }
 }

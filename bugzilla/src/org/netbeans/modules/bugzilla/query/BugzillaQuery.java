@@ -135,24 +135,32 @@ public class BugzillaQuery extends Query {
     public boolean refresh() { // XXX sync???
 
         assert urlParameters != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
             public void run() {
-                Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters});
+                Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 try {
+                    
+                    // keeps all issues we will retrieve from the server
+                    // - those matching the query criteria
+                    // - and the obsolete ones
                     Set<String> queryIssues = new HashSet<String>();
+                    
                     if(isSaved()) {
                         if(!wasRun()) {
                             if(issues.size() != 0) {
-                                Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues.");
+                                Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
                                 assert false;
                             }
                             // read the stored state if query wasn't run yet ...
+                            // we have to query them ...
                             queryIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
+                            // ... and they might be rendered obsolete if not returned by the query
                             obsoleteIssues.addAll(queryIssues);
                         } else {
+                            // all previously queried issues are candidates to become obsolete
                             obsoleteIssues.addAll(issues);
                             queryIssues.addAll(obsoleteIssues);
                         }
@@ -173,16 +181,20 @@ public class BugzillaQuery extends Query {
                     if(ret[0]) {
                         return;
                     }
+
+                    // only issues not returned by the query are obsolete
                     obsoleteIssues.removeAll(issues);
 
-                    if(!isSaved()) {
-                        queryIssues.addAll(issues);
-                    }
+                    // now get the task data for
+                    // - all issue returned by the query
+                    // - and issues which were returned by some previous run
+                    queryIssues.addAll(issues);
+
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
                     repository.getExecutor().execute(dataCmd);
                     ret[0] = dataCmd.hasFailed();
                 } finally {
-                    Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters});
+                    Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 }
             }
         });

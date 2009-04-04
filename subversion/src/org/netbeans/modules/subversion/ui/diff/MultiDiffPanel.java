@@ -721,7 +721,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 final IOException e = exception;
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        SvnClientExceptionHandler.notifyException(e, false, true);
+                        SvnClientExceptionHandler.notifyException(e, true, true);
                     }
                 });
             }
