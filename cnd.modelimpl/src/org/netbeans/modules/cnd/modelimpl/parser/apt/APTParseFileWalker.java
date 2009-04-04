@@ -173,10 +173,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     private MacroImpl createMacro(APTDefine define) {
-        if (!define.isValid()) {
-            return null;
-        }
-
+        // create even for invalid macro (to have possibility of showing error HL)
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
