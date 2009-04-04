@@ -7,6 +7,7 @@
 |org.netbeans.modules.localhistory|Local History|Base IDE|ide
 |org.netbeans.modules.mercurial|Mercurial|Base IDE|ide
 |org.netbeans.modules.subversion|Subversion|Base IDE|ide
+|org.netbeans.modules.team.kit|Team|Base IDE|ide
 |org.netbeans.modules.cnd.kit|C/C++|C/C++|cnd
 |org.netbeans.modules.timers|Timers API|Developing NetBeans|apisupport
 |org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy|groovy
@@ -30,7 +31,6 @@
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
 |org.netbeans.modules.soa.kit|SOA|SOA|soa
 |org.netbeans.modules.xml.kit|XML Schema and WSDL|SOA|xml
-|org.netbeans.modules.team.kit|Team|Team|ide
 |org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE|enterprise
 |org.netbeans.modules.identity.kit|Identity|Web & Java EE|identity
 |org.netbeans.modules.j2ee.kit|Java EE|Web & Java EE|enterprise
