@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.db.explorer.*;
 
 /**
 * @author Slavek Psenicka
@@ -61,7 +60,7 @@ public class LabeledComboDialog {
     Object combosel = null;
     JComboBox combo;
 
-    public LabeledComboDialog(String title, String lab, Collection items) {
+    public LabeledComboDialog(String title, String lab, Vector<String> items) {
         try {
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
@@ -69,9 +68,8 @@ public class LabeledComboDialog {
             GridBagConstraints con = new GridBagConstraints ();
             pane.setLayout (layout);
 
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-
-            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddToIndexDialogA11yDesc")); //NOI18N
+            pane.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage (LabeledComboDialog.class, "ACS_AddToIndexDialogA11yDesc")); //NOI18N
             
             // Title
 
@@ -90,10 +88,10 @@ public class LabeledComboDialog {
             con.gridx = 1;
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
-            combo = new JComboBox((items instanceof Vector) ? (Vector)items : new Vector(items));
-            combo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddToIndexComboA11yName")); //NOI18N
-            combo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddToIndexComboA11yDesc")); //NOI18N
-            combo.setToolTipText(bundle.getString("ACS_AddToIndexComboA11yDesc")); //NOI18N
+            combo = new JComboBox (items);
+            combo.getAccessibleContext().setAccessibleName(NbBundle.getMessage (LabeledComboDialog.class, "ACS_AddToIndexComboA11yName")); //NOI18N
+            combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (LabeledComboDialog.class, "ACS_AddToIndexComboA11yDesc")); //NOI18N
+            combo.setToolTipText(NbBundle.getMessage (LabeledComboDialog.class, "ACS_AddToIndexComboA11yDesc")); //NOI18N
             layout.setConstraints(combo, con);
             pane.add(combo);
 

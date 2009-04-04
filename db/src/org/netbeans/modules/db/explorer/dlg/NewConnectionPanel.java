@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,11 +43,10 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.net.MalformedURLException;
-import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -93,14 +92,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
-
-    private static ResourceBundle bundle() {
-        return NbBundle.getBundle(BUNDLE);
-    }
-
-    private static String getMessage(String key, Object ... args) {
-        return MessageFormat.format(bundle().getString(key), args);
-    }
 
     private void initFieldMap() {
         // These should be in the order of display on the form, so that we correctly
@@ -224,34 +215,33 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     private void initAccessibility() {
-        ResourceBundle b = NbBundle.getBundle(BUNDLE);
-        templateLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
-        templateComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
-        userLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
-        userField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
-        passwordLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
-        passwordField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
-        hostLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionHostA11yDesc")); //NOI18N
-        hostField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionHostTextFieldA11yName")); //NOI18N
-        portLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionPortA11yDesc")); //NOI18N
-        portField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionPortTextFieldA11yName")); //NOI18N
-        serverNameField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionServerNameTextFieldA11yName")); //NOI18N
-        serverNameLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionServerNameA11yDesc")); //NOI18N
-        databaseField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDatabaseNameTextFieldA11yName")); //NOI18N
-        databaseLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDatabaseNameA11yDesc")); //NOI18N
-        additionalPropsField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionAdditionalPropertiesTextFieldA11yName")); //NOI18N
-        additionalPropsLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionAdditionalPropertiesA11yDesc")); //NOI18N
-        urlField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionJDBCURLTextFieldA11yName")); //NOI18N
-        sidField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionSIDTextFieldA11yName")); //NOI18N
-        sidLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionSIDA11yDesc")); //NOI18N
-        serviceField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionServiceNameTextFieldA11yName")); //NOI18N
-        serviceLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionServiceNameA11yDesc")); //NOI18N
-        tnsField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionTNSNameTextFieldA11yName")); //NOI18N
-        tnsLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionTNSNameA11yDesc")); //NOI18N
-        dsnField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDSNTextFieldA11yName")); //NOI18N
-        dsnLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDSNA11yDesc")); //NOI18N
-        instanceField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionInstanceNameTextFieldA11yName")); //NOI18N
-        instanceLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionInstanceNameA11yDesc")); //NOI18N
+        templateLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
+        templateComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
+        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionUserNameA11yDesc")); //NOI18N
+        userField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPasswordA11yDesc")); //NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
+        hostLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionHostA11yDesc")); //NOI18N
+        hostField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionHostTextFieldA11yName")); //NOI18N
+        portLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPortA11yDesc")); //NOI18N
+        portField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPortTextFieldA11yName")); //NOI18N
+        serverNameField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServerNameTextFieldA11yName")); //NOI18N
+        serverNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServerNameA11yDesc")); //NOI18N
+        databaseField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDatabaseNameTextFieldA11yName")); //NOI18N
+        databaseLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDatabaseNameA11yDesc")); //NOI18N
+        additionalPropsField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionAdditionalPropertiesTextFieldA11yName")); //NOI18N
+        additionalPropsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionAdditionalPropertiesA11yDesc")); //NOI18N
+        urlField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionJDBCURLTextFieldA11yName")); //NOI18N
+        sidField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionSIDTextFieldA11yName")); //NOI18N
+        sidLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionSIDA11yDesc")); //NOI18N
+        serviceField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServiceNameTextFieldA11yName")); //NOI18N
+        serviceLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServiceNameA11yDesc")); //NOI18N
+        tnsField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionTNSNameTextFieldA11yName")); //NOI18N
+        tnsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionTNSNameA11yDesc")); //NOI18N
+        dsnField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDSNTextFieldA11yName")); //NOI18N
+        dsnLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDSNA11yDesc")); //NOI18N
+        instanceField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameTextFieldA11yName")); //NOI18N
+        instanceLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameA11yDesc")); //NOI18N
   }
 
     public void initializeFocus() {
@@ -307,115 +297,114 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         FormListener formListener = new FormListener();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/db/resources/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(showUrlCheckBox, bundle.getString("NewConnectionShowJDBCURL")); // NOI18N
-        showUrlCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionShowJDBCURLAllyDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showUrlCheckBox, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionShowJDBCURL")); // NOI18N
+        showUrlCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionShowJDBCURLAllyDesc")); // NOI18N
         showUrlCheckBox.setMargin(new java.awt.Insets(3, 0, 1, 1));
         showUrlCheckBox.addActionListener(formListener);
 
-        templateComboBox.setToolTipText(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yDesc")); // NOI18N
+        templateComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDriverClassComboBoxA11yDesc")); // NOI18N
         templateComboBox.addItemListener(formListener);
         templateComboBox.addActionListener(formListener);
 
-        hostField.setToolTipText(bundle.getString("ACS_NewConnectionHostA11yDesc")); // NOI18N
+        hostField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionHostA11yDesc")); // NOI18N
 
         templateLabel.setLabelFor(templateComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(templateLabel, bundle.getString("NewConnectionDriverName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(templateLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDriverName")); // NOI18N
 
         hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, bundle.getString("NewConnectionHost")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionHost")); // NOI18N
 
         portLabel.setLabelFor(portField);
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, bundle.getString("NewConnectionPort")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPort")); // NOI18N
 
-        portField.setToolTipText(bundle.getString("ACS_NewConnectionPortA11yDesc")); // NOI18N
+        portField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPortA11yDesc")); // NOI18N
 
         databaseLabel.setLabelFor(databaseField);
-        org.openide.awt.Mnemonics.setLocalizedText(databaseLabel, bundle.getString("NewConnectionDatabase")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(databaseLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDatabase")); // NOI18N
 
-        databaseField.setToolTipText(bundle.getString("ACS_NewConnectionDatabaseNameA11yDesc")); // NOI18N
+        databaseField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDatabaseNameA11yDesc")); // NOI18N
 
         sidLabel.setLabelFor(sidField);
-        org.openide.awt.Mnemonics.setLocalizedText(sidLabel, bundle.getString("NewConnectionSID")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sidLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionSID")); // NOI18N
 
-        sidField.setToolTipText(bundle.getString("ACS_NewConnectionSIDA11yDesc")); // NOI18N
+        sidField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionSIDA11yDesc")); // NOI18N
 
         serviceLabel.setLabelFor(serviceField);
-        org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, bundle.getString("NewConnectionServiceName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionServiceName")); // NOI18N
 
-        serviceField.setToolTipText(bundle.getString("ACS_NewConnectionServiceNameA11yDesc")); // NOI18N
+        serviceField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServiceNameA11yDesc")); // NOI18N
 
         tnsLabel.setLabelFor(tnsField);
-        org.openide.awt.Mnemonics.setLocalizedText(tnsLabel, bundle.getString("NewConnectionTNSName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tnsLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionTNSName")); // NOI18N
 
-        tnsField.setToolTipText(bundle.getString("ACS_NewConnectionTNSNameA11yDesc")); // NOI18N
+        tnsField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionTNSNameA11yDesc")); // NOI18N
 
         serverNameLabel.setLabelFor(serverNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(serverNameLabel, bundle.getString("NewConnectionServerName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serverNameLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionServerName")); // NOI18N
 
-        serverNameField.setToolTipText(bundle.getString("ACS_NewConnectionServerNameA11yDesc")); // NOI18N
+        serverNameField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionServerNameA11yDesc")); // NOI18N
 
         instanceLabel.setLabelFor(instanceField);
-        org.openide.awt.Mnemonics.setLocalizedText(instanceLabel, bundle.getString("NewConnectionInstanceName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(instanceLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionInstanceName")); // NOI18N
 
-        instanceField.setToolTipText(bundle.getString("ACS_NewConnectionInstanceNameA11yDesc")); // NOI18N
+        instanceField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameA11yDesc")); // NOI18N
 
         userLabel.setLabelFor(userField);
-        org.openide.awt.Mnemonics.setLocalizedText(userLabel, bundle.getString("NewConnectionUserName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionUserName")); // NOI18N
 
-        userField.setToolTipText(bundle.getString("ACS_NewConnectionUserNameA11yDesc")); // NOI18N
+        userField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionUserNameA11yDesc")); // NOI18N
 
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, bundle.getString("NewConnectionPassword")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPassword")); // NOI18N
 
-        passwordField.setToolTipText(bundle.getString("ACS_NewConnectionPasswordA11yDesc")); // NOI18N
+        passwordField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionPasswordA11yDesc")); // NOI18N
 
         dsnLabel.setLabelFor(dsnField);
-        org.openide.awt.Mnemonics.setLocalizedText(dsnLabel, bundle.getString("NewConnectionDSN")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dsnLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDSN")); // NOI18N
 
-        dsnField.setToolTipText(bundle.getString("ACS_NewConnectionDSNA11yDesc")); // NOI18N
+        dsnField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDSNA11yDesc")); // NOI18N
 
         additionalPropsLabel.setLabelFor(additionalPropsField);
-        org.openide.awt.Mnemonics.setLocalizedText(additionalPropsLabel, bundle.getString("NewConnectionAdditionalProperties")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(additionalPropsLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionAdditionalProperties")); // NOI18N
 
-        additionalPropsField.setToolTipText(bundle.getString("ACS_NewConnectionAdditionalPropertiesA11yDesc")); // NOI18N
+        additionalPropsField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionAdditionalPropertiesA11yDesc")); // NOI18N
 
-        urlField.setToolTipText(bundle.getString("ACS_NewConnectionJDBCURLA11yDesc")); // NOI18N
+        urlField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionJDBCURLA11yDesc")); // NOI18N
         urlField.addActionListener(formListener);
         urlField.addFocusListener(formListener);
         urlField.addKeyListener(formListener);
 
-        org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, bundle.getString("NewConnectionRememberPassword")); // NOI18N
-        passwordCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionRememberPasswordA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionRememberPassword")); // NOI18N
+        passwordCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionRememberPasswordA11yDesc")); // NOI18N
         passwordCheckBox.setMargin(new java.awt.Insets(3, 0, 1, 1));
 
         inputModelLabel.setLabelFor(fieldInputCheckBox);
-        org.openide.awt.Mnemonics.setLocalizedText(inputModelLabel, bundle.getString("NewCOnnectionInputMode")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(inputModelLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewCOnnectionInputMode")); // NOI18N
 
         inputModeButtonGroup.add(fieldInputCheckBox);
-        org.openide.awt.Mnemonics.setLocalizedText(fieldInputCheckBox, bundle.getString("NewConnectionFieldEntryMode")); // NOI18N
-        fieldInputCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionFieldEntryModeA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fieldInputCheckBox, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionFieldEntryMode")); // NOI18N
+        fieldInputCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionFieldEntryModeA11yDesc")); // NOI18N
         fieldInputCheckBox.addActionListener(formListener);
 
         inputModeButtonGroup.add(directInputCheckBox);
-        org.openide.awt.Mnemonics.setLocalizedText(directInputCheckBox, bundle.getString("NewConnectionDirectUrlEntryMode")); // NOI18N
-        directInputCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionDirectUrlEntryModeA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(directInputCheckBox, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDirectUrlEntryMode")); // NOI18N
+        directInputCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDirectUrlEntryModeA11yDesc")); // NOI18N
         directInputCheckBox.addActionListener(formListener);
 
         directUrlLabel.setLabelFor(directUrlField);
-        org.openide.awt.Mnemonics.setLocalizedText(directUrlLabel, bundle.getString("NewConnectionDirectURL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(directUrlLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDirectURL")); // NOI18N
 
         directUrlField.setColumns(20);
         directUrlField.setLineWrap(true);
         directUrlField.setRows(5);
-        directUrlField.setToolTipText(bundle.getString("ACS_NewConnectionJDBCURLA11yDesc")); // NOI18N
+        directUrlField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionJDBCURLA11yDesc")); // NOI18N
         directUrlScroll.setViewportView(directUrlField);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 674, Short.MAX_VALUE)
+            .add(0, 676, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -474,7 +463,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                                 .add(passwordCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                                 .add(139, 139, 139))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, directUrlScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)))
-                    .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))
+                    .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -622,7 +611,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }//GEN-LAST:event_templateComboBoxActionPerformed
 
     private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
-        if (evt.getStateChange() == evt.SELECTED)
+        if (evt.getStateChange() == ItemEvent.SELECTED)
         {
             Object item = templateComboBox.getSelectedItem();
             if ( item != null && !(item instanceof JdbcUrl)) {
@@ -897,13 +886,13 @@ private void showUrl() {
     }
 
     public String getTitle() {
-        return NbBundle.getBundle(BUNDLE).getString("NewConnectionDialogTitle"); //NOI18N
+        return NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDialogTitle"); //NOI18N
     }
 
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                progressHandle = ProgressHandleFactory.createHandle(getMessage("ConnectionProgress_Connecting"));
+                progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NewConnectionPanel.class, "ConnectionProgress_Connecting"));
                 progressHandle.start();
                 enableInput(false);
             }
@@ -1001,12 +990,12 @@ private void showUrl() {
 
             boolean requiredFieldMissing = false;
             if (url == null) {
-                displayError(getMessage("NewConnection.MSG_SelectADriver"), false);
+                displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SelectADriver"), false);
             } else if (url != null && url.isParseUrl()) {
                 for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                     if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                         requiredFieldMissing = true;
-                        displayError(getMessage("NewConnection.ERR_FieldRequired",
+                        displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.ERR_FieldRequired",
                                 entry.getValue().getLabel().getText()), false);
                     }
                 }
@@ -1015,7 +1004,7 @@ private void showUrl() {
                     clearError();
                 }
             } else if (isEmpty(urlField.getText())) {
-                displayError(getMessage("NewConnection.MSG_SpecifyURL"), false);
+                displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SpecifyURL"), false);
             } else {
                 clearError();
             }
@@ -1023,7 +1012,7 @@ private void showUrl() {
             if (this.directUrlField.getText().trim().length() > 0) {
                 clearError();
             } else {
-                displayError(getMessage("NewConnection.MSG_SpecifyURL"), false);
+                displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SpecifyURL"), false);
             }
         }
     }
