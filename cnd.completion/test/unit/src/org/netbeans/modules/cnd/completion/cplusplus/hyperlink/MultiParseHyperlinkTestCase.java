@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,13 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is the Accelerators module.
- * The Initial Developer of the Original Software is Andrei Badea.
- * Portions Copyright 2005-2006 Andrei Badea.
- * All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,57 +32,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Petr Hrebejk
- */
-
-package org.netbeans.modules.jumpto.file;
-
-import java.util.List;
-import javax.swing.ListModel;
-
-/** Unmodifyiable ListModel based on a List.
+ * Contributor(s):
  *
- * @author Petr Hrebejk
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-    
-class ListListModel<T> implements ListModel {
-    
-    private List list;
-    private Object last;
 
-    /** Creates a new instance of IteratorList */
-    public ListListModel( List<? extends T> list ) {
-        this( list, null );
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
+
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public class MultiParseHyperlinkTestCase extends HyperlinkBaseTestCase {
+    public MultiParseHyperlinkTestCase(String testName) {
+        super(testName);
     }
 
-    public ListListModel( List<? extends T> list, Object last ) {
-        this.list = list;
-        this.last = last;
-        // System.out.println("Creating with last " + last);
-    }
-    
-    // List implementataion ------------------------------------------------
-
-    public Object getElementAt(int index) {
-        // System.out.println("GE " + index );
-        
-        if ( last != null && index == list.size() ) {
-            return last;
-        }
-        
-        return list.get( index );
+    @Override
+    protected void setUp() throws Exception {
+        // check multiparse in one thread mode for stability
+        System.setProperty("cnd.modelimpl.parser.threads", "1");
+        System.setProperty("parser.log.parse", "true");
+        super.setUp();
     }
 
-    public int getSize() {
-        return list.size() + (last == null ? 0 : 1);
+    public void testIZ157907() throws Exception {
+        // IZ#151881: Unresolved ids in #ifdef and #ifndef
+        performTest("source.c", 5, 10, "shared.h", 12, 9);
+        performTest("source.cpp", 5, 10, "shared.h", 10, 9);
     }
-
-    public void removeListDataListener(javax.swing.event.ListDataListener l) {
-        // Does nothing - unmodifiable
-    }
-
-    public void addListDataListener(javax.swing.event.ListDataListener l) {
-        // Does nothing - unmodifiable
-    }
-    
 }

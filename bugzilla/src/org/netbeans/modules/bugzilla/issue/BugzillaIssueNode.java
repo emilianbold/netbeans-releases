@@ -147,7 +147,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
         @Override
         public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {
+            if("sortkey".equals(attributeName)) {                               // NOI18N
                 return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY));
             } else {
                 return super.getValue(attributeName);
@@ -167,7 +167,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
         @Override
         public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {
+            if("sortkey".equals(attributeName)) {                               // NOI18N
                 return getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY));
             } else {
                 return super.getValue(attributeName);
@@ -206,7 +206,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
         @Override
         public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {
+            if("sortkey".equals(attributeName)) {                               // NOI18N
                 return getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION));
             } else {
                 return super.getValue(attributeName);
