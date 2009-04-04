@@ -46,15 +46,6 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.libs.commons_codec</code-name-base>
             <module-dependencies/>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.openide.awt</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.libs.bugtracking</friend>
                 <package>org.apache.commons.codec</package>
