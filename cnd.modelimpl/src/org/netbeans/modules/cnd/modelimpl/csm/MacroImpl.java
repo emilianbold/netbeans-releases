@@ -99,8 +99,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     
     public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
-        assert(macroName != null);
-        assert(macroName.length() > 0);
+        macroName = macroName == null ? CharSequenceKey.empty() : macroName;
         assert(macroBody != null);
         this.name = NameCache.getManager().getString(macroName);
         this.kind = kind;
