@@ -100,9 +100,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     private String getOffsetBasedName() {
         return "[" + this.getContainingFile().getName() + ":" + this.getStartOffset() + "-" + this.getEndOffset() + "]"; // NOI18N
     }   
-    
-    protected CsmUID createUID() {
-        return UIDUtilities.createDeclarationUID(this);
+
+    @Override
+    protected CsmUID<? extends CsmOffsetableDeclaration> createUID() {
+        return UIDUtilities.<CsmOffsetableDeclaration>createDeclarationUID(this);
     }
 
     public boolean isValid() {
