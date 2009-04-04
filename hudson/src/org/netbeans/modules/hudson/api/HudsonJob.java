@@ -64,7 +64,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
                 return "<font color='#989800'>" + displayName + "</font>"; // NOI18N
             }
         },
-        red("red_run") { // NOI18N
+        red("red") { // NOI18N
             public @Override String colorizeDisplayName(String displayName) {
                 return "<font color='#A40000'>" + displayName + "</font>"; // NOI18N
             }
