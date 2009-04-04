@@ -384,7 +384,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 case INITIAL:
                 case PARTIAL:
                     if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && state == State.PARSED) {
-                        System.err.printf("additional parse in ensureParsed with file's state for %s\n", getAbsolutePath()); // NOI18N
+                        System.err.printf("additional parse with PARSED state for %s\n", getAbsolutePath()); // NOI18N
                     }
                     state = State.BEING_PARSED;
                     time = System.currentTimeMillis();
