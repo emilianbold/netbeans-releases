@@ -119,30 +119,28 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
      */
     public void propertyChange(final PropertyChangeEvent ev) {
         err.log(Level.FINE, "Got a change {0}", ev.getPropertyName());
-        refreshChildren(0);
+        refreshChildren(RefreshMode.SHALLOW);
     }
 
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(1);
+        refreshChildren(RefreshMode.DEEP);
     }
 
-    /** Deep refresh or not.
-     * @param operation 0 == shallow, 1 == deep, -1 == clear, 10 = shallow immediatelly
-     */
-    final void refreshChildren(int operation) {
+    private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
+    private final void refreshChildren(RefreshMode operation) {
         class R implements Runnable {
-            int op;
+            RefreshMode op;
             public void run() {
-                if (op == 1) {
-                    op = 2;
+                if (op == RefreshMode.DEEP) {
+                    op = RefreshMode.DEEP_LATER;
                     MUTEX.postWriteRequest(this);
                     return;
                 }
                 err.log(Level.FINE, "refreshChildren {0}", op);
 
                 try {
-                    if (op == -1) {
+                    if (op == RefreshMode.CLEAR) {
                         setKeys(Collections.<FolderChildrenPair>emptyList());
                         return;
                     }
@@ -161,13 +159,13 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                         positioned.add(new FolderChildrenPair(fo));
                     }
 
-                    if (op == 2) {
+                    if (op == RefreshMode.DEEP_LATER) {
                         setKeys(Collections.<FolderChildrenPair>emptyList());
                         setKeys(positioned);
                         return;
                     }
 
-                    if (op == 0) {
+                    if (op == RefreshMode.SHALLOW) {
                         setKeys(positioned);
                         return;
                     }
@@ -179,9 +177,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             }
         }
         R run = new R();
-        if (operation == 10) {
+        if (operation == RefreshMode.SHALLOW_IMMEDIATE) {
             refTask.waitFinished();
-            run.op = 0;
+            run.op = RefreshMode.SHALLOW;
             run.run();
         } else {
             run.op = operation;
@@ -276,7 +274,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             changeListener = WeakListeners.change(this, chF);
             chF.addChangeListener( changeListener );
         }
-        refreshChildren(10);
+        refreshChildren(RefreshMode.SHALLOW_IMMEDIATE);
         err.fine("addNotify end");
     }
 
@@ -311,7 +309,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             // make sure this event is processed by the data system
             DataObjectPool.checkAttributeChanged(fe);
             refreshKey(new FolderChildrenPair(fe.getFile()));
-            refreshChildren(10);
+            refreshChildren(RefreshMode.SHALLOW_IMMEDIATE);
         }
     }
 
@@ -319,18 +317,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     }
 
     public void fileDataCreated(FileEvent fe) {
-         refreshChildren(0);
+         refreshChildren(RefreshMode.SHALLOW);
     }
 
     public void fileDeleted(FileEvent fe) {
-        refreshChildren(0);
+        refreshChildren(RefreshMode.SHALLOW);
     }
 
     public void fileFolderCreated(FileEvent fe) {
-        refreshChildren(0);
+        refreshChildren(RefreshMode.SHALLOW);
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        refreshChildren(0);
+        refreshChildren(RefreshMode.SHALLOW);
     }
 }
