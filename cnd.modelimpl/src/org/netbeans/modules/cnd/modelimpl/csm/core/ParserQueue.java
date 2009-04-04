@@ -488,7 +488,7 @@ public final class ParserQueue {
             project = file.getProjectImpl(true);
             data = getProjectData(project, true);
             if (data.filesBeingParsed.contains(file)) {
-                if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                if (TraceFlags.TRACE_PARSER_QUEUE) {
                     System.err.println("beeing parsed by another thread " + file); // NOI18N
                 }
             } else {
@@ -695,10 +695,8 @@ public final class ParserQueue {
     }
 
     private boolean needEnqueue(FileImpl file) {
-        // we know, that each file is parsed only once =>
-        // let's speed up work with queue ~75% by skipping such files
-        // Also check that file project was not closed
-        return !file.isParsed() && !file.getProjectImpl(true).isDisposing() || addAlways;
+        // with multiple parse we can not check parsed state
+        return !file.getProjectImpl(true).isDisposing() || addAlways;
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
