@@ -77,6 +77,7 @@ public class GeneralSanityTest extends NbTestCase {
             addTest(
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
+                "testOrgNetBeansModulesGsfIsDisabledAutoload",
                 "testInstalledPlugins"
             )
         ));
@@ -128,6 +129,27 @@ public class GeneralSanityTest extends NbTestCase {
         fail("No org.openide.options module found, it should be present, but disabled");
     }
     
+    public void testOrgNetBeansModulesGsfIsDisabledAutoload() {
+        boolean gsfapi = false, gsf = false, gsfpath = false;
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf.api")) {
+                assertFalse("org.netbeans.modules.gsf.api should not be enabled", m.isEnabled());
+                gsfapi = true;
+            }
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf")) {
+                assertFalse("org.netbeans.modules.gsf should not be enabled", m.isEnabled());
+                gsf = true;
+            }
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsfpath.api")) {
+                assertFalse("org.netbeans.modules.gsfpath.api should not be enabled", m.isEnabled());
+                gsfpath = true;
+            }
+        }
+        assertTrue("No org.netbeans.modules.gsf.api module found, it should be present, but disabled", gsfapi);
+        assertTrue("No org.netbeans.modules.gsf module found, it should be present, but disabled", gsf);
+        assertTrue("No org.netbeans.modules.gsfpath.api module found, it should be present, but disabled", gsfpath);
+    }
+
     public void testInstalledPlugins() throws IOException {
         TreeSet<MyModule> idePlugins = new TreeSet<MyModule>();
 

@@ -1649,8 +1649,12 @@ public class CompletionHandler implements CodeCompletionHandler {
     private boolean completePackages(final List<CompletionProposal> proposals, final CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completePackages"); // NOI18N
 
-
+        // this can happen for ?. or similar constructs
         PackageCompletionRequest packageRequest = getPackageRequest(request);
+        if (request.isBehindDot() && packageRequest.basePackage.length() <= 0) {
+            return false;
+        }
+
 
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
 

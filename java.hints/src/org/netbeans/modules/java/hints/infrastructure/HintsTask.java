@@ -50,6 +50,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -225,7 +226,9 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
                 }
             }
         }
-        
+
+        private static final Set<Tree.Kind> SUPPRESS_ELEMENTS = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
+
         @Override
         public Void scan(Tree tree, List<ErrorDescription> p) {
             if (tree == null)
@@ -233,8 +236,14 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
             
             TreePath tp = new TreePath(getCurrentPath(), tree);
             Kind k = tree.getKind();
-            
-            runAndAdd(tp, hints.get(k), p);
+
+            if(SUPPRESS_ELEMENTS.contains(k)) {
+                pushSuppressWarrnings(tp);
+                runAndAdd(tp, hints.get(k), p);
+                suppresWarnings.pop();
+            } else {
+                runAndAdd(tp, hints.get(k), p);
+            }
             
             if (isCanceled()) {
                 return null;
@@ -257,7 +266,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitMethod(MethodTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
+            pushSuppressWarrnings(getCurrentPath());
             Void r = super.visitMethod(tree, arg1);
             suppresWarnings.pop();
             return r;
@@ -265,7 +274,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitClass(ClassTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
+            pushSuppressWarrnings(getCurrentPath());
             Void r = super.visitClass(tree, arg1);
             suppresWarnings.pop();
             return r;
@@ -273,17 +282,17 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitVariable(VariableTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
+            pushSuppressWarrnings(getCurrentPath());
             Void r = super.visitVariable(tree, arg1);
             suppresWarnings.pop();
             return r;
         }
         
-        private void pushSuppressWarrnings( ) {
+        private void pushSuppressWarrnings(TreePath tp) {
             Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
             Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
             
-            Element e = info.getTrees().getElement(getCurrentPath());
+            Element e = info.getTrees().getElement(tp);
             
             if ( e != null) {
                 for (AnnotationMirror am : e.getAnnotationMirrors()) {
