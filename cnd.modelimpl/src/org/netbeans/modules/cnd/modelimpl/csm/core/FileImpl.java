@@ -63,7 +63,6 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -93,6 +92,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -346,6 +346,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             this.fileBuffer = fileBuffer;
             if (state != State.INITIAL) {
+                if (reportParse || logState || TraceFlags.DEBUG) {
+                    System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                }
                 state = State.MODIFIED;
             }
             this.fileBuffer.addChangeListener(fileBufferChangeListener);
@@ -356,35 +359,33 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return this.fileBuffer;
     }
 
-    /**
-     * @param stateRef a reference to the state of the file at the moment it was polled from queue.
-     *
-     * The stateRef was introduced while fixing
-     * #146900 Sync issue with parser queue causes test failure on 4-CPU machine
-     *
-     * The issue occurs under the following conditions:
-     * 1. there are several parsing threads
-     * 2. the file is #included several times and should be parsed several times with different states
-     * 3. at the moment when a parser thread "A" polled it from queue, but not yet started parsing, the following events occur:
-     *    3a. the file is marked to reparse and enqueued again
-     *    3b. another thread (thread "B") polls it from the queue
-     *    3c. thread "B" was in time to finish parse prior than thread "A" started parse
-     * In this case, thread "A" encounters that the file state is "parsed" and skips it.
-     *
-     * TODO: introduce synchronization mechanizm more appropriate to multiple parse concept
-     */
-    public void ensureParsed(Collection<APTPreprocHandler> handlers, AtomicReference<FileImpl.State> stateRef) {
+    // ONLY FOR PARSER THREAD USAGE
+    // Parser Queue ensures that the same file can be parsed at the same time
+    // only by one thread. 
+    /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
+        boolean wasDummy = false;
         if (handlers == DUMMY_HANDLERS) {
+            wasDummy = true;
             handlers = getPreprocHandlers();
         }
         long time;
         synchronized (stateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
-                System.err.printf("file %s is %s, has %d handlers, state %s and stateRef %s\n", getAbsolutePath(), fileType, handlers.size(), state, stateRef.get()); // NOI18N
+                if (getAbsolutePath().toString().endsWith("newfile.h")) { // NOI18N
+                    System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), state, wasDummy); // NOI18N
+                    int i = 0;
+                    for (APTPreprocHandler aPTPreprocHandler : handlers) {
+                        logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
+                    }
+                }
             }
-            switch (stateRef.get()) {
+            switch (state) {
+                case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
                 case INITIAL:
                 case PARTIAL:
+                    if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && state == State.PARSED) {
+                        System.err.printf("additional parse in ensureParsed with file's state for %s\n", getAbsolutePath()); // NOI18N
+                    }
                     state = State.BEING_PARSED;
                     time = System.currentTimeMillis();
                     try {
@@ -440,8 +441,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         new CsmTracer().dumpModel(this);
                     }
                     break;
-                case PARSED:
-                    break;
+                default:
+                    System.err.println("unexpected state in ensureParsed " + state); // NOI18N
             }
         }
     }
@@ -451,7 +452,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (isValid()) {   // FIXUP: use a special lock here
             RepositoryUtils.put(this);
         }
-        if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
+        if (isValid()) {	// FIXUP: use a special lock here
             getProjectImpl(true).getGraph().putFile(this);
         }
         if (isValid()) {   // FIXUP: use a special lock here
@@ -495,6 +496,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     if (TraceFlags.TRACE_VALIDATION) {
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
+                    if (reportParse || logState || TraceFlags.DEBUG) {
+                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                    }
                     state = State.MODIFIED;
                     return false;
                 }
@@ -507,6 +511,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
             if (state != State.INITIAL) {
+                if (reportParse || logState || TraceFlags.DEBUG) {
+                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                }
                 state = State.MODIFIED;
             }
             if (invalidateCache) {
@@ -520,6 +527,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void markMoreParseNeeded() {
         synchronized (changeStateLock) {
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+            }
             switch (state) {
                 case BEING_PARSED:
                 case PARSED:
@@ -690,10 +700,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
         if (reportParse || logState || TraceFlags.DEBUG) {
-            System.err.printf("# %s %s (%s %s) (Thread=%s)\n", //NOI18N
+            System.err.printf("# %s %s \n#\t(%s %s %s) \n#\t(Thread=%s)\n", //NOI18N
                     title, fileBuffer.getFile().getPath(),
                     TraceUtils.getPreprocStateString(preprocHandler.getState()),
                     TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros),
+                    TraceUtils.getPreprocStartEntryString(preprocHandler.getState()),
                     Thread.currentThread().getName());
             if (logState) {
                 System.err.printf("%s\n\n", preprocHandler.getState()); //NOI18N
@@ -1536,7 +1547,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public final State getState() {
-        return state;
+        synchronized (changeStateLock) {
+            return state;
+        }
     }
 
     public boolean isParsingOrParsed() {
