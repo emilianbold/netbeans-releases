@@ -107,6 +107,14 @@ public class OutputLogger {
     }
 
     public void closeLog() {
+        rp.post(new Runnable() {
+            public void run() {
+                if (log != null) {
+                    log.getOut().close();
+                    log.getErr().close();
+                }
+            }
+        });
     }
 
     public void flushLog() {
