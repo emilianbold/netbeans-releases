@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -206,7 +205,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
 
 
-    protected CsmUID createUID() {
+    protected CsmUID<CsmMacro> createUID() {
         return UIDUtilities.createMacroUID(this);
     }
 
