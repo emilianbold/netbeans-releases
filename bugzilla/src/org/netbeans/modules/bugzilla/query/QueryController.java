@@ -104,6 +104,8 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     protected QueryPanel panel;
 
+    private static final String CHANGED_NOW = "Now";
+
     private final ComboParameter summaryParameter;
     private final ComboParameter commentsParameter;
     private final ComboParameter keywordsParameter;
@@ -328,7 +330,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-                    panel.changedToTextField.setText("Now"); // XXX
+                    panel.changedToTextField.setText(CHANGED_NOW);
 
                     // XXX
                     if (urlParameters != null) {
@@ -392,7 +394,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void focusGained(FocusEvent e) {
-        if(panel.changedFromTextField.getText().equals("")) {
+        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
             String lastChangeFrom = BugzillaConfig.getInstance().getLastChangeFrom();
             panel.changedFromTextField.setText(lastChangeFrom);
             panel.changedFromTextField.setSelectionStart(0);
@@ -436,7 +438,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.refreshCheckBox) {
             onAutoRefresh();
         } else if (e.getSource() == panel.idTextField) {
-            if(!panel.idTextField.getText().trim().equals("")) {
+            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
             }
         } else if (e.getSource() == panel.idTextField ||
@@ -491,7 +493,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(name == null) {
                         return;
                     }
-                    panel.queryNameTextField.setText("");
+                    panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
                 save(name, firstTime);
@@ -564,7 +566,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onGotoIssue() {
         final String id = panel.idTextField.getText().trim();
-        if(id == null || id.trim().equals("") ) {
+        if(id == null || id.trim().equals("") ) {                               // NOI18N
             return;
         }
         
@@ -635,7 +637,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onKeywords() {
-        String keywords = BugzillaUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository);
+        String keywords = BugzillaUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository); // NOI18N
         if(keywords != null) {
             panel.keywordsTextField.setText(keywords);
         }
@@ -646,7 +648,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 try {
                     String lastChageFrom = panel.changedFromTextField.getText().trim();
-                    if(lastChageFrom != null && !lastChageFrom.equals("")) {
+                    if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
                         BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
                     }
                     refresh();
@@ -743,7 +745,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         Cancellable c = new Cancellable() {
             public boolean cancel() {
-                task.cancel();
+                if(task != null) {
+                    task.cancel();
+                }
                 return true;
             }
         };

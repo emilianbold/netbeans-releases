@@ -276,15 +276,15 @@ public abstract class QueryParameter {
         @Override
         public ParameterValue[] getValues() {
             String value = txt.getText();
-            if(value == null || value.equals("")) {
+            if(value == null || value.equals("")) { // NOI18N
                 return EMPTY_PARAMETER_VALUE;
             }
-            String[] split = value.split(" ");
+            String[] split = value.split(" "); // NOI18N
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < split.length; i++) {
                 String s = split[i];
                 sb.append(s);
-                if(i < split.length - 1) sb.append("+");
+                if(i < split.length - 1) sb.append("+"); // NOI18N
             }
             String v = sb.toString();
             return new ParameterValue[] { new ParameterValue(v, v) };
@@ -295,7 +295,7 @@ public abstract class QueryParameter {
             if(pvs.length == 0 || pvs[0] == null) {
                 return;
             }
-            txt.setText(pvs[0].getValue().replace("+", " "));
+            txt.setText(pvs[0].getValue().replace("+", " ")); // NOI18N
         }
         @Override
         void setEnabled(boolean  b) {
@@ -304,7 +304,7 @@ public abstract class QueryParameter {
     }
 
     static class CheckBoxParameter extends QueryParameter {
-        private ParameterValue[] selected = new ParameterValue[] {new ParameterValue("1")};
+        private ParameterValue[] selected = new ParameterValue[] {new ParameterValue("1")}; // NOI18N
         private final JCheckBox chk;
         public CheckBoxParameter(JCheckBox chk, String parameter) {
             super(parameter);
@@ -320,7 +320,7 @@ public abstract class QueryParameter {
             if(pvs.length == 0 || pvs[0] == null) {
                 return;
             }
-            chk.setSelected(pvs[0].getValue().equals("1"));
+            chk.setSelected(pvs[0].getValue().equals("1")); // NOI18N
         }
         @Override
         void setEnabled(boolean  b) {
@@ -351,11 +351,11 @@ public abstract class QueryParameter {
         public String toString() {
             if(toString == null) {
                 StringBuffer sb = new StringBuffer();
-                sb.append("[");
+                sb.append("["); // NOI18N
                 sb.append(displayName);
-                sb.append(",");
+                sb.append(","); // NOI18N
                 sb.append(value);
-                sb.append("]");
+                sb.append("]"); // NOI18N
                 toString = sb.toString();
             }
             return toString;
