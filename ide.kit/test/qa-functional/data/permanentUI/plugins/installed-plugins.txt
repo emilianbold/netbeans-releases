@@ -21,7 +21,6 @@
 |org.netbeans.modules.maven.kit|Maven|Java|java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
-|org.netbeans.libs.commons_codec|Commons Codec Integration|Libraries|ide
 |org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
 |org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
 |org.netbeans.modules.maven.search|Maven Quick Search Bridge|null|java
