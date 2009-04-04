@@ -69,7 +69,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Element;
@@ -86,13 +85,10 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -253,7 +249,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 helper.getStandardPropertyEvaluator(), new String[] {"${src.dir}/*.java"}, // NOI18N
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(
                 JbiCustomizerProvider.class, "LBL_Node_EJBModule" // NOI18N
                 );
@@ -279,15 +275,9 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 srcJavaLabel, /*XXX*/
                 null, null
                 );
-        ProjectManager.mutex().postWriteRequest(
-                new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(
-                        FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
-                        );
-            }
-        }
-        );
+        sourcesHelper.registerExternalRoots(
+                FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
+                );
         
         casaFileListener = new FileChangeAdapter() {
             @Override

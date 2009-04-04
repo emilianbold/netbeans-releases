@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
- *
+ * object that can contain declarations and allow to look for existing ones
+ * based on offsets and name. Used from rendere in multi parse mode to append new
+ * content instead of replace existing
  * @author Vladimir Voskresensky
  */
 public interface DeclarationsContainer {

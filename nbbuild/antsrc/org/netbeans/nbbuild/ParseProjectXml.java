@@ -71,6 +71,13 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -78,8 +85,10 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Parse a projectized module's <code>nbproject/project.xml</code> and
@@ -312,6 +321,34 @@ public final class ParseProjectXml extends Task {
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
+            if (getModuleType(pDoc) == TYPE_NB_ORG) {
+                // Ensure project.xml is valid according to schema.
+                File nball = new File(getProject().getProperty("nb_all"));
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                List<Source> sources = new ArrayList<Source>();
+                String[] xsds = {
+                    "project.ant/src/org/netbeans/modules/project/ant/project.xsd",
+                    "apisupport.project/src/org/netbeans/modules/apisupport/project/resources/nb-module-project2.xsd",
+                    "apisupport.project/src/org/netbeans/modules/apisupport/project/resources/nb-module-project3.xsd",
+                };
+                for (String xsd : xsds) {
+                    sources.add(new StreamSource(new File(nball, xsd)));
+                }
+                Schema schema = schemaFactory.newSchema(sources.toArray(new Source[0]));
+                Validator validator = schema.newValidator();
+                validator.setErrorHandler(new ErrorHandler() {
+                    public void warning(SAXParseException x) throws SAXException {
+                        throw x;
+                    }
+                    public void error(SAXParseException x) throws SAXException {
+                        throw x;
+                    }
+                    public void fatalError(SAXParseException x) throws SAXException {
+                        throw x;
+                    }
+                });
+                validator.validate(new DOMSource(pDoc));
+            }
             if (publicPackagesProperty != null || javadocPackagesProperty != null) {
                 PublicPackage[] pkgs = getPublicPackages(pDoc);
                 if (publicPackagesProperty != null) {

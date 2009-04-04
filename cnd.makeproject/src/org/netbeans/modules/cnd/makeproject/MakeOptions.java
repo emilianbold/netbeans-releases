@@ -213,7 +213,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Def Group Perm
     public String getDefGroup() {
-        return getPreferences().get(DEF_GROUP, "sys"); // NOI18N
+        return getPreferences().get(DEF_GROUP, "bin"); // NOI18N
     }
     public void setDefGroup(String value) {
         String oldValue = getDefGroup();

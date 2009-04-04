@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexResult-getRoot-getRelativePath">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexResult.getRoot and getRelativePath</summary>
+      <version major="1" minor="9"/>
+      <date day="2" month="4" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexResult.getRoot()</code> and <code>IndexResult.getRelativePath()</code>
+              methods.
+          </p>
+      </description>
+  </change>
+
   <change id="IndexingManager-refreshAllIndicies">
       <api name="ParsingAPI"/>
       <summary>Adding IndexingManager.refreshAllIndicies()</summary>

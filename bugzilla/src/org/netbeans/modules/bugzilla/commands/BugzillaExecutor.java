@@ -63,10 +63,10 @@ public class BugzillaExecutor {
 
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
-    private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";
-    private static final String COULD_NOT_BE_FOUND           = "could not be found";
-    private static final String REPOSITORY                   = "repository";
-    private static final String MIDAIR_COLISION              = "mid-air collision occurred while submitting to";
+    private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
+    private static final String COULD_NOT_BE_FOUND           = "could not be found";            // NOI18N
+    private static final String REPOSITORY                   = "repository";                    // NOI18N
+    private static final String MIDAIR_COLLISION             = "mid-air collision occurred while submitting to"; // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -178,7 +178,7 @@ public class BugzillaExecutor {
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
-                if(msg.startsWith(MIDAIR_COLISION)) {
+                if(msg.startsWith(MIDAIR_COLLISION)) {
                     return "Mid-air collision occurred while submitting to ''{0}''.\nRefresh the issue and re-submit changes."; // XXX bundle me
                 }
             }

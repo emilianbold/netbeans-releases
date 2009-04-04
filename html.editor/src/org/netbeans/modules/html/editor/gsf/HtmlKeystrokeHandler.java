@@ -44,7 +44,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -79,25 +79,25 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         if ('>' != ch) {
             return false;
         }
-        TokenSequence<HtmlTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HtmlTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
         if (ts == null) {
             return false;
         }
         ts.move(caretOffset);
         boolean found = false;
         while (ts.movePrevious()) {
-            if (ts.token().id() == HtmlTokenId.TAG_OPEN_SYMBOL) {
+            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                 found = true;
                 break;
             }
-            if (ts.token().id() != HtmlTokenId.ARGUMENT &&
-                ts.token().id() != HtmlTokenId.OPERATOR &&
-                ts.token().id() != HtmlTokenId.VALUE &&
-                ts.token().id() != HtmlTokenId.VALUE_CSS &&
-                ts.token().id() != HtmlTokenId.VALUE_JAVASCRIPT &&
-                ts.token().id() != HtmlTokenId.WS &&
-                ts.token().id() != HtmlTokenId.TAG_CLOSE &&
-                ts.token().id() != HtmlTokenId.TAG_OPEN) {
+            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
+                ts.token().id() != HTMLTokenId.OPERATOR &&
+                ts.token().id() != HTMLTokenId.VALUE &&
+                ts.token().id() != HTMLTokenId.VALUE_CSS &&
+                ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
+                ts.token().id() != HTMLTokenId.WS &&
+                ts.token().id() != HTMLTokenId.TAG_CLOSE &&
+                ts.token().id() != HTMLTokenId.TAG_OPEN) {
                 break;
             }
         }
@@ -127,16 +127,16 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     //not used. HTMLKit coveres this functionality
     @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
-        TokenSequence<HtmlTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HtmlTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
         if (ts == null) {
             return -1;
         }
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        if (ts.moveNext() && ts.token().id() == HtmlTokenId.TAG_OPEN_SYMBOL &&
+        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
                 ts.token().text().toString().equals("</")) {
-            if (ts.moveNext() && ts.token().id() == HtmlTokenId.TAG_CLOSE) {
+            if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
                 closingTagName = ts.token().text().toString();
                 end = ts.offset()+ts.token().text().length();
                 ts.movePrevious();
@@ -147,10 +147,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             return  -1;
         }
         boolean foundOpening = false;
-        if (ts.token().id() == HtmlTokenId.TAG_CLOSE_SYMBOL &&
+        if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
                 ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
-                if (ts.token().id() == HtmlTokenId.TAG_OPEN) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
                     if (ts.token().text().toString().equals(closingTagName)) {
                         foundOpening = true;
                     }
@@ -189,7 +189,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         if(ts.moveNext() || ts.movePrevious()) {
             Token token = ts.token();
 
-            if(token.id() == HtmlTokenId.TEXT) {
+            if(token.id() == HTMLTokenId.TEXT) {
                 int from = ts.offset();
                 int to = from + token.text().length();
 

@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -177,7 +177,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 Token<? extends TokenId> token = tokenSequence.token();
 
                 if (token.id().primaryCategory().equals("text")) { // NOI18N
-                    TokenSequence<? extends HtmlTokenId> ts = tokenSequence.embedded(HtmlTokenId.language());
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
                     if (ts == null) {
                         continue;
                     }
@@ -224,7 +224,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 Token<? extends TokenId> token = tokenSequence.token();
 
                 if (token.id().name().equals(T_INLINE_HTML)) { // NOI18N
-                    TokenSequence<? extends HtmlTokenId> ts = tokenSequence.embedded(HtmlTokenId.language());
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
                     if (ts == null) {
                         continue;
                     }
@@ -336,7 +336,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
 
                 if (token.id().primaryCategory().equals("html")) { // NOI18N
-                    TokenSequence<? extends HtmlTokenId> ts = tokenSequence.embedded(HtmlTokenId.language());
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
                     if (ts == null) {
                         continue;
                     }
@@ -380,7 +380,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             List<Embedding> embeddings = new ArrayList<Embedding>();
             JsAnalyzerState state = new JsAnalyzerState();
             @SuppressWarnings("unchecked")
-            TokenSequence<? extends HtmlTokenId> htmlTokenSequence = (TokenSequence<? extends HtmlTokenId>) tokenSequence;
+            TokenSequence<? extends HTMLTokenId> htmlTokenSequence = (TokenSequence<? extends HTMLTokenId>) tokenSequence;
             extractJavaScriptFromHtml(snapshot, htmlTokenSequence, state, embeddings);
 
             return embeddings;
@@ -388,16 +388,16 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     } // End of HtmlTranslator class
 
     /** @return True iff we're still in the middle of an embedded token */
-    private static void extractJavaScriptFromHtml(Snapshot snapshot, TokenSequence<? extends HtmlTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
+    private static void extractJavaScriptFromHtml(Snapshot snapshot, TokenSequence<? extends HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         // NOI18N
         // Process the HTML content: look for embedded script blocks,
         // as well as JavaScript event handlers in element attributes.
         ts.moveStart();
         tokens:
         while (ts.moveNext()) {
-            Token<? extends HtmlTokenId> htmlToken = ts.token();
-            HtmlTokenId htmlId = htmlToken.id();
-            if (htmlId == HtmlTokenId.SCRIPT) {
+            Token<? extends HTMLTokenId> htmlToken = ts.token();
+            HTMLTokenId htmlId = htmlToken.id();
+            if (htmlId == HTMLTokenId.SCRIPT) {
                 state.in_javascript = true;
                 // Emit the block verbatim
                 int sourceStart = ts.offset();
@@ -433,7 +433,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 //                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
 //                        generatedEnd);
 //                codeBlocks.add(blockData);
-            } else if (htmlId == HtmlTokenId.TAG_OPEN) {
+            } else if (htmlId == HTMLTokenId.TAG_OPEN) {
                 String text = htmlToken.text().toString();
 
                 // TODO - if we see a <script src="someurl"> block that also
@@ -443,24 +443,24 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     // Look for "<script src=" and if found, locate any includes.
                     // Quit when I find TAG_CLOSE or run out of tokens
                     // (for files with errors)
-                    TokenSequence<? extends HtmlTokenId> ets = ts.subSequence(ts.offset());
+                    TokenSequence<? extends HTMLTokenId> ets = ts.subSequence(ts.offset());
                     ets.moveStart();
                     boolean foundSrc = false;
                     boolean foundType = false;
                     String type = null;
                     String src = null;
                     while (ets.moveNext()) {
-                        Token<? extends HtmlTokenId> t = ets.token();
-                        HtmlTokenId id = t.id();
+                        Token<? extends HTMLTokenId> t = ets.token();
+                        HTMLTokenId id = t.id();
                         // TODO - if we see a DEFER attribute here record that somehow
                         // such that I can have a quickfix look to make sure you don't try
                         // to mess with the document!
-                        if (id == HtmlTokenId.TAG_CLOSE_SYMBOL) {
+                        if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                             break;
                         } else if (foundSrc || foundType) {
-                            if (id == HtmlTokenId.ARGUMENT) {
+                            if (id == HTMLTokenId.ARGUMENT) {
                                 break;
-                            } else if (id == HtmlTokenId.VALUE) {
+                            } else if (id == HTMLTokenId.VALUE) {
                                 // Found a script src
                                 if (foundSrc) {
                                     src = t.toString();
@@ -471,7 +471,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                                 foundSrc = false;
                                 foundType = false;
                             }
-                        } else if (id == HtmlTokenId.ARGUMENT) {
+                        } else if (id == HTMLTokenId.ARGUMENT) {
                             String val = t.toString();
                             if ("src".equals(val)) {
                                 foundSrc = true;
@@ -496,9 +496,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                 }
 
-            } else if (state.in_javascript && htmlId == HtmlTokenId.TEXT) {
+            } else if (state.in_javascript && htmlId == HTMLTokenId.TEXT) {
                 embeddings.add(snapshot.create(ts.offset(), htmlToken.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
-            } else if (htmlId == HtmlTokenId.VALUE_JAVASCRIPT) {
+            } else if (htmlId == HTMLTokenId.VALUE_JAVASCRIPT) {
 
                 int sourceStart = ts.offset();
                 int sourceEnd = sourceStart + ts.token().length();
@@ -533,7 +533,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                 state.inlined_javascript_pieces++;
 
-            } else if (state.in_inlined_javascript && htmlId != HtmlTokenId.VALUE_JAVASCRIPT) {
+            } else if (state.in_inlined_javascript && htmlId != HTMLTokenId.VALUE_JAVASCRIPT) {
 
                 //we left the inlined javascript section
                 //need to check if the last inlined javascript section endded
@@ -580,7 +580,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 // Finish the surrounding function context
                 embeddings.add(snapshot.create("\n}\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
 
-            } else if (htmlId == HtmlTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
+            } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript

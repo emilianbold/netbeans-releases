@@ -44,9 +44,10 @@ package org.netbeans.test.editor;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Comparator;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.junit.Manager;
@@ -76,6 +77,7 @@ public class GeneralSanityTest extends NbTestCase {
             addTest(
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
+                "testOrgNetBeansModulesGsfIsDisabledAutoload",
                 "testInstalledPlugins"
             )
         ));
@@ -127,15 +129,31 @@ public class GeneralSanityTest extends NbTestCase {
         fail("No org.openide.options module found, it should be present, but disabled");
     }
     
-    public void testInstalledPlugins() {
-        TreeSet<ModuleInfo> idePlugins = new TreeSet<ModuleInfo>(new Comparator<ModuleInfo>() {
-
-            public int compare(ModuleInfo m1, ModuleInfo m2) {
-                String s = m1.getLocalizedAttribute("OpenIDE-Module-Display-Category") + " " + m1.getDisplayName();
-                return s.compareToIgnoreCase(m2.getLocalizedAttribute("OpenIDE-Module-Display-Category") + " " + m2.getDisplayName());
+    public void testOrgNetBeansModulesGsfIsDisabledAutoload() {
+        boolean gsfapi = false, gsf = false, gsfpath = false;
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf.api")) {
+                assertFalse("org.netbeans.modules.gsf.api should not be enabled", m.isEnabled());
+                gsfapi = true;
             }
-            
-        });
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsf")) {
+                assertFalse("org.netbeans.modules.gsf should not be enabled", m.isEnabled());
+                gsf = true;
+            }
+            if (m.getCodeNameBase().equals("org.netbeans.modules.gsfpath.api")) {
+                assertFalse("org.netbeans.modules.gsfpath.api should not be enabled", m.isEnabled());
+                gsfpath = true;
+            }
+        }
+        assertTrue("No org.netbeans.modules.gsf.api module found, it should be present, but disabled", gsfapi);
+        assertTrue("No org.netbeans.modules.gsf module found, it should be present, but disabled", gsf);
+        assertTrue("No org.netbeans.modules.gsfpath.api module found, it should be present, but disabled", gsfpath);
+    }
+
+    public void testInstalledPlugins() throws IOException {
+        TreeSet<MyModule> idePlugins = new TreeSet<MyModule>();
+
+        // plugins installed in the IDE
         for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             assertTrue(m instanceof Module);
             Module mm = (Module)m;
@@ -145,8 +163,15 @@ public class GeneralSanityTest extends NbTestCase {
             if (mm.isAutoload() || mm.isEager() || mm.isFixed()) {
                 continue;
             }
-            idePlugins.add(m);
+            idePlugins.add(new MyModule(
+                    mm.getCodeNameBase(),
+                    mm.getDisplayName(),
+                    "" + mm.getLocalizedAttribute("OpenIDE-Module-Display-Category"),
+                    getCluster(mm)));
         }
+
+        // add plugins that were not built during this particular build
+        idePlugins.addAll(getAbsentModulesFromGoldenFile());
 
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         final String idePluginsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
@@ -173,21 +198,23 @@ public class GeneralSanityTest extends NbTestCase {
         }
     }
 
-    private static void printPlugins(PrintStream out, Set<ModuleInfo> plugins) {
+    private static void printPlugins(PrintStream out, Set<MyModule> plugins) {
 
-        String output = "||Codebase||Display name||Category";
-        out.println(output);
+        out.println("||Codebase||Display name||Category||Cluster");
 
-        for (ModuleInfo m : plugins) {
-            output = "";
-            output += "|" + m.getCodeNameBase();
-            output += "|" + m.getDisplayName();
-            output += "|" + m.getLocalizedAttribute("OpenIDE-Module-Display-Category");
-            out.println(output);
-
+        for (MyModule m : plugins) {
+            out.println(m.toString());
         }
     }
 
+    private static String getCluster(Module m) {
+        File cluster = m.getJarFile().getParentFile().getParentFile();
+        return stripClusterNumber(cluster.getName());
+    }
+
+    private static String stripClusterNumber(String cluster) {
+        return Pattern.compile("[0-9]+").split(cluster)[0];
+    }
     /**
      * constructs the relative path to the golden file to Installed Plugins permanent UI spec
      * @return
@@ -200,6 +227,65 @@ public class GeneralSanityTest extends NbTestCase {
             ex.printStackTrace();
         }
         return dataDir + File.separator + "permanentUI" + File.separator + "plugins" + File.separator + "installed-plugins.txt";
+    }
+
+    private Set<MyModule> getAbsentModulesFromGoldenFile() throws IOException {
+        TreeSet<MyModule> result = new TreeSet<MyModule>();
+        Set<String> presentClusters = getAllClusters();
+        Scanner scanner = new Scanner(new File(getPluginsGoldenFile()));
+        scanner.nextLine(); // header row, ignore
+        while (scanner.hasNext()) {
+            String moduleRow = scanner.nextLine();
+            Scanner scanner2 = new Scanner (moduleRow);
+            scanner2.useDelimiter("\\x7C"); // | character
+            MyModule m = new MyModule(scanner2.next(), scanner2.next(), scanner2.next(), scanner2.next());
+            getAllClusters();
+            if (!presentClusters.contains(m.cluster)) {
+                result.add(m);
+            }
+        }
+        return result;
+    }
+
+    private Set<String> getAllClusters() {
+        String dirs = System.getProperty("netbeans.dirs");
+        String[] dirsArray = Pattern.compile(File.pathSeparator).split(dirs);
+        TreeSet<String> result = new TreeSet<String>();
+        for (int i = 0; i < dirsArray.length; i++) {
+            result.add(stripClusterNumber(new File(dirsArray[i]).getName()));
+        }
+        return result;
+    }
+
+
+    static class MyModule implements Comparable<MyModule> {
+        String codeNameBase;
+        String displayName;
+        String displayCategory;
+        String cluster;
+
+        public MyModule(String codeNameBase, String displayName, String displayCategory, String cluster) {
+            this.codeNameBase    = codeNameBase;
+            this.displayName     = displayName;
+            this.displayCategory = displayCategory;
+            this.cluster         = cluster;
+        }
+
+        public int compareTo(MyModule m2) {
+            String s = displayCategory + " " + displayName;
+            return s.compareToIgnoreCase(m2.displayCategory + " " + m2.displayName);
+        }
+
+        @Override
+        public String toString() {
+            String output = "";
+            output += "|" + codeNameBase;
+            output += "|" + displayName;
+            output += "|" + displayCategory;
+            output += "|" + cluster;
+            return output;
+        }
+
     }
 
 }

@@ -61,6 +61,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -116,6 +117,8 @@ public class Subversion {
      * Hyperlink providers available for the commit message TooltipWindow
      */
     private List<HyperlinkProvider> hyperlinkProviders;
+
+    private VCSKenaiSupport kenaiSupport = null;
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -374,7 +377,8 @@ public class Subversion {
 
                 } catch (SVNClientException ex)  {
                     if(!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) && 
-                       !SvnClientExceptionHandler.isCancelledAction(ex.getMessage()))
+                       !SvnClientExceptionHandler.isCancelledAction(ex.getMessage()) &&
+                       !SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage()))
                     {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -396,7 +400,9 @@ public class Subversion {
                     }
                 }
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                if(!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                }
             }
             return true;
         } else {
@@ -540,4 +546,12 @@ public class Subversion {
         }
         return hyperlinkProviders;
     }
+
+    public VCSKenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+        }
+        return kenaiSupport;
+    }
+    
 }

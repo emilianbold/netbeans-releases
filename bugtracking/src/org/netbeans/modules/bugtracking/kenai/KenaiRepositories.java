@@ -123,7 +123,7 @@ public class KenaiRepositories {
 
         repository = getRepository(kp);
         if(repository == null) {
-            BugtrackingManager.LOG.info("No bugtracking repository available for project " + kp.getName());
+            BugtrackingManager.LOG.info("No issue tracking repository available for project " + kp.getName()); // NOI18N
             return null;
         }        
         return repository;

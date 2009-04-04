@@ -108,11 +108,11 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     }
 
     RemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
-        this(new URL(build.getUrl() + "artifact/"), /*XXX I18N*/build.getJob().getDisplayName() + " #" + build.getNumber(), build.getJob());
+        this(new URL(build.getUrl() + "artifact/"), build.getDisplayName(), build.getJob()); // NOI18N
     }
 
     RemoteFileSystem(HudsonMavenModuleBuild module) throws MalformedURLException {
-        this(new URL(module.getUrl() + "artifact/"), /*XXX I18N*/module.getDisplayName() + " #" + module.getBuild().getNumber(), module.getBuild().getJob());
+        this(new URL(module.getUrl() + "artifact/"), module.getBuildDisplayName(), module.getBuild().getJob()); // NOI18N
     }
 
     /**
@@ -168,7 +168,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             java.util.List<String> kids = new ArrayList<String>();
             String line;
             while ((line = r.readLine()) != null) {
-                if (line.endsWith("/")) {
+                if (line.endsWith("/")) { // NOI18N
                     String n = line.substring(0, line.length() - 1);
                     kids.add(n);
                 } else {
@@ -282,7 +282,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
                                 delegate = inputStreamNoCache(name);
                                 while (p-- > 0) { // delegate.skip(p) might not return p
                                     if (delegate.read() == -1) {
-                                        throw new IOException("Premature EOF in " + name);
+                                        throw new IOException("Premature EOF in " + name); // NOI18N
                                     }
                                 }
                             }

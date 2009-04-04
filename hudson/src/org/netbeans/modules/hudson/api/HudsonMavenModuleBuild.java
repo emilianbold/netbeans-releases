@@ -78,4 +78,9 @@ public interface HudsonMavenModuleBuild {
      */
     FileSystem getArtifacts();
 
+    /**
+     * Display name comprised of module display name and build number.
+     */
+    String getBuildDisplayName();
+
 }

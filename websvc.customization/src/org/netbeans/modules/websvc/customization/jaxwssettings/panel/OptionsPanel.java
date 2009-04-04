@@ -238,12 +238,13 @@ public class OptionsPanel extends javax.swing.JPanel {
         }
 
         public int addOption() {
-            String name = generateUniqueName("option");
+            String name = generateUniqueName(NbBundle.getMessage(OptionsPanel.class, "DEFAULT_OPTION_NAME"));
             int index = options.size();
-            this.addRow(new String[]{name, "value"});
+            String defaultValue = NbBundle.getMessage(OptionsPanel.class, "DEFAULT_VALUE");
+            this.addRow(new String[]{name, defaultValue});
             WsimportOption opt = wsimportOptions.newWsimportOption();
             opt.setWsimportOptionName(name);
-            opt.setWsimportOptionValue("value");
+            opt.setWsimportOptionValue(defaultValue);
             options.add(opt);
             fireTableRowsInserted(index, index);
             return index;

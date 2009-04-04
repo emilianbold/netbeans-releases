@@ -54,6 +54,7 @@ import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -71,18 +72,18 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
     private final String displayName;
 
     public ShowBuildConsole(HudsonJobBuild build) {
-        this(build.getJob(), build.getUrl(), build.getJob().getDisplayName() + " #" + build.getNumber()); // XXX I18N
+        this(build.getJob(), build.getUrl(), build.getDisplayName());
     }
 
     public ShowBuildConsole(HudsonMavenModuleBuild module) {
-        this(module.getBuild().getJob(), module.getUrl(), module.getDisplayName() + " #" + module.getBuild().getNumber()); // XXX I18N
+        this(module.getBuild().getJob(), module.getUrl(), module.getBuildDisplayName());
     }
 
     private ShowBuildConsole(HudsonJob job, String url, String displayName) {
         this.job = job;
         this.url = url;
         this.displayName = displayName;
-        putValue(NAME, "Show Console"); // XXX I18N
+        putValue(NAME, NbBundle.getMessage(ShowBuildConsole.class, "ShowBuildConsole.label"));
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -114,21 +115,21 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                 URLConnection conn = new ConnectionBuilder().job(job).url(urlPrefix + start).
                         header("Accept-Encoding", "gzip"). // NOI18N
                         connection();
-                boolean moreData = Boolean.parseBoolean(conn.getHeaderField("X-More-Data"));
+                boolean moreData = Boolean.parseBoolean(conn.getHeaderField("X-More-Data")); // NOI18N
                 LOG.log(Level.FINE, "{0} retrieving text from {1}", new Object[] {url, start});
-                start = conn.getHeaderFieldInt("X-Text-Size", start);
+                start = conn.getHeaderFieldInt("X-Text-Size", start); // NOI18N
                 InputStream is = conn.getInputStream();
                 try {
                     InputStream isToUse = is;
-                    if ("gzip".equals(conn.getContentEncoding())) {
+                    if ("gzip".equals(conn.getContentEncoding())) { // NOI18N
                         LOG.log(Level.FINE, "{0} using GZIP", url);
                         isToUse = new GZIPInputStream(is);
                     }
                     // XXX safer to check content type on connection, but in fact Stapler sets it to UTF-8
-                    BufferedReader r = new BufferedReader(new InputStreamReader(isToUse, "UTF-8"));
+                    BufferedReader r = new BufferedReader(new InputStreamReader(isToUse, "UTF-8")); // NOI18N
                     String line;
                     while ((line = r.readLine()) != null) {
-                        OutputWriter stream = line.matches("(?i).*((warn(ing)?|err(or)?)[]:]|failed).*") ? err : out;
+                        OutputWriter stream = line.matches("(?i).*((warn(ing)?|err(or)?)[]:]|failed).*") ? err : out; // NOI18N
                         hyperlinker.handleLine(line, stream);
                     }
                 } finally {

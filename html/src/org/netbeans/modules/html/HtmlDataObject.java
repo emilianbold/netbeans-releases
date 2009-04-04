@@ -50,7 +50,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -238,7 +238,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             return rslt;
         }
         
-        TokenHierarchy hi = TokenHierarchy.create(txt, HtmlTokenId.language());
+        TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         ts.moveStart();
         while(ts.moveNext()) {
@@ -249,7 +249,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 break;
             }
             
-            if(token.id() == HtmlTokenId.VALUE) {
+            if(token.id() == HTMLTokenId.VALUE) {
                 String tokenImage = token.text().toString();
                 int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
                 charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;

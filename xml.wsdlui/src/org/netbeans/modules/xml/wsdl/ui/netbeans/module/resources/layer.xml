@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-WSDLDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                        <attr name="position" intvalue="88765"/>
                     </file>
                 </folder>
                 <folder name="Actions">

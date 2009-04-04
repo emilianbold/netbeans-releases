@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.TransferFile;
 
 /**
  * The particular implementation of the remote client (e.g. FTP, SFTP).
@@ -107,6 +106,15 @@ public interface RemoteClient {
     boolean isConnected();
 
     /**
+     * Return <code>true</code> if the remote file exists, <code>false</code> otherwise.
+     * @return <code>true</code> if the remote file exists, <code>false</code> otherwise.
+     * @param parent path of the parent folder.
+     * @param name name of the file.
+     * @throws RemoteException if any unexpected error occurs.
+     */
+    boolean exists(String parent, String name) throws RemoteException;
+
+    /**
      * Store a file on a remote server.
      * <p>
      * <b>Avoid closing of the given {@link InputStream input stream}!</b>
@@ -135,6 +143,14 @@ public interface RemoteClient {
      * @throws RemoteException if any unexpected error occurs.
      */
     boolean deleteFile(String pathname) throws RemoteException;
+
+    /**
+     * Delete directory from a remote server.
+     * @param pathname path of the directory to be deleted.
+     * @return <code>true</code> if the directory deletion was successful, <code>false</code> otherwise (typically for non-empty folders).
+     * @throws RemoteException if any unexpected error occurs.
+     */
+    boolean deleteDirectory(String pathname) throws RemoteException;
 
     /**
      * Rename the file on a remote server.
@@ -167,73 +183,8 @@ public interface RemoteClient {
 
     /**
      * Get the list of the {@link RemoteFile files} of the current directory.
-     * <p>
-     * {@link PathInfo} contains information about the current working directory
-     * and should be used only when throwing an {@link RemoteException remote exception}.
-     * @param pathInfo information about the current working directory.
      * @return the list of the {@link RemoteFile files} of the current directory, never <code>null</code>.
      * @throws RemoteException if any unexpected error occurs.
      */
-    List<RemoteFile> listFiles(PathInfo pathInfo) throws RemoteException;
-
-    /**
-     * This class contains information about the current working directory.
-     * Its typical usage is only for providing additional information if any error occurs.
-     */
-    final class PathInfo {
-        private final String baseDirectory;
-        private final String parentDirectory;
-
-        /**
-         * Create a new instance of {@link PathInfo}.
-         * @param baseDirectory base directory of the connection; it means the starting directory
-         *        when one connects to a remote server.
-         * @param parentDirectory parent directory of the current working directory, relative to <code>base directory</code>.
-         */
-        public PathInfo(String baseDirectory, String parentDirectory) {
-            assert baseDirectory != null;
-            assert parentDirectory != null;
-
-            this.baseDirectory = baseDirectory;
-            this.parentDirectory = parentDirectory;
-        }
-
-        /**
-         * Get the base directory of the connection; it means the starting directory
-         * when one connects to a remote server.
-         * @return the base directory.
-         */
-        public String getBaseDirectory() {
-            return baseDirectory;
-        }
-
-        /**
-         * Get parent directory of the current working directory, relative to <code>base directory</code>.
-         * @return parent directory of the current working directory, relative to <code>base directory</code>.
-         */
-        public String getParentDirectory() {
-            return parentDirectory;
-        }
-
-        /**
-         * Get the full path of the parent directory of the current working directory; it means
-         * {@link #getParentDirectory() parent directory} prepended with {@link #getBaseDirectory() base directory}.
-         * @return the full path of the parent directory of the current working directory.
-         */
-        public String getFullPath() {
-            return baseDirectory + TransferFile.SEPARATOR + parentDirectory;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder(200);
-            sb.append(getClass().getName());
-            sb.append(" [baseDirectory: "); // NOI18N
-            sb.append(baseDirectory);
-            sb.append(", parentDirectory: "); // NOI18N
-            sb.append(parentDirectory);
-            sb.append("]"); // NOI18N
-            return sb.toString();
-        }
-    }
+    List<RemoteFile> listFiles() throws RemoteException;
 }

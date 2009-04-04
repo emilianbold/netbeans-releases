@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import antlr.Token;
 import antlr.collections.AST;
 import java.util.Collection;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
@@ -82,6 +84,15 @@ public class TraceUtils {
     }
 
     public static final String getPreprocStateString(APTPreprocHandler.State preprocState) {
-        return String.format("valid=%b, compile-context=%b", preprocState.isValid(), preprocState.isCompileContext());//NOI18N
+        return String.format("valid=%b, compile-context=%b, cleaned=%b", preprocState.isValid(), preprocState.isCompileContext(), preprocState.isCleaned());//NOI18N
     }   
+
+    public static final String getPreprocStartEntryString(APTPreprocHandler.State preprocState) {
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(preprocState);
+        if (startEntry == null) {
+            return "no start entry info"; // NOI18N
+        } else {
+            return String.format("start file=%s, start-prj=%s", startEntry.getStartFile(), startEntry.getStartFileProject()); // NOI18N
+        }
+    }
 }

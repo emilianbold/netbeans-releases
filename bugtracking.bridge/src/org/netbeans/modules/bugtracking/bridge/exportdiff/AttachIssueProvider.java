@@ -76,7 +76,7 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     }
 
     @Override
-    public void handeDiffFile(File file) {
+    public void handleDiffFile(File file) {
         LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
 
         Issue issue = panel.getIssue();
@@ -102,11 +102,11 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
         Repository repoToSelect = null;
         if(files.length > 0) {
             for (File file : files) {
-                repoToSelect = support.getRepository(file);
+                repoToSelect = support.getRepository(file, false);
                 if(repoToSelect == null) {
-                    LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
                 } else {
-                    LOG.log(Level.FINE, " found repository " + repoToSelect + " for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " found issue tracker " + repoToSelect + " for " + file);  // NOI18N
                     break;
                 }
             }

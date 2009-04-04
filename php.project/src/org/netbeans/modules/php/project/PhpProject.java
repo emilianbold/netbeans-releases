@@ -361,7 +361,7 @@ public class PhpProject implements Project {
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
-                new PhpSources(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
+                new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
                 getEvaluator()
                 // ?? getRefHelper()

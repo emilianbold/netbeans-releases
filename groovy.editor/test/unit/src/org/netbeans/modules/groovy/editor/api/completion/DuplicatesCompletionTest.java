@@ -41,7 +41,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
 import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;

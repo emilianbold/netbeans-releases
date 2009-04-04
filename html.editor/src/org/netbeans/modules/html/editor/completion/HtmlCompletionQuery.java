@@ -48,7 +48,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -119,13 +119,13 @@ public class HtmlCompletionQuery {
         doc.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(doc);
-            TokenSequence ts = hi.tokenSequence(HtmlTokenId.language());
+            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
             if (ts == null) {
                 //Html language is not top level one
                 ts = hi.tokenSequence();
                 ts.move(offset);
                 if (ts.moveNext() || ts.movePrevious()) {
-                    ts = ts.embedded(HtmlTokenId.language());
+                    ts = ts.embedded(HTMLTokenId.language());
                 } else { // no tokens
                     return null;
                 }
@@ -156,7 +156,7 @@ public class HtmlCompletionQuery {
 
             Token tok = item;
             //scan the token chain before the
-            while (!(tok.id() == HtmlTokenId.TAG_OPEN || tok.id() == HtmlTokenId.TAG_CLOSE) && ts.movePrevious()) {
+            while (!(tok.id() == HTMLTokenId.TAG_OPEN || tok.id() == HTMLTokenId.TAG_CLOSE) && ts.movePrevious()) {
                 tok = ts.token();
             }
 
@@ -191,18 +191,18 @@ public class HtmlCompletionQuery {
 
             /* Character reference finder */
             int ampIndex = preText.lastIndexOf('&'); //NOI18N
-            if ((id == HtmlTokenId.TEXT || id == HtmlTokenId.VALUE) && ampIndex > -1) {
+            if ((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > -1) {
                 len = preText.length() - ampIndex;
                 String refNamePrefix = preText.substring(ampIndex + 1);
                 result = translateCharRefs(offset - len, len, dtd.getCharRefList(refNamePrefix));
 
-            } else if (id == HtmlTokenId.CHARACTER) {
+            } else if (id == HTMLTokenId.CHARACTER) {
                 if (inside || !preText.endsWith(";")) { // NOI18N
                     len = offset - itemOffset;
                     result = translateCharRefs(offset - len, len, dtd.getCharRefList(preText.substring(1)));
                 }
                 /* Tag finder */
-            } else if (id == HtmlTokenId.TAG_OPEN) { // NOI18N
+            } else if (id == HTMLTokenId.TAG_OPEN) { // NOI18N
                 len = offset - itemOffset + 1; // minus the < char length
                 result = translateTags(itemOffset - 1, len, dtd.getElementList(preText));
 
@@ -222,10 +222,10 @@ public class HtmlCompletionQuery {
 //                        Token t = ts.token();
 //
 //                        //test if next token is a whitespace and the next a tag token or an attribute token
-//                        if (t.id() == HtmlTokenId.WS) {
+//                        if (t.id() == HTMLTokenId.WS) {
 //                            if (ts.moveNext()) {
 //                                t = ts.token();
-//                                if ((t.id() == HtmlTokenId.TAG_CLOSE || t.id() == HtmlTokenId.ARGUMENT)) {
+//                                if ((t.id() == HTMLTokenId.TAG_CLOSE || t.id() == HTMLTokenId.ARGUMENT)) {
 //                                    //do not put the item into CC - otherwise it will break the completed tag
 //                                    result = null;
 //                                }
@@ -235,19 +235,19 @@ public class HtmlCompletionQuery {
 //                }
 
 
-            } else if (id != HtmlTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
+            } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
                 // There will be lookup for possible StartTags, in SyntaxSupport
                 //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
                 result = translateTags(offset - len, len, dtd.getElementList(""));
 
                 /* EndTag finder */
-            } else if (id == HtmlTokenId.TEXT && preText.endsWith("</")) { // NOI18N
+            } else if (id == HTMLTokenId.TEXT && preText.endsWith("</")) { // NOI18N
                 len = 2;
                 result = getPossibleEndTags(doc, offset, "");
-            } else if (id == HtmlTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</")) { // NOI18N
+            } else if (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</")) { // NOI18N
                 len = 2;
                 result = getPossibleEndTags(doc, offset, "");
-            } else if (id == HtmlTokenId.TAG_CLOSE) { // NOI18N
+            } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
                 len = offset - itemOffset;
                 result = getPossibleEndTags(doc, offset, preText);
 
@@ -256,10 +256,10 @@ public class HtmlCompletionQuery {
                  * arg, these rules doesn't match start of such arg this case because
                  * of need for matching starting quote
                  */
-            } else if (id == HtmlTokenId.TAG_CLOSE_SYMBOL) {
+            } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                 result = getAutocompletedEndTag(doc, offset);
 
-            } else if (id == HtmlTokenId.WS || id == HtmlTokenId.ARGUMENT) {
+            } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain(offset);
@@ -303,7 +303,7 @@ public class HtmlCompletionQuery {
                     if (tag == null) {
                         return null; // unknown tag
                     }
-                    String prefix = (id == HtmlTokenId.ARGUMENT) ? preText : "";
+                    String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
                     len = prefix.length();
                     List possible = tag.getAttributeList(prefix); // All attribs of given tag
                     Collection<SyntaxElement.TagAttribute> existing = tagElem.getAttributes(); // Attribs already used
@@ -336,14 +336,14 @@ public class HtmlCompletionQuery {
                  * color,.... - may be better resolved by attr type, may be moved
                  * to propertysheet
                  */
-            } else if (id == HtmlTokenId.VALUE || id == HtmlTokenId.OPERATOR || id == HtmlTokenId.WS) {
+            } else if (id == HTMLTokenId.VALUE || id == HTMLTokenId.OPERATOR || id == HTMLTokenId.WS) {
 
-                if (id == HtmlTokenId.WS) {
+                if (id == HTMLTokenId.WS) {
                     //is the token before an operator? '<div color= |red>'
                     ts.move(item.offset(hi));
                     ts.movePrevious();
                     Token t = ts.token();
-                    if (t.id() != HtmlTokenId.OPERATOR) {
+                    if (t.id() != HTMLTokenId.OPERATOR) {
                         return null;
                     }
                 }
@@ -377,11 +377,11 @@ public class HtmlCompletionQuery {
                     ts.move(item.offset(hi));
                     ts.moveNext();
                     Token argItem = ts.token();
-                    while (argItem.id() != HtmlTokenId.ARGUMENT && ts.movePrevious()) {
+                    while (argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {
                         argItem = ts.token();
                     }
 
-                    if (argItem.id() != HtmlTokenId.ARGUMENT) {
+                    if (argItem.id() != HTMLTokenId.ARGUMENT) {
                         return null; // no ArgItem
                     }
                     String argName = argItem.text().toString().toLowerCase(Locale.ENGLISH);
@@ -391,7 +391,7 @@ public class HtmlCompletionQuery {
                         return null;
                     }
 
-                    if (id != HtmlTokenId.VALUE) {
+                    if (id != HTMLTokenId.VALUE) {
                         len = 0;
                         result = translateValues(offset - len, len, arg.getValueList(""));
                     } else {
@@ -410,9 +410,9 @@ public class HtmlCompletionQuery {
                         result = translateValues(offset - len, len, arg.getValueList(quotationChar == null ? preText : preText.substring(1)), quotationChar);
                     }
                 }
-            } else if (id == HtmlTokenId.SCRIPT) {
+            } else if (id == HTMLTokenId.SCRIPT) {
                 result = addEndTag(SCRIPT_TAG_NAME, preText, offset);
-            } else if (id == HtmlTokenId.STYLE) {
+            } else if (id == HTMLTokenId.STYLE) {
                 result = addEndTag(STYLE_TAG_NAME, preText, offset);
             }
 
@@ -607,10 +607,10 @@ public class HtmlCompletionQuery {
             return new ArrayList(0);
         }
         List result = new ArrayList(values.size());
+        if(quotationChar != null) {
+            offset++; //shift the offset after the quotation
+        }
         for (Iterator i = values.iterator(); i.hasNext();) {
-            if(quotationChar != null) {
-                offset++; //shift the offset after the quotation
-            }
             result.add(HtmlCompletionItem.createAttributeValue(((DTD.Value) i.next()).getName(), offset));
         }
         return result;

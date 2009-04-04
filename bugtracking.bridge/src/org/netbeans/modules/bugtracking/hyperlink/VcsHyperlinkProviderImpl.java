@@ -73,8 +73,10 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
         final String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 
-        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
         if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
         
         class IssueDisplayer implements Runnable {
             private Issue issue = null;

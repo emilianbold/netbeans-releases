@@ -48,6 +48,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -79,16 +81,94 @@ public class BugtrackingOwnerSupport {
         return instance;
     }
 
-    public Repository getRepository(File file) {
-        return getRepository(file, null, true);
+    public enum ContextType {
+        MAIN_PROJECT_ONLY,
+        MAIN_OR_SINGLE_PROJECT,
+        ALL_PROJECTS,
+        SELECTED_FILE_AND_ALL_PROJECTS,
+    }
+
+    public Repository getRepository(ContextType context) {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        switch (context) {
+            case MAIN_PROJECT_ONLY:
+                Project mainProject = projects.getMainProject();
+                if (mainProject != null) {
+                    return getRepository(mainProject, false);
+                }
+                break;
+            case MAIN_OR_SINGLE_PROJECT:
+                Project mainOrSingleProject = getMainOrSingleProject();
+                if (mainOrSingleProject != null) {
+                    return getRepository(mainOrSingleProject, false);
+                }
+                break;
+            case ALL_PROJECTS:
+                return getRepository(projects.getOpenProjects());
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                return getRepositoryForContext(BugtrackingUtil.getLargerContext(),
+                                               false);
+            default:
+                assert false;
+                break;
+        }
+        return null;
+    }
+
+    public static Project getMainOrSingleProject() {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        Project[] openProjects = projects.getOpenProjects();
+        if (openProjects.length == 1) {
+            return openProjects[0];
+        } else {
+            return projects.getMainProject();
+        }
+    }
+
+    public Repository getRepository(Project[] projects) {
+        if (projects.length == 0) {
+            return null;
+        }
+        if (projects.length == 1) {
+            return getRepository(projects[0], false);
+        }
+
+        Repository chosenRepo = null;
+        for (Project project : projects) {
+            Repository repo = getRepository(project, false);
+            if (repo == null) {
+                continue;
+            }
+            if (chosenRepo == null) {
+                chosenRepo = repo;
+            } else if (repo != chosenRepo) {
+                break;        //the projects have various repositories assigned
+            }
+        }
+        return chosenRepo;
+    }
+
+    public Repository getRepository(Project project, boolean askIfUnknown) {
+        Repository repo;
+
+        FileObject fileObject = project.getProjectDirectory();
+        try {
+            repo = getKenaiBugtrackingRepository(fileObject);
+            if (repo != null) {
+                return repo;
+            }
+        } catch (KenaiException ex) {
+            return null;
+        }
+
+        File context = BugtrackingUtil.getLargerContext(project);
+        return getRepositoryForContext(context, null, askIfUnknown);
     }
 
     public Repository getRepository(File file, boolean askIfUnknown) {
         return getRepository(file, null, askIfUnknown);
-    }
-
-    public Repository getRepository(File file, String issueId) {
-        return getRepository(file, issueId, true);
     }
 
     public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
@@ -96,25 +176,74 @@ public class BugtrackingOwnerSupport {
         Repository repo = fileToRepo.get(file);
         if(repo != null) {
             LOG.log(Level.FINER, " found cached repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
-        } else {
-            LOG.log(Level.FINER, " no repository cached for file {1}", new Object[] {file}); // NOI18N
+            return repo;
         }
 
-        if(repo == null && askIfUnknown) {
-            repo = getBugtrackingOwner(file, issueId);
-            LOG.log(Level.FINER, " caching repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
-            fileToRepo.put(file, repo);
-        }
+        LOG.log(Level.FINER, " no repository cached for file {1}", new Object[] {file}); // NOI18N
 
-        return repo;
-    }
-
-    private Repository getBugtrackingOwner(File file, String issueId) {
         FileObject fileObject = FileUtil.toFileObject(file);
         if (fileObject == null) {
+            LOG.log(Level.WARNING, " did not find a FileObject for file {0}", new Object[] {file}); //NOI18N
             return null;
         }
 
+        try {
+            repo = getKenaiBugtrackingRepository(fileObject);
+            if (repo != null) {
+                return repo;
+            }
+        } catch (KenaiException ex) {
+            return null;
+        }
+
+        File context = BugtrackingUtil.getLargerContext(file, fileObject);
+        if (context == null) {
+            return null;
+        }
+
+        return getRepositoryForContext(context, issueId, askIfUnknown);
+    }
+
+    private Repository getRepositoryForContext(File context,
+                                               boolean askIfUnknown) {
+        return getRepositoryForContext(context, null, askIfUnknown);
+    }
+
+    private Repository getRepositoryForContext(File context, String issueId,
+                                               boolean askIfUnknown) {
+        Repository repo;
+
+        repo = fileToRepo.get(context);
+        if (repo != null) {
+            LOG.log(Level.FINER, " found cached repository [" + repo    //NOI18N
+                                 + "] for directory " + context); //NOI18N
+            return repo;
+        }
+
+        repo = FileToRepoMappingStorage.getInstance()
+               .getFirmlyAssociatedRepository(context);
+        if (repo != null) {
+            LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
+                                 + "] for directory " + context); //NOI18N
+            fileToRepo.put(context, repo);
+            return repo;
+        }
+
+        Repository suggestedRepository = FileToRepoMappingStorage.getInstance()
+                                         .getLooselyAssociatedRepository(context);
+        if (!askIfUnknown) {
+            return suggestedRepository;
+        }
+
+        repo = askUserToSpecifyRepository(issueId, suggestedRepository);
+        if (repo != null) {
+            return repo;
+        }
+
+        return null;
+    }
+
+    private static Repository getKenaiBugtrackingRepository(FileObject fileObject) throws KenaiException {
         Object attValue = fileObject.getAttribute(
                                    "ProvidedExtensions.RemoteLocation");//NOI18N
         if (attValue instanceof String) {
@@ -133,43 +262,13 @@ public class BugtrackingOwnerSupport {
                                     + " does not exist.");              //NOI18N
                 } else {
                     LOG.throwing(
-                            getClass().getName(),                       //class name
+                            BugtrackingOwnerSupport.class.getName(),    //class name
                             "getKenaiBugtrackingRepository(String)",    //method name //NOI18N
                             ex);
                 }
-                return null;
+                throw ex;
             }
         }
-
-        File context = BugtrackingUtil.getLargerContext(file, fileObject);
-        if (context == null) {
-            return null;
-        }
-
-        Repository repo = fileToRepo.get(context);
-        if (repo != null) {
-            LOG.log(Level.FINER, " found cached repository [" + repo    //NOI18N
-                                 + "] for directory " + context); //NOI18N
-            return repo;
-        }
-
-        repo = getRepositoryFromPrefs(context);
-        if (repo != null) {
-            LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
-                                 + "] for directory " + context); //NOI18N
-            fileToRepo.put(context, repo);
-            return repo;
-        }
-
-        Repository suggestedRepository = FileToRepoMappingStorage.getInstance()
-                                         .getLooselyAssociatedRepository(context);
-        repo = askUserToSpecifyRepository(fileObject, issueId, suggestedRepository);
-        if (repo != null) {
-            fileToRepo.put(context, repo);
-            storeRepositoryMappingToPrefs(context, repo);
-            return repo;
-        }
-
         return null;
     }
 
@@ -187,22 +286,79 @@ public class BugtrackingOwnerSupport {
      *          some problem getting the project's repository, e.g. because
      *          the given project does not exist on Kenai
      */
-    private Repository getKenaiBugtrackingRepository(String remoteLocation) throws KenaiException {
+    private static Repository getKenaiBugtrackingRepository(String remoteLocation) throws KenaiException {
         KenaiProject project = KenaiProject.forRepository(remoteLocation);//throws KenaiException
         return (project != null)
                ? BugtrackingUtil.getKenaiBugtrackingRepository(project)
                : null;        //not a Kenai project repository
     }
 
-    private Repository getRepositoryFromPrefs(File file) {
-        return FileToRepoMappingStorage.getInstance().getFirmlyAssociatedRepository(file);
+    public void setLooseAssociation(ContextType contextType, Repository repository) {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        File context = null;
+
+        switch (contextType) {
+            case MAIN_PROJECT_ONLY:
+                Project mainProject = projects.getMainProject();
+                if (mainProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainProject);
+                }
+                break;
+            case MAIN_OR_SINGLE_PROJECT:
+                Project mainOrSingleProject = getMainOrSingleProject();
+                if (mainOrSingleProject != null) {
+                    context = BugtrackingUtil.getLargerContext(mainOrSingleProject);
+                }
+                break;
+            case ALL_PROJECTS:
+                context = BugtrackingUtil.getContextFromProjects();
+            case SELECTED_FILE_AND_ALL_PROJECTS:
+                context = BugtrackingUtil.getLargerContext();
+            default:
+                assert false;
+                break;
+        }
+
+        if (context != null) {
+            FileToRepoMappingStorage.getInstance().setLooseAssociation(
+                    context,
+                    repository);
+        }
     }
 
-    protected void storeRepositoryMappingToPrefs(File root, Repository repository) {
-        FileToRepoMappingStorage.getInstance().setFirmAssociation(root, repository);
+    public void setLooseAssociation(File file, Repository repository) {
+        FileToRepoMappingStorage.getInstance().setLooseAssociation(
+                BugtrackingUtil.getLargerContext(file),
+                repository);
     }
 
-    private Repository askUserToSpecifyRepository(FileObject file, String issueId,
+    public void setFirmAssociations(File[] files, Repository repository) {
+        if (files == null) {
+            throw new IllegalArgumentException("files is null");        //NOI18N
+        }
+        if (files.length == 0) {
+            return;
+        }
+
+        for (int i = 0; i < files.length; i++) {
+            fileToRepo.put(files[i], repository);
+        }
+
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(
+                BugtrackingUtil.getLargerContext(files[0]),
+                repository);
+    }
+
+    public void setFirmAssociation(File file, Repository repository) {
+        fileToRepo.put(file, repository);
+
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(
+                BugtrackingUtil.getLargerContext(file),
+                repository);
+    }
+
+    private Repository askUserToSpecifyRepository(String issueId,
                                                   Repository suggestedRepo) {
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();

@@ -612,7 +612,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-            return chooser.getFileSystemView().getSystemIcon(f);
+            //#159646: Workaround for JDK issue #6357445
+            if (f.exists()) {
+                return chooser.getFileSystemView().getSystemIcon(f);
+            } else {
+                return null;
+            }
         }
 
         public void run() {

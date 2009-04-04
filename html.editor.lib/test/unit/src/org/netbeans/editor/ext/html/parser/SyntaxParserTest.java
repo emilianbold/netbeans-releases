@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;
@@ -59,7 +59,7 @@ import org.netbeans.modules.html.editor.HtmlKit;
  */
 public class SyntaxParserTest extends TestBase {
 
-    private static final LanguagePath languagePath = LanguagePath.get(HtmlTokenId.language());
+    private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
 
     public SyntaxParserTest() throws IOException, BadLocationException {
         super("SyntaxParserTest");

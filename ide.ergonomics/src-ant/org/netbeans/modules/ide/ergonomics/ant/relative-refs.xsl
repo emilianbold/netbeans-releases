@@ -51,6 +51,27 @@
                     />
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='Servers']/folder[@name='Actions']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Servers</xsl:attribute>
+                    <xsl:element name="folder">
+                        <xsl:attribute name="name">Actions</xsl:attribute>
+                        <xsl:apply-templates
+                            select="//*/folder[@name='Servers']/folder[@name='Actions']/*"
+                            mode="project-wizard"
+                        />
+                    </xsl:element>
+                </xsl:element>
+            </xsl:if>
+            <xsl:if test="//filesystem/folder[@name='Actions']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Actions</xsl:attribute>
+                    <xsl:apply-templates
+                        select="//filesystem/folder[@name='Actions']/*"
+                        mode="project-wizard"
+                    />
+                </xsl:element>
+            </xsl:if>
         </xsl:element>
     </xsl:template>
 

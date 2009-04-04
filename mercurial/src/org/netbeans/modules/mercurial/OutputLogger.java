@@ -107,6 +107,14 @@ public class OutputLogger {
     }
 
     public void closeLog() {
+        rp.post(new Runnable() {
+            public void run() {
+                if (log != null) {
+                    log.getOut().close();
+                    log.getErr().close();
+                }
+            }
+        });
     }
 
     public void flushLog() {
@@ -130,22 +138,9 @@ public class OutputLogger {
         rp.post(new Runnable() {
             public void run() {                
                 OutputWriter out = getLog().getOut();
-                int lines = list.size();
-                if (lines > MAX_LINES_TO_PRINT) {
-                    out.println(list.get(1));
-                    out.println(list.get(2));
-                    out.println(list.get(3));
-                    out.println("...");
-                    out.println(list.get(list.size() -1));
-                    out.println(MSG_TOO_MANY_LINES);
-                    for (String s : list){
-                        Mercurial.LOG.log(Level.WARNING, s);
-                    }
-                } else {
-                    for (String s : list){
-                        out.println(s);
-            	    }
-            	}
+                for (String s : list){
+                    out.println(s);
+                }
                 out.flush();
             }
         });

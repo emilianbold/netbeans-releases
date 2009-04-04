@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.editing.embedding;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
@@ -82,7 +82,7 @@ public class JsModelTest extends JsTestBase {
             // Already registered?
         }
         try {
-            TestLanguageProvider.register(HtmlTokenId.language());
+            TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
@@ -117,7 +117,7 @@ public class JsModelTest extends JsTestBase {
         String mimeType;
         if (relFilePath.endsWith(".html")) {
             mimeType = HTML_MIME_TYPE;
-            lexerLanguage = HtmlTokenId.language();
+            lexerLanguage = HTMLTokenId.language();
         } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
             mimeType = RHTML_MIME_TYPE;
             lexerLanguage = RhtmlTokenId.language();
@@ -465,13 +465,13 @@ public class JsModelTest extends JsTestBase {
 //        // HACK -- events don't seem to get fired synchronously... I've tried
 //        // EventQueue.invokeLater, overriding runInEq, and some other tricks
 //        // but without success. For now, access it directly
-//        history.testHelperNotifyToken(false, HtmlTokenId.STYLE);
-//        history.testHelperNotifyToken(true, HtmlTokenId.STYLE);
+//        history.testHelperNotifyToken(false, HTMLTokenId.STYLE);
+//        history.testHelperNotifyToken(true, HTMLTokenId.STYLE);
 //
-//        assertTrue(history.wasModified(HtmlTokenId.STYLE));
-//        assertTrue(!history.wasModified(HtmlTokenId.TEXT));
-//        assertTrue(!history.wasModified(HtmlTokenId.SCRIPT));
-//        assertTrue(!history.wasModified(HtmlTokenId.VALUE_JAVASCRIPT));
+//        assertTrue(history.wasModified(HTMLTokenId.STYLE));
+//        assertTrue(!history.wasModified(HTMLTokenId.TEXT));
+//        assertTrue(!history.wasModified(HTMLTokenId.SCRIPT));
+//        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
 //
 //        // Assert the translated source model is correctly updated
 //        assertTrue(ts instanceof JsTranslatedSource);
@@ -497,14 +497,14 @@ public class JsModelTest extends JsTestBase {
 //        // HACK -- events don't seem to get fired synchronously... I've tried
 //        // EventQueue.invokeLater, overriding runInEq, and some other tricks
 //        // but without success. For now, access it directly
-//        history.testHelperNotifyToken(true, HtmlTokenId.SCRIPT);
-//        history.testHelperNotifyToken(true, HtmlTokenId.TEXT);
+//        history.testHelperNotifyToken(true, HTMLTokenId.SCRIPT);
+//        history.testHelperNotifyToken(true, HTMLTokenId.TEXT);
 //
 //
-//        assertTrue(history.wasModified(HtmlTokenId.TEXT)); // The \n before the script
-//        assertTrue(history.wasModified(HtmlTokenId.SCRIPT));
-//        assertTrue(!history.wasModified(HtmlTokenId.STYLE));
-//        assertTrue(!history.wasModified(HtmlTokenId.VALUE_JAVASCRIPT));
+//        assertTrue(history.wasModified(HTMLTokenId.TEXT)); // The \n before the script
+//        assertTrue(history.wasModified(HTMLTokenId.SCRIPT));
+//        assertTrue(!history.wasModified(HTMLTokenId.STYLE));
+//        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
 //
 //        // Assert the translated source model is correctly updated
 //        assertTrue(ts instanceof JsTranslatedSource);
