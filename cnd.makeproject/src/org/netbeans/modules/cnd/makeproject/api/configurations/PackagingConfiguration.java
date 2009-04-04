@@ -379,6 +379,8 @@ public class PackagingConfiguration {
         }
 
         public void propertyChange(PropertyChangeEvent arg0) {
+            toolNodeProp.setCanWrite(getToolDefault().length() > 0);
+            optionsNodeProp.setCanWrite(getToolDefault().length() > 0);
             if (!output.getModified()) {
                 outputNodeProp.setDefaultValue(getOutputDefault());
                 output.reset();
