@@ -934,6 +934,11 @@ public final class VeryPretty extends JCTree.Visitor {
 	} else
 	    printIndentedStat(tree.thenpart, cs.redundantIfBraces(), cs.spaceBeforeIfLeftBrace(), cs.wrapIfStatement());
 	if (tree.elsepart != null) {
+        printElse(tree, prevblock);
+	}
+    }
+
+    public void printElse(JCIf tree, boolean prevblock) {
 	    if (cs.placeElseOnNewLine() || !prevblock) {
                 newline();
                 toLeftMargin();
@@ -946,7 +951,6 @@ public final class VeryPretty extends JCTree.Visitor {
 		printStat(tree.elsepart);
 	    } else
 		printIndentedStat(tree.elsepart, cs.redundantIfBraces(), cs.spaceBeforeElseLeftBrace(), cs.wrapIfStatement());
-	}
     }
 
     @Override
