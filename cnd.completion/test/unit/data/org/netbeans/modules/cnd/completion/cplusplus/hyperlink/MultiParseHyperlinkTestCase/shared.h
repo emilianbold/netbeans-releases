@@ -1,12 +1,12 @@
 #ifndef _NEWFILE_H
 #define	_NEWFILE_H
 
-#ifdef	__cplusplus
+#ifdef	CPP
 extern "C" {
 #endif
 
 struct AA {
-#if defined(__cplusplus)
+#if defined(CPP)
         int cpp_class; /* C++ class of screen (monochrome, etc.) */
 #else
         int class; /* class of screen (monochrome, etc.) */
@@ -14,7 +14,7 @@ struct AA {
 };
 
 
-#ifdef	__cplusplus
+#ifdef	CPP
 }
 #endif
 
