@@ -1,3 +1,4 @@
+#define CPP
 #include "shared.h"
 
 void function_cpp() {
