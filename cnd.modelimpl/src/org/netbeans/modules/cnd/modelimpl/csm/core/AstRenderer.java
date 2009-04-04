@@ -95,8 +95,8 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
                     ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                        ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext()) :
-                                        ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
+                                        ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container) :
+                                        ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
                     container.addDeclaration(cls);
                     addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                     renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -167,7 +167,7 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if (isClassSpecialization(token)) {
-                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext());
+                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
                         container.addDeclaration(spec);
                         addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
                     } else {
