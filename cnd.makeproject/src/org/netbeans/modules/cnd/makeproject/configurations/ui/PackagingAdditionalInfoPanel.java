@@ -85,6 +85,38 @@ public class PackagingAdditionalInfoPanel extends ListEditorPanel<String> {
         return newS;
     }
 
+    public String getAddButtonText() {
+        return getString("ADD_BUTTON_LBL");
+    }
+
+    public char getAddButtonMnemonics() {
+        return getString("ADD_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+
+    public String getRemoveButtonText() {
+        return getString("REMOVE_BUTTON_LBL");
+    }
+
+    public char getRemoveButtonMnemonics() {
+        return getString("REMOVE_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+
+    public String getUpButtonText() {
+        return getString("UP_BUTTON_LBL");
+    }
+
+    public char getUpButtonMnemonics() {
+        return getString("UP_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+
+    public String getDownButtonText() {
+        return getString("DOWN_BUTTON_LBL");
+    }
+
+    public char getDownButtonMnemonics() {
+        return getString("DOWN_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
 
