@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.RequestProcessor;
@@ -71,7 +72,8 @@ public class IOManager {
 
     
     // variables ...............................................................
-    
+
+    private final String                    title;
     private InputOutput                     debuggerIO = null;
     private OutputWriter                    debuggerOut;
     private OutputWriter                    debuggerErr;
@@ -85,18 +87,33 @@ public class IOManager {
     // init ....................................................................
     
     public IOManager(String title) {
-        debuggerIO = IOProvider.getDefault ().getIO (title, true);
-        debuggerIO.setFocusTaken (false);
-        debuggerIO.setErrSeparated(false);
-        debuggerOut = debuggerIO.getOut ();
-        debuggerErr = debuggerIO.getErr();
+        this.title = title;
+        init();
         //debuggerIO.select();
+    }
+
+    private boolean init() {
+        if (openDebuggerConsole()) {
+            debuggerIO = IOProvider.getDefault ().getIO (title, true);
+            debuggerIO.setFocusTaken (false);
+            debuggerIO.setErrSeparated(false);
+            debuggerOut = debuggerIO.getOut ();
+            debuggerErr = debuggerIO.getErr();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean openDebuggerConsole() {
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        return p.getBoolean("OpenDebuggerConsole", true);
     }
     
     
     // public interface ........................................................
 
-    private LinkedList buffer = new LinkedList ();
+    private final LinkedList buffer = new LinkedList ();
     private RequestProcessor.Task task;
     
     /**
@@ -119,6 +136,15 @@ public class IOManager {
     ) {
         if (text == null)
             throw new NullPointerException ();
+        if (!openDebuggerConsole()) {
+            return ;
+        } else {
+            synchronized (this) {
+                if (debuggerIO == null) {
+                    init();
+                }
+            }
+        }
         synchronized (buffer) {
             buffer.addLast (new Text (text, line, important));
         if (task == null)
@@ -182,7 +208,9 @@ public class IOManager {
     }
 
     void close () {
-        debuggerIO.closeInputOutput ();
+        if (debuggerIO != null) {
+            debuggerIO.closeInputOutput ();
+        }
     }
     
     

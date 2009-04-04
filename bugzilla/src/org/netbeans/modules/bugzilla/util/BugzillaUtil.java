@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
+        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
                 title,
