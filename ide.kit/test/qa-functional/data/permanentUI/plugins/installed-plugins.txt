@@ -7,6 +7,7 @@
 |org.netbeans.modules.localhistory|Local History|Base IDE|ide
 |org.netbeans.modules.mercurial|Mercurial|Base IDE|ide
 |org.netbeans.modules.subversion|Subversion|Base IDE|ide
+|org.netbeans.modules.team.kit|Team|Base IDE|ide
 |org.netbeans.modules.cnd.kit|C/C++|C/C++|cnd
 |org.netbeans.modules.timers|Timers API|Developing NetBeans|apisupport
 |org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy|groovy
@@ -20,7 +21,6 @@
 |org.netbeans.modules.maven.kit|Maven|Java|java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
-|org.netbeans.libs.commons_codec|Commons Codec Integration|Libraries|ide
 |org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
 |org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
 |org.netbeans.modules.maven.search|Maven Quick Search Bridge|null|java
@@ -28,7 +28,6 @@
 |org.netbeans.modules.dlight.kit|D-Light|Profiling|dlight
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
-|org.netbeans.modules.team.kit|Team|Team|ide
 |org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE|enterprise
 |org.netbeans.modules.identity.kit|Identity|Web & Java EE|identity
 |org.netbeans.modules.j2ee.kit|Java EE|Web & Java EE|enterprise
