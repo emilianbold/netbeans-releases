@@ -51,14 +51,14 @@ public class MultiParseHyperlinkTestCase extends HyperlinkBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         // check multiparse in one thread mode for stability
-        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        System.setProperty("parser.log.parse", "true");
+//        System.setProperty("cnd.modelimpl.parser.threads", "1");
+//        System.setProperty("parser.log.parse", "true");
         super.setUp();
     }
 
     public void testIZ157907() throws Exception {
         // IZ#151881: Unresolved ids in #ifdef and #ifndef
-        performTest("source.c", 5, 10, "shared.h", 12, 9);
-        performTest("source.cpp", 5, 10, "shared.h", 10, 9);
+        performTest("source.c", 6, 10, "shared.h", 12, 9);
+        performTest("source.cpp", 6, 10, "shared.h", 10, 9);
     }
 }
