@@ -157,7 +157,8 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         return file;
     }
 
-    protected CsmUID createUID() {
+    @Override
+    protected CsmUID<CsmInclude> createUID() {
         return UIDUtilities.createIncludeUID(this);
     }
     
