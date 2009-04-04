@@ -115,7 +115,7 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
         } else {
             Object first = parameters.iterator().next();
             Collection<CsmUID<K>> out = null;
-            if (first instanceof CsmUID) {
+            if (first instanceof CsmUID<?>) {
                 out = parameters;
             }
             return out;
@@ -128,7 +128,7 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
     }
 
     @Override
-    protected CsmUID createUID() {
+    protected CsmUID<CsmParameterList> createUID() {
         return UIDUtilities.createParamListUID(this);
     }
 
