@@ -76,6 +76,7 @@ class CategoryPanelGeneral extends StorablePanel {
         stepsResumeLabel = new javax.swing.JLabel();
         breakpointsSuspendComboBox = new javax.swing.JComboBox();
         stepsResumeComboBox = new javax.swing.JComboBox();
+        openDebuggerConsoleCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(stopOnExceptionsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stopOnExceptionsCheckBox.text")); // NOI18N
 
@@ -90,6 +91,8 @@ class CategoryPanelGeneral extends StorablePanel {
         breakpointsSuspendComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.allThreads"), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.breakpointThread"), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendCB.noThread") }));
 
         stepsResumeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stepsResumeCB.allThreads"), org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stepsResumeCB.currentThread") }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(openDebuggerConsoleCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.openDebuggerConsoleCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -107,8 +110,9 @@ class CategoryPanelGeneral extends StorablePanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(stepsResumeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(breakpointsSuspendComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 251, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(applyCodeChangesCheckBox))
-                .add(104, 104, 104))
+                    .add(applyCodeChangesCheckBox)
+                    .add(openDebuggerConsoleCheckBox))
+                .addContainerGap(104, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -124,7 +128,9 @@ class CategoryPanelGeneral extends StorablePanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(stepsResumeLabel)
                     .add(stepsResumeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(184, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(openDebuggerConsoleCheckBox)
+                .addContainerGap(153, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -136,6 +142,7 @@ class CategoryPanelGeneral extends StorablePanel {
         stopOnExceptionsCheckBox.setSelected(p.getBoolean("CatchExceptions", false));
         breakpointsSuspendComboBox.setSelectedIndex(suspendIndex(p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD)));
         stepsResumeComboBox.setSelectedIndex(resumeIndex(p.getInt("StepResume", 1)));
+        openDebuggerConsoleCheckBox.setSelected(p.getBoolean("OpenDebuggerConsole", true));
     }
 
     @Override
@@ -146,6 +153,7 @@ class CategoryPanelGeneral extends StorablePanel {
         p.setBoolean("CatchExceptions", stopOnExceptionsCheckBox.isSelected());
         p.setInt("BreakpointSuspend", suspendProp(breakpointsSuspendComboBox.getSelectedIndex()));
         p.setInt("StepResume", resumeProp(stepsResumeComboBox.getSelectedIndex()));
+        p.setBoolean("OpenDebuggerConsole", openDebuggerConsoleCheckBox.isSelected());
     }
 
     private static int suspendIndex(int jpdaBreakpointSuspend) {
@@ -192,6 +200,7 @@ class CategoryPanelGeneral extends StorablePanel {
     private javax.swing.JCheckBox applyCodeChangesCheckBox;
     private javax.swing.JComboBox breakpointsSuspendComboBox;
     private javax.swing.JLabel breakpointsSuspendLabel;
+    private javax.swing.JCheckBox openDebuggerConsoleCheckBox;
     private javax.swing.JComboBox stepsResumeComboBox;
     private javax.swing.JLabel stepsResumeLabel;
     private javax.swing.JCheckBox stopOnExceptionsCheckBox;
