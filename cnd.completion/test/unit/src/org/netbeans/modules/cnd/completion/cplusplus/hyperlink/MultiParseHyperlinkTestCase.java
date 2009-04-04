@@ -37,16 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm;
-
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
- * object that can contain declarations and allow to look for existing ones
- * based on offsets and name. Used from rendere in multi parse mode to append new
- * content instead of replace existing
+ *
  * @author Vladimir Voskresensky
  */
-public interface DeclarationsContainer {
-    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name);
+public class MultiParseHyperlinkTestCase extends HyperlinkBaseTestCase {
+    public MultiParseHyperlinkTestCase(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        // check multiparse in one thread mode for stability
+        System.setProperty("cnd.modelimpl.parser.threads", "1");
+        System.setProperty("parser.log.parse", "true");
+        super.setUp();
+    }
+
+    public void testIZ157907() throws Exception {
+        // IZ#151881: Unresolved ids in #ifdef and #ifndef
+        performTest("source.c", 5, 10, "shared.h", 12, 9);
+        performTest("source.cpp", 5, 10, "shared.h", 10, 9);
+    }
 }

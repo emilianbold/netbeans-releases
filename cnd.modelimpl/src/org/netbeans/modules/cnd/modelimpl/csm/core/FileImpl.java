@@ -361,6 +361,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         long time;
         synchronized (stateLock) {
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                System.err.printf("file %s has %d handlers, state %s and stateRef %s\n", getAbsolutePath(), handlers.size(), state, stateRef.get()); // NOI18N
+            }
             switch (stateRef.get()) {
                 case INITIAL:
                 case PARTIAL:

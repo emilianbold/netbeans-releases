@@ -196,8 +196,11 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                    case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                     {
-                        ClassImpl cls = ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext());
+                        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                        ClassImplSpecialization.create(token, null, getContainingFile(), !isRenderingLocalContext(), null) :
+                                        ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext(), null);
                         declarators.add(cls);
                         Pair typedefs = renderTypedef(token, cls, currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
