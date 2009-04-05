@@ -178,6 +178,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         PropertySupport ps = new PropertySupport.Name(this);
         addProperty(ps);
 
+        assert column != null : "Column " + this + " cannot be null.";
+        if (column == null) {
+            return ;
+        }
+
         try {
             addProperty(NULL, NULLDESC, Boolean.class, false, column.getNullable() == Nullable.NULLABLE);
             addProperty(DATATYPE, DATATYPEDESC, String.class, false, column.getType().toString());
