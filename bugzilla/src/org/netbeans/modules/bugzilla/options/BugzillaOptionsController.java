@@ -135,7 +135,7 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     private void validate(boolean fireEvents) {
         boolean oldValid = valid;
         panel.errorLabel.setVisible(false);
-        panel.errorLabel.setText("");
+        panel.errorLabel.setText("");                                           // NOI18N
 
         String queryRefresh = panel.queriesTextField.getText().trim();
         String issueRefresh = panel.issuesTextField.getText().trim();

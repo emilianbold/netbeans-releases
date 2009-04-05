@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisuali
  * @author mt154047
  */
 public final class FunctionsListViewVisualizerConfiguration implements VisualizerConfiguration{
-    private static final String ID = "FunctionsListViewVisualizerConfiguration";
+    private static final String ID = "FunctionsListViewVisualizerConfiguration";//NOI18N
     private final FunctionDatatableDescription functionDatatableDescription;
     private final DataTableMetadata metadata;
     private final List<Column> metrics;
@@ -76,7 +76,7 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
     }
 
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:functions");
+        return DataModelSchemeProvider.getInstance().getScheme("model:functions");//NOI18N
     }
 
     public DataTableMetadata getMetadata() {

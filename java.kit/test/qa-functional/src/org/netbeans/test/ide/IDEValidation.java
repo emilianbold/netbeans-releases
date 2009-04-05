@@ -163,7 +163,17 @@ public class IDEValidation extends JellyTestCase {
     
     
     public void testWriteAccess() throws Exception {
-        CountingSecurityManager.assertCounts("No writes during startup", 0);
+        String msg = "No writes during startup.\n" +
+            "Writing any files to disk during start is inefficient and usualy unnecessary.\n" +
+            "Consider using declarative registration in your layer.xml file, or delaying\n" +
+            "the initialization of the whole subsystem till it is really used.\n" +
+            "In case it is necessary to perform the write, you can modify the\n" +
+            "'allowed-file-write.txt' file in ide.kit module. More details at\n" +
+            "http://wiki.netbeans.org/FitnessViaWhiteAndBlackList";
+
+        CountingSecurityManager.assertCounts(msg, 0);
+        // disable further collecting of
+        CountingSecurityManager.initialize("non-existent", CountingSecurityManager.Mode.CHECK_READ, null);
     }
 
     /** Test creation of java project. 
@@ -363,7 +373,7 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testDb() {
         // "Databases"
-        String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "RootNode_DISPLAYNAME");
+        String databasesLabel = Bundle.getString("org.netbeans.modules.db.explorer.node.Bundle", "RootNode_DISPLAYNAME");
         Node databasesNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel);
         // "Please wait..."
         String waitNodeLabel = Bundle.getString("org.openide.nodes.Bundle", "LBL_WAIT");
@@ -378,13 +388,13 @@ public class IDEValidation extends JellyTestCase {
             log("Timeout expired: "+e.getMessage());
         }
         // "Drivers"
-        String driversLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "DriverListNode_DISPLAYNAME");
+        String driversLabel = Bundle.getString("org.netbeans.modules.db.explorer.node.Bundle", "DriverListNode_DISPLAYNAME");
         Node driversNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel+"|"+driversLabel);
         // "Add Driver ..."
-        String addDriverItem = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "AddNewDriver");
+        String addDriverItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddNewDriver");
         // open a dialog to add a new JDBC driver
         new ActionNoBlock(null, addDriverItem).perform(driversNode);
-        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "AddDriverDialogTitle");
+        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddDriverDialogTitle");
         new NbDialogOperator(addDriverTitle).cancel();
         
         // wait until the wait node dismiss and after that start waiting for JDBC_ODBC Bridge node
@@ -401,10 +411,10 @@ public class IDEValidation extends JellyTestCase {
             // node JDBC-ODBC Bridge should be present always but not on mac
             Node jdbcOdbcNode = new Node(driversNode, "JDBC-ODBC Bridge"); // NOI18N
             // "Connect Using ..."
-            String connectUsingItem = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "ConnectUsing");
+            String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
             // open a dialog to create a new connection
             new ActionNoBlock(null, connectUsingItem).perform(jdbcOdbcNode);
-            String newDatabaseConnectionTitle = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NewConnectionDialogTitle");
+            String newDatabaseConnectionTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "NewConnectionDialogTitle");
             new NbDialogOperator(newDatabaseConnectionTitle).cancel();
         }
     }

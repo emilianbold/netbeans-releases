@@ -135,6 +135,17 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         tinfo = null;
         type = "";
         value = "";
+        emptyFields();
+    }
+
+    private void emptyFields() {
+        int i, k = fields.length;
+        for (i=0; i < k; i++) {
+            Field field = fields[i];
+            if (field instanceof PropertyChangeListener) {
+                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (PropertyChangeListener)field);
+            }
+        }
         fields = new Field[0];
     }
 
@@ -310,7 +321,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     public synchronized void setModifiedValue(String value) {
         this.value = value;
         if (fields.length > 0) {
-            fields = new Field[0];
+            emptyFields();
             derefValue = null;
             if (value.length() > 0) {
                 expandChildren();
@@ -552,17 +563,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      */
     public String getToStringValue () throws InvalidExpressionException {
         return getValue();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof AbstractVariable &&
-                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
     }
 
     public String getName() {
@@ -1004,7 +1004,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
             assert ev.getNewValue() instanceof AbstractVariable;
             AbstractVariable av = (AbstractVariable) ev.getNewValue();
-            if (av != this && av.getFullName().equals(getFullName())) {
+            if (av.getFullName().equals(getFullName())) {
                 if (av instanceof AbstractField) {
                     final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
                     RequestProcessor.getDefault().post(new Runnable() {

@@ -69,7 +69,7 @@ public class PerformQueryCommand extends BugzillaCommand {
     @Override
     public void execute() throws CoreException {
         TaskRepository taskRepository = repository.getTaskRepository();
-        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");            // NOI18N
         query.setUrl(queryUrl);
         BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
         rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());

@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -97,7 +97,7 @@ public class JspIndenterTest extends TestBase2 {
         assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
 
         TestLanguageProvider.register(CssTokenId.language());
-        TestLanguageProvider.register(HtmlTokenId.language());
+        TestLanguageProvider.register(HTMLTokenId.language());
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
 

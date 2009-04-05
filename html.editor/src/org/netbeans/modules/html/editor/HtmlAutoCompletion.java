@@ -42,7 +42,7 @@ package org.netbeans.modules.html.editor;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -95,7 +95,7 @@ public class HtmlAutoCompletion {
             }
 
             Token token = ts.token();
-            if (token.id() == HtmlTokenId.VALUE) {
+            if (token.id() == HTMLTokenId.VALUE) {
                 //test if the user inserted the qutation in an attribute value and before
                 //an already existing end quotation
                 //the text looks following in such a situation:
@@ -132,7 +132,7 @@ public class HtmlAutoCompletion {
 
             int dotPosAfterTypedChar = dotPos + 1;
             if (token != null &&
-                    token.id() == HtmlTokenId.OPERATOR) {
+                    token.id() == HTMLTokenId.OPERATOR) {
                 doc.insertString(dotPosAfterTypedChar, "\"\"", null);
                 caret.setDot(dotPosAfterTypedChar + 1);
             }

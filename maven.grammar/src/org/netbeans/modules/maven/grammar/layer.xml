@@ -101,6 +101,10 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-maven-grammar-CodeTemplates.xml" url="POM-abbreviations.xml"/>
                     </folder>
                 </folder>
+                <folder name="Popup">
+                    <file name="generate-code">
+                    </file>
+                </folder>
                 <folder name="CodeGeneratorContextProviders">
                     <file name="org-netbeans-modules-maven-codegen-ContextProvider.instance"/>
                 </folder>
@@ -139,6 +143,10 @@ made subject to such option by the copyright holder.
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-maven-codegen-MirrorGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="generate-code">
                     </file>
                 </folder>
             </folder>

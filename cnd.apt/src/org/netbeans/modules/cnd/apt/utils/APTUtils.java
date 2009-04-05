@@ -94,7 +94,21 @@ public class APTUtils {
     /** Creates a new instance of APTUtils */
     private APTUtils() {
     }
-    
+
+    public static void setTokenText(APTToken _token, char buf[], int start, int count) {
+        if (_token instanceof APTBaseToken) {
+            _token.setTextID(CharSequenceKey.create(buf, start, count));
+        } else if (_token instanceof APTCommentToken) {
+            // no need to set text in comment token, but set text len
+            ((APTCommentToken)_token).setTextLength(count);
+        } else if (_token instanceof APTConstTextToken) {
+            // no need to set text in comment token
+        } else {
+            System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
+            _token.setText(new String(buf, start, count));
+        }
+    }
+
     public static APTToken createAPTToken(int type) {
         // Preprocessor tokens can be made constText, but we can get '#define' and '# define'
         // which have different text. so for now they are treated as usual tokens

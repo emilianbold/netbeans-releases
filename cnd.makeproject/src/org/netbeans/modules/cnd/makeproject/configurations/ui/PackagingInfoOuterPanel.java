@@ -50,10 +50,11 @@ import javax.swing.JPanel;
 public class PackagingInfoOuterPanel extends javax.swing.JPanel {
 
     /** Creates new form PackagingInfo2Panel */
-    public PackagingInfoOuterPanel(PackagingInfoPanel innerPanel) {
+    public PackagingInfoOuterPanel(PackagingInfoPanel innerPanel, PackagingAdditionalInfoPanel additionalInfoPanel) {
         java.awt.GridBagConstraints gridBagConstraints;
         
         initComponents();
+        docTextArea.setBackground(getBackground());
         
         remove(packagingHeaderOuterPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -61,12 +62,22 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(innerPanel, gridBagConstraints);
         
         innerPanel.setDocArea(docTextArea);
         innerPanel.refresh();
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        add(additionalInfoPanel, gridBagConstraints);
     }
 
     /** This method is called from within the constructor to
@@ -90,17 +101,17 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         packagingHeaderOuterPanel.setLayout(packagingHeaderOuterPanelLayout);
         packagingHeaderOuterPanelLayout.setHorizontalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 392, Short.MAX_VALUE)
+            .add(0, 411, Short.MAX_VALUE)
         );
         packagingHeaderOuterPanelLayout.setVerticalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 203, Short.MAX_VALUE)
+            .add(0, 99, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(packagingHeaderOuterPanel, gridBagConstraints);
 
@@ -119,6 +130,8 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 4, 4);
         add(scrollPane, gridBagConstraints);

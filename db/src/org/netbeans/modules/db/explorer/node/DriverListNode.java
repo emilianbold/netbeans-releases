@@ -48,6 +48,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -128,7 +129,7 @@ public class DriverListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("DriverListNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (DriverListNode.class, "DriverListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -138,7 +139,7 @@ public class DriverListNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_DriverList"); //NOI18N
+        return NbBundle.getMessage (DriverListNode.class, "ND_DriverList"); //NOI18N
     }
 
     @Override

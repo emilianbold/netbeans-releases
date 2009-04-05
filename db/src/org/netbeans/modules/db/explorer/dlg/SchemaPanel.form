@@ -3,6 +3,7 @@
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -22,7 +23,7 @@
         </Property>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="MSG_SchemaPanelComment" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="MSG_SchemaPanelComment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -43,7 +44,7 @@
           <ComponentRef name="schemaComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="SchemaDialogText" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="SchemaDialogText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -55,7 +56,7 @@
     <Component class="javax.swing.JComboBox" name="schemaComboBox">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_SchemaDialogTextComboBoxA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_SchemaDialogTextComboBoxA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
         <Property name="prototypeDisplayValue" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -71,7 +72,7 @@
     <Container class="javax.swing.JPanel" name="connectProgressPanel">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_ConnectionProgressBarA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_ConnectionProgressBarA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>

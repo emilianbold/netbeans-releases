@@ -118,7 +118,9 @@ class FilesystemHandler extends VCSInterceptor {
                 }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
-                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                    SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                }
                 IOException ex = new IOException(); // NOI18N
                 Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()}));
                 ex.initCause(e);
@@ -318,7 +320,9 @@ class FilesystemHandler extends VCSInterceptor {
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
             return false;
@@ -455,7 +459,9 @@ class FilesystemHandler extends VCSInterceptor {
                 file.delete();
             }
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
         }
     }
 
@@ -548,8 +554,9 @@ class FilesystemHandler extends VCSInterceptor {
                             retryCounter--;
                             continue;
                         }
-
-                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                        if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                            SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                        }
                         IOException ex = new IOException(); // NOI18N
                         Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_RenameFailed", new Object[] {from, to, e.getLocalizedMessage()}));
                         ex.initCause(e);
@@ -562,7 +569,9 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         } catch (SVNClientException e) {
-            SvnClientExceptionHandler.notifyException(e, false, false); // log this
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+            }
             IOException ex = new IOException(); // NOI18N
             Exceptions.attachLocalizedMessage(e, "Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
             ex.initCause(e);

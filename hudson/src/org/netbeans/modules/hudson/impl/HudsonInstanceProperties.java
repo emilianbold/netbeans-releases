@@ -157,7 +157,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
 
     public static List<String> split(String prop) {
         return prop != null && prop.trim().length() > 0 ?
-            Arrays.asList(prop.split("/")) :
+            Arrays.asList(prop.split("/")) : // NOI18N
             Collections.<String>emptyList();
     }
 

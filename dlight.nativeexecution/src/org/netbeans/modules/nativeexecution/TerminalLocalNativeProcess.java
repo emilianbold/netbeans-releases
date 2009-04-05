@@ -47,6 +47,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static boolean isMacOS;
     private final InputStream processOutput;
     private final InputStream processError;
-    private final OutputStream processInput;
     private final String pidFileName;
     private final Process termProcess;
 
@@ -97,125 +97,155 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
             }
         }
-        
+
         dorunScript = runScript;
     }
 
+    /*
+     * Huge try-catch block is required to catch any exception that could
+     * prevent constructor from completion. Listeners were notified of process
+     * being started in super constructor. In case of any problem we
+     * must notify listeners with call to destroy().
+     */
     public TerminalLocalNativeProcess(final ExternalTerminal t,
             final NativeProcessInfo info) throws IOException {
         super(info);
 
-        if (dorunScript == null) {
-            //throw new IOException("dorun not found"); // NOI18N
-            processError = new ByteArrayInputStream(
-                    "unable to start process in an external terminal - dorun script not found".getBytes()); // NOI18N
-            processOutput = new ByteArrayInputStream(new byte[0]);
-            processInput = null;
-            pidFileName = null;
-            termProcess = null;
-            return;
-        }
+        try {
 
-        ExternalTerminal terminal = t;
-
-        final String commandLine = info.getCommandLine();
-        String wDir = info.getWorkingDirectory(true);
-
-        String workingDirectory = wDir;
-
-        if (isWindows || workingDirectory == null) {
-            workingDirectory = "."; // NOI18N
-        }
-
-        File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
-        pidFile.deleteOnExit();
-        pidFileName = pidFile.toString();
-        String envFileName = pidFileName + ".env"; // NOI18N
-
-        final ExternalTerminalAccessor terminalInfo =
-                ExternalTerminalAccessor.getDefault();
-
-        if (terminalInfo.getTitle(terminal) == null) {
-            terminal = terminal.setTitle(commandLine);
-        }
-
-        String cmd = commandLine;
-
-        String pidFName = pidFileName;
-
-        if (isWindows) {
-            pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
-            envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
-            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-        }
-
-        List<String> command = terminalInfo.wrapCommand(
-                info.getExecutionEnvironment(),
-                terminal,
-                dorunScript,
-                "-w", workingDirectory, // NOI18N
-                "-e", envFileName, // NOI18N
-                "-p", pidFName, // NOI18N
-                "-x", terminalInfo.getPrompt(terminal), // NOI18N
-                cmd);
-
-        ProcessBuilder pb = new ProcessBuilder(command);
-
-        if ((isWindows || isMacOS) && wDir != null) {
-            pb.directory(new File(wDir));
-        }
-
-        final MacroMap env = info.getEnvVariables();
-
-        // setup DISPLAY variable for MacOS...
-        if (isMacOS) {
-            ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
-            Process p1 = pb1.start();
-            int status = -1;
-
-            try {
-                status = p1.waitFor();
-            } catch (InterruptedException ex) {
+            if (dorunScript == null) {
+                //throw new IOException("dorun not found"); // NOI18N
+                processError = new ByteArrayInputStream(
+                        "unable to start process in an external terminal - dorun script not found".getBytes()); // NOI18N
+                processOutput = new ByteArrayInputStream(new byte[0]);
+                pidFileName = null;
+                termProcess = null;
+                destroy();
+                return;
             }
 
-            String display = null;
+            ExternalTerminal terminal = t;
 
-            if (status == 0) {
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(p1.getInputStream()));
-                display = br.readLine();
+            final String commandLine = info.getCommandLine();
+            String wDir = info.getWorkingDirectory(true);
 
+            String workingDirectory = wDir;
+
+            if (isWindows || workingDirectory == null) {
+                workingDirectory = "."; // NOI18N
             }
 
-            if (display == null || "".equals(display)) { // NOI18N
-                display = ":0.0"; // NOI18N
+            File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
+            pidFile.deleteOnExit();
+            pidFileName = pidFile.toString();
+            String envFileName = pidFileName + ".env"; // NOI18N
+
+            final ExternalTerminalAccessor terminalInfo =
+                    ExternalTerminalAccessor.getDefault();
+
+            if (terminalInfo.getTitle(terminal) == null) {
+                terminal = terminal.setTitle(commandLine);
             }
 
-            pb.environment().put("DISPLAY", display); // NOI18N
-        }
+            String cmd = commandLine;
 
-        if (!env.isEmpty()) {
-            // TODO: FIXME (?)
-            // Do PATH normalization on Windows....
-            // Problem here is that this is done for PATH env. variable only!
+            String pidFName = pidFileName;
 
             if (isWindows) {
-                String path = env.get("PATH"); // NOI18N
-                env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
+                pidFName = pidFName.replaceAll("\\\\", "/"); // NOI18N
+                envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
             }
 
-            File envFile = new File(envFileName);
-            OutputStream fos = new FileOutputStream(envFile);
-            EnvWriter ew = new EnvWriter(fos);
-            ew.write(env);
-            fos.close();
+            List<String> command = terminalInfo.wrapCommand(
+                    info.getExecutionEnvironment(),
+                    terminal,
+                    dorunScript,
+                    "-w", workingDirectory, // NOI18N
+                    "-e", envFileName, // NOI18N
+                    "-p", pidFName, // NOI18N
+                    "-x", terminalInfo.getPrompt(terminal), // NOI18N
+                    cmd);
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+
+            if ((isWindows || isMacOS) && wDir != null) {
+                pb.directory(new File(wDir));
+            }
+
+            final MacroMap env = info.getEnvVariables();
+
+            // setup DISPLAY variable for MacOS...
+            if (isMacOS) {
+                ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
+                Process p1 = pb1.start();
+                int status = -1;
+
+                try {
+                    status = p1.waitFor();
+                } catch (InterruptedException ex) {
+                }
+
+                String display = null;
+
+                if (status == 0) {
+                    BufferedReader br = new BufferedReader(
+                            new InputStreamReader(p1.getInputStream()));
+                    display = br.readLine();
+
+                }
+
+                if (display == null || "".equals(display)) { // NOI18N
+                    display = ":0.0"; // NOI18N
+                }
+
+                pb.environment().put("DISPLAY", display); // NOI18N
+            }
+
+            if (!env.isEmpty()) {
+                // TODO: FIXME (?)
+                // Do PATH normalization on Windows....
+                // Problem here is that this is done for PATH env. variable only!
+
+                if (isWindows) {
+                    String path = env.get("PATH"); // NOI18N
+                    env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
+                }
+
+                File envFile = new File(envFileName);
+                OutputStream fos = new FileOutputStream(envFile);
+                EnvWriter ew = new EnvWriter(fos);
+                ew.write(env);
+                fos.close();
+            }
+
+            Process terminalProcess = null;
+
+            try {
+                terminalProcess = pb.start();
+            } catch (IOException ex) {
+                termProcess = null;
+                processError = new ByteArrayInputStream(ex.getMessage().getBytes());
+                processOutput = new ByteArrayInputStream(new byte[]{32});
+                return;
+            }
+
+            termProcess = terminalProcess;
+
+    //        String message = "Start " + commandLine + " in " + // NOI18N
+    //                terminalInfo.getTerminalProfile(terminal).getID() + "... "; // NOI18N
+
+            String message = " "; // NOI18N
+            processOutput = new ByteArrayInputStream(message.getBytes());
+            processError = termProcess.getErrorStream();
+
+        } catch (IOException ex) {
+            destroy();
+            throw ex;
+        } catch (RuntimeException ex) {
+            destroy();
+            throw ex;
         }
-
-        termProcess = pb.start();
-
-        processOutput = new ByteArrayInputStream(new byte[0]);
-        processError = termProcess.getErrorStream();
-        processInput = null;
 
         waitPID();
     }
@@ -227,7 +257,17 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private synchronized int sendSignal(int signal) {
         int result = 1;
+        int pid = -1;
 
+        try {
+            pid = getPID();
+        } catch (IllegalThreadStateException ex) {
+        }
+
+        if (pid < 0) {
+            return -1;
+        }
+        
         try {
             ProcessBuilder pb;
             List<String> command = new ArrayList<String>();
@@ -248,6 +288,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             result = killProcess.waitFor();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        } catch (InterruptedIOException ex) {
+            Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -261,7 +303,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         try {
             pid = getPID();
-        } catch (IllegalStateException ex) {
+        } catch (IllegalThreadStateException ex) {
         }
 
         if (pid < 0) {
@@ -299,6 +341,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 Thread.sleep(500);
             }
+        } catch (InterruptedIOException ex) {
+            throw new InterruptedException();
         } catch (IOException ex) {
         } catch (NumberFormatException ex) {
         }
@@ -308,7 +352,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public OutputStream getOutputStream() {
-        return processInput;
+        return null;
     }
 
     @Override
@@ -333,30 +377,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private void waitPID() {
         File realPidFile = new File(pidFileName); // NOI18N
 
-        while (true) {
+        while (!isInterrupted()) {
             if (realPidFile.exists() && realPidFile.length() > 0) {
                 try {
                     InputStream pidIS = new FileInputStream(realPidFile);
                     readPID(pidIS);
                     pidIS.close();
                     break;
+                } catch (InterruptedException ex) {
+                    interrupt();
+                } catch (InterruptedIOException ex) {
+                    interrupt();
                 } catch (IOException ex) {
-                    return;
                 }
             }
 
-            if (isFinished() || Thread.currentThread().isInterrupted()) {
-                // TODO: Not very good idea...
-                // use readPID(null) to initiate ERROR state...
-                readPID(null);
-                return;
+            if (isFinished()) {
+                interrupt();
             }
 
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 }

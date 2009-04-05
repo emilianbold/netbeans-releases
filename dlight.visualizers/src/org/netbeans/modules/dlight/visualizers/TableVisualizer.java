@@ -225,6 +225,12 @@ class TableVisualizer extends JPanel implements
         return 0;
     }
 
+    public void refresh() {
+        asyncFillModel();
+    }
+
+
+
     protected final void asyncFillModel() {
         DLightExecutorService.submit(new Runnable() {
 

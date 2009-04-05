@@ -52,7 +52,7 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
  */
 public class HudsonVersionImpl implements HudsonVersion {
     
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\b.*");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\b.*"); // NOI18N
     
     private final int major;
     private final int minor;
@@ -74,7 +74,7 @@ public class HudsonVersionImpl implements HudsonVersion {
     }
     
     public String toString() {
-        return getMajorVersion() + "." + getMinorVersion();
+        return getMajorVersion() + "." + getMinorVersion(); // NOI18N
     }
     
     public boolean equals(Object o) {

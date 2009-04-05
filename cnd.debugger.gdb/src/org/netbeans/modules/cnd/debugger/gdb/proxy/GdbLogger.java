@@ -70,7 +70,7 @@ public class GdbLogger {
         File tmpfile;
 
         try {
-            if (!debugger.isUnitTest()) {
+            if (!GdbDebugger.isUnitTest()) {
                 tmpfile = File.createTempFile("gdb-cmds", ".log"); // NOI18N
                 if (!Boolean.getBoolean("gdb.console.savelog")) { // NOI18N - This lets me save logss
                     tmpfile.deleteOnExit();

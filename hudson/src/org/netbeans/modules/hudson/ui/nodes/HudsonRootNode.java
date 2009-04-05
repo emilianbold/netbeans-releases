@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class HudsonRootNode extends AbstractNode {
     
-    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png";
+    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
     
     /** Init lock */
     private static final Object LOCK_INIT = new Object();

@@ -42,7 +42,7 @@ package org.netbeans.modules.css.editor;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
@@ -80,7 +80,7 @@ public class CssIndenterTest extends TestBase {
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JspKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/x-jsp"), HtmlTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/x-jsp"), HTMLTokenId.language());
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, JavaTokenId.language());
     }
@@ -151,6 +151,15 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase1() throws Exception {
+        //#160344
+        reformatFileContents("testfiles/case001.css", new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase2() throws Exception {
+        reformatFileContents("testfiles/case002.css", new IndentPrefs(4,4));
+    }
+
     public void testFormattingNetBeansCSS() throws Exception {
         reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
     }
@@ -176,6 +185,19 @@ public class CssIndenterTest extends TestBase {
         insertNewline("a{^}", "a{\n    ^\n}", null);
         insertNewline("a{\n/**/^\n}", "a{\n/**/\n^\n}", null);
         insertNewline("a{\n     /*^comment\n     */\n}", "a{\n     /*\n     ^comment\n     */\n}", null);
+
+        //#160344
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^bbb\nccc*/ ;}",
+                "xxxxxh2 { color:aqua /* aaa\n                     ^bbb\nccc*/ ;}", null);
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^*/ ;}",
+                "xxxxxh2 { color:aqua /* aaa\n              ^*/ ;}", null);
+
+        //#161642
+        insertNewline(
+                "xxxxxh2 { color:aqua /* aaa^*/;}",
+                "xxxxxh2 { color:aqua /* aaa\n              ^*/;}", null);
     }
 
 }

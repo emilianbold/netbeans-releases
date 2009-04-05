@@ -66,4 +66,9 @@ public interface Visualizer<T extends VisualizerConfiguration> {
    */
   VisualizerContainer getDefaultContainer();
 
+  /**
+   * This method is to refresh visualizer displayed data with the latest snapshot
+   */
+  void refresh();
+
 }

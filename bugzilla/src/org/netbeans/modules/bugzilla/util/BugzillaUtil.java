@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
+        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
                 title,
@@ -82,6 +82,16 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id) {
+        return getTaskData(repository, id, true);
+    }
+
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
@@ -89,7 +99,10 @@ public class BugzillaUtil {
                 taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
             }
         };
-        repository.getExecutor().execute(cmd);
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
         return taskData[0];
     }
 

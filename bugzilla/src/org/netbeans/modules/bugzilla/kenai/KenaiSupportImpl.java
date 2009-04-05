@@ -43,11 +43,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -69,41 +71,45 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         if(project == null) {
             return null;
         }
-        KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-        for (KenaiFeature f : features) {
-            if(!f.getName().equals("bz") && 
-               !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
-            {
-                return null;
-            }
-            String host = f.getLocation().getHost();
-            String location = f.getLocation().toString();
-            int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
-            if(idx <= 0) {
-                Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + location + "]"); // NOI18N
-                return null;
-            }
-            String url = location.substring(0, idx);
-            if(url.startsWith("http:")) { // XXX hack???                    // NOI18N
-                url = "https" + url.substring(4);                           // NOI18N
-            }
-            String productParamUrl = null;
-            String productAttribute = "product=";
-            String product = null;
-            idx = location.indexOf(productAttribute);
-            if(idx <= 0) {
-                Bugzilla.LOG.warning("can't get bugtracking product from [" + project.getName() + ", " + location + "]"); // NOI18N
-            } else {
-                productParamUrl = location.substring(idx);
-                product = location.substring(idx + productAttribute.length());
-            }            
-            
-            KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
-            synchronized(repositories) {
-                repositories.add(repo);
-            }
+        try {
+            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
+            for (KenaiFeature f : features) {
+                if (!f.getName().equals("bz") &&   // NOI18N
+                        !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505 // NOI18N
+                {
+                    return null;
+                }
+                String host = f.getLocation().getHost();
+                String location = f.getLocation().toString();
+                int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
+                if (idx <= 0) {
+                    Bugzilla.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
+                    return null;
+                }
+                String url = location.substring(0, idx);
+                if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+                    url = "https" + url.substring(4);                           // NOI18N
+                }
+                String productParamUrl = null;
+                String productAttribute = "product=";
+                String product = null;
+                idx = location.indexOf(productAttribute);
+                if (idx <= 0) {
+                    Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
+                } else {
+                    productParamUrl = location.substring(idx);
+                    product = location.substring(idx + productAttribute.length());
+                }
 
-            return repo;
+                KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
+                synchronized (repositories) {
+                    repositories.add(repo);
+                }
+
+                return repo;
+            }
+        } catch (KenaiException kenaiException) {
+            Bugzilla.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
         }
         return null;
     }
@@ -127,8 +133,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 user = KenaiUtil.getKenaiUser();
                 psswd = KenaiUtil.getKenaiPassword();
             } else {
-                user = "";                                                      
-                psswd = "";
+                user = "";                                                      // NOI18N
+                psswd = "";                                                     // NOI18N
             }
 
             for (KenaiRepository kr : repos) {

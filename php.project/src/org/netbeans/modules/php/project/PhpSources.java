@@ -32,6 +32,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -53,6 +54,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
 
+    private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
@@ -61,19 +63,17 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     private SourcesHelper sourcesHelper;
     private Sources delegate;
-    /**
-     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots}
-     **/
-    private volatile boolean externalRootsRegistered;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots, final SourceRoots seleniumRoots) {
+    public PhpSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots, final SourceRoots seleniumRoots) {
+        assert project != null;
         assert helper != null;
         assert evaluator != null;
         assert sourceRoots != null;
         assert testRoots != null;
         assert seleniumRoots != null;
 
+        this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
@@ -112,20 +112,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH
+        sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
         register(sourceRoots);
         register(testRoots);
         register(seleniumRoots);
-
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
 

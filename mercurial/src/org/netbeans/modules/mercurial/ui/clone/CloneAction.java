@@ -211,7 +211,8 @@ public class CloneAction extends ContextAction {
                         hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
                         hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
                     } else {
-                        Mercurial.LOG.log(Level.WARNING, null, hgConfigFiles.getException());
+                        Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
+                        Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
                         
                     if(!isLocalClone){

@@ -33,17 +33,17 @@
                           <Component id="lblUserName" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblNoAccount" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="register" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="signUp" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="forgotPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="chkRememberMe" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="password" alignment="0" pref="366" max="32767" attributes="0"/>
                           <Component id="username" alignment="0" pref="366" max="32767" attributes="0"/>
+                          <Component id="forgotPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -65,18 +65,17 @@
                   <Component id="lblPassword" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="password" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="chkRememberMe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="forgotPassword" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblNoAccount" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="register" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="signUp" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Component id="errorProgress" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -93,6 +92,13 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
       <SubComponents>
+        <Component class="javax.swing.JProgressBar" name="progressBar">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+              <CardConstraints cardName="card3"/>
+            </Constraint>
+          </Constraints>
+        </Component>
         <Component class="javax.swing.JLabel" name="error">
           <Properties>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -102,13 +108,6 @@
               <Image iconType="3" name="/org/netbeans/modules/kenai/ui/resources/error.png"/>
             </Property>
           </Properties>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="card3"/>
-            </Constraint>
-          </Constraints>
-        </Component>
-        <Component class="javax.swing.JProgressBar" name="progressBar">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="card3"/>
@@ -161,18 +160,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="forgotPassword">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="LoginPanel.forgotPassword.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="forgotPasswordMouseEntered"/>
-        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="forgotPasswordMouseExited"/>
-        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="forgotPasswordMousePressed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="lblNoAccount">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -180,19 +167,20 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="register">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="LoginPanel.register.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JPasswordField" name="password">
       <Events>
-        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="registerMouseEntered"/>
-        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="registerMouseExited"/>
-        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="registerMousePressed"/>
+        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="passwordFocusGained"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JPasswordField" name="password">
+    <Component class="javax.swing.JButton" name="forgotPassword">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.forgotPassword.text&quot;), new URLDisplayerAction(&quot;&quot;,forgetPasswordUrl));"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="signUp">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.register.text&quot;), new URLDisplayerAction(&quot;&quot;,registerUrl));"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

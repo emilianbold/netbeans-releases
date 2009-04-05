@@ -722,7 +722,9 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="zip-cluster-config" depends="init">
-    <property name="zip.name" value="NetBeans-${buildnum}-${cluster.config}.zip"/>
+    <property name="zip.dir" location="."/>
+    <mkdir dir="${zip.dir}"/>
+    <property name="zip.name" location="${zip.dir}/NetBeans-${buildnum}-${cluster.config}.zip"/>
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist name="nb.clusters.dirs" list="${nb.clusters.list}">
         <mapper type="glob" from="*" to="*.dir"/>

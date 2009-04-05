@@ -57,8 +57,8 @@ public class CpuIndicatorPanel {
 
     private static final Color COLOR_SYS = GraphConfig.COLOR_1;
     private static final Color COLOR_USR = GraphConfig.COLOR_3;
-    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, "System");
-    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, "User");
+    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.system"));//NOI18N
+    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.user"));//NOI18N
 
     private final PercentageGraph graph;
     private final GraphPanel<PercentageGraph, Legend> panel;

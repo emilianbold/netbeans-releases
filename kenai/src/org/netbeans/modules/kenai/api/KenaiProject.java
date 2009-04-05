@@ -45,8 +45,6 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
@@ -149,7 +147,7 @@ public final class KenaiProject {
      * Display name of this project
      * @return
      */
-    public synchronized String getDescription() {
+    public synchronized String getDescription() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.description;
     }
@@ -158,9 +156,14 @@ public final class KenaiProject {
      * @return tags separated by space
      *
      */
-    public synchronized String getTags() {
+    public synchronized String getTags() throws KenaiException {
         fetchDetailsIfNotAvailable();
         return data.tags;
+    }
+
+    public synchronized boolean isPrivate() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        return data.private_hidden;
     }
 
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
@@ -184,7 +187,7 @@ public final class KenaiProject {
      * @return features of given project
      * @see KenaiFeature
      */
-    public synchronized KenaiFeature[] getFeatures() {
+    public synchronized KenaiFeature[] getFeatures() throws KenaiException {
         fetchDetailsIfNotAvailable();
         if (features==null) {
             features=new KenaiFeature[data.features.length];
@@ -203,7 +206,7 @@ public final class KenaiProject {
      * @param type
      * @return
      */
-    public synchronized KenaiFeature[] getFeatures(Type type) {
+    public synchronized KenaiFeature[] getFeatures(Type type) throws KenaiException {
         ArrayList<KenaiFeature> fs= new ArrayList();
         for (KenaiFeature f:getFeatures()) {
             if (f.getType().equals(type)) {
@@ -273,16 +276,11 @@ public final class KenaiProject {
         return data;
     }
 
-    private void fetchDetailsIfNotAvailable() {
+    private void fetchDetailsIfNotAvailable() throws KenaiException {
         if (this.data.updated_at != null) {
             return;
         }
-
-        try {
-            refresh();
-        } catch (KenaiException kenaiException) {
-            Logger.getLogger(KenaiProject.class.getName()).log(Level.SEVERE, null, kenaiException);
-        }
+        refresh();
     }
 
     /**

@@ -48,10 +48,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiErrorMessage;
+import org.netbeans.modules.kenai.api.KenaiException;
 
 /**
  * Talks to remote Kenai server via Web services API.
@@ -115,7 +114,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 200)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String sss = resp.getDataAsString();
 
@@ -161,7 +160,7 @@ public class KenaiREST extends KenaiImpl {
             System.err.println("Page " + url + " loaded in " + (System.currentTimeMillis()-start) + " ms");
         }
         if (resp.getResponseCode() != 200)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
         String responseString = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
@@ -292,7 +291,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 201)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String response = resp.getDataAsString();
 
@@ -338,7 +337,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 201)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String response = resp.getDataAsString();
 

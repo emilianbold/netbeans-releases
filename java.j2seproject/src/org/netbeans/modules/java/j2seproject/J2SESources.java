@@ -53,6 +53,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.GenericSources;
@@ -72,20 +73,18 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private static final String BUILD_DIR_PROP = "${" + J2SEProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + J2SEProjectProperties.DIST_DIR + "}";    //NOI18N
 
+    private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private SourcesHelper sourcesHelper;
     private Sources delegate;
-    /**
-     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
-     **/
-    private boolean externalRootsRegistered;    
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    J2SESources(AntProjectHelper helper, PropertyEvaluator evaluator,
+    J2SESources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
+        this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
@@ -152,20 +151,12 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     }
     
     private Sources initSources() {
-        this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
+        this.sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH        
         register(sourceRoots);
         register(testRoots);
         this.sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
         this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
-        externalRootsRegistered = false;
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {                
-                if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
-                    externalRootsRegistered = true;
-                }
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
         return this.sourcesHelper.createSources();
     }
 

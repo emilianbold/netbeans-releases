@@ -107,7 +107,7 @@ public final class Erprint {
         if (log.isLoggable(Level.FINEST)) {
             descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
         }
-        
+
         descr = descr.outProcessorFactory(new InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -218,6 +218,28 @@ public final class Erprint {
         return result;
     }
 
+    public String[] getHotFunctions(String command, Metrics metrics, int limit, boolean restart) {
+        String[] result = null;
+        synchronized (lock) {
+            restart(restart);
+            setMetrics(metrics.mspec);
+            setSortBy(metrics.msort);
+            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
+            result = exec(command, limit); // NOI18N
+            erOutputProcessor.setFilterType(FilterType.noFiltering);
+        }
+        return result;
+    }
+
+    public FunctionStatistic getFunctionStatistic(String functionName, boolean restart){
+        FunctionStatistic result = null;
+        synchronized (lock) {
+            restart(restart);
+            result = new FunctionStatistic(exec("fsingle " + functionName, Integer.MAX_VALUE)); // NOI18N
+        }
+        return result;
+    }
+
     String[] getCallersCallees(int limit) {
         String[] ccOut = exec("callers-callees", limit); // NOI18N
         // TODO: process output
@@ -250,11 +272,11 @@ public final class Erprint {
     }
 
     private static class FilteredInputProcessor implements InputProcessor {
-        // Buffer must be synchronized, because it could be accessed
+        // Buffer must be synchronized, because it caould be accessed
         // from several threads (example: one thread - onTimer, another one -
         // user clicks on indicator)
         // The problem may appear when one thread gets buffer, while another one
-        // cleans it... 
+        // cleans it...
 
         private final Object lock = new String(FilteredInputProcessor.class.getName());
         private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
@@ -329,7 +351,7 @@ public final class Erprint {
             buffer.clear();
             this.doneSignal = doneSignal;
             // null - a special case. This means that er_print process has
-            // changed. So, prompt will be fetched again.... 
+            // changed. So, prompt will be fetched again....
             if (doneSignal == null) {
                 prompt = null;
             }

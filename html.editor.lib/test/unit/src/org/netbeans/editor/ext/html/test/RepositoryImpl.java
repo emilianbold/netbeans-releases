@@ -41,7 +41,7 @@
 
 package org.netbeans.editor.ext.html.test;
 
-import org.netbeans.api.html.lexer.HtmlTokenId;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -69,7 +69,7 @@ public class RepositoryImpl extends Repository {
         {
             FileSystem writeFs = FileUtil.createMemoryFileSystem();
             FileSystem layerFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
-            FileSystem lexerLayerFS = new XMLFileSystem(HtmlTokenId.class.getClassLoader().getResource("org/netbeans/lib/html/lexer/layer.xml"));
+            FileSystem lexerLayerFS = new XMLFileSystem(HTMLTokenId.class.getClassLoader().getResource("org/netbeans/lib/html/lexer/layer.xml"));
             return new MultiFileSystem(new FileSystem[] { writeFs, lexerLayerFS, layerFs });
         } catch (SAXException e) {
             return null;

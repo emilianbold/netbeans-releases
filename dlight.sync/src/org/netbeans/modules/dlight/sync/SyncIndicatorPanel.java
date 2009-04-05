@@ -16,7 +16,7 @@ import org.openide.util.NbBundle;
 
     private static final Color GRAPH_COLOR = GraphConfig.COLOR_4;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
-    private static final String THREADS_DETAIL_ID = "thread-count";
+    private static final String THREADS_DETAIL_ID = "thread-count";//NOI18N
 
     private final Graph graph;
     private final Legend legend;
@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Legend createLegend() {
-        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>singletonMap(THREADS_DETAIL_ID, "Threads:"));
+        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>singletonMap(THREADS_DETAIL_ID, NbBundle.getMessage(SyncIndicatorPanel.class, "SyncTool.Legend.Threads")));//NOI18N
         legend.updateDetail(THREADS_DETAIL_ID, Integer.toString(0));
         return legend;
     }

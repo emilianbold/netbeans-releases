@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@ package org.netbeans.modules.db.explorer;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -73,7 +72,7 @@ public class ConnectionList {
 
     private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<ConnectionListener>();
 
-    private Lookup.Result result = getLookupResult();
+    private Lookup.Result<DatabaseConnection> result = getLookupResult();
 
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
@@ -98,7 +97,7 @@ public class ConnectionList {
     }
 
     public DatabaseConnection[] getConnections() {
-        Collection<DatabaseConnection> dbconns = result.allInstances();
+        Collection<? extends DatabaseConnection> dbconns = result.allInstances();
         return dbconns.toArray(new DatabaseConnection[dbconns.size()]);
     }
 
@@ -121,9 +120,7 @@ public class ConnectionList {
         }
 
         if (contains(dbconn)) {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-
-            throw new DatabaseException(bundle.getString("EXC_ConnectionAlreadyExists")); // NOI18N
+            throw new DatabaseException(NbBundle.getMessage (ConnectionList.class, "EXC_ConnectionAlreadyExists")); // NOI18N
         }
 
         try {

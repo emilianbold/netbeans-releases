@@ -84,15 +84,15 @@ public class CreateJob extends AbstractAction {
     }
 
     public CreateJob(HudsonInstance instance) {
-        super("New Build..."); // XXX I18N
+        super(NbBundle.getMessage(CreateJob.class, "CreateJob.new_build"));
         this.instance = instance;
     }
 
     public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
-        final DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
+        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateJob.class, "CreateJob.title"));
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
-        final JButton createButton = new JButton("Create"); // XXX I18N
+        final JButton createButton = new JButton(NbBundle.getMessage(CreateJob.class, "CreateJob.create"));
         createButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -124,7 +124,7 @@ public class CreateJob extends AbstractAction {
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
             String createItemURL = instance.getUrl() + "createItem?name=" + Utilities.uriEncode(name); // NOI18N
             new ConnectionBuilder().instance(instance).url(createItemURL).
-                    header("Content-Type", "text/xml").
+                    header("Content-Type", "text/xml"). // NOI18N
                     postData(baos.toByteArray()).
                     httpConnection().disconnect();
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + Utilities.uriEncode(name) + "/")); // NOI18N

@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JDialog;
@@ -58,9 +59,6 @@ import org.openide.util.RequestProcessor;
  */
 public class ModalMessageDlg extends javax.swing.JPanel {
 
-    public interface CancellableTask extends Runnable, Cancellable {
-    }
-
     /**
      * allows to display modal dialog with title and message for the period of
      * long task run
@@ -71,44 +69,60 @@ public class ModalMessageDlg extends javax.swing.JPanel {
      * @param message message in dialog
      * @return
      */
-    public static void runLongTask(Dialog parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
-        runLongTaskImpl(parent, workTask, postEDTTask, title, message, null);
-    }
-    public static void runLongTask(Frame parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
-        runLongTaskImpl(parent, workTask, postEDTTask, title, message, null);
+    public static void runLongTask(Dialog parent,
+            final Runnable workTask, final Runnable postEDTTask, final Cancellable canceller,
+            String title, String message) {
+        runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
     }
 
-    public static boolean runLongCancellableTask(Dialog parent, final CancellableTask workTask,
-            final Runnable postEDTTask, String title, String message) {
-        return runLongTaskImpl(parent, workTask, postEDTTask, title, message, workTask);
-    }
-    public static boolean runLongCancellableTask(Frame parent, final CancellableTask workTask,
-            final Runnable postEDTTask, String title, String message) {
-        return runLongTaskImpl(parent, workTask, postEDTTask, title, message, workTask);
+    public static void runLongTask(Frame parent,
+            final Runnable workTask, final Runnable postEDTTask, final Cancellable canceller,
+            String title, String message) {
+        runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
     }
 
     private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
-            String title, String message, final Cancellable cancellable) {
+            String title, String message, final Cancellable canceller) {
 
         final JDialog dialog;
-        final AtomicBoolean success = new AtomicBoolean(true);
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-        if (parent instanceof Frame) {
-            dialog = new JDialog((Frame)parent, title, true);           
+        if (parent == null) {
+            dialog = new JDialog();
+        } else if (parent instanceof Frame) {
+            dialog = new JDialog((Frame)parent);
         } else {
             assert (parent instanceof Dialog);
-            dialog = new JDialog((Dialog)parent, title, true);
+            dialog = new JDialog((Dialog)parent);
         }
+        dialog.setTitle(title);
+        dialog.setModal(true);
+
+        final Runnable finalizer = new Runnable() {
+            public void run() {
+                // hide dialog and run action if successfully connected
+                dialog.setVisible(false);
+                dialog.dispose();
+                if (postEDTTask != null && ! cancelled.get()) {
+                    postEDTTask.run();
+                }
+            }
+        };
 
         JPanel panel;
-        if (cancellable == null) {
+        if (canceller == null) {
             panel = new ModalMessageDlgPane(message);
         } else {
             Cancellable wrapper = new Cancellable() {
+                /** is invoked from a separate cancellation thread */
                 public boolean cancel() {
-                    cancelled.set(cancellable.cancel());
-                    return cancelled.get();
+                    if (canceller.cancel()) {
+                        cancelled.set(true);
+                        SwingUtilities.invokeLater(finalizer);
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             };
             panel = new ModalMessageDlgCancellablePane(message, wrapper);
@@ -118,7 +132,8 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
         dialog.pack();
 
-        Rectangle bounds = parent.getBounds();
+        Rectangle bounds = (parent == null) ?
+            new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()) : parent.getBounds();
 
         int middleX = bounds.x + bounds.width / 2;
         int middleY = bounds.y + bounds.height / 2;
@@ -126,25 +141,17 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         Dimension size = dialog.getPreferredSize();
 
         dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     workTask.run();
                 } finally {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            // hide dialog and run action if successfully connected
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                            if (postEDTTask != null && ! cancelled.get()) {
-                                postEDTTask.run();
-                            }
-                        }
-                    });
+                    SwingUtilities.invokeLater(finalizer);
                 }
             }
         });
         dialog.setVisible(true);
-        return success.get();
+        return !cancelled.get();
     }    
 }

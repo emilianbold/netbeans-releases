@@ -45,7 +45,6 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 
 /**
  * @author Radek Matous
@@ -54,10 +53,10 @@ public class FolderName extends FileName {
     private static Map fileCache = new WeakHashMap();
 
 
-    FolderName(final FileNaming parent, final FileInfo fileInfo) {
-        super(parent, fileInfo);
+    FolderName(final FileNaming parent, final File file) {
+        super(parent, file);
         synchronized (FolderName.class) {
-            FolderName.fileCache.put(this, fileInfo.getFile());
+            FolderName.fileCache.put(this, file);
         }
     }
 

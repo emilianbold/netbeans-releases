@@ -206,7 +206,7 @@ public abstract class ExportDiffSupport {
                             }
                             toFile.deleteOnExit();
                             writeDiffFile(toFile);
-                            exportDiffProvider.handeDiffFile(toFile);
+                            exportDiffProvider.handleDiffFile(toFile);
                         } finally {
                             handle.finish();
                         }
@@ -304,7 +304,7 @@ public abstract class ExportDiffSupport {
          * Handles the given diff file
          * @param file
          */
-        public abstract void handeDiffFile(File file);
+        public abstract void handleDiffFile(File file);
 
         /**
          * Return a visual component representing this ExportDiffProvider

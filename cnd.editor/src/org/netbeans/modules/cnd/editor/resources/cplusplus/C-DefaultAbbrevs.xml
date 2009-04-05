@@ -109,6 +109,14 @@ for (${IDX} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
 }
 ]]>
         </code>
-    </codetemplate>    
+    </codetemplate>
+
+    <codetemplate abbreviation="fcom">
+        <code>
+<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}// </editor-fold>
+]]>
+        </code>
+    </codetemplate>
 
 </codetemplates>

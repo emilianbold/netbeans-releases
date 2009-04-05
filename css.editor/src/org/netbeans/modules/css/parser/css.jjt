@@ -32,6 +32,7 @@ PARSER_END(CssParser)
 
 //TOKEN_MGR_DECLS :
 
+
 <DEFAULT> TOKEN :
 {
     < S: ( " "|"\t"|"\r"|"\n"|"\f" )+ >
@@ -39,7 +40,17 @@ PARSER_END(CssParser)
 
 <DEFAULT> MORE :
 {
-  < "/*" > : COMMENT
+  < "/*" > : IN_COMMENT
+}
+
+<IN_COMMENT> MORE :
+{
+ < ~[] >
+}
+
+<IN_COMMENT> TOKEN :
+{
+  < COMMENT: "*/" > : DEFAULT
 }
 
 <DEFAULT> MORE: 
@@ -59,15 +70,6 @@ PARSER_END(CssParser)
   < ~[] > : MS_EXPRESSION
 }
 
-<COMMENT> SKIP :
-{
-  < "*/" > : DEFAULT
-}
-
-<COMMENT> MORE :
-{
-  < ~[] > : COMMENT
-}
 
 <DEFAULT> TOKEN :
 {
@@ -182,9 +184,9 @@ SimpleNode styleSheet() :{} {
 
 void styleSheetRuleList() :{} {
   ( charsetRule() )?
-  ( <S> | <CDO> | <CDC> )*
-  ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( ( <EOF> { return; } | rule() ) ( <S> | <CDO> | <CDC> )* )*
+  ( ( <S> | <COMMENT> ) | <CDO> | <CDC> )*
+  ( importRule() ( ( <S> | <COMMENT> ) | <CDO> | <CDC> )* )*
+  ( ( <EOF> { return; } | rule() ) ( ( <S> | <COMMENT> ) | <CDO> | <CDC> )* )*
 }
 
 void rule() :{} {
@@ -199,8 +201,8 @@ void styleSheetRuleSingle() :{} {
 }
 
 void charsetRule() : {} {
-  <CHARSET_SYM> ( <S> )*
-  <STRING> ( <S> )*
+  <CHARSET_SYM> ( ( <S> | <COMMENT> ) )*
+  <STRING> ( ( <S> | <COMMENT> ) )*
   <SEMICOLON>
 }
 
@@ -210,28 +212,28 @@ void unknownRule() :{} {
 }
 
 void importRule() : {} {
-    <IMPORT_SYM> ( <S> )*
+    <IMPORT_SYM> ( ( <S> | <COMMENT> ) )*
     (<STRING>
-    | <URI> ) ( <S> )*
+    | <URI> ) ( ( <S> | <COMMENT> ) )*
     ( mediaList() )?
     <SEMICOLON>
 }
 
 void mediaRule() : {} {
-        <MEDIA_SYM> ( <S> )*
+        <MEDIA_SYM> ( ( <S> | <COMMENT> ) )*
         mediaList()
-        <LBRACE> ( <S> )*
+        <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( mediaRuleList() )?
         <RBRACE>
 }
 
 void mediaList() :{} {
     medium()
-    ( <COMMA> ( <S> )* medium() )*
+    ( <COMMA> ( ( <S> | <COMMENT> ) )* medium() )*
 }
 
 void mediaRuleList() : {} {
-  ( ( styleRule() | pageRule() | unknownRule() ) ( <S> )* )+ 
+  ( ( styleRule() | pageRule() | unknownRule() ) ( ( <S> | <COMMENT> ) )* )+
 }
 
 void mediaRuleSingle() :
@@ -245,7 +247,7 @@ void medium() :
 {
 }
 {
-  ( <IDENT> | <GENERATED> ) ( <S> )*
+  ( <IDENT> | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
 }
 
 void pageRule() :
@@ -255,15 +257,15 @@ void pageRule() :
     boolean start = false;
 }
 {
-        <PAGE_SYM> ( <S> )*
+        <PAGE_SYM> ( ( <S> | <COMMENT> ) )*
 
-        ( LOOKAHEAD(2) ( t = <IDENT> ( <S> )* ) |
-        ( <IDENT> pseudoPage() ( <S> )* ) |
-        ( pseudoPage() ( <S> )* ) )?
+        ( LOOKAHEAD(2) ( t = <IDENT> ( ( <S> | <COMMENT> ) )* ) |
+        ( <IDENT> pseudoPage() ( ( <S> | <COMMENT> ) )* ) |
+        ( pseudoPage() ( ( <S> | <COMMENT> ) )* ) )?
 
-        <LBRACE> ( <S> )*
+        <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( declaration() )?
-        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        ( <SEMICOLON> ( ( <S> | <COMMENT> ) )* ( declaration() )? )*
         <RBRACE>
 }
 
@@ -290,10 +292,10 @@ void fontFaceRule() :
 {
 }
 {
-        <FONT_FACE_SYM> ( <S> )*
-        <LBRACE> ( <S> )* 
+        <FONT_FACE_SYM> ( ( <S> | <COMMENT> ) )*
+        <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( declaration() )?
-        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        ( <SEMICOLON> ( ( <S> | <COMMENT> ) )* ( declaration() )? )*
         <RBRACE>
 }
 
@@ -306,7 +308,7 @@ void operator() :
 {
 }
 {
-  <SLASH> ( <S> )* |  <COMMA> ( <S> )*
+  <SLASH> ( ( <S> | <COMMENT> ) )* |  <COMMA> ( ( <S> | <COMMENT> ) )*
 }
 
 //
@@ -318,9 +320,9 @@ void combinator() :
 {
 }
 {
-  ( <PLUS> ( <S> )*
-  | <GT> ( <S> )*
-  | <S> ( ( <PLUS> | <GT> ) ( <S> )* )? )
+  ( <PLUS> ( ( <S> | <COMMENT> ) )*
+  | <GT> ( ( <S> | <COMMENT> ) )*
+  | ( <S> | <COMMENT> ) ( ( <PLUS> | <GT> ) ( ( <S> | <COMMENT> ) )* )? )
 
 }
 
@@ -345,7 +347,7 @@ void property() :
 {
 }
 {
-    (<IDENT> | <GENERATED>) ( <S> )*
+    (<IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*
 }
 
 //
@@ -362,9 +364,9 @@ void styleRule() :
 {
     try {
         selectorList()
-        <LBRACE> ( <S> )*
+        <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( declaration() )?
-        ( <SEMICOLON> ( <S> )* ( declaration() )? )*
+        ( <SEMICOLON> ( ( <S> | <COMMENT> ) )* ( declaration() )? )*
         <RBRACE>
     } catch(ParseException e) {
         reportError(e);
@@ -378,7 +380,7 @@ void selectorList() :
 {
     try {
         selector()
-        ( <COMMA> ( <S> )*  selector() )* 
+        ( <COMMA> ( ( <S> | <COMMENT> ) )*  selector() )*
 
     } catch (ParseException e) {
         reportError(e);
@@ -396,7 +398,7 @@ void selector() :
 {
     try {
         simpleSelector()
-        ( LOOKAHEAD(2) combinator() simpleSelector() )* ( <S> )*
+        ( LOOKAHEAD(2) combinator() simpleSelector() )* ( ( <S> | <COMMENT> ) )*
     } catch (ParseException e) {
         reportError(e);
         skipSelector();
@@ -466,8 +468,8 @@ void attrib() :
 {
 }
 {
-    <LSQUARE> ( <S> )*
-    ( <IDENT> ) ( <S> )*
+    <LSQUARE> ( ( <S> | <COMMENT> ) )*
+    ( <IDENT> ) ( ( <S> | <COMMENT> ) )*
     (
         (
             <EQUALS>
@@ -476,13 +478,13 @@ void attrib() :
             |
             <DASHMATCH>
         )
-        ( <S> )*
+        ( ( <S> | <COMMENT> ) )*
         (
             ( <IDENT> )
             |
             <STRING> 
         )
-        ( <S> )*
+        ( ( <S> | <COMMENT> ) )*
     )?
     <RSQUARE>
 
@@ -502,8 +504,8 @@ void pseudo() :
         ( <IDENT> | <GENERATED> )
         |
         (
-            <FUNCTION> ( <S> )*
-            ( <IDENT> | <GENERATED> ) ( <S> )*
+            <FUNCTION> ( ( <S> | <COMMENT> ) )*
+            ( <IDENT> | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
             <RROUND>
         )
     )
@@ -520,9 +522,9 @@ void styleDeclaration()  :
 {
 }
 {
-	<LBRACE> ( <S> )*
+	<LBRACE> ( ( <S> | <COMMENT> ) )*
 	( declaration() )?
-	( <SEMICOLON> ( <S> )* ( declaration() )? )*
+	( <SEMICOLON> ( ( <S> | <COMMENT> ) )* ( declaration() )? )*
 	<RBRACE>
 }
 
@@ -538,7 +540,7 @@ void declaration() :
 {
     try {
         property()
-        <COLON> ( <S> )*
+        <COLON> ( ( <S> | <COMMENT> ) )*
         expr()
         ( prio() )?
     } catch (ParseException e) {
@@ -556,7 +558,7 @@ void prio() :
 {
 }
 {
-  <IMPORTANT_SYM> ( <S> )*
+  <IMPORTANT_SYM> ( ( <S> | <COMMENT> ) )*
 }
 
 //
@@ -618,7 +620,7 @@ void term() :
     | <DIMEN>
     | <INHERIT>  
     )
-    ( <S> )*
+    ( ( <S> | <COMMENT> ) )*
 }
 
 //
@@ -630,7 +632,7 @@ void function() :
 {
 }
 {
-    <FUNCTION> ( <S> )*
+    <FUNCTION> ( ( <S> | <COMMENT> ) )*
     expr()
     <RROUND>
 }
@@ -644,7 +646,7 @@ void rgb() :
 {
 }
 {
-    <RGB> ( <S> )*
+    <RGB> ( ( <S> | <COMMENT> ) )*
     expr()
     <RROUND>
 }
@@ -658,7 +660,7 @@ void hexcolor() :
 {
 }
 {
-    <HASH> ( <S> )*
+    <HASH> ( ( <S> | <COMMENT> ) )*
 }
 JAVACODE 
 void reportError(ParseException pe) {
