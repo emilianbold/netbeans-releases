@@ -46,6 +46,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,6 +77,7 @@ public class ViewListNode extends BaseNode {
         connection = getLookup().lookup(DatabaseConnection.class);
     }
 
+    @SuppressWarnings("unchecked")
     protected void initialize() {
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -87,7 +89,7 @@ public class ViewListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("ViewListNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (ViewListNode.class, "ViewListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -97,7 +99,7 @@ public class ViewListNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_ViewList"); //NOI18N
+        return NbBundle.getMessage (ViewListNode.class, "ND_ViewList"); //NOI18N
     }
 
     @Override

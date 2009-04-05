@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,30 +43,29 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.*;
 import java.awt.*;
-import java.util.ResourceBundle;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** A BeanInfo for DatabaseOption
 */
 public class DatabaseOptionBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors ()
     {
         PropertyDescriptor[] desc = new PropertyDescriptor[1];
         try {
             desc[0] = new PropertyDescriptor("debugMode", DatabaseOption.class); //NOI18N
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-            desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE")); //NOI18N
-            desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE")); //NOI18N
+            desc[0].setDisplayName(NbBundle.getMessage (DatabaseOptionBeanInfo.class, "PROP_DEBUG_MODE")); //NOI18N
+            desc[0].setShortDescription(NbBundle.getMessage (DatabaseOptionBeanInfo.class, "HINT_DEBUG_MODE")); //NOI18N
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
         return desc;
     }
 
+    @Override
     public Image getIcon(int type)
     {
         if (type == BeanInfo.ICON_COLOR_16x16) {

@@ -51,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,6 +82,7 @@ public class IndexListNode extends BaseNode {
         connection = getLookup().lookup(DatabaseConnection.class);
     }
 
+    @SuppressWarnings("unchecked")
     protected void initialize() {
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -104,7 +106,7 @@ public class IndexListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("IndexListNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (IndexListNode.class, "IndexListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -114,7 +116,7 @@ public class IndexListNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_IndexList"); //NOI18N
+        return NbBundle.getMessage (IndexListNode.class, "ND_IndexList"); //NOI18N
     }
 
     @Override
