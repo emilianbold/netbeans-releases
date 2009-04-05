@@ -202,7 +202,7 @@ public class JavacParser extends Parser {
     private CompilationInfoImpl ciImpl;
     //State of the parser
     private boolean initialized;
-    //Type of ClasspathInfo (explicit, implicit)
+    //Type of ClasspathInfo (explicit, implicit), is it still used?
     private boolean explicitCpInfo;
     //Parser is invalidated, new parser impl need to be created
     private boolean invalid;
@@ -210,6 +210,8 @@ public class JavacParser extends Parser {
     private Snapshot cachedSnapShot;
     //Lamport clock of parse calls
     private long parseId;
+    //Weak Change listener on ClasspathInfo, created by init
+    private ChangeListener weakCpListener;
     
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
@@ -248,6 +250,7 @@ public class JavacParser extends Parser {
             assert sourceFile != null;
             this.file = sourceFile;
             ClasspathInfo _tmpInfo;
+            final ClasspathInfo oldInfo = this.cpInfo;
             if (task instanceof ClasspathInfoProvider &&
                     (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
                 cpInfo = _tmpInfo;
@@ -260,7 +263,11 @@ public class JavacParser extends Parser {
             assert cp != null;
             this.root = cp.findOwnerRoot(sourceFile);
             if (singleSource) {
-                cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
+                if (oldInfo != null && weakCpListener != null) {
+                    oldInfo.removeChangeListener(weakCpListener);
+                }
+                this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
+                cpInfo.addChangeListener (this.weakCpListener);
                 initialized = true;
             }
         }
@@ -361,6 +368,7 @@ public class JavacParser extends Parser {
                     LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }
                 assert cachedSnapShot != null;
+                initialized = false;        //Reset initialized, world has changed.
                 parse (cachedSnapShot, task, null);
             }
         }
