@@ -147,7 +147,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void postInclude(APTInclude apt, FileImpl included) {
         if (needMacroAndIncludes()) {
-            getFile().addInclude(createInclude(apt, included));
+            getFile().addInclude(createInclude(apt, included), included == null);
         }
     }
 
