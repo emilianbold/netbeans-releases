@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -53,6 +53,7 @@ import org.netbeans.modules.db.explorer.dlg.AddIndexDialog;
 import org.netbeans.modules.db.explorer.node.IndexListNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -64,7 +65,7 @@ public class AddIndexAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class.getName());
 
     public String getName() {
-        return bundle().getString("AddIndex"); // NOI18N
+        return NbBundle.getMessage (AddIndexAction.class, "AddIndex"); // NOI18N
     }
 
 
@@ -114,7 +115,7 @@ public class AddIndexAction extends BaseAction {
             final DriverSpecification drvSpec = connector.getDriverSpecification(catalogName);
 
             // List columns not present in current index
-            Vector cols = new Vector(5);
+            Vector<String> cols = new Vector<String> (5);
 
             drvSpec.getColumns(tablename, "%");
             ResultSet rs = drvSpec.getResultSet();
@@ -127,7 +128,7 @@ public class AddIndexAction extends BaseAction {
             rs.close();
 
             if (cols.size() == 0)
-                throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
+                throw new Exception(NbBundle.getMessage (AddIndexAction.class, "EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
             final AddIndexDialog dlg = new AddIndexDialog(cols, spec, tablename, schemaName);
@@ -146,7 +147,7 @@ public class AddIndexAction extends BaseAction {
             }
         } catch(Exception exc) {
             LOGGER.log(Level.INFO, exc.getMessage(), exc);
-            DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
+            DbUtilities.reportError(NbBundle.getMessage (AddIndexAction.class, "ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
     }
 

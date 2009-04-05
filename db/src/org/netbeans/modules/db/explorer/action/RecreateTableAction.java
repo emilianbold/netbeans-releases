@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -65,6 +65,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
@@ -116,14 +117,14 @@ public class RecreateTableAction extends BaseAction {
                     JFileChooser chooser = new JFileChooser();
                     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                     chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-                    chooser.setDialogTitle(bundle().getString("RecreateTableFileOpenDialogTitle")); //NOI18N
+                    chooser.setDialogTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
 
                         public String getDescription() {
-                            return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
+                            return NbBundle.getMessage (RecreateTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                         }
                     });
 
@@ -167,7 +168,7 @@ public class RecreateTableAction extends BaseAction {
                     }
                 } catch (Exception exc) {
                     LOGGER.log(Level.INFO, null, exc);
-                    DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
+                    DbUtilities.reportError(NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
 
                 // if there's a TableListNode in the parent chain, that's the one
@@ -205,9 +206,9 @@ public class RecreateTableAction extends BaseAction {
             noResult = true;
         } catch (Exception exc) {
             LOGGER.log(Level.INFO, null, exc);
-            DbUtilities.reportError(bundle().
-                    getString("ERR_UnableToRecreateTable"),
-                    exc.getMessage()); //NOI18N
+            DbUtilities.reportError(
+                    NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), // NOI18N
+                    exc.getMessage());
             noResult = false;
         }
         return noResult;
@@ -264,7 +265,7 @@ public class RecreateTableAction extends BaseAction {
 
     @Override
     public String getName() {
-        return bundle().getString("RecreateTable"); // NOI18N
+        return NbBundle.getMessage (RecreateTableAction.class, "RecreateTable"); // NOI18N
     }
 
     @Override

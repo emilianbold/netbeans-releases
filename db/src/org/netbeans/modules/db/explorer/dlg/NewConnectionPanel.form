@@ -74,7 +74,7 @@
                           <Component id="directUrlScroll" alignment="1" pref="532" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="errorInfoPanel" alignment="0" pref="674" max="32767" attributes="0"/>
+                  <Component id="errorInfoPanel" alignment="0" pref="676" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -179,10 +179,10 @@
     <Component class="javax.swing.JCheckBox" name="showUrlCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionShowJDBCURL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionShowJDBCURL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionShowJDBCURLAllyDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionShowJDBCURLAllyDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[3, 0, 1, 1]"/>
@@ -198,7 +198,7 @@
           <StringArray count="0"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDriverClassComboBoxA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionDriverClassComboBoxA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -209,7 +209,7 @@
     <Component class="javax.swing.JTextField" name="hostField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionHostA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionHostA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -219,7 +219,7 @@
           <ComponentRef name="templateComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDriverName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDriverName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -229,7 +229,7 @@
           <ComponentRef name="hostField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionHost" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionHost" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -239,14 +239,14 @@
           <ComponentRef name="portField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPort" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="portField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPortA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionPortA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -256,14 +256,14 @@
           <ComponentRef name="databaseField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDatabase" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDatabase" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="databaseField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDatabaseNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionDatabaseNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -273,14 +273,14 @@
           <ComponentRef name="sidField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionSID" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionSID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="sidField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionSIDA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionSIDA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -290,14 +290,14 @@
           <ComponentRef name="serviceField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServiceName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionServiceName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="serviceField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServiceNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionServiceNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -307,14 +307,14 @@
           <ComponentRef name="tnsField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionTNSName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionTNSName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="tnsField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionTNSNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionTNSNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -324,14 +324,14 @@
           <ComponentRef name="serverNameField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServerName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionServerName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="serverNameField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServerNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionServerNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -341,14 +341,14 @@
           <ComponentRef name="instanceField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionInstanceName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionInstanceName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="instanceField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionInstanceNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionInstanceNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -358,14 +358,14 @@
           <ComponentRef name="userField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionUserName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionUserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="userField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionUserNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionUserNameA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -375,14 +375,14 @@
           <ComponentRef name="passwordField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPassword" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionPassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPasswordA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionPasswordA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -392,14 +392,14 @@
           <ComponentRef name="dsnField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDSN" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDSN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="dsnField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDSNA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionDSNA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -409,21 +409,21 @@
           <ComponentRef name="additionalPropsField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionAdditionalProperties" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionAdditionalProperties" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="additionalPropsField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionAdditionalPropertiesA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionAdditionalPropertiesA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="urlField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -435,10 +435,10 @@
     <Component class="javax.swing.JCheckBox" name="passwordCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionRememberPassword" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionRememberPassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionRememberPasswordA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionRememberPasswordA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[3, 0, 1, 1]"/>
@@ -453,7 +453,7 @@
           <ComponentRef name="fieldInputCheckBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewCOnnectionInputMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewCOnnectionInputMode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -463,10 +463,10 @@
           <ComponentRef name="inputModeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionFieldEntryMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionFieldEntryMode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionFieldEntryModeA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionFieldEntryModeA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -479,10 +479,10 @@
           <ComponentRef name="inputModeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDirectUrlEntryMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDirectUrlEntryMode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDirectUrlEntryModeA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionDirectUrlEntryModeA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -495,7 +495,7 @@
           <ComponentRef name="directUrlField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDirectURL" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionDirectURL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -512,7 +512,7 @@
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
@@ -523,7 +523,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="674" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="676" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">

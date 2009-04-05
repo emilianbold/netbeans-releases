@@ -2,6 +2,8 @@
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -19,7 +21,7 @@
           <ComponentRef name="drvList"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverFile" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverFile" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -52,7 +54,7 @@
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverAdd" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverAdd" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -67,7 +69,7 @@
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverRemove" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverRemove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -85,7 +87,7 @@
           <ComponentRef name="drvClassComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverClass" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverClass" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -111,7 +113,7 @@
     <Component class="javax.swing.JButton" name="findButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverFind" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverFind" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -129,7 +131,7 @@
           <ComponentRef name="nameTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="AddDriverDriverName" replaceFormat="NbBundle.getBundle(BUNDLE).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="AddDriverDriverName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>

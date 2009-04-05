@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -74,7 +74,7 @@ public class AddToIndexAction extends BaseAction {
 
     @Override
     public String getName() {
-        return bundle().getString("AddColumn"); // NOI18N
+        return NbBundle.getMessage (AddToIndexAction.class, "AddColumn"); // NOI18N
     }
 
     @Override
@@ -129,7 +129,7 @@ public class AddToIndexAction extends BaseAction {
             final String index = node.getName();
 
             // List columns used in current index (do not show)
-            final HashSet ixrm = new HashSet();
+            final HashSet<String> ixrm = new HashSet<String>();
 
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -158,11 +158,11 @@ public class AddToIndexAction extends BaseAction {
 
         } catch(Exception exc) {
             LOGGER.log(Level.INFO, exc.getMessage(), exc);
-            DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
+            DbUtilities.reportError(NbBundle.getMessage (AddToIndexAction.class, "ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
     }
     private void doAddToIndex(DriverSpecification drvSpec, String tablename, String schemaName, String index,
-            HashSet ixrm, Specification spec) throws DatabaseException, SQLException, Exception {
+            HashSet<String> ixrm, Specification spec) throws DatabaseException, SQLException, Exception {
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("This method can not be called from the event dispatch thread");
         }
@@ -189,14 +189,16 @@ public class AddToIndexAction extends BaseAction {
         }
         rs.close();
         // List columns not present in current index
-        Vector cols = new Vector(5);
+        Vector<String> cols = new Vector<String> (5);
         getColumns(drvSpec, tablename, rs, rset, ixrm, cols);
         if (cols.size() == 0) {
-            throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
+            throw new Exception(NbBundle.getMessage (AddToIndexAction.class, "EXC_NoUsableColumnInPlace")); // NOI18N
         }
 
         // Create and execute command
-        final LabeledComboDialog dlg = new LabeledComboDialog(bundle().getString("AddToIndexTitle"), bundle().getString("AddToIndexLabel"), cols); // NOI18N
+        final LabeledComboDialog dlg = new LabeledComboDialog(
+                NbBundle.getMessage (AddToIndexAction.class, "AddToIndexTitle"), // NOI18N
+                NbBundle.getMessage (AddToIndexAction.class, "AddToIndexLabel"), cols); // NOI18N
         Boolean success = Mutex.EVENT.readAccess(new ExceptionAction<Boolean>() {
             public Boolean run() throws Exception {
                 return new Boolean(dlg.run());
@@ -212,7 +214,7 @@ public class AddToIndexAction extends BaseAction {
         }
     }
 
-    private void getColumns(DriverSpecification drvSpec, String tablename, ResultSet rs, HashMap rset, HashSet ixrm, Vector cols) throws SQLException {
+    private void getColumns(DriverSpecification drvSpec, String tablename, ResultSet rs, HashMap rset, HashSet ixrm, Vector<String> cols) throws SQLException {
         drvSpec.getColumns(tablename, "%");
         rs = drvSpec.getResultSet();
         while (rs.next()) {
