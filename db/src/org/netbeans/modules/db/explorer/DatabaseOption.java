@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,9 +48,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.jar.JarFile;
@@ -74,10 +72,6 @@ public class DatabaseOption {
     private static boolean debugMode;
     private static Vector drivers;
     private static Vector connections;
-    private static int fetchlimit = 100;
-    private static int fetchstep = 200;
-    private static boolean autoConn = true;
-
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
     private static DatabaseOption INSTANCE = new DatabaseOption();
 
@@ -138,10 +132,11 @@ public class DatabaseOption {
 
     /** Name of the option */
     public String displayName() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("OptionName"); //NOI18N
+        return NbBundle.getMessage (DatabaseOption.class, "OptionName"); //NOI18N
     }
 
     /** Description of object */
+    @Override
     public String toString() {
         return (drivers != null ? drivers.size() : 0) + " drivers, " + (connections != null ? connections.size() : 0) + " connections"; //NOI18N
     }
@@ -165,37 +160,14 @@ public class DatabaseOption {
         connections = (Vector) in.readObject();
     }
 
-
-    private Vector createDrivers(Map drvMap) {
-        Vector def = (Vector) drvMap.get("defaultdriverlist"); //NOI18N
-        Vector rvec = null;
-        if (def != null && def.size() > 0) {
-            rvec = new Vector(def.size());
-            Enumeration defe = def.elements();
-            while (defe.hasMoreElements()) {
-                Object rit = defe.nextElement();
-                String name = (String) ((Map)rit).get("name"); //NOI18N
-                String drv = (String) ((Map)rit).get("driver"); //NOI18N
-                String prefix = (String) ((Map)rit).get("prefix"); //NOI18N
-                String adaptor = (String) ((Map)rit).get("adaptor"); //NOI18N
-                rit = new DatabaseDriver(name, drv, prefix, adaptor);
-                if (rit != null)
-                    rvec.add(rit);
-            }
-        } else
-            rvec = new Vector();
-        
-        return rvec;
-    }
-    
     private void lookForDrivers() {
         StringBuffer sb = new StringBuffer();
         sb.append(File.separator);
-        sb.append("lib");
+        sb.append("lib"); // NOI18N
         sb.append(File.separator);
-        sb.append("ext");
+        sb.append("ext"); // NOI18N
         String libext = sb.toString();        
-        String nbhome = System.getProperty("netbeans.home");
+        String nbhome = System.getProperty("netbeans.home"); // NOI18N
         
         preinstallDrivers(nbhome + libext);
     }

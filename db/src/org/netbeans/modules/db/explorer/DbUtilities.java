@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.explorer;
 
@@ -31,7 +31,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -55,9 +54,8 @@ public final class DbUtilities {
 
     public static String formatError(String message, String exception) {
         Parameters.notNull("message", message); // NOI18N
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
         if (exception != null) {
-            String format = bundle.getString("ERR_UnableTo_Detail"); // NOI18N
+            String format = NbBundle.getMessage (DbUtilities.class, "ERR_UnableTo_Detail"); // NOI18N
             StringBuilder formattedException = new StringBuilder(exception.trim());
             if (formattedException.length() > 0) {
                 formattedException.setCharAt(0, Character.toUpperCase(formattedException.charAt(0)));
@@ -70,7 +68,7 @@ public final class DbUtilities {
             formattedException.append('.');
             return MessageFormat.format(format, new Object[] { message, formattedException });
         } else {
-            String format = bundle.getString("ERR_UnableTo_NoDetail"); // NOI18N
+            String format = NbBundle.getMessage (DbUtilities.class, "ERR_UnableTo_NoDetail"); // NOI18N
             return MessageFormat.format(format, new Object[] { message });
         }
     }

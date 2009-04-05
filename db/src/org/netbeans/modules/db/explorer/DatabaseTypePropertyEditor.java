@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,9 +43,6 @@ package org.netbeans.modules.db.explorer;
 
 import java.awt.*;
 import java.beans.*;
-import java.sql.*;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
 
@@ -60,7 +57,6 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     private PropertyChangeSupport support;
 
     public DatabaseTypePropertyEditor() {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         support = new PropertyChangeSupport(this);
         constants = new int[] {
             java.sql.Types.ARRAY,
@@ -90,32 +86,32 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
             java.sql.Types.VARCHAR,
             java.sql.Types.OTHER};
         names = new String[] {
-            bundle.getString("SQL_ARRAY"), //NOI18N
-            bundle.getString("SQL_BIGINT"), //NOI18N
-            bundle.getString("SQL_BINARY"), //NOI18N
-            bundle.getString("SQL_BIT"), //NOI18N
-            bundle.getString("SQL_BLOB"), //NOI18N
-            bundle.getString("SQL_CHAR"), //NOI18N
-            bundle.getString("SQL_CLOB"), //NOI18N
-            bundle.getString("SQL_DATE"), //NOI18N
-            bundle.getString("SQL_DECIMAL"), //NOI18N
-            bundle.getString("SQL_DISTINCT"), //NOI18N
-            bundle.getString("SQL_DOUBLE"), //NOI18N
-            bundle.getString("SQL_FLOAT"), //NOI18N
-            bundle.getString("SQL_INTEGER"), //NOI18N
-            bundle.getString("SQL_JAVA_OBJECT"), //NOI18N
-            bundle.getString("SQL_LONGVARBINARY"), //NOI18N
-            bundle.getString("SQL_LONGVARCHAR"), //NOI18N
-            bundle.getString("SQL_NUMERIC"), //NOI18N
-            bundle.getString("SQL_REAL"), //NOI18N
-            bundle.getString("SQL_REF"), //NOI18N
-            bundle.getString("SQL_SMALLINT"), //NOI18N
-            bundle.getString("SQL_TIME"), //NOI18N
-            bundle.getString("SQL_TIMESTAMP"), //NOI18N
-            bundle.getString("SQL_TINYINT"), //NOI18N
-            bundle.getString("SQL_VARBINARY"), //NOI18N
-            bundle.getString("SQL_VARCHAR"), //NOI18N
-            bundle.getString("SQL_OTHER") //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_ARRAY"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BIGINT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BINARY"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BIT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BLOB"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_CHAR"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_CLOB"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DATE"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DECIMAL"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DISTINCT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DOUBLE"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_FLOAT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_INTEGER"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_JAVA_OBJECT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_LONGVARBINARY"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_LONGVARCHAR"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_NUMERIC"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_REAL"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_REF"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_SMALLINT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TIME"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TIMESTAMP"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TINYINT"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_VARBINARY"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_VARCHAR"), //NOI18N
+            NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_OTHER") //NOI18N
         }; //NOI18N
     }
 
@@ -130,9 +126,8 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     }
 
     public void setValue (Object object) {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 //        if (!(object instanceof Number)) {
-//            String message = MessageFormat.format(bundle.getString("EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
+//            String message = MessageFormat.format(NbBundle.getMessage (DatabaseTypePropertyEditor.class, "EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
 //            throw new IllegalArgumentException(message);
 //        }
 //        int ii = ((Number)object).intValue ();
@@ -142,7 +137,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         try {
             type = new Integer(object.toString());
         } catch (NumberFormatException exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
+            String message = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "EXC_CannotOperateWith", object.toString()); // NOI18N
             throw new IllegalArgumentException(message);        
         }
         
@@ -158,35 +153,35 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         
         if (i == k) {
             switch (ii) { //cannot find 'ii' type, try to find it in java.sql.Types
-                case -7: name = bundle.getString("SQL_BIT"); break; //NOI18N
-                case -6: name = bundle.getString("SQL_TINYINT"); break; //NOI18N
-                case 5: name = bundle.getString("SQL_SMALLINT"); break; //NOI18N
-                case 4: name = bundle.getString("SQL_INTEGER"); break; //NOI18N
-                case -5: name = bundle.getString("SQL_BIGINT"); break; //NOI18N
-                case 6: name = bundle.getString("SQL_FLOAT"); break; //NOI18N
-                case 7: name = bundle.getString("SQL_REAL"); break; //NOI18N
-                case 8: name = bundle.getString("SQL_DOUBLE"); break; //NOI18N
-                case 2: name = bundle.getString("SQL_NUMERIC"); break; //NOI18N
-                case 3: name = bundle.getString("SQL_DECIMAL"); break; //NOI18N
-                case 1: name = bundle.getString("SQL_CHAR"); break; //NOI18N
-                case 12: name = bundle.getString("SQL_VARCHAR"); break; //NOI18N
-                case -1: name = bundle.getString("SQL_LONGVARCHAR"); break; //NOI18N
-                case 91: name = bundle.getString("SQL_DATE"); break; //NOI18N
-                case 92: name = bundle.getString("SQL_TIME"); break; //NOI18N
-                case 93: name = bundle.getString("SQL_TIMESTAMP"); break; //NOI18N
-                case -2: name = bundle.getString("SQL_BINARY"); break; //NOI18N
-                case -3: name = bundle.getString("SQL_VARBINARY"); break; //NOI18N
-                case -4: name = bundle.getString("SQL_LONGVARBINARY"); break; //NOI18N
-                case 0: name = bundle.getString("SQL_NULL"); break; //NOI18N
-                case 1111: name = bundle.getString("SQL_OTHER"); break; //NOI18N
-                case 2000: name = bundle.getString("SQL_JAVA_OBJECT"); break; //NOI18N
-                case 2001: name = bundle.getString("SQL_DISTINCT"); break; //NOI18N
-                case 2002: name = bundle.getString("SQL_STRUCT"); break; //NOI18N
-                case 2003: name = bundle.getString("SQL_ARRAY"); break; //NOI18N
-                case 2004: name = bundle.getString("SQL_BLOB"); break; //NOI18N
-                case 2005: name = bundle.getString("SQL_CLOB"); break; //NOI18N
-                case 2006: name = bundle.getString("SQL_REF"); break; //NOI18N
-                default: name = bundle.getString("SQL_UNKNOWN"); //NOI18N
+                case -7: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BIT"); break; //NOI18N
+                case -6: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TINYINT"); break; //NOI18N
+                case 5: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_SMALLINT"); break; //NOI18N
+                case 4: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_INTEGER"); break; //NOI18N
+                case -5: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BIGINT"); break; //NOI18N
+                case 6: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_FLOAT"); break; //NOI18N
+                case 7: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_REAL"); break; //NOI18N
+                case 8: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DOUBLE"); break; //NOI18N
+                case 2: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_NUMERIC"); break; //NOI18N
+                case 3: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DECIMAL"); break; //NOI18N
+                case 1: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_CHAR"); break; //NOI18N
+                case 12: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_VARCHAR"); break; //NOI18N
+                case -1: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_LONGVARCHAR"); break; //NOI18N
+                case 91: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DATE"); break; //NOI18N
+                case 92: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TIME"); break; //NOI18N
+                case 93: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_TIMESTAMP"); break; //NOI18N
+                case -2: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BINARY"); break; //NOI18N
+                case -3: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_VARBINARY"); break; //NOI18N
+                case -4: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_LONGVARBINARY"); break; //NOI18N
+                case 0: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_NULL"); break; //NOI18N
+                case 1111: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_OTHER"); break; //NOI18N
+                case 2000: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_JAVA_OBJECT"); break; //NOI18N
+                case 2001: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_DISTINCT"); break; //NOI18N
+                case 2002: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_STRUCT"); break; //NOI18N
+                case 2003: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_ARRAY"); break; //NOI18N
+                case 2004: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_BLOB"); break; //NOI18N
+                case 2005: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_CLOB"); break; //NOI18N
+                case 2006: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_REF"); break; //NOI18N
+                default: name = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "SQL_UNKNOWN"); //NOI18N
             }
             index = 0;
         } else {
@@ -205,7 +200,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         int i, k = names.length;
         for (i = 0; i < k; i++) if (names [i].equals (string)) break;
         if (i == k) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotFindAsText"), new String[] {string}); // NOI18N
+            String message = NbBundle.getMessage (DatabaseTypePropertyEditor.class, "EXC_CannotFindAsText", string); // NOI18N
             throw new IllegalArgumentException(message);
         }
         index = i;

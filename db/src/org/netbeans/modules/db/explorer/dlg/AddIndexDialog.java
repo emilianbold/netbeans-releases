@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,11 +53,11 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.lib.ddl.DDLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 public class AddIndexDialog {
     boolean result = false;
@@ -66,8 +66,6 @@ public class AddIndexDialog {
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
     private static Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
-    private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-
     
     public AddIndexDialog(Collection columns, final Specification spec, final String tablename, final String schemaName) {
         try {
@@ -80,8 +78,8 @@ public class AddIndexDialog {
             // Index name
 
             JLabel label = new JLabel();
-            Mnemonics.setLocalizedText(label, bundle.getString("AddIndexName")); //NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexNameA11yDesc"));
+            Mnemonics.setLocalizedText(label, NbBundle.getMessage (AddIndexDialog.class, "AddIndexName")); //NOI18N
+            label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -97,16 +95,16 @@ public class AddIndexDialog {
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             namefld = new JTextField(35);
-            namefld.setToolTipText(bundle.getString("ACS_AddIndexNameTextFieldA11yDesc"));
-            namefld.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddIndexNameTextFieldA11yName"));
+            namefld.setToolTipText(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexNameTextFieldA11yDesc"));
+            namefld.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexNameTextFieldA11yName"));
             label.setLabelFor(namefld);
             layout.setConstraints(namefld, con);
             pane.add(namefld);
 
             // Unique/Non-unique
 
-            JLabel label_uq = new JLabel(bundle.getString("AddUniqueIndex")); //NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddUniqueIndexA11yDesc"));
+            JLabel label_uq = new JLabel(NbBundle.getMessage (AddIndexDialog.class, "AddUniqueIndex")); //NOI18N
+            label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddUniqueIndexA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -121,16 +119,16 @@ public class AddIndexDialog {
             con.gridy = 1;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             cbx_uq = new JCheckBox();
-            Mnemonics.setLocalizedText(cbx_uq, bundle.getString("Unique"));
-            cbx_uq.setToolTipText(bundle.getString("ACS_UniqueA11yDesc"));
+            Mnemonics.setLocalizedText(cbx_uq, NbBundle.getMessage (AddIndexDialog.class, "Unique"));
+            cbx_uq.setToolTipText(NbBundle.getMessage (AddIndexDialog.class, "ACS_UniqueA11yDesc"));
             label_uq.setLabelFor(cbx_uq);
             layout.setConstraints(cbx_uq, con);
             pane.add(cbx_uq);
 
             // Items list title
 
-            label = new JLabel(bundle.getString("AddIndexLabel")); //NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexLabelA11yDesc"));
+            label = new JLabel(NbBundle.getMessage (AddIndexDialog.class, "AddIndexLabel")); //NOI18N
+            label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexLabelA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -171,8 +169,8 @@ public class AddIndexDialog {
             JScrollPane spane = new JScrollPane(subpane);
             layout.setConstraints(spane, con);
             pane.add(spane);
-            pane.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddIndexDialogA11yName"));  // NOI18N
-            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexDialogA11yDesc"));  // NOI18N
+            pane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexDialogA11yName"));  // NOI18N
+            pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexDialogA11yDesc"));  // NOI18N
             
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -198,14 +196,14 @@ public class AddIndexDialog {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
                                 LOGGER.log(Level.INFO, null, cause);
-                                DbUtilities.reportError(bundle.getString("ERR_UnableToAddIndex"), e.getMessage());
+                                DbUtilities.reportError(NbBundle.getMessage (AddIndexDialog.class, "ERR_UnableToAddIndex"), e.getMessage());
                             }
                         }
                     }
                 }
             };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddIndexTitle"), true, listener); //NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddIndexDialog.class, "AddIndexTitle"), true, listener); //NOI18N
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -240,11 +238,11 @@ public class AddIndexDialog {
 
     class CheckBoxListener implements ActionListener
     {
-        private HashSet set;
+        private HashSet<String> set;
 
         CheckBoxListener(Collection columns)
         {
-            set = new HashSet();
+            set = new HashSet<String> ();
         }
 
         public void actionPerformed(ActionEvent event)
