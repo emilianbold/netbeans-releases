@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -80,6 +80,7 @@ import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
 public class ConnectUsingDriverAction extends BaseAction {
@@ -87,7 +88,7 @@ public class ConnectUsingDriverAction extends BaseAction {
 
     @Override
     public String getName() {
-        return bundle().getString("ConnectUsing"); // NOI18N
+        return NbBundle.getMessage (ConnectUsingDriverAction.class, "ConnectUsing"); // NOI18N
     }
 
     @Override
@@ -219,7 +220,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                             cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
                         } catch (DatabaseException exc) {
                             LOGGER.log(Level.INFO, null, exc);
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                            DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                             return;
                         }
 
@@ -242,7 +243,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                                 catch (DatabaseException dbe)
                                 {
                                     LOGGER.log(Level.INFO, null, dbe);
-                                    DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
+                                    DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
                                     cinfo.setConnection(null);
                                 }
                                 
@@ -273,10 +274,10 @@ public class ConnectUsingDriverAction extends BaseAction {
                     
                     String message = null;
                     if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), exc.getMessage()); //NOI18N
+                        message = MessageFormat.format(NbBundle.getMessage (ConnectUsingDriverAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
-                        buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
+                        buffer.append(DbUtilities.formatError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
                         if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                             SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
                             while (sqlEx != null) {
@@ -316,7 +317,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                             activeTask = cinfo.connectAsync();
                         } catch (DatabaseException exc) {
                             LOGGER.log(Level.INFO, null, exc);
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
+                            DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
                             closeConnection();
                         }
                         return;
@@ -405,7 +406,7 @@ public class ConnectUsingDriverAction extends BaseAction {
         }
         
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
-            fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
+            fireConnectionStep(NbBundle.getMessage (ConnectUsingDriverAction.class, "ConnectionProgress_Schemas")); // NOI18N
             Vector<String> schemas = new Vector<String>();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
@@ -418,7 +419,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                 // hack for Pointbase Network Server
 //            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
 //                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), exc.getMessage()); // NOI18N
+                        String message = NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
 //                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null

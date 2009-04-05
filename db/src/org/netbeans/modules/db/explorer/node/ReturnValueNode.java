@@ -51,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.Value;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,6 +77,7 @@ public class ReturnValueNode  extends BaseNode {
     private final MetadataElementHandle<Value> valueHandle;
     private final DatabaseConnection connection;
 
+    @SuppressWarnings("unchecked")
     private ReturnValueNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         valueHandle = getLookup().lookup(MetadataElementHandle.class);
@@ -114,7 +116,7 @@ public class ReturnValueNode  extends BaseNode {
         PropertySupport ps = new PropertySupport.Name(this);
         addProperty(ps);
 
-        addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("Return")); // NOI18N
+        addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ReturnValueNode.class, "Return")); // NOI18N
         addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
     }
 
@@ -134,7 +136,7 @@ public class ReturnValueNode  extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_ProcedureParam"); //NOI18N
+        return NbBundle.getMessage (ReturnValueNode.class, "ND_ProcedureParam"); //NOI18N
     }
 
     @Override

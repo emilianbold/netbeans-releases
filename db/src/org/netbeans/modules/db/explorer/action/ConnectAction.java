@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -83,6 +83,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 public class ConnectAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(ConnectAction.class.getName());
@@ -93,9 +94,8 @@ public class ConnectAction extends BaseAction {
 
     @Override
     public String getName() {
-        return bundle().getString("Connect"); // NOI18N
+        return NbBundle.getMessage (ConnectAction.class, "Connect"); // NOI18N
     }
-
 
     @Override
     public HelpCtx getHelpCtx() {
@@ -161,10 +161,10 @@ public class ConnectAction extends BaseAction {
                     
                     String message = null;
                     if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), exc.getMessage()); //NOI18N
+                        message = MessageFormat.format(NbBundle.getMessage (ConnectAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
-                        buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToConnect"), exc.getMessage())); //NOI18N
+                        buffer.append(DbUtilities.formatError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage())); //NOI18N
                         if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                             SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
                             while (sqlEx != null) {
@@ -237,7 +237,7 @@ public class ConnectAction extends BaseAction {
                                 connector.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
                                 LOGGER.log(Level.INFO, null, exc);
-                                DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                                DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                 return;
                             }
                             
@@ -283,7 +283,7 @@ public class ConnectAction extends BaseAction {
                                         connector.finishConnect(null, dbcon, dbcon.getConnection());
                                     } catch (DatabaseException exc) {
                                         Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                                        DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                         return;
                                     }
                                     
@@ -331,8 +331,8 @@ public class ConnectAction extends BaseAction {
                     JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
                     progressComponent.setPreferredSize(new Dimension(350, 20));
                     ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent);
-                    panel.getAccessibleContext().setAccessibleDescription(bundle().getString("ACS_ConnectingDialogTextA11yDesc"));
-                    descriptor = new DialogDescriptor(panel, bundle().getString("ConnectingDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION }, 
+                    panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc"));
+                    descriptor = new DialogDescriptor(panel, NbBundle.getMessage (ConnectAction.class, "ConnectingDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION },
                             DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                     
@@ -347,7 +347,7 @@ public class ConnectAction extends BaseAction {
                                 }
                                 catch (DatabaseException exc) {
                                     LOGGER.log(Level.INFO, null, exc);
-                                    DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                                    DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }
                             } else if (event.getPropertyName().equals("failed")) { // NOI18N
@@ -389,7 +389,7 @@ public class ConnectAction extends BaseAction {
                         dbcon.fireConnectionComplete();
                     }
                 } catch (Exception exc) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), exc.getMessage()); // NOI18N
+                    String message = MessageFormat.format(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage()); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     
                     // If the connection fails with a progress bar only, then 
@@ -404,8 +404,8 @@ public class ConnectAction extends BaseAction {
         }
 
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
-            fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
-            Vector schemas = new Vector();
+            fireConnectionStep(NbBundle.getMessage (ConnectAction.class, "ConnectionProgress_Schemas")); // NOI18N
+            Vector<String> schemas = new Vector<String> ();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
                 if (rs != null)
@@ -416,7 +416,7 @@ public class ConnectAction extends BaseAction {
             // hack for Pointbase Network Server
 //            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
 //                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), exc.getMessage()); // NOI18N
+                    String message = NbBundle.getMessage (ConnectAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
 //                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null

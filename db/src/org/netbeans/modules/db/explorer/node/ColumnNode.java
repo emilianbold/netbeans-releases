@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -67,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -98,6 +99,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private final DatabaseConnection connection;
     private boolean isTableColumn = true;
 
+    @SuppressWarnings("unchecked")
     private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         columnHandle = getLookup().lookup(MetadataElementHandle.class);
@@ -175,6 +177,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private void updateProperties(Column column) {
         PropertySupport ps = new PropertySupport.Name(this);
         addProperty(ps);
+
+        assert column != null : "Column " + this + " cannot be null.";
+        if (column == null) {
+            return ;
+        }
 
         try {
             addProperty(NULL, NULLDESC, Boolean.class, false, column.getNullable() == Nullable.NULLABLE);
@@ -295,7 +302,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_Column"); //NOI18N
+        return NbBundle.getMessage (ColumnNode.class, "ND_Column"); //NOI18N
     }
 
     @Override
