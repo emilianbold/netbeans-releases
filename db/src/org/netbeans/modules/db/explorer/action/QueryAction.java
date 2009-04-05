@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -53,6 +53,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,7 +95,7 @@ public abstract class QueryAction extends BaseAction {
             DatabaseMetaData dmd = connection.getConnection().getMetaData();
             quoter = SQLIdentifiers.createQuoter(dmd);
         } catch (SQLException ex) {
-            String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {ex.getMessage()}); // NOI18N
+            String message = NbBundle.getMessage (QueryAction.class, "ShowDataError", ex.getMessage()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             return "";
         }

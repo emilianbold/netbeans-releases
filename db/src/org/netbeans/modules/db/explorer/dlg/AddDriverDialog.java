@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,7 +53,6 @@ import java.sql.Driver;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -82,12 +81,11 @@ import org.openide.util.Exceptions;
 public class AddDriverDialog extends javax.swing.JPanel {
     
     private DefaultListModel dlm;
-    private List drvs;
+    private List<URL> drvs;
     private boolean customizer;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
     
-    private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
 
     /** Creates new form AddDriverDialog1 */
@@ -99,7 +97,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         // progressContainerPanel.add(Box.createVerticalStrut(progressContainerPanel.getPreferredSize().height), BorderLayout.EAST);
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
-        drvs = new LinkedList();
+        drvs = new LinkedList<URL> ();
     }
     
     public AddDriverDialog(JDBCDriver drv) {
@@ -178,19 +176,18 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }
 
     private void initAccessibility() {
-        ResourceBundle b = NbBundle.getBundle(BUNDLE);
-        this.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverDialogA11yDesc")); //NOI18N
-        drvListLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverDriverFileA11yDesc")); //NOI18N
-        drvList.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverDriverFileListA11yName")); //NOI18N
-        drvClassLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverDriverDriverClassA11yDesc")); //NOI18N
-        drvClassComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverDriverDriverClassComboBoxA11yName")); //NOI18N
-        nameLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverDriverNameA11yDesc")); //NOI18N
-        nameTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverDriverNameTextFieldA11yName")); //NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverAddButtonA11yDesc")); //NOI18N
-        findButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverRemoveButtonA11yDesc")); //NOI18N
-        removeButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverFindButtonA11yDesc")); //NOI18N
-        progressContainerPanel.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverProgressBarA11yName")); //NOI18N
-        progressContainerPanel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverProgressBarA11yDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDialogA11yDesc")); //NOI18N
+        drvListLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverFileA11yDesc")); //NOI18N
+        drvList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverFileListA11yName")); //NOI18N
+        drvClassLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverDriverClassA11yDesc")); //NOI18N
+        drvClassComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverDriverClassComboBoxA11yName")); //NOI18N
+        nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverNameA11yDesc")); //NOI18N
+        nameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverNameTextFieldA11yName")); //NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverAddButtonA11yDesc")); //NOI18N
+        findButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverRemoveButtonA11yDesc")); //NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverFindButtonA11yDesc")); //NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverProgressBarA11yName")); //NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -220,7 +217,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         drvListLabel.setLabelFor(drvList);
-        org.openide.awt.Mnemonics.setLocalizedText(drvListLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(drvListLabel, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -243,7 +240,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(drvListScrollPane, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverAdd")); // NOI18N
         browseButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -253,7 +250,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(browseButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverRemove")); // NOI18N
         removeButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -264,7 +261,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         add(removeButton, gridBagConstraints);
 
         drvClassLabel.setLabelFor(drvClassComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(drvClassLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(drvClassLabel, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -282,7 +279,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(drvClassComboBox, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(findButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(findButton, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverFind")); // NOI18N
         findButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -292,7 +289,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         add(findButton, gridBagConstraints);
 
         nameLabel.setLabelFor(nameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(AddDriverDialog.class, "AddDriverDriverName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -399,7 +396,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         
         JFileChooser fc = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(fc, null);
-        fc.setDialogTitle(NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_Title")); //NOI18N
+        fc.setDialogTitle(NbBundle.getMessage (AddDriverDialog.class, "AddDriver_Chooser_Title")); //NOI18N
         fc.setMultiSelectionEnabled(true);
         fc.setAcceptAllFileFilterUsed(false);
         
@@ -410,7 +407,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
             
             public String getDescription() {
-                return NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_Filter"); //NOI18N
+                return NbBundle.getMessage (AddDriverDialog.class, "AddDriver_Chooser_Filter"); //NOI18N
             }
         });
         
@@ -484,7 +481,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         return nameTextField.getText();
     }
     
-    public List getDriverLocation() {
+    public List<URL> getDriverLocation() {
         return drvs;
     }
     
@@ -494,12 +491,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
     private void findDriverClass() {
         JarFile jf;
-        String[] drivers = (String[]) DriverListUtil.getDrivers().toArray(new String[DriverListUtil.getDrivers().size()]);
+        String[] drivers = DriverListUtil.getDrivers ().toArray (new String[DriverListUtil.getDrivers ().size ()]);
         
         drvClassComboBox.removeAllItems();
         for (int i = 0; i < drvs.size(); i++) {
             try {
-                URL url = (URL)drvs.get(i);
+                URL url = drvs.get (i);
 
                 if ("nbinst".equals(url.getProtocol())) { // NOI18N
                     // try to get a file: URL for the nbinst: URL
@@ -537,9 +534,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 // introspection to see if a class in one of these jar files
                 // implements java.sql.Driver
                 URLClassLoader jarloader = 
-                    new URLClassLoader(
-                        (URL[])drvs.toArray(new URL[drvs.size()]),
-                        this.getClass().getClassLoader());
+                    new URLClassLoader(drvs.toArray(new URL[drvs.size ()]),this.getClass ().getClassLoader ());
                 
                 for (int i = 0; i < dlm.size(); i++) {
                     try {
@@ -583,7 +578,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
                 progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
                 progressHandle.start();
-                progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart"));
+                progressMessageLabel.setText(NbBundle.getMessage (AddDriverDialog.class, "AddDriverProgressStart"));
             }
         });
     }

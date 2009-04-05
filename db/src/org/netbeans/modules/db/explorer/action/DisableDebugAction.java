@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -42,6 +42,7 @@ package org.netbeans.modules.db.explorer.action;
 import org.netbeans.modules.db.explorer.node.RootNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,7 +51,7 @@ import org.openide.util.HelpCtx;
 public class DisableDebugAction extends BaseAction {
     @Override
     public String getName() {
-        return bundle().getString("DisableDebug"); // NOI18N
+        return NbBundle.getMessage (DisableDebugAction.class, "DisableDebug"); // NOI18N
     }
 
     @Override

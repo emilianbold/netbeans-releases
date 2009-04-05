@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,18 +34,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.text.MessageFormat;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,7 +56,7 @@ public class ViewDataAction extends QueryAction {
 
     @Override
     public String getName() {
-        return bundle().getString("ViewData"); // NOI18N
+        return NbBundle.getMessage (ViewDataAction.class, "ViewData"); // NOI18N
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ViewDataAction extends QueryAction {
                             String expression = getDefaultQuery(activatedNodes);
                             SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression, true);
                         } catch(Exception exc) {
-                            String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
+                            String message = NbBundle.getMessage (ViewDataAction.class, "ShowDataError", exc.getMessage()); // NOI18N
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         }
                     }

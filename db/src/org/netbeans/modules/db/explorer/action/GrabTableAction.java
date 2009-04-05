@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,14 +34,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
 
 import java.awt.Dialog;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -85,7 +84,7 @@ import org.openide.windows.WindowManager;
 public class GrabTableAction extends BaseAction {
 
     public String getName() {
-        return bundle().getString("GrabStructure"); // NOI18N
+        return NbBundle.getMessage (GrabTableAction.class, "GrabStructure"); // NOI18N
     }
 
     @Override
@@ -115,7 +114,7 @@ public class GrabTableAction extends BaseAction {
             JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-            chooser.setDialogTitle(bundle().getString("GrabTableFileSaveDialogTitle")); //NOI18N
+            chooser.setDialogTitle(NbBundle.getMessage (GrabTableAction.class, "GrabTableFileSaveDialogTitle")); //NOI18N
             chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
             chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                 public boolean accept(File f) {
@@ -123,7 +122,7 @@ public class GrabTableAction extends BaseAction {
                 }
 
                 public String getDescription() {
-                  return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
+                  return NbBundle.getMessage (GrabTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                 }
             });
 
@@ -135,12 +134,12 @@ public class GrabTableAction extends BaseAction {
                     file = chooser.getSelectedFile();
                     if (file != null) {
                         if(file.exists()) {
-                            Object yesOption = new JButton(bundle().getString("Yes"));
-                            Object noOption = new JButton (bundle().getString("No"));
+                            Object yesOption = new JButton(NbBundle.getMessage (GrabTableAction.class, "Yes"));
+                            Object noOption = new JButton (NbBundle.getMessage (GrabTableAction.class, "No"));
                             Object result = DialogDisplayer.getDefault ().notify (new NotifyDescriptor
-                                            (MessageFormat.format(bundle().getString("MSG_ReplaceFileOrNot"), // NOI18N
-                                                new String[] {file.getName()}), //question
-                                             bundle().getString("GrabTableFileSaveDialogTitle"), // title
+                                            (NbBundle.getMessage (GrabTableAction.class, "MSG_ReplaceFileOrNot", // NOI18N
+                                                file.getName()), //question
+                                             NbBundle.getMessage (GrabTableAction.class, "GrabTableFileSaveDialogTitle"), // title
                                              NotifyDescriptor.YES_NO_OPTION, // optionType
                                              NotifyDescriptor.QUESTION_MESSAGE, // messageType
 
@@ -164,14 +163,14 @@ public class GrabTableAction extends BaseAction {
                             new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
                                 spec, node.getTableHandle(), theFile);
                         } catch (Exception exc) {
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
+                            DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
                         }
                     }
                 }
             );
 
         } catch(Exception exc) {
-            DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
+            DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
         }
     }
 
@@ -181,8 +180,6 @@ public class GrabTableAction extends BaseAction {
         private Task task;
         private Dialog dialog;
         private ProgressHandle progressHandle;
-
-        //private boolean finished;
 
         private Enumeration<MetadataElementHandle<Column>> enumeration;
         private DatabaseException exception;
@@ -195,7 +192,7 @@ public class GrabTableAction extends BaseAction {
             progressHandle = ProgressHandleFactory.createHandle(null);
             GrabTableProgressPanel progressPanel = new GrabTableProgressPanel();
             progressPanel.setProgressComponent(ProgressHandleFactory.createProgressComponent(progressHandle));
-            String dialogTitle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("GrabTableProgressDialogTitle"); // NOI18N
+            String dialogTitle = NbBundle.getMessage (GrabTableAction.class, "GrabTableProgressDialogTitle"); // NOI18N
             DialogDescriptor desc = new DialogDescriptor(progressPanel, dialogTitle, true, new Object[0], DialogDescriptor.NO_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
             dialog = DialogDisplayer.getDefault().createDialog(desc);
             dialog.setResizable(false);

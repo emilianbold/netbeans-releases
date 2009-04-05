@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,7 +104,7 @@ public class DatabaseConnection implements DBConnection {
 
     static final long serialVersionUID =4554639187416958735L;
 
-    private Set exceptionListeners = Collections.synchronizedSet(new HashSet());
+    private final Set<ExceptionListener> exceptionListeners = Collections.synchronizedSet (new HashSet<ExceptionListener> ());
     private Connection con;
 
     /** Driver URL and name */
@@ -169,10 +168,10 @@ public class DatabaseConnection implements DBConnection {
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
 
-    static private final Lookup.Result openConnectionLookupResult;
+    static private final Lookup.Result<OpenConnectionInterface> openConnectionLookupResult;
     static private Collection openConnectionServices = null;
     static {
-        openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template(OpenConnectionInterface.class));
+        openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<OpenConnectionInterface>(OpenConnectionInterface.class));
         openConnectionLookupResult.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 synchronized (DatabaseConnection.class) {
@@ -393,13 +392,15 @@ public class DatabaseConnection implements DBConnection {
 
     /** Returns name of the connection */
     public String getName() {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-        if(name == null)
-            if((getSchema()==null)||(getSchema().length()==0))
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), getDatabase(), getUser(), bundle.getString("SchemaIsNotSet")); //NOI18N
-            else
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), getDatabase(), getUser(), getSchema()); //NOI18N
-                return name;
+        if(name == null) {
+            if((getSchema()==null)||(getSchema().length()==0)) {
+                name = NbBundle.getMessage (DatabaseConnection.class, "ConnectionNodeUniqueName", getDatabase(), getUser(),
+                        NbBundle.getMessage (DatabaseConnection.class, "SchemaIsNotSet")); //NOI18N
+            } else {
+                name = NbBundle.getMessage (DatabaseConnection.class, "ConnectionNodeUniqueName", getDatabase(), getUser(), getSchema()); //NOI18N
+            }
+        }
+        return name;
     }
 
     /** Sets user name of the connection
@@ -517,7 +518,7 @@ public class DatabaseConnection implements DBConnection {
         }
 
         if (drv == null || db == null || usr == null )
-            throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
+            throw new DDLException(NbBundle.getMessage (DatabaseConnection.class, "EXC_InsufficientConnInfo")); // NOI18N
 
         Properties dbprops = new Properties();
         if ((usr != null) && (usr.length() > 0)) {
@@ -553,7 +554,7 @@ public class DatabaseConnection implements DBConnection {
 
             return connection;
         } catch (SQLException e) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), db, drv, e.getMessage()); // NOI18N
+            String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, e.getMessage()); // NOI18N
 
             //commented out for 3.6 release, need to solve for next Studio release
             // hack for Pointbase Network Server
@@ -571,7 +572,7 @@ public class DatabaseConnection implements DBConnection {
             ddle.initCause(e);
             throw ddle;
         } catch (Exception exc) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), db, drv, exc.getMessage()); // NOI18N
+            String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, exc.getMessage()); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
 
@@ -606,7 +607,7 @@ public class DatabaseConnection implements DBConnection {
 
     private void doConnect() throws DDLException {
         if (drv == null || db == null || usr == null )
-            sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
+            sendException(new DDLException(NbBundle.getMessage (DatabaseConnection.class, "EXC_InsufficientConnInfo")));
 
         Properties dbprops = new Properties();
         if ( usr.length() > 0 ) {
@@ -641,9 +642,8 @@ public class DatabaseConnection implements DBConnection {
 
             propertySupport.firePropertyChange("connected", null, null);
         } catch (Exception e) {
-            String message = MessageFormat.format(
-                        NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"),
-                        db, drv, e.getMessage()); // NOI18N
+            String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", // NOI18N
+                        db, drv, e.getMessage());
             // Issue 69265
             if (drv.equals(DRIVER_CLASS_NET)) {
                 if (e instanceof SQLException) {
@@ -789,8 +789,8 @@ public class DatabaseConnection implements DBConnection {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DBConnection) {
-            DBConnection con = (DBConnection) obj;
-            return toString().equals(con.toString());
+            DBConnection conn = (DBConnection) obj;
+            return toString().equals(conn.toString());
         }
 
         return false;
