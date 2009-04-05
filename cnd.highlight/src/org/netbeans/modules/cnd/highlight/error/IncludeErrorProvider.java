@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.openide.util.NbBundle;
@@ -122,7 +123,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
-        for( CsmInclude incl : file.getIncludes() ) {
+        for(CsmInclude incl : CsmFileInfoQuery.getDefault().getBrokenIncludes(file)) {
             if (request.isCancelled()) {
                 break;
             }
