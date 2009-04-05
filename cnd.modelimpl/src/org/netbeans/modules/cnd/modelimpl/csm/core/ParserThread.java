@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -86,8 +85,7 @@ public final class ParserThread implements Runnable {
                 trace("polling queue"); // NOI18N
             }
             try {
-                AtomicReference<FileImpl.State> fileState = new AtomicReference<FileImpl.State>();
-                ParserQueue.Entry entry = queue.poll(fileState);
+                ParserQueue.Entry entry = queue.poll();
                 if (entry == null) {
                     if (TraceFlags.TRACE_PARSER_QUEUE) {
                         trace("waiting"); // NOI18N
@@ -103,7 +101,7 @@ public final class ParserThread implements Runnable {
                     if (TraceFlags.TRACE_PARSER_QUEUE) {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
-                    Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && !file.isParsed()) ? new Diagnostic.StopWatch() : null;
+                    Diagnostic.StopWatch stw = TraceFlags.TIMING_PARSE_PER_FILE_FLAT ? new Diagnostic.StopWatch() : null;
                     try {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
@@ -124,7 +122,7 @@ public final class ParserThread implements Runnable {
                             }
                         }
                         if (!project.isDisposing()) {
-                            file.ensureParsed(preprocHandlers, fileState);
+                            file.ensureParsed(preprocHandlers);
                         }
                     } catch (Throwable thr) {
                         DiagnosticExceptoins.register(thr);

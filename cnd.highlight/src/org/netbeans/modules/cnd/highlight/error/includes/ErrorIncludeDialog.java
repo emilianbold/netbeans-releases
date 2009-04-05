@@ -114,11 +114,12 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     public ErrorIncludeDialog(Set<CsmFile> files) {
         List<CsmInclude> includes = new ArrayList<CsmInclude>();
         List<CsmErrorDirective> errors = new ArrayList<CsmErrorDirective>();
+        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
         for(CsmFile file:files){
             Collection<CsmErrorDirective> fileErrors = file.getErrors();
             boolean hasFailed = !fileErrors.isEmpty();
             errors.addAll(fileErrors);
-            for(CsmInclude incl : file.getIncludes()){
+            for(CsmInclude incl : fiq.getBrokenIncludes(file)) {
                 if (incl.getIncludeFile() == null){
                     includes.add(incl);
                     hasFailed = true;
@@ -204,14 +205,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     }
 
     private void checkHighlightModel(Set<CsmFile> files){
+        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
         for(Object f : baseProject.getSourceFiles()){
             CsmFile file = (CsmFile) f;
-            boolean failed = false;
-            for (CsmInclude directive : file.getIncludes()){
-                if (directive.getIncludeFile()==null){
-                    failed = true;
-                }
-            }
+            boolean failed = fiq.hasBrokenIncludes(file);
             if (failed){
                 if (!files.contains(file)) {
                     System.out.println("Project source file is failed and not found in highlight"); // NOI18N
@@ -226,12 +223,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
         for(Object f :baseProject.getHeaderFiles()){
             CsmFile file = (CsmFile) f;
-            boolean failed = false;
-            for (CsmInclude directive : file.getIncludes()){
-                if (directive.getIncludeFile()==null){
-                    failed = true;
-                }
-            }
+            boolean failed = fiq.hasBrokenIncludes(file);
             if (failed){
                 if (!files.contains(file)) {
                     System.out.println("Project header file is failed and not found in highlight"); // NOI18N

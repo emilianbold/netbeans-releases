@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -117,6 +118,20 @@ public abstract class CsmFileInfoQuery {
     public abstract List<CsmInclude> getIncludeStack(CsmFile file);
 
     /**
+     *
+     * @param file file
+     * @return list of broken include directives in file
+     */
+    public abstract Collection<CsmInclude> getBrokenIncludes(CsmFile file);
+
+    /**
+     *
+     * @param file file
+     * @return check if file has broken include directives
+     */
+    public abstract boolean hasBrokenIncludes(CsmFile file);
+
+    /**
      * Attempts to get the version of a file.
      * @param file - the file to get a version for.
      * @return The file's version or 0 if the document does not
@@ -164,6 +179,16 @@ public abstract class CsmFileInfoQuery {
         @Override
         public long getFileVersion(CsmFile file) {
             return 0;
+        }
+
+        @Override
+        public Collection<CsmInclude> getBrokenIncludes(CsmFile file) {
+            return Collections.<CsmInclude>emptyList();
+        }
+
+        @Override
+        public boolean hasBrokenIncludes(CsmFile file) {
+            return false;
         }
     } 
 }
