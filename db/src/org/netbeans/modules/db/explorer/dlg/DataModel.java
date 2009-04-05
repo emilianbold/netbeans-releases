@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,9 +56,9 @@ import org.openide.util.NbBundle;
 public class DataModel extends AbstractTableModel
 {
     /** Column data */
-    private Vector data;
+    private Vector<Object> data;
 
-    transient private Vector primaryKeys = new Vector();
+    transient private Vector<ColumnItem> primaryKeys = new Vector<ColumnItem>();
     transient private Vector uniqueKeys = new Vector();
 
     static final long serialVersionUID =4162743695966976536L;
@@ -66,7 +66,7 @@ public class DataModel extends AbstractTableModel
     public DataModel()
     {
         super();
-        data = new Vector(1);
+        data = new Vector<Object> (1);
     }
 
     public Vector getData()
@@ -155,6 +155,7 @@ public class DataModel extends AbstractTableModel
         }
     }
 
+    @Override
     public void setValueAt(Object val, int row, int col) {
         //fixed bug 23788 (http://db.netbeans.org/issues/show_bug.cgi?id=23788)
         if (row == -1 || col == -1)
@@ -166,15 +167,18 @@ public class DataModel extends AbstractTableModel
         }
     }
 
+    @Override
     public String getColumnName(int col) {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("CreateTable_" + col); //NOI18N
+        return NbBundle.getMessage (DataModel.class, "CreateTable_" + col); //NOI18N
     }
 
+    @Override
     public Class getColumnClass(int c)
     {
         return getValueAt(0,c).getClass();
     }
 
+    @Override
     public boolean isCellEditable(int row, int col)
     {
         return true;

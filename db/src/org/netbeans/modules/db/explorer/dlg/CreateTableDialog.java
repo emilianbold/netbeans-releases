@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,6 @@ import java.awt.event.*;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -75,11 +74,10 @@ public class CreateTableDialog {
     JTable table;
     JButton addbtn, delbtn;
     Specification spec;
-    private Vector ttab;
+    private Vector<TypeElement> ttab;
 
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
-    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     private static final int SIZE_COL_INDEX = 6;
     private static Logger LOGGER = Logger.getLogger(
             CreateTableDialog.class.getName());
@@ -89,7 +87,7 @@ public class CreateTableDialog {
             ClassLoader cl = CreateTableDialog.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(filename);
             if (stream == null) {
-                String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToOpenStream"), new Object[] {filename}); // NOI18N
+                String message = NbBundle.getMessage (CreateTableDialog.class, "EXC_UnableToOpenStream", filename); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -117,8 +115,8 @@ public class CreateTableDialog {
             // Table name field
 
             label = new JLabel();
-            Mnemonics.setLocalizedText(label, bundle.getString("CreateTableName")); // NOI18N
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableNameA11yDesc"));
+            Mnemonics.setLocalizedText(label, NbBundle.getMessage (CreateTableDialog.class, "CreateTableName")); // NOI18N
+            label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableNameA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.weighty = 0.0;
@@ -135,9 +133,9 @@ public class CreateTableDialog {
             constr.gridx = 1;
             constr.gridy = 0;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            dbnamefield = new JTextField(bundle.getString("CreateTableUntitledName"), 10); // NOI18N
-            dbnamefield.setToolTipText(bundle.getString("ACS_CreateTableNameTextFieldA11yDesc"));
-            dbnamefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableNameTextFieldA11yName"));
+            dbnamefield = new JTextField(NbBundle.getMessage (CreateTableDialog.class, "CreateTableUntitledName"), 10); // NOI18N
+            dbnamefield.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableNameTextFieldA11yDesc"));
+            dbnamefield.getAccessibleContext().setAccessibleName(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableNameTextFieldA11yName"));
             label.setLabelFor(dbnamefield);
             layout.setConstraints(dbnamefield, constr);
             pane.add(dbnamefield);
@@ -154,9 +152,9 @@ public class CreateTableDialog {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             table = new DataTable(new ColumnDataModel(getTypes()));
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            table.setToolTipText(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
-            table.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableColumnTableA11yName"));
-            table.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
+            table.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableColumnTableA11yDesc"));
+            table.getAccessibleContext().setAccessibleName(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableColumnTableA11yName"));
+            table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableColumnTableA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(table);
             scrollpane.setBorder(new BevelBorder(BevelBorder.LOWERED));
             layout.setConstraints(scrollpane, constr);
@@ -165,7 +163,7 @@ public class CreateTableDialog {
             // Setup cell editors for table
 
             Map tmap = spec.getTypeMap();
-            ttab = new Vector(tmap.size());
+            ttab = new Vector<TypeElement> (tmap.size());
             Iterator iter = tmap.keySet().iterator();
             while (iter.hasNext()) {
                 String iterkey = (String)iter.next();
@@ -199,8 +197,8 @@ public class CreateTableDialog {
             // Button add column
 
             addbtn = new JButton();
-            Mnemonics.setLocalizedText(addbtn, bundle.getString("CreateTableAddButtonTitle")); // NOI18N
-            addbtn.setToolTipText(bundle.getString("ACS_CreateTableAddButtonTitleA11yDesc"));
+            Mnemonics.setLocalizedText(addbtn, NbBundle.getMessage (CreateTableDialog.class, "CreateTableAddButtonTitle")); // NOI18N
+            addbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableAddButtonTitleA11yDesc"));
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -217,8 +215,8 @@ public class CreateTableDialog {
             // Button delete column
 
             delbtn = new JButton();
-            Mnemonics.setLocalizedText(delbtn, bundle.getString("CreateTableRemoveButtonTitle")); // NOI18N
-            delbtn.setToolTipText(bundle.getString("ACS_CreateTableRemoveButtonTitleA11yDesc"));
+            Mnemonics.setLocalizedText(delbtn, NbBundle.getMessage (CreateTableDialog.class, "CreateTableRemoveButtonTitle")); // NOI18N
+            delbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableRemoveButtonTitleA11yDesc")); // NOI18N
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -244,7 +242,7 @@ public class CreateTableDialog {
                         Vector idxCommands = new Vector();
 
                         if (! result) {
-                            String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
+                            String msg = NbBundle.getMessage (CreateTableDialog.class, "EXC_InsufficientCreateTableInfo");
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                             return;
                         }
@@ -279,17 +277,17 @@ public class CreateTableDialog {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
                                 LOGGER.log(Level.INFO, null, cause);
-                                DbUtilities.reportError(bundle.getString("ERR_UnableToCreateTable"), e.getMessage());
+                                DbUtilities.reportError(NbBundle.getMessage (CreateTableDialog.class, "ERR_UnableToCreateTable"), e.getMessage());
                             }
                         }
                     }
                 }
             };
 
-            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableDialogA11yDesc"));
+            pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableDialogA11yDesc")); // NOI18N
 
             addbtn.doClick();
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("CreateTableDialogTitle"), true, listener); // NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(pane, NbBundle.getMessage (CreateTableDialog.class, "CreateTableDialogTitle"), true, listener); // NOI18N
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -340,7 +338,7 @@ public class CreateTableDialog {
                 TableColumn col = cmodel.getColumn(i);
                 Map cmap = ColumnItem.getColumnProperty(i);
                 col.setIdentifier(cmap.get("name")); //NOI18N
-                columnName = bundle.getString("CreateTable_" + i); //NOI18N
+                columnName = NbBundle.getMessage (CreateTableDialog.class, "CreateTable_" + i); //NOI18N
                 columnWidth = (new Double(getFontMetrics(getFont()).getStringBounds(columnName, getGraphics()).getWidth())).intValue() + 20;
                 if (cmap.containsKey("width")) { // NOI18N
                     if (((Integer)cmap.get("width")).intValue() < columnWidth)

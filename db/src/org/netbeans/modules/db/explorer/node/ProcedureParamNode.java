@@ -51,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -79,6 +80,7 @@ public class ProcedureParamNode  extends BaseNode {
     private final MetadataElementHandle<Parameter> paramHandle;
     private final DatabaseConnection connection;
 
+    @SuppressWarnings("unchecked")
     private ProcedureParamNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
         paramHandle = getLookup().lookup(MetadataElementHandle.class);
@@ -132,13 +134,13 @@ public class ProcedureParamNode  extends BaseNode {
 
         switch (param.getDirection()) {
             case IN:
-                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("In")); // NOI18N
+                addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureParamNode.class, "In")); // NOI18N
                 break;
             case OUT:
-                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("Out")); // NOI18N
+                addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureParamNode.class, "Out")); // NOI18N
                 break;
             case INOUT:
-                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("InOut")); // NOI18N
+                addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureParamNode.class, "InOut")); // NOI18N
                 break;
         }
 
@@ -181,7 +183,7 @@ public class ProcedureParamNode  extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_ProcedureParam"); //NOI18N
+        return NbBundle.getMessage (ProcedureParamNode.class, "ND_ProcedureParam"); //NOI18N
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -51,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,6 +82,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
         connection = getLookup().lookup(DatabaseConnection.class);
     }
     
+    @SuppressWarnings("unchecked")
     protected void initialize() {
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -92,7 +94,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("TableListNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (TableListNode.class, "TableListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -102,7 +104,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_TableList"); //NOI18N
+        return NbBundle.getMessage (TableListNode.class, "ND_TableList"); //NOI18N
     }
 
     @Override
