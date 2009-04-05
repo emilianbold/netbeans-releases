@@ -43,6 +43,7 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,7 +79,7 @@ public class ProcedureListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("ProcedureListNode_DISPLAYNAME");
+        return NbBundle.getMessage (ProcedureListNode.class, "ProcedureListNode_DISPLAYNAME");
     }
 
     public String getIconBase() {
@@ -87,7 +88,7 @@ public class ProcedureListNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_ProcedureList"); //NOI18N
+        return NbBundle.getMessage (ProcedureListNode.class, "ND_ProcedureList"); //NOI18N
     }
 
     @Override

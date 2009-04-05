@@ -43,6 +43,7 @@ import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -79,7 +80,7 @@ public class ForeignKeyListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString("ForeignKeyListNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (ForeignKeyListNode.class, "ForeignKeyListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -89,7 +90,7 @@ public class ForeignKeyListNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_ForeignKeyList"); //NOI18N
+        return NbBundle.getMessage (ForeignKeyListNode.class, "ND_ForeignKeyList"); //NOI18N
     }
 
     @Override

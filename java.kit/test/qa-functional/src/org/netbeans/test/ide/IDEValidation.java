@@ -373,7 +373,7 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testDb() {
         // "Databases"
-        String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "RootNode_DISPLAYNAME");
+        String databasesLabel = Bundle.getString("org.netbeans.modules.db.explorer.node.Bundle", "RootNode_DISPLAYNAME");
         Node databasesNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel);
         // "Please wait..."
         String waitNodeLabel = Bundle.getString("org.openide.nodes.Bundle", "LBL_WAIT");
@@ -388,13 +388,13 @@ public class IDEValidation extends JellyTestCase {
             log("Timeout expired: "+e.getMessage());
         }
         // "Drivers"
-        String driversLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "DriverListNode_DISPLAYNAME");
+        String driversLabel = Bundle.getString("org.netbeans.modules.db.explorer.node.Bundle", "DriverListNode_DISPLAYNAME");
         Node driversNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel+"|"+driversLabel);
         // "Add Driver ..."
-        String addDriverItem = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "AddNewDriver");
+        String addDriverItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddNewDriver");
         // open a dialog to add a new JDBC driver
         new ActionNoBlock(null, addDriverItem).perform(driversNode);
-        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "AddDriverDialogTitle");
+        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddDriverDialogTitle");
         new NbDialogOperator(addDriverTitle).cancel();
         
         // wait until the wait node dismiss and after that start waiting for JDBC_ODBC Bridge node
@@ -411,10 +411,10 @@ public class IDEValidation extends JellyTestCase {
             // node JDBC-ODBC Bridge should be present always but not on mac
             Node jdbcOdbcNode = new Node(driversNode, "JDBC-ODBC Bridge"); // NOI18N
             // "Connect Using ..."
-            String connectUsingItem = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "ConnectUsing");
+            String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
             // open a dialog to create a new connection
             new ActionNoBlock(null, connectUsingItem).perform(jdbcOdbcNode);
-            String newDatabaseConnectionTitle = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NewConnectionDialogTitle");
+            String newDatabaseConnectionTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "NewConnectionDialogTitle");
             new NbDialogOperator(newDatabaseConnectionTitle).cancel();
         }
     }
