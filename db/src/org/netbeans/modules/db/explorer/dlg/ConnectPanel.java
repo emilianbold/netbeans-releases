@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -102,12 +102,12 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
     }
 
     private void initAccessibility() {
-        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameA11yDesc")); //NOI18N
-        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameTextFieldA11yName")); //NOI18N
-        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordA11yDesc")); //NOI18N
-        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yName")); //NOI18N
-        connectProgressPanel.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
-        connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectDialogUserNameA11yDesc")); //NOI18N
+        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectDialogUserNameTextFieldA11yName")); //NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectDialogPasswordA11yDesc")); //NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectDialogPasswordTextFieldA11yName")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
     public void initializeFocus() {
@@ -146,7 +146,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         setLayout(new java.awt.GridBagLayout());
 
         userLabel.setLabelFor(userTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(userLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogUserName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ConnectDialogUserName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -154,7 +154,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         add(userLabel, gridBagConstraints);
 
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogPassword")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ConnectDialogPassword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -163,8 +163,8 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(passwordLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogRememberPassword")); // NOI18N
-        passwordCheckBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogRememberPasswordA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ConnectDialogRememberPassword")); // NOI18N
+        passwordCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ACS_ConnectDialogRememberPasswordA11yDesc")); // NOI18N
         passwordCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -174,7 +174,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordCheckBox, gridBagConstraints);
 
-        passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yDesc")); // NOI18N
+        passwordField.setToolTipText(org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ACS_ConnectDialogPasswordTextFieldA11yDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -182,7 +182,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordField, gridBagConstraints);
 
-        userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameTextFieldA11yDesc")); // NOI18N
+        userTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ACS_ConnectDialogUserNameTextFieldA11yDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -190,7 +190,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
         add(userTextField, gridBagConstraints);
 
-        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); // NOI18N
+        connectProgressPanel.setToolTipText(org.openide.util.NbBundle.getMessage(ConnectPanel.class, "ACS_ConnectionProgressBarA11yDesc")); // NOI18N
         connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
 
         org.openide.awt.Mnemonics.setLocalizedText(progressMessageLabel, " ");
@@ -242,7 +242,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
     }
 
     public String getTitle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogTitle"); // NOI18N
+        return NbBundle.getMessage (ConnectPanel.class, "ConnectDialogTitle"); // NOI18N
     }
 
     private void startProgress() {
@@ -252,7 +252,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
                 progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
                 progressHandle.start();
-                progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting"));
+                progressMessageLabel.setText(NbBundle.getMessage (ConnectPanel.class, "ConnectionProgress_Connecting"));
             }
         });
     }
@@ -273,9 +273,9 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
                 // without this, the removed progress component remains painted on its parent... why?
                 progressContainerPanel.repaint();
                 if (connected) {
-                    progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established"));
+                    progressMessageLabel.setText(NbBundle.getMessage (ConnectPanel.class, "ConnectionProgress_Established"));
                 } else {
-                    progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed"));
+                    progressMessageLabel.setText(NbBundle.getMessage (ConnectPanel.class, "ConnectionProgress_Failed"));
                 }
             }
         });
