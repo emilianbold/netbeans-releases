@@ -41,7 +41,6 @@
 package org.netbeans.modules.php.project.connections.ui;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -61,6 +60,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -81,50 +81,67 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- *
  * @author  Radek Matous
  */
-public final class TransferFilter extends javax.swing.JPanel {
-    TransferFilterTable table = null;
-    TransferFileTableModel model = null;
+public final class TransferFilter extends JPanel {
+    private static final long serialVersionUID = -1971424369225251471L;
+    private static final ImageIcon INFO_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/info_icon.png")); // NOI18N
+
+    final TransferFilterTable table;
+    final TransferFileTableModel model;
     private DocumentListener dlForSearch;
     private FocusListener flForSearch;
-    private String filter = "";
+    private volatile String filter = "";
     private PopupActionSupport popupActionsSupport;
-    private static final RequestProcessor SEARCH_PROCESSOR = new RequestProcessor("search-processor");
-    private final RequestProcessor.Task searchTask = SEARCH_PROCESSOR.create(new Runnable() {
-
+    private static final RequestProcessor FILTER_PROCESSOR = new RequestProcessor("filter processor");
+    private final RequestProcessor.Task searchTask = FILTER_PROCESSOR.create(new Runnable() {
         public void run() {
             if (filter != null) {
                 int row = getSelectedRow();
-                final TransferFileUnit u = (row >= 0) ? getModel().getUnitAtRow(row) : null;
+                final TransferFileUnit unit = row != -1 ? getModel().getUnitAtRow(row) : null;
                 final Map<Integer, Boolean> state = TransferFileTableModel.captureState(model.getData());
-                Runnable runAftreWards = new Runnable() {
-
+                Runnable runAfterWards = new Runnable() {
                     public void run() {
-                        if (u != null) {
-                            int row = findRow(u.getId());
+                        if (unit != null) {
+                            int row = model.getRowForUnit(unit);
                             restoreSelectedRow(row);
                         }
                         TransferFileTableModel.restoreState(model.getData(), state, model.isMarkedAsDefault());
                         refreshState();
                     }
                 };
-                model.setFilter(filter, runAftreWards);
+                model.setFilter(filter, runAfterWards);
             }
         }
     });
-        
-    //folders are not filtered although not showed to user
+
+    private TransferFilter(TransferFilterTable table) {
+        this.table = table;
+        TableModel m = table.getModel();
+        assert m instanceof TransferFileTableModel : m + " instanceof TransferFileTableModel.";
+        model = (TransferFileTableModel) m;
+        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        initComponents();
+    }
+
+    private static TransferFilter create(TransferFilterTable table) {
+        TransferFilter transferFilter = new TransferFilter(table);
+        transferFilter.initPopup();
+        transferFilter.listenOnSelection();
+        transferFilter.listenOnUnitChanges();
+        transferFilter.refreshState();
+        return transferFilter;
+    }
+
     public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp) {
         return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp);
     }
 
-    //folders are not filtered although not showed to user
     public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles) {
         return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1);
     }
 
+    // folders are not filtered although not showed to user
     private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp) {
         TransferFileTableModel model = null;
         String title = null;
@@ -138,13 +155,13 @@ public final class TransferFilter extends javax.swing.JPanel {
                 title = NbBundle.getMessage(TransferFilter.class, "Upload_Title");
                 break;
             default:
-                assert false;
+                throw new IllegalArgumentException("Unknown model type: " + type);
         }
-        TransferFilter panel = new TransferFilter(new TransferFilterTable(model));
+        TransferFilter transferFilter = TransferFilter.create(new TransferFilterTable(model));
         JButton okButton = new JButton();
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));
         DialogDescriptor descriptor = new DialogDescriptor(
-                panel,
+                transferFilter,
                 title,
                 true,
                 new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
@@ -159,15 +176,15 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(toTransfer.size());
         for (TransferFile transferFile : toTransfer) {
-            retval.add(new TransferFileUnit(transferFile, model.isMarkedAsDefault()));
+            retval.add(new TransferFileUnit(transferFile, TransferFileTableModel.isMarkedAsDefault()));
         }
         return retval;
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp) {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(toTransfer.size());
         boolean selected = timestamp == -1;
         for (TransferFile transferFile : toTransfer) {
             if (timestamp != -1) {
@@ -187,52 +204,16 @@ public final class TransferFilter extends javax.swing.JPanel {
         return retval;
     }
 
-    private TransferFilter(TransferFilterTable table) {
-        this.table = table;
-        TableModel m = table.getModel();
-        assert m instanceof TransferFileTableModel : m + " instanceof FileConfirmationTableModel.";
-        model = (TransferFileTableModel) m;
-        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        initComponents();
-        //TODO: for WINDOWS - don't paint background and let visible the native look
-        /*
-        if (UIManager.getLookAndFeel().getName().toLowerCase().startsWith("windows")) {//NOI18N
-        setOpaque(false);
-        }
-         */
-        initTab();
-        listenOnSelection();
-        refreshState();
-
-        addUpdateUnitListener(new TransferFileTableChangeListener() {
-
-            public void updateUnitsChanged() {
-                // no need to refresh table data (they are sorted so it's already done)
-                refreshState();
-            }
-
-            public void filterChanged() {
-                model.fireTableDataChanged();
-                refreshState();
-            }
-        });
-    }
-
     void focusTable() {
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 table.requestFocusInWindow();
             }
         });
     }
-    
+
     TransferFileTableModel getModel() {
         return model;
-    }
-
-    TransferFilterTable getTable() {
-        return table;
     }
 
     public String getHelpId() {
@@ -246,10 +227,8 @@ public final class TransferFilter extends javax.swing.JPanel {
         if (dlForSearch == null) {
             tfSearch.getDocument().addDocumentListener(getDocumentListener());
         }
-
         if (flForSearch == null) {
             flForSearch = new FocusListener() {
-
                 public void focusGained(FocusEvent e) {
                     tfSearch.selectAll();
                 }
@@ -265,20 +244,18 @@ public final class TransferFilter extends javax.swing.JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        if (dlForSearch != null) {
-            tfSearch.getDocument().removeDocumentListener(getDocumentListener());
-        }
+        assert dlForSearch != null;
+        tfSearch.getDocument().removeDocumentListener(getDocumentListener());
         dlForSearch = null;
-        if (flForSearch != null) {
-            tfSearch.removeFocusListener(flForSearch);
-        }
+
+        assert flForSearch != null;
+        tfSearch.removeFocusListener(flForSearch);
         flForSearch = null;
     }
 
     public void refreshState() {
         int units = model.getMarkedUnits().size();
         popupActionsSupport.tableDataChanged();
-
         if (units == 0) {
             cleanSelectionInfo();
         } else {
@@ -286,27 +263,28 @@ public final class TransferFilter extends javax.swing.JPanel {
         }
     }
 
-    private void initTab() {
+    private void initPopup() {
         TabAction[] forPopup = null;
-
         switch (model.getType()) {
             case DOWNLOAD:
             case UPLOAD:
-                forPopup = new TabAction[]{new CheckAllAction (), new UncheckAllAction(), new CheckAction()};
+                forPopup = new TabAction[] {new CheckAllAction(), new UncheckAllAction(), new CheckAction()};
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown model type: " + model.getType());
         }
         model.addTableModelListener(new TableModelListener() {
-
             public void tableChanged(TableModelEvent e) {
                 refreshState();
             }
         });
-        table.addMouseListener(popupActionsSupport = new PopupActionSupport(forPopup));
+        popupActionsSupport = new PopupActionSupport(forPopup);
+        table.addMouseListener(popupActionsSupport);
     }
 
     private void cleanSelectionInfo() {
-        lSelectionInfo.setText(" ");
-        lWarning.setText(" ");
+        lSelectionInfo.setText(" "); // NOI18N
+        lWarning.setText(" "); // NOI18N
         lWarning.setIcon(null);
     }
 
@@ -314,39 +292,48 @@ public final class TransferFilter extends javax.swing.JPanel {
         String operationNameKey = null;
         switch (model.getType()) {
             case UPLOAD:
-                operationNameKey = "FileConfirmationTableModel_Warning_Upload";
+                operationNameKey = "FileConfirmationTableModel_Warning_Upload"; // NOI18N
                 break;
             case DOWNLOAD:
-                operationNameKey = "FileConfirmationTableModel_Warning_Download";
+                operationNameKey = "FileConfirmationTableModel_Warning_Download"; // NOI18N
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown model type: " + model.getType());
         }
-        String key = count == 1 ? "FileConfirmationPane_lHowManySelected_Single_Text" : "FileConfirmationPane_lHowManySelected_Many_Text";
+        String key = count == 1 ? "FileConfirmationPane_lHowManySelected_Single_Text" : "FileConfirmationPane_lHowManySelected_Many_Text"; // NOI18N
         lSelectionInfo.setText((NbBundle.getMessage(TransferFilter.class, key, count)));
-        Image loadImage = ImageUtilities.loadImage(
-                "org/netbeans/modules/php/project/ui/resources/info_icon.png");//NOI18N
-        lWarning.setIcon(new ImageIcon(loadImage));
+        lWarning.setIcon(INFO_ICON);
         lWarning.setText(NbBundle.getMessage(TransferFilter.class, operationNameKey));
     }
 
     private void listenOnSelection() {
         table.getSelectionModel().setSelectionInterval(0, 0);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
-                //Ignore extra messages.
+                // ignore extra messages.
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
-                ListSelectionModel lsm =
-                        (ListSelectionModel) e.getSource();
+                ListSelectionModel lsm = (ListSelectionModel) e.getSource();
                 if (lsm.isSelectionEmpty()) {
-                    //no rows are selected
                     popupActionsSupport.rowChanged(-1);
                 } else {
-                    int selectedRow = lsm.getMinSelectionIndex();
-                    popupActionsSupport.rowChanged(selectedRow);
-                //selectedRow is selected
+                    popupActionsSupport.rowChanged(lsm.getMinSelectionIndex());
                 }
+            }
+        });
+    }
+
+    private void listenOnUnitChanges() {
+        addUpdateUnitListener(new TransferFileTableChangeListener() {
+            public void updateUnitsChanged() {
+                // no need to refresh table data (they are sorted so it's already done)
+                refreshState();
+            }
+
+            public void filterChanged() {
+                model.fireTableDataChanged();
+                refreshState();
             }
         });
     }
@@ -366,18 +353,21 @@ public final class TransferFilter extends javax.swing.JPanel {
     DocumentListener getDocumentListener() {
         if (dlForSearch == null) {
             dlForSearch = new DocumentListener() {
+                public void insertUpdate(DocumentEvent event) {
+                    processUpdate(event);
+                }
 
-                public void insertUpdate(DocumentEvent arg0) {
+                public void removeUpdate(DocumentEvent event) {
+                    processUpdate(event);
+                }
+
+                public void changedUpdate(DocumentEvent event) {
+                    processUpdate(event);
+                }
+
+                private void processUpdate(DocumentEvent event) {
                     filter = tfSearch.getText().trim();
                     searchTask.schedule(350);
-                }
-
-                public void removeUpdate(DocumentEvent arg0) {
-                    insertUpdate(arg0);
-                }
-
-                public void changedUpdate(DocumentEvent arg0) {
-                    insertUpdate(arg0);
                 }
             };
         }
@@ -478,8 +468,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private class PopupActionSupport extends MouseAdapter {
-
+    private final class PopupActionSupport extends MouseAdapter {
         private final TabAction[] actions;
 
         PopupActionSupport(TabAction[] actions) {
@@ -493,10 +482,9 @@ public final class TransferFilter extends javax.swing.JPanel {
             }
 
             for (TabAction action : actions) {
-                if (action instanceof RowTabAction) {
-                    RowTabAction rowAction = (RowTabAction) action;
-                    rowAction.unitChanged(row, u);
-                }
+                assert action instanceof RowTabAction : "Need RowTabAction and not " + action.getClass().getName();
+                RowTabAction rowAction = (RowTabAction) action;
+                rowAction.unitChanged(row, u);
             }
         }
 
@@ -509,9 +497,8 @@ public final class TransferFilter extends javax.swing.JPanel {
 
         private JPopupMenu createPopup() {
             JPopupMenu popup = new JPopupMenu();
-            popup.removeAll();
-            Set<String> categories2 = new HashSet<String>();
-            List<String> categories = new ArrayList<String>();
+            Set<String> categories2 = new HashSet<String>(actions.length);
+            List<String> categories = new ArrayList<String>(actions.length);
             for (TabAction action : actions) {
                 String categoryName = action.getActionCategory();
                 if (categories2.add(categoryName)) {
@@ -523,16 +510,9 @@ public final class TransferFilter extends javax.swing.JPanel {
                 for (TabAction action : actions) {
                     String actionCategory = action.getActionCategory();
                     if ((categoryName != null && categoryName.equals(actionCategory)) || (categoryName == null && actionCategory == null)) {
-                        if (action instanceof RowTabAction) {
-                            RowTabAction rowAction = (RowTabAction) action;
-                            if (rowAction.isVisible()) {
-                                if (addSeparator) {
-                                    addSeparator = false;
-                                    popup.addSeparator();
-                                }
-                                popup.add(new JMenuItem(action));
-                            }
-                        } else {
+                        assert action instanceof RowTabAction : "Need RowTabAction and not " + action.getClass().getName();
+                        RowTabAction rowAction = (RowTabAction) action;
+                        if (rowAction.isVisible()) {
                             if (addSeparator) {
                                 addSeparator = false;
                                 popup.addSeparator();
@@ -555,13 +535,6 @@ public final class TransferFilter extends javax.swing.JPanel {
             maybeShowPopup(e);
         }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (!maybeShowPopup(e)) {
-                //int row = FileConfirmationPane.this.table.rowAtPoint(e.getPoint());
-            }
-        }
-
         private boolean maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 focusTable();
@@ -576,15 +549,15 @@ public final class TransferFilter extends javax.swing.JPanel {
         int row = table.rowAtPoint(e);
         if (row >= 0) {
             table.getSelectionModel().setSelectionInterval(row, row);
-            final JPopupMenu popup = popupActionsSupport.createPopup();
-            if (popup != null && popup.getComponentCount() > 0) {
+            JPopupMenu popup = popupActionsSupport.createPopup();
+            if (popup.getComponentCount() > 0) {
                 popup.show(invoker, e.x, e.y);
 
             }
         }
     }
 
-    private int getSelectedRow() {
+    int getSelectedRow() {
         return table.getSelectedRow();
     }
 
@@ -592,22 +565,13 @@ public final class TransferFilter extends javax.swing.JPanel {
         if (row < 0) {
             row = 0;
         }
+        int rowCount = table.getRowCount();
         for (int temp = row; temp >= 0; temp--) {
-            if (temp < table.getRowCount() && temp > -1) {
+            if (temp < rowCount && temp > -1) {
                 table.getSelectionModel().setSelectionInterval(temp, temp);
                 break;
             }
         }
-    }
-
-    int findRow(Integer id) {
-        for (int i = 0; i < model.getRowCount(); i++) {
-            TransferFileUnit u = model.getUnitAtRow(i);
-            if (u != null && id.equals(u.getId())) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     static String textForKey(String key) {
@@ -623,13 +587,12 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     private abstract class TabAction extends AbstractAction {
-
-        private String name;
-        private String actionCategory;
+        private final String name;
+        private final String actionCategory;
 
         public TabAction(String nameKey, String actionCategoryKey) {
             super(textForKey(nameKey));
-            actionCategory = actionCategoryKey;//(actionCategoryKey != null) ? NbBundle.getMessage(UnitTab.class, actionCategoryKey) : null;
+            actionCategory = actionCategoryKey; //(actionCategoryKey != null) ? NbBundle.getMessage(UnitTab.class, actionCategoryKey) : null;
             putValue(MNEMONIC_KEY, mnemonicForKey(nameKey));
             name = (String) getValue(NAME);
             putIntoActionMap(table);
@@ -646,7 +609,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         }
 
         public String getActionCategory() {
-            return getActionCategoryImpl();//NOI18N
+            return getActionCategoryImpl();
         }
 
         protected String getActionCategoryImpl() {
@@ -676,10 +639,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         }
 
         public final void actionPerformed(ActionEvent e) {
-            try {
-                performerImpl();
-            } finally {
-            }
+            performerImpl();
         }
 
         public void tableDataChanged() {
@@ -694,9 +654,8 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     private abstract class RowTabAction extends TabAction {
-
-        private TransferFileUnit u;
-        private int row;
+        private volatile TransferFileUnit unit;
+        private volatile int row;
 
         public RowTabAction(String nameKey, String actionCategoryKey) {
             super(nameKey, actionCategoryKey);
@@ -706,20 +665,20 @@ public final class TransferFilter extends javax.swing.JPanel {
             super(nameKey, accelerator, actionCategoryKey);
         }
 
-        public void unitChanged(int row, TransferFileUnit u) {
-            this.u = u;
+        public void unitChanged(int row, TransferFileUnit unit) {
+            this.unit = unit;
             this.row = row;
             unitChanged();
         }
 
         public final boolean isVisible() {
-            return (u != null) ? isVisible(u) : isVisible(row);
+            return (unit != null) ? isVisible(unit) : isVisible(row);
         }
 
-        private final void unitChanged() {
-            if (u != null) {
-                setEnabled(isEnabled(u));
-                setContextName(getContextName(u));
+        private void unitChanged() {
+            if (unit != null) {
+                setEnabled(isEnabled(unit));
+                setContextName(getContextName(unit));
             } else {
                 setEnabled(isEnabled(row));
                 setContextName(getContextName(row));
@@ -737,26 +696,26 @@ public final class TransferFilter extends javax.swing.JPanel {
         }
 
         public final void performerImpl() {
-            performerImpl(u);
+            performerImpl(unit);
         }
 
-        protected boolean isVisible(TransferFileUnit u) {
-            return u != null;
+        protected boolean isVisible(TransferFileUnit unit) {
+            return unit != null;
         }
 
         protected boolean isVisible(int row) {
             return false;
         }
 
-        public abstract void performerImpl(TransferFileUnit u);
+        public abstract void performerImpl(TransferFileUnit unit);
 
-        protected abstract boolean isEnabled(TransferFileUnit u);
+        protected abstract boolean isEnabled(TransferFileUnit unit);
 
         protected boolean isEnabled(int row) {
             return false;
         }
 
-        protected abstract String getContextName(TransferFileUnit u);
+        protected abstract String getContextName(TransferFileUnit unit);
 
         protected String getContextName(int row) {
             return getActionName();
@@ -764,86 +723,92 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     private class UncheckAllAction extends RowTabAction {
-        public UncheckAllAction () {
-            super ("FileConfirmationPane_UncheckAllAction", "Uncheck");//NOI18N
+        private static final long serialVersionUID = -1506415995282022116L;
+
+        public UncheckAllAction() {
+            super("FileConfirmationPane_UncheckAllAction", "Uncheck"); // NOI18N
         }
+
         public void performerImpl(TransferFileUnit notUsed) {
             final int row = getSelectedRow();
             Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
             for (TransferFileUnit tfu : allUnits) {
-                if (tfu != null && tfu.isMarked ()  && tfu.canBeMarked ()) {
-                    tfu.setMarked (false);
+                if (tfu.isMarked()  && tfu.canBeMarked()) {
+                    tfu.setMarked(false);
                 }
-            }
-            model.fireTableDataChanged ();
-            restoreSelectedRow(row);
-        }
-
-        @Override
-        protected boolean isEnabled(TransferFileUnit u) {
-            return true;
-        }
-
-        @Override
-        protected String getContextName(TransferFileUnit u) {
-            return getActionName ();
-        }
-    }
-
-    private  class CheckAllAction extends RowTabAction {
-        public CheckAllAction () {
-            super ("FileConfirmationPane_CheckAllAction", "Check");//NOI18N
-        }
-
-        @Override
-        public void performerImpl(TransferFileUnit notUsed) {
-            final int row = getSelectedRow();
-            Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
-            for (TransferFileUnit tfu : allUnits) {
-                if (tfu != null && !tfu.isMarked () &&  tfu.canBeMarked ()) {
-                    tfu.setMarked (true);
-                }
-            }
-            model.fireTableDataChanged ();
-            restoreSelectedRow(row);
-        }
-
-        @Override
-        protected boolean isEnabled(TransferFileUnit u) {
-            return true;
-        }
-
-        @Override
-        protected String getContextName(TransferFileUnit u) {
-            return getActionName ();
-        }
-    }
-
-    private class CheckAction extends RowTabAction {
-
-        public CheckAction() {
-            super("FileConfirmationPane_CheckAction", KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), null);
-        }
-
-        public void performerImpl(TransferFileUnit u) {
-            final int row = getSelectedRow();
-            if (u != null && u.canBeMarked()) {
-                u.setMarked(!u.isMarked());
             }
             model.fireTableDataChanged();
             restoreSelectedRow(row);
         }
 
-        protected boolean isEnabled(TransferFileUnit u) {
-            return u != null && u.canBeMarked();
+        @Override
+        protected boolean isEnabled(TransferFileUnit unit) {
+            return true;
         }
 
-        protected String getContextName(TransferFileUnit u) {
+        @Override
+        protected String getContextName(TransferFileUnit unit) {
+            return getActionName();
+        }
+    }
+
+    private  class CheckAllAction extends RowTabAction {
+        private static final long serialVersionUID = -2771565736665639L;
+
+        public CheckAllAction() {
+            super("FileConfirmationPane_CheckAllAction", "Check"); // NOI18N
+        }
+
+        @Override
+        public void performerImpl(TransferFileUnit notUsed) {
+            final int row = getSelectedRow();
+            Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
+            for (TransferFileUnit tfu : allUnits) {
+                if (!tfu.isMarked() &&  tfu.canBeMarked()) {
+                    tfu.setMarked(true);
+                }
+            }
+            model.fireTableDataChanged();
+            restoreSelectedRow(row);
+        }
+
+        @Override
+        protected boolean isEnabled(TransferFileUnit unit) {
+            return true;
+        }
+
+        @Override
+        protected String getContextName(TransferFileUnit unit) {
+            return getActionName();
+        }
+    }
+
+    private class CheckAction extends RowTabAction {
+        private static final long serialVersionUID = 3205317962231792782L;
+
+        public CheckAction() {
+            super("FileConfirmationPane_CheckAction", KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), null); // NOI18N
+        }
+
+        public void performerImpl(TransferFileUnit unit) {
+            final int row = getSelectedRow();
+            if (unit != null && unit.canBeMarked()) {
+                unit.setMarked(!unit.isMarked());
+            }
+            model.fireTableDataChanged();
+            restoreSelectedRow(row);
+        }
+
+        protected boolean isEnabled(TransferFileUnit unit) {
+            return unit.canBeMarked();
+        }
+
+        protected String getContextName(TransferFileUnit unit) {
             return getActionName();
         }
 
         @Override
-        protected boolean isVisible(TransferFileUnit u) {
+        protected boolean isVisible(TransferFileUnit unit) {
             return false;
         }
 

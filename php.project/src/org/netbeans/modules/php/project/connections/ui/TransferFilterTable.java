@@ -62,8 +62,7 @@ final class TransferFilterTable extends JTable {
     private static final long serialVersionUID = -1378410694823823371L;
     private static final int DARKER_COLOR_COMPONENT = 10;
 
-    private TransferFileTableModel model = null;
-    private TableCellRenderer enableRenderer = null;
+    private final TransferFileTableModel model;
     private int rowHeightFontBase = -1;
 
     TransferFilterTable(TransferFileTableModel model) {
@@ -82,12 +81,6 @@ final class TransferFilterTable extends JTable {
     public void addNotify() {
         super.addNotify();
         getParent().setBackground(getBackground());
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        enableRenderer = null;
     }
 
     @Override
