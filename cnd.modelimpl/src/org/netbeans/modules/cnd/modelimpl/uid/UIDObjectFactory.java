@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
@@ -92,7 +94,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return theFactory;
     }
 
-    public void writeUID(CsmUID anUID, DataOutput aStream) throws IOException {
+    public void writeUID(CsmUID<?> anUID, DataOutput aStream) throws IOException {
         if (!(anUID == null || anUID instanceof SelfPersistent)) {
             assert false : anUID + ", " + anUID.getObject();
         }
@@ -103,7 +105,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     public <T> CsmUID<T> readUID(DataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
-        assert out == null || out instanceof CsmUID;
+        assert out == null || out instanceof CsmUID<?>;
         return (CsmUID<T>) out;
     }
 
@@ -116,7 +118,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             int collSize = aCollection.size();
             aStream.writeInt(collSize);
 
-            for (CsmUID uid : aCollection) {
+            for (CsmUID<T> uid : aCollection) {
                 assert uid != null;
                 writeUID(uid, aStream);
             }
@@ -150,7 +152,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CharSequence key = anEntry.getKey();
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
-            CsmUID anUID = anEntry.getValue();
+            CsmUID<T> anUID = anEntry.getValue();
             assert anUID != null;
             writeUID(anUID, aStream);
         }
@@ -166,7 +168,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
         for (Map.Entry<FileImpl.OffsetSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
             anEntry.getKey().write(aStream);
-            CsmUID anUID = anEntry.getValue();
+            CsmUID<T> anUID = anEntry.getValue();
             assert anUID != null;
             writeUID(anUID, aStream);
         }
@@ -181,7 +183,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
         for (Map.Entry<FileImpl.NameSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
             anEntry.getKey().write(aStream);
-            CsmUID anUID = anEntry.getValue();
+            CsmUID<T> anUID = anEntry.getValue();
             assert anUID != null;
             writeUID(anUID, aStream);
         }
@@ -199,13 +201,13 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
             Object o = anEntry.getValue();
-            if (o instanceof CsmUID) {
+            if (o instanceof CsmUID<?>) {
                 aStream.writeInt(1);
-                writeUID((CsmUID) o, aStream);
+                writeUID((CsmUID<?>) o, aStream);
             } else {
-                CsmUID[] arr = (CsmUID[]) o;
+                CsmUID<?>[] arr = (CsmUID<?>[]) o;
                 aStream.writeInt(arr.length);
-                for (CsmUID uid : arr) {
+                for (CsmUID<?> uid : arr) {
                     assert uid != null;
                     writeUID(uid, aStream);
                 }
@@ -285,13 +287,13 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             assert key != null;
             int arrSize = aStream.readInt();
             if (arrSize == 1) {
-                CsmUID uid = readUID(aStream);
+                CsmUID<?> uid = readUID(aStream);
                 assert uid != null;
                 aMap.put(key, uid);
             } else {
-                CsmUID[] uids = new CsmUID[arrSize];
+                CsmUID<?>[] uids = new CsmUID<?>[arrSize];
                 for (int k = 0; k < arrSize; k++) {
-                    CsmUID uid = readUID(aStream);
+                    CsmUID<?> uid = readUID(aStream);
                     assert uid != null;
                     uids[k] = uid;
                 }
@@ -311,19 +313,19 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_FILE_UID;
         } else if (object instanceof TypedefUID) {
             aHandler = UID_TYPEDEF_UID;
-        } else if (object instanceof ClassifierUID) {
+        } else if (object instanceof ClassifierUID<?>) {
             aHandler = UID_CLASSIFIER_UID;
-        } else if (object instanceof UnnamedClassifierUID) {
+        } else if (object instanceof UnnamedClassifierUID<?>) {
             aHandler = UID_UNNAMED_CLASSIFIER_UID;
         } else if (object instanceof MacroUID) {
             aHandler = UID_MACRO_UID;
         } else if (object instanceof IncludeUID) {
             aHandler = UID_INCLUDE_UID;
-        } else if (object instanceof ParamListUID) {
+        } else if (object instanceof ParamListUID<?>) {
             aHandler = UID_PARAM_LIST_UID;
-        } else if (object instanceof UnnamedOffsetableDeclarationUID) {
+        } else if (object instanceof UnnamedOffsetableDeclarationUID<?>) {
             aHandler = UID_UNNAMED_OFFSETABLE_DECLARATION_UID;
-        } else if (object instanceof DeclarationUID) {
+        } else if (object instanceof DeclarationUID<?>) {
             aHandler = UID_DECLARATION_UID;
         } else if (object instanceof BuiltInUID) {
             aHandler = UID_BUILT_IN_UID;
@@ -367,11 +369,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
 
             case UID_CLASSIFIER_UID:
-                anUID = new ClassifierUID(aStream);
+                anUID = new ClassifierUID<CsmOffsetableDeclaration>(aStream);
                 break;
 
             case UID_UNNAMED_CLASSIFIER_UID:
-                anUID = new UnnamedClassifierUID(aStream);
+                anUID = new UnnamedClassifierUID<CsmOffsetableDeclaration>(aStream);
                 break;
 
             case UID_MACRO_UID:
@@ -386,15 +388,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
             // no reason to cache declaration and more detailed uids.
             case UID_PARAM_LIST_UID:
-                anUID = new ParamListUID(aStream);
+                anUID = new ParamListUID<CsmNamedElement>(aStream);
                 break;
 
             case UID_UNNAMED_OFFSETABLE_DECLARATION_UID:
-                anUID = new UnnamedOffsetableDeclarationUID(aStream);
+                anUID = new UnnamedOffsetableDeclarationUID<CsmOffsetableDeclaration>(aStream);
                 break;
 
             case UID_DECLARATION_UID:
-                anUID = new DeclarationUID(aStream);
+                anUID = new DeclarationUID<CsmOffsetableDeclaration>(aStream);
                 break;
 
             case UID_BUILT_IN_UID:
@@ -423,8 +425,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
         if (share) {
             assert anUID != null;
-            assert anUID instanceof CsmUID;
-            CsmUID shared = UIDManager.instance().getSharedUID((CsmUID) anUID);
+            assert anUID instanceof CsmUID<?>;
+            CsmUID<?> shared = UIDManager.instance().getSharedUID((CsmUID<?>) anUID);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             anUID = (SelfPersistent) shared;

@@ -56,11 +56,11 @@ package org.netbeans.modules.cnd.api.model;
  * CsmFunctionParameterList object is offsetable starting at "(" and ending at ")"
  * @author Vladimir Voskresensky
  */
-public interface CsmFunctionParameterList extends CsmParameterList<CsmFunctionParameterList, CsmParameter> {
+public interface CsmFunctionParameterList extends CsmParameterList<CsmParameter> {
 
     /**
      * returns collection of K&R named objects inside "(" and ")"
      * @return null if not K&R style
      */
-    CsmParameterList<CsmParameterList, CsmKnRName> getKernighanAndRitchieParameterList();
+    CsmParameterList<CsmKnRName> getKernighanAndRitchieParameterList();
 }
