@@ -706,6 +706,11 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(cmd);
+
+        if(wasNew) {
+            // a new issue was created -> refresh all queries
+            repository.refreshAllQueries();
+        }
     }
 
     public boolean refresh() {

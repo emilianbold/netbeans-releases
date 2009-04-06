@@ -472,6 +472,15 @@ public class BugzillaRepository extends Repository {
         }
     }
 
+    public void refreshAllQueries() {
+        Query[] qs = getQueries();
+        for (Query q : qs) {
+            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+            QueryController qc = ((BugzillaQuery) q).getController();
+            qc.onRefresh();
+        }
+    }
+
     private class IssuesCollector extends TaskDataCollector {
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
