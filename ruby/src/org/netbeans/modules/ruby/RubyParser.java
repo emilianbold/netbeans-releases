@@ -60,6 +60,10 @@ import org.jrubyparser.lexer.SyntaxException;
 import org.jrubyparser.parser.ParserConfiguration;
 import org.jrubyparser.parser.ParserResult;
 import org.jrubyparser.parser.Ruby18Parser;
+import org.jrubyparser.parser.Ruby19Parser;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -73,6 +77,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -533,7 +538,7 @@ public final class RubyParser extends Parser {
             //warnings.setFile(file);
 //            DefaultRubyParser parser = new DefaultRubyParser();
             //XXX: jruby-parser - need to check source level here
-            org.jrubyparser.parser.RubyParser parser = new Ruby18Parser();
+            org.jrubyparser.parser.RubyParser parser = getParserFor(context);
             parser.setWarnings(warnings);
 
             if (sanitizing == Sanitize.NONE) {
@@ -652,6 +657,58 @@ public final class RubyParser extends Parser {
             return sanitize(context, sanitizing);
         }
     }
+
+
+    /**
+     * Gets the parser for the given context. If the context is owned by 
+     * a project that uses Ruby 1.9 or JRuby with 1.9 turned on, this method 
+     * will return a 1.9 compatible parser; otherwise a 1.8 compatible parser. 
+     * 
+     * @param context
+     * @return
+     */
+    private static org.jrubyparser.parser.RubyParser getParserFor(Context context) {
+        // currently there is no way to specify a source level for the project 
+        // using a UI. instead the source version is determined by the platform the project
+        // uses, or in case JRuby that can support both 1.8 and 1.9 we check for the 
+        // specified compat level
+        FileObject fo = context.snapshot.getSource().getFileObject();
+        if (fo == null) {
+            return new Ruby18Parser();
+        }
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return new Ruby18Parser();
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(owner);
+        if (platform == null) {
+            return new Ruby18Parser();
+        }
+        if (platform.isJRuby()) {
+            return getParserForJRuby(owner);
+        }
+        String version = platform.getVersion();
+        if (version == null) {
+            return new Ruby18Parser();
+        }
+        if (version.startsWith("1.9")) { //NOI18N
+            return new Ruby19Parser();
+        }
+        return new Ruby18Parser();
+    }
+
+    private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
+        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+        if (evaluator != null) {
+            // specified in SharedRubyProjectProperties, but don't want add a dep to it.
+            String jvmArgs = evaluator.getProperty("jvm.args"); //NOI18N
+            if (jvmArgs != null) {
+                return jvmArgs.contains("jruby.compat.version=RUBY1_9") ? new Ruby19Parser() : new Ruby18Parser();
+            }
+        }
+        return new Ruby18Parser();
+    }
+
 
     private static class InputStreamReaderImpl extends InputStreamReader {
 
