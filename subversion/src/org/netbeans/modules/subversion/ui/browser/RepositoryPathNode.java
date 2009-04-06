@@ -317,12 +317,19 @@ public class RepositoryPathNode extends AbstractNode {
                                 removePreselectedFolders(listedEntries, false);
                             }
 
+                            // collection of nodes which are to be deleted, e.g. shown as folders but in fact they are files
+                            Collection<RepositoryPathEntry> deletedEntries = new ArrayList<RepositoryPathEntry>();
                             // keep nodes which were created in the browser
                             for(RepositoryPathEntry listedEntry : listedEntries) {
                                 boolean found = false;
                                 for(RepositoryPathEntry previousEntry : previousEntries) {
                                     if(previousEntry.getRepositoryFile().getName().equals(listedEntry.getRepositoryFile().getName())) {
-                                        found = true;
+                                        if (!listedEntry.getSvnNodeKind().equals(previousEntry.getSvnNodeKind())) {
+                                            // remove this false entry and add it as new (it is FILE, not a DIR)
+                                            deletedEntries.add(listedEntry);
+                                        } else {
+                                            found = true;
+                                        }
                                         break;
                                     }
                                 }
@@ -331,6 +338,8 @@ public class RepositoryPathNode extends AbstractNode {
                                     accepptedNewEntries.add(listedEntry);
                                 }
                             }
+                            // remove entries contained in deletedEntries
+                            removePreselectedFolders(deletedEntries, true);
                         }
                         // MUST BE SET TO NULL, otherwise deleted nodes might be reused in createNodes
                         previousNodes = null;
