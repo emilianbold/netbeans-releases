@@ -92,7 +92,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -345,13 +344,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
-            if (state != State.INITIAL) {
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+            // we do not need listener for non-document based buffer
+            // all state invalidations are made through:
+            //  - external file change event
+            //  - or "end file edit" action in deep reparsing utils
+            if (fileBuffer != null && !fileBuffer.isFileBased()) {
+                if (state != State.INITIAL) {
+                    if (reportParse || logState || TraceFlags.DEBUG) {
+                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                    }
+                    state = State.MODIFIED;
                 }
-                state = State.MODIFIED;
+                this.fileBuffer.addChangeListener(fileBufferChangeListener);
             }
-            this.fileBuffer.addChangeListener(fileBufferChangeListener);
         }
     }
 
@@ -371,7 +376,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         long time;
         synchronized (stateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
-                if (getAbsolutePath().toString().endsWith("newfile.h")) { // NOI18N
+                if (traceFile(getAbsolutePath())) {
                     System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), state, wasDummy); // NOI18N
                     int i = 0;
                     for (APTPreprocHandler aPTPreprocHandler : handlers) {
@@ -508,7 +513,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     private final Object changeStateLock = new Object();
 
-    public void markReparseNeeded(boolean invalidateCache) {
+    public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
             if (state != State.INITIAL) {
                 if (reportParse || logState || TraceFlags.DEBUG) {
@@ -525,7 +530,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public void markMoreParseNeeded() {
+    public final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
@@ -543,7 +548,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public int getErrorCount() {
+    public final int getErrorCount() {
         return errorCount;
     }
 
@@ -1385,6 +1390,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             declarationsLock.readLock().lock();
             anUid = declarations.get(key);
             sortedDeclarations = null;
+//            if (traceFile(this.getAbsolutePath())) {
+//                System.err.printf("%s found %s [%d-%d] in \n\t%s\n", (anUid == null) ? "NOT " : "", name, startOffset, endOffset, declarations);
+//            }
         } finally {
             declarationsLock.readLock().unlock();
         }
@@ -1966,5 +1974,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         public Iterator<T> iterator() {
             return Collections.<T>emptyList().iterator();
         }
+    }
+
+    public static boolean traceFile(CharSequence file) {
+        return true; // file.toString().endsWith("newfile.h") || file.toString().endsWith("shared.h"); // NOI18N
     }
 }

@@ -150,5 +150,31 @@ public class ExceptionsTest extends TestCase {
 
         assertCleanStackTrace(e);
     }
+
+    public void testAttachLocalizedMessageForWeirdException() {
+        class WeirdEx extends Exception {
+            public WeirdEx(String message) {
+                super(message);
+            }
+
+            @Override
+            public Throwable getCause() {
+                return null;
+            }
+        }
+
+        Exception e = new WeirdEx("Help");
+        String msg = "me please";
+
+        Exception expResult = e;
+        Exception result = Exceptions.attachMessage(e, msg);
+        assertEquals(expResult, result);
+
+        String fnd = Exceptions.findLocalizedMessage(e);
+
+        assertEquals("No localized msg found", null, fnd);
+
+        assertCleanStackTrace(e);
+    }
     
 }

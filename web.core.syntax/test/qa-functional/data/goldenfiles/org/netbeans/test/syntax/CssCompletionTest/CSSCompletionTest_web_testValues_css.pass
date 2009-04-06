@@ -73,3 +73,25 @@ border-top-color transparent
 color white
 color yellow
 End cursor position = 190
+[border-bottom-color : |, color red, border-bottom-color : red, 240]
+color aqua
+color black
+color blue
+color fuchsia
+color gray
+color green
+border-bottom-color inherit
+color lime
+color maroon
+color navy
+color olive
+color orange
+color purple
+color red
+color rgb
+color silver
+color teal
+border-bottom-color transparent
+color white
+color yellow
+End cursor position = 266
