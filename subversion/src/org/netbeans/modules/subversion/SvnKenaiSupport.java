@@ -75,7 +75,9 @@ public class SvnKenaiSupport {
             // we already queried the authentication for this url, but it didn't
             // seem to be accepted -> force a new login, the logged in user
             // might not be authorized for the kenai project.
-            kenaiSupport.forceLogin();
+            if(!kenaiSupport.forceLogin()) {
+                return null;
+            }
         }
         queriedUrls.add(url);
         return kenaiSupport.getPasswordAuthentication(url);

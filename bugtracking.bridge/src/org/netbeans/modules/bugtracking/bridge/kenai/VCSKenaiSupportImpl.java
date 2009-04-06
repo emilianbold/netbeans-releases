@@ -93,6 +93,6 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public boolean forceLogin() {
-        return !UIUtils.showLogin();
+        return UIUtils.showLogin();
     }
 }
