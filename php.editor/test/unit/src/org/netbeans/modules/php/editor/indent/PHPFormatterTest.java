@@ -95,6 +95,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/switch_stmt.php");
     }
 
+    public void testArrays1() throws Exception{
+        reformatFileContents("testfiles/formatting/arrays1.php");
+    }
+
     public void testSubsequentQuotes() throws Exception{
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
     }
