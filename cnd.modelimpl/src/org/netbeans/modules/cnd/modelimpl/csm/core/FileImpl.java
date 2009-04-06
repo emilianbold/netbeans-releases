@@ -371,7 +371,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         long time;
         synchronized (stateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
-                if (getAbsolutePath().toString().endsWith("newfile.h")) { // NOI18N
+                if (traceFile(getAbsolutePath())) {
                     System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), state, wasDummy); // NOI18N
                     int i = 0;
                     for (APTPreprocHandler aPTPreprocHandler : handlers) {
@@ -1966,5 +1966,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         public Iterator<T> iterator() {
             return Collections.<T>emptyList().iterator();
         }
+    }
+
+    public static boolean traceFile(CharSequence file) {
+        return true; // file.toString().endsWith("newfile.h");
     }
 }
