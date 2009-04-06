@@ -203,4 +203,13 @@ public abstract class ModuleInstaller {
         return null;
     }
 
+    /** Loads dependencies cached from previous run, if possible.
+     * @param cnb the code name base of the module to get dependencies for
+     * @return null or set of dependencies for the module
+     * @since 2.18
+     */
+    protected Set<Dependency> loadDependencies(String cnb) {
+        return null;
+    }
+
 }
