@@ -200,10 +200,8 @@ public class JavacParser extends Parser {
     private final ChangeListener cpInfoListener;
     //Cached javac impl
     private CompilationInfoImpl ciImpl;
-    //State of the parser
+    //State of the parser, used only for single source parser, otherwise don't care.
     private boolean initialized;
-    //Type of ClasspathInfo (explicit, implicit), is it still used?
-    private boolean explicitCpInfo;
     //Parser is invalidated, new parser impl need to be created
     private boolean invalid;
     //Last used snapshot
@@ -244,6 +242,7 @@ public class JavacParser extends Parser {
     }
     
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
+        boolean explicitCpInfo = false;
         if (!initialized) {
             final Source source = snapshot.getSource();
             final FileObject sourceFile = source.getFileObject();
@@ -265,9 +264,12 @@ public class JavacParser extends Parser {
             if (singleSource) {
                 if (oldInfo != null && weakCpListener != null) {
                     oldInfo.removeChangeListener(weakCpListener);
+                    this.weakCpListener = null;
                 }
-                this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
-                cpInfo.addChangeListener (this.weakCpListener);
+                if (!explicitCpInfo) {      //Don't listen on artificial classpahs
+                    this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
+                    cpInfo.addChangeListener (this.weakCpListener);                    
+                }
                 initialized = true;
             }
         }
@@ -304,7 +306,6 @@ public class JavacParser extends Parser {
                 if (task instanceof ClasspathInfoProvider &&
                     (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
                     cpInfo = _tmpInfo;
-                    explicitCpInfo = true;
                     ciImpl = new CompilationInfoImpl(cpInfo);
                 }
                 else {
