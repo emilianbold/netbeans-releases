@@ -125,9 +125,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static enum UploadFiles {
         MANUALLY ("LBL_UploadFilesManually", "TXT_UploadFilesManually"), // NOI18N
-        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"); // NOI18N
-        // disabled because of lack of time for NB 6.5
-        //ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
+        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"), // NOI18N
+        ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
 
         private final String label;
         private final String description;

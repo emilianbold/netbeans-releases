@@ -573,6 +573,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     private boolean saveWorker(String extraMessage) {
+
+        // Prevent project files corruption.
+        if (getState() != State.READY) {
+            return false;
+        }
+
         // First check all configurations aux objects if they have changed
         Configuration[] configurations = getConfs().getConfs();
         for (int i = 0; i < configurations.length; i++) {
