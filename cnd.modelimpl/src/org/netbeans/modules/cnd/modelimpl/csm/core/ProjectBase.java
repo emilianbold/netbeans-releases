@@ -398,7 +398,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         if (CsmKindUtilities.isClass(decl) || CsmKindUtilities.isEnum(decl)) {
 
-            ClassEnumBase cls = (ClassEnumBase) decl;
+            ClassEnumBase<?> cls = (ClassEnumBase<?>) decl;
             CharSequence qname = cls.getQualifiedName();
 
             synchronized (classifierReplaceLock) {
@@ -412,11 +412,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         return false;
                     }
                     // remove the old one if the new one is stronger
-                    if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
+                    if ((old instanceof ClassEnumBase<?>) && ((ClassEnumBase<?>) old).shouldBeReplaced(cls)) {
                         if (TraceFlags.TRACE_REGISTRATION) {
                             System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl)); //NOI18N
                         } 
-                        ((ClassEnumBase) old).dispose();
+                        ((ClassEnumBase<?>) old).dispose();
                     }
                 }
                 getDeclarationsSorage().putDeclaration(decl);
@@ -926,7 +926,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             boolean remove = true;
             Set<CsmFile> parents = getGraphStorage().getParentFiles(file);
             for (CsmFile parent : parents) {
-                if (!candidates.contains(parent)) {
+                if (!candidates.contains((FileImpl)parent)) {
                     remove = false;
                     break;
                 }
