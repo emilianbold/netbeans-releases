@@ -691,14 +691,12 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * ignores it.
      */
     private static AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info) {
-        String n, t, v;
-        int count;
-
         if (info.charAt(0) == '{') { // we've got an anonymous class/struct/union...
+            int count = 0;
             try {
                 count = Integer.parseInt((String) map.get("<anon-count>")); // NOI18N
             } catch (NumberFormatException nfe) {
-                count = 0;
+                // do nothing
             }
             info = info.substring(1, info.length() - 1);
             for (int i = 1; i <= count; i++) {
@@ -715,45 +713,46 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 parent.addField(completeFieldDefinition(parent, m, info.substring(start).trim()));
             }
         } else {
+            String name, type, value;
             int pos = info.indexOf('=');
             if (pos != -1) {
                 if (info.charAt(0) == '<') {
-                    n = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
-                    t = info.substring(1, pos - 2).trim();
-                    v = info.substring(pos + 1).trim();
-                    if (t.length() == 0) {
+                    name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
+                    type = info.substring(1, pos - 2).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (type.length() == 0) {
                         // I think this is handling a gdb bug. Its hard to say because the exact response
                         // from gdb isn't well documented. In any case, this is triggered when the value
                         // of a superclass is an empty string (<> = {...}). Since we've parsed the super
                         // class already, I'm assuming single inheritance and taking the super from the map.
-                        t = (String) map.get("<super1>"); // NOI18N
+                        type = (String) map.get("<super1>"); // NOI18N
                     }
-                    if (n.startsWith("_vptr")) { // NOI18N
+                    if (name.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
                 } else {
-                    n = info.substring(0, pos - 1).trim();
-                    v = info.substring(pos + 1).trim();
-                    if (n.startsWith("_vptr")) { // NOI18N
+                    name = info.substring(0, pos - 1).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (name.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
-                    Object o = map.get(n);
+                    Object o = map.get(name);
                     if (o instanceof String) {
-                        t = o.toString();
+                        type = o.toString();
                     } else if (o instanceof Map) {
-                        t = (String) ((Map) o).get("<name>"); // NOI18N
-			if (t == null) {
+                        type = (String) ((Map) o).get("<name>"); // NOI18N
+			if (type == null) {
 			    log.warning("GdbDebugger.completeFieldDefinition: Missing <name> from map");
 			    return null; // FIXME (See IZ 157133)
 			}
-                    } else if (isNumber(v)) {
-                        t = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else if (isNumber(value)) {
+                        type = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {
-                        log.warning("Cannot determine field type for " + n); // NOI18N
+                        log.warning("Cannot determine field type for " + name); // NOI18N
                         return null;
                     }
                 }
-                return new AbstractField(parent, n, t, v);
+                return new AbstractField(parent, name, type, value);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim()); // NOI18N
             }
@@ -1078,17 +1077,22 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         private AbstractVariable parent;
 
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
+            assert name != null : "AbstractField with null name" ;// NOI18N
             if (name.startsWith("static ")) { // NOI18N
                 this.name = name.substring(7);
             } else {
                 this.name = name;
             }
-            int lcurly = type.indexOf('{');
-            if (lcurly == -1) {
-                this.type = type;
+            if (type == null) {
+                this.type = "";
             } else {
-                int rcurly = type.indexOf('}', lcurly);
-                this.type = type.substring(0, lcurly).trim() + type.substring(rcurly + 1);
+                int lcurly = type.indexOf('{');
+                if (lcurly == -1) {
+                    this.type = type;
+                } else {
+                    int rcurly = type.indexOf('}', lcurly);
+                    this.type = type.substring(0, lcurly).trim() + type.substring(rcurly + 1);
+                }
             }
             this.parent = parent;
             fields = new Field[0];
