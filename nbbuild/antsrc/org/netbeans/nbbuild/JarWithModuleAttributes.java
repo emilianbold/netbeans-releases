@@ -101,6 +101,7 @@ public class JarWithModuleAttributes extends Jar {
         try {
             // Check to see if OpenIDE-Module-Implementation-Version is already defined.
             String implVers;
+            String specVer;
             String ownCnb;
             Manifest staticManifest;
             InputStream is = new FileInputStream(manifestFile);
@@ -109,6 +110,7 @@ public class JarWithModuleAttributes extends Jar {
                 staticManifest = new Manifest(new InputStreamReader(is, "UTF-8"));
                 Manifest.Section mainSection = staticManifest.getMainSection();
                 implVers = mainSection.getAttributeValue("OpenIDE-Module-Implementation-Version");
+                specVer = mainSection.getAttributeValue("OpenIDE-Module-Specification-Version");
                 String myself = mainSection.getAttributeValue("OpenIDE-Module");
                 if (myself == null) {
                     myself = mainSection.getAttributeValue("Bundle-SymbolicName");
@@ -300,6 +302,10 @@ public class JarWithModuleAttributes extends Jar {
                     }
                 }
             }
+            if (isOSGiMode && added.getMainSection().getAttribute("Bundle-Version") == null && specVer != null) {
+                added.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", specVer));
+            }
+
             boolean old = false; // #110661
             String destDir = getProject().getProperty("netbeans.dest.dir");
             if (destDir != null) {
