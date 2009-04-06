@@ -46,37 +46,41 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Radek Matous
  */
 public abstract class TransferFileTableModel extends AbstractTableModel {
 
-    private List<TransferFileUnit> fileData = Collections.emptyList();
-    private List<TransferFileTableChangeListener> listeners =
-            new ArrayList<TransferFileTableChangeListener>();
-    private String filter = "";//NOI18N
+    private final List<TransferFileUnit> fileData = new ArrayList<TransferFileUnit>();
+    private final List<TransferFileTableChangeListener> listeners = new CopyOnWriteArrayList<TransferFileTableChangeListener>();
+    volatile String filter = ""; // NOI18N
 
     public static enum Type {
-
-        UPLOAD, DOWNLOAD
+        UPLOAD,
+        DOWNLOAD
     }
 
-    /** Creates a new instance of CategoryTableModel */
     public TransferFileTableModel() {
     }
 
+    protected abstract Type getType();
+
+    protected abstract String getTabTitle();
+
+    protected abstract String getFirstColumnName();
+
     List<TransferFileUnit> getData() {
-        return fileData;
+        return new ArrayList<TransferFileUnit>(fileData);
     }
 
     static Map<Integer, Boolean> captureState(List<TransferFileUnit> files) {
-        Map<Integer, Boolean> retval = new HashMap<Integer, Boolean>();
+        Map<Integer, Boolean> retval = new HashMap<Integer, Boolean>(files.size());
         for (TransferFileUnit unit : files) {
             retval.put(unit.getId(), unit.isMarked());
         }
@@ -102,29 +106,49 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return true;
     }
 
-    public abstract Type getType();
+    public Object getValueAt(int row, int col) {
+        Object res = null;
 
-    public abstract Object getValueAt(int row, int col);
+        TransferFileUnit u = getUnitAtRow(row);
+        switch(col) {
+            case 0:
+                res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+                break;
+            case 1:
+                res = u.getDisplayName();
+                break;
+            default:
+                assert false : "Unknown column index: " + col;
+        }
+        return res;
+    }
+
+    public int getColumnCount() {
+        return 2;
+    }
 
     @Override
-    public abstract Class getColumnClass(int c);
+    public Class getColumnClass(int c) {
+        Class<?> res = null;
 
-    public abstract boolean isSortAllowed(Object columnIdentifier);
+        switch(c) {
+            case 0:
+                res = Boolean.class;
+                break;
+            case 1:
+                res = String.class;
+                break;
+        }
+
+        return res;
+    }
+
+    public boolean isSortAllowed(Object columnIdentifier) {
+        return true;
+    }
 
     public String getTabTooltipText() {
         return null;
-    }
-
-    public abstract String getTabTitle();
-
-    public final String getDecoratedTabTitle() {
-        int count = getItemCount();
-        int rawCount = getRawItemCount();
-        String countInfo = (count == rawCount) ? String.valueOf(rawCount) :
-            NbBundle.getMessage(TransferFileTableModel.class, "FileConfirmationUI_Tabs_CountFormat", count, rawCount);
-        String newName = NbBundle.getMessage(TransferFileTableModel.class,
-                "FileConfirmationUI_Tabs_NameFormat", getTabTitle(), countInfo);
-        return (rawCount == 0) ? getTabTitle() : newName;
     }
 
     public String getToolTipText(int row, int col) {
@@ -137,60 +161,57 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return retval;
     }
 
+    private String getTooltipForCheckBox(int row) {
+        return NbBundle.getMessage(TransferFileTableModel.class, "FileConfirmation_TooltipCheckBox", (String) getValueAt(row, 1));
+    }
+
     public int getMinWidth(JTableHeader header, int col) {
         return header.getHeaderRect(col).width;
     }
 
-    public abstract int getPreferredWidth(JTableHeader header, int col);
+    public int getPreferredWidth(JTableHeader header, int col) {
+        if (col == 1) {
+            return getMinWidth(header, col) * 4;
+        }
+        return getMinWidth(header, col);
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        switch (column) {
+            case 0:
+                return getFirstColumnName();
+            case 1:
+                return NbBundle.getMessage(TransferFileTableModel.class, "FileConfirmationTableModel_Columns_RelativePath");
+            default:
+                assert false : "Unknown column index: " + column;
+        }
+        return super.getColumnName(column);
+    }
 
     public final void sort(final Object columnIdentifier, final boolean sortAscending) {
         if (getColumnName(0).equals(columnIdentifier)) {
-            Collections.sort(fileData, new Comparator<TransferFileUnit>() {
-                public int compare(TransferFileUnit o1, TransferFileUnit o2) {
-                    TransferFileUnit unit1 = sortAscending ? o1 : o2;
-                    TransferFileUnit unit2 = sortAscending ? o2 : o1;
-                    if (unit1.isMarked() && unit2.isMarked()) {
-                        return TransferFileUnit.compare(unit1, unit2);
-                    } else if (unit1.isMarked()) {
-                        return -1;
-                    } else if (unit2.isMarked()) {
-                        return 1;
-                    }
-                    return TransferFileUnit.compare(unit1, unit2);
-                }
-            });
+            Collections.sort(fileData, new MarkedComparator(sortAscending));
         } else if (getColumnName(1).equals(columnIdentifier)) {
-            Collections.sort(fileData, new Comparator<TransferFileUnit>() {
-                public int compare(TransferFileUnit o1, TransferFileUnit o2) {
-                    TransferFileUnit unit1 = sortAscending ? o1 : o2;
-                    TransferFileUnit unit2 = sortAscending ? o2 : o1;
-                    return TransferFileUnit.compare(unit1, unit2);
-                }
-            });
+            Collections.sort(fileData, new PathComparator(sortAscending));
         } else {
             assert false : "Unknown column identifier: " + columnIdentifier;
         }
         fireTableDataChanged();
     }
 
-    private String getTooltipForCheckBox(int row) {
-        String key0 = "FileConfirmation_TooltipCheckBox";
-        return (key0 != null) ? NbBundle.getMessage(TransferFileTableModel.class, key0, (String) getValueAt(row, 1)) : null;
-    }
-
     protected final void setData(List<TransferFileUnit> files) {
         assert files != null;
-        fileData = new ArrayList<TransferFileUnit>(files);
+        fileData.clear();
+        fileData.addAll(files);
         fireTableDataChanged();
     }
 
     public void setFilter(final String filter, final Runnable runAfterwards) {
+        assert filter != null;
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
-                synchronized (TransferFileTableModel.class) {
-                    TransferFileTableModel.this.filter = filter.toLowerCase();
-                }
+                TransferFileTableModel.this.filter = filter.toLowerCase();
                 fireFilterChange();
                 if (runAfterwards != null) {
                     runAfterwards.run();
@@ -200,9 +221,8 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     }
 
     public String getFilter() {
-        synchronized (TransferFileTableModel.class) {
-            return this.filter == null ? "" : this.filter;
-        }
+        assert filter != null;
+        return filter;
     }
 
     public void addUpdateUnitListener(TransferFileTableChangeListener l) {
@@ -214,41 +234,30 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     }
 
     void fireUpdataUnitChange() {
-        assert listeners != null : "UpdateUnitListener found.";
         for (TransferFileTableChangeListener l : listeners) {
             l.updateUnitsChanged();
         }
     }
 
     void fireButtonsChange() {
-        assert listeners != null : "UpdateUnitListener found.";
         for (TransferFileTableChangeListener l : listeners) {
             l.buttonsChanged();
         }
     }
 
     void fireFilterChange() {
-        assert listeners != null : "UpdateUnitListener found.";
         for (TransferFileTableChangeListener l : listeners) {
             l.filterChanged();
         }
     }
 
-    List<TransferFileUnit> getVisibleFileUnits() {
-        return getVisibleFileUnits(getData(), getFilter(), true);
-    }
-
-    private List<TransferFileUnit> getVisibleFileUnits(List<TransferFileUnit> fileUnits, String filter, boolean filterAlsoStandardModules) {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        for (TransferFileUnit file : fileUnits) {
-            if (filterAlsoStandardModules) {
-                if (file.isVisible(filter)) {
-                    retval.add(file);
-                }
-            } else {
-                if (file.isVisible(filter)) {
-                    retval.add(file);
-                }
+    public List<TransferFileUnit> getVisibleFileUnits() {
+        List<TransferFileUnit> dataCopy = getData();
+        String filterCopy = filter;
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(dataCopy.size());
+        for (TransferFileUnit file : dataCopy) {
+            if (file.isVisible(filterCopy)) {
+                retval.add(file);
             }
         }
         return retval;
@@ -262,52 +271,72 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return fileData.size();
     }
 
-    public int getItemCount() {
-        return getVisibleFileUnits().size();
-    }
-
-    public List<TransferFileUnit> getMarkedFileUnits() {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        List<TransferFileUnit> visibleFileUnits = getMarkedUnits();
-        for (TransferFileUnit transferFileUnit : visibleFileUnits) {
-            if (transferFileUnit.getTransferFile().isFile()) {
-                retval.add(transferFileUnit);
-            }
-        }
-        return retval;
-    }
-
-    public List<TransferFileUnit> getFilteredUnits() {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        List<TransferFileUnit> allUnits = getData();
-        for (TransferFileUnit fUnit : allUnits) {
-            if (fUnit.isMarked()) {
-                if (fUnit.getTransferFile().isFile()) {
-                    retval.add(fUnit);
-                }
-            }
-        }
-        return retval;
-    }
-
     public List<TransferFileUnit> getMarkedUnits() {
-        List<TransferFileUnit> markedUnits = new ArrayList<TransferFileUnit>();
-        List<TransferFileUnit> units = getData();
-
-        for (TransferFileUnit u : units) {
-            if (u.isMarked()) {
-                markedUnits.add(u);
+        List<TransferFileUnit> allUnits = getData();
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(allUnits.size());
+        for (TransferFileUnit fUnit : allUnits) {
+            if (fUnit.getTransferFile().isFile() && fUnit.isMarked()) {
+                retval.add(fUnit);
             }
         }
-        return markedUnits;
+        return retval;
     }
 
     public TransferFileUnit getUnitAtRow(int row) {
-        return getVisibleFileUnits().size() <= row ? null : getVisibleFileUnits().get(row);
+        assert getVisibleFileUnits().size() > row : String.format("Unknown row index [%d, size %d]", row, getVisibleFileUnits().size());
+        return getVisibleFileUnits().get(row);
     }
 
     @Override
     public boolean isCellEditable(int row, int col) {
         return col == 0 && Boolean.class.equals(getColumnClass(col));
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        assert columnIndex == 0 : "Only first column is editable.";
+        assert aValue instanceof Boolean : aValue + " must be instance of Boolean.";
+        TransferFileUnit u = getUnitAtRow(rowIndex);
+        if ((Boolean) aValue != u.isMarked()) {
+            u.setMarked(!u.isMarked());
+            fireUpdataUnitChange();
+            fireButtonsChange();
+            // TODO fire data changed event if sorting on checkboxes
+        }
+    }
+
+    private static class MarkedComparator implements Comparator<TransferFileUnit> {
+        private final boolean sortAscending;
+
+        public MarkedComparator(boolean sortAscending) {
+            this.sortAscending = sortAscending;
+        }
+
+        public int compare(TransferFileUnit o1, TransferFileUnit o2) {
+            TransferFileUnit unit1 = sortAscending ? o1 : o2;
+            TransferFileUnit unit2 = sortAscending ? o2 : o1;
+            if (unit1.isMarked() && unit2.isMarked()) {
+                return TransferFileUnit.compare(unit1, unit2);
+            } else if (unit1.isMarked()) {
+                return -1;
+            } else if (unit2.isMarked()) {
+                return 1;
+            }
+            return TransferFileUnit.compare(unit1, unit2);
+        }
+    }
+
+    private static class PathComparator implements Comparator<TransferFileUnit> {
+        private final boolean sortAscending;
+
+        public PathComparator(boolean sortAscending) {
+            this.sortAscending = sortAscending;
+        }
+
+        public int compare(TransferFileUnit o1, TransferFileUnit o2) {
+            TransferFileUnit unit1 = sortAscending ? o1 : o2;
+            TransferFileUnit unit2 = sortAscending ? o2 : o1;
+            return TransferFileUnit.compare(unit1, unit2);
+        }
     }
 }

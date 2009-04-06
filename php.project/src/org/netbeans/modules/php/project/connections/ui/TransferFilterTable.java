@@ -205,7 +205,7 @@ final class TransferFilterTable extends JTable {
                             }
                         } finally {
                             if (u != null) {
-                                List<TransferFileUnit> units = model.getVisibleFileUnits();
+                                List<TransferFileUnit> units = model.getMarkedUnits();
                                 int row = (u != null) ? units.indexOf (u) : -1;
                                 if (row > -1) {
                                     TransferFileUnit u2 = model.getUnitAtRow (row);

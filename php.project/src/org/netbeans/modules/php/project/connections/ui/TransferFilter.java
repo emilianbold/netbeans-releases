@@ -153,7 +153,7 @@ public final class TransferFilter extends javax.swing.JPanel {
                 null,
                 null);
         if (DialogDisplayer.getDefault().notify(descriptor) == okButton) {
-            return unwrapFileUnits(model.getFilteredUnits());
+            return unwrapFileUnits(model.getMarkedUnits());
         }
         return Collections.<TransferFile>emptySet();
     }
@@ -280,13 +280,13 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     public void refreshState() {
-        final Collection<TransferFileUnit> units = model.getMarkedFileUnits();
+        int units = model.getRowCount();
         popupActionsSupport.tableDataChanged();
 
-        if (units.size() == 0) {
+        if (units == 0) {
             cleanSelectionInfo();
         } else {
-            setSelectionInfo(units.size());
+            setSelectionInfo(units);
         }
     }
 
