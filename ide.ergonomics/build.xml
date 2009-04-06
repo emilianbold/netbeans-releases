@@ -210,11 +210,11 @@
          <replace dir="${proxydir}">
              <replacefilter
                 token="&lt;body&gt;"
-                value="&lt;body &gt;&lt;em&gt;This feature is not yet enabled.&lt;/em&gt;&lt;p&gt;"
+                value="&lt;body &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
              />
              <replacefilter
                 token="&lt;BODY&gt;"
-                value="&lt;BODY &gt;&lt;em&gt;This feature is not yet enabled.&lt;/em&gt;&lt;p&gt;"
+                value="&lt;BODY &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
              />
              <include name="*.html"/>
              <exclude name="*_*"/>
