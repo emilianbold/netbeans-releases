@@ -379,5 +379,11 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="RegistersTopComponent.wstcgrp" url="RegistersTopComponentWstcgrp.xml"/>
+                <file name="MemoryViewTopComponent.wstcgrp" url="MemoryViewTopComponentWstcgrp.xml"/>
+            </folder>
+        </folder>
     </folder>
 </filesystem>
