@@ -1098,10 +1098,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final void invalidatePreprocState(File file) {
-        Object stateLock = getFileContainer().getLock(file);
+        FileContainer fileContainer = getFileContainer();
+        Object stateLock = fileContainer.getLock(file);
         synchronized (stateLock) {
-            getFileContainer().invalidatePreprocState(file);
+            fileContainer.invalidatePreprocState(file);
         }
+        fileContainer.put();
     }
 
     /**
