@@ -63,5 +63,12 @@ public abstract class VCSKenaiSupport {
      * @return
      */
     public abstract boolean isKenai(String url);
+
+    /**
+     * Force login
+     *
+     * @return
+     */
+    public abstract boolean forceLogin();
     
 }

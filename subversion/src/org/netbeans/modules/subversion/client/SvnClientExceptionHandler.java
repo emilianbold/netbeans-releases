@@ -71,6 +71,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
@@ -173,8 +174,8 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    public boolean handleKenaiAuthorisation(VCSKenaiSupport kenaiSupport, String url) {
-        PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(url);
+    public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
+        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         if(pa == null) {
             return false;
         }
@@ -191,9 +192,10 @@ public class SvnClientExceptionHandler {
     private boolean handleRepositoryConnectError() {                
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
 
-        VCSKenaiSupport kenaiSupport = Subversion.getInstance().getKenaiSupport();
-        if(kenaiSupport != null && kenaiSupport.isKenai(url.toString())) {
-            return handleKenaiAuthorisation(kenaiSupport, url.toString());
+
+        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
+        if(support.isKenai(url.toString())) {
+            return handleKenaiAuthorisation(support, url.toString());
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);

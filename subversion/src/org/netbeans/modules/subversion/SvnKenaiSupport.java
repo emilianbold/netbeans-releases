@@ -37,62 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.bridge.kenai;
+package org.netbeans.modules.subversion;
 
 import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
-public class VCSKenaiSupportImpl extends VCSKenaiSupport {
+public class SvnKenaiSupport {
 
-    private final Set<String> kenaiUrls = new HashSet<String>();
+    private static SvnKenaiSupport instance;
+    private VCSKenaiSupport kenaiSupport = null;
+    private Set<String> queriedUrls = new HashSet<String>(5);
 
-    @Override
+    private SvnKenaiSupport() {
+        kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    }
+
+    public static SvnKenaiSupport getInstance() {
+        if(instance == null) {
+            instance = new SvnKenaiSupport();
+        }
+        return instance;
+    }
+
     public boolean isKenai(String url) {
-        synchronized(kenaiUrls) {
-            if(kenaiUrls.contains(url)) {
-                return true;
-            }
-        }
-        boolean ret = false;
-        try {
-            ret = KenaiProject.forRepository(url) != null;
-        } catch (KenaiException ex) { }
-
-        if(ret) {
-            synchronized(kenaiUrls) {
-                kenaiUrls.add(url);
-            }
-        }
-        return ret;
-    }
-    
-    @Override
-    public PasswordAuthentication getPasswordAuthentication(String url) {
-        PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-        if(a != null) {
-            return a;
-        } else {
-            if(!UIUtils.showLogin()) {
-                return null;
-            }
-        }
-        return Kenai.getDefault().getPasswordAuthentication();
+        return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
-    @Override
-    public boolean forceLogin() {
-        return !UIUtils.showLogin();
+    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
+        if(forceRelogin && queriedUrls.contains(url)) {
+            // we already queried the authentication for this url, but it didn't
+            // seem to be accepted -> force a new login, the logged in user
+            // might not be authorized for the kenai project.
+            kenaiSupport.forceLogin();
+        }
+        queriedUrls.add(url);
+        return kenaiSupport.getPasswordAuthentication(url);
     }
+
 }
