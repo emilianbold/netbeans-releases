@@ -200,7 +200,7 @@ final class TransferFilterTable extends JTable {
                             }
                             Object id = getColumnModel ().getColumn (column).getIdentifier ();
                             if (model.isSortAllowed (id)) {
-                                sortingRenderer.setSorting (id);
+                                sortingRenderer.setSorting (column);
                                 repaint ();
                             }
                         } finally {
@@ -255,5 +255,7 @@ final class TransferFilterTable extends JTable {
                 sortingRenderer.setDefaultSorting ();
             }
         }
-    }                
+    }
+
+
 }

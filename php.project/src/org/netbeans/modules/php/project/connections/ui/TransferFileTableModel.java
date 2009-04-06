@@ -128,9 +128,8 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Class getColumnClass(int c) {
+    public Class<?> getColumnClass(int c) {
         Class<?> res = null;
-
         switch(c) {
             case 0:
                 res = Boolean.class;
@@ -139,7 +138,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
                 res = String.class;
                 break;
         }
-
         return res;
     }
 
@@ -189,13 +187,13 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return super.getColumnName(column);
     }
 
-    public final void sort(final Object columnIdentifier, final boolean sortAscending) {
-        if (getColumnName(0).equals(columnIdentifier)) {
+    public final void sort(final int columnIndex, final boolean sortAscending) {
+        if (columnIndex == 0) {
             Collections.sort(fileData, new MarkedComparator(sortAscending));
-        } else if (getColumnName(1).equals(columnIdentifier)) {
+        } else if (columnIndex == 1) {
             Collections.sort(fileData, new PathComparator(sortAscending));
         } else {
-            assert false : "Unknown column identifier: " + columnIdentifier;
+            assert false : "Unknown column index: " + columnIndex;
         }
         fireTableDataChanged();
     }
@@ -301,7 +299,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
             u.setMarked(!u.isMarked());
             fireUpdataUnitChange();
             fireButtonsChange();
-            // TODO fire data changed event if sorting on checkboxes
         }
     }
 

@@ -51,23 +51,25 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
 /**
- *
  * @author Radek Matous
  */
 public class SortColumnHeaderRenderer implements TableCellRenderer {
+    private static final String SORTING_COLUMN_INDEX = "SortingColumnIndex";
+    private static final String SORTING_ASCENDING = "SortingAscending";
+    private static ImageIcon SORT_DESC_ICON;
+    private static ImageIcon SORT_ASC_ICON;
+
     private TransferFileTableModel model;
     private TableCellRenderer textRenderer;
-    private String sortColumn;
-    private ImageIcon sortDescIcon;
-    private static ImageIcon sortAscIcon;    
+    private int sortColumnIndex;
     private boolean sortAscending;
     
     public SortColumnHeaderRenderer (TransferFileTableModel model, TableCellRenderer textRenderer) {
         this.model = model;
         this.textRenderer = textRenderer;
-        sortColumn = getPreferences().get("SortingColumn", getDefaultColumnSelected());// NOI18N
-        sortAscending = getPreferences().getBoolean("SortAscending", true);// NOI18N
-        this.model.sort (sortColumn, sortAscending);
+        sortColumnIndex = getPreferences().getInt(SORTING_COLUMN_INDEX, getDefaultSortingColumn());
+        sortAscending = getPreferences().getBoolean(SORTING_ASCENDING, true);
+        this.model.sort (sortColumnIndex, sortAscending);
     }
         
     public Component getTableCellRendererComponent (JTable table, Object value,
@@ -77,7 +79,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer {
         Component text = textRenderer.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
         if( text instanceof JLabel ) {
             JLabel label = (JLabel)text;
-            if (table.getColumnModel ().getColumn (column).getIdentifier ().equals (sortColumn)) {
+            if (column == sortColumnIndex) {
                 label.setIcon ( sortAscending ? getSortAscIcon () : getSortDescIcon ());
                 label.setHorizontalTextPosition ( SwingConstants.LEFT );
             } else {
@@ -88,39 +90,37 @@ public class SortColumnHeaderRenderer implements TableCellRenderer {
     }
     
     public void setDefaultSorting () {
-        setSorting(getDefaultColumnSelected());
+        setSorting(getDefaultSortingColumn());
     }
     
-    private String getDefaultColumnSelected() {
-        String retval = null;
-        retval = this.model.getColumnName(1); // category
-        return retval;
+    private int getDefaultSortingColumn() {
+        return 1;
     }
         
-    public void setSorting (Object column) {
-        if (!column.equals (sortColumn)) {
-            sortColumn = (String)column;
+    public void setSorting (int columnIndex) {
+        if (columnIndex != sortColumnIndex) {
+            sortColumnIndex = columnIndex;
             sortAscending = true;
         } else {
             sortAscending = !sortAscending;
         }
-        getPreferences().put("SortingColumn", sortColumn);// NOI18N
-        getPreferences().putBoolean("SortAscending", sortAscending);// NOI18N
-        this.model.sort (column, sortAscending);
+        getPreferences().putInt(SORTING_COLUMN_INDEX, sortColumnIndex);
+        getPreferences().putBoolean(SORTING_ASCENDING, sortAscending);
+        model.sort (columnIndex, sortAscending);
     }
         
     private ImageIcon getSortAscIcon () {
-        if (sortAscIcon == null) {
-            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif", false); // NOI18N
+        if (SORT_ASC_ICON == null) {
+            SORT_ASC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif", false); // NOI18N
         }
-        return sortAscIcon;
+        return SORT_ASC_ICON;
     }
     
     private ImageIcon getSortDescIcon () {
-        if (sortDescIcon == null) {
-            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif", false); // NOI18N
+        if (SORT_DESC_ICON == null) {
+            SORT_DESC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif", false); // NOI18N
         }
-        return sortDescIcon;
+        return SORT_DESC_ICON;
     }
         
     private static Preferences getPreferences() {
