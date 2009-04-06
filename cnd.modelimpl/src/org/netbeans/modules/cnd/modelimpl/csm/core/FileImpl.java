@@ -344,13 +344,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
-            if (state != State.INITIAL) {
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+            // we do not need listener for non-document based buffer
+            // all state invalidations are made through:
+            //  - external file change event
+            //  - or "end file edit" action in deep reparsing utils
+            if (fileBuffer != null && !fileBuffer.isFileBased()) {
+                if (state != State.INITIAL) {
+                    if (reportParse || logState || TraceFlags.DEBUG) {
+                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                    }
+                    state = State.MODIFIED;
                 }
-                state = State.MODIFIED;
+                this.fileBuffer.addChangeListener(fileBufferChangeListener);
             }
-            this.fileBuffer.addChangeListener(fileBufferChangeListener);
         }
     }
 
