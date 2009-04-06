@@ -55,8 +55,8 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -355,6 +355,15 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     /** @see "issue #36033" */
+    @RandomlyFails // assertNotNull failed in NB-Core-Build #2418:
+                   // java.lang.IllegalStateException: WARNING(please REPORT):  Externally created file: <workdir>/build/classes/p/Y.class  (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.printWarning(FileObjectFactory.java:243)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.checkCacheState(FileObjectFactory.java:226)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.issueIfExist(FileObjectFactory.java:328)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.getFileObject(FileObjectFactory.java:193)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.getValidFileObject(FileObjectFactory.java:630)
+                   //         at org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj.getFileObject(FolderObj.java:110)
+                   //         at org.netbeans.modules.java.j2seproject.BuildImplTest.testCompileWithDependencyAnalysis(BuildImplTest.java:376)
     public void testCompileWithDependencyAnalysis() throws Exception {
         AntProjectHelper aph = setupProject(0, false);
         FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
@@ -520,7 +529,7 @@ public final class BuildImplTest extends NbTestCase {
         AntProjectHelper aph = setupProject(0, false);
         TestFileUtils.writeFile(aph.getProjectDirectory(), "src/pkg1/A.java", "package pkg1; public class A {}");
         assertBuildSuccess(ActionUtils.runTarget(aph.getProjectDirectory().getFileObject("build.xml"), new String[] {"javadoc"}, getProperties()));
-        String text = TestFileUtils.readFile(aph.resolveFileObject("dist/javadoc/allclasses-frame.html"));
+        String text = aph.resolveFileObject("dist/javadoc/allclasses-frame.html").asText();
         assertTrue(text.matches("(?s).*pkg1/A\\.html.*"));
         assertFalse(text.matches("(?s).*pkg1/A\\.html.*pkg1/A\\.html.*"));
     }
