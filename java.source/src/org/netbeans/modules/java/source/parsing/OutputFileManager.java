@@ -57,6 +57,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -206,11 +207,18 @@ public class OutputFileManager extends CachingFileManager {
             return -1;
         }
         Iterator<ClassPath.Entry> it = entries.iterator();
-        for (int i = 0; it.hasNext(); i++) {
-            URL rootUrl = it.next().getURL();
-            if (isParentOf(rootUrl, file.toUri().toURL())) {
-                return i;
+        //Logging for issue #151416
+        try {
+            for (int i = 0; it.hasNext(); i++) {
+                URL rootUrl = it.next().getURL();
+                if (isParentOf(rootUrl, file.toUri().toURL())) {
+                    return i;
+                }
             }
+        } catch (IllegalArgumentException e) {
+            //Logging for issue #151416
+            String message = String.format("file: %s class: %s uri: %s", file.toString(), file.getClass().toString(), file.toUri().toString());
+            throw Exceptions.attachMessage(e, message);
         }
         return -2;
     }
