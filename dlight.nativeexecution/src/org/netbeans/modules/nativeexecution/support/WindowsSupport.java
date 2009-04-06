@@ -75,9 +75,9 @@ public final class WindowsSupport {
             if (sh.exists() && sh.canRead()) {
                 cygwinShell = sh.getAbsolutePath();
                 cygwinBase = sh.getParentFile().getParentFile().getAbsolutePath();
+                return cygwinShell;
             }
         }
-
 
         // 2. Try msys
         String msysRoot = queryWindowsRegistry(
@@ -90,10 +90,22 @@ public final class WindowsSupport {
             if (sh.exists() && sh.canRead()) {
                 msysShell = sh.getAbsolutePath();
                 msysBase = sh.getParentFile().getParentFile().getAbsolutePath();
+                return msysShell;
             }
         }
 
-        return cygwinShell == null ? msysShell : cygwinShell;
+        // 3. Search in PATH
+        String paths = System.getenv("PATH"); // NOI18N
+        if (paths != null) {
+            for (String path : paths.split(";")) { // NOI18N
+                File sh = new File(path, "sh.exe"); // NOI18N
+                if (sh.exists() && sh.canRead()) {
+                    return sh.getAbsolutePath();
+                }
+            }
+        }
+
+        return null;
     }
 
     private static String queryWindowsRegistry(String key, String param, String regExpr) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.util;
 
-package org.netbeans.modules.cnd.api.model;
+import java.util.concurrent.Callable;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Represents a parameter list.
- *
- *
- * void foo(int a, int b) {
- * }
- *
- * K&R style:
- * void knr(a, b)
- * int a;
- * int b;
- * {
- * }
- *
- * CsmFunctionParameterList object is offsetable starting at "(" and ending at ")"
- * @author Vladimir Voskresensky
+ * @author Radek Matous
  */
-public interface CsmFunctionParameterList extends CsmParameterList<CsmParameter> {
+abstract class FileOperationFactory  {
+    abstract Callable<Boolean> createCopyHandler(FileObject source);
+    abstract Callable<Boolean> createDeleteHandler(FileObject source);
+    abstract Callable<Boolean> createInitHandler(FileObject source);
+    abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
 
-    /**
-     * returns collection of K&R named objects inside "(" and ")"
-     * @return null if not K&R style
-     */
-    CsmParameterList<CsmKnRName> getKernighanAndRitchieParameterList();
+    protected static final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
+        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && VisibilityQuery.getDefault().isVisible(source);
+    }
+    static boolean isNbProjectMetadata(FileObject fo) {
+        final String metadataName = "nbproject";//NOI18N
+        if (fo.getPath().indexOf(metadataName) != -1) {
+            while (fo != null) {
+                if (fo.isFolder()) {
+                    if (metadataName.equals(fo.getNameExt())) {
+                        return true;
+                    }
+                }
+                fo = fo.getParent();
+            }
+        }
+        return false;
+    }
+
+
 }

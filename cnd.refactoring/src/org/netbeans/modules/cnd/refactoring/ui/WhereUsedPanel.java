@@ -241,7 +241,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             StringBuilder macroName = new StringBuilder(((CsmMacro)refObject).getName());
             if (((CsmMacro)refObject).getParameters() != null) {
                 macroName.append("("); // NOI18N
-                Iterator<? extends CharSequence> params = ((CsmMacro)refObject).getParameters().iterator();
+                Iterator<CharSequence> params = ((CsmMacro)refObject).getParameters().iterator();
                 if (params.hasNext()) {
                     macroName.append(params.next());
                     while (params.hasNext()) {

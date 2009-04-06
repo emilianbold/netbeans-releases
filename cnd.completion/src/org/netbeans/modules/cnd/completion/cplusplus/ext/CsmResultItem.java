@@ -569,7 +569,7 @@ public abstract class CsmResultItem implements CompletionItem {
     public static class MacroResultItem extends CsmResultItem {
 
         private CharSequence macName;
-        private List params;
+        private List<CharSequence> params;
         private static CsmPaintComponent.MacroPaintComponent macroPaintComp = null;
 
         public MacroResultItem(CsmMacro mac, int priotity) {
@@ -582,7 +582,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return macName.toString();
         }
 
-        private List getParams() {
+        private List<CharSequence> getParams() {
             return params;
         }
 
@@ -875,7 +875,7 @@ public abstract class CsmResultItem implements CompletionItem {
         private CsmCompletionExpression substituteExp;
         private final boolean isDeclaration;
         private List<ParamStr> params = new ArrayList<ParamStr>();
-        private List excs = new ArrayList();
+        private List<?> excs = new ArrayList<Object>();
         private int modifiers;
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
@@ -946,11 +946,11 @@ public abstract class CsmResultItem implements CompletionItem {
             return mtdName.toString();
         }
 
-        public List getParams() {
+        public List<ParamStr> getParams() {
             return params;
         }
 
-        public List getExceptions() {
+        public List<?> getExceptions() {
             return excs;
         }
 
@@ -967,9 +967,9 @@ public abstract class CsmResultItem implements CompletionItem {
 
         public List<String> createParamsList() {
             List<String> ret = new ArrayList<String>();
-            for (Iterator it = getParams().iterator(); it.hasNext();) {
+            for (Iterator<ParamStr> it = getParams().iterator(); it.hasNext();) {
                 StringBuilder sb = new StringBuilder();
-                ParamStr ps = (ParamStr) it.next();
+                ParamStr ps = it.next();
                 sb.append(ps.getSimpleTypeName());
                 if (ps.isVarArg()) {
                     sb.append("..."); // NOI18N
