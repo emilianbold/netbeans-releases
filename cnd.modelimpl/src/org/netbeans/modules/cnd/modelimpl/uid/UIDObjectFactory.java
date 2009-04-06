@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -320,7 +321,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_MACRO_UID;
         } else if (object instanceof IncludeUID) {
             aHandler = UID_INCLUDE_UID;
-        } else if (object instanceof ParamListUID<?, ?>) {
+        } else if (object instanceof ParamListUID<?>) {
             aHandler = UID_PARAM_LIST_UID;
         } else if (object instanceof UnnamedOffsetableDeclarationUID<?>) {
             aHandler = UID_UNNAMED_OFFSETABLE_DECLARATION_UID;
@@ -387,7 +388,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
             // no reason to cache declaration and more detailed uids.
             case UID_PARAM_LIST_UID:
-                anUID = new ParamListUID(aStream);
+                anUID = new ParamListUID<CsmNamedElement>(aStream);
                 break;
 
             case UID_UNNAMED_OFFSETABLE_DECLARATION_UID:

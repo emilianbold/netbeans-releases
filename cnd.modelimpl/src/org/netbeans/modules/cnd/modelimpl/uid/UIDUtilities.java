@@ -89,17 +89,14 @@ public class UIDUtilities {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createFileUID(FileImpl file) {
         return UIDManager.instance().getSharedUID(new FileUID(file));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
         return UIDManager.instance().getSharedUID(new NamespaceUID(ns));
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
         assert (!(declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
         CsmUID<T> uid;
@@ -124,32 +121,26 @@ public class UIDUtilities {
         return declaration.getName().length() > 0;
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
         return UIDManager.instance().getSharedUID(new MacroUID(macro));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
     }
 
-    @SuppressWarnings("unchecked")
-    public static CsmUID<CsmParameterList> createParamListUID(CsmParameterList incl) {
-        return UIDManager.instance().getSharedUID(new ParamListUID(incl));
+    public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
+        return UIDManager.instance().getSharedUID(new ParamListUID<T>(incl));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
@@ -354,7 +345,6 @@ public class UIDUtilities {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static <T extends CsmOffsetableDeclaration> CsmUID<T> handleUnnamedDeclaration(T decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
@@ -496,9 +486,9 @@ public class UIDUtilities {
     /**
      * UID for CsmParameterList
      */
-    /* package */ static final class ParamListUID<T extends CsmParameterList, K extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T, K>> {
+    /* package */ static final class ParamListUID<T extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T>> {
 
-        public ParamListUID(CsmParameterList<T, K> paramList) {
+        public ParamListUID(CsmParameterList<T> paramList) {
             super(KeyUtilities.createParamListKey(paramList));
         }
 

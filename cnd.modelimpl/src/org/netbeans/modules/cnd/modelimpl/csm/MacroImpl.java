@@ -91,7 +91,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * immutable list of parameters, 
      * i.e. [a, b] or null if macros without parameters
      */
-    private final List<? extends CharSequence> params;
+    private final List<CharSequence> params;
     
     public static SystemMacroImpl createSystemMacro(CharSequence macroName, String macroBody, CsmFile unresolved, Kind kind) {
         return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
@@ -115,7 +115,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
     }
     
-    public List<? extends CharSequence> getParameters() {
+    public List<CharSequence> getParameters() {
         return params;
     }
     
@@ -138,7 +138,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         retValue.append(getName());
         if (getParameters() != null) {
             retValue.append("["); // NOI18N
-            for (Iterator<? extends CharSequence> it = getParameters().iterator(); it.hasNext();) {
+            for (Iterator<CharSequence> it = getParameters().iterator(); it.hasNext();) {
                 CharSequence param = it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
@@ -208,7 +208,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return UIDUtilities.createMacroUID(this);
     }
 
-    public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
+    public CsmParameterList<CsmMacroParameter> getParameterList() {
         throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 }
