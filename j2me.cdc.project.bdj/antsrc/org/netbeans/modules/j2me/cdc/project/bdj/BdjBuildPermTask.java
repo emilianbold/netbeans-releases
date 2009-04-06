@@ -99,9 +99,12 @@ public class BdjBuildPermTask extends Task {
                         String perm = st.nextToken();
                         int i = perm.indexOf('=');
                         if (i != -1){
-                            String action = perm.substring(0, i-1);
-                            String target = perm.substring(i+1);
-                            pw.println("        <host action=\"" + action + "\">" + target + "</host>");
+                            String action = perm.substring(0,i).trim();
+                            String target = perm.substring(i+1).trim();
+                            if ( action.length() >0 && target .length() >0 ){
+                                pw.println("        <host action=\"" +
+                                        action + "\">" + target + "</host>");
+                            }
                         }
                     }
                     pw.println("    </network>");
