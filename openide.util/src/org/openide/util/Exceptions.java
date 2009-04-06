@@ -215,20 +215,25 @@ public final class Exceptions extends Object {
             }
             if (t.getCause() == null) {
                 if (create) {
+                    IllegalStateException x = null;
                     try {
                         t.initCause(new AnnException());
-                    } catch (IllegalStateException x) {
-                        AnnException ann = extras.get(t);
-                        if (ann == null) {
-                            ann = new AnnException(t.getMessage());
-                            ann.initCause(t);
-                            LOG.log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
-                            extras.put(t, ann);
+                        AnnException ann = (AnnException)t.getCause();
+                        if (ann != null) {
+                            return ann;
                         }
-                        return ann;
+                    } catch (IllegalStateException ex) {
+                        x = ex;
                     }
+                    AnnException ann = extras.get(t);
+                    if (ann == null) {
+                        ann = new AnnException(t.getMessage());
+                        ann.initCause(t);
+                        LOG.log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
+                        extras.put(t, ann);
+                    }
+                    return ann;
                 }
-                return (AnnException)t.getCause();
             }
             return findOrCreate(t.getCause(), create);
         }

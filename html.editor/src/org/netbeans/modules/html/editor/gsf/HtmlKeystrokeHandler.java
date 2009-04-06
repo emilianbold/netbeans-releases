@@ -40,6 +40,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -185,6 +186,9 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
         TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
+        if(ts == null) {
+            return Collections.emptyList();
+        }
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
             Token token = ts.token();
@@ -232,6 +236,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     int from = snapshot.getOriginalOffset(node.startOffset());
                     int to = snapshot.getOriginalOffset(node.endOffset());
 
+                    if(from == -1 || to == -1) {
+                        continue;
+                    }
+
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
                     if(last == null || !(last.getStart() == from && last.getEnd() == to)) {
@@ -241,12 +249,12 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-        //the bottom most element represents the whole parse tree, replace it by the document
-        //range since they doesn't need to be the same
-        if(!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength()));
+        OffsetRange wholeDocument = new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength());
+        //add the whole document range if the latst element doesn't equal to it
+        if(ranges.size() == 0 || !ranges.get(ranges.size() - 1).equals(wholeDocument)) {
+            ranges.add(wholeDocument);
         }
-
+        
         return ranges;
     }
 

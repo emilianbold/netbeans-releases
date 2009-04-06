@@ -1,7 +1,40 @@
 /*
- * CreateDatabasePanel.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on August 28, 2008, 11:49 AM
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.ui;
@@ -72,7 +105,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         "CreateNewDatabasePanel.MSG_SpecifyDatabase");
         }
 
-        if (this.isGrantAccess() && Utils.isEmpty((String)comboUsers.getSelectedItem())) {
+        if (this.isGrantAccess() && 
+                (comboUsers.getSelectedItem() == null ||
+                Utils.isEmpty(((DatabaseUser)comboUsers.getSelectedItem()).getUser ()))) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatbasePanel.MSG_NoGrantUserSelected");
         }
 
@@ -436,7 +471,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         });
 
         comboDatabaseName.setEditable(true);
-        comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         comboDatabaseName.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleDescription")); // NOI18N
         comboDatabaseName.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -444,8 +478,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         });
 
-        comboUsers.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         comboUsers.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboUsers.AccessibleContext.accessibleDescription")); // NOI18N
+        comboUsers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboUsersActionPerformed(evt);
+            }
+        });
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
@@ -467,9 +505,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(comboUsers, 0, 323, Short.MAX_VALUE)
                             .add(comboDatabaseName, 0, 323, Short.MAX_VALUE)))
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-                    .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE))
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+                    .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -509,14 +547,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGrantAccessItemStateChanged
         comboUsers.setEnabled(isGrantAccess());
     }//GEN-LAST:event_chkGrantAccessItemStateChanged
+
+    private void comboUsersActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboUsersActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboUsersActionPerformed
     
     private static class DatabaseComboModel implements ComboBoxModel {
         private final List<String> sampleNames = SampleManager.getSampleNames();
-        static final String SAMPLE_PREFIX =
+        private static final String SAMPLE_PREFIX =
                 NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
-        String selected = null;
-        final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
+        private String selected = null;
 
         public void setSelectedItem(Object item) {
             selected = (String)item;
@@ -557,10 +598,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     private static class UsersComboModel implements ComboBoxModel {
-        final DatabaseServer server;
+        private final DatabaseServer server;
 
-        ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
-        DatabaseUser selected;
+        private List<DatabaseUser> users= new ArrayList<DatabaseUser>();
+        private DatabaseUser selected;
 
         public UsersComboModel(DatabaseServer server) throws DatabaseException {
             this.server = server;
@@ -577,6 +618,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         rootUser = user;
                         break;
                     }
+                }
+                if (users.size () > 0) {
+                    selected = users.get (0);
                 }
                 
                 if ( rootUser != null ) {
@@ -595,7 +639,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public void setSelectedItem(Object item) {
-            selected = (DatabaseUser)item;
+            assert item instanceof DatabaseUser;
+            if (item instanceof DatabaseUser) {
+                selected = (DatabaseUser)item;
+            }
         }
 
         public Object getSelectedItem() {
@@ -615,6 +662,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         public void removeListDataListener(ListDataListener arg0) {
         }
+
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

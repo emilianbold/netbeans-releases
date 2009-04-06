@@ -65,7 +65,7 @@ public class MeasureJ2EEMenusTest  {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenuTest.class)
         .addTest(J2EEProjectsViewPopupMenuTest.class)
-        .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters("websvccommon[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
        
         return suite;
     }
