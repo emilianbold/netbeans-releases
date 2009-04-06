@@ -60,6 +60,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -289,7 +290,7 @@ public class RepositoryPathNode extends AbstractNode {
         }
 
         public void listRepositoryPath(final RepositoryPathEntry pathEntry) {
-
+            
             previousNodes = getNodes();
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2001")); // NOI18N
             setKeys(Collections.singleton(waitNode));
@@ -304,17 +305,19 @@ public class RepositoryPathNode extends AbstractNode {
                         }
 
                         Collection<RepositoryPathEntry> previousEntries = getPreviousNodeEntries();
+                        // entries to add
+                        Collection<RepositoryPathEntry> accepptedNewEntries = new ArrayList<RepositoryPathEntry>();
                         if(listedEntries == null) {
                             // is not a folder in the repository
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
                             node.setRepositoryFolder(false);
                         } else {
                             if(!isCreativeBrowser(client)) {
-                                removePreselectedFolders(listedEntries);
+                                // remove all preselected which are not contained in listedEntries
+                                removePreselectedFolders(listedEntries, false);
                             }
 
                             // keep nodes which were created in the browser
-                            Collection<RepositoryPathEntry> accepptedEntries = new ArrayList<RepositoryPathEntry>();
                             for(RepositoryPathEntry listedEntry : listedEntries) {
                                 boolean found = false;
                                 for(RepositoryPathEntry previousEntry : previousEntries) {
@@ -324,12 +327,14 @@ public class RepositoryPathNode extends AbstractNode {
                                     }
                                 }
                                 if(!found) {
-                                    accepptedEntries.add(listedEntry);
+                                    // add only entries which are not yet added as a childnodes
+                                    accepptedNewEntries.add(listedEntry);
                                 }
                             }
-                            previousEntries.addAll(accepptedEntries);
                         }
-                        setKeys(previousEntries);
+                        // MUST BE SET TO NULL, otherwise deleted nodes might be reused in createNodes
+                        previousNodes = null;
+                        setKeys(accepptedNewEntries);
 
                     } catch (SVNClientException ex) {
                         Collection entries = getPreviousNodeEntries();
@@ -345,6 +350,12 @@ public class RepositoryPathNode extends AbstractNode {
                 }
             };
             support.start(rp, pathEntry.getRepositoryFile().getRepositoryUrl(), org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
+            // expand parents nodes also, this will expand also repository entries along the initial selected path
+            // and may hide not allowed preselected paths (e.g. in import, switch etc.)
+            Node parentNode = getNode().getParentNode();
+            if (parentNode != null) {
+                ((RepositoryPathNode)parentNode).expand();
+            }
         }
 
         private Collection<RepositoryPathEntry> getPreviousNodeEntries() {
@@ -381,7 +392,12 @@ public class RepositoryPathNode extends AbstractNode {
             return false;
         }
 
-        private void removePreselectedFolders(final Collection cl) {
+        /**
+         *
+         * @param cl
+         * @param removeContained if true then entries contained in cl will be removed, otherwise those not contained in cl
+         */
+        private void removePreselectedFolders(final Collection cl, boolean removeContained) {
             Node[] childNodes = getNodes();
             for(int i=0; i < childNodes.length; i++) {
                 if(childNodes[i] instanceof RepositoryPathNode) {
@@ -397,7 +413,7 @@ public class RepositoryPathNode extends AbstractNode {
                                 }
                             }
                         }
-                        if(!pathExists) {
+                        if(pathExists == removeContained) {
                             remove(new Node[] { childNodes[i] });
                         }
                     }
@@ -550,7 +566,7 @@ public class RepositoryPathNode extends AbstractNode {
      * Lists it's children from the repository after the second expand in the browser
      */
     private static class DelayedExpandNode extends RepositoryPathNode {
-        private final int IGNORE_EXPANDS = 1;
+        private final int IGNORE_EXPANDS = 0;
         private int expanded = 0;
         public DelayedExpandNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
             super(client, entry, repositoryFolder);
