@@ -192,17 +192,16 @@ public class JarWithModuleAttributes extends Jar {
                                 throw new BuildException("Implementation dependencies not supported in Netigso mode: " + one);
                             }
                         } else {
-                            String version = one.substring(great + 1).trim();
-                            int dot = version.indexOf('.');
-                            int nextMajor;
-                            if (dot == -1) {
-                                nextMajor = Integer.parseInt(version) + 1;
-                            } else {
-                                nextMajor = Integer.parseInt(version.substring(0, dot)) + 1;
+                            int[] version = parseDecimal(one.substring(great + 1).trim(), 3);
+                            int nextMajor = version[0] + 1;
+                            sb.append(one.substring(0, great).trim()).append(";bundle-version=\"[");
+                            String conditionalDot = "";
+                            for (int i = 0; i < version.length; i++) {
+                                sb.append(conditionalDot);
+                                sb.append(version[i]);
+                                conditionalDot = ".";
                             }
-                            sb.append(one.substring(0, great).trim()).append(";bundle-version=\"[").append(version).
-                                    append(", ").append(nextMajor).
-                                    append(")\"");
+                            sb.append(", ").append(nextMajor).append(")\"");
                         }
                     }
 
@@ -342,6 +341,15 @@ public class JarWithModuleAttributes extends Jar {
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
+    }
+
+    private int[] parseDecimal(String trim, int max) {
+        String[] segments = trim.split("\\.");
+        int[] arr = new int[segments.length > max ? max : segments.length];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = Integer.parseInt(segments[i]);
+        }
+        return arr;
     }
 
     private void specVersBaseWarning(File manifestFile, String message) throws BuildException {
