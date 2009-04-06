@@ -62,19 +62,25 @@ public final class KenaiFeature {
     KenaiFeature(FeatureData data) {
         this.featureData = data;
         try {
-            try {
-                this.loc = featureData.url == null ? null : new URI(featureData.url);
-                assert loc!=null?loc.isAbsolute():true;
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, null, ex);
+            this.loc = featureData.url == null ? null : new URI(featureData.url);
+            assert loc != null ? loc.isAbsolute() : true;
+        } catch (URISyntaxException uRISyntaxException) {
+            //workaround for #161838
+            for (String part: featureData.url.split(" ")) {
+                try {
+                    this.loc = new URI(part);
+                    if (this.loc.isAbsolute())
+                        break;
+                } catch (URISyntaxException uRISyntaxException1) {
+                    //ignore
+                }
             }
+            if (this.loc==null || !this.loc.isAbsolute())
+                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, null, uRISyntaxException);
+        }
+        try {
             this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
         } catch (MalformedURLException malformedURLException) {
-            try {
-                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url", "https://kenai.com") + featureData.web_url);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), ex);
-            }
             Logger.getLogger(KenaiFeature.class.getName()).log(Level.FINE, malformedURLException.getMessage(), malformedURLException);
         }
     }

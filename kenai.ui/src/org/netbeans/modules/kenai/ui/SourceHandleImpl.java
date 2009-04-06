@@ -169,6 +169,10 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private void initRecent() {
+        if (prefs==null) {
+            //external repository not supported
+            return;
+        }
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString());
         for (String root:roots) {
             try {
