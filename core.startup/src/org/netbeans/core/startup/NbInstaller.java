@@ -700,6 +700,19 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
     }
+
+    private static String cacheCnb;
+    private static Set<Dependency> cacheDeps;
+    @Override
+    protected Set<Dependency> loadDependencies(String cnb) {
+        return cnb.equals(cacheCnb) ? cacheDeps : null;
+    }
+    @SuppressWarnings("unchecked")
+    static void register(String name, Object obj) {
+        cacheCnb = name;
+        cacheDeps = (Set<Dependency>)obj;
+    }
+
     
     private AutomaticDependencies autoDepsHandler = null;
     
