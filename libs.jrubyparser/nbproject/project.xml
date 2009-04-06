@@ -65,8 +65,8 @@ made subject to such option by the copyright holder.
                 <package>org.jrubyparser.rewriter.utils</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jruby-parser.jar</runtime-relative-path>
-                <binary-origin>external/jruby-parser.jar</binary-origin>
+                <runtime-relative-path>ext/jruby-parser-0.1.jar</runtime-relative-path>
+                <binary-origin>external/jruby-parser-0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

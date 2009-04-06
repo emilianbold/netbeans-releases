@@ -1,5 +1,6 @@
 Name: JRuby Parser
 Description: A Ruby parser in written Java useful for IDE's and Ruby code analysis tools
+Version: 0.1
 License: LGPL-2.1
 OSR: 6419
 Origin: http://kenai.com/projects/jruby-parser
