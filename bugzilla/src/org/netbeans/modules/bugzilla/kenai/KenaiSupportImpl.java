@@ -116,6 +116,8 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            // XXX move to spi
+
 
             // get all kenai repositories
             KenaiRepository[] repos;
