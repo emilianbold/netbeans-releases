@@ -26,128 +26,19 @@
             <tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
             <tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
             <tocitem text="Binding Components to Data" expand="false">
-                <tocitem text="About Binding Components to Data" target="projrave_connect_data_about_data_binding" />
-                <tocitem text="Databases">
-                    <tocitem text="About Components and Data" target="projrave_connect_data_aboutcompdata" />
-                    <tocitem text="Working With Databases" target="projrave_connect_data_working_with_databases" />
-                    <tocitem text="Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
-                    <tocitem text="JDBC Type Conversions for RowSets" target="projrave_connect_data_jdbc_type_conversions" />
-                    <tocitem text="Accessing the Data">
-                        <tocitem text="Adding a Database Table  to a Page" target="projrave_connect_data_howtodata_add_tables2form" />
-                        <tocitem text="Binding a List Component to a Database" target="projrave_connect_data_howtodata_binding_data_2_list_component" />
-                        <tocitem text="Binding a Simple Component to a Database" target="projrave_connect_data_howtodata_bind_components" />
-                        <tocitem text="Binding a Table Component to a Database" target="projrave_connect_data_howtodata_binding_data_2_table_component" />
-                        <tocitem text="Creating an SQL Query" target="projrave_connect_data_howtodata_create_sql_query" />
-                        <tocitem text="Deleting a Database Table from a Page" target="projrave_connect_data_howtodata_delete_table" />
-                    </tocitem>
-                    <tocitem text="Setting Up Database Connections">
-                        <tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
-                    </tocitem>
-                    <tocitem text="Using the Java DB Database Server" expand="false">
-                        <tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
-                    </tocitem>
-                    <tocitem text="SQL">
-                        <tocitem text="Supported SQL Queries" target="projrave_connect_data_sql_query_supported" />
-                        <tocitem text="About the Visual SQL Editor">
-                            <tocitem text="About the Visual SQL Editor" target="projrave_ui_elements_editors_about_query_editor" />
-                            <tocitem text="About the Diagram Pane" target="projrave_ui_elements_editors_qe_diagram_pane" />
-                            <tocitem text="About the Grid Pane" target="projrave_ui_elements_editors_qe_grid_pane" />
-                            <tocitem text="About the SQL Pane" target="projrave_ui_elements_editors_qe_sql_pane" />
-                            <tocitem text="About the Results Pane" target="projrave_ui_elements_editors_qe_results_pane" />
-                            <tocitem text="Visual SQL Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
-                            <tocitem text="Run Query Document Window" target="projrave_ui_elements_server_nav_run_query" />
-                        </tocitem>
-                    </tocitem>
+                
+                    
+                    
+                    
                 </tocitem>
-                <tocitem text="Enterprise JavaBeans">
-                    <tocitem text="About Enterprise JavaBeans" target="projrave_ejb_aboutejbs" />
-                    <tocitem text="Working with Enterprise JavaBean Components" target="projrave_ejb_process" />
-                    <tocitem text="Enterprise JavaBean Components: Quick Reference" target="projrave_ejb_howtoejbs_ejb_quickref" />
-                    <tocitem text="Adding a Set of Enterprise JavaBean Components to a Visual Web JSF Application" target="projrave_ejb_howtoejbs_ejb_add_to_IDE" />
-                    <tocitem text="Adding an Enterprise JavaBean Object to a Visual Web JSF Page" target="projrave_ejb_howtoejbs_ejb_add_to_page" />
-                    <tocitem text="Binding a List Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_list" />
-                    <tocitem text="Binding a Simple Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_simple" />
-                    <tocitem text="Binding a Table Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_table" />
-                    <tocitem text="Deleting an Enterprise JavaBean Component" target="projrave_ejb_howtoejbs_ejb_delete" />
-                    <tocitem text="Exporting a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_ejb_export" />
-                    <tocitem text="Importing a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_import" />
-                </tocitem>
-                <tocitem text="Web Services">
-                    <tocitem text="About Web Services" target="projrave_web_svc_aboutwebservices" />
-                    <tocitem text="Working with Web Services" target="projraveweb_svc_web_services_process" />
-                    <tocitem text="Visual Web JSF Web Service Tasks: Quick Reference" target="projrave_web_svc_howtowebservices_webservices_quickref" />
-                    <tocitem text="Adding a Web Service to a Visual Web JSF Project" target="projrave_web_svc_howtowebservices_accessing_websvc" />
-                    <tocitem text="Deleting a Web Service" target="projrave_web_svc_howtowebservices_delete_websvc" />
-                    <tocitem text="Adding a Web Service to a Visual Web JSF Page" target="projrave_web_svc_howtowebservices_add_websvc_to_page" />
-                    <tocitem text="Creating a  Web Service Group" target="projrave_web_svc_howtowebservices_create_websvc_group" />
-                    <tocitem text="Viewing the WSDL File" target="projrave_web_svc_howtowebservices_viewing_wsdl_file" />
-                    <tocitem text="Binding a List Component to a Web Service Method" target="projrave_web_svc_howtowebservices_ws_bind_list" />
-                    <tocitem text="Binding a Simple Component to a Web Service Method" target="projrave_web_svc_howtowebservices_ws_bind_simple" />
-                    <tocitem text="Binding a Table Component to a Web Service Method" target="projrave_web_svc_howtowebservices_ws_bind_table" />
-                </tocitem>
+                
+                
             </tocitem>
         </tocitem>
         <tocitem text="Creating and Editing Web Components">
             <tocitem text="About Creating Web Components" target="about_create_webcomps" />
-            <tocitem text="Components" expand="false">
-                <tocitem text="About Components" target="projrave_components_aboutcomponents" />
-                <tocitem text="Working With Components" target="projrave_components_component_process" />
-                <tocitem text="Component Tasks: Quick Reference" target="projrave_components_howtocomponents_howtocomponents" />
-                <tocitem text="About Pages" target="projrave_components_webform" />
-                <tocitem text="About the Palette" target="projrave_ui_elements_palette_palette" />
-                <tocitem text="About Virtual Forms" target="projrave_components_aboutvirtualforms" />
-                <tocitem text="About Themes" target="projrave_components_aboutthemes" />
-                <tocitem text="Common Component Properties" target="projrave_components_common_comp_props" />
-                <tocitem text="Adding and Managing Code Clips" target="projrave_components_howtocomponents_add_clip" />
-                <tocitem text="Adding and Viewing Components">
-                    <tocitem text="Adding Components to a Page" target="projrave_components_howtocomponents_add_component" />
-                    <tocitem text="Selecting Components in a Page" target="projrave_components_howtocomponents_select_comp" />
-                    <tocitem text="Deleting a Component From a Page" target="projrave_components_howtocomponents_delete_comp" />
-                    <tocitem text="Previewing a Page" target="projrave_components_howtocomponents_preview_form" />
-                    <tocitem text="Viewing a Page at Different Resolutions" target="projrave_components_howtocomponents_view_browser_size" />
-                </tocitem>
-                <tocitem text="Positioning Components">
-                    <tocitem text="Aligning Components" target="projrave_components_howtocomponents_align_components" />
-                    <tocitem text="Nesting Components" target="projrave_components_howtocomponents_nest_comp" />
-                    <tocitem text="Stacking Components" target="projrave_components_howtocomponents_layer_comp" />
-                    <tocitem text="Setting the Grid" target="projrave_components_howtocomponents_snap2grip" />
-                    <tocitem text="Setting Page Layout" target="projrave_components_howtocomponents_layout_comp" />
-                </tocitem>
-                <tocitem text="Defining Behavior and Appearance of Components">
-                    <tocitem text="About Property Methods" target="projrave_components_about_prop_methods" />
-                    <tocitem text="Setting CSS Styles for a Component" target="projrave_components_howtocomponents_set_style_property" />
-                    <tocitem text="Connecting Components to Data" target="projrave_components_howtocomponents_data_source_ref" />
-                    <tocitem text="Setting Tab Order" target="projrave_components_howtocomponents_set_tab_order" />
-                    <tocitem text="Setting Component Properties" target="projrave_components_howtocomponents_set_comp_props" />
-                    <tocitem text="Binding Component Properties" target="projrave_components_howtocomponents_bind_comp_props" />
-                    <tocitem text="Adding a Category to the Palette" target="projrave_components_howtocomponents_add_section_to_palette" />
-                    <tocitem text="Using Cascading Style Sheets" target="projrave_components_howtocomponents_style_sheet" />
-                    <tocitem text="About Component Libraries" target="projrave_components_about_complibs" />
-                    <tocitem text="Importing Components" target="projrave_components_howtocomponents_import_complib" />
-                    <tocitem text="Removing a Component Library" target="projrave_components_howtocomponents_remove_comp_lib" />
-                    <tocitem text="Updating a Component Library" target="projrave_components_howtocomponents_update_comp_lib" />
-                </tocitem>
-            </tocitem>
-            <tocitem text="Pages" expand="false">
-                <tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
-                <tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
-                <tocitem text="Working With Multiple Pages" target="projrave_multiple_forms_multiform_process" />
-                <tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
-                <tocitem text=" Connecting Multiple Pages">
-                    <tocitem text="Deleting a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_delete_connector" />
-                    <tocitem text="Renaming a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_rename_connector" />
-                    <tocitem text="Setting Up Dynamic Page Navigation" target="projrave_multiple_forms_howtomultiforms_dynamic_form_navigation" />
-                    <tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
-                    <tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
-                </tocitem>
-                <tocitem text="Creating Pages and Components">
-                    <tocitem text="Adding Components in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
-                    <tocitem text="Creating a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_create_form" />
-                    <tocitem text="Deleting a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_delete_page" />
-                    <tocitem text="Opening Pages From the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
-                    <tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
-                </tocitem>
-            </tocitem>
+            
+            
             <tocitem text="JSP and HTML Files">
                 <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
                 <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
@@ -240,7 +131,6 @@
             <tocitem text="About Web Application Frameworks" target="about_framework" />
             <tocitem text="JavaServer Faces">
                 <tocitem text="About JavaServer Faces Framework Support" target="framework_jsf_about" />
-                <tocitem text="About the Visual Web JSF Framework" target="projraveweb_create_tag_framework_jsf_about_visweb_framework" />
                 <tocitem text="About CRUD Applications" target="framework_jsf_crud" />
                 <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
                 <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
