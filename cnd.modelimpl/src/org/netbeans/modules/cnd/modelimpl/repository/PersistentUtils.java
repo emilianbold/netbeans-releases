@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -111,10 +112,10 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support for parameters
-    public static void writeParameterList(CsmParameterList params, DataOutput output) throws IOException {
+    public static void writeParameterList(CsmParameterList<?> params, DataOutput output) throws IOException {
         if (params == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
-        } else if (params instanceof ParameterListImpl) {
+        } else if (params instanceof ParameterListImpl<?, ?>) {
             int handler = PARAM_LIST_IMPL;
             if (params instanceof FunctionParameterListImpl) {
                 handler = FUN_PARAM_LIST_IMPL;
@@ -123,19 +124,19 @@ public class PersistentUtils {
                 }
             }
             output.writeInt(handler);
-            ((ParameterListImpl)params).write(output);
+            ((ParameterListImpl<?, ?>)params).write(output);
         }
     }
 
-    public static CsmParameterList readParameterList(DataInput input) throws IOException {
+    public static CsmParameterList<?> readParameterList(DataInput input) throws IOException {
         int handler = input.readInt();
-        CsmParameterList paramList;
+        CsmParameterList<?> paramList;
         switch (handler) {
             case AbstractObjectFactory.NULL_POINTER:
                 paramList = null;
                 break;
             case PARAM_LIST_IMPL:
-                paramList = new ParameterListImpl(input);
+                paramList = new ParameterListImpl<CsmParameterList<CsmNamedElement>, CsmNamedElement>(input);
                 break;
             case FUN_PARAM_LIST_IMPL:
                 paramList = new FunctionParameterListImpl(input);

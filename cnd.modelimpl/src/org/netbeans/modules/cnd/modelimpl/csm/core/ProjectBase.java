@@ -398,7 +398,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         if (CsmKindUtilities.isClass(decl) || CsmKindUtilities.isEnum(decl)) {
 
-            ClassEnumBase cls = (ClassEnumBase) decl;
+            ClassEnumBase<?> cls = (ClassEnumBase<?>) decl;
             CharSequence qname = cls.getQualifiedName();
 
             synchronized (classifierReplaceLock) {
@@ -412,11 +412,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         return false;
                     }
                     // remove the old one if the new one is stronger
-                    if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
+                    if ((old instanceof ClassEnumBase<?>) && ((ClassEnumBase<?>) old).shouldBeReplaced(cls)) {
                         if (TraceFlags.TRACE_REGISTRATION) {
                             System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl)); //NOI18N
                         } 
-                        ((ClassEnumBase) old).dispose();
+                        ((ClassEnumBase<?>) old).dispose();
                     }
                 }
                 getDeclarationsSorage().putDeclaration(decl);
@@ -926,7 +926,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             boolean remove = true;
             Set<CsmFile> parents = getGraphStorage().getParentFiles(file);
             for (CsmFile parent : parents) {
-                if (!candidates.contains(parent)) {
+                if (!candidates.contains((FileImpl)parent)) {
                     remove = false;
                     break;
                 }
@@ -1098,10 +1098,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final void invalidatePreprocState(File file) {
-        Object stateLock = getFileContainer().getLock(file);
+        FileContainer fileContainer = getFileContainer();
+        Object stateLock = fileContainer.getLock(file);
         synchronized (stateLock) {
-            getFileContainer().invalidatePreprocState(file);
+            fileContainer.invalidatePreprocState(file);
         }
+        fileContainer.put();
     }
 
     /**
@@ -1127,9 +1129,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         boolean updateFileContainer = false;
-//        if (file.toString().endsWith("newfile.h")) { // NOI18N
-//            TRACE_FILE = true;
-//        }
         try {
             disposeLock.readLock().lock();
             if (disposing) {
@@ -1146,13 +1145,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             APTPreprocHandler.State newState = preprocHandler.getState();
-
-//            if (TraceFlags.TRACE_PC_STATE) {
-//                System.err.printf("onFileIncluded  %s %s %s\n", //NOI18N
-//                        csmFile.getAbsolutePath(),
-//                        TraceUtils.getPreprocStateString(preprocHandler.getState()),
-//                        TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros));
-//            }
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
 
@@ -1213,7 +1205,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // at least for the case of recursion
             synchronized (entry.getLock()) {
                 comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
-                if (TRACE_FILE) {
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
                     traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
                 }
                 if (comparisonResult == ComparisonResult.BETTER) {
@@ -1238,14 +1230,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             walker.visit();
 
             if (comparisonResult == ComparisonResult.WORSE) {
-                if (TRACE_FILE) {
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
                     traceIncludeStates("worse 1", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
                 }
                 return csmFile;
             } else if (comparisonResult == ComparisonResult.SAME && newStateFound.get() /*&& csmFile.isParsed()*/) {
                 // it's better than rely on pcStates check -
                 // somebody could place state, but not yet calculate pcState
-                if (TRACE_FILE) {
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
                     traceIncludeStates("same 1", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
                 }
                 return csmFile;
@@ -1261,11 +1253,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (entry.getModCount() != entryModCount) {
                     // Phase B1
                     comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
-                    if (TRACE_FILE) {
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
                     }
                     if (comparisonResult == ComparisonResult.WORSE) {
-                        if (TRACE_FILE) {
+                        if (TRACE_FILE && FileImpl.traceFile(file)) {
                             traceIncludeStates("worse 2", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
                         }
                         return csmFile;
@@ -1273,7 +1265,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         // we are not better than all
                         if (existsInEntryOnPhaseAExit && !newStateFound.get()) {
                             // our existing state was removed => it was invalidated => no need to parse
-                            if (TRACE_FILE) {
+                            if (TRACE_FILE && FileImpl.traceFile(file)) {
                                 traceIncludeStates("state was removed ", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
                             }
                             return csmFile;
@@ -1295,14 +1287,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                 if (comparisonResult == ComparisonResult.BETTER) {
                     clean = true;
-                    if (TRACE_FILE) {
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("best state", csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
                     }
                 } else {  // comparisonResult == SAME
                     // Phase B2
                     if (TraceFlags.SMART_HEADERS_PARSE) {
                         comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
-                        if (TRACE_FILE) {
+                        if (TRACE_FILE && FileImpl.traceFile(file)) {
                             traceIncludeStates("pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
                         }
                         switch (comparisonResult) {

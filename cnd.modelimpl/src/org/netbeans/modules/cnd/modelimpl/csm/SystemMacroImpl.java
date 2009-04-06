@@ -78,7 +78,7 @@ public class SystemMacroImpl implements CsmMacro {
         this.containingFile = containingFile;
     }
     
-    public List<? extends CharSequence> getParameters() {
+    public List<CharSequence> getParameters() {
         return params;
     }
 
@@ -144,7 +144,7 @@ public class SystemMacroImpl implements CsmMacro {
         retValue.append(getName());
         if (getParameters() != null) {
             retValue.append("["); // NOI18N
-            for (Iterator<? extends CharSequence> it = getParameters().iterator(); it.hasNext();) {
+            for (Iterator<CharSequence> it = getParameters().iterator(); it.hasNext();) {
                 CharSequence param = it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
@@ -161,7 +161,7 @@ public class SystemMacroImpl implements CsmMacro {
         return retValue.toString();
     }
 
-    public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
+    public CsmParameterList<CsmMacroParameter> getParameterList() {
         return null;
     }
 }
