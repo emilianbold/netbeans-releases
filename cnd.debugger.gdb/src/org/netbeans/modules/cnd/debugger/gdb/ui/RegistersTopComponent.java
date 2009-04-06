@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -164,7 +165,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
     
     private static class RegisterTableModel extends AbstractTableModel {
         
-        private final List<RegisterValue> values = new ArrayList<RegisterValue>();
+        private final List<RegisterValue> values = Collections.synchronizedList(new ArrayList<RegisterValue>());
         
         public static final int COLUMN_REGISTER=0;
         public static final int COLUMN_VALUE=1;
@@ -243,14 +244,20 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
 
         @SuppressWarnings("unchecked")
         private void refresh() {
-            values.clear();
-            List<RegisterValue> res =
-                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
-            if (res != null) {
-                values.addAll(res);
-            }
-            Collections.sort(values, REGISTER_COMPARATOR);
-            fireTableDataChanged();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    List<RegisterValue> res =
+                            (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+                    synchronized (values) {
+                        values.clear();
+                        if (res != null) {
+                            values.addAll(res);
+                        }
+                        Collections.sort(values, REGISTER_COMPARATOR);
+                    }
+                    fireTableDataChanged();
+                }
+            });
         }
     }
     
