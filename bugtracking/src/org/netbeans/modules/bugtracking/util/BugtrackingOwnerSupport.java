@@ -313,8 +313,10 @@ public class BugtrackingOwnerSupport {
                 break;
             case ALL_PROJECTS:
                 context = BugtrackingUtil.getContextFromProjects();
+                break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
                 context = BugtrackingUtil.getLargerContext();
+                break;
             default:
                 assert false;
                 break;
