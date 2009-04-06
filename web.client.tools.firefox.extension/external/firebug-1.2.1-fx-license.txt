@@ -5,7 +5,6 @@ License: BSD
 OSR: 9906
 Origin: http://www.getfirebug.com
 Files: firebug-1.2.1-fx.xpi
-Comment: 
 
 Use of Firebug 1.2.1 is governed by the terms of the license below:
 
