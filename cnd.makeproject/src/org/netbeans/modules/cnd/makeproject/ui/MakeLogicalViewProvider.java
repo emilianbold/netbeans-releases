@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -153,14 +154,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public Node createLogicalView() {
+        MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
         if (ASYNC_ROOT_NODE) {
             log.fine("creating async root node in EDT? " + SwingUtilities.isEventDispatchThread());// NOI18N
-            return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+            return new MakeLogicalViewRootNode(configurationDescriptor.getLogicalFolders());
         } else {
-            if (getMakeConfigurationDescriptor() == null) {
+            if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN
+                    || configurationDescriptor.getConfs().size() == 0) {
                 return new MakeLogicalViewRootNodeBroken();
             } else {
-                return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+                return new MakeLogicalViewRootNode(configurationDescriptor.getLogicalFolders());
             }
         }
     }

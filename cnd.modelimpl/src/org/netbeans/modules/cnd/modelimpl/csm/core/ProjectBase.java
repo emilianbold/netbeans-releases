@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -1209,14 +1210,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
                 }
                 if (comparisonResult == ComparisonResult.BETTER) {
+                    CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 1", Level.INFO); // NOI18N
                     entry.setPendingReparse(true); // #148608 Instable test regressions on CLucene
                     // some of the old states are worse than the new one; we'll deinitely parse
-                    if (TraceFlags.SMART_HEADERS_PARSE) {
-                        existsInEntryOnPhaseAExit = true;
-                        entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
-                    } else {
-                        entry.setState(newState, null);
-                    }
+                    existsInEntryOnPhaseAExit = true;
+                    entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
                     updateFileContainer = true;
                 } else {
                     existsInEntryOnPhaseAExit = newStateFound.get();
@@ -1287,53 +1285,44 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                 if (comparisonResult == ComparisonResult.BETTER) {
                     clean = true;
+                    CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 2", Level.INFO); // NOI18N
                     if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("best state", csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
                     }
                 } else {  // comparisonResult == SAME
                     // Phase B2
-                    if (TraceFlags.SMART_HEADERS_PARSE) {
-                        comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
-                        if (TRACE_FILE && FileImpl.traceFile(file)) {
-                            traceIncludeStates("pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
-                        }
-                        switch (comparisonResult) {
-                            case BETTER:
-                                clean = true;
-                                break;
-                            case SAME:
-                                //clean is set by isPendingReparse() call
-                                break;
-                            case WORSE:
-                                return csmFile;
-                            default:
-                                assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
-                                return csmFile;
-                        }
-                    } else {
-                        if (isBetterThanAll(pcState, statesToKeep)) {
-                            statesToKeep.clear();
+                    comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
+                        traceIncludeStates("pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
+                    }
+                    switch (comparisonResult) {
+                        case BETTER:
+                            CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 3", Level.INFO); // NOI18N
                             clean = true;
-                        } else {
+                            break;
+                        case SAME:
+                            //clean is set by isPendingReparse() call
+                            break;
+                        case WORSE:
                             return csmFile;
-                        }
+                        default:
+                            assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
+                            return csmFile;
                     }
                 }
                 // TODO: think over, what if we aready changed entry,
                 // but now deny parsing, because base, but not this project, is disposing?!
                 if (!isDisposing() && !base.isDisposing()) {
                     if (clean) {
-                        if (TraceFlags.SMART_HEADERS_PARSE) {
-                            for (FileContainer.StatePair pair : statesToKeep) {
-                                // if pair has null in pair.pcState
-                                // => a parallel thread is processing the same file
-                                // below entry.setStates will change mode count
-                                // => the parallel thread will check that itself
-                                // Conclusion:
-                                // - do not add it's pair.state to parsing states
-                                if (pair.pcState != null) {
-                                    statesToParse.add(pair.state);
-                                }
+                        for (FileContainer.StatePair pair : statesToKeep) {
+                            // if pair has null in pair.pcState
+                            // => a parallel thread is processing the same file
+                            // below entry.setStates will change mode count
+                            // => the parallel thread will check that itself
+                            // Conclusion:
+                            // - do not add it's pair.state to parsing states
+                            if (pair.pcState != null) {
+                                statesToParse.add(pair.state);
                             }
                         }
                     }
@@ -1405,9 +1394,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         SAME,
         WORSE
     }
-    private static final int BETTER = 1;
-    private static final int SAME = 0;
-    private static final int WORSE = -1;
 
     /**
      * Checks old states and new one, decides
@@ -1431,8 +1417,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return  BETTER - new state is better than old ones 
      *          SAME - new state is more or less  the same :) as old ones
      *          WORSE - new state is worse than old ones
-     *
-     * NB: if exit is true, the return value is unpredictable and shouldn't be used.
      */
     private ComparisonResult fillStatesToKeep(
             APTPreprocHandler.State newState,
@@ -1476,26 +1460,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
+        if (result == ComparisonResult.BETTER) {
+            CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty ", Level.INFO); // NOI18N
+        }
         return result;
     }
 
-    private boolean isBetterThanAll(
-            FilePreprocessorConditionState pcState,
-            Collection<FileContainer.StatePair> oldStates) {
-
-        if (TraceFlags.NO_HEADERS_REPARSE) {
-            return false;
-        }
-        for (FileContainer.StatePair pair : oldStates) {
-            if (!pcState.isBetter(pair.pcState)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
-     * If it returns EXIT, statesToKeep content is unpredictable!
+     * If it returns WORSE, statesToKeep content is unpredictable!
      * 
      * @param newState
      * @param pcState

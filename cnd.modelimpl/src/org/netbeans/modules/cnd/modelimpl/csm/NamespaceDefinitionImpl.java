@@ -130,6 +130,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         // TODO: for now we are in O(n), but better to be O(ln n) speed
         synchronized (this) {
             out = UIDUtilities.findExistingUIDInList(declarations, start, end, name);
+//            if (FileImpl.traceFile(getContainingFile().getAbsolutePath())) {
+//                System.err.printf("%s found %s [%d-%d] in \n\t%s\n", (out == null) ? "NOT " : "", name, start, end, declarations);
+//            }
         }
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
