@@ -144,8 +144,10 @@ final class OutputUtils {
 
         /* Get the method name and the class name: */
         int lastDotIndex = beforeBrackets.lastIndexOf('.');
-        String clsName = beforeBrackets.substring(0, lastDotIndex);
-        String methodName = beforeBrackets.substring(lastDotIndex + 1);
+        String clsName = (lastDotIndex == -1)
+                         ? beforeBrackets
+                         : beforeBrackets.substring(0, lastDotIndex);
+//        String methodName = beforeBrackets.substring(lastDotIndex + 1);
 
         /* Get the file name and line number: */
         String fileName = null;
