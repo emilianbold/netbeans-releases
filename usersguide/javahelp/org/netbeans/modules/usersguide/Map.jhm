@@ -474,7 +474,18 @@
 <mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="pending.html" />
 
 
-<!--Collaboration csh topics-->
+<!-- Collaborative Development -->
+<mapID target="collab_about" url="collab/collab_about.html" />
+
+<!-- Collaborative Development - Kenai topics-->
+<mapID target="kenai_projects" url="collab/about_kenai_projects.html" />
+<mapID target="kenai_create" url="collab/create_kenai_project.html" />
+<mapID target="kenai_workingwith" url="collab/kenai_dashboard.html" />
+<mapID target="kenai_quickref" url="collab/kenai_quickref.html" />
+
+
+
+<!-- Collaboration csh topics-->
 <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
 <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
 </map>
