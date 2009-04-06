@@ -68,9 +68,6 @@ public class TraceFlags {
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
 
 
-    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", true);     // NOI18N
-    public static final boolean NO_HEADERS_REPARSE = DebugUtils.getBoolean("cnd.no.hdr.reparse", false); // NOI18N
-    
     /** 
      * swithces off parsing function bodies
      */

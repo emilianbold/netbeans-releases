@@ -42,9 +42,10 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -96,8 +97,8 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             }
             return l;
         } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getMyProject() failed", ex);
+            return null;
         }
     }
 
@@ -106,7 +107,8 @@ public class ProjectAccessorImpl extends ProjectAccessor {
         try {
             return new ProjectHandleImpl(kenai.getProject(projectId,force));
         } catch (KenaiException ex) {
-            throw new RuntimeException(ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getProject() " + projectId + " failed", ex);
+            return null;
         }
     }
 

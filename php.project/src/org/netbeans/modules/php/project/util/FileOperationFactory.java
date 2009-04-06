@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.util;
 
-package org.netbeans.performance.j2ee;
-
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2ee.dialogs.*;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import java.util.concurrent.Callable;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
- *
- * @author  lmartinek@netbeans.org
+ * @author Radek Matous
  */
-public class MeasureJ2EEDialogsTest {
+abstract class FileOperationFactory  {
+    abstract Callable<Boolean> createCopyHandler(FileObject source);
+    abstract Callable<Boolean> createDeleteHandler(FileObject source);
+    abstract Callable<Boolean> createInitHandler(FileObject source);
+    abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
 
-    
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
-        System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EEProjectPropertiesTest.class)
-        .addTest(InvokeSBActionTest.class)
-        .addTest(SelectJ2EEModuleDialogTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
-
-        return suite;
+    protected static final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
+        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && VisibilityQuery.getDefault().isVisible(source);
     }
-    
+    static boolean isNbProjectMetadata(FileObject fo) {
+        final String metadataName = "nbproject";//NOI18N
+        if (fo.getPath().indexOf(metadataName) != -1) {
+            while (fo != null) {
+                if (fo.isFolder()) {
+                    if (metadataName.equals(fo.getNameExt())) {
+                        return true;
+                    }
+                }
+                fo = fo.getParent();
+            }
+        }
+        return false;
+    }
+
+
 }
