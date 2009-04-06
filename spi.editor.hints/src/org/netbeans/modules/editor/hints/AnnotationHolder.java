@@ -135,6 +135,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         if (file == null)
             return null;
 
+        // vlv: [+]
+        if ( !file.isValid()) {
+            return null;
+        }
+        // vlv: [-]
         try {
             DataObject od = DataObject.find(file);
             AnnotationHolder result = file2Holder.get(od);
