@@ -57,27 +57,57 @@ import org.openide.filesystems.FileUtil;
 final class LocalOperationFactory extends FileOperationFactory {
 
     private static final Logger LOGGER = Logger.getLogger(LocalOperationFactory.class.getName());
+    private static final boolean IS_WARNING_LOGGABLE = LOGGER.isLoggable(Level.WARNING);
     private static final boolean IS_FINE_LOGGABLE = LOGGER.isLoggable(Level.FINE);
     private final PhpProject project;
 
     LocalOperationFactory(PhpProject project) {
+        if (project == null) {
+            throw new IllegalArgumentException("project can't be null");
+        }
         this.project = project;
     }
 
     private boolean isEnabledAndValidConfig() {
+        assert project != null;
         boolean copySourcesEnabled = ProjectPropertiesSupport.isCopySourcesEnabled(project);
-        FileObject sourceRoot = copySourcesEnabled ? ProjectPropertiesSupport.getSourcesDirectory(project)  : null;
-        File targetRoot = sourceRoot != null ? getTargetRoot(project) : null;
+        if (!copySourcesEnabled) return false;
+
+        FileObject sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
+        if (sourceRoot == null) {
+            if (IS_WARNING_LOGGABLE) {
+                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "source root is null"));//NOI18N
+            }
+            return false;
+        }
+
+        File targetRoot = getTargetRoot(project);
+        if (targetRoot == null) {
+            if (IS_WARNING_LOGGABLE) {
+                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root is null"));//NOI18N
+            }
+            return false;
+        }
+
         File writableFolder = targetRoot;
         while (writableFolder != null && !writableFolder.exists()) {
             writableFolder = writableFolder.getParentFile();
         }
-        return (targetRoot != null) ? writableFolder != null && Utils.isFolderWritable(writableFolder) : false;
+        
+        boolean isWritable = Utils.isFolderWritable(writableFolder);
+        if (!isWritable) {
+            if (IS_WARNING_LOGGABLE) {
+                LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root isn't writable"));//NOI18N
+            }
+            return false;
+        }
+        
+        return true;
     }
     
     @Override
     Callable<Boolean> createCopyHandler(final FileObject source) {
-        return (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
+        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
                 Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
@@ -86,11 +116,17 @@ final class LocalOperationFactory extends FileOperationFactory {
                 return (target != null) ? doCopy(source, target) : false;
             }
         } : null;
+        if (IS_FINE_LOGGABLE) {
+            String format = retval != null ? "Copying file \"%s\" from project \"%s\" is scheduled." ://NOI18N
+                "!Copying file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
+            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
+        }
+        return retval;
     }
 
     @Override
     Callable<Boolean> createDeleteHandler(final FileObject source) {
-        return (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
+        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
@@ -100,12 +136,17 @@ final class LocalOperationFactory extends FileOperationFactory {
                 return (target != null) ? doDelete(target) : false;
             }
         } : null;
+        if (IS_FINE_LOGGABLE) {
+            String format = retval != null ? "Deleting file \"%s\" from project \"%s\" is scheduled." ://NOI18N
+                "!Deleting file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
+            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
+        }
+        return retval;
     }
 
     @Override
     Callable<Boolean> createInitHandler(final FileObject source) {
-        return (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
-
+        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
                 Pair<FileObject, File> cfgPair = Pair.of(sourcesDirectory, getTargetRoot(project));
@@ -129,11 +170,17 @@ final class LocalOperationFactory extends FileOperationFactory {
                 return false;
             }
         } : null;
+        if (IS_FINE_LOGGABLE) {
+            String format = retval != null ? "Initialization of folder \"%s\" from project \"%s\" is scheduled." ://NOI18N
+                "!Initialization of folder \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
+            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
+        }
+        return retval;
     }
 
     @Override
     Callable<Boolean> createRenameHandler(final FileObject source, final String oldName) {
-        return (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
+        Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
@@ -167,6 +214,12 @@ final class LocalOperationFactory extends FileOperationFactory {
                 return false;
             }
         } : null;
+        if (IS_FINE_LOGGABLE) {
+            String format = retval != null ? "Renaming file \"%s\" from project \"%s\" is scheduled." ://NOI18N
+                "!Renaming file \"%s\" from project \"%s\" isn't scheduled.";//NOI18N
+            LOGGER.fine(String.format(format, FileUtil.getFileDisplayName(source), project.getName()));
+        }
+        return retval;
     }
 
     private static File getTargetRoot(PhpProject project) {
@@ -203,6 +256,8 @@ final class LocalOperationFactory extends FileOperationFactory {
         }
         if (IS_FINE_LOGGABLE) {
             LOGGER.fine((target.exists() ? "file copied: " : "!file not copied: ") + target.getAbsolutePath());//NOI18N
+        } else if ((IS_WARNING_LOGGABLE && !target.exists())) {
+            LOGGER.warning("!file not copied: " + target.getAbsolutePath());//NOI18N
         }
         return target.exists();
     }
@@ -216,8 +271,11 @@ final class LocalOperationFactory extends FileOperationFactory {
                 target.delete();
             }
             if (IS_FINE_LOGGABLE) {
-                LOGGER.fine((target.exists() ? "file deleted: " : "!file not deleted: ") + target.getAbsolutePath());//NOI18N
+                LOGGER.fine((!target.exists() ? "file deleted: " : "!file not deleted: ") + target.getAbsolutePath());//NOI18N
+            } else if ((IS_WARNING_LOGGABLE && target.exists())) {
+                LOGGER.warning("!file not deleted: " + target.getAbsolutePath());//NOI18N
             }
+
             return !target.exists();
         }
         return false;
