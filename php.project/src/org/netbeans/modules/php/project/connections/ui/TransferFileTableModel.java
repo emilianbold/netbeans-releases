@@ -141,10 +141,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return res;
     }
 
-    public boolean isSortAllowed(Object columnIdentifier) {
-        return true;
-    }
-
     public String getTabTooltipText() {
         return null;
     }
@@ -237,12 +233,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         }
     }
 
-    void fireButtonsChange() {
-        for (TransferFileTableChangeListener l : listeners) {
-            l.buttonsChanged();
-        }
-    }
-
     void fireFilterChange() {
         for (TransferFileTableChangeListener l : listeners) {
             l.filterChanged();
@@ -269,11 +259,23 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return fileData.size();
     }
 
-    public List<TransferFileUnit> getMarkedUnits() {
+    public List<TransferFileUnit> getAllUnits() {
         List<TransferFileUnit> allUnits = getData();
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(allUnits.size());
         for (TransferFileUnit fUnit : allUnits) {
-            if (fUnit.getTransferFile().isFile() && fUnit.isMarked()) {
+            if (fUnit.getTransferFile().isFile()) {
+                retval.add(fUnit);
+            }
+        }
+        return retval;
+    }
+
+    public List<TransferFileUnit> getMarkedUnits() {
+        List<TransferFileUnit> allUnits = getAllUnits();
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(allUnits.size());
+        for (TransferFileUnit fUnit : allUnits) {
+            assert fUnit.getTransferFile().isFile() : "Only files can be visible";
+            if (fUnit.isMarked()) {
                 retval.add(fUnit);
             }
         }
@@ -283,6 +285,17 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     public TransferFileUnit getUnitAtRow(int row) {
         assert getVisibleFileUnits().size() > row : String.format("Unknown row index [%d, size %d]", row, getVisibleFileUnits().size());
         return getVisibleFileUnits().get(row);
+    }
+
+    public int getRowForUnit(TransferFileUnit unit) {
+        int i = 0;
+        for (TransferFileUnit u : getAllUnits()) {
+            if (unit.equals(u)) {
+                return i;
+            }
+            ++i;
+        }
+        return -1;
     }
 
     @Override
@@ -298,7 +311,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         if ((Boolean) aValue != u.isMarked()) {
             u.setMarked(!u.isMarked());
             fireUpdataUnitChange();
-            fireButtonsChange();
         }
     }
 

@@ -85,8 +85,8 @@ import org.openide.util.RequestProcessor;
  * @author  Radek Matous
  */
 public final class TransferFilter extends javax.swing.JPanel {
-    private TransferFilterTable table = null;
-    private TransferFileTableModel model = null;
+    TransferFilterTable table = null;
+    TransferFileTableModel model = null;
     private DocumentListener dlForSearch;
     private FocusListener flForSearch;
     private String filter = "";
@@ -191,7 +191,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         this.table = table;
         TableModel m = table.getModel();
         assert m instanceof TransferFileTableModel : m + " instanceof FileConfirmationTableModel.";
-        this.model = (TransferFileTableModel) m;
+        model = (TransferFileTableModel) m;
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         initComponents();
         //TODO: for WINDOWS - don't paint background and let visible the native look
@@ -207,12 +207,8 @@ public final class TransferFilter extends javax.swing.JPanel {
         addUpdateUnitListener(new TransferFileTableChangeListener() {
 
             public void updateUnitsChanged() {
-                model.fireTableDataChanged();
+                // no need to refresh table data (they are sorted so it's already done)
                 refreshState();
-            }
-
-            public void buttonsChanged() {
-                //UnitTab.this.manager.buttonsChanged();
             }
 
             public void filterChanged() {
@@ -577,7 +573,7 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     private void showPopup(Point e, Component invoker) {
-        int row = TransferFilter.this.table.rowAtPoint(e);
+        int row = table.rowAtPoint(e);
         if (row >= 0) {
             table.getSelectionModel().setSelectionInterval(row, row);
             final JPopupMenu popup = popupActionsSupport.createPopup();
@@ -633,7 +629,7 @@ public final class TransferFilter extends javax.swing.JPanel {
 
         public TabAction(String nameKey, String actionCategoryKey) {
             super(textForKey(nameKey));
-            this.actionCategory = actionCategoryKey;//(actionCategoryKey != null) ? NbBundle.getMessage(UnitTab.class, actionCategoryKey) : null;
+            actionCategory = actionCategoryKey;//(actionCategoryKey != null) ? NbBundle.getMessage(UnitTab.class, actionCategoryKey) : null;
             putValue(MNEMONIC_KEY, mnemonicForKey(nameKey));
             name = (String) getValue(NAME);
             putIntoActionMap(table);

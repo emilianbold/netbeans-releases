@@ -53,65 +53,48 @@ import org.openide.util.NbPreferences;
 /**
  * @author Radek Matous
  */
-public class SortColumnHeaderRenderer implements TableCellRenderer {
-    private static final String SORTING_COLUMN_INDEX = "SortingColumnIndex";
-    private static final String SORTING_ASCENDING = "SortingAscending";
-    private static ImageIcon SORT_DESC_ICON;
-    private static ImageIcon SORT_ASC_ICON;
+public final class SortColumnHeaderRenderer implements TableCellRenderer {
+    private static final String SORTING_COLUMN_INDEX = "SortingColumnIndex"; // NOI18N
+    private static final String SORTING_ASCENDING = "SortingAscending"; // NOI18N
+    private static ImageIcon sortDescIcon;
+    private static ImageIcon sortAscIcon;
 
     private final TransferFileTableModel model;
     private final TableCellRenderer textRenderer;
     private int sortColumnIndex;
     private boolean sortAscending;
-    
-    private SortColumnHeaderRenderer (TransferFileTableModel model, TableCellRenderer textRenderer) {
+
+    public SortColumnHeaderRenderer(TransferFileTableModel model, TableCellRenderer textRenderer) {
         this.model = model;
         this.textRenderer = textRenderer;
         sortColumnIndex = getPreferences().getInt(SORTING_COLUMN_INDEX, getDefaultSortingColumn());
         sortAscending = getPreferences().getBoolean(SORTING_ASCENDING, true);
-        model.sort (sortColumnIndex, sortAscending);
+        model.sort(sortColumnIndex, sortAscending);
     }
 
-    public static SortColumnHeaderRenderer create(final TransferFileTableModel model, TableCellRenderer textRenderer) {
-        final SortColumnHeaderRenderer renderer = new SortColumnHeaderRenderer(model, textRenderer);
-        renderer.model.addUpdateUnitListener(new TransferFileTableChangeListener() {
-            public void updateUnitsChanged() {
-                renderer.model.sort(renderer.sortColumnIndex, renderer.sortAscending);
-            }
-            public void buttonsChanged() {
-            }
-            public void filterChanged() {
-            }
-        });
-        return renderer;
-    }
-        
-    public Component getTableCellRendererComponent (JTable table, Object value,
-            boolean isSelected,
-            boolean hasFocus, int row,
-            int column) {
-        Component text = textRenderer.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
-        if( text instanceof JLabel ) {
-            JLabel label = (JLabel)text;
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        Component text = textRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        if (text instanceof JLabel) {
+            JLabel label = (JLabel) text;
             if (column == sortColumnIndex) {
-                label.setIcon ( sortAscending ? getSortAscIcon () : getSortDescIcon ());
-                label.setHorizontalTextPosition ( SwingConstants.LEFT );
+                label.setIcon(sortAscending ? getSortAscIcon() : getSortDescIcon());
+                label.setHorizontalTextPosition(SwingConstants.LEFT);
             } else {
-                label.setIcon ( null);
+                label.setIcon(null);
             }
         }
         return text;
     }
-    
-    public void setDefaultSorting () {
+
+    public void setDefaultSorting() {
         setSorting(getDefaultSortingColumn());
     }
-    
+
     private int getDefaultSortingColumn() {
         return 1;
     }
-        
-    public void setSorting (int columnIndex) {
+
+    public void setSorting(int columnIndex) {
         if (columnIndex != sortColumnIndex) {
             sortColumnIndex = columnIndex;
             sortAscending = true;
@@ -120,24 +103,28 @@ public class SortColumnHeaderRenderer implements TableCellRenderer {
         }
         getPreferences().putInt(SORTING_COLUMN_INDEX, sortColumnIndex);
         getPreferences().putBoolean(SORTING_ASCENDING, sortAscending);
-        model.sort (columnIndex, sortAscending);
+        model.sort(columnIndex, sortAscending);
     }
-        
-    private ImageIcon getSortAscIcon () {
-        if (SORT_ASC_ICON == null) {
-            SORT_ASC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif", false); // NOI18N
+
+    public void sort() {
+        model.sort(sortColumnIndex, sortAscending);
+    }
+
+    private ImageIcon getSortAscIcon() {
+        if (sortAscIcon == null) {
+            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif", false); // NOI18N
         }
-        return SORT_ASC_ICON;
+        return sortAscIcon;
     }
-    
-    private ImageIcon getSortDescIcon () {
-        if (SORT_DESC_ICON == null) {
-            SORT_DESC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif", false); // NOI18N
+
+    private ImageIcon getSortDescIcon() {
+        if (sortDescIcon == null) {
+            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif", false); // NOI18N
         }
-        return SORT_DESC_ICON;
+        return sortDescIcon;
     }
-        
+
     private static Preferences getPreferences() {
         return NbPreferences.forModule(SortColumnHeaderRenderer.class);
-    }    
+    }
 }

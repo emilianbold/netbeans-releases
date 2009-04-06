@@ -68,8 +68,8 @@ public class TransferFileUnit {
         return isMarked;
     }
 
-    public void setMarked(boolean marked) {
-        this.isMarked = marked;
+    public void setMarked(boolean isMarked) {
+        this.isMarked = isMarked;
     }
 
     public Integer getId() {
