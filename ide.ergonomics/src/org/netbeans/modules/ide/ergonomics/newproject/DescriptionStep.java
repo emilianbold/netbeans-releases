@@ -88,6 +88,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private FeatureInfo info;
     private WizardDescriptor wd;
     private FileObject fo;
+    private boolean autoEnable;
+
+    public DescriptionStep(boolean autoEnable) {
+        this.autoEnable = autoEnable;
+    }
 
     public Component getComponent () {
         if (panel == null) {
@@ -165,7 +170,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                                 waitForDelegateWizard ();
                                 return new JLabel(" ");
                             }
-                        }, info, true);
+                        }, info, autoEnable);
                     }
                 });
             } catch (InterruptedException ex) {

@@ -233,7 +233,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 }
             } else if (rt.equals("char *") || rt.equals("unsigned char *") || rt.equals("const char *")) { // NOI18N
                 //see IZ: 151642 - string values may differ
-                if (value.replace("\"", "\\\"").equals(this.value)){
+                if (value.replace("\"", "\\\"").equals(this.value)) { // NOI18N
                     return;
                 }
                 value = setValueCharStar(value);
@@ -256,7 +256,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 }
             } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
                 //see IZ: 151642 - string values may differ
-                if (value.replace("\"", "\\\"").equals(this.value)){
+                if (value.replace("\"", "\\\"").equals(this.value)) { // NOI18N
                     return;
                 }
                 value = setValueCharStar(value);
@@ -372,9 +372,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         if (value.startsWith("0x") && (pos = value.indexOf(" \\\"")) != -1 && value.endsWith("\\\"")) { // NOI18N
             value = '"' + value.substring(pos + 3, value.length() - 2) + '"'; // NOI18N
         } else if (value.startsWith("0x") && (pos = value.indexOf(" \"")) != -1 && value.endsWith("\"")) { // NOI18N
-            value = value.substring(pos + 1).replace("\"", "\\\"");
+            value = value.substring(pos + 1).replace("\"", "\\\""); // NOI18N
         } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') { // NOI18N
-            value = value.replace("\"", "\\\"");
+            value = value.replace("\"", "\\\""); // NOI18N
         } else {
             value = null;
         }

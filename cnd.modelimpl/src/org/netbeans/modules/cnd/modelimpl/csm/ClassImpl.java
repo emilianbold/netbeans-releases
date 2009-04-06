@@ -710,6 +710,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
             out = UIDUtilities.findExistingUIDInList(members, start, end, name);
+//            if (FileImpl.traceFile(getContainingFile().getAbsolutePath())) {
+//                System.err.printf("%s found %s [%d-%d] in \n\t%s\n", (out == null) ? "NOT " : "", name, start, end, members);
+//            }
         }
         if (out == null) {
             // check friends

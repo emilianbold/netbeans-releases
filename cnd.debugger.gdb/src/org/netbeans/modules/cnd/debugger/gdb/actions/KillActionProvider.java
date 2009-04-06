@@ -139,9 +139,10 @@ public class KillActionProvider extends ActionsProvider {
      */
     public boolean isEnabled(Object action) {
         if (debuggerImpl != null) {
-            synchronized (debuggerImpl.LOCK) {
+            // synchronization removed for now, it causes IDE hang
+            //synchronized (debuggerImpl.LOCK) {
                 return true;
-            }
+            //}
         }
         return false;
     }

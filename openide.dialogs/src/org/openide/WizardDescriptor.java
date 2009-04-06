@@ -1120,8 +1120,10 @@ public class WizardDescriptor extends DialogDescriptor {
         if (wizardPanel != null) {
             // set back escapeActionListener as same as NbPresenter does
             if (escapeActionListener != null) {
-                wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
-                    KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                if (wizardPanel.getRootPane () != null) {
+                    wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
+                        KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                }
             }
             wizardPanel.setProgressComponent (null, null);
         }

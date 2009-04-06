@@ -71,6 +71,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private WizardDescriptor.InstantiatingIterator delegateIterator;
     private Boolean doEnable = null;
     private FileObject template;
+    private boolean autoEnable = true;
     
     public FeatureOnDemanWizardIterator (FileObject template) {
         this.template = template;
@@ -112,7 +113,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private void createPanels () {
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
-            panels.add (new DescriptionStep ());
+            panels.add (new DescriptionStep (autoEnable));
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
             
@@ -141,7 +142,7 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private void createPanelsForEnable () {
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
-            panels.add (new DescriptionStep ());
+            panels.add (new DescriptionStep (autoEnable));
             panels.add (new EnableStep ());
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemanWizardIterator.class, "DescriptionStep_Name"),
@@ -196,6 +197,9 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
     private WizardDescriptor wiz;
     
     public void initialize(WizardDescriptor wiz) {
+        if (WizardDescriptor.CLOSED_OPTION.equals(wiz.getValue())) {
+            autoEnable = false;
+        }
         this.wiz = wiz;
         wiz.putProperty (CHOSEN_TEMPLATE, template);
         wiz.putProperty(DELEGATE_ITERATOR, null);

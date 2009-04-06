@@ -29,7 +29,8 @@ public abstract class ProjectAccessor {
      * Retrieve the list of projects the given user is member of.
      * @param login
      * @param forceRefresh force reload from server
-     * @return
+     * @return list of member projects or null, if member projects
+     * are not accessible
      */
     public abstract List<ProjectHandle> getMemberProjects( LoginHandle login, boolean forceRefresh );
 
@@ -37,7 +38,7 @@ public abstract class ProjectAccessor {
      * Load details for given project.
      * @param projectId Project identification
      * @param forceRefresh force reload from server
-     * @return
+     * @return projectHandle or null, if project handle not accessible
      */
     public abstract ProjectHandle getNonMemberProject(String projectId, boolean forceRefresh);
 
