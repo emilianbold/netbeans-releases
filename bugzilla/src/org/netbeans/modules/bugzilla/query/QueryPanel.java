@@ -144,18 +144,6 @@ public class QueryPanel extends javax.swing.JPanel {
         repaint();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        controller.addNotify();
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        controller.removeNotify();
-    }
-
     void setQueryRunning(boolean running) {
         modifyButton.setEnabled(!running);
         refreshButton.setEnabled(!running);

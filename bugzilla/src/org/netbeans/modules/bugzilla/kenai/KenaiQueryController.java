@@ -75,13 +75,8 @@ public class KenaiQueryController extends QueryController {
     }
 
     @Override
-    protected void addNotify() {
-        super.addNotify();
-    }
-
-    @Override
-    protected void removeNotify() {
-        super.removeNotify();
+    public void closed() {
+        super.closed();
         // override
         scheduleForRefresh();
     }
