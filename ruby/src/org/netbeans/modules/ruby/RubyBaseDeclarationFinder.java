@@ -40,7 +40,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.IndexedElement;

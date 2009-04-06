@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
@@ -120,7 +120,7 @@ public class RailsViews extends RubyAstRule {
      * For example, methods that contain a redirect method probably don't need one.
      */
     private boolean shouldHaveView(ParserResult info, Node node) {
-        if (node.nodeId == NodeType.FCALLNODE) {
+        if (node.getNodeType() == NodeType.FCALLNODE) {
             String method = ((INameNode)node).getName();
             
             if (method.startsWith("redirect_")) { // NOI18N

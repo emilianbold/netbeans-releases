@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.EditRegions;
@@ -102,7 +102,7 @@ public class NestedLocal extends RubyAstRule {
         AstPath path = context.path;
         ParserResult info = context.parserResult;
 
-        if (node.nodeId == NodeType.FORNODE) {
+        if (node.getNodeType() == NodeType.FORNODE) {
             // Check the children and see if we have a LocalAsgnNode; tbese are the
             // loop variables which are NOT local to the for block; if found, go and see
             // if it's a reuse!
@@ -142,7 +142,7 @@ public class NestedLocal extends RubyAstRule {
             return false;
         }
 
-        if (node.nodeId == NodeType.LOCALVARNODE || node.nodeId == NodeType.LOCALASGNNODE) {
+        if (node.getNodeType() == NodeType.LOCALVARNODE || node.getNodeType() == NodeType.LOCALASGNNODE) {
             if (name.equals(((INameNode)node).getName())) {
                 return true;
             }
@@ -222,19 +222,19 @@ public class NestedLocal extends RubyAstRule {
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
-            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (node.nodeId == NodeType.ARGSNODE) {
+            } else if (node.getNodeType() == NodeType.ARGSNODE) {
                 isParameter = true;
             }
 

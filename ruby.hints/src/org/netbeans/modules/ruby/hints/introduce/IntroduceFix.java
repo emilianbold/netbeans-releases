@@ -50,9 +50,9 @@ import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
@@ -304,7 +304,7 @@ class IntroduceFix implements PreviewableFix {
 
         AstPath path = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         boolean addHash = false;
-        if (path.leafGrandParent() != null && path.leafGrandParent().nodeId == NodeType.HASHNODE) {
+        if (path.leafGrandParent() != null && path.leafGrandParent().getNodeType() == NodeType.HASHNODE) {
             addHash = true;
         }
         if (addHash) {
@@ -482,7 +482,7 @@ class IntroduceFix implements PreviewableFix {
         boolean found = false;
         while (it.hasNext()) {
             Node n = it.next();
-            if (n.nodeId == NodeType.NEWLINENODE) {
+            if (n.getNodeType() == NodeType.NEWLINENODE) {
                 if (prev != null) {
                     found = true;
                     // Peek ahead and see if we have another outer newline that is also on
@@ -492,7 +492,7 @@ class IntroduceFix implements PreviewableFix {
                     Node innerNewline = n;
                     while (it.hasNext()) {
                         n = it.next();
-                        if (n.nodeId == NodeType.NEWLINENODE) {
+                        if (n.getNodeType() == NodeType.NEWLINENODE) {
                             int prevNewline = Math.min(LexUtilities.getLexerOffset(info, innerNewline.getPosition().getStartOffset()), doc.getLength());
                             int newLine = Math.min(LexUtilities.getLexerOffset(info, n.getPosition().getStartOffset()), doc.getLength());
                             if (p != null && newLine != -1 && prevNewline != -1 && Utilities.getRowStart(doc, prevNewline) == Utilities.getRowStart(doc, newLine)) {
@@ -523,11 +523,11 @@ class IntroduceFix implements PreviewableFix {
         
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr.nodeId == NodeType.DEFNNODE || curr.nodeId == NodeType.DEFSNODE) {
+            if (curr.getNodeType() == NodeType.DEFNNODE || curr.getNodeType() == NodeType.DEFSNODE) {
                 return Math.min(LexUtilities.getLexerOffset(info, curr.getPosition().getEndOffset()), doc.getLength());
             }
-            if (curr.nodeId == NodeType.CLASSNODE || curr.nodeId == NodeType.SCLASSNODE ||
-                    curr.nodeId == NodeType.MODULENODE) {
+            if (curr.getNodeType() == NodeType.CLASSNODE || curr.getNodeType() == NodeType.SCLASSNODE ||
+                    curr.getNodeType() == NodeType.MODULENODE) {
                 // End of the class:
                 //int clzEnd = LexUtilities.getLexerOffset(info, curr.getPosition().getEndOffset());
                 //// Skip over "end"

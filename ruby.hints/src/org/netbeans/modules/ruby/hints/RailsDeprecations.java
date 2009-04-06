@@ -35,10 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
@@ -167,7 +167,7 @@ public class RailsDeprecations extends RubyAstRule {
 
     private void scan(ParserResult info, Node node, List<Hint> result) {
         // Look for use of deprecated fields
-        if (node.nodeId == NodeType.INSTVARNODE || node.nodeId == NodeType.INSTASGNNODE) {
+        if (node.getNodeType() == NodeType.INSTVARNODE || node.getNodeType() == NodeType.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
 
             // Skip matches in _test files, since the standard code generator still
@@ -199,10 +199,10 @@ public class RailsDeprecations extends RubyAstRule {
                 // make sure that the class on the left is actually a model,
                 // but that's costly and much less likely to be a problem
                 if (name.startsWith("find_")) { // NOI18N
-                    if (node.nodeId == NodeType.CALLNODE) {    
+                    if (node.getNodeType() == NodeType.CALLNODE) {    
                         Node receiver = ((CallNode)node).getReceiverNode();
-                        if (receiver.nodeId != NodeType.CONSTNODE && 
-                                receiver.nodeId != NodeType.COLON2NODE) {
+                        if (receiver.getNodeType() != NodeType.CONSTNODE && 
+                                receiver.getNodeType() != NodeType.COLON2NODE) {
                             return;
                         }
                     }
