@@ -148,7 +148,7 @@ public final class FileInfo {
     
     public FileInfo getRoot() {
         if (root == null) {
-            File tmp = getFile();
+            File tmp = getFile().getAbsoluteFile();
             File retVal = tmp;
             while (tmp != null) {
                 retVal = tmp;

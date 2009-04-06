@@ -131,10 +131,8 @@ public class ForkedJavaOverride extends Java {
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
                 OutputStream os = getOutputStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream) {
-                    os = AntBridge.delegateOutputStream(false);
-                    logLevel = Project.MSG_INFO;
-                }
+                os = AntBridge.delegateOutputStream(false);
+                logLevel = Project.MSG_INFO;
                 outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
                         "Out Thread for " + getProject().getName()); // NOI18N
                 outTask.start();
@@ -143,10 +141,8 @@ public class ForkedJavaOverride extends Java {
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
                 OutputStream os = getErrorStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream) {
-                    os = AntBridge.delegateOutputStream(true);
-                    logLevel = Project.MSG_WARN;
-                }
+                os = AntBridge.delegateOutputStream(true);
+                logLevel = Project.MSG_WARN;
                 errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
                         "Err Thread for " + getProject().getName()); // NOI18N
                 errTask.start();
