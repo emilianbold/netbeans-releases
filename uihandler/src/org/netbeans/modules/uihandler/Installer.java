@@ -68,7 +68,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -1651,10 +1650,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 checkingResult = new Boolean(new String(array, 0, length));
             } catch (UnsupportedEncodingException ex) {
                 Exceptions.printStackTrace(ex);
-            }catch (SocketTimeoutException ste){
-                Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Connection timeout", ste); // NOI18N
             } catch (Exception exception) {
-                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, "CHECKING PASSWORD FAILED", exception); // NOI18N
+                Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Checking password failed", exception); // NOI18N
             }
             return checkingResult;
         }
