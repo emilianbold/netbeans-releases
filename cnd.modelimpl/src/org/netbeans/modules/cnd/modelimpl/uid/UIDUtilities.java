@@ -162,7 +162,7 @@ public class UIDUtilities {
     }
 
     public static boolean isProjectFile(CsmUID<CsmProject> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
             int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
             int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
@@ -173,7 +173,7 @@ public class UIDUtilities {
     }
 
     public static boolean isSameProject(CsmUID<CsmFile> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
             int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
             int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
@@ -184,7 +184,7 @@ public class UIDUtilities {
     }
 
     public static boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
-        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
             int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid1).getKey());
             int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
