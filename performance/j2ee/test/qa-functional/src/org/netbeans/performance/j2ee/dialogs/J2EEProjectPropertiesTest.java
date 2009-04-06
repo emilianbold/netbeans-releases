@@ -39,36 +39,80 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2ee;
+package org.netbeans.performance.j2ee.dialogs;
 
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2ee.dialogs.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
+
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test of Project Properties Window
  *
- * @author  lmartinek@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class MeasureJ2EEDialogsTest {
+public class J2EEProjectPropertiesTest extends PerformanceTestCase {
+
+    private Node testNode;
+    private String TITLE, projectName;
+    
+    /**
+     * Creates a new instance of ProjectPropertiesWindow
+     */
+    public J2EEProjectPropertiesTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    /**
+     * Creates a new instance of ProjectPropertiesWindow
+     */
+    public J2EEProjectPropertiesTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(J2EEProjectPropertiesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
 
     
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
+    public void testJ2EEProject() {
+        projectName = "TestApplication";
+        doMeasurement();
+    }
 
-        
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
-        System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
+    public void testJ2EE_ejbProject() {
+        projectName = "TestApplication-ejb";
+        doMeasurement();
+    }
+    public void testJ2EE_warProject() {
+        projectName = "TestApplication-war";
+        doMeasurement();
+    }
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EEProjectPropertiesTest.class)
-        .addTest(InvokeSBActionTest.class)
-        .addTest(SelectJ2EEModuleDialogTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
-
-        return suite;
+    
+    public void initialize() {
+        //TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle","LBL_Customizer_Title", new String[]{projectName});
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);
+    }
+    
+    public void prepare() {
+    }
+    
+    public ComponentOperator open() {
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator("Project Properties");
     }
     
 }

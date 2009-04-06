@@ -149,7 +149,7 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     private File file(String cache, int[] len) {
-        String ud = System.getProperty("netbeans.user"); // NOI18N
+        String ud = getUserDir();
         if (ud == null) {
             return null;
         }
@@ -245,7 +245,7 @@ public final class Stamps {
     }
     
     private static void discardCachesImpl(AtomicLong al) {
-        String user = System.getProperty ("netbeans.user"); // NOI18N
+        String user = getUserDir();
         long now = System.currentTimeMillis();
         if (user != null) {
             File f = new File(user, ".lastModified");
@@ -291,7 +291,11 @@ public final class Stamps {
     // Implementation. As less dependecies on other NetBeans clases, as possible, please.
     // This will be called externally from a launcher.
     //
-    
+
+    private static String getUserDir() {
+        String ud = System.getProperty("netbeans.user"); // NOI18N
+        return "memory".equals(ud) ? null : ud;
+    }
 
     private static AtomicLong stamp(boolean checkStampFile) {
         AtomicLong result = new AtomicLong();
@@ -312,7 +316,7 @@ public final class Stamps {
                 sb.append(t).append('=').append(result.longValue()).append('\n');
             }
         }
-        String user = System.getProperty ("netbeans.user"); // NOI18N
+        String user = getUserDir();
         if (user != null) {
             stampForCluster (new File (user), result, new HashSet<File> (), false, false);
             sb.append(user).append('=').append(result.longValue()).append('\n');
@@ -339,7 +343,7 @@ public final class Stamps {
             }
             return;
         }
-        String user = System.getProperty ("netbeans.user"); // NOI18N
+        String user = getUserDir();
         if (user != null) {
             File userDir = new File(user);
             stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
@@ -497,7 +501,7 @@ public final class Stamps {
         public boolean store(AtomicInteger delay) {
             assert os == null;
             
-            String ud = System.getProperty("netbeans.user"); // NOI18N
+            String ud = getUserDir();
             if (ud == null) {
                 LOG.warning("No 'netbeans.user' property to store: " + cache); // NOI18N
                 return false;
