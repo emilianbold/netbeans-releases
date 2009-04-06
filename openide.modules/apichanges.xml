@@ -47,6 +47,21 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="DependencyIsSerializable">
+        <api name="modules"/>
+        <summary>Dependency class made serializable</summary>
+        <version major="7" minor="10"/>
+        <date day="6" month="4" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                <code>Dependency</code> now implements <code>Serializable</code>
+            </p>
+        </description>
+        <class package="org.openide.modules" name="Dependency"/>
+        <issue number="160390"/>
+    </change>
     <change id="PatchedPublic">
         <api name="modules"/>
         <summary>Added annotation <code>@PatchedPublic</code></summary>

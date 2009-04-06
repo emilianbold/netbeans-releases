@@ -533,6 +533,9 @@ public final class ModuleManager {
     void refineDependencies(Module m, Set<Dependency> dependencies) {
         installer.refineDependencies(m, dependencies);
     }
+    Set<Dependency> loadDependencies(String cnb) {
+        return installer.loadDependencies(cnb);
+    }
     /** Allows the installer to add provides (used to provide name of platform we run on)
      */
     String[] refineProvides (Module m) {

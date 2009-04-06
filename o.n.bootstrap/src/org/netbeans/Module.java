@@ -80,7 +80,7 @@ public abstract class Module extends ModuleInfo {
     public static final String PROP_MANIFEST = "manifest"; // NOI18N
     public static final String PROP_VALID = "valid"; // NOI18N
     public static final String PROP_PROBLEMS = "problems"; // NOI18N
-    
+
     /** manager which owns this module */
     protected final ModuleManager mgr;
     /** event logging (should not be much here) */
@@ -306,6 +306,7 @@ public abstract class Module extends ModuleInfo {
      */
     protected void parseManifest() throws InvalidException {
         Attributes attr = getManifest().getMainAttributes();
+
         // Code name
         codeName = attr.getValue("OpenIDE-Module"); // NOI18N
         if (codeName == null) {
@@ -322,9 +323,13 @@ public abstract class Module extends ModuleInfo {
             if (codeName.indexOf(',') != -1) {
                 throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module: " + codeName); // NOI18N
             }
-            Dependency.create(Dependency.TYPE_MODULE, codeName);
             Object[] cnParse = Util.parseCodeName(codeName);
             codeNameBase = (String)cnParse[0];
+            Set<?> deps = mgr.loadDependencies(codeNameBase);
+            boolean verifyCNBs = deps == null;
+            if (verifyCNBs) {
+                Dependency.create(Dependency.TYPE_MODULE, codeName);
+            }
             codeNameRelease = (cnParse[1] != null) ? ((Integer)cnParse[1]).intValue() : -1;
             if (cnParse[2] != null) throw new NumberFormatException(codeName);
             // Spec vers
@@ -350,7 +355,9 @@ public abstract class Module extends ModuleInfo {
                     if (provide.indexOf(',') != -1) {
                         throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module-Provides: " + provide); // NOI18N
                     }
-                    Dependency.create(Dependency.TYPE_MODULE, provide);
+                    if (verifyCNBs) {
+                        Dependency.create(Dependency.TYPE_MODULE, provide);
+                    }
                     if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
                     provides[i] = provide;
                 }
@@ -382,12 +389,16 @@ public abstract class Module extends ModuleInfo {
                         String piece = tok.nextToken();
                         if (piece.endsWith(".*")) { // NOI18N
                             String pkg = piece.substring(0, piece.length() - 2);
-                            Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            if (verifyCNBs) {
+                                Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            }
                             if (pkg.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
                             exports.add(new PackageExport(pkg.replace('.', '/') + '/', false));
                         } else if (piece.endsWith(".**")) { // NOI18N
                             String pkg = piece.substring(0, piece.length() - 3);
-                            Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            if (verifyCNBs) {
+                                Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            }
                             if (pkg.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
                             exports.add(new PackageExport(pkg.replace('.', '/') + '/', true));
                         } else {
@@ -414,8 +425,10 @@ public abstract class Module extends ModuleInfo {
                         if (piece.indexOf('/') != -1) {
                             throw new IllegalArgumentException("May specify only module code name bases in OpenIDE-Module-Friends, not major release versions: " + piece); // NOI18N
                         }
-                        // Indirect way of checking syntax:
-                        Dependency.create(Dependency.TYPE_MODULE, piece);
+                        if (verifyCNBs) {
+                            // Indirect way of checking syntax:
+                            Dependency.create(Dependency.TYPE_MODULE, piece);
+                        }
                         // OK, add it.
                         set.add(piece);
                     }
@@ -428,37 +441,7 @@ public abstract class Module extends ModuleInfo {
                     this.friendNames = set;
                 }
             }
-            
-            
-            // Dependencies
-            Set<Dependency> dependencies = new HashSet<Dependency>(20);
-            // First convert IDE/1 -> org.openide/1, so we never have to deal with
-            // "IDE deps" internally:
-            @SuppressWarnings("deprecation")
-            Set<Dependency> openideDeps = Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies")); // NOI18N
-            if (!openideDeps.isEmpty()) {
-                // If empty, leave it that way; NbInstaller will add it anyway.
-                Dependency d = openideDeps.iterator().next();
-                String name = d.getName();
-                if (!name.startsWith("IDE/")) throw new IllegalStateException("Weird IDE dep: " + name); // NOI18N
-                dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, "org.openide/" + name.substring(4) + " > " + d.getVersion())); // NOI18N
-                if (dependencies.size() != 1) throw new IllegalStateException("Should be singleton: " + dependencies); // NOI18N
-                
-                Util.err.warning("the module " + codeNameBase + " uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html"); // NOI18N
-            }
-            dependencies.addAll(Dependency.create(Dependency.TYPE_JAVA, attr.getValue("OpenIDE-Module-Java-Dependencies"))); // NOI18N
-            dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, attr.getValue("OpenIDE-Module-Module-Dependencies"))); // NOI18N
-            String pkgdeps = attr.getValue("OpenIDE-Module-Package-Dependencies"); // NOI18N
-            if (pkgdeps != null) {
-                // XXX: Util.err.log(ErrorManager.WARNING, "Warning: module " + codeNameBase + " uses the OpenIDE-Module-Package-Dependencies manifest attribute, which is now deprecated: XXX URL TBD");
-                dependencies.addAll(Dependency.create(Dependency.TYPE_PACKAGE, pkgdeps)); // NOI18N
-            }
-            dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, attr.getValue("OpenIDE-Module-Requires"))); // NOI18N
-            dependencies.addAll(Dependency.create(Dependency.TYPE_NEEDS, attr.getValue("OpenIDE-Module-Needs"))); // NOI18N
-            dependencies.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
-            // Permit the concrete installer to make some changes:
-            mgr.refineDependencies(this, dependencies);
-            dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
+            initDeps(deps, attr);
         } catch (IllegalArgumentException iae) {
             throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
@@ -630,6 +613,54 @@ public abstract class Module extends ModuleInfo {
         public @Override String toString() {
             return "PackageExport[" + pkg + (recursive ? "**/" : "") + "]"; // NOI18N
         }
+    }
+
+    /** Initializes dependencies of this module
+     *
+     * @param knownDeps Set<Dependency> of this module known from different source,
+     *    can be null
+     * @param attr attributes in manifest to parse if knownDeps is null
+     */
+    private void initDeps(Set<?> knownDeps, Attributes attr)
+    throws IllegalStateException, IllegalArgumentException {
+        if (knownDeps != null) {
+            dependenciesA = knownDeps.toArray(new Dependency[knownDeps.size()]);
+            knownDeps = null;
+            return;
+        }
+
+        // Dependencies
+        Set<Dependency> dependencies = new HashSet<Dependency>(20);
+        // First convert IDE/1 -> org.openide/1, so we never have to deal with
+        // "IDE deps" internally:
+        @SuppressWarnings(value = "deprecation")
+        Set<Dependency> openideDeps = Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies")); // NOI18N
+        if (!openideDeps.isEmpty()) {
+            // If empty, leave it that way; NbInstaller will add it anyway.
+            Dependency d = openideDeps.iterator().next();
+            String name = d.getName();
+            if (!name.startsWith("IDE/")) {
+                throw new IllegalStateException("Weird IDE dep: " + name); // NOI18N
+            }
+            dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, "org.openide/" + name.substring(4) + " > " + d.getVersion())); // NOI18N
+            if (dependencies.size() != 1) {
+                throw new IllegalStateException("Should be singleton: " + dependencies); // NOI18N
+            }
+            Util.err.warning("the module " + codeNameBase + " uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html"); // NOI18N
+        }
+        dependencies.addAll(Dependency.create(Dependency.TYPE_JAVA, attr.getValue("OpenIDE-Module-Java-Dependencies"))); // NOI18N
+        dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, attr.getValue("OpenIDE-Module-Module-Dependencies"))); // NOI18N
+        String pkgdeps = attr.getValue("OpenIDE-Module-Package-Dependencies"); // NOI18N
+        if (pkgdeps != null) {
+            // XXX: Util.err.log(ErrorManager.WARNING, "Warning: module " + codeNameBase + " uses the OpenIDE-Module-Package-Dependencies manifest attribute, which is now deprecated: XXX URL TBD");
+            dependencies.addAll(Dependency.create(Dependency.TYPE_PACKAGE, pkgdeps)); // NOI18N
+        }
+        dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, attr.getValue("OpenIDE-Module-Requires"))); // NOI18N
+        dependencies.addAll(Dependency.create(Dependency.TYPE_NEEDS, attr.getValue("OpenIDE-Module-Needs"))); // NOI18N
+        dependencies.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
+        // Permit the concrete installer to make some changes:
+        mgr.refineDependencies(this, dependencies);
+        dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
     }
 
 }
