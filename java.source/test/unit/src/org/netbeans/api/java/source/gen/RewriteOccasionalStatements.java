@@ -32,10 +32,12 @@ import org.junit.Test;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This test verifies issues from netbeans issueszila about rewriting trees.
@@ -63,7 +65,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     @Test
     public void test158337regresion1() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile,TEST_CONTENT);
+        TestUtilities.copyStringToFile(testFile, TEST_CONTENT);
         String golden = "\n" +
                 "public class NewArrayTest {\n" +
                 "\n" +
@@ -96,8 +98,6 @@ public class RewriteOccasionalStatements extends GeneratorTest {
         assertEquals(golden, res);
     }
 
-
-    
 
     @Test
     public void test158337regresion2() throws Exception {
@@ -144,11 +144,10 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     }
 
 
-
     @Test
     public void test158337() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile,TEST_CONTENT);
+        TestUtilities.copyStringToFile(testFile, TEST_CONTENT);
         String golden = "\n" +
                 "public class NewArrayTest {\n" +
                 "\n" +
@@ -206,4 +205,198 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     String getSourcePckg() {
         return "";
     }
+
+    public void testExtractInterface117986() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String source = "public class ExtractSuperInterface implements MyInterface1, MyInterface2, MyInterface3 {\n" +
+                "}\n";
+        TestUtilities.copyStringToFile(testFile, source);
+        String golden = "public class ExtractSuperInterface implements SuperInterface {\n" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                Elements elements = wc.getElements();
+                TypeElement typeElement = elements.getTypeElement("ExtractSuperInterface");
+                ElementHandle<TypeElement> sourceType = ElementHandle.<TypeElement>create(typeElement);
+                TypeElement clazz = sourceType.resolve(wc);
+                assert clazz != null;
+                ClassTree classTree = wc.getTrees().getTree(clazz);
+                TreeMaker maker = wc.getTreeMaker();
+                // fake interface since interface file does not exist yet
+                Tree interfaceTree = maker.Identifier("SuperInterface");
+
+                // filter out obsolete members
+                List<Tree> members2Add = new ArrayList<Tree>();
+                // filter out obsolete implements trees
+                List<Tree> impls2Add = Collections.singletonList(interfaceTree);                
+
+                ClassTree nc;
+                if (clazz.getKind() == ElementKind.CLASS) {
+                    nc = maker.Class(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            classTree.getExtendsClause(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.INTERFACE) {
+                    nc = maker.Interface(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.ENUM) {
+                    nc = maker.Enum(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            impls2Add,
+                            members2Add);
+                } else {
+                    throw new IllegalStateException(classTree.toString());
+                }
+
+                wc.rewrite(classTree, nc);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals("Golden and result does not match", golden, res);
+    }
+
+    public void testExtractInterfaceRegresion1() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String source = "public class ExtractSuperInterface implements MyInterface1 {\n" +
+                "}\n";
+        TestUtilities.copyStringToFile(testFile, source);
+        String golden = "public class ExtractSuperInterface implements SuperInterface {\n" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                Elements elements = wc.getElements();
+                TypeElement typeElement = elements.getTypeElement("ExtractSuperInterface");
+                ElementHandle<TypeElement> sourceType = ElementHandle.<TypeElement>create(typeElement);
+                TypeElement clazz = sourceType.resolve(wc);
+                assert clazz != null;
+                ClassTree classTree = wc.getTrees().getTree(clazz);
+                TreeMaker maker = wc.getTreeMaker();
+                // fake interface since interface file does not exist yet
+                Tree interfaceTree = maker.Identifier("SuperInterface");
+
+                // filter out obsolete members
+                List<Tree> members2Add = new ArrayList<Tree>();
+                // filter out obsolete implements trees
+                List<Tree> impls2Add = Collections.singletonList(interfaceTree);
+
+                ClassTree nc;
+                if (clazz.getKind() == ElementKind.CLASS) {
+                    nc = maker.Class(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            classTree.getExtendsClause(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.INTERFACE) {
+                    nc = maker.Interface(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.ENUM) {
+                    nc = maker.Enum(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            impls2Add,
+                            members2Add);
+                } else {
+                    throw new IllegalStateException(classTree.toString());
+                }
+
+                wc.rewrite(classTree, nc);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals("Golden and result does not match", golden, res);
+    }
+
+    public void testExtractInterfaceRegresion2() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String source = "public class ExtractSuperInterface implements MyInterface1, MyInterface2 {\n" +
+                "}\n";
+        TestUtilities.copyStringToFile(testFile, source);
+        String golden = "public class ExtractSuperInterface implements SuperInterface {\n" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                Elements elements = wc.getElements();
+                TypeElement typeElement = elements.getTypeElement("ExtractSuperInterface");
+                ElementHandle<TypeElement> sourceType = ElementHandle.<TypeElement>create(typeElement);
+                TypeElement clazz = sourceType.resolve(wc);
+                assert clazz != null;
+                ClassTree classTree = wc.getTrees().getTree(clazz);
+                TreeMaker maker = wc.getTreeMaker();
+                // fake interface since interface file does not exist yet
+                Tree interfaceTree = maker.Identifier("SuperInterface");
+
+                // filter out obsolete members
+                List<Tree> members2Add = new ArrayList<Tree>();
+                // filter out obsolete implements trees
+                List<Tree> impls2Add = Collections.singletonList(interfaceTree);
+
+                ClassTree nc;
+                if (clazz.getKind() == ElementKind.CLASS) {
+                    nc = maker.Class(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            classTree.getExtendsClause(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.INTERFACE) {
+                    nc = maker.Interface(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            classTree.getTypeParameters(),
+                            impls2Add,
+                            members2Add);
+                } else if (clazz.getKind() == ElementKind.ENUM) {
+                    nc = maker.Enum(
+                            classTree.getModifiers(),
+                            classTree.getSimpleName(),
+                            impls2Add,
+                            members2Add);
+                } else {
+                    throw new IllegalStateException(classTree.toString());
+                }
+
+                wc.rewrite(classTree, nc);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals("Golden and result does not match", golden, res);
+    }
+
+
 }
