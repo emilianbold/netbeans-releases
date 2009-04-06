@@ -144,7 +144,8 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             file.setBuffer(buf);
-            DeepReparsingUtils.reparseOnEdit(file, this);
+            // no need for deep parsing util call here, because it will be called as external notification change anyway
+//            DeepReparsingUtils.reparseOnEdit(file, this);
         }
     }
 
