@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.awt.Image;
+import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -161,5 +162,21 @@ public class KenaiRepository extends BugzillaRepository {
     protected void setCredentials(String user, String password) {
         super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
     }
+
+    @Override
+    public boolean authenticate(String errroMsg) {
+        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(getUrl());
+        if(pa == null) {
+            return false;
+        }
+
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+
+        setCredentials(user, new String(password));
+
+        return true;
+    }
+
 
 }

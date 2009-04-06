@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
@@ -353,6 +354,10 @@ public class BugzillaRepository extends Repository {
             executor = new BugzillaExecutor(this);
         }
         return executor;
+    }
+
+    public boolean authenticate(String errroMsg) {
+        return BugtrackingUtil.editRepository(this, errroMsg);
     }
 
     private class Cache extends IssueCache {
