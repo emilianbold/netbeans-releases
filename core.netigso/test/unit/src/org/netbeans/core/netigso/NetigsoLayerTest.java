@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -139,6 +140,9 @@ public class NetigsoLayerTest extends SetupHid {
         }
         fo = FileUtil.getConfigFile("TestFolder");
         assertNotNull("Folder found", fo);
+
+        URL u = mgr.getClassLoader().getResource("org/bar/layer.xml");
+        assertNotNull("System ClassLoader can load resources", u);
     }
 /* Looks like non-exported packages do not work, as the URLHandlersBundleStreamHandler gets
  * somehow confused.

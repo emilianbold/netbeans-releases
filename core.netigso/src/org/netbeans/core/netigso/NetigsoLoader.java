@@ -3,6 +3,8 @@ package org.netbeans.core.netigso;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.ProxyClassLoader;
 import org.openide.util.Exceptions;
@@ -15,6 +17,16 @@ final class NetigsoLoader extends ProxyClassLoader {
     public NetigsoLoader(Bundle bundle) {
         super(new ClassLoader[0], true);
         this.bundle = bundle;
+        Set<String> pkgs = new HashSet<String>();
+        Enumeration en = bundle.findEntries("", "", true);
+        while (en.hasMoreElements()) {
+            URL url = (URL)en.nextElement();
+            if (url.getFile().startsWith("/META-INF")) {
+                continue;
+            }
+            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+        }
+        addCoveredPackages(pkgs);
     }
 
     @Override
