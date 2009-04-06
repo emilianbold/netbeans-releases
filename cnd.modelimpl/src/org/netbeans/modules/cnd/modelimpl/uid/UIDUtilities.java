@@ -54,11 +54,14 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
@@ -82,7 +85,6 @@ public class UIDUtilities {
     private UIDUtilities() {
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     }
@@ -103,14 +105,14 @@ public class UIDUtilities {
         CsmUID<T> uid;
         //if (!ProjectBase.canRegisterDeclaration(declaration)) {
         if (!namedDeclaration(declaration)) {
-            uid = handleUnnamedDeclaration((CsmOffsetableDeclaration) declaration);
+            uid = handleUnnamedDeclaration(declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                uid = new TypedefUID((CsmTypedef) declaration);
+                uid = (CsmUID<T>) new TypedefUID((CsmTypedef) declaration);
             } else if (declaration instanceof CsmClassifier) {
-                uid = new ClassifierUID(declaration);
+                uid = new ClassifierUID<T>(declaration);
             } else {
-                uid = new DeclarationUID(declaration);
+                uid = new DeclarationUID<T>(declaration);
             }
         }
         return UIDManager.instance().getSharedUID(uid);
@@ -153,16 +155,16 @@ public class UIDUtilities {
     }
 
     public static int getProjectID(CsmUID<CsmFile> uid) {
-        if (uid instanceof KeyBasedUID) {
-            return KeyUtilities.getProjectIndex(((KeyBasedUID) uid).getKey());
+        if (uid instanceof KeyBasedUID<?>) {
+            return KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid).getKey());
         }
         return -1;
     }
 
     public static boolean isProjectFile(CsmUID<CsmProject> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -171,9 +173,9 @@ public class UIDUtilities {
     }
 
     public static boolean isSameProject(CsmUID<CsmFile> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -182,9 +184,9 @@ public class UIDUtilities {
     }
 
     public static boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid1 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -203,58 +205,70 @@ public class UIDUtilities {
         return false;
     }
 
-    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static CsmDeclaration.Kind getKind(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyKind(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getKind();
+            CsmObject object = (CsmObject) uid.getObject();
+            if (CsmKindUtilities.isDeclaration(object)) {
+                return ((CsmDeclaration)object).getKind();
+            }
         }
         return null;
     }
 
     public static CharSequence getFileName(CsmUID<CsmFile> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         }
         return null;
     }
 
     public static CharSequence getProjectName(CsmUID<CsmProject> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         }
         return null;
     }
 
-    public static <T extends CsmOffsetableDeclaration> CharSequence getName(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static CharSequence getName(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getName();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isNamedElement(object)) {
+                return ((CsmNamedElement) object).getName();
+            }
         }
         return null;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getStartOffset(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static int getStartOffset(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyStartOffset(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getStartOffset();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isOffsetable(object)) {
+                return ((CsmOffsetable) object).getStartOffset();
+            }
         }
         return -1;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getEndOffset(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static int getEndOffset(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyEndOffset(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getEndOffset();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isOffsetable(object)) {
+                return ((CsmOffsetable) object).getEndOffset();
+            }
         }
         return -1;
     }
@@ -341,15 +355,15 @@ public class UIDUtilities {
     }
 
     @SuppressWarnings("unchecked")
-    private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
+    private static <T extends CsmOffsetableDeclaration> CsmUID<T> handleUnnamedDeclaration(T decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
             new CsmTracer().dumpModel(decl);
         }
         if (decl instanceof CsmClassifier) {
-            return new UnnamedClassifierUID(decl, UnnamedID.incrementAndGet());
+            return new UnnamedClassifierUID<T>(decl, UnnamedID.incrementAndGet());
         } else {
-            return new UnnamedOffsetableDeclarationUID(decl, UnnamedID.incrementAndGet());
+            return new UnnamedOffsetableDeclarationUID<T>(decl, UnnamedID.incrementAndGet());
         }
     }
     private static AtomicInteger UnnamedID = new AtomicInteger(0);
@@ -404,7 +418,7 @@ public class UIDUtilities {
     private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
 
         public OffsetableDeclarationUIDBase(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase) declaration));
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
         }
 
         protected OffsetableDeclarationUIDBase(Key key) {
@@ -429,9 +443,9 @@ public class UIDUtilities {
     /**
      * UID for CsmTypedef
      */
-    /* package */ static final class TypedefUID<T extends CsmTypedef> extends OffsetableDeclarationUIDBase<T> {
+    /* package */ static final class TypedefUID extends OffsetableDeclarationUIDBase<CsmTypedef> {
 
-        public TypedefUID(T typedef) {
+        public TypedefUID(CsmTypedef typedef) {
             super(typedef);
 //            assert typedef instanceof RegistarableDeclaration;
 //            if (!((RegistarableDeclaration)typedef).isRegistered()) {
@@ -537,7 +551,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedClassifierUID(T classifier, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) classifier, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index));
         }
 
         /* package */ UnnamedClassifierUID(DataInput aStream) throws IOException {
@@ -556,7 +570,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedOffsetableDeclarationUID(T decl, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) decl, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index));
         }
 
         /* package */ UnnamedOffsetableDeclarationUID(DataInput aStream) throws IOException {
@@ -625,7 +639,7 @@ public class UIDUtilities {
 
     }
 
-    /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
+    /* package */ static final class UnresolvedClassUID extends UnresolvedUIDBase<CsmClass> {
 
         private CharSequence name;
 
@@ -654,7 +668,7 @@ public class UIDUtilities {
             if (!super.equals(obj)) {
                 return false;
             }
-            final UnresolvedClassUID<?> other = (UnresolvedClassUID<?>) obj;
+            final UnresolvedClassUID other = (UnresolvedClassUID) obj;
             if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
                 return false;
             }
