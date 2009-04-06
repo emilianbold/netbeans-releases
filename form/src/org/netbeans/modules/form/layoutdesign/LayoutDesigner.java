@@ -3690,6 +3690,9 @@ public class LayoutDesigner implements LayoutConstants {
                 return; // don't change default gap if not resizing
             pad = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
             pref = pad;
+        } else if (pref < 0) { // autocorrect invalid pref size (#159536)
+            pad = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
+            pref = pad;
         }
         if (currentSize != pref) { // [check for canResize?]
             if (min == NOT_EXPLICITLY_DEFINED) {
