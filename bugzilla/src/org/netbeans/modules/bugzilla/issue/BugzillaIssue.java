@@ -184,6 +184,10 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh");
+        if(refresh != null && refresh.equals("true")) {
+            return;
+        }
         repository.scheduleForRefresh(getID());
     }
 
