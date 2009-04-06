@@ -61,7 +61,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     private List<TransferFileTableChangeListener> listeners =
             new ArrayList<TransferFileTableChangeListener>();
     private String filter = "";//NOI18N
-    private Comparator<TransferFileUnit> fileCmp;
 
     public static enum Type {
 
@@ -112,8 +111,6 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
 
     public abstract boolean isSortAllowed(Object columnIdentifier);
 
-    protected abstract Comparator<TransferFileUnit> getComparator(final Object columnIdentifier, final boolean sortAscending);
-
     public String getTabTooltipText() {
         return null;
     }
@@ -146,20 +143,32 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
 
     public abstract int getPreferredWidth(JTableHeader header, int col);
 
-    protected Comparator<TransferFileUnit> getDefaultComparator() {
-        return new Comparator<TransferFileUnit>() {
-
-            public int compare(TransferFileUnit o1, TransferFileUnit o2) {
-                return TransferFileUnit.compare(o1, o2);
-            }
-        };
-    }
-
-    public final void sort(Object columnIdentifier, boolean sortAscending) {
-        if (columnIdentifier == null) {
-            setFileUnitComparator(getDefaultComparator());
+    public final void sort(final Object columnIdentifier, final boolean sortAscending) {
+        if (getColumnName(0).equals(columnIdentifier)) {
+            Collections.sort(fileData, new Comparator<TransferFileUnit>() {
+                public int compare(TransferFileUnit o1, TransferFileUnit o2) {
+                    TransferFileUnit unit1 = sortAscending ? o1 : o2;
+                    TransferFileUnit unit2 = sortAscending ? o2 : o1;
+                    if (unit1.isMarked() && unit2.isMarked()) {
+                        return TransferFileUnit.compare(unit1, unit2);
+                    } else if (unit1.isMarked()) {
+                        return -1;
+                    } else if (unit2.isMarked()) {
+                        return 1;
+                    }
+                    return TransferFileUnit.compare(unit1, unit2);
+                }
+            });
+        } else if (getColumnName(1).equals(columnIdentifier)) {
+            Collections.sort(fileData, new Comparator<TransferFileUnit>() {
+                public int compare(TransferFileUnit o1, TransferFileUnit o2) {
+                    TransferFileUnit unit1 = sortAscending ? o1 : o2;
+                    TransferFileUnit unit2 = sortAscending ? o2 : o1;
+                    return TransferFileUnit.compare(unit1, unit2);
+                }
+            });
         } else {
-            setFileUnitComparator(getComparator(columnIdentifier, sortAscending));
+            assert false : "Unknown column identifier: " + columnIdentifier;
         }
         fireTableDataChanged();
     }
@@ -169,28 +178,10 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return (key0 != null) ? NbBundle.getMessage(TransferFileTableModel.class, key0, (String) getValueAt(row, 1)) : null;
     }
 
-    //private final void setData(List<FileUnit> files,  Comparator<FileUnit> unitCmp) {
-    private final void setData(List<TransferFileUnit> files, Comparator<TransferFileUnit> unitCmp) {
-        this.fileCmp = unitCmp != null ? unitCmp : getDefaultComparator();
-        if (files != null) {
-            this.fileData = Collections.emptyList();
-            this.fileData = new ArrayList<TransferFileUnit>();
-            this.fileData.addAll(files);
-        } else {
-            assert fileData != null;
-        }
-        if (unitCmp != null) {
-            Collections.sort(fileData, unitCmp);
-        }
-        this.fireTableDataChanged();
-    }
-
-    public final void setFileUnitComparator(Comparator<TransferFileUnit> comparator) {
-        setData(null, comparator);
-    }
-
-    public final void setData(List<TransferFileUnit> files) {
-        setData(files, null);
+    protected final void setData(List<TransferFileUnit> files) {
+        assert files != null;
+        fileData = new ArrayList<TransferFileUnit>(files);
+        fireTableDataChanged();
     }
 
     public void setFilter(final String filter, final Runnable runAfterwards) {

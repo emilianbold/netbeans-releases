@@ -159,24 +159,7 @@ public class TransferFileUploadModel extends TransferFileTableModel {
     }
 
     public boolean isSortAllowed(Object columnIdentifier) {
-        boolean isUpload = getColumnName(0).equals(columnIdentifier);
-        return isUpload ? false : true;
-    }
-
-    protected Comparator<TransferFileUnit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
-        return new Comparator<TransferFileUnit>() {
-
-            public int compare(TransferFileUnit o1, TransferFileUnit o2) {
-                TransferFileUnit unit1 = sortAscending ? o1 : o2;
-                TransferFileUnit unit2 = sortAscending ? o2 : o1;
-                if (getColumnName(0).equals(columnIdentifier)) {
-                    assert false : columnIdentifier.toString();
-                } else if (getColumnName(1).equals(columnIdentifier)) {
-                    return TransferFileUnit.compare(unit1, unit2);
-                }
-                return 0;
-            }
-        };
+        return true;
     }
 
     protected String getBundle(String key, Object... params) {
