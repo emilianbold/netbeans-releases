@@ -59,17 +59,31 @@ public class SortColumnHeaderRenderer implements TableCellRenderer {
     private static ImageIcon SORT_DESC_ICON;
     private static ImageIcon SORT_ASC_ICON;
 
-    private TransferFileTableModel model;
-    private TableCellRenderer textRenderer;
+    private final TransferFileTableModel model;
+    private final TableCellRenderer textRenderer;
     private int sortColumnIndex;
     private boolean sortAscending;
     
-    public SortColumnHeaderRenderer (TransferFileTableModel model, TableCellRenderer textRenderer) {
+    private SortColumnHeaderRenderer (TransferFileTableModel model, TableCellRenderer textRenderer) {
         this.model = model;
         this.textRenderer = textRenderer;
         sortColumnIndex = getPreferences().getInt(SORTING_COLUMN_INDEX, getDefaultSortingColumn());
         sortAscending = getPreferences().getBoolean(SORTING_ASCENDING, true);
-        this.model.sort (sortColumnIndex, sortAscending);
+        model.sort (sortColumnIndex, sortAscending);
+    }
+
+    public static SortColumnHeaderRenderer create(final TransferFileTableModel model, TableCellRenderer textRenderer) {
+        final SortColumnHeaderRenderer renderer = new SortColumnHeaderRenderer(model, textRenderer);
+        renderer.model.addUpdateUnitListener(new TransferFileTableChangeListener() {
+            public void updateUnitsChanged() {
+                renderer.model.sort(renderer.sortColumnIndex, renderer.sortAscending);
+            }
+            public void buttonsChanged() {
+            }
+            public void filterChanged() {
+            }
+        });
+        return renderer;
     }
         
     public Component getTableCellRendererComponent (JTable table, Object value,

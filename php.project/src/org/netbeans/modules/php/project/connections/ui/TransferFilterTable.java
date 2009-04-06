@@ -71,6 +71,7 @@ final class TransferFilterTable extends JTable {
         //getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileConfirmationTable.class, "ACN_UnitTable")); // NOI18N
         //getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_UnitTable")); // NOI18N        
         this.model = model;
+
         setShowGrid (false);
         setColumnsSize ();
         setIntercellSpacing (new Dimension (0, 0));
@@ -235,7 +236,7 @@ final class TransferFilterTable extends JTable {
         @Override
         public void setDefaultRenderer (TableCellRenderer defaultRenderer) {
             if( !(defaultRenderer instanceof SortColumnHeaderRenderer) ) {
-                sortingRenderer = new SortColumnHeaderRenderer ((TransferFileTableModel)getModel (), defaultRenderer );
+                sortingRenderer = SortColumnHeaderRenderer.create ((TransferFileTableModel)getModel (), defaultRenderer );
                 defaultRenderer = sortingRenderer;
             }
             super.setDefaultRenderer ( defaultRenderer );
