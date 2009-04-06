@@ -292,7 +292,8 @@ public class JavacParser extends Parser {
     public void invalidate () {
         this.invalid = true;
     }
-        
+
+    //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
         assert task != null;
@@ -301,39 +302,40 @@ public class JavacParser extends Parser {
         canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
-            if (this.sourceCount == 0) {
-                ClasspathInfo _tmpInfo = null;
-                if (task instanceof ClasspathInfoProvider &&
-                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                    cpInfo = _tmpInfo;
-                    ciImpl = new CompilationInfoImpl(cpInfo);
-                }
-                else {
-                    throw new IllegalArgumentException("No classpath provided by task: " + task);
-                }
-            }
-            else if (this.sourceCount == 1) {
-                init (snapshot, task, true);
-                boolean needsFullReparse = true;
-                if (supportsReparse) {
-                    Pair<DocPositionRegion,MethodTree> _changedMethod;                    
-                    synchronized (this) {
-                        _changedMethod = this.changedMethod;
-                        this.changedMethod = null;
+            switch (this.sourceCount) {
+                case 0:
+                    ClasspathInfo _tmpInfo = null;
+                    if (task instanceof ClasspathInfoProvider &&
+                        (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                        cpInfo = _tmpInfo;
+                        ciImpl = new CompilationInfoImpl(cpInfo);
                     }
-                    if (_changedMethod != null && ciImpl != null) {
-                        LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
-                        needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                    else {
+                        throw new IllegalArgumentException("No classpath provided by task: " + task);
                     }
-                }
-                if (needsFullReparse) {
-                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
-                    LOGGER.fine("\t:created new javac");                                    //NOI18N
-                }
-            } 
-            else {
-                init (snapshot, task, false);
-                ciImpl = createCurrentInfo(this, file, root, snapshot,
+                    break;
+                case 1:
+                    init (snapshot, task, true);
+                    boolean needsFullReparse = true;
+                    if (supportsReparse) {
+                        Pair<DocPositionRegion,MethodTree> _changedMethod;
+                        synchronized (this) {
+                            _changedMethod = this.changedMethod;
+                            this.changedMethod = null;
+                        }
+                        if (_changedMethod != null && ciImpl != null) {
+                            LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
+                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                        }
+                    }
+                    if (needsFullReparse) {
+                        ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                        LOGGER.fine("\t:created new javac");                                    //NOI18N
+                    }
+                    break;
+                default:
+                    init (snapshot, task, false);
+                    ciImpl = createCurrentInfo(this, file, root, snapshot,
                         ciImpl == null ? null : ciImpl.getJavacTask());
             }            
             cachedSnapShot = snapshot;
@@ -341,7 +343,8 @@ public class JavacParser extends Parser {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
         }
     }
-    
+
+    //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public JavacParserResult getResult (final Task task) throws ParseException {
         assert ciImpl != null;
