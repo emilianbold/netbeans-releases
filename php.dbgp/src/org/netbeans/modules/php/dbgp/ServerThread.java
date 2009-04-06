@@ -33,6 +33,8 @@ class ServerThread extends SingleThread {
 
 
     public void run() {
+        ProxyClient proxy = ProxyClient.getInstance();
+        boolean proxyUsed = (proxy != null) ? proxy.init() : false;
         isStopped = new AtomicBoolean(false);
         DebugSession debugSession = getDebugSession();
         if (debugSession != null && createServerSocket(debugSession)) {
@@ -51,6 +53,9 @@ class ServerThread extends SingleThread {
                 }
             }
             closeSocket();
+        }
+        if (proxyUsed) {
+            proxy.close();
         }
     }
 

@@ -589,7 +589,9 @@ public class HtmlSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
         TokenSequence first = tslist.get(0);
         first.moveStart();
-        first.moveNext(); //should return true
+        if(!first.moveNext()) {
+            return null; //likely empty input (document)
+        }
 
         List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
         TokenSequence sequence = null;
