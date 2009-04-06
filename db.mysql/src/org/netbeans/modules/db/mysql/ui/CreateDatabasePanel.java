@@ -105,7 +105,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         "CreateNewDatabasePanel.MSG_SpecifyDatabase");
         }
 
-        if (this.isGrantAccess() && Utils.isEmpty((String)comboUsers.getSelectedItem())) {
+        if (this.isGrantAccess() && 
+                (comboUsers.getSelectedItem() == null ||
+                Utils.isEmpty(((DatabaseUser)comboUsers.getSelectedItem()).getUser ()))) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatbasePanel.MSG_NoGrantUserSelected");
         }
 
@@ -469,7 +471,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         });
 
         comboDatabaseName.setEditable(true);
-        comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         comboDatabaseName.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleDescription")); // NOI18N
         comboDatabaseName.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -477,8 +478,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         });
 
-        comboUsers.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         comboUsers.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboUsers.AccessibleContext.accessibleDescription")); // NOI18N
+        comboUsers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboUsersActionPerformed(evt);
+            }
+        });
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
@@ -500,9 +505,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(comboUsers, 0, 323, Short.MAX_VALUE)
                             .add(comboDatabaseName, 0, 323, Short.MAX_VALUE)))
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-                    .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE))
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+                    .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -542,14 +547,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGrantAccessItemStateChanged
         comboUsers.setEnabled(isGrantAccess());
     }//GEN-LAST:event_chkGrantAccessItemStateChanged
+
+    private void comboUsersActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboUsersActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboUsersActionPerformed
     
     private static class DatabaseComboModel implements ComboBoxModel {
         private final List<String> sampleNames = SampleManager.getSampleNames();
-        static final String SAMPLE_PREFIX =
+        private static final String SAMPLE_PREFIX =
                 NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
-        String selected = null;
-        final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
+        private String selected = null;
 
         public void setSelectedItem(Object item) {
             selected = (String)item;
@@ -590,10 +598,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     private static class UsersComboModel implements ComboBoxModel {
-        final DatabaseServer server;
+        private final DatabaseServer server;
 
-        ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
-        DatabaseUser selected;
+        private List<DatabaseUser> users= new ArrayList<DatabaseUser>();
+        private DatabaseUser selected;
 
         public UsersComboModel(DatabaseServer server) throws DatabaseException {
             this.server = server;
@@ -610,6 +618,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         rootUser = user;
                         break;
                     }
+                }
+                if (users.size () > 0) {
+                    selected = users.get (0);
                 }
                 
                 if ( rootUser != null ) {
@@ -628,7 +639,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public void setSelectedItem(Object item) {
-            selected = (DatabaseUser)item;
+            assert item instanceof DatabaseUser;
+            if (item instanceof DatabaseUser) {
+                selected = (DatabaseUser)item;
+            }
         }
 
         public Object getSelectedItem() {
@@ -648,6 +662,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         public void removeListDataListener(ListDataListener arg0) {
         }
+
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
