@@ -63,6 +63,7 @@ import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -172,30 +173,25 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         }        
         this.repositoryRoot = repositoryRoot;
         
-        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryRootNode(this, repositoryRoot);                        
-        rootNode.expand();
+        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryRootNode(this, repositoryRoot);
         
-        Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
+        Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);
         getExplorerManager().setRootContext(rootNode);
+        panel.expandNode((RepositoryPathNode) rootNode);
         
         if(selectedNodes == null) {
             selectedNodes = new Node[] {};
         }
-        
-        try {        
-            getExplorerManager().setSelectedNodes(selectedNodes);    
-            for (int i = 0; i < selectedNodes.length; i++) {
-                getExplorerManager().setExploredContext(selectedNodes[i]);                           
-            }   
-            if(selectedNodes.length > 0) {
-                ((RepositoryPathNode) selectedNodes[selectedNodes.length - 1]).expand();
-            } else {
-                rootNode.expand();        
+        if(selectedNodes.length > 0) {
+            for (Node selectedNode : selectedNodes) {
+                panel.expandNode((RepositoryPathNode) selectedNode);
             }
-        } catch (PropertyVetoException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
-        }                  
-                
+            try {
+                getExplorerManager().setSelectedNodes(selectedNodes);
+            } catch (PropertyVetoException ex) {
+                // not interested
+            }
+        }
     }       
 
     public RepositoryFile[] getRepositoryFiles() {

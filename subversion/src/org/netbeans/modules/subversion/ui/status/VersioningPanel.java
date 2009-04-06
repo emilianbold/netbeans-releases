@@ -355,7 +355,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             return;
         }          
         LifecycleManager.getDefault().saveAll();
-        if(context.getRootFiles().length < 1) {
+        if(context == null || context.getRootFiles().length < 1) {
             return;
         }        
         refreshStatuses();
