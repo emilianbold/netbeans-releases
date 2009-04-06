@@ -276,7 +276,7 @@ public final class TransferFilter extends javax.swing.JPanel {
     }
 
     public void refreshState() {
-        int units = model.getRowCount();
+        int units = model.getMarkedUnits().size();
         popupActionsSupport.tableDataChanged();
 
         if (units == 0) {
