@@ -142,8 +142,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         int i, k = fields.length;
         for (i=0; i < k; i++) {
             Field field = fields[i];
-            if (field instanceof PropertyChangeListener) {
-                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (PropertyChangeListener)field);
+            // we only care about AbstractVariables here, other implementations should care themselves
+            if (field instanceof AbstractVariable) {
+                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (AbstractVariable)field);
             }
         }
         fields = new Field[0];
@@ -230,7 +231,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char"); // NOI18N
                 }
-            } else if (rt.equals("char *") || rt.equals("unsigned char *")) { // NOI18N
+            } else if (rt.equals("char *") || rt.equals("unsigned char *") || rt.equals("const char *")) { // NOI18N
+                //see IZ: 151642 - string values may differ
+                if (value.replace("\"", "\\\"").equals(this.value)){
+                    return;
+                }
                 value = setValueCharStar(value);
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
@@ -250,6 +255,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
                 }
             } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
+                //see IZ: 151642 - string values may differ
+                if (value.replace("\"", "\\\"").equals(this.value)){
+                    return;
+                }
                 value = setValueCharStar(value);
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
@@ -258,12 +267,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 // no current validation
             }
             if (value != null) {
-                if (value.endsWith("\\\"")) { // NOI18N
-                    pos = value.indexOf('"');
-                    if (pos != -1) {
-                        value = value.substring(pos, value.length() - 1) + '"';
-                    }
-                }
+                // disabled for now, otherwise string values \"xxx\" do not work correctly
+//                if (value.endsWith("\\\"")) { // NOI18N
+//                    pos = value.indexOf('"');
+//                    if (pos != -1) {
+//                        value = value.substring(pos, value.length() - 1) + '"';
+//                    }
+//                }
                 if (value.charAt(0) == '(') {
                     pos = GdbUtils.findMatchingParen(value, 0);
                     if (pos != -1) {
@@ -336,7 +346,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @param value The value typed by the user into the value editor
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
-    private String setValueChar(String value) {
+    private static String setValueChar(String value) {
         int pos;
 
         if (value.startsWith("0x") && (pos = value.indexOf(" '")) != -1 && value.endsWith("'")) { // NOI18N
@@ -356,15 +366,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @param value The value typed by the user into the value editor
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
-    private String setValueCharStar(String value) {
+    private static String setValueCharStar(String value) {
         int pos;
 
         if (value.startsWith("0x") && (pos = value.indexOf(" \\\"")) != -1 && value.endsWith("\\\"")) { // NOI18N
             value = '"' + value.substring(pos + 3, value.length() - 2) + '"'; // NOI18N
         } else if (value.startsWith("0x") && (pos = value.indexOf(" \"")) != -1 && value.endsWith("\"")) { // NOI18N
-            value = value.substring(pos + 1);
+            value = value.substring(pos + 1).replace("\"", "\\\"");
         } else if (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') { // NOI18N
-            // OK
+            value = value.replace("\"", "\\\"");
         } else {
             value = null;
         }
@@ -412,7 +422,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @param value The value typed by the user into the value editor
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
-    private String setValueNumber(String value) {
+    private static String setValueNumber(String value) {
         if (isNumber(value)) {
             // OK
         } else {
@@ -666,7 +676,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @param info The string to verify
      * @return true if t is some kind of a character pointer
      */
-    private boolean isCharString(String t) {
+    private static boolean isCharString(String t) {
         if (t != null && t.endsWith("*") && !t.endsWith("**")) { // NOI18N
             t = GdbUtils.getBaseType(t);
             if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
@@ -680,15 +690,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * Complete and create the field information. Its OK to return null because addField
      * ignores it.
      */
-    private AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info) {
-        String n, t, v;
-        int count;
-
+    private static AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info) {
         if (info.charAt(0) == '{') { // we've got an anonymous class/struct/union...
+            int count = 0;
             try {
                 count = Integer.parseInt((String) map.get("<anon-count>")); // NOI18N
             } catch (NumberFormatException nfe) {
-                count = 0;
+                // do nothing
             }
             info = info.substring(1, info.length() - 1);
             for (int i = 1; i <= count; i++) {
@@ -705,45 +713,46 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 parent.addField(completeFieldDefinition(parent, m, info.substring(start).trim()));
             }
         } else {
+            String name, type, value;
             int pos = info.indexOf('=');
             if (pos != -1) {
                 if (info.charAt(0) == '<') {
-                    n = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
-                    t = info.substring(1, pos - 2).trim();
-                    v = info.substring(pos + 1).trim();
-                    if (t.length() == 0) {
+                    name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
+                    type = info.substring(1, pos - 2).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (type.length() == 0) {
                         // I think this is handling a gdb bug. Its hard to say because the exact response
                         // from gdb isn't well documented. In any case, this is triggered when the value
                         // of a superclass is an empty string (<> = {...}). Since we've parsed the super
                         // class already, I'm assuming single inheritance and taking the super from the map.
-                        t = (String) map.get("<super1>"); // NOI18N
+                        type = (String) map.get("<super1>"); // NOI18N
                     }
-                    if (n.startsWith("_vptr")) { // NOI18N
+                    if (name.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
                 } else {
-                    n = info.substring(0, pos - 1).trim();
-                    v = info.substring(pos + 1).trim();
-                    if (n.startsWith("_vptr")) { // NOI18N
+                    name = info.substring(0, pos - 1).trim();
+                    value = info.substring(pos + 1).trim();
+                    if (name.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
-                    Object o = map.get(n);
+                    Object o = map.get(name);
                     if (o instanceof String) {
-                        t = o.toString();
+                        type = o.toString();
                     } else if (o instanceof Map) {
-                        t = (String) ((Map) o).get("<name>"); // NOI18N
-			if (t == null) {
+                        type = (String) ((Map) o).get("<name>"); // NOI18N
+			if (type == null) {
 			    log.warning("GdbDebugger.completeFieldDefinition: Missing <name> from map");
 			    return null; // FIXME (See IZ 157133)
 			}
-                    } else if (isNumber(v)) {
-                        t = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else if (isNumber(value)) {
+                        type = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {
-                        log.warning("Cannot determine field type for " + n); // NOI18N
+                        log.warning("Cannot determine field type for " + name); // NOI18N
                         return null;
                     }
                 }
-                return new AbstractField(parent, n, t, v);
+                return new AbstractField(parent, name, type, value);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim()); // NOI18N
             }
@@ -751,7 +760,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return null;
     }
 
-    private void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
+    private static void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
         String frag;
         int idx = 0;
         int pos;
@@ -807,7 +816,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    private void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
+    private static void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int count;
         int idx = var.fields.length;
@@ -827,7 +836,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    private void parseCharArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
+    private static void parseCharArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int idx = 0;
         value = value.replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...
@@ -1033,7 +1042,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return getFullName(false);
     }
 
-    private boolean isNumber(String value) {
+    private static boolean isNumber(String value) {
         try {
             Long.parseLong(value);
             return true;
@@ -1042,7 +1051,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    private boolean isNumberInRange(String value, long low, long high) {
+    private static boolean isNumberInRange(String value, long low, long high) {
         try {
             long val = Long.parseLong(value);
             return val >= low && val <= high;
@@ -1068,17 +1077,22 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         private AbstractVariable parent;
 
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
+            assert name != null : "AbstractField with null name" ;// NOI18N
             if (name.startsWith("static ")) { // NOI18N
                 this.name = name.substring(7);
             } else {
                 this.name = name;
             }
-            int lcurly = type.indexOf('{');
-            if (lcurly == -1) {
-                this.type = type;
+            if (type == null) {
+                this.type = "";
             } else {
-                int rcurly = type.indexOf('}', lcurly);
-                this.type = type.substring(0, lcurly).trim() + type.substring(rcurly + 1);
+                int lcurly = type.indexOf('{');
+                if (lcurly == -1) {
+                    this.type = type;
+                } else {
+                    int rcurly = type.indexOf('}', lcurly);
+                    this.type = type.substring(0, lcurly).trim() + type.substring(rcurly + 1);
+                }
             }
             this.parent = parent;
             fields = new Field[0];
