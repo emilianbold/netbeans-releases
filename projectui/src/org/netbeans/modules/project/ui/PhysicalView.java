@@ -292,26 +292,50 @@ public class PhysicalView {
             final Runnable r = new Runnable () {
                 public void run () {
                     String prop = evt.getPropertyName();
-                    if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
+                    boolean ok = false;
+                    if (prop == null || ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
                         fireDisplayNameChange(null, null);
-                    } else if (ProjectInformation.PROP_NAME.equals(prop)) {
+                        ok = true;
+                    }
+                    if (prop == null || ProjectInformation.PROP_NAME.equals(prop)) {
                         fireNameChange(null, null);
-                    } else if (ProjectInformation.PROP_ICON.equals(prop)) {
+                        ok = true;
+                    }
+
+                    if (prop == null || ProjectInformation.PROP_ICON.equals(prop)) {
                         // OK, ignore
-                    } else if ( "name".equals(prop) ) { // NOI18N
+                        ok = true;
+                    }
+
+                    if (prop == null || "name".equals(prop) ) { // NOI18N
                         fireNameChange(null, null);
-                    } else if ( "displayName".equals(prop) ) { // NOI18N
+                        ok = true;
+                    }
+
+                    if (prop == null || "displayName".equals(prop) ) { // NOI18N
                         fireDisplayNameChange(null, null);
-                    } else if ( "icon".equals(prop) ) { // NOI18N
+                        ok = true;
+                    }
+
+                    if (prop == null || "icon".equals(prop) ) { // NOI18N
                         // OK, ignore
-                    } else if ( "rootFolder".equals(prop) ) { // NOI18N
+                        ok = true;
+                    }
+
+                    if (prop == null || "rootFolder".equals(prop) ) { // NOI18N
                         // XXX Do something to children and lookup 
                         fireNameChange(null, null);
                         fireDisplayNameChange(null, null);
                         fireShortDescriptionChange(null, null);
-                    } else if (SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
+                        ok = true;
+                    }
+
+                    if (prop == null || SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
                         // OK, ignore
-                    } else {
+                        ok = true;
+                    }
+
+                    if (!ok) {
                         assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
                     }
                 }
