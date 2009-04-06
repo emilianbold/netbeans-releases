@@ -64,11 +64,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionParameterList, CsmParameter> implements CsmFunctionParameterList {
 
-    private FunctionParameterListImpl(CsmFile file, int start, int end, Collection/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    private FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
         super(file, start, end, parameters);
     }
 
-    public CsmParameterList<CsmParameterList, CsmKnRName> getKernighanAndRitchieParameterList() {
+    public CsmParameterList<CsmKnRName> getKernighanAndRitchieParameterList() {
         return null;
     }
 
@@ -148,16 +148,16 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
      * parameter list of K&R function
      */
     public static final class FunctionKnRParameterListImpl extends FunctionParameterListImpl {
-        private final ParameterListImpl<CsmParameterList, CsmKnRName> krList;
+        private final ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName> krList;
 
         private FunctionKnRParameterListImpl(CsmFile file, int start, int end,
-                Collection<CsmUID<CsmParameter>> parameters, ParameterListImpl<CsmParameterList, CsmKnRName> krList) {
+                Collection<CsmUID<CsmParameter>> parameters, ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName> krList) {
             super(file, start, end, parameters);
             this.krList = krList;
         }
 
         @Override
-        public CsmParameterList<CsmParameterList, CsmKnRName> getKernighanAndRitchieParameterList() {
+        public CsmParameterList<CsmKnRName> getKernighanAndRitchieParameterList() {
             return krList;
         }
 
@@ -177,7 +177,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         @SuppressWarnings("unchecked")
         public FunctionKnRParameterListImpl(DataInput input) throws IOException {
             super(input);
-            this.krList = (ParameterListImpl<CsmParameterList, CsmKnRName>) PersistentUtils.readParameterList(input);
+            this.krList = (ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName>) PersistentUtils.readParameterList(input);
         }
     }
 }
