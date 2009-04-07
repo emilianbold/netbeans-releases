@@ -71,7 +71,11 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
@@ -209,7 +213,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     // ---- management of libraries ----
 
 
-    private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeSupportListener {
+    private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeListener {
 
         private final ProjectLibraryArea area;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -219,8 +223,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             this.area = area;
             libraries = calculate(area);
             Definitions defs = new Definitions(area.mainPropertiesFile);
-            FileChangeSupport.DEFAULT.addListener(this, defs.mainPropertiesFile);
-            FileChangeSupport.DEFAULT.addListener(this, defs.privatePropertiesFile);
+            FileUtil.addFileChangeListener(this, defs.mainPropertiesFile);
+            FileUtil.addFileChangeListener(this, defs.privatePropertiesFile);
         }
 
         public synchronized ProjectLibraryImplementation[] getLibraries() {
@@ -239,15 +243,27 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             pcs.removePropertyChangeListener(listener);
         }
 
-        public void fileCreated(FileChangeSupportEvent event) {
+        public void fileFolderCreated(FileEvent fe) {
             recalculate();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
+        public void fileDataCreated(FileEvent fe) {
             recalculate();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
+        public void fileChanged(FileEvent fe) {
+            recalculate();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            recalculate();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            recalculate();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
             recalculate();
         }
 
@@ -810,7 +826,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      * @return a provider of project library definition properties
      */
     public static PropertyProvider createPropertyProvider(final AntProjectHelper helper) {
-        class PP implements PropertyProvider, FileChangeSupportListener, AntProjectListener {
+        class PP implements PropertyProvider, FileChangeListener, AntProjectListener {
             final ChangeSupport cs = new ChangeSupport(this);
             final Set<File> listeningTo = new HashSet<File>();
             {
@@ -820,7 +836,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (f != null) {
                     noLongerListeningTo.remove(f);
                     if (listeningTo.add(f)) {
-                        FileChangeSupport.DEFAULT.addListener(this, f);
+                        FileUtil.addFileChangeListener(this, f);
                     }
                 }
             }
@@ -836,7 +852,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
                 for (File f : noLongerListeningTo) {
                     listeningTo.remove(f);
-                    FileChangeSupport.DEFAULT.removeListener(this, f);
+                    FileUtil.removeFileChangeListener(this, f);
                 }
                 return m;
             }
@@ -846,15 +862,31 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             public void removeChangeListener(ChangeListener l) {
                 cs.removeChangeListener(l);
             }
-            public void fileCreated(FileChangeSupportEvent event) {
+
+            public void fileFolderCreated(FileEvent fe) {
                 fireChangeNowOrLater();
             }
-            public void fileDeleted(FileChangeSupportEvent event) {
+
+            public void fileDataCreated(FileEvent fe) {
                 fireChangeNowOrLater();
             }
-            public void fileModified(FileChangeSupportEvent event) {
+
+            public void fileChanged(FileEvent fe) {
                 fireChangeNowOrLater();
             }
+
+            public void fileDeleted(FileEvent fe) {
+                fireChangeNowOrLater();
+            }
+
+            public void fileRenamed(FileRenameEvent fe) {
+                fireChangeNowOrLater();
+            }
+
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+                fireChangeNowOrLater();
+            }
+
             void fireChangeNowOrLater() {
                 // See PropertyUtils.FilePropertyProvider.
                 if (!cs.hasListeners()) {
