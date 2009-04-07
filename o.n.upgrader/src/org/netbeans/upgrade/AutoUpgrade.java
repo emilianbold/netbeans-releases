@@ -98,29 +98,15 @@ public final class AutoUpgrade {
     }
 
     //#75324 NBplatform settings are not imported
-    private static void upgradeBuildProperties(final File sourceFolder, final String[] version) throws  IOException {
-        try {   
-            //TODO: review and implement less version specific
-            if (version[0].startsWith("2_")) {//CREATOR
-                File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
-                Copy.appendSelectedLines(new File(sourceFolder,"build.properties"), //NOI18N
-                        userdir,new String[] {".*"});                
-            } else if (Float.parseFloat(version[0]) >= 5.0 ) {//NOI18N
-                File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
-                String[] regexForSelection = new String[] {
-                    "^nbplatform[.](?!default[.]netbeans[.]dest[.]dir).+[.].+=.+$"//NOI18N
-                };
-                Copy.appendSelectedLines(new File(sourceFolder,"build.properties"), //NOI18N
-                        userdir,regexForSelection);
-            }            
-        } catch(NumberFormatException nex) {
-            return;
-        }
+    private static void upgradeBuildProperties(final File sourceFolder, final String[] version) throws IOException {
+        File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
+        String[] regexForSelection = new String[]{
+            "^nbplatform[.](?!default[.]netbeans[.]dest[.]dir).+[.].+=.+$"//NOI18N
+        };
+        Copy.appendSelectedLines(new File(sourceFolder, "build.properties"), //NOI18N
+                userdir, regexForSelection);
     }
 
-    private static final String CREATOR = ".Creator/2_1"; //NOI18N
-    private static final String VISUALWEB_REPRESENTATION = "modules/org-netbeans-modules-visualweb-insync.jar";//NOI18N
-    
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List VERSION_TO_CHECK = 
@@ -137,12 +123,6 @@ public final class AutoUpgrade {
             String ver;
             while (it.hasNext () && sourceFolder == null) {
                 ver = (String) it.next ();
-                if (ver.equals(CREATOR)) {//NOI18N
-                    final boolean visualWebPresent = InstalledFileLocator.getDefault().locate(VISUALWEB_REPRESENTATION, null, false) != null;
-                    if (!visualWebPresent) {
-                        continue;
-                    }
-                }                
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
@@ -266,45 +246,4 @@ public final class AutoUpgrade {
         return old;
     }
     
-    private static List<FileObject> getFiles (
-        FileObject      folder,
-        int             depth,
-        String          fileName,
-        String          extension
-    ) {
-        if (depth == 0) {
-            FileObject result = folder.getFileObject (fileName, extension);
-            if (result == null) return Collections.emptyList();
-            return Collections.singletonList (result);
-        }
-        Enumeration<? extends FileObject> en = folder.getChildren (false);
-        List<FileObject> result = new ArrayList<FileObject> ();
-        while (en.hasMoreElements ()) {
-            FileObject fo = en.nextElement ();
-            if (!fo.isFolder ()) continue;
-            result.addAll (getFiles (fo, depth - 1, fileName, extension));
-        }
-        return result;
-    }
-    
-    private static void copy (FileObject sourceDir, FileObject destDir) 
-    throws IOException {
-        Enumeration en = sourceDir.getData (false);
-        while (en.hasMoreElements ()) {
-            FileObject fo = (FileObject) en.nextElement ();
-            if (fo.isFolder ()) {
-                FileObject newDestDir = destDir.createFolder (fo.getName ());
-                copy (fo, newDestDir);
-            } else {
-                try {
-                    FileObject destFile = FileUtil.copyFile 
-                            (fo, destDir, fo.getName (), fo.getExt ());
-                    FileUtil.copyAttributes (fo, destFile);
-                } catch (IOException ex) {    
-                    if (!fo.getNameExt ().endsWith ("_hidden"))
-                        throw ex;    
-                }
-            }
-        }
-    }
 }
