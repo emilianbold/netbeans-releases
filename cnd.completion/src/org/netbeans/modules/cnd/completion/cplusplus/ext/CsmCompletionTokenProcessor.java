@@ -260,6 +260,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         }
     }
 
+    private void setExprToTYPE(CsmCompletionExpression exp) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < exp.getTokenCount(); i++) {
+            if (i > 0) {
+                buf.append(" ");// NOI18N
+            }
+            buf.append(exp.getTokenText(i));
+        }
+        exp.setType(buf.toString());
+        exp.setExpID(TYPE);
+    }
+
     /** Check whether there can be any joining performed
      * for current expressions on the stack.
      * @param tokenID tokenID of the current token
@@ -286,7 +298,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case AMP:
                                 case CONST:
                                 case IDENTIFIER:
-                                    top.setExpID(TYPE);
+                                    setExprToTYPE(top);
                                     stop = true;
                                     break;
                             }
@@ -300,7 +312,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case CONST:
                                 case IDENTIFIER:
                                     popExp();
-                                    top2.setExpID(TYPE);
+                                    setExprToTYPE(top2);
                                     for (int i = 0; i < top.getTokenCount(); ++i) {
                                         top2.addToken(top.getTokenID(i),
                                                 top.getTokenOffset(i),
@@ -332,7 +344,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case AMP:
                                 case CONST:
                                 case IDENTIFIER:
-                                    top.setExpID(TYPE);
+                                    setExprToTYPE(top);
                                     break;
                             }
                             break;
@@ -2125,6 +2137,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         case VOLATILE:
                             expType = TYPE_PREFIX;
                     }
+                    setExprToTYPE(top);
                     top.setExpID(expType);
                 // fallthrough
                 }

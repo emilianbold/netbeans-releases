@@ -1595,14 +1595,18 @@ abstract public class CsmCompletionQuery {
                                 CompletionResolver.Result res = compResolver.getResult();
                                 if (findType) {
                                     CsmClassifier cls = null;
-                                    Iterator it = res.getProjectClassesifiersEnums().iterator();
-                                    if (!it.hasNext()) {
-                                        it = res.getLibClassifiersEnums().iterator();
+                                    Collection<CsmObject> elems = new ArrayList<CsmObject>();
+                                    res.addResulItemsToCol(elems);
+                                    for (CsmObject csmObject : elems) {
+                                        if (CsmKindUtilities.isVariable(csmObject)) {
+                                            lastType = ((CsmVariable)csmObject).getType();
+                                            break;
+                                        } else if (CsmKindUtilities.isClassifier(csmObject)) {
+                                            cls = (CsmClassifier)csmObject;
+                                            break;
+                                        }
                                     }
-                                    if (it.hasNext()) {
-                                        cls = (CsmClassifier) it.next();
-                                    }
-                                    if (cls != null) {
+                                    if (lastType == null && cls != null) {
                                         lastType = CsmCompletion.getType(cls, 0, false, 0);
                                     }
                                 }
