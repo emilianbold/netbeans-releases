@@ -78,27 +78,7 @@ public final class HintsControllerImpl {
     private HintsControllerImpl() {}
     
     public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
-        // vlv: [+]
-        // DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        Object obj = doc.getProperty(doc.StreamDescriptionProperty);
-        DataObject od = null;
-
-        if (obj instanceof FileObject) {
-            FileObject file = (FileObject) obj;
-
-            if ( !file.isValid()) {
-                return;
-            }
-            try {
-                od = DataObject.find(file);
-            } catch (org.openide.loaders.DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-        else if (obj instanceof DataObject) {
-            od = (DataObject) obj;
-        }
-        // vlv: [-]
+        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
         if (od == null)
             return ;
