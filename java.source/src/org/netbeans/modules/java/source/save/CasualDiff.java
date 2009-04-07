@@ -1853,8 +1853,11 @@ public class CasualDiff {
                         if (JavaTokenId.COMMA == tokenSequence.token().id())
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
-                    oldT = oldIter.next(); ++i;                    
-//                    copyTo(lastOldPos, getOldPos(oldT));
+                    oldT = oldIter.next(); ++i;
+                    int to = getOldPos(oldT);
+                    if (to - lastOldPos > 1) {
+                        copyTo(lastOldPos, to);
+                    }
                     if (treesMatch(oldT, item.element, false)) {
                         lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
                     } else {
