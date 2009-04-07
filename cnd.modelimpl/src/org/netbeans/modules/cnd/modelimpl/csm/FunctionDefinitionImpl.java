@@ -84,6 +84,14 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+        if (body instanceof Disposable) {
+            ((Disposable) body).dispose();
+        }
+    }
+    
+    @Override
     public CsmCompoundStatement getBody() {
         return body;
     }

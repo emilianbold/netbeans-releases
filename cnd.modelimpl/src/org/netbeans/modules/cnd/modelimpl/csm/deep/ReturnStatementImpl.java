@@ -41,16 +41,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * CsmReturnStatement implementation
