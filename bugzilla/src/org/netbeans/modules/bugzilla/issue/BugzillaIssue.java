@@ -765,8 +765,12 @@ public class BugzillaIssue extends Issue {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
             when = d;
-            // XXX check for NULL
-            String author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            String author = null;
+            if(authorAttr != null) {
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                author = nameAttr != null ? nameAttr.getValue() : null;
+            }
             if ((author == null) || author.trim().equals("")) { // NOI18N
                 author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getValue();
             }
