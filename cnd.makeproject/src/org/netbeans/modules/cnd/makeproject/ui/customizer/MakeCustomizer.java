@@ -635,24 +635,22 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
                 descriptions.add(createNotFoundNode("Run")); // NOI18N
             }
+
+            descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Profile")); // NOI18N
+
             List<CustomizerNode> l = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
-            boolean debugNode = false;
             if (l.size() > 1) {
                 CustomizerNode[] cn = {l.get(0)};
                 descriptions.add(new DebugCustomizerNode("Debuggers", getString("LBL_Config_Debugger"), l.toArray(cn))); // NOI18N
-                debugNode = true;
             } else if (l.size() == 1) {
                 descriptions.addAll(l);
-                debugNode = true;
             } else {
                 descriptions.add(createNotFoundNode("Debug")); // NOI18N
             }
 
-            if (!debugNode) {
-                CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
-                if (advanced != null) {
-                    descriptions.add(advanced);
-                }
+            CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
+            if (advanced != null) {
+                descriptions.add(advanced);
             }
         }
         descriptions.add(createRequiredProjectsDescription(project));
