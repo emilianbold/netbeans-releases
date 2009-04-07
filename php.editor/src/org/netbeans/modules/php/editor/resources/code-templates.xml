@@ -270,6 +270,13 @@ ${cursor}]]>
         </code>
     </codetemplate>
 
+   <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.fcom" abbreviation="fcom" contexts="php-code">
+      <code>
+<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}// </editor-fold>
+]]>
+      </code>
+   </codetemplate>
 
 </codetemplates>
 
