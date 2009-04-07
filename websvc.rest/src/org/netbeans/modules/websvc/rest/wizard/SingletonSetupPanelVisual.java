@@ -457,6 +457,10 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
         // set default source group and package cf. targetFolder
         if (targetFolder != null) {
             SourceGroup targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+//            if (targetSourceGroup == null) {
+//                targetSourceGroup = getLocationValue();
+//                targetFolder = targetSourceGroup.getRootFolder();
+//            }
             if (targetSourceGroup != null) {
                 locationComboBox.setSelectedItem(targetSourceGroup);
                 String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
@@ -503,6 +507,7 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
             if (packageFO != null) {
                 Templates.setTargetFolder(settings, packageFO);
             } else {
+                Templates.setTargetFolder(settings, null);
                 settings.putProperty(WizardProperties.TARGET_PACKAGE, getPackage());
             }
         } catch (IOException ex) {
