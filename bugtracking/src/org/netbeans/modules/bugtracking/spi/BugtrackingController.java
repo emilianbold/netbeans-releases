@@ -110,6 +110,17 @@ public abstract class BugtrackingController {
     }
     
     /**
+     * 
+     * Get current help context asociated with this panel.
+     * 
+     * 
+     * @return current help context
+     */
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    /**
      * Registers a PropertyChangeListener
      * @param l
      */

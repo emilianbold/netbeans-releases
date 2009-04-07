@@ -184,6 +184,11 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
+    }
+
+    @Override
     public String getErrorMessage() {
         return errorMessage;
     }
