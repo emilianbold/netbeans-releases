@@ -64,6 +64,12 @@ made subject to such option by the copyright holder.
                 <!--<attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/autos.png"/>-->
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_AutosAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.DebugCoreAction"/>
+                <!--<attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/autos.png"/>-->
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_DebugCoreAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Editors">
@@ -244,6 +250,10 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
                 <attr name="position" intvalue="600"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.instance"/>
+                <attr name="position" intvalue="630"/>
             </file>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
