@@ -83,6 +83,18 @@ public class PHPNewLineIndentTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/multiline_function_call.php");
     }
 
+    public void testArrays1() throws Exception{
+        testIndentInFile("testfiles/indent/arrays1.php");
+    }
+
+    public void testArrays2() throws Exception{
+        testIndentInFile("testfiles/indent/arrays2.php");
+    }
+
+    public void testArrays3() throws Exception{
+        testIndentInFile("testfiles/indent/arrays3.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
