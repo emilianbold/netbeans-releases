@@ -289,15 +289,9 @@ public final class FileUtil extends Object {
 
         private void locateCurrent() {
             FileObject oldCurrent = current;
-            currentF = path;
+            currentF = FileUtil.normalizeFile(path);
             while (true) {
-                try {
-                    current = FileUtil.toFileObject(currentF);
-                } catch (IllegalArgumentException x) {
-                    // #73526: was originally normalized, but now is not. E.g. file changed case.
-                    currentF = FileUtil.normalizeFile(currentF);
-                    current = FileUtil.toFileObject(currentF);
-                }
+                current = FileUtil.toFileObject(currentF);
                 if (current != null) {
                     isOnTarget = path.equals(currentF);
                     break;

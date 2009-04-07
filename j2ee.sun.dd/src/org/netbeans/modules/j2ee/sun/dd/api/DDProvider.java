@@ -385,6 +385,10 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.class, SunWebAppProxy.class,
                 DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_250_DTD_SYSTEM_ID
             ));
+        sunWebAppVersionMap.put(SunWebApp.VERSION_3_0_0, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.class, SunWebAppProxy.class,
+                DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID
+            ));
 
         sunEjbJarVersionMap.put(SunEjbJar.VERSION_2_0_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar.class, SunEjbJarProxy.class,
@@ -511,7 +515,9 @@ public final class DDProvider {
     private static SunWebApp createWebApp(DDParse parse) throws DDException {
         SunWebApp webRoot = null;
         String version = parse.getVersion();
-        if (SunWebApp.VERSION_2_5_0.equals(version)) {
+        if (SunWebApp.VERSION_3_0_0.equals(version)) {
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES);
+        } else if (SunWebApp.VERSION_2_5_0.equals(version)) {
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
         } else if (SunWebApp.VERSION_2_4_1.equals(version)) {
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
@@ -973,6 +979,10 @@ public final class DDProvider {
                 SunEjbJar.VERSION_2_0_0, SunEjbJarProxy.class, SunEjbJar.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_3_0_0, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_3_0-0.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunWebApp.VERSION_2_5_0, SunWebAppProxy.class, SunWebApp.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.class,

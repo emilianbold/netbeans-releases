@@ -82,7 +82,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
     private static final String XML_XSD_DEF="<?xml version='1.0'?><xs:schema targetNamespace=\"http://www.w3.org/XML/1998/namespace\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xml:lang=\"en\"><xs:attribute name=\"lang\" type=\"xs:language\"><xs:annotation><xs:documentation>In due course, we should install the relevant ISO 2- and 3-letter codes as the enumerated possible values . . .</xs:documentation></xs:annotation></xs:attribute></xs:schema>"; // NOI18N
-    private  static final String TypeToURLMap[] = {
+    private static final String TypeToURLMap[] = {
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 J2EE Application 1.3//EN" 	, "sun-application_1_3-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 J2EE Application 1.4//EN" 	, "sun-application_1_4-0.dtd" , ///[THIS IS DEPRECATED]
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN"                , "sun-application_1_4-0.dtd" ,
@@ -133,8 +133,12 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"                                        , "web-jsptaglibrary_1_1.dtd",
     };
     
-    /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */
-    private  static final String SchemaToURLMap[] = {
+    private static final String JavaEE6TypeToURLMap[] = {
+        "-//Sun Microsystems, Inc.//DTD GlassFish v3 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
+    };
+
+        /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */
+    private static final String SchemaToURLMap[] = {
         
         "SCHEMA:http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"                    , "ejb-jar_2_1",
         
@@ -160,6 +164,16 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     };
     
+    private static final String JavaEE6SchemaToURLMap[] = {
+
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                    , "ejb-jar_3_1",
+        "SCHEMA:http://java.sun.com/xml/ns/j2ee/jsp_2_2.xsd"                        , "jsp_2_2",
+        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd"                    , "web-app_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-common_3_0.xsd"                    , "web-common_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/j2ee/web-fragment_3_0.xsd"                    , "web-fragment_3_0",
+
+    };
+
     private static Map<ServerInstanceProvider, RunTimeDDCatalog> ddCatalogMap = new HashMap<ServerInstanceProvider, RunTimeDDCatalog>();
     private static RunTimeDDCatalog preludeDDCatalog;
     private static RunTimeDDCatalog javaEE6DDCatalog;
@@ -168,6 +182,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private ServerInstanceProvider ip=null;
     private String displayNameKey;
     private String shortDescriptionKey;
+    private boolean hasAdditionalMap = false;
 
     /** Creates a new instance of RunTimeDDCatalog */
     public RunTimeDDCatalog() {
@@ -202,6 +217,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
             javaEE6DDCatalog = new RunTimeDDCatalog();
             javaEE6DDCatalog.displayNameKey = "LBL_V3RunTimeDDCatalog"; // NOI18N
             javaEE6DDCatalog.shortDescriptionKey = "DESC_V3RunTimeDDCatalog"; // NOI18N
+            javaEE6DDCatalog.hasAdditionalMap = true;
         }
         return javaEE6DDCatalog;
     }
@@ -227,8 +243,18 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         for (int i=0;i<TypeToURLMap.length;i = i+2){
             list.add(TypeToURLMap[i]);
         }
+        if (hasAdditionalMap) {
+            for (int i=0;i<JavaEE6TypeToURLMap.length;i = i+2){
+                list.add(JavaEE6TypeToURLMap[i]);
+            }
+        }
         for (int i=0;i<SchemaToURLMap.length;i = i+2){
             list.add(SchemaToURLMap[i]);
+        }
+        if (hasAdditionalMap) {
+            for (int i=0;i<JavaEE6SchemaToURLMap.length;i = i+2){
+                list.add(JavaEE6SchemaToURLMap[i]);
+            }
         }
         
         return list.listIterator();
@@ -261,12 +287,42 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                 }
             }
         }
+        if (hasAdditionalMap) {
+            for (int i=0;i<JavaEE6TypeToURLMap.length;i = i+2){
+                if (JavaEE6TypeToURLMap[i].equals(publicId)){
+                    File file = new File(installRoot+"/lib/"+loc+"/"+JavaEE6TypeToURLMap[i+1]);
+                    try{
+                        return file.toURI().toURL().toExternalForm();
+                    }catch(Exception e){
+                        return "";
+                    }
+                }
+            }
+        }
         loc="schemas";
         for (int i=0;i<SchemaToURLMap.length;i = i+2){
             if (SchemaToURLMap[i].equals(publicId)){
                 return "nbres:/org/netbeans/modules/j2ee/sun/ide/resources/"+SchemaToURLMap[i+1]+".dtd";
                 
                 
+            }
+        }
+        if (hasAdditionalMap) {
+            for (int i=0;i<JavaEE6SchemaToURLMap.length;i = i+2){
+                if (JavaEE6SchemaToURLMap[i].equals(publicId)){
+
+                    // xsds are in the server and NB can now use them for code completion
+                    // old code required dtds and would have done something like this:
+                    // return "nbres:/org/netbeans/modules/j2ee/sun/ide/resources/"+JavaEE6SchemaToURLMap[i+1]+".dtd";
+                    // because before NB could use xsd for code completion, the module had a
+                    // hacked copy of the dtd to deal with that
+                    File file = new File(installRoot+"/lib/"+loc+"/"+JavaEE6SchemaToURLMap[i+1]+".xsd");
+                    try{
+                        return file.toURI().toURL().toExternalForm();
+                    }catch(Exception e){
+                        return "";
+                    }
+                }
             }
         }
         return null;

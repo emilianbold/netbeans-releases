@@ -317,6 +317,9 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     }
 
     public Object readAttribute(String name, String attrName) {
+        if (attrName.equals("isRemoteAndSlow")) { // NOI18N
+            return true; // #159628
+        }
         return null;
     }
 

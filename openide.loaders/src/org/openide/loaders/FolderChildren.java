@@ -274,7 +274,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             changeListener = WeakListeners.change(this, chF);
             chF.addChangeListener( changeListener );
         }
-        refreshChildren(RefreshMode.SHALLOW_IMMEDIATE);
+        if (Boolean.TRUE.equals(folder.getPrimaryFile().getAttribute("isRemoteAndSlow"))) { // NOI18N
+            // #159628: do not block EQ loading this folder's children.
+            refreshChildren(RefreshMode.SHALLOW);
+        } else {
+            refreshChildren(RefreshMode.SHALLOW_IMMEDIATE);
+        }
         err.fine("addNotify end");
     }
 
