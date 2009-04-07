@@ -41,6 +41,7 @@
 
 package org.openide.util;
 
+import org.netbeans.modules.openide.util.ActiveQueue;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -211,8 +212,6 @@ public final class Utilities {
     /** A height of the Mac OS X's menu */
     private static final int TYPICAL_MACOSX_MENU_HEIGHT = 24;
 
-    private static ActiveQueue activeReferenceQueue;
-
     /** The operating system on which NetBeans runs*/
     private static int operatingSystem = -1;
     private static final String[] keywords = new String[] {
@@ -271,7 +270,7 @@ public final class Utilities {
      * class MyReference extends WeakReference<Thing> implements Runnable {
      *     private final OtherInfo dataToCleanUp;
      *     public MyReference(Thing ref, OtherInfo data) {
-     *         super(ref, Utilities.activeReferenceQueue());
+     *         super(ref, Utilities.queue());
      *         dataToCleanUp = data;
      *     }
      *     public void run() {
@@ -293,14 +292,8 @@ public final class Utilities {
      * Do not attempt to cache the return value.
      * @since 3.11
      */
-    public static synchronized ReferenceQueue<Object> activeReferenceQueue() {
-        if (activeReferenceQueue == null) {
-            activeReferenceQueue = new ActiveQueue(false);
-        }
-
-        activeReferenceQueue.ping();
-
-        return activeReferenceQueue;
+    public static ReferenceQueue<Object> activeReferenceQueue() {
+        return ActiveQueue.queue();
     }
 
     /** Get the operating system on which NetBeans is running.
@@ -3116,108 +3109,5 @@ widthcheck:  {
         public Map getDeps() {
             return deps;
         }
-    }
-
-    /** Implementation of the active queue.
-     */
-    private static final class ActiveQueue extends ReferenceQueue<Object> implements Runnable {
-
-        private static final Logger LOGGER = Logger.getLogger(ActiveQueue.class.getName().replace('$', '.'));
-
-        /** number of known outstanding references */
-        private int count;
-        private boolean deprecated;
-
-        public ActiveQueue(boolean deprecated) {
-            this.deprecated = deprecated;
-        }
-
-        @Override
-        public Reference<Object> poll() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Reference<Object> remove(long timeout) throws IllegalArgumentException, InterruptedException {
-            throw new InterruptedException();
-        }
-
-        @Override
-        public Reference<Object> remove() throws InterruptedException {
-            throw new InterruptedException();
-        }
-
-        public void run() {
-            while (true) {
-                try {
-                    Reference<?> ref = super.remove(0);
-                    LOGGER.finer("dequeued reference");
-
-                    if (!(ref instanceof Runnable)) {
-                        LOGGER.warning(
-                            "A reference not implementing runnable has been added to the Utilities.activeReferenceQueue(): " +
-                            ref.getClass() // NOI18N
-                        );
-
-                        continue;
-                    }
-
-                    if (deprecated) {
-                        LOGGER.warning(
-                            "Utilities.ACTIVE_REFERENCE_QUEUE has been deprecated for " + ref.getClass() +
-                            " use Utilities.activeReferenceQueue" // NOI18N
-                        );
-                    }
-
-                    // do the cleanup
-                    try {
-                        ((Runnable) ref).run();
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t) {
-                        // Should not happen.
-                        // If it happens, it is a bug in client code, notify!
-                        LOGGER.log(Level.WARNING, null, t);
-                    } finally {
-                        // to allow GC
-                        ref = null;
-                    }
-                } catch (InterruptedException ex) {
-                    // Can happen during VM shutdown, it seems. Ignore.
-                    continue;
-                }
-
-                synchronized (this) {
-                    assert count > 0;
-                    count--;
-                    if (count == 0) {
-                        // We have processed all we have to process (for now at least).
-                        // Could be restarted later if ping() called again.
-                        // This could also happen in case someone called activeReferenceQueue() once and tried
-                        // to use it for several references; in that case run() might never be called on
-                        // the later ones to be collected. Can't really protect against that situation.
-                        // See issue #86625 for details.
-                        LOGGER.fine("stopping thread");
-                        break;
-                    }
-                }
-            }
-        }
-
-        synchronized void ping() {
-            if (count == 0) {
-                Thread t = new Thread(this, "Active Reference Queue Daemon"); // NOI18N
-                t.setPriority(Thread.MIN_PRIORITY);
-                t.setDaemon(true); // to not prevent exit of VM
-                t.start();
-                // Note that this will not be printed during IDE startup because
-                // it happens before logging is even initialized.
-                LOGGER.fine("starting thread");
-            } else {
-                LOGGER.finer("enqueuing reference");
-            }
-            count++;
-        }
-
     }
 }

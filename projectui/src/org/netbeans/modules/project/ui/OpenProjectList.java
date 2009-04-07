@@ -1346,7 +1346,8 @@ public final class OpenProjectList {
                 URL url = prjRef.getURL();
                 FileObject prjDir = null;
                 try {
-                    prjDir = FileUtil.toFileObject(new File(url.toURI()));
+                    File file = FileUtil.normalizeFile(new File(url.toURI()));
+                    prjDir = FileUtil.toFileObject(file);
                 } catch (URISyntaxException use) {
                     // invalid projectdir URL saved?
                 }
