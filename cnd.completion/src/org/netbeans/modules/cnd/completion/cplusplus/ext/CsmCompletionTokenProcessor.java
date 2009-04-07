@@ -827,6 +827,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
+                    case TYPEID:
                     case IDENTIFIER: // identifier found e.g. 'a'
                          {
                             switch (topID) {
@@ -2103,7 +2104,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             }
         }
 
-        if (kwdType != null) { // keyword constant (in conversions)
+        if (kwdType != null && tokenID != CppTokenId.TYPEID) { // keyword constant (in conversions)
             switch (topID) {
                 case NO_EXP: // declaration started with type name
                 case NEW: // possibly new kwdType[]
