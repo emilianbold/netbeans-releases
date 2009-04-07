@@ -55,6 +55,12 @@ import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
 
+/**
+ * Logic of building indenter state is worth rewritting. It evolved over the time
+ * and got into quite a messy state. It probably does all what's ever needed from
+ * point of view of CSS language and there is enough unit tests to prove it but
+ * it is just ugly and hard to read considering simplicity of CSS syntax.
+ */
 public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     private Stack<CssStackItem> stack = null;
@@ -66,6 +72,8 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
      * comments should in addition get PRESERVE_INDENTATION command.
      */
     private boolean inComment = false;
+
+    private boolean inMedia = false;
 
     public CssIndenter(Context context) {
         super(CssTokenId.language(), context);
@@ -88,23 +96,28 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
     protected void reset() {
         stack = new Stack<CssStackItem>();
         inComment = false;
+        inMedia = false;
     }
 
     @Override
     protected int getFormatStableStart(JoinedTokenSequence<CssTokenId> ts, int startOffset, int endOffset,
             AbstractIndenter.OffsetRanges rangesToIgnore) {
-        ts.move(startOffset);
+        // start from the end offset to properly calculate braces balance and
+        // find correfct formatting start (consider case of a rule defined
+        // within a media rule):
+        ts.move(endOffset);
 
-        if (!ts.movePrevious()) {
+        if (!ts.moveNext() && !ts.movePrevious()) {
             return LexUtilities.getTokenSequenceStartOffset(ts);
         }
 
+        int balance = 0;
         // Look backwards to find a suitable context - beginning of a rule
         do {
             Token<CssTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (id == CssTokenId.IDENT) {
+            if (id == CssTokenId.IDENT && ts.offset() < startOffset && balance == 0) {
                 int index = ts.index();
                 ts.moveNext();
                 Token tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
@@ -112,7 +125,9 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                 ts.moveNext();
                 if (tk != null && tk.id() == CssTokenId.LBRACE) {
                     if (ts.movePrevious()) {
-                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CssTokenId.S, CssTokenId.IDENT));
+                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CssTokenId.S, 
+                                CssTokenId.IDENT, CssTokenId.MEDIA_SYM, CssTokenId.COMMA,
+                                CssTokenId.GT, CssTokenId.PLUS));
                         if (tk != null) {
                             ts.moveNext();
                             tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
@@ -120,6 +135,12 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                     }
                     return ts.offset();
                 }
+            } else if (id == CssTokenId.RBRACE) {
+                balance++;
+            } else if (id == CssTokenId.LBRACE) {
+                balance--;
+            } else if (id == CssTokenId.MEDIA_SYM && ts.offset() < startOffset && balance == 0) {
+                return ts.offset();
             }
         } while (ts.movePrevious());
 
@@ -128,48 +149,43 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     private void getIndentFromState(List<IndentCommand> iis, boolean updateState, int lineStartOffset) {
         Stack<CssStackItem> blockStack = getStack();
-        // decide on preliminary indent of current line based on current stack content;
-        // it is preliminary as it can be still adjusted when iterating over current line
-        // for example if current line contains "}" then current line should be de-indented
-        if (!blockStack.empty()) {
-            CssStackItem item = blockStack.peek();
-            if (item.state == StackItemState.IN_VALUE) {
-                // first have a look if IN_RULE was processed
-                if (blockStack.size() > 1) {
-                    CssStackItem prevItem = blockStack.get(blockStack.size()-2);
-                    assert prevItem.state == StackItemState.IN_RULE;
-                    if (prevItem.processed == Boolean.FALSE) {
-                        // handle this one first:
-                        IndentCommand ii = new IndentCommand(IndentCommand.Type.INDENT, lineStartOffset);
-                        if (prevItem.indent != -1) {
-                            ii.setFixedIndentSize(prevItem.indent);
-                        }
-                        iis.add(ii);
-                        if (updateState) {
-                            prevItem.processed = Boolean.TRUE;
-                        }
-                    }
+
+        int lastUnprocessedItem = blockStack.size();
+        for (int i = blockStack.size()-1; i>=0; i--) {
+            if (!blockStack.get(i).processed) {
+                lastUnprocessedItem = i;
+            } else {
+                break;
+            }
+        }
+        for (int i=lastUnprocessedItem; i< blockStack.size(); i++) {
+            CssStackItem item = blockStack.get(i);
+            assert !item.processed : item;
+            if (item.state == StackItemState.IN_MEDIA ||
+                item.state == StackItemState.IN_RULE) {
+                IndentCommand ii = new IndentCommand(IndentCommand.Type.INDENT, lineStartOffset);
+                if (item.indent != -1) {
+                    ii.setFixedIndentSize(item.indent);
                 }
+                iis.add(ii);
+                if (updateState) {
+                    item.processed = Boolean.TRUE;
+                }
+            } else if (item.state == StackItemState.IN_VALUE) {
                 IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, lineStartOffset);
                 if (item.indent != -1) {
                     ii.setFixedIndentSize(item.indent);
                 }
                 iis.add(ii);
-            } else if (item.state == StackItemState.IN_RULE) {
-                if (item.processed == Boolean.FALSE) {
-                    IndentCommand ii = new IndentCommand(IndentCommand.Type.INDENT, lineStartOffset);
-                    if (item.indent != -1) {
-                        ii.setFixedIndentSize(item.indent);
-                    }
-                    iis.add(ii);
-                    if (updateState) {
-                        item.processed = Boolean.TRUE;
-                    }
-                }
-            } else if (item.state == StackItemState.RULE_FINISHED) {
-                iis.add(new IndentCommand(IndentCommand.Type.RETURN, lineStartOffset));
+                // do not mark IN_VALUE as processed so that it is applied on all next lines:
+            } else if (item.state == StackItemState.RULE_FINISHED ||
+                    item.state == StackItemState.MEDIA_FINISHED) {
+                IndentCommand ii = new IndentCommand(IndentCommand.Type.RETURN, lineStartOffset);
+                iis.add(ii);
                 if (updateState) {
-                    blockStack.pop();
+                    item.processed = Boolean.TRUE;
+                    blockStack.remove(i);
+                    i--;
                 }
             }
         }
@@ -186,6 +202,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
         ts.move(context.getLineStartOffset());
 
         boolean ruleWasDefined = false;
+        boolean mediaWasDefined = false;
         int lastLBrace = -1;
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext() &&
@@ -198,15 +215,19 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
             if (lastLBrace != -1 && token.id() != CssTokenId.S) {
                 CssStackItem state = blockStack.peek();
-                assert state.state == StackItemState.IN_RULE;
+                assert (state.state == StackItemState.IN_RULE || state.state == StackItemState.IN_MEDIA);
                 state.indent = ts.offset() - context.getLineNonWhiteStartOffset();
                 lastLBrace = -1;
             }
             if (token.id() == CssTokenId.LBRACE) {
-                if (!isInState(blockStack, StackItemState.IN_RULE)) {
+                if (inMedia) {
+                    inMedia = false;
+                    lastLBrace = ts.offset();
+                    blockStack.push(new CssStackItem(StackItemState.IN_MEDIA));
+                    mediaWasDefined = true;
+                } else if (!isInState(blockStack, StackItemState.IN_RULE)) {
                     CssStackItem state = new CssStackItem(StackItemState.IN_RULE);
                     lastLBrace = ts.offset();
-                    state.processed = Boolean.FALSE;
                     blockStack.push(state);
                     ruleWasDefined = true;
                 }
@@ -242,6 +263,24 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         // case nothing needs to be done.
                         if (!ruleWasDefined) {
                             blockStack.push(new CssStackItem(StackItemState.RULE_FINISHED));
+                        }
+                    }
+                } else if (isInState(blockStack, StackItemState.IN_MEDIA)) {
+                    CssStackItem item = blockStack.pop();
+                    if (item.state == StackItemState.RULE_FINISHED) {
+                        // if top state is RULE_FINISHED then remove state underneath
+                        // which should be IN_MEDIA
+                        item = blockStack.pop();
+                        blockStack.push(new CssStackItem(StackItemState.RULE_FINISHED));
+                    }
+                    assert item.state == StackItemState.IN_MEDIA : item;
+                    if (ts.offset() == context.getLineNonWhiteStartOffset()) {
+                        // if "}" is first character on line then it changes line's indentation:
+                        iis.add(new IndentCommand(IndentCommand.Type.RETURN, context.getLineStartOffset()));
+                    } else {
+                        // see desc of RULE_FINISHED above - the same logic applies here:
+                        if (!mediaWasDefined) {
+                            blockStack.push(new CssStackItem(StackItemState.MEDIA_FINISHED));
                         }
                     }
                 }
@@ -282,6 +321,9 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         ic.setFixedIndentSize(preservedLineIndentation);
                         iis.add(ic);
                     }
+            } else if (token.id() == CssTokenId.MEDIA_SYM) {
+                assert blockStack.size() == 0 : blockStack;
+                inMedia = true;
             }
         }
 
@@ -309,15 +351,17 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
     }
 
     private static enum StackItemState {
+        IN_MEDIA,
         IN_RULE,
         IN_VALUE,
         RULE_FINISHED,
+        MEDIA_FINISHED,
         ;
     }
 
     private static class CssStackItem  {
         private StackItemState state;
-        private Boolean processed;
+        private Boolean processed = false;
         private int indent;
 
         private CssStackItem(StackItemState state) {
