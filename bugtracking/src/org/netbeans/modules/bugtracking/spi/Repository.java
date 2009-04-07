@@ -60,7 +60,7 @@ public abstract class Repository {
     /**
      * a query was saved or removed
      */
-    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed";
+    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
 
     /**
      * Returns the icon for this repository

@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  */
 public class BugtrackingRootNode extends AbstractNode {
     
-    private static final String ICON_BASE = "org/netbeans/modules/bugtracking/ui/resources/bugtracking.png";
+    private static final String ICON_BASE = "org/netbeans/modules/bugtracking/ui/resources/bugtracking.png"; // NOI18N
     
     /** Init lock */
     private static final Object LOCK_INIT = new Object();
@@ -81,7 +81,7 @@ public class BugtrackingRootNode extends AbstractNode {
     private BugtrackingRootNode() {
         super(new RootNodeChildren());
         setName("bugtracking"); // NOI18N
-        setDisplayName(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_BugtrackingNode"));
+        setDisplayName(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_BugtrackingNode")); // NOI18N
         setIconBaseWithExtension(ICON_BASE);
     }
     
@@ -91,9 +91,9 @@ public class BugtrackingRootNode extends AbstractNode {
      * @return default instance of BugtrackingRootNode
      */
     @ServicesTabNodeRegistration(
-        name="bugtracking",
-        displayName="org.netbeans.modules.bugtracking.ui.nodes.Bundle#LBL_BugtrackingNode",
-        iconResource="org/netbeans/modules/bugtracking/ui/resources/bugtracking.png",
+        name="bugtracking",                                                                 // NOI18N
+        displayName="org.netbeans.modules.bugtracking.ui.nodes.Bundle#LBL_BugtrackingNode", // NOI18N
+        iconResource="org/netbeans/modules/bugtracking/ui/resources/bugtracking.png",       // NOI18N
         position=588
     )
     public static BugtrackingRootNode getDefault() {
@@ -108,7 +108,7 @@ public class BugtrackingRootNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.createRepository();
                 }

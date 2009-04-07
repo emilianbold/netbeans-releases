@@ -80,7 +80,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private Issue issue;
-    private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true);
+    private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
 
     /**
@@ -287,7 +287,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
             public void run() {
                 try {
@@ -382,8 +382,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     setName(issue.getDisplayName());
                     setToolTipText(issue.getTooltip());
                 } else {
-                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
-                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
+                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
                 }
             }
         });

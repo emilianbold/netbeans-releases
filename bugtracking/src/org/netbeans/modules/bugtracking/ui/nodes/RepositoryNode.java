@@ -86,12 +86,12 @@ public class RepositoryNode extends AbstractNode {
                     IssueAction.openIssue(repository);
                 }
             },
-            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.editRepository(repository);
                 }
             },
-            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getDisplayName() }), // NOI18N

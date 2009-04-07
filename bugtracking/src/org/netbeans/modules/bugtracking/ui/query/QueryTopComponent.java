@@ -101,11 +101,11 @@ final class QueryTopComponent extends TopComponent
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
     private Query[] savedQueries = null;
     
-    private static final String PREFERRED_ID = "QueryTopComponent";
+    private static final String PREFERRED_ID = "QueryTopComponent"; // NOI18N
     private Query query; // XXX synchronized
     private static final Object LOCK = new Object();
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true);
+    private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
     private Task prepareTask;
 
     QueryTopComponent() {
@@ -376,15 +376,15 @@ final class QueryTopComponent extends TopComponent
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(QueryTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof QueryTopComponent) {
             return (QueryTopComponent) win;
         }
         Logger.getLogger(QueryTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 
@@ -524,7 +524,7 @@ final class QueryTopComponent extends TopComponent
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryTopComponent.class, "CTL_PreparingQuery"), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryTopComponent.class, "CTL_PreparingQuery"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
             public void run() {
                 try {
@@ -572,11 +572,11 @@ final class QueryTopComponent extends TopComponent
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
-                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()}));
-                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getTooltip()}));
+                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()})); // NOI18N
+                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getTooltip()})); // NOI18N
                 } else {
-                    setName(NbBundle.getMessage(QueryTopComponent.class, "CTL_QueryTopComponent"));
-                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "HINT_QueryTopComponent"));
+                    setName(NbBundle.getMessage(QueryTopComponent.class, "CTL_QueryTopComponent")); // NOI18N
+                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "HINT_QueryTopComponent")); // NOI18N
                 }
             }
         });

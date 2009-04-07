@@ -64,7 +64,7 @@ public class QueryAction extends SystemAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction");
+        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

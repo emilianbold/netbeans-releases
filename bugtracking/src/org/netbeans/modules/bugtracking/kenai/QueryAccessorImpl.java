@@ -244,7 +244,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     private static class FakeJiraSupport {
-        private static final String JIRA_SUBSTRING ="kenai.com/jira/";
+        private static final String JIRA_SUBSTRING ="kenai.com/jira/"; // NOI18N
         private String projectUrl;
         private String createIssueUrl;
 
@@ -265,7 +265,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 url = null;
                 issueUrl = null;
                 for (KenaiFeature f : features) {
-                    if (!f.getName().equals("jira") &&
+                    if (!f.getName().equals("jira") && // NOI18N
                             !f.getLocation().toString().contains(JIRA_SUBSTRING)) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
                     {
                         return null;
@@ -283,7 +283,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             if(idx > -1) {
                 issueUrl =
                         url.substring(0, idx + JIRA_SUBSTRING.length()) +
-                        "secure/CreateIssue!default.jspa?pname=" +
+                        "secure/CreateIssue!default.jspa?pname=" + // NOI18N
                         project.getName();
 
             }
