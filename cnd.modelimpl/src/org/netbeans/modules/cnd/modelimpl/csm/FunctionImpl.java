@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -675,12 +674,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if(params != null && params.size() > 0) {
             sb.append('<');
             int limit = 0;
-            for (Iterator iter = params.iterator(); iter.hasNext();) {
+            for (Iterator<CsmTemplateParameter> iter = params.iterator(); iter.hasNext();) {
                 if (limit >= PARAMETERS_LIMIT) {
                     break;
                 }
                 limit++;
-                CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
+                CsmTemplateParameter param = iter.next();
                 if (CsmKindUtilities.isVariableDeclaration(param)) {
                     CsmVariable var = (CsmVariable) param;
                     CsmType type = var.getType();
@@ -719,7 +718,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.scopeRef == null) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
