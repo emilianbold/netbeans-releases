@@ -1182,11 +1182,11 @@ public class InteceptorTest extends NbTestCase {
         
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
         
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
-        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        assertCachedStatus(fileC, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
         
         commit(wc);
     }
@@ -1215,11 +1215,11 @@ public class InteceptorTest extends NbTestCase {
         
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
         
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
-        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        assertCachedStatus(fileC, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
         
         commit(wc);
     }
@@ -1328,6 +1328,7 @@ public class InteceptorTest extends NbTestCase {
         
         // move
         moveDO(fileA, fileB);
+        Thread.sleep(500);
         
         // create from file
         FileUtil.toFileObject(fileA.getParentFile()).createData(fileA.getName());
@@ -1884,11 +1885,11 @@ public class InteceptorTest extends NbTestCase {
         
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
         
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
-        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        assertCachedStatus(fileC, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
         
         commit(wc);
     }
@@ -1917,11 +1918,11 @@ public class InteceptorTest extends NbTestCase {
         
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());        
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileB).getTextStatus());        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(fileC).getTextStatus());        
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
         
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));                
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));                
-        assertCachedStatus(fileC, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);    
+        assertCachedStatus(fileC, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
         
         commit(wc);
     }
