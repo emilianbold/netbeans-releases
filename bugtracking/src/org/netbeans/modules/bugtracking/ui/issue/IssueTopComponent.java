@@ -57,12 +57,17 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 
 /**
@@ -75,6 +80,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private Issue issue;
+    private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true);
+    private Task prepareTask;
 
     /**
      * Creates new {@code IssueTopComponent}.
@@ -269,31 +276,49 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     private BugtrackingController controller;
     private void onRepoSelected() {
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        if(prepareTask != null) {
+            prepareTask.cancel();
+        }
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(prepareTask != null) {
+                    prepareTask.cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c);
+        prepareTask = rp.post(new Runnable() {
             public void run() {
-                Repository repo = (Repository) repositoryComboBox.getSelectedItem();
-                if (repo == null) {
-                    return;
-                }
-                if(issue != null) {                    
-                    if(controller != null) issuePanel.remove(controller.getComponent());
-                    issue.removePropertyChangeListener(IssueTopComponent.this);
-                }
-                issue = repo.createIssue();
-                if (issue == null) {
-                    return;
-                }
-                controller = issue.getController();
-
-                final BugtrackingController c = issue.getController();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
-                        issue.addPropertyChangeListener(IssueTopComponent.this);
-                        revalidate();
-                        repaint();
+                try {
+                    handle.start();
+                    Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+                    if (repo == null) {
+                        return;
                     }
-                });
+                    if(issue != null) {
+                        if(controller != null) issuePanel.remove(controller.getComponent());
+                        issue.removePropertyChangeListener(IssueTopComponent.this);
+                    }
+                    issue = repo.createIssue();
+                    if (issue == null) {
+                        return;
+                    }
+                    controller = issue.getController();
+
+                    final BugtrackingController c = issue.getController();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
+                            issue.addPropertyChangeListener(IssueTopComponent.this);
+                            revalidate();
+                            repaint();
+                        }
+                    });
+                } finally {
+                    handle.finish();
+                    prepareTask = null;
+                }
             }
         });
     }
@@ -327,6 +352,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.removePropertyChangeListener(this);
             issue.getController().closed();
+        }
+        if(prepareTask != null) {
+            prepareTask.cancel();
         }
     }
 

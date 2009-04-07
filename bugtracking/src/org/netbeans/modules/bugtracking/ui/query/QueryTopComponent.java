@@ -68,6 +68,8 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -78,7 +80,10 @@ import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -99,6 +104,9 @@ final class QueryTopComponent extends TopComponent
     private static final String PREFERRED_ID = "QueryTopComponent";
     private Query query; // XXX synchronized
     private static final Object LOCK = new Object();
+
+    private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true);
+    private Task prepareTask;
 
     QueryTopComponent() {
         this(null, null);
@@ -417,6 +425,9 @@ final class QueryTopComponent extends TopComponent
             query.getController().closed();
         }
         Kenai.getDefault().removePropertyChangeListener(this);
+        if(prepareTask != null) {
+            prepareTask.cancel();
+        }
     }
 
     /** replaces this in object stream */
@@ -502,39 +513,57 @@ final class QueryTopComponent extends TopComponent
     }
 
     private void onRepoSelected() {
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        if(prepareTask != null) {
+            prepareTask.cancel();
+        }
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(prepareTask != null) {
+                    prepareTask.cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryTopComponent.class, "CTL_PreparingQuery"), c);
+        prepareTask = rp.post(new Runnable() {
             public void run() {
-                Repository repo = (Repository) repositoryComboBox.getSelectedItem();
-                if (repo == null) {
-                    return;
-                }
-                repo.addPropertyChangeListener(QueryTopComponent.this);
-                
-                final BugtrackingController removeController = query != null ? query.getController() : null;
-                if(query != null) {
-                    query.removePropertyChangeListener(QueryTopComponent.this);
-                }
-
-                query = repo.createQuery();
-                if (query == null) {
-                    return;
-                }
-                query.addPropertyChangeListener(QueryTopComponent.this);
-                query.addNotifyListener(QueryTopComponent.this);
-
-                updateSavedQueries(repo);
-
-                final BugtrackingController addController = query.getController();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if(removeController != null) {
-                            panel.remove(removeController.getComponent());
-                        }
-                        panel.add(addController.getComponent());
-                        panel.revalidate();
-                        panel.repaint();
+                try {
+                    handle.start();
+                    Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+                    if (repo == null) {
+                        return;
                     }
-                });
+                    repo.addPropertyChangeListener(QueryTopComponent.this);
+
+                    final BugtrackingController removeController = query != null ? query.getController() : null;
+                    if(query != null) {
+                        query.removePropertyChangeListener(QueryTopComponent.this);
+                    }
+
+                    query = repo.createQuery();
+                    if (query == null) {
+                        return;
+                    }
+                    query.addPropertyChangeListener(QueryTopComponent.this);
+                    query.addNotifyListener(QueryTopComponent.this);
+
+                    updateSavedQueries(repo);
+
+                    final BugtrackingController addController = query.getController();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if(removeController != null) {
+                                panel.remove(removeController.getComponent());
+                            }
+                            panel.add(addController.getComponent());
+                            panel.revalidate();
+                            panel.repaint();
+                        }
+                    });
+                } finally {
+                    handle.finish();
+                    prepareTask = null;
+                }
             }
         });
     }
