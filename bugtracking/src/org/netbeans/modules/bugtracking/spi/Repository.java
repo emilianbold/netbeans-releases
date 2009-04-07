@@ -117,14 +117,18 @@ public abstract class Repository {
     public abstract BugtrackingController getController();
 
     /**
-     * Creates a new query instance.
-     * @return
+     * Creates a new query instance. Might block for a longer time.
+     *
+     * @return a new Query instance or null if it's not possible
+     * to access the repository.
      */
     public abstract Query createQuery(); 
 
     /**
-     * Creates an issue
-     * @return
+     * Creates a new Issue instance. Might block for a longer time.
+     *
+     * @return return a new Issue instance or null if it's not possible
+     * to access the repository.
      */
     public abstract Issue createIssue();
 

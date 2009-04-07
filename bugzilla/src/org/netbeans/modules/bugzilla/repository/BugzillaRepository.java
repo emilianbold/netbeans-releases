@@ -117,12 +117,20 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query createQuery() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         BugzillaQuery q = new BugzillaQuery(this);        
         return q;
     }
 
     @Override
     public Issue createIssue() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         TaskAttributeMapper attributeMapper =
                 Bugzilla.getInstance()
                     .getRepositoryConnector()
