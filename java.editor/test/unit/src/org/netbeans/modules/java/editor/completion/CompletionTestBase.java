@@ -236,8 +236,11 @@ public class CompletionTestBase extends NbTestCase {
         File output = new File(getWorkDir(), getName() + ".out");
         Writer out = new FileWriter(output);
         for (Object item : items) {
-            out.write(item.toString());
-            out.write("\n");
+            String itemString = item.toString();
+            if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple"))) { //ignoring 'apple' package
+                out.write(itemString);
+                out.write("\n");
+            }
         }
         out.close();
         
