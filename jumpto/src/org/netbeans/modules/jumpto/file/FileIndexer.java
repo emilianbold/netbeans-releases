@@ -84,6 +84,9 @@ public final class FileIndexer extends CustomIndexer {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : deleted) {
                     is.removeDocuments(i);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("removed " + i.getURL() + "/" + i.getRelativePath());
+                    }
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
@@ -96,6 +99,9 @@ public final class FileIndexer extends CustomIndexer {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {
                     is.markDirtyDocuments(i);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("dirty " + i.getURL() + "/" + i.getRelativePath());
+                    }
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
