@@ -372,7 +372,7 @@ public final class ModuleList {
         try {
             ObjectInput oi = new ObjectInputStream(is) {
                 protected @Override Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-                    return loader.loadClass(desc.getName());
+                    return Class.forName(desc.getName(), true, loader); // was loader.loadClass(desc.getName());
                 }
             };
             for (Map.Entry<File,Long[]> entry : NbCollections.checkedMapByFilter((Map) oi.readObject(), File.class, Long[].class, true).entrySet()) {

@@ -46,14 +46,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -71,11 +74,13 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.layers.PlatformLayersCacheManager.PLFSCacheEntry;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -108,6 +113,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public class LayerUtils {
+    private static final Collection<FileSystem> EMPTY_FS_COL = new ArrayList<FileSystem>();
 
     private LayerUtils() {}
     
@@ -598,10 +604,12 @@ public class LayerUtils {
         
             NbModuleProvider.NbModuleType type = Util.getModuleType(p);
             FileSystem projectLayer = layerForProject(p).layer(false);
+
             if (type == NbModuleProvider.STANDALONE) {
                 Set<File> jars = 
                         getPlatformJarsForStandaloneProject(p);
-                FileSystem[] platformLayers = getPlatformLayers(jars);
+                NbPlatform plaf = getPlatformForProject(p);
+                Collection<FileSystem> platformLayers = getCachedLayers(plaf != null? plaf.getDestDir() : null, jars);
                 ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
                 return mergeFilesystems(projectLayer, platformLayers, cp);
             } else if (type == NbModuleProvider.SUITE_COMPONENT) {
@@ -620,12 +628,12 @@ public class LayerUtils {
                     if (roLayer != null) {
                         readOnlyLayers.add(roLayer);
                     }
-                    // XXX could also look for ${sister}/build/classes/META-INF/generated-layer.xml
                 }
-                Set<File> jars = getPlatformJarsForSuiteComponentProject(p, suite);
-                readOnlyLayers.addAll(Arrays.asList(getPlatformLayers(jars)));
+                NbPlatform plaf = suite.getPlatform(true);
+                Set<File> jars = getPlatformJarsForSuiteComponentProject(suite);
+                readOnlyLayers.addAll(getCachedLayers(plaf != null ? plaf.getDestDir() : null, jars));
                 ClassPath cp = createLayerClasspath(modules, jars);
-                return mergeFilesystems(projectLayer, readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
+                return mergeFilesystems(projectLayer, readOnlyLayers, cp);
             } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 //it's safe to cast to NbModuleProject here.
                 NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
@@ -651,6 +659,7 @@ public class LayerUtils {
                         continue;
                     }
                     otherLayerURLs.add(layerXml.getURL());
+                    // TODO cache
                     // XXX as above, could add generated-layer.xml
                 }
                 XMLFileSystem xfs = new XMLFileSystem();
@@ -660,7 +669,7 @@ public class LayerUtils {
                     assert false : ex;
                 }
                 ClassPath cp = createLayerClasspath(projects, Collections.<File>emptySet());
-                return mergeFilesystems(projectLayer, new FileSystem[] {xfs}, cp);
+                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs), cp);
             } else {
                 throw new AssertionError(type);
             }
@@ -693,7 +702,7 @@ public class LayerUtils {
         return platform;
     }
     // TODO C.P +cluster.path
-    public static Set<File> getPlatformJarsForSuiteComponentProject(Project project, SuiteProject suite) {
+    public static Set<File> getPlatformJarsForSuiteComponentProject(SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
         String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
@@ -744,9 +753,36 @@ public class LayerUtils {
     }
 
     /**
+     * Returns possibly cached list of filesystems representing the XML layers of the supplied platform module JARs.
+     * If cache is not ready yet, this call blocks until the cache is created.
+     * Layer filesystems are already ordered to handle masked ("_hidden") files correctly.
+     * @param platformJars
+     * @return List of read-only layer filesystems
+     * @throws java.io.IOException
+     */
+    private static Collection<FileSystem> getCachedLayers(File rootDir, final Set<File> platformJars) throws IOException {
+        if (rootDir == null)
+            return EMPTY_FS_COL;
+
+        File[] clusters = rootDir.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                return ClusterUtils.isValidCluster(pathname);
+            }
+        });
+        Collection<FileSystem> cache = PlatformLayersCacheManager.getCache(clusters,
+                new FileFilter() {
+                    public boolean accept(File jar) {
+                        return platformJars.contains(jar);
+                    }
+                });
+        return cache;
+    }
+
+    /**
      * Constructs a list of filesystems representing the XML layers of the supplied platform module JARs.
      */
     private static FileSystem[] getPlatformLayers(Set<File> platformJars) throws IOException {
+        // TODO delete when cache is in place
         List<FileSystem> layers = new ArrayList<FileSystem>();
         JAR: for (File jar : platformJars) {
             ManifestManager mm = ManifestManager.getInstanceFromJAR(jar);
@@ -845,13 +881,16 @@ public class LayerUtils {
      * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
      * You should also pass a classpath that can be used to look up resource bundles and icons.
      */
-    private static FileSystem mergeFilesystems(FileSystem writableLayer, FileSystem[] readOnlyLayers, final ClassPath cp) {
+    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers, final ClassPath cp) {
         if (writableLayer == null) {
             writableLayer = new XMLFileSystem();
         }
-        final FileSystem[] layers = new FileSystem[readOnlyLayers.length + 1];
+        final FileSystem[] layers = new FileSystem[readOnlyLayers.size() + 1];
         layers[0] = writableLayer;
-        System.arraycopy(readOnlyLayers, 0, layers, 1, readOnlyLayers.length);
+        Iterator<FileSystem> it = readOnlyLayers.iterator();
+        for (int i = 1; it.hasNext(); i++) {
+            layers[i] = it.next();
+        }
         class BadgingMergedFileSystem extends MultiFileSystem {
             private final BadgingSupport status;
             public BadgingMergedFileSystem() {
