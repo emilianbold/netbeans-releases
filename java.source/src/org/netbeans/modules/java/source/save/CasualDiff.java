@@ -1854,10 +1854,8 @@ public class CasualDiff {
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    int to = getOldPos(oldT);
-                    if (to - lastOldPos > 1) {
-                        copyTo(lastOldPos, to);
-                    }
+                    copyTo(lastOldPos, getOldPos(oldT));
+
                     if (treesMatch(oldT, item.element, false)) {
                         lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
                     } else {
@@ -1905,7 +1903,7 @@ public class CasualDiff {
                     }
                     if (i == 0 && !newList.isEmpty()) {
                         lastOldPos = endOffset;
-                    } else {          
+                    } else {
                         lastOldPos = endPos(item.element);
 //                        lastOldPos = Math.max(testPos, endPos(item.element));
                     }
