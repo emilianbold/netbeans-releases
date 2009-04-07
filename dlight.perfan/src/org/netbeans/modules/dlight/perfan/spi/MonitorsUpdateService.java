@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +50,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.perfan.storage.impl.Erprint;
+import org.netbeans.modules.dlight.perfan.storage.impl.ErprintSession;
 import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -62,7 +63,7 @@ public class MonitorsUpdateService {
             Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName()));
     private static final List<String> leaksColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
-    private final Erprint er_print;
+    private final ErprintSession er_print;
     private final SunStudioDataCollector ssdc;
     private final boolean isSyncMonitor;
     private final boolean isMemoryMonitor;
@@ -74,7 +75,7 @@ public class MonitorsUpdateService {
             String sproHome, String experimentDir,
             Collection<CollectedInfo> collectedInfo) {
         this.ssdc = ssdc;
-        this.er_print = new Erprint(execEnv, sproHome, experimentDir);
+        this.er_print = new ErprintSession(execEnv, sproHome, experimentDir);
         isSyncMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY);
         isMemoryMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY);
         metrics = isMemoryMonitor ? Metrics.constructFrom(
@@ -87,7 +88,7 @@ public class MonitorsUpdateService {
         if (isBlank()) {
             return;
         }
-        
+
         task = DLightExecutorService.scheduleAtFixedRate(new MonitorsUpdateRunnable(), 1,
                 TimeUnit.SECONDS, "SunStudio monitors update task"); // NOI18N
 
@@ -96,9 +97,9 @@ public class MonitorsUpdateService {
     public void stop() {
         synchronized (this) {
             if (task != null) {
+                er_print.close();
                 task.cancel(true);
                 task = null;
-                er_print.stop();
             }
         }
     }
@@ -110,32 +111,42 @@ public class MonitorsUpdateService {
     private class MonitorsUpdateRunnable implements Runnable {
 
         public void run() {
-            er_print.restart(true);
+            boolean restarted = false;
 
             if (isSyncMonitor) {
-                ExperimentStatistics stat = er_print.getExperimentStatistics(false);
-                DataRow row = new DataRow(syncColNames, Arrays.asList(stat.getULock_p()));
-                ssdc.updateIndicators(Arrays.asList(row));
+                try {
+                    ExperimentStatistics stat = er_print.getExperimentStatistics(!restarted);
+                    restarted = true;
+                    if (stat != null) {
+                        DataRow row = new DataRow(syncColNames, Arrays.asList(stat.getULock_p()));
+                        ssdc.updateIndicators(Arrays.asList(row));
+                    }
+                } catch (IOException ex) {
+                }
             }
 
             if (isMemoryMonitor) {
-                String[] result = er_print.getHotFunctions(metrics, 1, false);
+                try {
+                    String[] result = er_print.getHotFunctions(metrics, 1, !restarted);
+                    restarted = true;
 
-                if (result == null || result.length == 0) {
-                    return;
-                }
+                    if (result == null || result.length == 0) {
+                        return;
+                    }
 
-                Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
+                    Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
 
-                if (!m.matches()) {
-                    return;
-                }
+                    if (!m.matches()) {
+                        return;
+                    }
 
-                String value = m.group(1);
+                    String value = m.group(1);
 
-                if (value != null) {
-                    DataRow row = new DataRow(leaksColNames, Arrays.asList(Long.valueOf(value)));
-                    ssdc.updateIndicators(Arrays.asList(row));
+                    if (value != null) {
+                        DataRow row = new DataRow(leaksColNames, Arrays.asList(Long.valueOf(value)));
+                        ssdc.updateIndicators(Arrays.asList(row));
+                    }
+                } catch (IOException ex) {
                 }
             }
         }
