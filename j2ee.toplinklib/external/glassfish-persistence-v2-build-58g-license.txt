@@ -1,7 +1,7 @@
 Name: glassfish-persistence
 Version: v2-build-58g
 OSR: ? 
-License: CDDL-GPL-2-CP 
+License: CDDL-GPL-2-CP
 Origin: http://glassfish.dev.java.net 
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
