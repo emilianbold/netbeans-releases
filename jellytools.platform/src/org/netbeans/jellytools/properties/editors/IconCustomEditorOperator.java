@@ -41,6 +41,8 @@
 
 package org.netbeans.jellytools.properties.editors;
 
+//TODO: add rest of the functionality of the icon editor
+
 import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -66,10 +68,9 @@ public class IconCustomEditorOperator extends NbDialogOperator {
         super((JDialog)wrapper.getSource());
     }
     
-    private JRadioButtonOperator _rbURL;
-    private JRadioButtonOperator _rbFile;
-    private JRadioButtonOperator _rbClasspath;
-    private JRadioButtonOperator _rbNoPicture;
+    private JRadioButtonOperator _rbImageWithinProject;
+    private JRadioButtonOperator _rbExternalImage;    
+    private JRadioButtonOperator _rbNoImage;
     private JTextFieldOperator _txtName;
     private JButtonOperator _btSelectFile;
 
@@ -77,50 +78,41 @@ public class IconCustomEditorOperator extends NbDialogOperator {
     // Subcomponents definition part
     //******************************
 
-    /** Tries to find "URL" JRadioButton in this dialog.
+    /** Tries to find "Image Within Project" JRadioButton in this dialog.
      * @return JRadioButtonOperator instance
      */
-    public JRadioButtonOperator rbURL() {
-        if (_rbURL==null) {
-            _rbURL = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_URL"));
+    public JRadioButtonOperator rbImageWithinProject() {
+        if (_rbImageWithinProject==null) {
+            _rbImageWithinProject = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.modules.form.editors.Bundle", "CustomIconEditor.classPathRadio.text"));
         }
-        return _rbURL;
+        return _rbImageWithinProject;
     }
 
-    /** Tries to find "File" JRadioButton in this dialog.
+    /** Tries to find "External Image" JRadioButton in this dialog.
      * @return JRadioButtonOperator instance
      */
-    public JRadioButtonOperator rbFile() {
-        if (_rbFile==null) {
-            _rbFile = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_File"));
+    public JRadioButtonOperator rbExternalImage() {
+        if (_rbExternalImage==null) {
+            _rbExternalImage = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.modules.form.editors.Bundle", "CustomIconEditor.externalRadio.text"));
         }
-        return _rbFile;
+        return _rbExternalImage;
     }
 
-    /** Tries to find "Classpath" JRadioButton in this dialog.
-     * @return JRadioButtonOperator instance
-     */
-    public JRadioButtonOperator rbClasspath() {
-        if (_rbClasspath==null) {
-            _rbClasspath = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_Classpath"));
-        }
-        return _rbClasspath;
-    }
 
     /** Tries to find "No picture" JRadioButton in this dialog.
      * @return JRadioButtonOperator instance
      */
-    public JRadioButtonOperator rbNoPicture() {
-        if (_rbNoPicture==null) {
-            _rbNoPicture = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_NoPicture"));
+    public JRadioButtonOperator rbNoImage() {
+        if (_rbNoImage==null) {
+            _rbNoImage = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.modules.form.editors.Bundle", "CustomIconEditor.noIconRadio.text"));
         }
-        return _rbNoPicture;
+        return _rbNoImage;
     }
 
-    /** Tries to find Name JTextField in this dialog.
+    /** Tries to find "File or URL" JTextField in this dialog.
      * @return JTextFieldOperator instance
      */
-    public JTextFieldOperator txtName() {
+    public JTextFieldOperator txtFileOrURL() {
         if (_txtName==null) {
             _txtName = new JTextFieldOperator(this);
         }
@@ -132,7 +124,7 @@ public class IconCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btSelectFile() {
         if (_btSelectFile==null) {
-            _btSelectFile = new JButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_ButtonSelect"));
+            _btSelectFile = new JButtonOperator(this, Bundle.getString("org.netbeans.modules.form.editors.Bundle", "CustomIconEditor.fileLabel.text"));
         }
         return _btSelectFile;
     }
@@ -141,45 +133,40 @@ public class IconCustomEditorOperator extends NbDialogOperator {
     // Low-level functionality definition part
     //****************************************
 
-    /** Clicks on "URL" JRadioButton. */
-    public void uRL() {
-        rbURL().push();
+    /** Clicks on "Image Within Project" JRadioButton. */
+    public void imageWithinProject() {
+        this.rbImageWithinProject().push();
     }
 
-    /** Clicks on "File" JRadioButton.  */
-    public void file() {
-        rbFile().push();
+    /** Clicks on "External Image" JRadioButton.  */
+    public void externalImage() {
+        rbExternalImage().push();
     }
 
-    /** Clicks on "Classpath" JRadioButton. */
-    public void classpath() {
-        rbClasspath().push();
+    /** Clicks on "No Image" JRadioButton. */
+    public void noImage() {
+        rbNoImage().push();
     }
 
-    /** Clicks on "No picture" JRadioButton. */
-    public void noPicture() {
-        rbNoPicture().push();
-    }
-
-    /** Gets text from Name text field.
+    /** Gets text from File or URL text field.
      * @return text from Name text field.
      */
-    public String getName() {
-        return txtName().getText();
+    public String getFileOrURL() {
+        return txtFileOrURL().getText();
     }
 
-    /** Sets text in Name text field.
+    /** Sets text in File or URL text field.
      * @param text text to be written to Name text field
      */
-    public void setName(String text) {
-        txtName().setText(text);
+    public void setFileOrURL(String text) {
+        txtFileOrURL().setText(text);
     }
 
-    /** Types text in Name text field.
+    /** Types text in File or URL text field.
      * @param text text to be written to Name text field
      */
-    public void typeName(String text) {
-        txtName().typeText(text);
+    public void FileOrURL(String text) {
+        txtFileOrURL().typeText(text);
     }
 
     /** Clicks on "Select File" JButton. */
@@ -194,11 +181,9 @@ public class IconCustomEditorOperator extends NbDialogOperator {
     /** Performs verification of this operator by accessing all its components.
      */
     public void verify() {
-        rbURL();
-        rbFile();
-        rbClasspath();
-        rbNoPicture();
-        txtName();
+        rbImageWithinProject();
+        rbExternalImage();
+        rbNoImage();
         btSelectFile();
         btOK();
         btCancel();

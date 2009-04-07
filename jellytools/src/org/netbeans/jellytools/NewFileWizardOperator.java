@@ -197,7 +197,7 @@ public class NewFileWizardOperator extends WizardOperator {
      */
     public JLabelOperator lblProject() {
         if (_lblProject==null) {
-            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_Project"));
+            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_TargetChooser_Project_Label"));
         }
         return _lblCategories;
     }
@@ -212,12 +212,12 @@ public class NewFileWizardOperator extends WizardOperator {
         return _lblCategories;
     }
 
-    /** Tries to find "Projects:" JLabel in this dialog.
+    /** Tries to find "File Types:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblFileTypes() {
         if (_lblFileTypes==null) {
-            _lblFileTypes = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_FileTypes"));
+            _lblFileTypes = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_Files"));
         }
         return _lblFileTypes;
     }
