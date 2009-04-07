@@ -190,25 +190,6 @@ public class XMLUtilTest extends NbTestCase {
             XMLUtil.validate(r, s);
             fail();
         } catch (SAXException x) {/*OK*/}
-        // #146081: xml:base attributes get inserted sometimes and can mess up validation.
-        xsd =
-                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema' targetNamespace='some://where' xmlns='some://where' elementFormDefault='qualified'>\n" +
-                " <xsd:element name='root'>\n" +
-                "  <xsd:complexType>\n" +
-                "   <xsd:sequence>\n" +
-                "    <xsd:element name='hello' type='xsd:NMTOKEN'/>\n" +
-                "   </xsd:sequence>\n" +
-                "  </xsd:complexType>\n" +
-                " </xsd:element>\n" +
-                "</xsd:schema>\n";
-        s = f.newSchema(new StreamSource(new StringReader(xsd)));
-        File d = getWorkDir();
-        File main = new File(d, "main.xml");
-        File ent = new File(d, "ent.xml");
-        TestFileUtils.writeFile(main, "<!DOCTYPE root [<!ENTITY ent SYSTEM 'ent.xml'>]> <root xmlns='some://where'>&ent;</root>");
-        TestFileUtils.writeFile(ent, "<hello xmlns='some://where'>there</hello>");
-        r = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null).getDocumentElement();
-        XMLUtil.validate(r, s);
     }
     
     public void testToAttributeValue() throws IOException {
@@ -460,4 +441,46 @@ public class XMLUtilTest extends NbTestCase {
         assertTrue("Expecting CDATASection node", child instanceof CDATASection);
         assertEquals("Wrong CDATASection content", cdataContent, ((CDATASection) child).getNodeValue());
     }
+
+    public void testEntityIncludes() throws Exception {
+        clearWorkDir();
+        // #146081: xml:base attributes get inserted sometimes and can mess up validation.
+        // #160806: problems writing: no system ID, xml:base inserted.
+        SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        String xsd =
+                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema' targetNamespace='some://where' xmlns='some://where' elementFormDefault='qualified'>\n" +
+                " <xsd:element name='root'>\n" +
+                "  <xsd:complexType>\n" +
+                "   <xsd:sequence>\n" +
+                "    <xsd:element name='hello' type='xsd:NMTOKEN'/>\n" +
+                "   </xsd:sequence>\n" +
+                "  </xsd:complexType>\n" +
+                " </xsd:element>\n" +
+                "</xsd:schema>\n";
+        Schema s = f.newSchema(new StreamSource(new StringReader(xsd)));
+        File d = getWorkDir();
+        File main = new File(d, "main.xml");
+        File ent = new File(d, "ent.xml");
+        TestFileUtils.writeFile(main, "<!DOCTYPE root [<!ENTITY ent SYSTEM 'ent.xml'>]> <root xmlns='some://where'>&ent;</root>");
+        TestFileUtils.writeFile(ent, "<hello xmlns='some://where'>there</hello>");
+        Document doc = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null);
+        XMLUtil.validate(doc.getDocumentElement(), s);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        String expanded =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root xmlns=\"some://where\">\n" +
+                "    <hello>there</hello>\n" +
+                "</root>\n";
+        assertEquals(expanded, baos.toString("UTF-8"));
+        // XXX #160806 reported a problem with "xml:base" being consider a no-NS attr; not yet caught by test
+        // Try again with no xmlns specified in entity; should inherit from main.xml:
+        TestFileUtils.writeFile(ent, "<hello>there</hello>");
+        doc = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null);
+        XMLUtil.validate(doc.getDocumentElement(), s);
+        baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        assertEquals(expanded, baos.toString("UTF-8"));
+    }
+
 }
