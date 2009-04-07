@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -245,7 +244,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
 
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized
             this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;

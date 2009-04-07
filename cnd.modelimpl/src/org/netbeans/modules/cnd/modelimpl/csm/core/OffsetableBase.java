@@ -46,7 +46,6 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -129,7 +128,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (fileRef == null) {
             // restore container from it's UID
             this.fileRef = UIDCsmConverter.UIDtoFile(fileUID);
             assert this.fileRef != null : "no object for UID " + fileUID;

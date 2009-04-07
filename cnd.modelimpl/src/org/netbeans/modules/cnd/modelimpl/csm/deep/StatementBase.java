@@ -77,7 +77,8 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            // this is possible situation when scope is already invalidated (see IZ#154264)
+            // assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }

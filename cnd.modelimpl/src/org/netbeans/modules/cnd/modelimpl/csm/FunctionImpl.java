@@ -753,7 +753,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            // wrong assert, see IZ#158605
+            // this is possible situation when scope is already invalidated (see IZ#154264)
             //assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
