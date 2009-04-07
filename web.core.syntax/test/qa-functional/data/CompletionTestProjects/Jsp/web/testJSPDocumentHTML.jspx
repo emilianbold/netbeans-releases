@@ -10,7 +10,7 @@
 <!-- completion for HTML tags -->
 <%--CC
 <h|
-<html>
+html
 <html>
 --%>
 
@@ -25,7 +25,7 @@ dir
 <%--CC
 <html dir="|
 rtl
-<html dir="rtl"
+<html dir="rtl
 --%>
 
 <!-- completion for HTML entities -->
@@ -38,7 +38,7 @@ rtl
 <!-- completion + indentation for HTML end tags -->
 <%--CC
 <html></|
-</html>
+/html
 <html></html>
 --%>
 

@@ -26,7 +26,7 @@ href
 <%--CC
 <p dir="|
 rtl
-<p dir="rtl"
+<p dir="rtl
 --%>
 
 <%-- Java completion for out object --%>
@@ -38,7 +38,7 @@ JspWriter out
 
 <%--CC
 <jsp:|
-< jsp:text >
+jsp:text
 <jsp:text
 --%>
 

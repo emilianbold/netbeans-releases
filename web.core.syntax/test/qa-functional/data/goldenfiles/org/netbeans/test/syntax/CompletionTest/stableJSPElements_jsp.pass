@@ -1,4 +1,4 @@
-[<jsp:|, < jsp:text >, <jsp:text, 145]
+[<jsp:|, jsp:text, <jsp:text, 141]
 < jsp:attribute >
 < jsp:body >
 < jsp:declaration >
@@ -17,10 +17,10 @@
 < jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
-End cursor position = 155
-[<jsp:include page="testJS|", testJSPElements.jsp, <jsp:include page="testJSPElements.jsp", 290]
+End cursor position = 151
+[<jsp:include page="testJS|", testJSPElements.jsp, <jsp:include page="testJSPElements.jsp", 286]
 testJSF.jsp
 testJSPDocumentBasic.jspx
 testJSPDocumentHTML.jspx
 testJSPElements.jsp
-End cursor position = 329
+End cursor position = 325

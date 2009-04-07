@@ -29,21 +29,21 @@ tabindex
 title
 type
 End cursor position = 375
-[<p dir="|, rtl, <p dir="rtl", 440]
+[<p dir="|, rtl, <p dir="rtl, 439]
 ltr
 rtl
-End cursor position = 453
-[&d|, &delta;, &delta;, 510]
-&dArr;
-&dagger;
-&darr;
-&deg;
-&delta;
-&diams;
-&divide;
-End cursor position = 518
-[<table><tr><td></|, </td>, <table><tr><td></td>, 601]
-</td>
-</tr>
-</table>
-End cursor position = 622
+End cursor position = 451
+[&d|, &delta;, &delta;, 509]
+⇓ &dArr;
+† &dagger;
+↓ &darr;
+° &deg;
+δ &delta;
+♦ &diams;
+÷ &divide;
+End cursor position = 517
+[<table><tr><td></|, </td, <table><tr><td></td>, 599]
+</td >
+</tr >
+</table >
+End cursor position = 620

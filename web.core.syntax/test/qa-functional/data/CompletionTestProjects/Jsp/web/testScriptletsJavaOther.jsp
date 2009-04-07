@@ -15,14 +15,14 @@
 <%-- Java completion for HttpSession object methods --%>
 <%--CC
 <% request.getSession().|
-void removeAttribute (String name )
+void removeAttribute
 <% request.getSession().removeAttribute(name)
 --%>
 
 <%-- Java completion for session object --%>
 <%--CC
 <% session.|
-Object getAttribute (String name )
+Object getAttribute
 <% session.getAttribute(name)
 --%>
 
