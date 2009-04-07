@@ -46,7 +46,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
@@ -57,26 +56,34 @@ import org.openide.util.RequestProcessor;
 public class DLightExecutorService {
 
     private final static String PREFIX = "DLIGHT: "; // NOI18N
+    private final static RequestProcessor processor = new RequestProcessor(PREFIX, 50);
     private final static Object lock;
-    private final static Logger log;
-
 
     static {
-        log = DLightLogger.getLogger(DLightExecutorService.class);
         lock = new String(DLightExecutorService.class.getName());
     }
 
-    public static <T> Future<T> submit(final Callable<T> task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        final FutureTask<T> ftask = new FutureTask<T>(task);
-        processor.post(ftask);
+    public static <T> Future<T> submit(final Callable<T> task, final String name) {
+        final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
 
+            public T call() throws Exception {
+                Thread.currentThread().setName(PREFIX + name);
+                return task.call();
+            }
+        });
+
+        processor.post(ftask);
         return ftask;
     }
 
-    public static void submit(final Runnable task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        processor.post(task);
+    public static void submit(final Runnable task, final String name) {
+        processor.post(new Runnable() {
+
+            public void run() {
+                Thread.currentThread().setName(PREFIX + name);
+                task.run();
+            }
+        });
     }
 
     public static Future scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
