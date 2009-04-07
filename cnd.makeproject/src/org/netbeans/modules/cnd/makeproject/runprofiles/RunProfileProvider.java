@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
 import java.beans.PropertyChangeSupport;
@@ -46,13 +45,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxO
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
 public class RunProfileProvider implements ConfigurationAuxObjectProvider {
+
     /**
      * Creates an instance of the auxiliary information object
      */
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-	RunProfile runProfile = new RunProfile(baseDir, pcs);
-	return runProfile;
+        RunProfile runProfile = new RunProfile(baseDir, pcs);
+        return runProfile;
     }
 }
