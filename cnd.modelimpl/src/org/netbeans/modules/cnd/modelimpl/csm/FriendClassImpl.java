@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
@@ -127,21 +128,21 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     public CsmClass getReferencedClass(Resolver resolver) {
-        if (friendUID != null) {
-            return friendUID.getObject();
-        }
-        if(classForwardUID != null) {
-            CsmClassForwardDeclaration cfd = classForwardUID.getObject();
+        CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
+        if(cls == null) {
+            CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
             if(cfd != null) {
-                CsmClass cls = cfd.getCsmClass();
-                friendUID = UIDs.get(cls);
-                return cls;
+                cls = cfd.getCsmClass();
+                friendUID = UIDCsmConverter.declarationToUID(cls);
+                if (cls != null) {
+                    return cls;
+                }
             }
         }
         CsmObject o = resolve(resolver);
         if (CsmKindUtilities.isClass(o)) {
-            CsmClass cls = (CsmClass) o;
-            friendUID = UIDs.get(cls);
+            cls = (CsmClass) o;
+            friendUID = UIDCsmConverter.objectToUID(cls);
             return cls;
         }
         return null;
@@ -169,11 +170,9 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     private void unregisterInProject() {
-        if (classForwardUID != null) {
-            CsmClassForwardDeclaration cfd = classForwardUID.getObject();
-            if (cfd instanceof ClassForwardDeclarationImpl) {
-                ((ClassForwardDeclarationImpl) cfd).dispose();
-            }
+        CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
+        if (cfd instanceof ClassForwardDeclarationImpl) {
+            ((ClassForwardDeclarationImpl) cfd).dispose();
         }
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         this.cleanUID();
