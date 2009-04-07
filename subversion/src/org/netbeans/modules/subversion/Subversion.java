@@ -116,9 +116,7 @@ public class Subversion {
     /**
      * Hyperlink providers available for the commit message TooltipWindow
      */
-    private List<HyperlinkProvider> hyperlinkProviders;
-
-    private VCSKenaiSupport kenaiSupport = null;
+    private List<HyperlinkProvider> hyperlinkProviders;    
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -545,13 +543,6 @@ public class Subversion {
             setHyperlinkProviders();
         }
         return hyperlinkProviders;
-    }
-
-    public VCSKenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
-        }
-        return kenaiSupport;
     }
     
 }

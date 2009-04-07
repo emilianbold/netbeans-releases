@@ -37,10 +37,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.bugtracking.util;
 
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 /**
  *
@@ -49,39 +52,56 @@ import org.netbeans.modules.kenai.api.Kenai;
 public class KenaiUtil {
 
     /**
-     * Returns the actuall kenai user or null if not loged in
-     * 
-     * @return
-     */
-    static String getKenaiUser() {
-        PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
-        if(passwordAuthentication != null) {
-            return  passwordAuthentication.getUserName();
-        }
-        return null;
-    }
-
-    /**
-     *
-     * Returns the password for the actuall kenai user or null if not loged in
+     * Returns true if logged into kenai, otherwise false.
      *
      * @return
      */
-    static String getKenaiPassword() {
-        PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
-        if(passwordAuthentication != null) {
-            return new String(passwordAuthentication.getPassword());
-        }
-        return null;
-    }
-
-    /**
-     * Returns true if logged into kenai. Owtherwise false.
-     * 
-     * @return
-     */
-    static boolean isLoggedIn() {
+    public static boolean isLoggedIn() {
         return Kenai.getDefault().getPasswordAuthentication() != null;
     }
 
+    /**
+     * Returns true if the given url belongs to a kenai project
+     * 
+     * @param url
+     * @return
+     */
+    public static boolean isKenai(String url) {
+        try {
+            return KenaiProject.forRepository(url) != null;
+        } catch (KenaiException ex) { }
+        return false;
+    }
+
+    /**
+     * Returns an instance of PasswordAuthentication holding the actuall
+     * Kenai credentials.
+     *
+     * @param forceLogin - forces a login if user not logged in
+     * @return PasswordAuthentication
+     */
+    public static PasswordAuthentication getPasswordAuthentication(boolean forceLogin) {
+        PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
+        if(a != null) {
+            return a;
+        } 
+        
+        if(!forceLogin) {
+            return null;
+        }
+
+        if(!showLogin()) {
+            return null;
+        }
+        
+        return Kenai.getDefault().getPasswordAuthentication();
+    }
+
+    /**
+     * Opens the kenai login dialog.
+     * @return true if login successfull, otherwise false
+     */
+    public static boolean showLogin() {
+        return UIUtils.showLogin();
+    }
 }
