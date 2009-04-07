@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -242,7 +243,9 @@ public class IssuePanel extends javax.swing.JPanel {
             format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
             String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
             reportedField.setText(reportedTxt);
+            fixPrefSize(reportedField);
             modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
+            fixPrefSize(modifiedField);
             reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
             reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
@@ -268,6 +271,15 @@ public class IssuePanel extends javax.swing.JPanel {
             updateMessagePanel();
         }
         reloading = false;
+    }
+
+    private static void fixPrefSize(JTextField textField) {
+        // The preferred size of JTextField on (Classic) Windows look and feel
+        // is one pixel shorter. The following code is a workaround.
+        textField.setPreferredSize(null);
+        Dimension dim = textField.getPreferredSize();
+        Dimension fixedDim = new Dimension(dim.width+1, dim.height);
+        textField.setPreferredSize(fixedDim);
     }
 
     private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field, JLabel warningLabel, JLabel fieldLabel) {
