@@ -1003,7 +1003,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
 
-            //make sure the variable on the left side is not considered to be read:
+            //make sure the variable on the left side is not considered to be read
+            //#162163: but dereferencing array is a read
+            if (node.getVariable() != null && node.getVariable().getKind() != Kind.IDENTIFIER) {
+                scan(node.getVariable(), p);
+            }
+            
             return scan(node.getExpression(), p);
         }
 
