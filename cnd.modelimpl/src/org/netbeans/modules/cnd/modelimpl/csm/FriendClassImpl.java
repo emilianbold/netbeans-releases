@@ -66,15 +66,17 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private final CharSequence name;
     private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;
+    private final CsmUID<CsmClassForwardDeclaration> classForwardUID;
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
     
-    public FriendClassImpl(AST ast, FileImpl file, CsmClass parent, boolean register) {
+    public FriendClassImpl(AST ast, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
+        classForwardUID = (cfd != null) ? UIDs.get(cfd) : null;
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
@@ -128,6 +130,14 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         if (friendUID != null) {
             return friendUID.getObject();
         }
+        if(classForwardUID != null) {
+            CsmClassForwardDeclaration cfd = classForwardUID.getObject();
+            if(cfd != null) {
+                CsmClass cls = cfd.getCsmClass();
+                friendUID = UIDs.get(cls);
+                return cls;
+            }
+        }
         CsmObject o = resolve(resolver);
         if (CsmKindUtilities.isClass(o)) {
             CsmClass cls = (CsmClass) o;
@@ -155,10 +165,16 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     @Override
     public void dispose() {
         super.dispose();
-	unregisterInProject();
+        unregisterInProject();
     }
 
     private void unregisterInProject() {
+        if (classForwardUID != null) {
+            CsmClassForwardDeclaration cfd = classForwardUID.getObject();
+            if (cfd instanceof ClassForwardDeclarationImpl) {
+                ((ClassForwardDeclarationImpl) cfd).dispose();
+            }
+        }
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         this.cleanUID();
     }
@@ -191,6 +207,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
         UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.classForwardUID, output);
     }
 
 
@@ -202,5 +219,6 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.friendUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
+        this.classForwardUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 }
