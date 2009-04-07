@@ -1282,7 +1282,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (repository != null) {
                 BugtrackingOwnerSupport.getInstance().setLooseAssociation(
                         BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                        null);
+                        repository);
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed

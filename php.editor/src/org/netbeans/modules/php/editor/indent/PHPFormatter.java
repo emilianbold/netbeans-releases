@@ -293,7 +293,13 @@ public class PHPFormatter implements Formatter {
             // I can't look at the first position on the line, since
             // for a string array that is indented, the indentation portion
             // is recorded as a blank identifier
-            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, pos);
+
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPositionedSequence(doc, pos);
+
+            if (ts != null) {
+                token = ts.token();
+            }
 
             if (token != null) {
                 TokenId id = token.id();
@@ -301,7 +307,6 @@ public class PHPFormatter implements Formatter {
                 // indentation alone!
                 if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
                     id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
-                    id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
 
 // TODO: please review!! without this line PHP formatter clobers
@@ -313,6 +318,16 @@ public class PHPFormatter implements Formatter {
                     // No indentation for literal strings in Ruby, since they can
                     // contain newlines. Leave it as is.
                     return true;
+                }
+
+                if (id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING){
+                    int startLine = Utilities.getLineOffset(doc, ts.offset());
+                    int currentLine = Utilities.getLineOffset(doc, pos);
+
+                    if (startLine < currentLine){
+                        // multiline string
+                        return true;
+                    }
                 }
 // XXX: resurrect support for heredoc
 //                if (id == PHPTokenId.STRING_END || id == PHPTokenId.QUOTED_STRING_END) {

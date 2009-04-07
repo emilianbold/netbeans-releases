@@ -1505,13 +1505,16 @@ class LayoutFeeder implements LayoutConstants {
         LayoutInterval alignParent;
         do {
             alignParent = LayoutInterval.getFirstParent(toAlignWith, PARALLEL);
-            if (alignParent == null)
+            if (alignParent == null) {
+                parParent.add(tempRemoved, removedIndex); // add back temporarily removed
                 return null; // aligning with parent (the interval must be already aligned)
+            }
             if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizingOp)) {
                 // toAlignWith is at border so we can perhaps use the parent instead
                 if (alignParent == parParent) {
-//                    if (LayoutInterval.getDirectNeighbor(aligning, alignment, false) == null)
+                    if (LayoutInterval.getNeighbor(aligning, alignment, false, true, false) == null) {
                         alignWithParent = true;
+                    }
                 }
                 else toAlignWith = alignParent;
             }

@@ -532,6 +532,9 @@ public final class ProjectEar extends J2eeApplicationProvider
             path = path.substring(8); // removing "META-INF/"
         }
         FileObject moduleFolder = getMetaInf();
+        if (moduleFolder == null) {
+            return null;
+        }
         File configFolder = FileUtil.toFile(moduleFolder);
         return new File(configFolder, path);
     }

@@ -540,6 +540,13 @@ class LayoutPersistenceManager implements LayoutConstants {
         int min = (minNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(minNode);
         int pref = (prefNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(prefNode);
         int max = (maxNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(maxNode);
+        if (pref != NOT_EXPLICITLY_DEFINED && pref < 0) { // autocorrect invalid pref size (#159536)
+            System.err.println("WARNING: Invalid preferred size (" // NOI18N
+                    + Integer.toString(pref)
+                    + ") of a layout interval encountered, reset to default."); // NOI18N
+            pref = NOT_EXPLICITLY_DEFINED;
+            layoutModel.setCorrected();
+        }
         interval.setSizes(min, pref, max);
 
         if (interval.isDefaultPadding(false)) {

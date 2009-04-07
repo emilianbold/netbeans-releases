@@ -12,7 +12,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +20,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -164,7 +165,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
     
     private static class RegisterTableModel extends AbstractTableModel {
         
-        private final List<RegisterValue> values = new ArrayList<RegisterValue>();
+        private final List<RegisterValue> values = Collections.synchronizedList(new ArrayList<RegisterValue>());
         
         public static final int COLUMN_REGISTER=0;
         public static final int COLUMN_VALUE=1;
@@ -243,14 +244,24 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
 
         @SuppressWarnings("unchecked")
         private void refresh() {
-            values.clear();
-            List<RegisterValue> res =
-                    (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
-            if (res != null) {
-                values.addAll(res);
-            }
-            Collections.sort(values, REGISTER_COMPARATOR);
-            fireTableDataChanged();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    List<RegisterValue> res =
+                            (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+                    synchronized (values) {
+                        values.clear();
+                        if (res != null) {
+                            values.addAll(res);
+                        }
+                        Collections.sort(values, REGISTER_COMPARATOR);
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            fireTableDataChanged();
+                        }
+                    });
+                }
+            });
         }
     }
     

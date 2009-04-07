@@ -15,6 +15,7 @@
              etc. See the generatestubs project for details. -->
         <unzip dest="build" src="external/jsstubs.zip"/>
         <unzip dest="build" src="external/js-domstubs.zip"/>
+        <copy file="external/sdocs.zip" todir="build/jsstubs"/>
         <!-- XXX would not need to repack these if they did not use the jsstubs/ internal dir name: -->
         <zip zipfile="${cluster}/jsstubs/allstubs.zip">
             <fileset dir="build/jsstubs"/>

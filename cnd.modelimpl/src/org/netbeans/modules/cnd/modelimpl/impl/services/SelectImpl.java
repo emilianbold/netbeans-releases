@@ -351,7 +351,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.kinds = kinds;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
                 if (kind != null) {
                     for (CsmDeclaration.Kind k : kinds) {
@@ -382,7 +382,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.caseSensitive = caseSensitive;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 CharSequence name = UIDUtilities.getName(uid);
                 if (name != null) {
                     if (allowEmptyName && name.length() == 0) {
@@ -408,7 +408,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.endOffset = endOffset;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 int start = UIDUtilities.getStartOffset(uid);
                 int end = UIDUtilities.getEndOffset(uid);
                 if (start < 0) {
@@ -433,7 +433,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.innerOffset = innerOffset;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 int start = UIDUtilities.getStartOffset(uid);
                 int end = UIDUtilities.getEndOffset(uid);
                 if (start < 0) {
@@ -460,7 +460,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.second = second;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 return ((UIDFilter) first).accept(uid) && ((UIDFilter) second).accept(uid);
             }
 
@@ -477,7 +477,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.nameAcceptor = nameAcceptor;
             }
 
-            public boolean accept(CsmUID uid) {
+            public boolean accept(CsmUID<?> uid) {
                 CharSequence name = UIDUtilities.getName(uid);
                 return nameAcceptor.accept(name);
             }

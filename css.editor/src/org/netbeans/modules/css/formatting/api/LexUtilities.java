@@ -157,12 +157,18 @@ public class LexUtilities {
         if (ignores.contains(ts.token().id())) {
             while (ts.moveNext() && ignores.contains(ts.token().id())) {}
         }
+        if (ts.token() == null || ignores.contains(ts.token().id())) {
+            return null;
+        }
         return ts.token();
     }
 
     public static <T extends TokenId> Token<T> findNext(JoinedTokenSequence<T> ts, List<T> ignores) {
         if (ignores.contains(ts.token().id())) {
             while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        if (ts.token() == null || ignores.contains(ts.token().id())) {
+            return null;
         }
         return ts.token();
     }
@@ -171,12 +177,18 @@ public class LexUtilities {
         if (ignores.contains(ts.token().id())) {
             while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
         }
+        if (ts.token() == null || ignores.contains(ts.token().id())) {
+            return null;
+        }
         return ts.token();
     }
 
     public static <T extends TokenId> Token<T> findPrevious(JoinedTokenSequence<T> ts, List<T> ignores) {
         if (ignores.contains(ts.token().id())) {
             while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        if (ts.token() == null || ignores.contains(ts.token().id())) {
+            return null;
         }
         return ts.token();
     }
