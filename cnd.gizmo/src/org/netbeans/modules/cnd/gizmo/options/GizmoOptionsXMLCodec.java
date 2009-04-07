@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.options;
 
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
-import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -120,13 +118,13 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         if (gizmoOptions.getProfileOnRun().getModified()) {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
-        if (gizmoOptions.getProfileOnRun().getModified()) {
+        if (gizmoOptions.getCpu().getModified()) {
             xes.element(CPU_ELEMENT, "" + gizmoOptions.getCpu().getValue()); // NOI18N
         }
-        if (gizmoOptions.getProfileOnRun().getModified()) {
+        if (gizmoOptions.getMemory().getModified()) {
             xes.element(MEMORY_ELEMENT, "" + gizmoOptions.getMemory().getValue()); // NOI18N
         }
-        if (gizmoOptions.getProfileOnRun().getModified()) {
+        if (gizmoOptions.getSynchronization().getModified()) {
             xes.element(SYNCHRONIZATION_ELEMENT, "" + gizmoOptions.getSynchronization().getValue()); // NOI18N
         }
         if (gizmoOptions.getDataProvider().getModified()) {
