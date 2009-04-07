@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -67,7 +68,7 @@ public class KenaiRepository extends BugzillaRepository {
     private String host;
 
     public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
-        super(repoName, url, KenaiUtil.getKenaiUser(), KenaiUtil.getKenaiPassword(), null, null);
+        super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -111,7 +112,7 @@ public class KenaiRepository extends BugzillaRepository {
 
                 // XXX escape @?
                 // XXX what if user already mail address?
-                String user = KenaiUtil.getKenaiUser();
+                String user = getKenaiUser();
                 if(user == null) {
                     user = "";                                                  // NOI18N
                 }
@@ -165,7 +166,7 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(getUrl());
+        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
         if(pa == null) {
             return false;
         }
@@ -178,5 +179,20 @@ public class KenaiRepository extends BugzillaRepository {
         return true;
     }
 
+    private static String getKenaiUser() {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+        if(pa != null) {
+            return pa.getUserName();
+        }
+        return "";
+    }
+
+    private static String getKenaiPassword() {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+        if(pa != null) {
+            return new String(pa.getPassword());
+        }
+        return "";
+    }
 
 }

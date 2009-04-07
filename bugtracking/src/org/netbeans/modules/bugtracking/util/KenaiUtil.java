@@ -51,26 +51,57 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
  */
 public class KenaiUtil {
 
+    /**
+     * Returns true if logged into kenai, otherwise false.
+     *
+     * @return
+     */
+    public static boolean isLoggedIn() {
+        return Kenai.getDefault().getPasswordAuthentication() != null;
+    }
+
+    /**
+     * Returns true if the given url belongs to a kenai project
+     * 
+     * @param url
+     * @return
+     */
     public static boolean isKenai(String url) {
         try {
             return KenaiProject.forRepository(url) != null;
         } catch (KenaiException ex) { }
         return false;
     }
-    
-    public static PasswordAuthentication getPasswordAuthentication(String url) {
+
+    /**
+     * Returns an instance of PasswordAuthentication holding the actuall
+     * Kenai credentials.
+     *
+     * @param forceLogin - forces a login if user not logged in
+     * @return PasswordAuthentication
+     */
+    public static PasswordAuthentication getPasswordAuthentication(boolean forceLogin) {
         PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
         if(a != null) {
             return a;
-        } else {
-            if(!UIUtils.showLogin()) {
-                return null;
-            }
+        } 
+        
+        if(!forceLogin) {
+            return null;
         }
+
+        if(!showLogin()) {
+            return null;
+        }
+        
         return Kenai.getDefault().getPasswordAuthentication();
     }
 
-    public static boolean forceLogin() {
+    /**
+     * Opens the kenai login dialog.
+     * @return true if login successfull, otherwise false
+     */
+    public static boolean showLogin() {
         return UIUtils.showLogin();
     }
 }

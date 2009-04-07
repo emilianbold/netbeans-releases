@@ -41,12 +41,14 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -118,7 +120,6 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             // XXX move to spi
 
-
             // get all kenai repositories
             KenaiRepository[] repos;
             synchronized(repositories) {
@@ -131,9 +132,10 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             // get kenai credentials
             String user;
             String psswd;
-            if(KenaiUtil.isLoggedIn()) {
-                user = KenaiUtil.getKenaiUser();
-                psswd = KenaiUtil.getKenaiPassword();
+            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            if(pa != null) {
+                user = pa.getUserName();
+                psswd = new String(pa.getPassword());
             } else {
                 user = "";                                                      // NOI18N
                 psswd = "";                                                     // NOI18N

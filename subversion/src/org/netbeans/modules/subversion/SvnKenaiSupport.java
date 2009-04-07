@@ -73,14 +73,14 @@ public class SvnKenaiSupport {
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
         if(forceRelogin && queriedUrls.contains(url)) {
             // we already queried the authentication for this url, but it didn't
-            // seem to be accepted -> force a new login, the logged in user
-            // might not be authorized for the kenai project.
-            if(!kenaiSupport.forceLogin()) {
+            // seem to be accepted -> force a new login, the current user
+            // might not be authorized for the given kenai project (url).
+            if(!kenaiSupport.showLogin()) {
                 return null;
             }
         }
         queriedUrls.add(url);
-        return kenaiSupport.getPasswordAuthentication(url);
+        return kenaiSupport.getPasswordAuthentication();
     }
 
 }

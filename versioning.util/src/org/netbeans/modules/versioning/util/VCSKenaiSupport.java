@@ -49,12 +49,11 @@ public abstract class VCSKenaiSupport {
 
     /**
      * Returns an instance of PasswordAuthentication holding the actuall
-     * Kenai credentials.
+     * Kenai credentials or null if user not logged in.
      *
-     * @param url
      * @return
      */
-    public abstract PasswordAuthentication getPasswordAuthentication(String url);
+    public abstract PasswordAuthentication getPasswordAuthentication();
 
     /**
      * Returns true if the given url belongs to a Kenai project, otherwise false.
@@ -65,10 +64,9 @@ public abstract class VCSKenaiSupport {
     public abstract boolean isKenai(String url);
 
     /**
-     * Force login
-     *
-     * @return
+     * Opens the kenai login dialog.
+     * @return true if login successfull, otherwise false
      */
-    public abstract boolean forceLogin();
+    public abstract boolean showLogin();
     
 }
