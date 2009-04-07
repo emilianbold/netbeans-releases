@@ -110,6 +110,10 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testMultilineString() throws Exception{
         reformatFileContents("testfiles/formatting/multiline_string.php");
     }
+    
+    public void testIfElseAlternativeSyntax() throws Exception{
+        reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
+    }
 
     public void test161049() throws Exception{
         reformatFileContents("testfiles/formatting/issue161049.php");
