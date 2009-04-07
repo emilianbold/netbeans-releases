@@ -533,6 +533,7 @@ public class CompletionTest extends J2eeTestCase {
 
     private void logIntoRef(String message){
         message = message.replaceAll("<\\?>", "");
+        message = message.replaceAll("<\\? >", "");
         ref(message);
     }
 

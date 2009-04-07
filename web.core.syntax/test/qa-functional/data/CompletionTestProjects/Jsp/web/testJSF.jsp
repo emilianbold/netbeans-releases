@@ -11,14 +11,14 @@
 <%-- completion for JSF tags --%>
 <%--CC
 <f:v
-< f:validateLength >
+f:validateLength
 <f:validateLength
 --%>
 
 <%-- completion for JSF tags --%>
 <%--CC
 <htmllib:m|
-< htmllib:messages >
+htmllib:messages
 <htmllib:messages
 --%>
 

@@ -1,22 +1,43 @@
-[cons|, const, const, 88]
-Array constructor
-Boolean constructor
-Date constructor
-Error constructor
-EvalError constructor
-Function constructor
-Number constructor
-Object constructor
-RangeError constructor
-ReferenceError constructor
-RegExp constructor
-String constructor
-SyntaxError constructor
-TypeError constructor
-URIError constructor
-const
-End cursor position = 94
-[va|, var, var, 110]
+[de|, debugger, debugger, 92]
+CSSMediaRule deleteRule ( Number index )
+CSSStyleSheet deleteRule ( Number index 
+CharacterData deleteData ( Number offset
+Core JS decodeURI ( encodedURI ) : void
+Core JS decodeURIComponent ( encodedURI 
+Document defaultView
+Document designMode
+DocumentView defaultView : AbstractView
+Event detail
+HTMLInputElement defaultChecked : Boolea
+HTMLInputElement defaultValue : String
+HTMLObjectElement declare : Boolean
+HTMLOptionElement defaultSelected : Bool
+HTMLScriptElement defer : Boolean
+HTMLTableElement deleteCaption () : void
+HTMLTableElement deleteRow ( Number inde
+HTMLTableElement deleteTFoot () : void
+HTMLTableElement deleteTHead () : void
+HTMLTableRowElement deleteCell ( Number 
+HTMLTableSectionElement deleteRow ( Numb
+HTMLTextAreaElement defaultValue : Strin
+MediaList deleteMedium ( String oldMediu
+NodeIterator detach () : void
+Range deleteContents () : void
+Range detach () : void
+Selection deleteFromDocument () : void
+Stylesheet deleteRule ( index ) : void
+Table deleteCaption () : void
+Table deleteRow ( index ) : void
+Table deleteTFoot () : void
+Table deleteTHead () : void
+TableRow deleteCell ( index ) : void
+UIEvent detail : Number
+Window defaultStatus : String
+debugger
+default
+delete
+End cursor position = 101
+[va|, var, var, 114]
 Array valueOf () : void
 Attr value : String
 Boolean valueOf () : void
@@ -34,8 +55,8 @@ Number valueOf () : Number
 Object valueOf () : void
 String valueOf () : String
 var
-End cursor position = 114
-[St|, Core JS String, String, 146]
+End cursor position = 118
+[St|, Core JS String, String, 150]
 Core JS String
 Core JS String
 Core JS String ( string )
@@ -51,20 +72,20 @@ DOM Stylesheet
 DOM Stylesheet
 FlashPlayer StopPlay ()
 static
-End cursor position = 153
-[my|, testJS.js myfunction () : void, myfunction(), 211]
+End cursor position = 157
+[my|, testJS.js myfunction () : void, myfunction(), 215]
 testJS.js myfunction () : void
 testJS.js myvariable
-End cursor position = 224
-[my|, testJS.js myvariable, myvariable, 265]
+End cursor position = 228
+[my|, testJS.js myvariable, myvariable, 269]
 testJS.js myfunction () : void
 testJS.js myvariable
-End cursor position = 276
-[Ra|, Core JS RangeError, RangeError, 309]
+End cursor position = 280
+[Ra|, Core JS RangeError, RangeError, 313]
 Core JS RangeError
 Core JS RangeError
 DOM Range
 DOM Range
 DOM RangeException
 DOM RangeException
-End cursor position = 320
+End cursor position = 324

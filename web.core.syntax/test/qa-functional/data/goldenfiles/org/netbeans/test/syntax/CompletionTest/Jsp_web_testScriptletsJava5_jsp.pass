@@ -155,7 +155,7 @@ double
 Deprecated
 Double
 End cursor position = 1714
-[<% get| %>, Calendar getInstance (), <% getInstance() %>, 1770]
+[<% get| %>, Calendar getInstance, <% getInstance() %>, 1767]
 Locale[] getAvailableLocales ()
 Class <?> getClass ()
 String getInitParameter (String name )
@@ -169,8 +169,8 @@ ServletConfig getServletConfig ()
 ServletContext getServletContext ()
 String getServletInfo ()
 String getServletName ()
-End cursor position = 1787
-[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1986]
+End cursor position = 1784
+[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1983]
 AbstractMethodError
 ArithmeticException
 ArrayIndexOutOfBoundsException
