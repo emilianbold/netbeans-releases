@@ -165,6 +165,11 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/case003.css", new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase4() throws Exception {
+        // #161874
+        reformatFileContents("testfiles/case004.css", new IndentPrefs(4,4));
+    }
+
     public void testFormattingNetBeansCSS() throws Exception {
         reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
     }

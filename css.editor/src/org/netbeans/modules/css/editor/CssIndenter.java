@@ -326,6 +326,11 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                 inMedia = true;
             }
         }
+        if (context.isBlankLine() && inComment && iis.isEmpty()) {
+            IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+            ic.setFixedIndentSize(preservedLineIndentation);
+            iis.add(ic);
+        }
 
         if (iis.isEmpty()) {
             iis.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset()));
