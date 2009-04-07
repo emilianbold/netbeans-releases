@@ -56,11 +56,6 @@ public abstract class BugtrackingController {
      */
     public static String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";
 
-    /**
-     * The data in the controllers component where applied
-     */
-    public static String EVENT_COMPONENT_DATA_APPLIED   = "bugtracking.data.applied";
-
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
@@ -141,13 +136,6 @@ public abstract class BugtrackingController {
      */
     protected void fireDataChanged() {
         support.firePropertyChange(EVENT_COMPONENT_DATA_CHANGED, null, null);
-    }
-
-    /**
-     * Signals that the data in this controler where applied
-     */
-    protected void fireDataApplied() {
-        support.firePropertyChange(EVENT_COMPONENT_DATA_APPLIED, null, null);
     }
 
 }

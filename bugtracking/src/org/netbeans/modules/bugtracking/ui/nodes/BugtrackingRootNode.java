@@ -127,7 +127,7 @@ public class BugtrackingRootNode extends AbstractNode {
 
         @Override
         protected Node[] createNodes(Repository repository) {
-            return new Node[] {new RepositoryNode(repository)};
+            return new Node[] {repository.getNode()};
         }
         
         @Override

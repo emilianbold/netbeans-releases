@@ -42,7 +42,9 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.openide.nodes.Node;
 
 /**
  * 
@@ -52,6 +54,7 @@ import org.netbeans.modules.bugtracking.util.IssueCache;
  */
 public abstract class Repository {
 
+    private RepositoryNode node;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
@@ -76,6 +79,17 @@ public abstract class Repository {
      * @return
      */
     public abstract String getTooltip();
+
+    /**
+     * Returns a Node representing this repository
+     * @return
+     */
+    public Node getNode() {
+        if(node == null) {
+            node = new RepositoryNode(this);
+        }
+        return node;
+    }
 
     /**
      * Returns the repositories url
