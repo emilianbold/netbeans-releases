@@ -402,6 +402,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 ArrayList<FileDescription> files = new ArrayList<FileDescription>();
                 for(IndexResult r : results) {
                     FileObject file = r.getFile();
+                    if (file == null || !file.isValid()) {
+                        // the file has been deleted in the meantime
+                        continue;
+                    }
+
                     Project project = FileOwnerQuery.getOwner(file);
                     boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
                     FileDescription fd = new FileDescription(
