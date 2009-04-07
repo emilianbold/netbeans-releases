@@ -8,7 +8,7 @@
 '=' [19, 1]; symbol; 4; directive; JspTagTokenContext, JspMultiTokenContext
 '"text/html"' [20, 11]; attribute-value; 8; directive; JspTagTokenContext, JspMultiTokenContext
 '%>' [31, 2]; symbol; 4; directive; JspTagTokenContext, JspMultiTokenContext
-'<NL>' [33, 1]; text; 1; -; HTMLTokenContext, JspMultiTokenContext
+'<NL>' [33, 1]; text; 1; -; HtmlTokenContext, JspMultiTokenContext
 '<%@' [34, 3]; symbol; 4; directive; JspTagTokenContext, JspMultiTokenContext
 'page' [37, 4]; tag-directive; 3; directive; JspTagTokenContext, JspMultiTokenContext
 ' ' [41, 1]; whitespace; 11; directive; JspTagTokenContext, JspMultiTokenContext
