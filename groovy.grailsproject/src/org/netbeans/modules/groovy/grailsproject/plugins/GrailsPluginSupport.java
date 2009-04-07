@@ -237,7 +237,7 @@ public class GrailsPluginSupport {
 
     private boolean handlePlugins(final Collection<GrailsPlugin> selectedPlugins, boolean uninstall) {
         assert SwingUtilities.isEventDispatchThread();
-        
+
         if (!(selectedPlugins != null && selectedPlugins.size() > 0)) {
             return false;
         }
@@ -245,50 +245,55 @@ public class GrailsPluginSupport {
         boolean installed = true;
 
         final ExecutorService executor = Executors.newFixedThreadPool(1);
-        for (final GrailsPlugin plugin : selectedPlugins) {
-            String title = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "Uninstallation" : "Installation");
-            String message = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName());
-            ProgressHandle handle = ProgressHandleFactory.createHandle(message);
-            
-            ProgressDialogDescriptor descriptor = ProgressSupport.createProgressDialog(title, handle, null);
-            final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        try {
+            for (GrailsPlugin plugin : selectedPlugins) {
+                String title = NbBundle.getMessage(GrailsPluginSupport.class,
+                        uninstall ? "Uninstallation" : "Installation");
+                String message = NbBundle.getMessage(GrailsPluginSupport.class,
+                        uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName());
+                ProgressHandle handle = ProgressHandleFactory.createHandle(message);
 
-            descriptor.addCancelListener(new ActionListener() {
+                ProgressDialogDescriptor descriptor = ProgressSupport.createProgressDialog(title, handle, null);
+                final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
 
-                public void actionPerformed(ActionEvent e) {
-                    dlg.setVisible(false);
-                    dlg.dispose();
+                descriptor.addCancelListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        dlg.setVisible(false);
+                        dlg.dispose();
+                    }
+                });
+
+                // FIXME should it be FS atomic action ?
+                Callable<Boolean> runner = getPluginHandlerCallable(plugin, descriptor, dlg, uninstall);
+
+                final Future<Boolean> result = executor.submit(runner);
+
+                handle.start();
+                handle.progress(message);
+
+                dlg.setVisible(true);
+
+                try {
+                    installed = installed && result.get().booleanValue();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex.getCause() != null ? ex.getCause() : ex);
+                } finally {
+                    handle.finish();
                 }
-            });
-
-            // FIXME should it be FS atomic action ?
-            Callable<Boolean> runner = getPluginHandlerCallable(plugin, descriptor, dlg, uninstall);
-
-            final Future<Boolean> result = executor.submit(runner);
-            
-            handle.start();
-            handle.progress(message);
-
-            dlg.setVisible(true);
-
-            try {
-                installed = installed && result.get().booleanValue();
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                break;
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex.getCause() != null ? ex.getCause() : ex);
-            } finally {
-                handle.finish();
             }
-        }
-        executor.shutdown();
+        } finally {
+            executor.shutdown();
 
-        // TODO if we will support global plugins we have to refresh global plugins dir as well
-        FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
+            // TODO if we will support global plugins we have to refresh global plugins dir as well
+            FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
+        }
         return installed;
     }
-    
+
     private Callable<Boolean> getPluginHandlerCallable(final GrailsPlugin plugin,
             final ProgressDialogDescriptor desc, final Dialog dlg, final boolean uninstall) {
         final String command = uninstall ? "uninstall-plugin" : "install-plugin"; // NOI18N
@@ -347,7 +352,7 @@ public class GrailsPluginSupport {
                     return !broken;
                 } finally {
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {                            
+                        public void run() {
                             dlg.setVisible(false);
                             dlg.dispose();
                         }

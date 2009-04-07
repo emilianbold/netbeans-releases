@@ -1,0 +1,86 @@
+Code completion result for source line:
+this.|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     addShutdownHook(Closure)                   void
+METHOD     any()                                      boolean
+METHOD     any(Closure)                               boolean
+METHOD     asType(Class)                              Object
+METHOD     bindData(Object, Object)        [PROTECTE  Object
+METHOD     bindData(Object, Object, List)  [PROTECTE  Object
+METHOD     bindData(Object, Object, List,  [PROTECTE  Object
+METHOD     bindData(Object, Object, Map)   [PROTECTE  Object
+METHOD     bindData(Object, Object, Map,   [PROTECTE  Object
+METHOD     bindData(Object, Object, Strin  [PROTECTE  Object
+METHOD     chain(Map)                      [PROTECTE  Object
+METHOD     clone()                         [PROTECTE  Object
+METHOD     collect(Closure)                           List
+METHOD     collect(Collection, Closure)               Collection
+METHOD     dump()                                     String
+METHOD     each(Closure)                              Object
+METHOD     eachWithIndex(Closure)                     Object
+METHOD     equals(Object)                  [PUBLIC]   boolean
+METHOD     every()                                    boolean
+METHOD     every(Closure)                             boolean
+METHOD     finalize()                      [PROTECTE  void
+METHOD     find(Closure)                              Object
+METHOD     findAll(Closure)                           List
+METHOD     findIndexOf(Closure)                       int
+METHOD     findIndexOf(int, Closure)                  int
+METHOD     findIndexValues(Closure)                   List
+METHOD     findIndexValues(int, Closure)              List
+METHOD     findLastIndexOf(Closure)                   int
+METHOD     findLastIndexOf(int, Closure)              int
+METHOD     getAt(String)                              Object
+METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getProperties()                            Map
+METHOD     grep(Object)                               Collection
+METHOD     hashCode()                      [PUBLIC]   int
+METHOD     identity(Closure)                          Object
+METHOD     inject(Object, Closure)                    Object
+METHOD     inspect()                                  String
+METHOD     invokeMethod(String, Object)               Object
+METHOD     is(Object)                                 boolean
+METHOD     isCase(Object)                             boolean
+METHOD     iterator()                                 Iterator
+METHOD     notify()                        [PUBLIC]   void
+METHOD     notifyAll()                     [PUBLIC]   void
+METHOD     print(Object)                              void
+METHOD     print(PrintWriter)                         void
+METHOD     printf(String, Object)                     void
+METHOD     printf(String, Object)                     void
+METHOD     println()                                  void
+METHOD     println(Object)                            void
+METHOD     println(PrintWriter)                       void
+METHOD     putAt(String, Object)                      void
+METHOD     redirect(Map)                   [PROTECTE  Object
+METHOD     render(Closure)                 [PROTECTE  Object
+METHOD     render(Map)                     [PROTECTE  Object
+METHOD     render(Map, Closure)            [PROTECTE  Object
+METHOD     render(Object)                  [PROTECTE  Object
+METHOD     render(String)                  [PROTECTE  Object
+METHOD     sleep(long)                                void
+METHOD     sleep(long, Closure)                       void
+METHOD     sprintf(String, Object)                    String
+METHOD     sprintf(String, Object)                    String
+METHOD     toString()                      [PUBLIC]   String
+METHOD     use(Class, Closure)                        Object
+METHOD     use(List, Closure)                         Object
+METHOD     use(Object[])                              Object
+METHOD     wait()                          [PUBLIC]   void
+METHOD     wait(long)                      [PUBLIC]   void
+METHOD     wait(long, int)                 [PUBLIC]   void
+METHOD     with(Closure)                              Object
+METHOD     withFormat(Closure)             [PROTECTE  Object
+FIELD      allowedMethods                  [STATIC,   
+FIELD      class                                      Class
+FIELD      create                          [PRIVATE]  
+FIELD      delete                          [PRIVATE]  
+FIELD      edit                            [PRIVATE]  
+FIELD      index                           [PRIVATE]  
+FIELD      list                            [PRIVATE]  
+FIELD      save                            [PRIVATE]  
+FIELD      show                            [PRIVATE]  
+FIELD      update                          [PRIVATE]  
