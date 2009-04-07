@@ -96,8 +96,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
             // handle parameters defined in panel
             assert panel != null;
             query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-            boolean allProjects = (panel.getScope()==WhereUsedPanel.Scope.ALL);
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, allProjects);
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, panel.getScopeProject());
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             query.getContext().add(ar);
 
