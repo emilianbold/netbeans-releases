@@ -72,11 +72,6 @@ import org.openide.util.RequestProcessor;
  * Helper class for getting <b>all</b> the properties of a PHP project.
  * <p>
  * <b>This class is the preferred way to get PHP project properties.</b>
- * </p>
- * <p>
- * Method {@link #isActiveConfigValid(org.netbeans.modules.php.project.PhpProject, boolean) isActiveConfigValid()}
- * could be called before getting any Run Configuration property. It's possible to show the project properties
- * dialog if the configuration is invalid.
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
