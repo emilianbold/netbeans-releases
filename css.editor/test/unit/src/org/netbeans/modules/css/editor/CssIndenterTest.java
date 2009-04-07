@@ -160,6 +160,16 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/case002.css", new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase3() throws Exception {
+        // #160089
+        reformatFileContents("testfiles/case003.css", new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase4() throws Exception {
+        // #161874
+        reformatFileContents("testfiles/case004.css", new IndentPrefs(4,4));
+    }
+
     public void testFormattingNetBeansCSS() throws Exception {
         reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
     }
@@ -198,6 +208,17 @@ public class CssIndenterTest extends TestBase {
         insertNewline(
                 "xxxxxh2 { color:aqua /* aaa^*/;}",
                 "xxxxxh2 { color:aqua /* aaa\n              ^*/;}", null);
+
+        // #160089
+        insertNewline(
+                "@media TV{\n    h1{}^}",
+                "@media TV{\n    h1{}\n^}", null);
+        insertNewline(
+                "@media TV, Screen {\n    h1 > h2 + h3 h4 {\n    }^}",
+                "@media TV, Screen {\n    h1 > h2 + h3 h4 {\n    }\n^}", null);
+        insertNewline(
+                "@media Screen { h1{\n                ^}\n}",
+                "@media Screen { h1{\n                \n                ^}\n}", null);
     }
 
 }

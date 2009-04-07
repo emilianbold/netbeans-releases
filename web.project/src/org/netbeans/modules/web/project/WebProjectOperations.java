@@ -136,7 +136,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         FileObject[] srcRoots = src.getRoots();
 
         for (int cntr = 0; cntr < srcRoots.length; cntr++) {
-            files.add(srcRoots[cntr]);
+            if (srcRoots[cntr] != null) {
+                files.add(srcRoots[cntr]);
+            }
         }
 
         PropertyEvaluator evaluator = project.evaluator();
@@ -144,7 +146,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         if (prop != null) {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject srcDir = project.getAntProjectHelper().resolveFileObject(prop);
-            if (projectDirectory != srcDir && !files.contains(srcDir))
+            if (srcDir != null && projectDirectory != srcDir && !files.contains(srcDir))
                 files.add(srcDir);
         }
         
@@ -152,7 +154,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         FileObject[] testRoots = test.getRoots();
         
         for (int cntr = 0; cntr < testRoots.length; cntr++) {
-            files.add(testRoots[cntr]);
+            if (testRoots[cntr] != null) {
+                files.add(testRoots[cntr]);
+            }
         }
 
         // add libraries folder if it is within project:
@@ -161,7 +165,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
             File f = helper.resolveFile(helper.getLibrariesLocation());
             if (f != null && f.exists()) {
                 FileObject libFolder = FileUtil.toFileObject(f).getParent();
-                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                if (libFolder != null && FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
                     files.add(libFolder);
                 }
             }
