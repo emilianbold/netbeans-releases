@@ -74,6 +74,14 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return statements;
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (statements != null) {
+            Utils.disposeAll(statements);
+        }
+    }
+
     protected AST getStartRenderingAst() {
         return getAst();
     }
