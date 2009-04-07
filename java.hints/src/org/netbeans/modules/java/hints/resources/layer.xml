@@ -174,8 +174,8 @@ made subject to such option by the copyright holder.
                     <file name="ImportsSamePackage.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createSamePackage"/>
                     </file>
-                    <file name="ImportsForbidden.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createForbidden"/>
+                    <file name="ImportsExcluded.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createExcluded"/>
                     </file>
                     <file name="ImportsStar.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createStar"/>
