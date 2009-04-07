@@ -719,10 +719,6 @@ made subject to such option by the copyright holder.
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/core[.]properties|config/Services/Browsers/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#General.Options.Export.displayName"/>
             </file>
-            <file name="netbeans.conf">
-                <attr name="include" stringvalue="etc/netbeans[.]conf"/>
-                <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#netbeans.conf.Options.Export.displayName"/>
-            </file>
             <file name="Other">
                 <attr name="include" stringvalue="config/Preferences/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#Other.Options.Export.displayName"/>
