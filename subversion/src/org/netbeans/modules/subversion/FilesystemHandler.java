@@ -440,6 +440,16 @@ class FilesystemHandler extends VCSInterceptor {
     private void revertDeleted(SvnClient client, final File file, boolean checkParents) {
         try {
             ISVNStatus status = getStatus(client, file);
+            revertDeleted(client, status, file, checkParents);
+        } catch (SVNClientException ex) {
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
+        }
+    }
+
+    private void revertDeleted(SvnClient client, ISVNStatus status, final File file, boolean checkParents) {
+        try {
             if (FilesystemHandler.this.equals(status, SVNStatusKind.DELETED)) {
                 if(checkParents) {
                     // we have a file scheduled for deletion but it's going to be created again,
@@ -495,8 +505,9 @@ class FilesystemHandler extends VCSInterceptor {
                 int retryCounter = 6;
                 while (true) {
                     try {
+                        ISVNStatus toStatus = getStatus(client, to);
                         // check if the file wasn't just deleted in this session
-                        revertDeleted(client, to, false);
+                        revertDeleted(client, toStatus, to, false);
 
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
@@ -504,9 +515,15 @@ class FilesystemHandler extends VCSInterceptor {
 
                         // store all from-s children -> they also have to be refreshed in after move
                         List<File> srcChildren = null;
+                        SVNUrl url = status != null ? status.getUrlCopiedFrom() : null;
+                        SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                         try {
                             srcChildren = SvnUtils.listRecursively(from);
-                            if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED)) {
+                            if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) && 
+                                    (!status.isCopied() || (url != null && url.equals(toUrl)))) {
+                                // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
+                                // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
+                                // otherwise svn move should be invoked
                                 client.revert(from, true);
                                 from.renameTo(to);
                             } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
