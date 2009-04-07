@@ -1834,6 +1834,9 @@ abstract public class CsmCompletionQuery {
                                     } else {
                                         lastType = null;
                                     }
+                                    if (lastType == null && (!last || findType)) {
+                                        lastType = findBuiltInFunctionReturnType(mtdName,  mtdNameExp.getTokenOffset(0));
+                                    }
                                 }
                                 return lastType != null;
                             }
@@ -1910,6 +1913,27 @@ abstract public class CsmCompletionQuery {
                 return ip.instantiate(template, params, getFinder().getCsmFile());
             }
             return null;
+        }
+
+        private CsmType findBuiltInFunctionReturnType(String mtdName, int tokenOffset) {
+            CsmType out = null;
+            if ("typeid".contentEquals(mtdName)) {
+                CsmClassifier cls = getFinder().getExactClassifier("std::type_info");
+                if (cls == null) {
+                    CsmNamespace ns = findExactNamespace("std", tokenOffset);
+                    if (ns != null) {
+                        List<CsmClassifier> findClasses = getFinder().findClasses(ns, mtdName, true, false);
+                        for (CsmClassifier csmClassifier : findClasses) {
+                            cls = csmClassifier;
+                            break;
+                        }
+                    }
+                }
+                if (cls != null) {
+                    out = CsmCompletion.getType(cls, 0, false, 0);
+                }
+            }
+            return out;
         }
 
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
