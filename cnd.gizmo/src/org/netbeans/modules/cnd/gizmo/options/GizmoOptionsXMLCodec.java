@@ -52,6 +52,10 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
     private GizmoOptions gizmoOptions;
 
     private final static String PROFILE_ON_RUN_ELEMENT = "profileOnRun"; // NOI18N
+    private final static String CPU_ELEMENT = "cpu"; // NOI18N
+    private final static String MEMORY_ELEMENT = "memory"; // NOI18N
+    private final static String SYNCHRONIZATION_ELEMENT = "synchronization"; // NOI18N
+    private final static String DATA_PROVIDER_ELEMENT = "dataprovider"; // NOI18N
 
     public final static String TRUE_VALUE = "true"; // NOI18N
     public final static String FALSE_VALUE = "false"; // NOI18N
@@ -93,12 +97,40 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
             boolean b = currentText.equals(TRUE_VALUE);
             gizmoOptions.getProfileOnRun().setValue(b);
         }
+        if (element.equals(CPU_ELEMENT)) {
+            boolean b = currentText.equals(TRUE_VALUE);
+            gizmoOptions.getCpu().setValue(b);
+        }
+        if (element.equals(MEMORY_ELEMENT)) {
+            boolean b = currentText.equals(TRUE_VALUE);
+            gizmoOptions.getMemory().setValue(b);
+        }
+        if (element.equals(SYNCHRONIZATION_ELEMENT)) {
+            boolean b = currentText.equals(TRUE_VALUE);
+            gizmoOptions.getSynchronization().setValue(b);
+        }
+        else if (element.equals(DATA_PROVIDER_ELEMENT)) {
+            int i = new Integer(currentText).intValue();
+            gizmoOptions.getDataProvider().setValue(i);
+        }
     }
 
     private static void encode(XMLEncoderStream xes, GizmoOptions gizmoOptions) {
         xes.elementOpen(GizmoOptions.PROFILE_ID, getVersion());
         if (gizmoOptions.getProfileOnRun().getModified()) {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
+        }
+        if (gizmoOptions.getProfileOnRun().getModified()) {
+            xes.element(CPU_ELEMENT, "" + gizmoOptions.getCpu().getValue()); // NOI18N
+        }
+        if (gizmoOptions.getProfileOnRun().getModified()) {
+            xes.element(MEMORY_ELEMENT, "" + gizmoOptions.getMemory().getValue()); // NOI18N
+        }
+        if (gizmoOptions.getProfileOnRun().getModified()) {
+            xes.element(SYNCHRONIZATION_ELEMENT, "" + gizmoOptions.getSynchronization().getValue()); // NOI18N
+        }
+        if (gizmoOptions.getDataProvider().getModified()) {
+            xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
         }
         xes.elementClose(GizmoOptions.PROFILE_ID);
     }

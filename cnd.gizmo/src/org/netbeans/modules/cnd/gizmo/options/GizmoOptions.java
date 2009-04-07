@@ -43,10 +43,13 @@ package org.netbeans.modules.cnd.gizmo.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.openide.util.NbBundle;
 
 public class GizmoOptions implements ConfigurationAuxObject {
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
@@ -55,16 +58,36 @@ public class GizmoOptions implements ConfigurationAuxObject {
     private boolean needSave = false;
     private String baseDir;
 
+    // Profile on Run
     private BooleanConfiguration profileOnRun;
+    // Cpu
+    private BooleanConfiguration cpu;
+    // Memory
+    private BooleanConfiguration memory;
+    // Synchronization
+    private BooleanConfiguration synchronization;
+    // Data Provider
+    public static final int SUNSTUDIO = 0;
+    public static final int DTRACE = 1;
+    private static final String[] DATA_PROVIDER_NAMES = {
+	  getString("SunStudio"),
+	  getString("DTrace"),
+    };
+    private IntConfiguration dataProvider;
     
     public GizmoOptions(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-        initialize();
+
+        profileOnRun = new BooleanConfiguration(null, true, null, null);
+        cpu = new BooleanConfiguration(null, true, null, null);
+        memory = new BooleanConfiguration(null, true, null, null);
+        synchronization = new BooleanConfiguration(null, true, null, null);
+        dataProvider = new IntConfiguration(null, DTRACE, DATA_PROVIDER_NAMES, null);
     }
-    
+
     public void initialize() {
-        setProfileOnRun(new BooleanConfiguration(null, true, null, null));
+        clearChanged();
     }
 
     public boolean isModified() {
@@ -88,6 +111,62 @@ public class GizmoOptions implements ConfigurationAuxObject {
      */
     public void setProfileOnRun(BooleanConfiguration profileOnRun) {
         this.profileOnRun = profileOnRun;
+    }
+
+    /**
+     * @return the cpu
+     */
+    public BooleanConfiguration getCpu() {
+        return cpu;
+    }
+
+    /**
+     * @param cpu the cpu to set
+     */
+    public void setCpu(BooleanConfiguration cpu) {
+        this.cpu = cpu;
+    }
+
+    /**
+     * @return the memory
+     */
+    public BooleanConfiguration getMemory() {
+        return memory;
+    }
+
+    /**
+     * @param memory the memory to set
+     */
+    public void setMemory(BooleanConfiguration memory) {
+        this.memory = memory;
+    }
+
+    /**
+     * @return the synchronization
+     */
+    public BooleanConfiguration getSynchronization() {
+        return synchronization;
+    }
+
+    /**
+     * @param synchronization the synchronization to set
+     */
+    public void setSynchronization(BooleanConfiguration synchronization) {
+        this.synchronization = synchronization;
+    }
+
+    /**
+     * @return the dataProvider
+     */
+    public IntConfiguration getDataProvider() {
+        return dataProvider;
+    }
+
+    /**
+     * @param dataProvider the dataProvider to set
+     */
+    public void setDataProvider(IntConfiguration dataProvider) {
+        this.dataProvider = dataProvider;
     }
 
     /**
@@ -136,13 +215,22 @@ public class GizmoOptions implements ConfigurationAuxObject {
         GizmoOptions gizmoOptions = (GizmoOptions)auxObject;
         
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
+        getCpu().assign(gizmoOptions.getCpu());
+        getMemory().assign(gizmoOptions.getMemory());
+        getSynchronization().assign(gizmoOptions.getSynchronization());
+        getDataProvider().assign(gizmoOptions.getDataProvider());
     }
 
     
     @Override
     public GizmoOptions clone() {
         GizmoOptions clone = new GizmoOptions(getBaseDir(), null);
+
         clone.setProfileOnRun(getProfileOnRun().clone());
+        clone.setCpu(getCpu().clone());
+        clone.setMemory(getMemory().clone());
+        clone.setSynchronization(getSynchronization().clone());
+        clone.setDataProvider(getDataProvider().clone());
         return clone;
     }
     
@@ -150,4 +238,13 @@ public class GizmoOptions implements ConfigurationAuxObject {
         return baseDir;
     }
 
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+
+    protected static String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(GizmoOptions.class);
+        }
+        return bundle.getString(s);
+    }
 }
