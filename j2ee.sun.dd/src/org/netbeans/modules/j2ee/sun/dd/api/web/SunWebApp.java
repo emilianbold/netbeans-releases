@@ -59,34 +59,36 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 
 public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
+    public static final String VERSION_3_0_0 = "3.00"; //NOI18N
     public static final String VERSION_2_5_0 = "2.50"; //NOI18N
     public static final String VERSION_2_4_1 = "2.41"; //NOI18N
     public static final String VERSION_2_4_0 = "2.40"; //NOI18N
     public static final String VERSION_2_3_0 = "2.30"; //NOI18N
 
     public static final String ERRORURL = "ErrorUrl";	// NOI18N
-	public static final String HTTPSERVLETSECURITYPROVIDER = "HttpservletSecurityProvider";	// NOI18N
-	public static final String CONTEXT_ROOT = "ContextRoot";	// NOI18N
-	public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
-	public static final String SERVLET = "Servlet";	// NOI18N
-	public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";	// NOI18N
-	public static final String IDEMPOTENTURLPATTERNURLPATTERN = "IdempotentUrlPatternUrlPattern";	// NOI18N
-	public static final String IDEMPOTENTURLPATTERNNUMOFRETRIES = "IdempotentUrlPatternNumOfRetries";	// NOI18N
-	public static final String SESSION_CONFIG = "SessionConfig";	// NOI18N
-	public static final String EJB_REF = "EjbRef";	// NOI18N
-	public static final String RESOURCE_REF = "ResourceRef";	// NOI18N
-	public static final String RESOURCE_ENV_REF = "ResourceEnvRef";	// NOI18N
-	public static final String SERVICE_REF = "ServiceRef";	// NOI18N
-	public static final String CACHE = "Cache";	// NOI18N
-	public static final String CLASS_LOADER = "MyClassLoader";	// NOI18N
-	public static final String JSP_CONFIG = "JspConfig";	// NOI18N
-	public static final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
-	public static final String PARAMETER_ENCODING = "ParameterEncoding";	// NOI18N
-	public static final String PARAMETERENCODINGFORMHINTFIELD = "ParameterEncodingFormHintField";	// NOI18N
-	public static final String PARAMETERENCODINGDEFAULTCHARSET = "ParameterEncodingDefaultCharset";	// NOI18N
-	public static final String PROPERTY = "WebProperty";	// NOI18N
-	public static final String MESSAGE_DESTINATION = "MessageDestination";	// NOI18N
-	public static final String WEBSERVICE_DESCRIPTION = "WebserviceDescription";	// NOI18N
+    public static final String HTTPSERVLETSECURITYPROVIDER = "HttpservletSecurityProvider";	// NOI18N
+    public static final String CONTEXT_ROOT = "ContextRoot";	// NOI18N
+    public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
+    public static final String SERVLET = "Servlet";	// NOI18N
+    public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";	// NOI18N
+    public static final String IDEMPOTENTURLPATTERNURLPATTERN = "IdempotentUrlPatternUrlPattern";	// NOI18N
+    public static final String IDEMPOTENTURLPATTERNNUMOFRETRIES = "IdempotentUrlPatternNumOfRetries";	// NOI18N
+    public static final String SESSION_CONFIG = "SessionConfig";	// NOI18N
+    public static final String EJB_REF = "EjbRef";	// NOI18N
+    public static final String RESOURCE_REF = "ResourceRef";	// NOI18N
+    public static final String RESOURCE_ENV_REF = "ResourceEnvRef";	// NOI18N
+    public static final String SERVICE_REF = "ServiceRef";	// NOI18N
+    public static final String CACHE = "Cache";	// NOI18N
+    public static final String CLASS_LOADER = "MyClassLoader";	// NOI18N
+    public static final String JSP_CONFIG = "JspConfig";	// NOI18N
+    public static final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
+    public static final String PARAMETER_ENCODING = "ParameterEncoding";	// NOI18N
+    public static final String PARAMETERENCODINGFORMHINTFIELD = "ParameterEncodingFormHintField";	// NOI18N
+    public static final String PARAMETERENCODINGDEFAULTCHARSET = "ParameterEncodingDefaultCharset";	// NOI18N
+    public static final String PROPERTY = "WebProperty";	// NOI18N
+    public static final String VALVE = "Valve";	// NOI18N
+    public static final String MESSAGE_DESTINATION = "MessageDestination";	// NOI18N
+    public static final String WEBSERVICE_DESCRIPTION = "WebserviceDescription";	// NOI18N
     public static final String MESSAGE_DESTINATION_REF = "MessageDestinationRef";	// NOI18N
 
         
@@ -313,6 +315,15 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
     public int addWebProperty(WebProperty value);
     public int removeWebProperty(WebProperty value);
     public WebProperty newWebProperty();
+
+    public void setValve(int index, Valve value) throws VersionNotSupportedException;
+    public Valve getValve(int index) throws VersionNotSupportedException;
+    public int sizeValve() throws VersionNotSupportedException;
+    public void setValve(Valve[] value) throws VersionNotSupportedException;
+    public Valve[] getValve() throws VersionNotSupportedException;
+    public int addValve(Valve value) throws VersionNotSupportedException;
+    public int removeValve(Valve value) throws VersionNotSupportedException;
+    public Valve newValve() throws VersionNotSupportedException;
 
     public void setMessageDestination(int index, MessageDestination value);
     public MessageDestination getMessageDestination(int index);
