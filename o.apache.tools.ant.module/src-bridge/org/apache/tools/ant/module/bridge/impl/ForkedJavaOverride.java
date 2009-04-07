@@ -131,8 +131,11 @@ public class ForkedJavaOverride extends Java {
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
                 OutputStream os = getOutputStream();
                 Integer logLevel = null;
-                os = AntBridge.delegateOutputStream(false);
-                logLevel = Project.MSG_INFO;
+                if (os == null || os instanceof LogOutputStream
+                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                    os = AntBridge.delegateOutputStream(false);
+                    logLevel = Project.MSG_INFO;
+                }
                 outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
                         "Out Thread for " + getProject().getName()); // NOI18N
                 outTask.start();
@@ -141,8 +144,11 @@ public class ForkedJavaOverride extends Java {
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
                 OutputStream os = getErrorStream();
                 Integer logLevel = null;
-                os = AntBridge.delegateOutputStream(true);
-                logLevel = Project.MSG_WARN;
+                if (os == null || os instanceof LogOutputStream
+                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                    os = AntBridge.delegateOutputStream(true);
+                    logLevel = Project.MSG_WARN;
+                }
                 errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
                         "Err Thread for " + getProject().getName()); // NOI18N
                 errTask.start();
