@@ -93,7 +93,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     public Collection<CsmScopeElement> getScopeElements() {
         @SuppressWarnings("unchecked")
-        Collection<CsmScopeElement> out = (List) getStatements();
+        Collection<CsmScopeElement> out = (Collection<CsmScopeElement>) (List<?>) getStatements();
         return out;
     }
 
