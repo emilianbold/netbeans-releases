@@ -164,7 +164,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
                         
                     } while (indentContinuationWithinStatement_skipToken(ts.token()));
 
-                    end = firstNonWSBwd(doc, ts.offset() + ts.token().length());
+                    end = ts.offset() + ts.token().length();
                 }
 
                 addIndentLevel(end, -1 * continuationIndentSize);
@@ -175,12 +175,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private static boolean indentContinuationWithinStatement_skipToken(Token token){
-        if (token.id() == PHPTokenId.PHP_SEMICOLON){
+        Object tokenID = token.id();
+
+        if (tokenID == PHPTokenId.PHP_SEMICOLON){
             return true;
         }
 
-        if (token.id() == PHPTokenId.PHP_TOKEN){
-            if (")".equals(token.text())){ //NOI18N
+        if (tokenID == PHPTokenId.PHP_TOKEN){
+            if (")".equals(token.text().toString())){ //NOI18N
                 return true;
             }
         }
