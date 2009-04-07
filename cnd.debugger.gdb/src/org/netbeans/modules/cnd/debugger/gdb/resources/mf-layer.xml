@@ -209,11 +209,6 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Popup">
-                    <file name="SeparatorBeforeCut.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1852"/>
-                    </file>
-
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1426"/>
