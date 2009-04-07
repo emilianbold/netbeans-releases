@@ -98,6 +98,7 @@ public class DDTreeWalker {
         if(transInfo != null) {
             Vector<ModElement> modElementsList = new Vector<ModElement>();
             Xmltype type = null;
+            // FIXME Must enhance for Servlet 3.0
             if(currentVersion.equals(SunWebApp.VERSION_2_5_0)){
                 type = getXmlType(transInfo, "sunWebApp41");
                 modElementsList = updateModElementsList(modElementsList, type);

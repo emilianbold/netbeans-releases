@@ -915,9 +915,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     private static boolean isRefactorableFolder(DataObject dataObject) {
         FileObject fileObject = dataObject.getPrimaryFile();
-        FileObject[] children = fileObject.getChildren();
-        if (children == null || children.length <= 0) {
-            return false;
+        if (/* #159628 */!Boolean.TRUE.equals(fileObject.getAttribute("isRemoteAndSlow"))) { // NOI18N
+            FileObject[] children = fileObject.getChildren();
+            if (children == null || children.length <= 0) {
+                return false;
+            }
         }
         
         return (dataObject instanceof DataFolder) && 

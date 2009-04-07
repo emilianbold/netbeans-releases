@@ -239,6 +239,9 @@ public class Analyzer implements Runnable {
     }
 
     private static boolean containsJavaFiles(FileObject folder) {
+        if (/* #159628 */Boolean.TRUE.equals(folder.getAttribute("isRemoteAndSlow"))) { // NOI18N
+            return true;
+        }
         FileObject[] children = folder.getChildren();
         for (int i = 0; i < children.length; i++) {
             FileObject child = children[i];
