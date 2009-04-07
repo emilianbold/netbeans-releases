@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-      <api name="EditorHintsSPI" category="devel" group="java" type="export" url="@TOP@index.html">
+      <api name="EditorHintsSPI" category="stable" group="java" type="export" url="@TOP@index.html">
           allows to show errors in the editor, with possible fixes.
       </api>
   </p>
@@ -93,7 +93,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   The qualit of the feature was proven by being used by dozens of modules for
+   several releases. There are also some unit tests.
   </p>
  </answer>
 
@@ -112,7 +113,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+    The work has already been done.
   </p>
  </answer>
 
@@ -189,7 +190,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+    This is API addition, no deprecation or replacements.
   </p>
  </answer>
 
@@ -207,7 +208,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+    Yes.
   </p>
  </answer>
 
@@ -221,7 +222,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No.
   </p>
  </answer>
 
@@ -261,7 +262,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   There is not direct JRE dependency --- the module should run on whatever version
+   the current NB version runs on.
   </p>
  </answer>
 
@@ -274,7 +276,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE is enough.
   </p>
  </answer>
 
@@ -327,7 +329,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   No external dependencies.
   </p>
  </answer>
 
@@ -355,7 +357,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   The module is platform agnostic.
   </p>
  </answer>
 
@@ -379,7 +381,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   Normal module dependencies are used for this module.
   </p>
  </answer>
 
@@ -407,7 +409,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   Only module jars are deployed for this module.
   </p>
  </answer>
 
@@ -423,7 +425,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -444,7 +446,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Yes, only SPI package is exposed as public.
   </p>
  </answer>
 
@@ -462,7 +464,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   The module can be installed anywhere.
   </p>
  </answer>
 
@@ -482,7 +484,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   No.
   </p>
  </answer>
 
@@ -498,7 +500,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -521,7 +523,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   No.
   </p>
  </answer>
 
@@ -541,7 +543,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   No.
   </p>
  </answer>
 
@@ -559,7 +561,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   No.
   </p>
  </answer>
 
@@ -577,7 +579,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   No.
   </p>
  </answer>
 
@@ -603,7 +605,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -621,7 +623,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -672,7 +674,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   The module does not use the clipboard.
   </p>
  </answer>
 
@@ -690,7 +692,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   The module does not participate in DnD operations.
   </p>
  </answer>
 
@@ -721,7 +723,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   There is nothing written to the disk or network by this module.
   </p>
  </answer>
 
@@ -787,7 +789,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -800,7 +802,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   No.
   </p>
  </answer>
 
@@ -814,7 +816,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   No.
   </p>
  </answer>
 
@@ -841,7 +843,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   There are only practival limits of the code e.g. nobody have ever tried to
+   create tens of thousands of hints.
   </p>
  </answer>
 
@@ -855,7 +858,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   I have no idea how much memory the module consumes.
   </p>
  </answer>
 
@@ -920,7 +923,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   The main factor to scale is the size of the opened files in the editor.
   </p>
  </answer>
 
@@ -938,7 +941,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   There is no enforcement of the performance of the plugged in code.
   </p>
  </answer>
 
@@ -951,7 +954,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -965,7 +968,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -986,7 +989,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   No.
   </p>
  </answer>
 
@@ -1009,7 +1012,9 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   Yes. The module registers editor annotations types under Editors/AnnotationTypes,
+   actions into the gutter of the editor to Editors/GlyphGutterActions,
+   actions to main menu and shortcuts.
   </p>
  </answer>
 
@@ -1030,7 +1035,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -1068,7 +1073,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1085,7 +1090,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 
