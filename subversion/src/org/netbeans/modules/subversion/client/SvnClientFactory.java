@@ -250,7 +250,7 @@ public class SvnClientFactory {
                return;
             }
             if(!checkJavaHlVersion()) {
-                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
+                LOG.log(Level.INFO, "Unsupported version of subversion javahl bindings. Falling back on commandline.");
                 setupCommandline();
                 return;
             }
@@ -536,19 +536,7 @@ public class SvnClientFactory {
     }
 
     private boolean checkJavaHlVersion() throws SVNClientException {
-        CommandlineClient cc = new CommandlineClient();
-        try {
-            cc.checkSupportedJavaHlVersion();
-        } catch (SVNClientException e) {
-            LOG.log(Level.FINE, "checking version", e);
-            if(SvnClientExceptionHandler.isUnsupportedJavaHl(e.getMessage())) {
-                return false;
-            }
-            // Lets be optimistic at this place. Might be
-            // that it is just cli which is not istalled...
-            return true; 
-        }
-        return true;
+        return SvnClientAdapterFactory.getInstance().isSupportedJavahlVersion();
     }
 
     private abstract class ClientAdapterFactory {
