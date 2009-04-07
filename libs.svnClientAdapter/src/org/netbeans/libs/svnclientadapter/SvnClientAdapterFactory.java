@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
 import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory;
 
@@ -63,6 +64,22 @@ public class SvnClientAdapterFactory {
             instance = new SvnClientAdapterFactory();
         }
         return instance;
+    }
+
+    private static boolean isSupportedJavahlVersion(String version) {
+        boolean retval = false;
+        if (version != null) {
+            version = version.toLowerCase();
+            if (version.startsWith("1.3") ||
+                    version.startsWith("1.4") ||
+                    version.startsWith("1.5") ||
+                    version.contains("version 1.3") ||
+                    version.contains("version 1.4") ||
+                    version.contains("version 1.5")) {
+                retval = true;
+            }
+        }
+        return retval;
     }
 
     public enum Client {
@@ -102,5 +119,31 @@ public class SvnClientAdapterFactory {
             }
         }
         return null;
+    }
+
+    /**
+     * Checks if accessible javahl libraries' version is supported.
+     * Currently supported:
+     * <ul>
+     * <li>1.3</li>
+     * <li>1.4</li>
+     * <li>1.5</li>
+     * </ul>
+     * @return true if javahl is of a supported version, otherwise false
+     */
+    public boolean isSupportedJavahlVersion() {
+        boolean retval = false;
+        if (Client.javahl.equals(client)) {
+            ISVNClientAdapter adapter = JhlClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);
+            if (adapter != null && adapter instanceof JhlClientAdapter) {
+                JhlClientAdapter jhlAdapter = (JhlClientAdapter) adapter;
+                String version = jhlAdapter.getNativeLibraryVersionString();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "isSupportedJavahlVersion: version {0}", version);
+                }
+                retval = isSupportedJavahlVersion(version);
+            }
+        }
+        return retval;
     }
 }
