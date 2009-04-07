@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -229,7 +230,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             iterator = readWizard(fo);
             // reset and warn, seems like 100 millis isn't enough!
             if (iterator instanceof FeatureOnDemanWizardIterator) {
-                Logger.getLogger(DescriptionStep.class.getName()).warning(
+                Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
+                LOG.warning(
                     "There is still wrong interator " + // NOI18N
                     iterator.getClass().getName() +
                     " for file object " + fo // NOI18N
@@ -245,10 +247,23 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     }
                     return; // give up
                 }
-                Logger.getLogger(DescriptionStep.class.getName()).info("Forcing refresh"); // NOI18N
+                LOG.info("Forcing refresh"); // NOI18N
                 // force refresh for the filesystem
                 FoDFileSystem.getInstance().refresh();
-                Logger.getLogger(DescriptionStep.class.getName()).info("Done with refresh"); // NOI18N
+                LOG.info("Done with refresh"); // NOI18N
+
+                FileObject fake = FileUtil.getConfigFile(fo.getPath());
+                if (fake == null) {
+                    LOG.warning("no "+ fo.getPath() + " on FoD: " + fake); // NOI18N
+                    FileObject p = fake;
+                    while (p != null) {
+                        LOG.info("  parent: " + p + " children: " + Arrays.asList(p.getChildren())); // NOI18N
+                        p = p.getParent();
+                    }
+                } else {
+                    LOG.info("fake found " + fake); // NOI18N
+                    LOG.info("its wizard is " + readWizard(fake)); // NOI18N
+                }
             }
         }
         iterator.initialize (wd);
