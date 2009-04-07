@@ -96,7 +96,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
-    protected static final int LAST_USED_FLAG_INDEX = 3;
+    private static final byte FLAGS_INVALID = 1 << 4;
+    protected static final int LAST_USED_FLAG_INDEX = 4;
     private byte flags;
     
     private static final boolean CHECK_SCOPE = false;
@@ -715,8 +716,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         this.unregisterInProject();
         _disposeParameters();
+        setFlags(FLAGS_INVALID, true);
     }
-    
+
+    @Override
+    public boolean isValid() {
+        return !hasFlags(FLAGS_INVALID) && super.isValid();
+    }
+
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID
