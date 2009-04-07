@@ -639,21 +639,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (progressHandle == null) {
                 return;
             }
-            URL tmp = FileUtil.getArchiveFile(currentlyScannedRoot);
-            if (tmp == null) {
-                tmp = currentlyScannedRoot;
+            progressHandle.progress(urlForMessage(currentlyScannedRoot));
+        }
+
+        protected final void updateProgress(URL currentlyScannedRoot, int scannedFiles, int totalFiles) {
+            assert currentlyScannedRoot != null;
+            if (progressHandle == null) {
+                return;
             }
-            try {
-                if ("file".equals(tmp.getProtocol())) { //NOI18N
-                    final File file = new File(new URI(tmp.toString()));
-                    progressHandle.progress(file.getAbsolutePath());
-                }
-                else {
-                    progressHandle.progress(tmp.toString());
-                }
-            } catch (URISyntaxException ex) {
-                progressHandle.progress(tmp.toString());
-            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(urlForMessage(currentlyScannedRoot));
+            sb.append(" (").append(scannedFiles).append(" of ").append(totalFiles).append(")"); //NOI18N
+            progressHandle.progress(sb.toString());
         }
 
         protected final void delete (final Collection<Indexable> deleted, final URL root) throws IOException {
@@ -690,10 +688,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         protected final void index (final Map<String,Collection<Indexable>> resources, final URL root) throws IOException {
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
-                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                //First use all custom indexers
-//                Set<String> allMimeTypes = Util.getAllMimeTypes();
+                // determine the total number of files
+                int scannedFilesCount = 0;
+                int totalFilesCount = 0;
                 for (String mimeType : resources.keySet()) {
+                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                    if (indexables != null) {
+                        totalFilesCount += indexables.size();
+                    }
+                }
+
+                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                for (String mimeType : resources.keySet()) {
+                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                    if (indexables == null) {
+                        continue;
+                    }
+                    
+                    scannedFilesCount += indexables.size();
+                    updateProgress(root, scannedFilesCount, totalFilesCount);
+                    
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("-- Indexing " + mimeType + " in " + root); //NOI18N
                     }
@@ -713,26 +727,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         // some CustomIndexers (eg. java) need to know about roots even when there
                         // are no modified Inexables at the moment (eg. java checks source level in
                         // the associated project, etc)
-                        final Collection<? extends Indexable> indexables = resources.get(mimeType);
-                        if (indexables != null) {
-                            final CustomIndexer indexer = factory.createIndexer();
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
-                            }
-                            try {
-                                SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                LOGGER.log(Level.WARNING, null, t);
-                            }
+                        final CustomIndexer indexer = factory.createIndexer();
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                        }
+                        try {
+                            SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                        } catch (ThreadDeath td) {
+                            throw td;
+                        } catch (Throwable t) {
+                            LOGGER.log(Level.WARNING, null, t);
                         }
                     }
 
                     if (supportsEmbeddings) {
                         if (canBeParsed(mimeType)) {
                             //Then use slow gsf like indexers
-                            final Collection<? extends Indexable> indexables = resources.get(mimeType);
                             LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", indexables); //NOI18N
 
                             final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob);
@@ -829,6 +839,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             
             return false;
         }
+
+        private String urlForMessage(URL currentlyScannedRoot) {
+            String msg = null;
+
+            URL tmp = FileUtil.getArchiveFile(currentlyScannedRoot);
+            if (tmp == null) {
+                tmp = currentlyScannedRoot;
+            }
+            try {
+                if ("file".equals(tmp.getProtocol())) { //NOI18N
+                    final File file = new File(new URI(tmp.toString()));
+                    msg = file.getAbsolutePath();
+                }
+            } catch (URISyntaxException ex) {
+                // ignore
+            }
+
+            return msg == null ? tmp.toString() : msg;
+        }
     } // End of Work class
 
     private static final class FileListWork extends Work {
@@ -864,7 +893,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public @Override void getDone() {
-            updateProgress(root);
+//            updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 try {
@@ -901,7 +930,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public @Override void getDone() {
-            updateProgress(root);
+//            updateProgress(root);
             try {
                 final ArrayList<Indexable> indexables = new ArrayList<Indexable>(files.length);
                 final FileObject rootFo = URLMapper.findFileObject(root);
