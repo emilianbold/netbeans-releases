@@ -58,7 +58,7 @@ public class GizmoCustomizerNodeProvider implements CustomizerNodeProvider {
 
     public CustomizerNode factoryCreate() {
         if (customizerNode == null) {
-            customizerNode = new GizmoCustomizerNode("Gizmo", NbBundle.getMessage(GizmoCustomizerNodeProvider.class, "GizmoDisplayName")); // NOI18N
+            customizerNode = new GizmoCustomizerNode("Profile", NbBundle.getMessage(GizmoCustomizerNodeProvider.class, "GizmoDisplayName")); // NOI18N
         }
         return customizerNode;
     }
