@@ -41,12 +41,16 @@
 
 package org.netbeans.spi.editor.hints;
 
-/**TODO: icon?
+/**
+ * Fix enhanced by the possibility to be sorted by a different text than
+ * the description.
  *
  * @author Jan Lahoda
  */
 public interface EnhancedFix extends Fix {
 
+    /**
+     * @return text used for the sorting of the fixes.
+     */
     public abstract CharSequence getSortText();
-
 }
