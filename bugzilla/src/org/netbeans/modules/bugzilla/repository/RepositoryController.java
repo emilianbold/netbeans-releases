@@ -271,7 +271,9 @@ public class RepositoryController extends BugtrackingController implements Docum
             public boolean cancel() {
                 panel.progressPanel.setVisible(false);
                 panel.validateLabel.setVisible(false);
-                if(task[0] != null) task[0].cancel();
+                if(task[0] != null) {
+                    task[0].cancel();
+                }
                 return true;
             }
         };

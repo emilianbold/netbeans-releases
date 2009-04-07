@@ -118,7 +118,14 @@ public class BugzillaExecutor {
             }
 
             handleIOException(ioe);
-        } 
+        } catch(RuntimeException re) {
+            Throwable t = re.getCause();
+            if(t instanceof InterruptedException) {
+                Bugzilla.LOG.log(Level.FINE, null, t);
+            } else {
+                Bugzilla.LOG.log(Level.SEVERE, null, re);
+            }
+        }
     }
 
     public boolean handleIOException(IOException io) {
