@@ -195,6 +195,9 @@ is divided into following sections:
                         <isfalse value="${{directory.deployment.supported}}"/>
                     </and>
                 </condition>
+                <condition property="do.package.not.directory.deploy">
+                    <isfalse value="${{directory.deployment.supported}}"/>
+                </condition>
                 <xsl:comment>End Variables needed to support directory deployment.</xsl:comment>
 
                 <condition property="j2ee.appclient.mainclass.tool.param" value="-mainclass ${{main.class}}" else="">
@@ -308,12 +311,17 @@ exists or setup the property manually. For example like this:
             </target>
 
             <target name="do-compile">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,-do-compile-deps</xsl:attribute>
                 
                 <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
                 </copy>
-                
+            </target>
+
+            <target name="-do-compile-deps">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:attribute name="if">do.package.not.directory.deploy</xsl:attribute>
+
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
                     <xsl:variable name="file" select=" ear2:file"/>
@@ -322,7 +330,7 @@ exists or setup the property manually. For example like this:
                        <xsl:attribute name="files"><xsl:value-of select="$file"/></xsl:attribute>
                     </copyfiles>
                 </xsl:for-each>
-                
+
             </target>
 
             <target name="post-compile">

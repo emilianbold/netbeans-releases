@@ -117,7 +117,7 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (project != null && context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();

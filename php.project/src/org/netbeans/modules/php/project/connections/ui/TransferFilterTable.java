@@ -46,113 +46,86 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 /**
- *
  * @author Radek Matous
  */
 final class TransferFilterTable extends JTable {
-    private TransferFileTableModel model = null;
+    private static final long serialVersionUID = -1378410694823823371L;
     private static final int DARKER_COLOR_COMPONENT = 10;
-    private TableCellRenderer enableRenderer = null;
-    private int rowHeightFontBase = -1;
-    
-    TransferFilterTable (TransferFileTableModel model) {
-        super (model);
-        //getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileConfirmationTable.class, "ACN_UnitTable")); // NOI18N
-        //getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_UnitTable")); // NOI18N        
-        this.model = model;
-        setShowGrid (false);
-        setColumnsSize ();
-        setIntercellSpacing (new Dimension (0, 0));
-        revalidate ();
-    }
 
+    private final TransferFileTableModel model;
+    private int rowHeightFontBase = -1;
+
+    TransferFilterTable(TransferFileTableModel model) {
+        super(model);
+        //getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileConfirmationTable.class, "ACN_UnitTable")); // NOI18N
+        //getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_UnitTable")); // NOI18N
+        this.model = model;
+
+        setShowGrid(false);
+        setColumnsSize();
+        setIntercellSpacing(new Dimension(0, 0));
+        revalidate();
+    }
 
     @Override
     public void addNotify() {
         super.addNotify();
         getParent().setBackground(getBackground());
     }
-    
+
     @Override
-    public void removeNotify () {
-        super.removeNotify ();
-        enableRenderer = null;
-    }
-    
-    @Override
-    public String getToolTipText (MouseEvent e) {
+    public String getToolTipText(MouseEvent e) {
         String tip = null;
-        java.awt.Point p = e.getPoint ();
-        int rowIndex = rowAtPoint (p);
-        int colIndex = columnAtPoint (p);
-        int realColumnIndex = convertColumnIndexToModel (colIndex);
-        TransferFileTableModel model = (TransferFileTableModel)getModel ();
-        tip = model.getToolTipText (rowIndex, realColumnIndex);
-        return tip != null ? tip : super.getToolTipText (e);
+        Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        int colIndex = columnAtPoint(p);
+        int realColumnIndex = convertColumnIndexToModel(colIndex);
+        tip = model.getToolTipText(rowIndex, realColumnIndex);
+        return tip != null ? tip : super.getToolTipText(e);
     }
-    
-    void resetEnableRenderer () {
-        if (enableRenderer != null) {
-            setEnableRenderer (enableRenderer);
-            TableCellRenderer defaultRenderer = getDefaultRenderer(String.class);
-            
-        }
-    }
-    
-    void setEnableRenderer (TableCellRenderer renderer) {
-        enableRenderer = renderer;
-        TableColumnModel columnModel = getColumnModel();
-        columnModel.getColumn(3).setCellRenderer(renderer);
-    }
-    
-    void resortByDefault () {
-        ((MyTableHeader) getTableHeader ()).setDefaultSorting ();
-    }
-    
-    void setColumnsSize () {
-        int columnCount = model.getColumnCount ();
+
+    private void setColumnsSize() {
+        int columnCount = model.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
-            TableColumn activeColumn = getColumnModel ().getColumn (i);
-            activeColumn.setPreferredWidth (this.model.getPreferredWidth (getTableHeader (), i));
+            TableColumn activeColumn = getColumnModel().getColumn(i);
+            activeColumn.setPreferredWidth(model.getPreferredWidth(getTableHeader(), i));
         }
     }
-    
+
     @Override
-    public Component prepareRenderer (TableCellRenderer renderer,
-            int rowIndex, int vColIndex) {
-        Component c = super.prepareRenderer (renderer, rowIndex, vColIndex);
-        Color bgColor = getBackground ();
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        Component c = super.prepareRenderer(renderer, row, column);
+        Color bgColor = getBackground();
         Color bgColorDarker = getDarkerColor(bgColor);
-        
-        TransferFileUnit u = model.getUnitAtRow (rowIndex);
-        if (u != null && !u.canBeMarked ()) {
-            c.setForeground (Color.gray);
+
+        TransferFileUnit u = model.getUnitAtRow(row);
+        if (u != null && !u.canBeMarked()) {
+            c.setForeground(Color.gray);
         } else {
             c.setFont(getFont());
-            if (isRowSelected(rowIndex)) {
+            if (isRowSelected(row)) {
                 c.setForeground(getSelectionForeground());
             } else {
                 c.setForeground(getForeground());
             }
         }
-        if (!isCellSelected (rowIndex, vColIndex)) {
-            if (rowIndex % 2 == 0) {
-                c.setBackground (bgColorDarker);
+        if (!isCellSelected(row, column)) {
+            if (row % 2 == 0) {
+                c.setBackground(bgColorDarker);
             } else {
-                c.setBackground (bgColor);
+                c.setBackground(bgColor);
             }
-        } 
+        }
         if (rowHeightFontBase < 0) {
             Font font =  c.getFont();
             FontMetrics fontMetrics = c.getFontMetrics(font);
@@ -160,100 +133,103 @@ final class TransferFilterTable extends JTable {
             rowHeightFontBase = Math.max(def, fontMetrics.getHeight());
             setRowHeight(rowHeightFontBase);
         }
-        
+
         return c;
     }
-    
+
     static Color getDarkerColor(Color color) {
         return new Color(
                 Math.abs(color.getRed() - DARKER_COLOR_COMPONENT),
                 Math.abs(color.getGreen() - DARKER_COLOR_COMPONENT),
                 Math.abs(color.getBlue() - DARKER_COLOR_COMPONENT));
-        
     }
-    
+
     @Override
-    protected JTableHeader createDefaultTableHeader () {
-        return new MyTableHeader ( columnModel );
+    protected JTableHeader createDefaultTableHeader() {
+        return TransferFilterTableHeader.create(this);
     }
-    
-    private class MyTableHeader extends JTableHeader {
-        private SortColumnHeaderRenderer sortingRenderer;
-        
-        public MyTableHeader ( TableColumnModel model ) {
-            super ( model );
-            addMouseListener ( new MouseAdapter () {
+
+    private static final class TransferFilterTableHeader extends JTableHeader {
+        private static final long serialVersionUID = 195246681443014165L;
+
+        private final SortColumnHeaderRenderer sortingRenderer;
+        int selectedRow = -1;
+
+        private TransferFilterTableHeader(TransferFilterTable table) {
+            super(table.getColumnModel());
+            setTable(table);
+            sortingRenderer = new SortColumnHeaderRenderer((TransferFileTableModel) getTable().getModel(), getDefaultRenderer());
+            setDefaultRenderer(sortingRenderer);
+        }
+
+        public static JTableHeader create(TransferFilterTable table) {
+            final TransferFilterTableHeader tableHeader = new TransferFilterTableHeader(table);
+            tableHeader.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked (MouseEvent e) {
-                    if( e.getClickCount() != 1 || !TransferFilterTable.this.isEnabled()) {
-                        return;
-                    }
-                    int column = columnAtPoint ( e.getPoint () );
-                    if( sortingRenderer != null) {
-                        TransferFileUnit u = null;
-                        TransferFileTableModel model = null;
-                        try {
-                            model = (TransferFileTableModel)getModel ();
-                            int row = getSelectedRow ();
-                            if (row > -1) {
-                                u = model.getUnitAtRow (row);
-                            }
-                            Object id = getColumnModel ().getColumn (column).getIdentifier ();
-                            if (model.isSortAllowed (id)) {
-                                sortingRenderer.setSorting (id);
-                                repaint ();
-                            }
-                        } finally {
-                            if (u != null) {
-                                List<TransferFileUnit> units = model.getVisibleFileUnits();
-                                int row = (u != null) ? units.indexOf (u) : -1;
-                                if (row > -1) {
-                                    TransferFileUnit u2 = model.getUnitAtRow (row);
-                                    if (u2 != null) {
-                                        if (u.getId().equals (u2.getId())) {
-                                            getSelectionModel ().setSelectionInterval (row, row);
-                                            Rectangle rect = TransferFilterTable.this.getCellRect (row, 0, true);
-                                            TransferFilterTable.this.scrollRectToVisible (rect);
-                                        }
-                                    } 
-                                }
-                            }
-                        }
-                    }
+                public void mousePressed(MouseEvent e) {
+                    tableHeader.setSelectedRow();
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    assert tableHeader.sortingRenderer != null : "Sorting renderer cannot be null.";
+
+                    TransferFileUnit selectedUnit = tableHeader.getSelectedUnit();
+
+                    int column = tableHeader.getTable().columnAtPoint(e.getPoint());
+                    tableHeader.sortingRenderer.setSorting(column);
+                    tableHeader.repaint();
+
+                    tableHeader.scroolToUnit(selectedUnit);
                 }
             });
-            this.setReorderingAllowed ( false );
+            ((TransferFileTableModel) tableHeader.getTable().getModel()).addUpdateUnitListener(new TransferFileTableChangeListener() {
+                public void updateUnitsChanged() {
+                    tableHeader.setSelectedRow();
+                    TransferFileUnit selectedUnit = tableHeader.getSelectedUnit();
+                    tableHeader.sortingRenderer.sort();
+                    tableHeader.scroolToUnit(selectedUnit);
+                }
+                public void filterChanged() {
+                }
+            });
+            tableHeader.setReorderingAllowed(false);
+            return tableHeader;
         }
-        
+
         @Override
-        public void setDraggedColumn ( TableColumn aColumn ) {
-            if( null != aColumn && aColumn.getModelIndex () == 0 )
-                return; //don't allow the first column to be dragged
-            super.setDraggedColumn ( aColumn );
-        }
-        
-        @Override
-        public void setDefaultRenderer (TableCellRenderer defaultRenderer) {
-            if( !(defaultRenderer instanceof SortColumnHeaderRenderer) ) {
-                sortingRenderer = new SortColumnHeaderRenderer ((TransferFileTableModel)getModel (), defaultRenderer );
-                defaultRenderer = sortingRenderer;
+        public void setDraggedColumn(TableColumn aColumn) {
+            if (aColumn != null && aColumn.getModelIndex() == 0) {
+                //don't allow the first column to be dragged
+                return;
             }
-            super.setDefaultRenderer ( defaultRenderer );
+            super.setDraggedColumn(aColumn);
         }
-        
-        @Override
-        public void setResizingColumn ( TableColumn col ) {
-            if( null != getResizingColumn () && null == col ) {
-                //maybe could be persistent later
-                //storeColumnState();
+
+        void setSelectedRow() {
+            selectedRow = getTable().getSelectedRow();
+        }
+
+        // preserve selected row in order to scroll to it
+        TransferFileUnit getSelectedUnit() {
+            TransferFileUnit selectedUnit = null;
+            TransferFileTableModel model = (TransferFileTableModel) getTable().getModel();
+            if (selectedRow != -1) {
+                selectedUnit = model.getUnitAtRow(selectedRow);
             }
-            super.setResizingColumn ( col );
+            return selectedUnit;
         }
-        
-        public void setDefaultSorting () {
-            if (sortingRenderer != null) {
-                sortingRenderer.setDefaultSorting ();
+
+        void scroolToUnit(TransferFileUnit selectedUnit) {
+            if (selectedUnit == null) {
+                return;
             }
+            TransferFileTableModel model = (TransferFileTableModel) getTable().getModel();
+            int newRow = model.getRowForUnit(selectedUnit);
+            assert newRow != -1 : String.format("Previoulsy selecte unit %s has to be found.", selectedUnit);
+            getTable().getSelectionModel().setSelectionInterval(newRow, newRow);
+            Rectangle rect = getTable().getCellRect(newRow, 0, true);
+            getTable().scrollRectToVisible(rect);
         }
-    }                
+    }
 }
