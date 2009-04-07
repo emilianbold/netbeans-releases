@@ -50,11 +50,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -96,20 +100,61 @@ public class CommentsPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    JTextPane pane = (JTextPane)e.getSource();
-                    StyledDocument doc = pane.getStyledDocument();
-                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                    AttributeSet as = elem.getAttributes();
-                    StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
-                    if (stacktraceAction != null) {
-                        stacktraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
-                    }
-                    IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                    if (issueAction != null) {
-                        issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        openStackTrace(e, false);
+                        Element elem = element(e);
+                        AttributeSet as = elem.getAttributes();
+                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
+                        if (issueAction != null) {
+                            issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                        }
                     }
                 } catch(Exception ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showMenu(e);
+            }
+
+            private void showMenu(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    try {
+                        Element elem = element(e);
+                        String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
+                        JPopupMenu menu = new JPopupMenu();
+                        menu.add(new StackTraceAction(stackFrame, false));
+                        menu.add(new StackTraceAction(stackFrame, true));
+                        menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
+                    } catch(Exception ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+            private Element element(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                return doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+            }
+
+            private void openStackTrace(MouseEvent e, boolean showHistory) {
+                Element elem = element(e);
+                AttributeSet as = elem.getAttributes();
+                StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                if (stacktraceAction != null) {
+                    try {
+                        StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), showHistory);
+                    } catch(Exception ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
 
@@ -290,9 +335,30 @@ public class CommentsPanel extends JPanel {
         return replyListener;
     }
 
-    private static class StackTraceAction {
-        void openStackTrace(String text) {
-            StackTraceSupport.findAndOpen(text);
+    private static class StackTraceAction extends AbstractAction {
+        private String stackFrame;
+        private boolean showHistory;
+
+        StackTraceAction() {
+        }
+
+        StackTraceAction(String stackFrame, boolean showHistory) {
+            this.stackFrame = stackFrame;
+            this.showHistory = showHistory;
+            String name = NbBundle.getMessage(StackTraceAction.class, showHistory ? "CommentsPanel.StackTraceAction.showHistory" : "CommentsPanel.StackTraceAction.open"); // NOI18N
+            putValue(Action.NAME, name);
+        }
+
+        static void openStackTrace(String text, boolean showHistory) {
+            if (showHistory) {
+                StackTraceSupport.findAndShowHistory(text);
+            } else {
+                StackTraceSupport.findAndOpen(text);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openStackTrace(stackFrame, showHistory);
         }
     }
 
