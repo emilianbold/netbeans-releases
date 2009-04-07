@@ -365,7 +365,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         } else if (CsmKindUtilities.isClassifier(element)){
             CharSequence name = ((CsmClassifier)element).getName();
             if (name.length()==0 && (element instanceof CsmCompoundClassifier)) {
-                Collection list = ((CsmCompoundClassifier)element).getEnclosingTypedefs();
+                Collection<CsmTypedef> list = ((CsmCompoundClassifier)element).getEnclosingTypedefs();
                 if (list.size() > 0) {
                     return null;
                 }
