@@ -70,7 +70,7 @@ public class RemoveInstanceAction extends NodeAction {
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
             
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION)
-                HudsonManagerImpl.getInstance().removeInstance(instance);
+                HudsonManagerImpl.getDefault().removeInstance(instance);
         }
     }
     
