@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,72 +37,80 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo;
+package org.netbeans.modules.cnd.gizmo.options;
 
-import javax.swing.JPanel;
+import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author mt154047
- */
-//@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
-public class GizmoCustomizerNodeProvider implements CustomizerNodeProvider {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
+public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
+    /**
+     * Creates an instance of a customizer node
+     */
     private CustomizerNode customizerNode = null;
 
     public CustomizerNode factoryCreate() {
         if (customizerNode == null) {
-            customizerNode = new GizmoCustomizerNode("Profile", NbBundle.getMessage(GizmoCustomizerNodeProvider.class, "GizmoDisplayName")); // NOI18N
+            customizerNode = createProfileNode();
         }
         return customizerNode;
     }
 
-    static class GizmoCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode {
-
-        public GizmoCustomizerNode(String name, String displayName) {
-            super(name, displayName, null);
-        }
-
-//        @Override
-//        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
-//            Configuration configuration) {
-////	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
-//         //   return profile == null ? null : profile.getSheet();
-//            return null;
-//        }
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsGizmo"); // NOI18N
-        }
-
-        public int getPriority() {
-            return 300;
-        }
-
-        @Override
-        public CustomizerStyle customizerStyle() {
-            return CustomizerStyle.PANEL;
-        }
-
-
-
-        @Override
-        public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
-            return new GizmoOptionsPanel(new GizmoProjectOptions(project));
-        }
-      
+    public CustomizerNode createProfileNode() {
+        return new GizmoOptionsCustomizerNode(
+                "Profile", // NOI18N
+                getString("ProfilNodeTxt"),
+                null);
     }
 
+    class GizmoOptionsCustomizerNode extends CustomizerNode {
+
+        public GizmoOptionsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            GizmoOptions gizmoOptions = (GizmoOptions) configuration.getAuxObject(GizmoOptions.PROFILE_ID);
+            return createSheet(gizmoOptions);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsGizmo"); // NOI18N // FIXUP: need real help tag from Ann
+        }
+    }
+
+
+    private Sheet createSheet(GizmoOptions gizmoOptions) {
+        Sheet sheet = new Sheet();
+
+        Sheet.Set set = new Sheet.Set();
+        set.setName("General"); // NOI18N
+        set.setDisplayName(getString("GeneralName"));
+        
+        set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, "profileonrun", getString("profileonrun_txt"), getString("profileonrun_help")));
+        
+        sheet.put(set);
+        return sheet;
+    }
+
+    /** Look up i18n strings here */
+    private ResourceBundle bundle;
+
+    protected String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(GizmoOptionsNodeProvider.class);
+        }
+        return bundle.getString(s);
+    }
 }
