@@ -57,7 +57,13 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -73,7 +79,7 @@ import org.openide.util.NbBundle;
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
 public final class SystemFileSystem extends MultiFileSystem 
-implements FileSystem.Status {
+implements FileSystem.Status, FileChangeListener {
     // Must be public for BeanInfo to work: #11186.
 
     /** generated Serialized Version UID */
@@ -90,6 +96,8 @@ implements FileSystem.Status {
     /** name of file attribute with URL to 32x32 color icon */
     private static final String ATTR_ICON_32 = "SystemFileSystem.icon32"; // NOI18N
 
+    private static final Logger LOG = Logger.getLogger(SystemFileSystem.class.getName());
+
     /** user fs */
     private ModuleLayeredFileSystem user;
     /** home fs */
@@ -105,6 +113,7 @@ implements FileSystem.Status {
         
         setSystemName(SYSTEM_NAME);
         setHidden(true);
+        addFileChangeListener(this);
     }
 
 
@@ -369,6 +378,45 @@ implements FileSystem.Status {
     @Override
     protected void notifyMigration (FileObject fo) {
         fireFileStatusChanged (new FileStatusEvent (this, fo, false, true));
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+        log("fileFolderCreated", fe); // NOI18N
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        log("fileDataCreated", fe); // NOI18N
+    }
+
+    public void fileChanged(FileEvent fe) {
+        log("fileChanged", fe); // NOI18N
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        log("fileDeleted", fe); // NOI18N
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        log("fileDeleted", fe); // NOI18N
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        log("fileAttributeChanged", fe); // NOI18N
+    }
+
+    private static void log(String type, FileEvent fe) {
+        if (LOG.isLoggable(Level.FINER)) {
+            LogRecord r = new LogRecord(Level.FINER, "LOG_FILE_EVENT");
+            r.setLoggerName(LOG.getName());
+            r.setParameters(new Object[] {
+                type,
+                fe.getFile().getPath(),
+                fe.getFile(),
+                fe
+            });
+            r.setResourceBundle(NbBundle.getBundle(SystemFileSystem.class));
+            LOG.log(r);
+        }
     }
 
     // --- SAFETY ---
