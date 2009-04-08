@@ -43,13 +43,13 @@ package gui.windowsystem;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- *
  * @author mmirilovic@netbeans.org
  */
 public class MainMenu extends JellyTestCase {
@@ -61,14 +61,11 @@ public class MainMenu extends JellyTestCase {
         super(testName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MainMenu("testMainMenuMnemonicsCollision"));
-        suite.addTest(new MainMenu("testMainMenuShortCutCollision"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.allModules(MainMenu.class);
     }
 
-    public void setUp() {
+    public @Override void setUp() {
         // err = System.out;
         err = getLog();
         log = getRef();
@@ -84,13 +81,13 @@ public class MainMenu extends JellyTestCase {
 
     public void testMainMenuMnemonicsCollision() {
         String collisions = MenuChecker.checkMnemonicCollision();
-        assertFalse(collisions, collisions.length()>0);
+        assertFalse("There were mnemonic collisions:" + collisions, collisions.length()>0);
     }
 
 
     public void testMainMenuShortCutCollision() {
         String collisions = MenuChecker.checkShortCutCollision();
-        assertFalse(collisions, collisions.length()>0);
+        assertFalse("There were accelerator collisions:" + collisions, collisions.length()>0);
     }
 
     /** Print full stack trace to log files, get message and log to test results if test fails.
