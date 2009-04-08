@@ -152,7 +152,7 @@ color white
 color yellow
 End cursor position = 591
 [<style> | </style>, @import, <style> @import </style>, 674]
-</style>
+</style >
 @charset
 @font-face
 @import

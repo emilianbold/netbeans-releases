@@ -20,8 +20,8 @@ ServletConfig getServletConfig ()
 
 <%-- completion for body HTML tag --%>
 <%--CC
-<bo|
-<body>
+<b|
+body
 <body>
 --%>
 
@@ -35,7 +35,7 @@ boolean isNew ()
 <%-- completion for TAG directives --%>
 <%--CC
 <%@|
-<%@ attribute % >
+attribute
 <%@attribute  %>
 --%>
 

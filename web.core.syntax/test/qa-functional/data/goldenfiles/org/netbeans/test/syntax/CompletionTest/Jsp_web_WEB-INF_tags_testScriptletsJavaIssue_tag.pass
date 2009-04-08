@@ -79,7 +79,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
 End cursor position = 833
-[<% org.test.TestBean t = new org.test.TestBean(); t.|, void setName (String name ), <% org.test.TestBean t = new org.test.TestBean(); t.setName(name), 1056]
+[<% org.test.TestBean t = new org.test.TestBean(); t.|, void setName (String name, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name), 1054]
 boolean equals (Object obj )
 Class <?> getClass ()
 Integer getId ()
@@ -93,4 +93,4 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1121
+End cursor position = 1119

@@ -47,8 +47,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.php.project.PhpPreferences;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbPreferences;
 
 /**
  * @author Radek Matous
@@ -125,6 +125,6 @@ public final class SortColumnHeaderRenderer implements TableCellRenderer {
     }
 
     private static Preferences getPreferences() {
-        return NbPreferences.forModule(SortColumnHeaderRenderer.class);
+        return PhpPreferences.getPreferences(false);
     }
 }
