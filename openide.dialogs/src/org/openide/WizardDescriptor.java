@@ -117,11 +117,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
  *
  * <p><b>Related Tutorial</b>
  *
+ * <ul>
  * <p><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html">NetBeans Wizard Module Tutorial</a>
+ * <p><a href="doc-files/wizard-guidebook.html">Wizard Guide</a>
+ * </ul>
  *
  * @see DialogDisplayer#createDialog
- * @see <a href="doc-files/wizard-guidebook.html">Wizard Guidebook
- * (describes the set of properties controlling the display of wizard panels)</a>
  */
 public class WizardDescriptor extends DialogDescriptor {
     /** "Next" button option.
