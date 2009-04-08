@@ -310,7 +310,7 @@ public final class EventSupport {
         }
                 
         public void editorRegistryChanged() {
-            final JTextComponent editor = EditorRegistry.focusedComponent();
+            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
@@ -329,11 +329,14 @@ public final class EventSupport {
                 if (editor != null) {
                     editor.addCaretListener(this);
                     editor.addPropertyChangeListener(this);
-                    final Document doc = editor.getDocument();
-                    final Source source = doc == null ? null : Source.create(doc);
-                    if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
-                    }
+                }
+            }
+            final JTextComponent focused = EditorRegistry.focusedComponent();
+            if (focused != null) {
+                final Document doc = editor.getDocument();
+                final Source source = doc == null ? null : Source.create(doc);
+                if (source != null) {
+                    SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
                 }
             }
         }
