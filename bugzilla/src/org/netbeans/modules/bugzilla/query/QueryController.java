@@ -207,7 +207,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         postPopulate(urlParameters);
     }
 
-    protected void addNotify() {
+    @Override
+    public void opened() {
         boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
         if(autoRefresh) {
             scheduleForRefresh();
@@ -217,7 +218,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    protected void removeNotify() {
+    @Override
+    public void closed() {
         onCancelChanges();
         if(task != null) {
             task.cancel();

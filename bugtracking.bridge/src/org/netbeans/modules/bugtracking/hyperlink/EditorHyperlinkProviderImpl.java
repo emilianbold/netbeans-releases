@@ -158,6 +158,9 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 return null;
             }
             Token t = ts.token();
+            if(t.id() == null || t.id().primaryCategory() == null || t.id().name() == null) {
+                continue;
+            }
             if (t.id().primaryCategory().toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention
                 t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback
             {

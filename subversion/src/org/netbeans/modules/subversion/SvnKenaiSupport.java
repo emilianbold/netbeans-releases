@@ -37,48 +37,50 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.subversion;
 
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryController;
+import java.net.PasswordAuthentication;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiQueryController extends QueryController {
-    private String product;
-    private boolean predefinedQuery;
+public class SvnKenaiSupport {
 
-    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product, boolean predefinedQuery) {
-        super(repository, query, urlParameters);
-        this.product = product;
-        this.predefinedQuery = predefinedQuery;
+    private static SvnKenaiSupport instance;
+    private VCSKenaiSupport kenaiSupport = null;
+    private Set<String> queriedUrls = new HashSet<String>(5);
+
+    private SvnKenaiSupport() {
+        kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
     }
 
-    @Override
-    public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
-    }
-
-    @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        if(predefinedQuery) {
-            // override - for predefined kenai queries are those always disabled
-            panel.modifyButton.setEnabled(false);
-            panel.removeButton.setEnabled(false);
+    public static SvnKenaiSupport getInstance() {
+        if(instance == null) {
+            instance = new SvnKenaiSupport();
         }
+        return instance;
     }
 
-    @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
+    public boolean isKenai(String url) {
+        return kenaiSupport != null && kenaiSupport.isKenai(url);
+    }
+
+    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
+        if(forceRelogin && queriedUrls.contains(url)) {
+            // we already queried the authentication for this url, but it didn't
+            // seem to be accepted -> force a new login, the current user
+            // might not be authorized for the given kenai project (url).
+            if(!kenaiSupport.showLogin()) {
+                return null;
+            }
+        }
+        queriedUrls.add(url);
+        return kenaiSupport.getPasswordAuthentication();
     }
 
 }
