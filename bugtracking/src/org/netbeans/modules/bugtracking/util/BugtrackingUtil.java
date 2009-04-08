@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -177,7 +178,8 @@ public class BugtrackingUtil {
         panel.setLayout(layout);
         JLabel label = new JLabel(message);
         panel.add(label);
-        int gap = LayoutStyle.getSharedInstance().getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
+        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
         panel.add(bar);
         panel.add(Box.createVerticalStrut(gap));
@@ -185,19 +187,27 @@ public class BugtrackingUtil {
         JLabel hintLabel = new JLabel(bundle.getString("MSG_SelectIssueHint")); // NOI18N
         hintLabel.setEnabled(false);
         panel.add(hintLabel);
-        panel.add(Box.createVerticalStrut(70));
+        panel.add(Box.createVerticalStrut(80));
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                layoutStyle.getContainerGap(panel, SwingConstants.NORTH, null),
+                layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
+                0,
+                layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
         Issue issue = null;
 
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 bundle.getString("LBL_Issues"), // NOI18N
+                true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
-        if (DialogDisplayer.getDefault().notify(descriptor) == ok) {
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.issueChooser")); // NOI18N
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
             issue = bar.getIssue();
         }
         return issue;
