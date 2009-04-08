@@ -127,11 +127,11 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         });
         for (i = 0; i < k; i++) {
             AttachType at = (AttachType) attachTypes.get (i);
-            cbAttachTypes.addItem (at.getTypeDisplayName ());
-            if ( (defaultAttachTypeName != null) &&
-                 (defaultAttachTypeName.equals (at.getClass ().getName ()))
-            )
+            String displayName = at.getTypeDisplayName();
+            cbAttachTypes.addItem (displayName);
+            if (displayName.equals(defaultAttachTypeName)) {
                 defaultIndex = i;
+            }
         }
 
         cbAttachTypes.setActionCommand ("SwitchMe!"); // NOI18N
@@ -209,7 +209,7 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     }
     
     boolean ok () {
-        String defaultAttachTypeName = currentAttachType.getClass().getName();
+        String defaultAttachTypeName = currentAttachType.getTypeDisplayName();
         Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
         if (controller == null) return true;
         boolean ok = controller.ok ();

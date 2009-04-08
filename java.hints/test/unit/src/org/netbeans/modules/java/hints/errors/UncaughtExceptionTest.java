@@ -45,11 +45,6 @@ public class UncaughtExceptionTest extends HintsTestBase {
     }
     
     @Override
-    protected boolean createCaches() {
-        return false;
-    }
-    
-    @Override
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/UncaughtExceptionTest/";
     }

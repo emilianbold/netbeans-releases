@@ -70,14 +70,14 @@ public class IssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        openQuery();
+        openIssue();
     }
 
-    public static void openQuery() {
-        openQuery(null);
+    public static void openIssue() {
+        openIssue(null);
     }
 
-    public static void openQuery(Repository givenRepository) {
+    public static void openIssue(Repository givenRepository) {
         final Repository repository;
         final boolean repositoryGiven;
 

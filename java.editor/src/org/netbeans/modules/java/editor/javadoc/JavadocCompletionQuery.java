@@ -603,7 +603,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         
         for (String pkgName : jdctx.javac.getClasspathInfo().getClassIndex().getPackageNames(pkgPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class)))
-            if (pkgName.length() > 0)
+            if (pkgName.length() > 0 && !Utilities.isExcluded(pkgName + "."))
                 items.add(JavaCompletionItem.createPackageItem(pkgName, substitutionOffset, false));
     }
     

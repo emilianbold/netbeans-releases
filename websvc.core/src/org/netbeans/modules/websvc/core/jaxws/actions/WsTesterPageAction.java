@@ -58,7 +58,6 @@ import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -98,11 +97,8 @@ public class WsTesterPageAction extends NodeAction {
                                     || HttpURLConnection.HTTP_BAD_METHOD == responseCode) {
                                 connectionOK = true;
                             }
-                        } catch (java.net.ConnectException ex) {
-                            DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(WsTesterPageAction.class, "MSG_UNABLE_TO_OPEN_TEST_PAGE", url),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                        } catch (java.io.IOException ex) {
+                            Logger.getLogger(WsTesterPageAction.class.getName()).log(Level.INFO, "URLConnection problem", ex); //NOI18N
                         } finally {
                             if (httpConnection != null) {
                                 httpConnection.disconnect();
@@ -111,7 +107,7 @@ public class WsTesterPageAction extends NodeAction {
                     }
 
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Logger.getLogger(WsTesterPageAction.class.getName()).log(Level.INFO, "URLConnection problem", ex); //NOI18N
                 }
                 if (connectionOK) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);

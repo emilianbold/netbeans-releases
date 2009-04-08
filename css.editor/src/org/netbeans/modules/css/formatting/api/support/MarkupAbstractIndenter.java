@@ -452,6 +452,15 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
         }
 
+        if (context.isBlankLine() && iis.isEmpty() && firstPreservedLineIndent != -1 && ts.moveNext()) {
+            Token<T1> token = ts.token();
+            if (token != null && ts.embedded() == null && isPreservedLine(token, context)) {
+                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                ic.setFixedIndentSize(firstPreservedLineIndent);
+                iis.add(ic);
+            }
+        }
+
         // are we within a content of a tag which is not formattable:
         if (unformattableTagContent) {
             // ignore this line

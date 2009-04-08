@@ -342,7 +342,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 throw new IOException("Could not load suite for " + p); // NOI18N
             }
             Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
-            return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
+            return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(suite));
         } else if (type == NbModuleProvider.NETBEANS_ORG) {
             //Can cast to NbModuleProject here..
             return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p), Collections.<File>emptySet());

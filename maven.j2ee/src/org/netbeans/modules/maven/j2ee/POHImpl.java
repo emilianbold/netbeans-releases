@@ -80,6 +80,7 @@ public class POHImpl extends ProjectOpenedHook {
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
+    private String contextPath;
 
     public POHImpl(Project prj, J2eeLookupProvider.Provider prov) {
         project = prj;
@@ -93,6 +94,10 @@ public class POHImpl extends ProjectOpenedHook {
                 refreshAppServerAssignment();
             }
         });
+    }
+
+    public void setContextPath(String path) {
+        this.contextPath = path;
     }
     
     protected void projectOpened() {
@@ -150,6 +155,9 @@ public class POHImpl extends ProjectOpenedHook {
             if (impl != null) {
                 impl.setServerInstanceID(instanceFound);
                 impl.getConfigSupport().ensureConfigurationReady();
+                if (contextPath != null) {
+                    impl.getWebModuleImplementation().setContextPath(contextPath);
+                }
             }
             EjbModuleProviderImpl ejb = project.getLookup().lookup(EjbModuleProviderImpl.class);
             if (ejb != null) {

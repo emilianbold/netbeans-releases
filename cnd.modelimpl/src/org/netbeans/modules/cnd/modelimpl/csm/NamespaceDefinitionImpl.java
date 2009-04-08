@@ -251,7 +251,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     private void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.namespaceRef == null) {
             // restore container from it's UID
             this.namespaceRef = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
             assert this.namespaceRef != null || this.namespaceUID == null : "no object for UID " + this.namespaceUID;

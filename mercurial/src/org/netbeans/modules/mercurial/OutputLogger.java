@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.mercurial;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.List;
 import java.net.URL;
+import java.util.HashSet;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -64,10 +64,12 @@ public class OutputLogger {
     private boolean ignoreCommand = false;
     private String repositoryRootString;
     private boolean empty;
+    private boolean writable;
     private static final RequestProcessor rp = new RequestProcessor("MercurialOutput", 1);
     public static final int MAX_LINES_TO_PRINT = 500;
 
     private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
+    private static final HashSet<String> openedWindows = new HashSet<String>(5);
 
 
     public static OutputLogger getLogger(String repositoryRoot) {
@@ -89,18 +91,32 @@ public class OutputLogger {
      * @return the log
      */
     private InputOutput getLog() {
+        writable = true;
         if(log == null) {
             Mercurial.LOG.fine("Creating OutputLogger for " + repositoryRootString);
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
+            if (!openedWindows.contains(repositoryRootString)) {
+                // log window has been opened
+                writable = HgModuleConfig.getDefault().getAutoOpenOutput();
+                openedWindows.add(repositoryRootString);
+                if (!writable) {
+                    // close it again
+                    log.closeInputOutput();
+                }
+            }
         }
         if (log.isClosed()) {
-            Mercurial.LOG.fine("Creating OutputLogger for " + repositoryRootString);
-            log = IOProvider.getDefault().getIO(repositoryRootString, false);
-            try {
-                // HACK (mystic logic) workaround, otherwise it writes to nowhere
-                log.getOut().reset();
-            } catch (IOException e) {
-                Mercurial.LOG.log(Level.SEVERE, null, e);
+            if (HgModuleConfig.getDefault().getAutoOpenOutput()) {
+                Mercurial.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+                log = IOProvider.getDefault().getIO(repositoryRootString, false);
+                try {
+                    // HACK (mystic logic) workaround, otherwise it writes to nowhere
+                    log.getOut().reset();
+                } catch (IOException e) {
+                    Mercurial.LOG.log(Level.SEVERE, null, e);
+                }
+            } else {
+                writable = false;
             }
         }
         return log;
@@ -109,7 +125,7 @@ public class OutputLogger {
     public void closeLog() {
         rp.post(new Runnable() {
             public void run() {
-                if (log != null) {
+                if (log != null && writable) {
                     log.getOut().close();
                     log.getErr().close();
                 }
@@ -119,9 +135,12 @@ public class OutputLogger {
 
     public void flushLog() {
         rp.post(new Runnable() {
-            public void run() {        
-                getLog().getOut().flush();
-                getLog().getErr().flush();
+            public void run() {
+                getLog();
+                if (writable) {
+                    getLog().getOut().flush();
+                    getLog().getErr().flush();
+                }
             }
         });        
     }
@@ -136,12 +155,14 @@ public class OutputLogger {
         if( list.isEmpty()) return;
 
         rp.post(new Runnable() {
-            public void run() {                
+            public void run() { 
                 OutputWriter out = getLog().getOut();
-                for (String s : list){
-                    out.println(s);
+                if (writable) {
+                    for (String s : list) {
+                        out.println(s);
+                    }
+                    out.flush();
                 }
-                out.flush();
             }
         });
     }
@@ -156,8 +177,11 @@ public class OutputLogger {
         if( msg == null) return;
         rp.post(new Runnable() {
             public void run() {
-                getLog().getOut().println(msg);
-                getLog().getOut().flush();
+                OutputWriter out = getLog().getOut();
+                if (writable) {
+                    out.println(msg);
+                    out.flush();
+                }
             }
         });
     }
@@ -173,8 +197,11 @@ public class OutputLogger {
 
         rp.post(new Runnable() {
             public void run() {
-                getLog().getErr().println(msg);
-                getLog().getErr().flush();
+                OutputWriter out = getLog().getErr();
+                if (writable) {
+                    out.println(msg);
+                    out.flush();
+                }
             }
         });
     }
@@ -192,20 +219,21 @@ public class OutputLogger {
             public void run() {                
                 try {
                     OutputWriter out = getLog().getOut();
-
-                    OutputListener listener = new OutputListener() {
-                        public void outputLineAction(OutputEvent ev) {
-                            try {
-                                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(sURL));
-                            } catch (IOException ex) {
-                            // Ignore
+                    if (writable) {
+                        OutputListener listener = new OutputListener() {
+                            public void outputLineAction(OutputEvent ev) {
+                                try {
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(sURL));
+                                } catch (IOException ex) {
+                                    // Ignore
+                                }
                             }
-                        }
-                        public void outputLineSelected(OutputEvent ev) {}
-                        public void outputLineCleared(OutputEvent ev) {}
-                    };
-                    out.println(sURL, listener, true);
-                    out.flush();
+                            public void outputLineSelected(OutputEvent ev) {}
+                            public void outputLineCleared(OutputEvent ev) {}
+                        };
+                        out.println(sURL, listener, true);
+                        out.flush();
+                    }
                 } catch (IOException ex) {
                 // Ignore
                 }
@@ -223,12 +251,14 @@ public class OutputLogger {
         rp.post(new Runnable() {
             public void run() {             
                 OutputWriter out = getLog().getOut();
-                try {
-                    out.reset();
-                } catch (IOException ex) {
-                    // Ignore Exception
+                if (writable) {
+                    try {
+                        out.reset();
+                    } catch (IOException ex) {
+                        // Ignore Exception
+                    }
+                    out.flush();
                 }
-                out.flush();
             }
         });
     }

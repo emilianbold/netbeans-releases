@@ -50,8 +50,10 @@ import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -116,7 +118,14 @@ public class BugzillaExecutor {
             }
 
             handleIOException(ioe);
-        } 
+        } catch(RuntimeException re) {
+            Throwable t = re.getCause();
+            if(t instanceof InterruptedException) {
+                Bugzilla.LOG.log(Level.FINE, null, t);
+            } else {
+                Bugzilla.LOG.log(Level.SEVERE, null, re);
+            }
+        }
     }
 
     public boolean handleIOException(IOException io) {
@@ -225,15 +234,20 @@ public class BugzillaExecutor {
                     final HtmlPanel p = new HtmlPanel();
                     String label = NbBundle.getMessage(BugzillaExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()});
                     p.setHtml(html, label);
-                    NotifyDescriptor descriptor = new NotifyDescriptor (
-                        p,
-                        NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"),
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.INFORMATION_MESSAGE,
-                        new Object[] {NotifyDescriptor.OK_OPTION},
-                        NotifyDescriptor.OK_OPTION);
-                    DialogDisplayer.getDefault().notify(descriptor);
+                    DialogDescriptor dialogDescriptor = 
+                            new DialogDescriptor(
+                                p,
+                                NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"),
+                                true,
+                                new Object[] {NotifyDescriptor.CANCEL_OPTION},
+                                NotifyDescriptor.CANCEL_OPTION,
+                                DialogDescriptor.DEFAULT_ALIGN,
+                                new HelpCtx(p.getClass()),
+                                null);
+
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
     //                 XXX show in browser ?
+
                     return;
                 }
             }
@@ -263,7 +277,7 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                boolean ret = repository.authenticate(errroMsg);
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser"));
                 }

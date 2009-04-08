@@ -243,6 +243,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             lst.add(tok.nextToken());
         }
         mapp.setActivatedProfiles(lst);
+        mapp.setRecursive(cbRecursive.isSelected());
 
     }
 

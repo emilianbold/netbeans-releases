@@ -200,22 +200,23 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.hudson.ant</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
-                <friend>org.netbeans.modules.javafx.project</friend>
+                <friend>org.netbeans.modules.javacard</friend>
                 <friend>org.netbeans.modules.javafx.profiler</friend>
+                <friend>org.netbeans.modules.javafx.project</friend>
                 <friend>org.netbeans.modules.projectimport</friend>
-                <friend>org.netbeans.modules.projectimport.jbuilder</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.j2se</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
+                <friend>org.netbeans.modules.projectimport.jbuilder</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.xtest</friend>
-                <friend>org.netbeans.modules.javacard</friend>
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
                 <package>org.netbeans.modules.java.api.common.classpath</package>

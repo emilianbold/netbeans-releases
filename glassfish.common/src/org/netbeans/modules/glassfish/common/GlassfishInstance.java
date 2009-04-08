@@ -46,10 +46,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -73,6 +76,8 @@ import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -82,7 +87,7 @@ import org.openide.windows.InputOutput;
  *
  * @author Peter Williams
  */
-public class GlassfishInstance implements ServerInstanceImplementation {
+public class GlassfishInstance implements ServerInstanceImplementation, LookupListener {
 
     // !PW FIXME Can we extract the server name from the install?  That way,
     // perhaps we can distinguish between GF V3 and Sun AS 10.0
@@ -108,6 +113,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup lookup;
+    private transient Lookup.Result<GlassfishModuleFactory> lookupResult;
+    private transient Collection<GlassfishModuleFactory> currentFactories;
     
     // api instance
     private ServerInstance commonInstance;
@@ -124,8 +131,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
 
         updateModuleSupport();
     }
-    
-    private void updateModuleSupport() {
+
+    private void updateFactories() {
         // !PW FIXME should read asenv.bat on windows.
         Properties asenvProps = new Properties();
         String homeFolder = commonSupport.getGlassfishRoot();
@@ -139,7 +146,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
                 Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
             } catch(IOException ex) {
                 Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-                asenvProps = new Properties();
+                asenvProps.clear();
             } finally {
                 if(is != null) {
                     try { is.close(); } catch (IOException ex) { }
@@ -148,11 +155,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         } else {
             Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist");
         }
-        
-        // Find all modules that have NetBeans support, add them to lookup if server
-        // supports them.
-        for (GlassfishModuleFactory moduleFactory : 
-                Lookups.forPath("Servers/GlassFish").lookupAll(GlassfishModuleFactory.class)) {
+        Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
+        //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
+        added.addAll(lookupResult.allInstances());
+        added.removeAll(currentFactories);
+        currentFactories = (Collection<GlassfishModuleFactory>) lookupResult.allInstances();
+        for (GlassfishModuleFactory moduleFactory : added) {
             if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                 Object t = moduleFactory.createModule(lookup);
                 if (null == t) {
@@ -164,6 +172,19 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         }
     }
     
+    private void updateModuleSupport() {
+        // Find all modules that have NetBeans support, add them to lookup if server
+        // supports them.
+        currentFactories = Collections.EMPTY_LIST;
+        lookupResult = Lookups.forPath("Servers/GlassFish").lookupResult(GlassfishModuleFactory.class);
+        updateFactories();
+        lookupResult.addLookupListener(this);
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        updateFactories();
+    }
+
     /** 
      * Creates a GlassfishInstance object for a server installation.  This
      * instance should be added to the the provider registry if the caller wants

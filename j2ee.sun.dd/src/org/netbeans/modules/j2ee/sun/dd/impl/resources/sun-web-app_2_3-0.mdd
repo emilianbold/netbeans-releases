@@ -222,6 +222,30 @@
                     public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
                         throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
                     }
+                    public void setValve(int index, org.netbeans.modules.j2ee.sun.dd.api.web.Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public org.netbeans.modules.j2ee.sun.dd.api.web.Valve getValve(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public int sizeValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public void setValve(org.netbeans.modules.j2ee.sun.dd.api.web.Valve[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public org.netbeans.modules.j2ee.sun.dd.api.web.Valve[] getValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public int addValve(org.netbeans.modules.j2ee.sun.dd.api.web.Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public int removeValve(org.netbeans.modules.j2ee.sun.dd.api.web.Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public org.netbeans.modules.j2ee.sun.dd.api.web.Valve newValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
                 </user-code>
 	</meta-element>
 	<meta-element>

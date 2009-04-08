@@ -783,11 +783,12 @@ public final class EarProjectProperties {
                             if (add) {
                                 l.add(item);
                             } else {
-                                assert l.indexOf(item) != -1 : "cannot find item for: " + item; // NOI18N
-                                ClassPathSupport.Item existingItem = l.get(l.indexOf(item));
-                                l.remove(existingItem);
-                                if (isLastReference(CommonProjectUtils.getAntPropertyName(existingItem.getReference()), ep, JAR_CONTENT_ADDITIONAL)) {
-                                    referencesToBeDestroyed.add(existingItem.getReference());
+                                if (l.indexOf(item) != -1) {
+                                    ClassPathSupport.Item existingItem = l.get(l.indexOf(item));
+                                    l.remove(existingItem);
+                                    if (isLastReference(CommonProjectUtils.getAntPropertyName(existingItem.getReference()), ep, JAR_CONTENT_ADDITIONAL)) {
+                                        referencesToBeDestroyed.add(existingItem.getReference());
+                                    }
                                 }
                             }
                         }

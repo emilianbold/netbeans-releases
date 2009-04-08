@@ -289,15 +289,9 @@ public final class FileUtil extends Object {
 
         private void locateCurrent() {
             FileObject oldCurrent = current;
-            currentF = path;
+            currentF = FileUtil.normalizeFile(path);
             while (true) {
-                try {
-                    current = FileUtil.toFileObject(currentF);
-                } catch (IllegalArgumentException x) {
-                    // #73526: was originally normalized, but now is not. E.g. file changed case.
-                    currentF = FileUtil.normalizeFile(currentF);
-                    current = FileUtil.toFileObject(currentF);
-                }
+                current = FileUtil.toFileObject(currentF);
                 if (current != null) {
                     isOnTarget = path.equals(currentF);
                     break;
@@ -869,7 +863,21 @@ public final class FileUtil extends Object {
             file = normFile;
         }
 
-        FileObject retVal = URLMapper.toFileObject(file);
+        FileObject retVal = null;
+        try {
+            URL url = file.toURI().toURL();
+
+            if ((url.getAuthority() != null) &&
+                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
+                return null;
+            }
+
+            retVal = URLMapper.findFileObject(url);
+
+            /*probably temporary piece of code to catch the cause of #46630*/
+        } catch (MalformedURLException e) {
+            retVal = null;
+        }
 
         if (retVal != null) {
             if (getDiskFileSystem() == null) {

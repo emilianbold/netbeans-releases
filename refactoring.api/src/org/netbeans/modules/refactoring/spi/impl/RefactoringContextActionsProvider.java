@@ -154,8 +154,7 @@ public final class RefactoringContextActionsProvider
         } else if (instance instanceof JComponent) {
             result.add((JComponent) instance);
         } else if (instance instanceof Action) {
-            JMenuItem mi = new JMenuItem();
-            Actions.connect(mi, (Action) instance, true);
+            Actions.MenuItem mi = new Actions.MenuItem((Action) instance, true);
             result.add(mi);
         } else {
             throw new IOException(String.format("Unsupported instance: %s, class: %s", instance, instance.getClass())); // NOI18N

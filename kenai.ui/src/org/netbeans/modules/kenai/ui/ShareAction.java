@@ -42,6 +42,7 @@ import java.text.MessageFormat;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -104,16 +105,17 @@ public final class ShareAction extends CookieAction {
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
-            // everything should be created, show summary
-            // XXX check the project is really created
-            // returning the repo will be needed as well
-            showLandingPage(createdProjects);
+            showDashboard(createdProjects);
         }
 
     }
 
-    private static void showLandingPage(Set<CreatedProjectInfo> projects) {
-        //TODO: Implement landing page. Need UI spec.
+    private static void showDashboard(Set<CreatedProjectInfo> projects) {
+        final KenaiTopComponent kenaiTc = KenaiTopComponent.getDefault();
+        kenaiTc.open();
+        kenaiTc.requestActive();
+        DashboardImpl.getInstance().selectAndExpand(projects.iterator().next().project);
+
     }
 
 }

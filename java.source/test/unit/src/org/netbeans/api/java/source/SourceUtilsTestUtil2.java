@@ -43,7 +43,6 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.modules.java.source.transform.Transformer;
-import org.netbeans.modules.java.source.ActivatedDocumentListener;
 
 /**
  *
@@ -52,10 +51,6 @@ import org.netbeans.modules.java.source.ActivatedDocumentListener;
 public final class SourceUtilsTestUtil2 {
 
     private SourceUtilsTestUtil2() {
-    }
-
-    public static void ignoreCompileRequests() {
-        ActivatedDocumentListener.IGNORE_COMPILE_REQUESTS = true;
     }
 
     public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t) {

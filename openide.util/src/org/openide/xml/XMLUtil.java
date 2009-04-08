@@ -415,7 +415,10 @@ public final class XMLUtil extends Object {
                 if (pub != null) {
                     t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, pub);
                 }
-                t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
+                String sys = dt.getSystemId();
+                if (sys != null) {
+                    t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, sys);
+                }
             }
             t.setOutputProperty(OutputKeys.ENCODING, enc);
 
@@ -512,7 +515,7 @@ public final class XMLUtil extends Object {
         return copy;
     }
     private static void fixupAttrsSingle(Element e) throws DOMException {
-        e.removeAttributeNS("http://www.w3.org/XML/1998/namespace", "base"); // NOI18N
+        removeXmlBase(e);
         Map<String, String> replace = new HashMap<String, String>();
         NamedNodeMap attrs = e.getAttributes();
         for (int j = 0; j < attrs.getLength(); j++) {
@@ -525,6 +528,10 @@ public final class XMLUtil extends Object {
             e.removeAttribute(entry.getKey());
             e.setAttributeNS(null, entry.getKey(), entry.getValue());
         }
+    }
+    private static void removeXmlBase(Element e) {
+        e.removeAttributeNS("http://www.w3.org/XML/1998/namespace", "base"); // NOI18N
+        e.removeAttribute("xml:base"); // NOI18N
     }
 
     /**
@@ -817,6 +824,7 @@ public final class XMLUtil extends Object {
         nl = doc.getElementsByTagName("*"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             Element e = (Element) nl.item(i);
+            removeXmlBase(e);
             NodeList nl2 = e.getChildNodes();
             for (int j = 0; j < nl2.getLength(); j++) {
                 Node n = nl2.item(j);

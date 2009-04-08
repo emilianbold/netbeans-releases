@@ -88,7 +88,15 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         }
         return parameter;
     }
-    
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (parameter instanceof Disposable) {
+            ((Disposable) parameter).dispose();
+        }
+    }
+
     /** overrides parent method */
     @Override
     protected AST getStartRenderingAst() {
