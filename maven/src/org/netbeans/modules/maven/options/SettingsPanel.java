@@ -108,6 +108,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         };
         initValues();
+        ((MyJTextField)txtLocalRepository).setHintText("<Use default local repository as defined by Maven>");
         listener = new ActionListenerImpl();
         cbSnapshots.addActionListener(listener);
         comIndex.addActionListener(listener);
@@ -288,7 +289,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblEmbeddedVersion = new javax.swing.JLabel();
         lblExternalVersion = new javax.swing.JLabel();
         lblLocalRepository = new javax.swing.JLabel();
-        txtLocalRepository = new javax.swing.JTextField();
+        txtLocalRepository = new MyJTextField();
         btnLocalRepository = new javax.swing.JButton();
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
@@ -450,7 +451,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         chooser.setDialogTitle(NbBundle.getMessage(SettingsPanel.class, "TIT_Select"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setFileHidingEnabled(false);
-        String path = txtLocalRepository.getText();
+        String path = ((MyJTextField)txtLocalRepository).getRealText();
         if (path.trim().length() == 0) {
             path = new File(System.getProperty("user.home"), ".m2").getAbsolutePath(); //NOI18N
         }
@@ -462,7 +463,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
-            txtLocalRepository.setText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
+            ((MyJTextField)txtLocalRepository).setRealText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
         }
     }//GEN-LAST:event_btnLocalRepositoryActionPerformed
 
@@ -559,12 +560,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
         String repo = MavenSettings.getDefault().getCustomLocalRepository();
-        txtLocalRepository.setText(repo != null ? repo : "");
+        ((MyJTextField)txtLocalRepository).setRealText(repo != null ? repo : "");
     }
     
     public void applyValues() {
         MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
-        MavenSettings.getDefault().setCustomLocalRepository(txtLocalRepository.getText());
+        MavenSettings.getDefault().setCustomLocalRepository(((MyJTextField)txtLocalRepository).getRealText());
         String cl = txtCommandLine.getText().trim();
         if (cl.length() == 0) {
             cl = null;

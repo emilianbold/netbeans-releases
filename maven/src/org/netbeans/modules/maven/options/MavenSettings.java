@@ -173,7 +173,7 @@ public class MavenSettings  {
         if (text != null && text.trim().length() == 0) {
             text = null;
         }
-        getPreferences().put(PROP_CUSTOM_LOCAL_REPOSITORY, text);
+        putProperty(PROP_CUSTOM_LOCAL_REPOSITORY, text);
     }
     
     public String getCustomLocalRepository() {
