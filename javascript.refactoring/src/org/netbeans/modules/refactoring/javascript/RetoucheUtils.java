@@ -374,12 +374,19 @@ public class RetoucheUtils {
 //    }
 //
     public static Set<FileObject> getJsFilesInProject(FileObject fileInProject) {
+        return getJsFilesInProject(fileInProject, false);
+    }
+
+    public static Set<FileObject> getJsFilesInProject(FileObject fileInProject, boolean excludeReadOnlySourceRoots) {
         Set<FileObject> files = new HashSet<FileObject>(100);
         Collection<FileObject> sourceRoots = QuerySupport.findRoots(fileInProject,
                 null,
                 Collections.singleton(JsClassPathProvider.BOOT_CP),
                 Collections.<String>emptySet());
         for (FileObject root : sourceRoots) {
+            if(excludeReadOnlySourceRoots && !root.canWrite()) {
+                continue; //skip read only source roots
+            }
             String name = root.getName();
             // Skip non-refactorable parts in renaming
             if (name.equals("vendor") || name.equals("script")) { // NOI18N
