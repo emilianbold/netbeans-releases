@@ -80,6 +80,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -93,7 +94,16 @@ public class BugtrackingUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
         JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(panel, title, true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        final DialogDescriptor dd =
+            new DialogDescriptor(
+                    panel,
+                    title,
+                    true,
+                    new Object[]{ok, cancel},
+                    ok,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(panel.getClass()),
+                    null);
         return DialogDisplayer.getDefault().notify(dd) == ok;
     }
 
