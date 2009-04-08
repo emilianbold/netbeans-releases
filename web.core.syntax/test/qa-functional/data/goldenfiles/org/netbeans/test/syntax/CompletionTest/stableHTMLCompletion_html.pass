@@ -30,21 +30,21 @@ target
 title
 type
 End cursor position = 227
-[<p dir="|, rtl, <p dir="rtl", 292]
+[<p dir="|, rtl, <p dir="rtl, 291]
 ltr
 rtl
-End cursor position = 305
-[&d|, &delta;, &delta;, 362]
-&dArr;
-&dagger;
-&darr;
-&deg;
-&delta;
-&diams;
-&divide;
-End cursor position = 370
-[<table><tr><td></|, </td>, <table><tr><td></td>, 453]
-</td>
-</tr>
-</table>
-End cursor position = 474
+End cursor position = 303
+[&d|, &delta;, &delta;, 361]
+⇓ &dArr;
+† &dagger;
+↓ &darr;
+° &deg;
+δ &delta;
+♦ &diams;
+÷ &divide;
+End cursor position = 369
+[<table><tr><td></|, </td, <table><tr><td></td>, 451]
+</td >
+</tr >
+</table >
+End cursor position = 472

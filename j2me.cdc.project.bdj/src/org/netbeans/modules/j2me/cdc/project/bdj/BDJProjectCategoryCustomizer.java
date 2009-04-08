@@ -44,7 +44,9 @@ package org.netbeans.modules.j2me.cdc.project.bdj;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
@@ -68,6 +70,9 @@ public class BDJProjectCategoryCustomizer extends JPanel implements CustomizerPa
     /** Creates new form SavaJeProjectCategoryCustomizer */
     public BDJProjectCategoryCustomizer() {
         initComponents();
+
+        applicationId.setDocument( new NumericDocument(16) );
+        organizationId.setDocument( new NumericDocument(32) );
     }
 
     public void initValues(ProjectProperties props, String configuration) {
@@ -305,7 +310,80 @@ private void browseDeploymentDirActionPerformed(java.awt.event.ActionEvent evt) 
         deploymentDirField.setText(file.getAbsolutePath());
     }
 }//GEN-LAST:event_browseDeploymentDirActionPerformed
-    
+
+
+   private class NumericDocument extends PlainDocument {
+
+       NumericDocument( int bits ){
+           myBits = bits;
+           max = 1l<<bits;
+       }
+
+        @Override
+        public void insertString(int offs, String str, AttributeSet a) 
+                throws BadLocationException
+        {
+            if ( str == null ){
+                return;
+            }
+            StringBuilder builder = new StringBuilder();
+            builder.append(getText(0, getLength()));
+            builder.insert(offs, str);
+
+            String number ;
+            if ( builder.length() >1 && builder.charAt( 0 ) =='0'
+                    && builder.charAt( 1 ) =='x')
+            {
+                // Hex number
+                number = builder.substring(2);
+                try {
+                    if ( number.length()!= 0 ){
+                        if ( myBits >15 ){
+                            long l = Long.parseLong( number , 16 );
+                            if ( l <0 || l >max ){
+                                return;
+                            }
+                        }
+                        else {
+                            int i = Integer.parseInt( number , 16 );
+                            if ( i <0 || i >max ){
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch (NumberFormatException e){
+                    return;
+                }
+            }
+            else {
+                number = builder.toString();
+                try {
+                    if ( number.length()!= 0 ){
+                        if ( myBits >15 ){
+                            long l = Long.parseLong( number );
+                            if ( l <0 || l >max ){
+                                return;
+                            }
+                        }
+                        else {
+                            int i = Integer.parseInt( number );
+                            if ( i <0 || i >max ){
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch (NumberFormatException e){
+                    return;
+                }
+            }
+            super.insertString(offs, str, a);
+        }
+
+        private final int myBits;
+        private final long max;
+   }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField applicationId;

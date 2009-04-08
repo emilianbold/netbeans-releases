@@ -37,13 +37,6 @@ TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"
 JDK_TESTS=/opt/jdk1.5.0_14
 # standard NetBeans unit and UI validation tests
 ant commit-validation
-# Init application server for tests
-sh -x `dirname $0`/initAppserver.sh
-# Mobility UI validation tests
-ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dcontinue.after.failing.tests=true test
-# J2EE validation tests
-#-Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR
-ant -f j2ee.kit/build.xml -Dtest.config=uicommit -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
 
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`

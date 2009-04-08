@@ -23,7 +23,6 @@
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
 |org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
 |org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
-|org.netbeans.modules.maven.search|Maven Quick Search Bridge|null|java
 |org.netbeans.modules.php.kit|PHP|PHP|php
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby

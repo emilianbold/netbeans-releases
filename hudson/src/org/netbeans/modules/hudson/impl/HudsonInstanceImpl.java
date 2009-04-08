@@ -198,7 +198,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         assert instance.getUrl() != null;
         assert Integer.parseInt(instance.getProperties().get(INSTANCE_SYNC)) >= 0;
         
-        if (null == HudsonManagerImpl.getInstance().addInstance(instance))
+        if (null == HudsonManagerImpl.getDefault().addInstance(instance))
             return null;
         
         return instance;

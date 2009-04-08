@@ -73,6 +73,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik, Radek Matous
  */
 public class PhpProjectProperties implements ConfigManager.ConfigProvider {
+    public static final int DEFAULT_DEBUG_PROXY_PORT = 9001;
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
     public static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
@@ -96,6 +97,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String DEBUG_URL = "debug.url"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_REMOTE = "debug.path.mapping.remote"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_LOCAL = "debug.path.mapping.local"; // NOI18N
+    public static final String DEBUG_PROXY_HOST = "debug.proxy.host"; // NOI18N
+    public static final String DEBUG_PROXY_PORT = "debug.proxy.port"; // NOI18N
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
@@ -115,6 +118,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         DEBUG_URL,
         DEBUG_PATH_MAPPING_REMOTE,
         DEBUG_PATH_MAPPING_LOCAL,
+        DEBUG_PROXY_HOST,
+        DEBUG_PROXY_PORT,
     };
 
     public static enum RunAsType {
