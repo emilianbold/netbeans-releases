@@ -515,16 +515,32 @@ public class RunJarPanel extends javax.swing.JPanel {
             }
             newAllParams = newAllParams + newParams;
             newAllParams = newAllParams.trim();
-            if (!oldAllParams.equals(newAllParams)) {
-                if (isCurrentRun) {
+            if (isCurrentRun) {
+                boolean changed = false;
+                if (!oldAllParams.equals(newAllParams)) {
                     run.getProperties().setProperty(RUN_PARAMS, newAllParams);
+                    changed = true;
+                }
+                if (!oldWorkDir.equals(newWorkDir)) {
                     run.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    changed = true;
+                }
+                if (changed) {
                     ModelHandle.setUserActionMapping(run, a2gm);
                     handle.markAsModified(a2gm);
                 }
-                if (isCurrentDebug) {
+            }
+            if (isCurrentDebug) {
+                boolean changed = false;
+                if (!oldAllParams.equals(newAllParams)) {
                     debug.getProperties().setProperty(RUN_PARAMS, DEFAULT_DEBUG_PARAMS + " " + newAllParams);
+                    changed = true;
+                }
+                if (!oldWorkDir.equals(newWorkDir)) {
                     debug.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    changed = true;
+                }
+                if (changed) {
                     ModelHandle.setUserActionMapping(debug, a2gm);
                     handle.markAsModified(a2gm);
                 }

@@ -52,6 +52,7 @@ public class DebuggerOptions {
     Boolean debuggerStoppedAtTheFirstLine;
     String phpInterpreter;
     List<Pair<String, String>> pathMapping;
+    Pair<String, Integer> debugProxy;
 
     public static DebuggerOptions getGlobalInstance() {
         return GLOBAL_INSTANCE;
@@ -59,6 +60,14 @@ public class DebuggerOptions {
 
     public List<Pair<String, String>> getPathMapping() {
         return pathMapping;
+    }
+
+    /**
+     *
+     * @return debug proxy <host, port> or <code>null</code> if not used
+     */
+    public Pair<String, Integer> getDebugProxy() {
+        return debugProxy;
     }
 
     public int getPort() {

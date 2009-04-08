@@ -1,6 +1,6 @@
 Name: Hibernate Library
 Version: 3.2.5
-License: LGPL 2.1
+License: LGPL-2.1
 OSR: 8144
 Files: hibernate-3.2.5-lib.zip
 Origin: http://hibernate.org

@@ -108,21 +108,18 @@ public class MirrorGenerator implements CodeGenerator {
             String id = panel.getMirrorId();
             Mirror mirror = model.getSettings().findMirrorById(id);
             if (mirror == null) {
-                model.startTransaction();
-                mirror = model.getFactory().createMirror();
-                mirror.setId(id);
-                mirror.setUrl(panel.getMirrorUrl());
-                mirror.setMirrorOf(panel.getMirrorOf());
-                model.getSettings().addMirror(mirror);
-                model.endTransaction();
                 try {
-                    model.sync();
-                    int pos = mirror.getModel().getAccess().findPosition(mirror.getPeer());
-                    component.setCaretPosition(pos);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    model.startTransaction();
+                    mirror = model.getFactory().createMirror();
+                    mirror.setId(id);
+                    mirror.setUrl(panel.getMirrorUrl());
+                    mirror.setMirrorOf(panel.getMirrorOf());
+                    model.getSettings().addMirror(mirror);
+                } finally {
+                    model.endTransaction();
                 }
-
+                int pos = mirror.getModel().getAccess().findPosition(mirror.getPeer());
+                component.setCaretPosition(pos);
             }
         }
     }

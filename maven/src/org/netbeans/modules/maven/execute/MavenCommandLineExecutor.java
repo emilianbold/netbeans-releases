@@ -45,11 +45,12 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
 import hidden.org.codehaus.plexus.util.StringUtils;
+import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -242,6 +243,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
+        String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
+        if (localRepo != null) {
+            toRet.add("-Dmaven.repo.local=" + localRepo);
+        }
+        
+
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
             toRet.add("--offline");//NOI18N
         }
@@ -258,20 +265,44 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.isShowError()) {
             toRet.add("--errors");//NOI18N
         }
-        if (!MavenSettings.getDefault().isUsePluginRegistry()) {
-            toRet.add("--no-plugin-registry");//NOI18N
-        }
-        String checksum = MavenSettings.getDefault().getChecksumPolicy();
-        if (checksum != null) {
-            if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(checksum)) {
-                toRet.add("--strict-checksums");//NOI18N
-            }
-            if (MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals(checksum)) {
-                toRet.add("--lax-checksums");//NOI18N
-            }
-        }
         if (config.isUpdateSnapshots()) {
             toRet.add("--update-snapshots");//NOI18N
+        }
+
+
+
+        String opts = MavenSettings.getDefault().getDefaultOptions();
+        if (opts != null) {
+            try {
+                String[] s = CommandLineUtils.translateCommandline(opts);
+                for (String one : s) {
+                    one = one.trim();
+                    if (one.startsWith("-D")) {
+                        //check against the config.getProperties
+                    } else {
+                        if (!config.isShowDebug() && (one.equals("-X") || one.equals("--debug"))) {
+                            continue;
+                        }
+                        if (!config.isShowError() && (one.equals("-e") || one.equals("--errors"))) {
+                            continue;
+                        }
+                        if (!config.isUpdateSnapshots() && (one.equals("--update-snapshots") || one.equals("-U"))) {
+                            continue;
+                        }
+                        if (config.isInteractive() && (one.equals("--batch-mode") || one.equals("-B"))) {
+                            continue;
+                        }
+                        if ((config.isOffline() != null && !config.isOffline().booleanValue()) && (one.equals("--offline") || one.equals("-o"))) {
+                            continue;
+                        }
+                    }
+                    toRet.add(one);
+                }
+
+            } catch (Exception ex1) {
+                Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + opts);
+            }
+
         }
 
         String profiles = "";//NOI18N

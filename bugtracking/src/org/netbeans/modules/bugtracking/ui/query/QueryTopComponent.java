@@ -222,7 +222,7 @@ final class QueryTopComponent extends TopComponent
             }
         });
 
-        scrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        scrollPane.setBorder(null);
 
         jPanel2.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -282,7 +282,7 @@ final class QueryTopComponent extends TopComponent
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, Short.MAX_VALUE))
+                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 313, Short.MAX_VALUE))
                     .add(findIssuesLabel))
                 .addContainerGap())
         );
