@@ -90,9 +90,11 @@ import org.openide.util.WeakSet;
 public class BreakpointAnnotationProvider implements AnnotationProvider,
                                                      DebuggerManagerListener {
 
-    private Map<JPDABreakpoint, Annotation[]> breakpointToAnnotations;
-    private Set<FileObject> annotatedFiles;
+    private final Map<JPDABreakpoint, Set<Annotation>> breakpointToAnnotations =
+            new HashMap<JPDABreakpoint, Set<Annotation>>();
+    private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
+    private boolean attachManagerListener = true;
 
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
@@ -123,14 +125,6 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     }
     
     public void annotate (final FileObject fo) {
-        boolean attachManagerListener = false;
-        synchronized (this) {
-            if (breakpointToAnnotations == null) {
-                breakpointToAnnotations = new HashMap<JPDABreakpoint, Annotation[]>();
-                annotatedFiles = new WeakSet<FileObject>();
-                attachManagerListener = true;
-            }
-        }
         synchronized (breakpointToAnnotations) {
             if (annotatedFiles.contains(fo)) {
                 // Already annotated
@@ -142,7 +136,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     JPDABreakpoint b = (JPDABreakpoint) breakpoint;
                     if (!annotatedBreakpoints.contains(b)) {
                         b.addPropertyChangeListener (this);
-                        breakpointToAnnotations.put(b, new Annotation[] {});
+                        breakpointToAnnotations.put(b, new WeakSet<Annotation>());
                         if (b instanceof LineBreakpoint) {
                             LineBreakpoint lb = (LineBreakpoint) b;
                             LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -154,6 +148,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             annotatedFiles.add(fo);
         }
         if (attachManagerListener) {
+            attachManagerListener = false;
             DebuggerManager.getDebuggerManager().addDebuggerListener(
                     WeakListeners.create(DebuggerManagerListener.class,
                                          this,
@@ -235,7 +230,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     if (!add) breakpointToAnnotations.remove(b);
                 }
                 if (add) {
-                    breakpointToAnnotations.put(b, new Annotation[] {});
+                    breakpointToAnnotations.put(b, new WeakSet<Annotation>());
                     for (FileObject fo : annotatedFiles) {
                         addAnnotationTo(b, fo);
                     }
@@ -363,22 +358,18 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         if (annotations.size() == 0) {
             return ;
         }
-        Object[] oldAnnotations = breakpointToAnnotations.get(b);
-        if (oldAnnotations == null || oldAnnotations.length == 0) {
-            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[0]));
+        Set<Annotation> bpAnnotations = breakpointToAnnotations.get(b);
+        if (bpAnnotations == null) {
+            breakpointToAnnotations.put(b, new WeakSet<Annotation>(annotations));
         } else {
-            Annotation[] newAnnotations = new Annotation[oldAnnotations.length + annotations.size()];
-            System.arraycopy(oldAnnotations, 0, newAnnotations, 0, oldAnnotations.length);
-            for (int i = 0; i < annotations.size(); i++) {
-                newAnnotations[i + oldAnnotations.length] = annotations.get(i);
-            }
-            breakpointToAnnotations.put(b, newAnnotations);
+            bpAnnotations.addAll(annotations);
+            breakpointToAnnotations.put(b, bpAnnotations);
         }
     }
 
     // Is called under synchronized (breakpointToAnnotations)
     private void removeAnnotations(JPDABreakpoint b) {
-        Annotation[] annotations = breakpointToAnnotations.remove(b);
+        Set<Annotation> annotations = breakpointToAnnotations.remove(b);
         if (annotations == null) return ;
         for (Annotation a : annotations) {
             a.detach();
