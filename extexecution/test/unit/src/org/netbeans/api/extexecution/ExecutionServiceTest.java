@@ -39,29 +39,36 @@
 
 package org.netbeans.api.extexecution;
 
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.api.extexecution.input.TestInputUtils;
+import org.netbeans.api.extexecution.input.TestLineProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
 public class ExecutionServiceTest extends NbTestCase {
+
+    private static final int PROCESS_TIMEOUT = 30000;
 
     public ExecutionServiceTest(String name) {
         super(name);
@@ -333,6 +340,43 @@ public class ExecutionServiceTest extends NbTestCase {
         assertNotNull(getInputOutput("Test #2", false, null));
     }
 
+    public void testCharset() throws InterruptedException, ExecutionException, TimeoutException {
+        Charset charset = Charset.forName("UTF-16LE");
+        final String[] lines = new String[] {"Process line \u1234", "Process line \u1235", "Process line \u1236"};
+
+        TestInputStream is = new TestInputStream(TestInputUtils.prepareInputStream(lines, "\n", charset, true));
+        TestProcess process = new TestProcess(0, is);
+        is.setProcess(process);
+
+        TestCallable callable = new TestCallable();
+        callable.addProcess(process);
+
+        final TestLineProcessor processor = new TestLineProcessor(false);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().charset(charset).outProcessorFactory(
+                new ExecutionDescriptor.InputProcessorFactory() {
+
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.bridge(processor);
+            }
+        });
+
+        ExecutionService service = ExecutionService.newService(
+                callable, descriptor, "Test");
+
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+
+        assertEquals(0, task.get(PROCESS_TIMEOUT, TimeUnit.MILLISECONDS).intValue());
+        assertTrue(process.isFinished());
+        assertEquals(0, process.exitValue());
+
+        List<String> processed = processor.getLinesProcessed();
+        assertEquals(lines.length, processed.size());
+        for (int i = 0; i < lines.length; i++) {
+            assertEquals(lines[i], processed.get(i));
+        }
+    }
+
     private static InputOutputManager.InputOutputData getInputOutput(String name,
             boolean actions, String optionsPath) {
 
@@ -374,12 +418,21 @@ public class ExecutionServiceTest extends NbTestCase {
 
         private final int returnValue;
 
+        private final InputStream is;
+
         private boolean finished;
 
         private boolean started;
 
         public TestProcess(int returnValue) {
+            this(returnValue, TestInputUtils.prepareInputStream(
+                    new String[] {"Process line 1", "Process line 2", "Process line 3"}, "\n",
+                    Charset.defaultCharset(), true));
+        }
+
+        public TestProcess(int returnValue, InputStream is) {
             this.returnValue = returnValue;
+            this.is = is;
         }
 
         public void start() {
@@ -435,9 +488,7 @@ public class ExecutionServiceTest extends NbTestCase {
 
         @Override
         public InputStream getInputStream() {
-            return TestInputUtils.prepareInputStream(
-                    new String[] {"Process line 1", "Process line 2", "Process line 3"},
-                    "\n", Charset.forName("UTF-8"), true);
+            return is;
         }
 
         @Override
@@ -468,4 +519,71 @@ public class ExecutionServiceTest extends NbTestCase {
             }
         }
     }
+
+    private static class TestInputStream extends FilterInputStream {
+
+        private Process process;
+
+        public TestInputStream(InputStream is) {
+            super(is);
+        }
+
+        public synchronized Process getProcess() {
+            return process;
+        }
+
+        public synchronized void setProcess(Process process) {
+            this.process = process;
+        }
+
+        @Override
+        public int available() throws IOException {
+            int available = super.available();
+            if (available <= 0) {
+                Process toDestroy = getProcess();
+                if (toDestroy != null) {
+                    toDestroy.destroy();
+                }
+            }
+            return available;
+        }
+
+
+        @Override
+        public int read() throws IOException {
+            int val = super.read();
+            if (val < 0) {
+                Process toDestroy = getProcess();
+                if (toDestroy != null) {
+                    toDestroy.destroy();
+                }
+            }
+            return val;
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            int val = super.read(b);
+            if (val < 0) {
+                Process toDestroy = getProcess();
+                if (toDestroy != null) {
+                    toDestroy.destroy();
+                }
+            }
+            return val;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int val = super.read(b, off, len);
+            if (val < 0) {
+                Process toDestroy = getProcess();
+                if (toDestroy != null) {
+                    toDestroy.destroy();
+                }
+            }
+            return val;
+        }
+    }
+
 }
