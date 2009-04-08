@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -138,12 +139,42 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
     public Action[] actions(Set files) {
         if (files.isEmpty()) return new Action[0];
-        FileObject fo = (FileObject) files.iterator().next();
-        File file = FileUtil.toFile(fo);
-        if (file == null) return new Action[0];
-        VersioningSystem vs = getOwner(file);
-        
+
         List<Action> actions = new ArrayList<Action>();
+        LocalHistoryActions localHistoryAction = null;
+
+        // group all given files by owner
+        Map<VersioningSystem, List<File>> owners = new HashMap<VersioningSystem, java.util.List<File>>(3);
+        for (FileObject fo : (Set<FileObject>) files) {
+            File file = FileUtil.toFile(fo);
+            if (file != null) {
+
+                // check if there is at least ine file managed by local hisotry
+                VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file);
+                if(localHistoryAction == null && localHistory != null && localHistory.getVCSAnnotator() != null) {
+                    localHistoryAction = SystemAction.get(LocalHistoryActions.class);
+                    localHistoryAction.setVersioninSystem(localHistory);
+                    actions.add(localHistoryAction);
+                }
+
+                VersioningSystem owner = getOwner(file);
+                if(owner != null) {
+                    List<File> fileList = owners.get(owner);
+                    if(fileList == null) {
+                        fileList = new ArrayList<File>();
+                    }
+                    fileList.add(file);
+                    owners.put(owner, fileList);
+                }
+            }
+        }
+
+        VersioningSystem vs = null;
+        if(owners.keySet().size() == 1) {
+            vs = owners.keySet().iterator().next();
+        } else {
+            return actions.toArray(new Action [actions.size()]);
+        } 
         
         VCSAnnotator an = null;
         if (vs != null) {
@@ -154,13 +185,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             action.setVersioninSystem(vs);
             actions.add(action);
         }
-        
-        VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file);
-        if(localHistory != null && localHistory.getVCSAnnotator() != null) {
-            LocalHistoryActions localHistoryAction = SystemAction.get(LocalHistoryActions.class);
-            localHistoryAction.setVersioninSystem(localHistory);          
-            actions.add(localHistoryAction);
-        } 
+
         return actions.toArray(new Action [actions.size()]);
     }
     

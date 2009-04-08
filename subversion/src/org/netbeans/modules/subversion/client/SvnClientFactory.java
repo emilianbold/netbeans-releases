@@ -238,6 +238,7 @@ public class SvnClientFactory {
         try {
             if(!initFile.exists()) initFile.createNewFile();
         } catch (IOException ex) {
+            // should not happen
             LOG.log(Level.INFO, null, ex);
         }
 
@@ -247,6 +248,11 @@ public class SvnClientFactory {
                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                setupCommandline();
                return;
+            }
+            if(!checkJavaHlVersion()) {
+                LOG.log(Level.INFO, "Unsupported version of subversion javahl bindings. Falling back on commandline.");
+                setupCommandline();
+                return;
             }
         } catch (SVNClientException e) {
             LOG.log(Level.WARNING, null, e); // should not happen
@@ -527,6 +533,10 @@ public class SvnClientFactory {
             LOG.log(Level.FINE, "checking version", e);
             throw e;
         }
+    }
+
+    private boolean checkJavaHlVersion() throws SVNClientException {
+        return SvnClientAdapterFactory.getInstance().isSupportedJavahlVersion();
     }
 
     private abstract class ClientAdapterFactory {

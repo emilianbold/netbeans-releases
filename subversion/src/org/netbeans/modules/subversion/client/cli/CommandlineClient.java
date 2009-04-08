@@ -120,6 +120,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     private Commandline cli;     
 
     public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
+    public static String ERR_JAVAHL_NOT_SUPPORTED = "unsupported javahl version";
     
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
@@ -141,6 +142,22 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             Subversion.LOG.log(Level.FINE, null, ex);
             throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
         }        
+    }
+
+    public void checkSupportedJavaHlVersion() throws SVNClientException {
+        VersionCommand cmd = new VersionCommand();
+        try {
+            config(cmd);
+            cli.exec(cmd);
+            checkErrors(cmd);
+            if(!cmd.isSupportedJavaHl()) {
+                Subversion.LOG.log(Level.WARNING, "JavaHl for svn version >=1.6 not supported yet.");
+                throw new SVNClientException(ERR_JAVAHL_NOT_SUPPORTED + "\n" + cmd.getOutput());
+            }
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+            throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
+        }
     }
     
     public void addNotifyListener(ISVNNotifyListener l) {

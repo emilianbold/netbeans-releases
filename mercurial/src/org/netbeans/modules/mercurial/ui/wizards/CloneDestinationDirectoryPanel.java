@@ -83,7 +83,11 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         return message;
     }
 
-    public boolean isValid() {
+    /**
+     * Validates user's input
+     * @return <code>true</code> if directory does not exist, <code>false</code> otherwise
+     */
+    public boolean isInputValid() {
         String dir = directoryField.getText();
         String name = nameField.getText();
         File file = new File (dir, name);
