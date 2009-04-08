@@ -141,7 +141,11 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
         
         setPreferredSize(new Dimension(800, 400));
-    }   
+    }
+
+    void expandNode(RepositoryPathNode repositoryPathNode) {
+        outlineView.expandNode(repositoryPathNode);
+    }
     
     void warning(String warningText) {
         if(warningText != null) {

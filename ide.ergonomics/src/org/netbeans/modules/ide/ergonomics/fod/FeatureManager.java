@@ -110,7 +110,16 @@ implements PropertyChangeListener, LookupListener {
      * @return
      */
     public static int dumpModules() {
-        if (!FoDFileSystem.LOG.isLoggable(Level.FINE)) {
+        return dumpModules(Level.FINE, Level.FINEST);
+    }
+    /** Returns the amount of (partially) enabled clusters, or -1 if not
+     * computed.
+     * @param withLevel with what severity dump the modules?
+     * @param detailsLevel level to print detailed infos
+     * @return
+     */
+    public static int dumpModules(Level withLevel, Level detailsLevel) {
+        if (!FoDFileSystem.LOG.isLoggable(withLevel)) {
             return -1;
         }
         int cnt = 0;
@@ -127,22 +136,22 @@ implements PropertyChangeListener, LookupListener {
                 }
             }
             if (enabled.isEmpty()) {
-                FoDFileSystem.LOG.fine(info.clusterName + " disabled"); // NOTICES
+                FoDFileSystem.LOG.log(withLevel, info.clusterName + " disabled"); // NOTICES
                 continue;
             }
             if (disabled.isEmpty()) {
-                FoDFileSystem.LOG.fine(info.clusterName + " enabled"); // NOTICES
+                FoDFileSystem.LOG.log(withLevel, info.clusterName + " enabled"); // NOTICES
                 cnt++;
                 continue;
             }
-            FoDFileSystem.LOG.fine(
+            FoDFileSystem.LOG.log(withLevel,
                 info.clusterName + " enabled " + enabled.size() + " disabled " + disabled.size()); // NOTICES
             cnt++;
             for (String cnb : disabled) {
-                FoDFileSystem.LOG.finest("- " + cnb); // NOI18N
+                FoDFileSystem.LOG.log(detailsLevel, "- " + cnb); // NOI18N
             }
             for (String cnb : enabled) {
-                FoDFileSystem.LOG.finest("+ " + cnb); // NOI18N
+                FoDFileSystem.LOG.log(detailsLevel, "+ " + cnb); // NOI18N
             }
         }
         return cnt;

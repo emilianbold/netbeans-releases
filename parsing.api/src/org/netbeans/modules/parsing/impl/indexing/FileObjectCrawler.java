@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
@@ -58,15 +59,15 @@ public class FileObjectCrawler extends Crawler {
     private final FileObject[] files;
     private final boolean checkTimeStamps;
 
-    public FileObjectCrawler (final FileObject root, final boolean checkTimeStamps) throws IOException {
-        super (root.getURL(), checkTimeStamps);
+    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck);
         this.root = root;
         this.files = null;
         this.checkTimeStamps = checkTimeStamps;
     }
 
-    public FileObjectCrawler (final FileObject root, final FileObject[] files, final boolean checkTimeStamps) throws IOException {
-        super (root.getURL(), checkTimeStamps);
+    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck);
         this.root = root;
         this.files = files;
         this.checkTimeStamps = checkTimeStamps;
@@ -76,9 +77,9 @@ public class FileObjectCrawler extends Crawler {
     protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
         if (files != null) {
-            collect (files, root, result, supportedMimeTypes);
+            collect(files, root, result, supportedMimeTypes);
         } else {
-            collect (root.getChildren(), root, result, supportedMimeTypes);
+            collect(root.getChildren(), root, result, supportedMimeTypes);
         }
         return result;
     }
@@ -87,11 +88,21 @@ public class FileObjectCrawler extends Crawler {
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes) {
         for (FileObject fo : fos) {
+            //keep the same logic like in RepositoryUpdater
+            if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
+                continue;
+            }
             if (fo.isFolder()) {
                 collect(fo.getChildren(), root, cache, supportedMimeTypes);
             } else {
                 final String mime = fo.getMIMEType();
-                if (mime != null && supportedMimeTypes.contains(mime)) {
+                boolean ignore = "content/unknown".equals(mime); //NOI18N
+
+                if (!ignore && supportedMimeTypes != null) {
+                    ignore = !supportedMimeTypes.contains(mime);
+                }
+
+                if (!ignore) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
                         indexable = new LinkedList<Indexable>();

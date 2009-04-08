@@ -754,11 +754,9 @@ public final class PerseusController {
         if ( bBox == null) {
             SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
             ModelNode child = ((ModelNode)elem).getFirstChildNode();
-            SVGRect tmpBBox = null;
             while (child != null && bBox == null){
                 if (child instanceof SVGLocatableElement) {
-                    tmpBBox = getSafeBBox((SVGLocatableElement) child);
-                    bBox = calculateMaxBBox(bBox, tmpBBox);
+                    bBox = calculateMaxBBox(bBox, getSafeBBox((SVGLocatableElement) child));
                     child = child.getNextSiblingNode();
                 }
             }
@@ -771,11 +769,9 @@ public final class PerseusController {
         if (bBox == null) {
             SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
             ModelNode child = ((ModelNode) elem).getFirstChildNode();
-            SVGRect tmpBBox = null;
             while (child != null) {
                 if (child instanceof SVGLocatableElement) {
-                    tmpBBox = getFullBBox((SVGLocatableElement) child);
-                    bBox = calculateMaxBBox(bBox, tmpBBox);
+                    bBox = calculateMaxBBox(bBox, getFullBBox((SVGLocatableElement) child));
                     child = child.getNextSiblingNode();
                 }
             }
@@ -783,22 +779,21 @@ public final class PerseusController {
         return bBox;
     }
 
-    /*
+    /**
     public static SVGRect getMaxBBox(SVGLocatableElement elem) {
         SVGRect bBox = elem.getBBox();
         SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
         ModelNode child = ((ModelNode) elem).getFirstChildNode();
-        SVGRect tmpBBox = null;
         while (child != null) {
             if (child instanceof SVGLocatableElement) {
                     SceneManager.log(Level.SEVERE, "        element:" + child); //NOI18N
-                tmpBBox = getMaxBBox((SVGLocatableElement) child);
-                bBox = calculateMaxBBox(bBox, tmpBBox);
+                bBox = calculateMaxBBox(bBox, getMaxBBox((SVGLocatableElement) child));
                 child = child.getNextSiblingNode();
             }
         }
         return bBox;
-    }*/
+    }
+     */
 
     private static SVGRect calculateMaxBBox(SVGRect bBox, SVGRect tmpBBox) {
         if (bBox == null) {

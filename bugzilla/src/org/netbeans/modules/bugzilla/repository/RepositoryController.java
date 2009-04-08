@@ -109,7 +109,27 @@ public class RepositoryController extends BugtrackingController implements Docum
 
     private String getUrl() {
         String url = panel.urlField.getText().trim();
-        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url; // NOI18N
+    }
+
+    private String getName() {
+        return panel.nameField.getText();
+    }
+
+    private String getUser() {
+        return panel.userField.getText();
+    }
+
+    private String getPassword() {
+        return new String(panel.psswdField.getPassword());
+    }
+
+    private String getHttpUser() {
+        return panel.httpCheckBox.isSelected() ? panel.httpUserField.getText() : null;
+    }
+
+    private String getHttpPassword() {
+        return panel.httpCheckBox.isSelected() ? new String(panel.httpPsswdField.getPassword()) : null;
     }
 
     private boolean validate() {
@@ -121,7 +141,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.validateButton.setEnabled(false);
 
         String name = panel.nameField.getText().trim();
-        if(name.equals("")) {
+        if(name.equals("")) { // NOI18N
             errorMessage = "Missing name"; // XXX bundle me
             return false;
         }
@@ -131,14 +151,14 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = BugzillaConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = "Repository with the same name alreay exists"; // XXX bundle me
+                    errorMessage = "Issue tracker with the same name alreay exists"; // XXX bundle me
                     return false;
                 }
             }
         }
 
         String url = getUrl();
-        if(url.equals("")) {
+        if(url.equals("")) { // NOI18N
             errorMessage = "Missing URL"; // XXX bundle me
             return false;
         }
@@ -153,7 +173,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = "Repository with the same url alreay exists"; // XXX bundle me
+                    errorMessage = "Issue tracker with the same url already exists"; // XXX bundle me
                     return false;
                 }
             }
@@ -175,10 +195,15 @@ public class RepositoryController extends BugtrackingController implements Docum
             BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
         repository.setName(newName);
-        repository.setTaskRepository(panel.nameField.getText(), getUrl(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
-        BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+        repository.setTaskRepository(
+            getName(),
+            getUrl(),
+            getUser(),
+            getPassword(),
+            getHttpUser(),
+            getHttpPassword());
+        Bugzilla.getInstance().addRepository(repository);
         fireDataApplied();
-        repository.resetRepository(); // only on url, user or passwd change
     }
 
     void populate() {
@@ -189,6 +214,18 @@ public class RepositoryController extends BugtrackingController implements Docum
                     AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
                     panel.userField.setText(c.getUserName());
                     panel.psswdField.setText(c.getPassword());
+                    c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                    if(c != null) {
+                        String httpUser = c.getUserName();
+                        String httpPsswd = c.getPassword();
+                        if(httpUser != null && !httpUser.equals("") &&          // NOI18N
+                           httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
+                        {
+                            panel.httpCheckBox.setSelected(true);
+                            panel.httpUserField.setText(httpUser);
+                            panel.httpPsswdField.setText(httpPsswd);
+                        }
+                    }
                     panel.urlField.setText(repository.getTaskRepository().getUrl());
                     panel.nameField.setText(repository.getDisplayName());
                     populating = false;
@@ -233,7 +270,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c); // NOI18N
         JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
         panel.progressPanel.removeAll();
         panel.progressPanel.add(comp, BorderLayout.CENTER);
@@ -244,20 +281,22 @@ public class RepositoryController extends BugtrackingController implements Docum
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
                 panel.enableFields(false);
-                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
+                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
                 try {
                     repository.resetRepository(); // reset mylyns caching
                     TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
-                            panel.nameField.getText(),
+                            getName(),
                             getUrl(),
-                            panel.userField.getText(),
-                            new String(panel.psswdField.getPassword()));
+                            getUser(),
+                            getPassword(),
+                            getHttpUser(),
+                            getHttpPassword());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
                     repository.getExecutor().execute(cmd, false);
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
-                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null.");
+                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
                             errorMessage = "Validation failed."; // XXX bundle me
                         } else {
                             errorMessage = cmd.getErrorMessage();

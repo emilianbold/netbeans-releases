@@ -686,6 +686,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
 
         public void run() {
+            IOException exception = null;
             for (int i = 0; i < prepareSetups.length; i++) {
                 if (prepareSetups != setups) return;
                 try {
@@ -708,8 +709,21 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         }
                     });
                 } catch (IOException e) {
-                    Subversion.LOG.log(Level.SEVERE, null, e);
+                    Subversion.LOG.log(Level.INFO, null, e);
+                    if (exception == null) {
+                        // save only the first exception
+                        exception = e;
+                    }
                 }
+            }
+            if (exception != null) {
+                // notify user of the failure
+                final IOException e = exception;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        SvnClientExceptionHandler.notifyException(e, true, true);
+                    }
+                });
             }
         }
     }

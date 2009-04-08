@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -61,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class HudsonRootNode extends AbstractNode {
     
-    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png";
+    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
     
     /** Init lock */
     private static final Object LOCK_INIT = new Object();
@@ -84,6 +85,12 @@ public class HudsonRootNode extends AbstractNode {
      *
      * @return default instance of HudsonRootNode
      */
+    @ServicesTabNodeRegistration(
+        name="hudson",
+        displayName="org.netbeans.modules.hudson.ui.nodes.Bundle#LBL_HudsonNode",
+        iconResource="org/netbeans/modules/hudson/ui/resources/hudson.png",
+        position=488
+    )
     public static HudsonRootNode getDefault() {
         synchronized(LOCK_INIT) {
             if (null == defaultInstance)

@@ -49,7 +49,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.html.palette.BrowseFolders;
-import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
+import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -263,7 +263,7 @@ public class ACustomizer extends javax.swing.JPanel {
 
         Document targetDoc = target.getDocument();
         FileObject targetDocFO = NbEditorUtilities.getFileObject(targetDoc);
-        SourceGroup[] sg = HTMLPaletteUtilities.getSourceGroups(targetDocFO);
+        SourceGroup[] sg = HtmlPaletteUtilities.getSourceGroups(targetDocFO);
         
         File file = null;
         if (sg.length > 0) {
@@ -283,7 +283,7 @@ public class ACustomizer extends javax.swing.JPanel {
             String path = file.getAbsolutePath();
             FileObject aFO = FileUtil.toFileObject(file);
             try {
-                String relPathToFile = HTMLPaletteUtilities.getRelativePath(targetDocFO, aFO);
+                String relPathToFile = HtmlPaletteUtilities.getRelativePath(targetDocFO, aFO);
                 if (relPathToFile.length() > 0)
                     path = relPathToFile;
             }

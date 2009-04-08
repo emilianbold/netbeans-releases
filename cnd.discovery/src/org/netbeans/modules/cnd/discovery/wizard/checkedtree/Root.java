@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.checkedtree;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -55,10 +57,12 @@ import java.util.StringTokenizer;
 public class Root implements AbstractRoot {
     private Map<String,AbstractRoot> children = new HashMap<String,AbstractRoot>();
     private String name;
+    private String folder;
     private List<String> files;
     
-    public Root(String name){
+    public Root(String name, String folder){
         this.name = name;
+        this.folder = folder;
     }
     
     public Collection<AbstractRoot> getChildren(){
@@ -67,6 +71,10 @@ public class Root implements AbstractRoot {
     
     public String getName(){
         return name;
+    }
+
+    public String getFolder(){
+        return FileUtil.normalizeFile(new File(folder)).getAbsolutePath();
     }
     
     private Root getChild(String child){
@@ -86,12 +94,21 @@ public class Root implements AbstractRoot {
     public Root addChild(String child){
         Root current = this;
         StringTokenizer st = new StringTokenizer(child,"/\\"); // NOI18N
+        StringBuilder path = new StringBuilder();
         while(st.hasMoreTokens()){
             String segment = st.nextToken();
+            if (path.length()>0){
+                path.append('/');
+            } else {
+                if(!(segment.length()>1 && segment.charAt(1)==':')){
+                    path.append('/');
+                }
+            }
+            path.append(segment);
             if (st.hasMoreTokens()) {
                 Root found = current.getChild(segment);
                 if (found == null) {
-                    found = new Root(segment);
+                    found = new Root(segment, path.toString());
                     current.children.put(segment, found);
                 }
                 current = found;

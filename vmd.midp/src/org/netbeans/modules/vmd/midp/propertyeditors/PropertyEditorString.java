@@ -285,7 +285,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This element should be selected by default
      */
     public boolean isInitiallySelected() {
-        return databindingElement == null;
+        return true;
     }
 
     /*
@@ -383,7 +383,10 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
             updateCustomEditor = false;
+        }else if (databindingElement != null) {
+            ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
         }
+
         if ( updateCustomEditor ) {
             customEditor.setText((String) value.getPrimitiveValue());
         }

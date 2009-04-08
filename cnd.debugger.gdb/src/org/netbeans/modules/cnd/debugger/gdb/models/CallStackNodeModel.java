@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Session;
@@ -56,6 +58,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 
 
 /**
@@ -169,6 +172,24 @@ public class CallStackNodeModel implements NodeModel {
         if (functionName != null && !functionName.equals("??")) { // NOI18N
             // By default use function name
             csfName = functionName;
+
+            // add arguments
+            Collection<GdbVariable> args = csf.getArguments();
+            if (args != null) {
+                StringBuilder sb = new StringBuilder(csfName);
+                sb.append('(');
+                for (Iterator<GdbVariable> iter = args.iterator(); iter.hasNext();) {
+                    GdbVariable arg = iter.next();
+                    sb.append(arg.getName());
+                    sb.append('=');
+                    sb.append(arg.getValue());
+                    if (iter.hasNext()) {
+                        sb.append(',');
+                    }
+                }
+                sb.append(')');
+                csfName = sb.toString();
+            }
         } else if (csf.getAddr() != null) {  
             //If function name is not available, use address
             csfName= NbBundle.getMessage(CallStackNodeModel.class,

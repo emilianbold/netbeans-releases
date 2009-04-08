@@ -46,11 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.security.NoSuchAlgorithmException;
 import java.util.prefs.Preferences;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -63,7 +59,6 @@ import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -73,18 +68,15 @@ import org.openide.util.RequestProcessor;
  * @author Jan Becicka
  */
 public final class UIUtils {
-    private static final String encMethod = "AES"; // NOI18N
-    private static SecretKeySpec key = new SecretKeySpec("netbeansnetbeans".getBytes(), encMethod); // NOI18N
-    private static Cipher cipher;
     static {
-        try {
-            cipher = Cipher.getInstance(encMethod);
-        } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchPaddingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        String url = System.getProperty("kenai.com.url", "https://kenai.com"); //NOI18N
+        String s = url.substring(url.lastIndexOf("/")+1); //NOI18N
+        KENAI_USERNAME_PREF= s + ".username"; //NOI18N
+        KENAI_PASSWORD_PREF= s + ".password"; //NOI18N
     }
+    
+    private final static String KENAI_PASSWORD_PREF;
+    private final static String KENAI_USERNAME_PREF;
 
     private UIUtils() {
     }
@@ -155,13 +147,13 @@ public final class UIUtils {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        String uname=preferences.get("kenai.username", null); // NOI18N
+        String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
         if (uname==null) {
             return false;
         }
-        byte[] password=preferences.getByteArray("kenai.password", null); // NOI18N
+        String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         try {
-            Kenai.getDefault().login(uname, new String(decode(password)).toCharArray());
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray());
         } catch (KenaiException ex) {
             return false;
         }
@@ -184,7 +176,6 @@ public final class UIUtils {
                 new Object[]{ctlLogin,ctlCancel},ctlLogin,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null, new ActionListener() {
-
                     public void actionPerformed(ActionEvent event) {
                         if (event.getSource().equals(ctlLogin)) {
                         loginPanel.showProgress();
@@ -192,6 +183,8 @@ public final class UIUtils {
 
                             public void run() {
                                 try {
+                                    if (loginPanel.getUsername().contains("@")) //NOI18N
+                                        throw new KenaiException(NbBundle.getMessage(LoginPanel.class, "ERR_InvalidUsername"));
                                     Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
                                     loginPanel.getRootPane().getParent().setVisible(false);
                                 } catch (final KenaiException ex) {
@@ -205,11 +198,11 @@ public final class UIUtils {
                             }
                         });
                         if (loginPanel.isStorePassword()) {
-                            preferences.put("kenai.username", loginPanel.getUsername()); // NOI18N
-                            preferences.putByteArray("kenai.password", encode(new String(loginPanel.getPassword()).getBytes())); // NOI18N
+                            preferences.put(KENAI_USERNAME_PREF, loginPanel.getUsername()); // NOI18N
+                            preferences.put(KENAI_PASSWORD_PREF, Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
                         } else {
-                            preferences.remove("kenai.username"); // NOI18N
-                            preferences.remove("kenai.password"); // NOI18N
+                            preferences.remove(KENAI_USERNAME_PREF); // NOI18N
+                            preferences.remove(KENAI_PASSWORD_PREF); // NOI18N
                         }
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
@@ -220,41 +213,17 @@ public final class UIUtils {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get("kenai.username", null); // NOI18N
-        byte[] password=preferences.getByteArray("kenai.password", null); // NOI18N
+        String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
+        String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         if (uname!=null && password!=null) {
             loginPanel.setUsername(uname);
-            loginPanel.setPassword(new String(decode(password)).toCharArray());
+            loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
         }
         d.pack();
+        d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
 
         return loginPanel.getClientProperty("cancel")==null; // NOI18N
-    }
-
-
-        /** Creates new form LoginPanel */
-
-
-    static byte[] encode(byte[] password) {
-
-        try {
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            return cipher.doFinal(password);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-
-    static byte[] decode(byte[] pass) {
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            return cipher.doFinal(pass);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
     }
 }

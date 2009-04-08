@@ -94,8 +94,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         }
 
         @Override
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-            VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2, getScope());
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
+            VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, getScope());
             declarators.add(var);
             return var;
         }
@@ -128,8 +128,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                             token = token.getFirstChild();
                             if (token != null) {
                                 boolean _static = false;
+                                boolean _extern = false;
                                 if (isQualifier(token.getType())) {
                                     _static = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_static);
+                                    _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
                                     token = getFirstSiblingSkipQualifiers(token);
                                 }
                                 if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
@@ -160,14 +162,14 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                                                     if (isVariableLikeFunc(next)) {
                                                         FunctionImpl fun = createFunction(next, getContainingFile(), type, getScope());
                                                     } else {
-                                                        VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, currentNamespace, container, getScope());
+                                                        VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, _extern, currentNamespace, container, getScope());
                                                     }
                                                 }
                                             }
                                             if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
                                                 AST nameAst = next.getFirstChild();
                                                 if (nameAst != null && nameAst.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                                                    VariableImpl var = createVariable(next, getContainingFile(), type, nameAst.getText(), _static, currentNamespace, container, getScope());
+                                                    VariableImpl var = createVariable(next, getContainingFile(), type, nameAst.getText(), _static, _extern, currentNamespace, container, getScope());
                                                     next = next.getNextSibling();
                                                     if (next != null && next.getType() == CPPTokenTypes.COMMA) {
                                                         next = next.getNextSibling();
@@ -194,8 +196,11 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                    case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                     {
-                        ClassImpl cls = ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext());
+                        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                        ClassImplSpecialization.create(token, null, getContainingFile(), !isRenderingLocalContext(), null) :
+                                        ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext(), null);
                         declarators.add(cls);
                         Pair typedefs = renderTypedef(token, cls, currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {

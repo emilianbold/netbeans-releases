@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -54,6 +56,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -63,7 +66,7 @@ import org.openide.windows.InputOutput;
  *
  */
 public final class Erprint {
-
+    private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final Object lock = new String(Erprint.class.getName());
     private final ExecutionEnvironment execEnv;
     private final String er_printCmd;
@@ -100,7 +103,11 @@ public final class Erprint {
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
-        descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
+
+        if (log.isLoggable(Level.FINEST)) {
+            descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
+        }
+
         descr = descr.outProcessorFactory(new InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -211,6 +218,28 @@ public final class Erprint {
         return result;
     }
 
+    public String[] getHotFunctions(String command, Metrics metrics, int limit, boolean restart) {
+        String[] result = null;
+        synchronized (lock) {
+            restart(restart);
+            setMetrics(metrics.mspec);
+            setSortBy(metrics.msort);
+            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
+            result = exec(command, limit); // NOI18N
+            erOutputProcessor.setFilterType(FilterType.noFiltering);
+        }
+        return result;
+    }
+
+    public FunctionStatistic getFunctionStatistic(String functionName, boolean restart){
+        FunctionStatistic result = null;
+        synchronized (lock) {
+            restart(restart);
+            result = new FunctionStatistic(exec("fsingle " + functionName, Integer.MAX_VALUE)); // NOI18N
+        }
+        return result;
+    }
+
     String[] getCallersCallees(int limit) {
         String[] ccOut = exec("callers-callees", limit); // NOI18N
         // TODO: process output
@@ -247,7 +276,7 @@ public final class Erprint {
         // from several threads (example: one thread - onTimer, another one -
         // user clicks on indicator)
         // The problem may appear when one thread gets buffer, while another one
-        // cleans it... 
+        // cleans it...
 
         private final Object lock = new String(FilteredInputProcessor.class.getName());
         private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
@@ -293,8 +322,10 @@ public final class Erprint {
 
         public void reset() throws IOException {
             synchronized (lock) {
-                while (doneSignal.getCount() > 0) {
-                    doneSignal.countDown();
+                if (doneSignal != null) {
+                    while (doneSignal.getCount() > 0) {
+                        doneSignal.countDown();
+                    }
                 }
 
                 reset(null);
@@ -320,7 +351,7 @@ public final class Erprint {
             buffer.clear();
             this.doneSignal = doneSignal;
             // null - a special case. This means that er_print process has
-            // changed. So, prompt will be fetched again.... 
+            // changed. So, prompt will be fetched again....
             if (doneSignal == null) {
                 prompt = null;
             }

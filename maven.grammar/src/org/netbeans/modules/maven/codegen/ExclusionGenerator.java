@@ -40,15 +40,17 @@
  */
 package org.netbeans.modules.maven.codegen;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -58,8 +60,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -93,10 +93,15 @@ public class ExclusionGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return "Dependency Exclusion...";
+        return NbBundle.getMessage(ExclusionGenerator.class, "NAME_Exclusion");
     }
 
     public void invoke() {
+        try {
+            model.sync();
+        } catch (IOException ex) {
+            Logger.getLogger(ExclusionGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
+        }
         if (!model.getState().equals(State.VALID)) {
             //TODO report somehow, status line?
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExclusionGenerator.class, "MSG_Cannot_Parse"));

@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.ini4j.Ini;
+import org.ini4j.InvalidIniFormatException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -91,16 +92,17 @@ public class HgConfigFiles {
     private static final String WINDOWS_HG_RC_FILE = "Mercurial.ini";                                 // NOI18N
     private static final String WINDOWS_DEFAULT_MECURIAL_INI_PATH = "C:\\Mercurial\\Mercurial.ini";                                 // NOI18N
     private boolean bIsProjectConfig;
+    private InvalidIniFormatException initException;
     /**
      * Creates a new instance
      */
     private HgConfigFiles() {
         bIsProjectConfig = false;
-        // get the system hgrc file 
+        // get the system hgrc file
         if(Utilities.isWindows()) {
             hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
-        }else{    
-            hgrc = loadSystemAndGlobalFile(HG_RC_FILE);                                          
+        }else{
+            hgrc = loadSystemAndGlobalFile(HG_RC_FILE);
         }
     }
     
@@ -120,20 +122,24 @@ public class HgConfigFiles {
         bIsProjectConfig = true;
         dir = file;        
         // <repository>/.hg/hgrc on all platforms
-        hgrc = loadRepoHgrcFile(file);                                             
+        hgrc = loadRepoHgrcFile(file);
+    }
+
+    public IOException getException () {
+        return initException;
     }
  
     public void setProperty(String name, String value) {
         if (name.equals(HG_USERNAME)) { 
-            setProperty(HG_UI_SECTION, HG_USERNAME, value); 
+            setProperty(HG_UI_SECTION, HG_USERNAME, value);
         } else if (name.equals(HG_DEFAULT_PUSH)) { 
-            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value); 
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value);
         } else if (name.equals(HG_DEFAULT_PULL)) { 
-            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value); 
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value);
         } else if (name.equals(HG_EXTENSIONS_HGK)) { 
             // Allow hgext.hgk to be set to some other user defined value if required
             if(getProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK).equals("")){
-                setProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK, value, true); 
+                setProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK, value, true);
             }
         } else if (name.equals(HG_EXTENSIONS_FETCH)) { 
             // Allow fetch to be set to some other user defined value if required
@@ -168,7 +174,7 @@ public class HgConfigFiles {
     }
 
     public void setUserName(String value) {
-        setProperty(HG_UI_SECTION, HG_USERNAME, value); 
+        setProperty(HG_UI_SECTION, HG_USERNAME, value);
     }
 
     public String getSysUserName() {
@@ -276,6 +282,7 @@ public class HgConfigFiles {
     }
     
     private void storeIni(Ini ini, String iniFile) {
+        assert initException == null;
         try {
             String filePath;
             if (dir != null) {
@@ -315,6 +322,9 @@ public class HgConfigFiles {
             }
         } catch (FileNotFoundException ex) {
             // ignore
+        } catch (InvalidIniFormatException ex) {
+            Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
+            initException = ex;
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
         } finally {

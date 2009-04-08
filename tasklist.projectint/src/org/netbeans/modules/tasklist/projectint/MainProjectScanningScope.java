@@ -45,15 +45,15 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -67,7 +67,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -78,14 +77,14 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht
  */
 public class MainProjectScanningScope extends TaskScanningScope 
-        implements PropertyChangeListener, Runnable {
+        implements PropertyChangeListener {
 
     private Callback callback;
     private InstanceContent lookupContent = new InstanceContent();
     private Lookup lookup;
     private Project currentProject;
-    private Collection<FileObject> editedFiles;
     private Map<String,String> scopeLabels = Collections.synchronizedMap( new HashMap<String, String>(3) );
+    private Timer refreshTimer;
     
     private MainProjectScanningScope( String displayName, String description, Image icon ) {
         super( displayName, description, icon );
@@ -105,7 +104,7 @@ public class MainProjectScanningScope extends TaskScanningScope
     }
     
     public Iterator<FileObject> iterator() {
-        return new MainProjectIterator( editedFiles );
+        return new MainProjectIterator();
     }
     
     @Override
@@ -161,15 +160,9 @@ public class MainProjectScanningScope extends TaskScanningScope
                     p = findCurrentProject();
                 }
                 setCurrentProject(p, false);
-                if( SwingUtilities.isEventDispatchThread() ) {
-                    run();
-                } else {
-                    SwingUtilities.invokeLater( this );
-                }
             } else if( null == newCallback && null != callback ) {
                 OpenProjects.getDefault().removePropertyChangeListener( this );
                 TopComponent.getRegistry().removePropertyChangeListener( this );
-                editedFiles = null;
                 setCurrentProject(null, false);
             }
             this.callback = newCallback;
@@ -189,21 +182,23 @@ public class MainProjectScanningScope extends TaskScanningScope
                     setCurrentProject( p, true );
                 }
             }
-        } else if( TopComponent.Registry.PROP_OPENED.equals( e.getPropertyName() ) ) {
-            //remember which files are opened so that they can be scanned first
-            run();
         } else if( TopComponent.Registry.PROP_ACTIVATED_NODES.equals( e.getPropertyName() ) ) {
-            //check for possible change of current project
-            Project p = OpenProjects.getDefault().getMainProject();
-            if( null == p ) {
-                p = findCurrentProject();
-                setCurrentProject( p, true );
-            }
+            //start timer to switch current project
+            if( null != refreshTimer )
+                refreshTimer.cancel();
+            refreshTimer = new Timer();
+            refreshTimer.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    Project p = OpenProjects.getDefault().getMainProject();
+                    if( null == p ) {
+                        p = findCurrentProject();
+                        setCurrentProject( p, true );
+                    }
+                }
+            }, 500);
         }
-    }
-    
-    public void run() {
-        editedFiles = Utils.collectEditedFiles();
     }
     
     private void setCurrentProject( Project newProject, boolean callbackRefresh ) {

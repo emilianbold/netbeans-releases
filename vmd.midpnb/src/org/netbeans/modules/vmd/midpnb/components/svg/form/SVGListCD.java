@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
@@ -61,7 +63,10 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
@@ -112,6 +117,15 @@ public class SVGListCD extends ComponentDescriptor{
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, "DISP_ListModel"), PropertyEditorListModel.createInstance( NbBundle.getMessage( SVGListCD.class, "LBL_ListModel"), NbBundle.getMessage( SVGListCD.class, "TXT_ListModel")), PROP_ELEMENTS); // NOI18N
     }
+
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, false, true);
+        super.gatherPresenters(presenters);
+    }
+
+
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(

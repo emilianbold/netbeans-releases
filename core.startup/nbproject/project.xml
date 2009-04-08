@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.11</specification-version>
+                        <specification-version>2.18</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -118,6 +118,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.autoupdate.services</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.modulemanager</friend>
+                <friend>org.netbeans.modules.options.api</friend>
                 <package>org.netbeans.core.startup</package>
                 <package>org.netbeans.core.startup.layers</package>
             </friend-packages>

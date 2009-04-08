@@ -118,33 +118,4 @@ public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, Recogni
         });
     }
 
-    // ------------------------------------------------------------------------
-    // J2eeserver support
-    // ------------------------------------------------------------------------
-//    public boolean startServer() {
-//        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
-//        if(commonModule != null) {
-//            return commonModule.startServer(new OperationStateListener() {
-//                public void operationStateChanged(OperationState newState, String message) {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-//                }
-//            });
-//        } else {
-//            throw new UnsupportedOperationException("StartServer is not supported by JRubyServerModule");
-//        }
-//    }
-//
-//    public boolean stopServer() {
-//        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
-//        if(commonModule != null) {
-//            return commonModule.stopServer(new OperationStateListener() {
-//                public void operationStateChanged(OperationState newState, String message) {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-//                }
-//            });
-//        } else {
-//            throw new UnsupportedOperationException("StopServer is not supported by JRubyServerModule");
-//        }
-//    }
-
 }

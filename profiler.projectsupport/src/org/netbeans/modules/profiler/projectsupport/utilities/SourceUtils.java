@@ -1273,6 +1273,16 @@ public final class SourceUtils {
                         return;
                     }
 
+//                    Use the following code to enable javac hierarchy traversal
+//                    Element element = null;
+//                    while (path != null) {
+//                        element = ci.getTrees().getElement(path);
+//                        if (element != null && ((element.getKind() == ElementKind.METHOD) || (element.getKind() == ElementKind.CONSTRUCTOR) || (element.getKind() == ElementKind.STATIC_INIT))) {
+//                            break;
+//                        }
+//                        path = path.getParentPath();
+//                    }
+
                     Element element = ci.getTrees().getElement(path);
 
                     if ((element != null) && ((element.getKind() == ElementKind.METHOD) || (element.getKind() == ElementKind.CONSTRUCTOR) || (element.getKind() == ElementKind.STATIC_INIT))) {

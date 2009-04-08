@@ -59,7 +59,6 @@ public final class FileInfo {
     private int isComputeNode = -1;
     private int isUnixSpecialFile = -1;
     private int isUNC = -1;    
-    private int isFloppy = -1;
     private int isConvertibleToFileObject = -1;
 
     private Integer id = null;        
@@ -69,7 +68,6 @@ public final class FileInfo {
     private FileInfo parent = null;
     private FileNaming fileNaming = null;
     private FileObject fObject = null;
-    
 
     public FileInfo(final File file, int exists) {
         this.file = file;
@@ -92,14 +90,12 @@ public final class FileInfo {
         return (isFile == 0) ? false : true;
     }
 
-
     public boolean isDirectory() {
         if (isDirectory == -1) {
             isDirectory = (getFile().isDirectory()) ? 1 : 0;
         }
         return (isDirectory == 0) ? false : true;
     }
-
 
     public boolean  exists() {
         if (exists == -1) {
@@ -152,7 +148,7 @@ public final class FileInfo {
     
     public FileInfo getRoot() {
         if (root == null) {
-            File tmp = getFile();
+            File tmp = getFile().getAbsoluteFile();
             File retVal = tmp;
             while (tmp != null) {
                 retVal = tmp;

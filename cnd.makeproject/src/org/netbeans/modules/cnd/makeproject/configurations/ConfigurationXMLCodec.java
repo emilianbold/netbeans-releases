@@ -231,6 +231,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     itemConfiguration.setTool(tool);
                 }
             } else {
+                System.err.println("Not found item: "+path);
                 // FIXUP
             }
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
@@ -240,6 +241,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
                 currentFolderConfiguration = folderConfiguration;
             } else {
+                System.err.println("Not found folder: "+path);
                 // FIXUP
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
@@ -363,6 +365,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentQmakeConfiguration = ((MakeConfiguration) currentConf).getQmakeConfiguration();
         } else if (element.equals(QT_DEFS_LIST_ELEMENT)) {
             currentList = currentQmakeConfiguration.getCustomDefs().getValue();
+        } else if (element.equals(PACK_ADDITIONAL_INFOS_LIST_ELEMENT)) {
+            currentList = currentPackagingConfiguration.getAdditionalInfo().getValue();
         }
     }
 
@@ -496,11 +500,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT)) {
             currentCustomToolConfiguration.getAdditionalDependencies().setValue(getString(currentText));
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
-            currentItemConfiguration.clearChanged();
-            currentItemConfiguration = null;
+            if (currentItemConfiguration != null) {
+                currentItemConfiguration.clearChanged();
+                currentItemConfiguration = null;
+            }
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
-            currentFolderConfiguration.clearChanged();
-            currentFolderConfiguration = null;
+            if (currentFolderConfiguration != null) {
+                currentFolderConfiguration.clearChanged();
+                currentFolderConfiguration = null;
+            }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;
@@ -784,6 +792,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getQmakeSpec().setValue(getString(currentText));
             }
+        } else if (element.equals(PACK_ADDITIONAL_INFOS_LIST_ELEMENT)) {
+            currentList = null;
         }
     }
 

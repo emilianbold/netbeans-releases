@@ -110,7 +110,7 @@ public final class MerbProject extends RubyBaseProject {
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
-            new MerbSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new MerbSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new MerbSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RubyProject - use lookup instead

@@ -5,8 +5,8 @@ End cursor position = 1012
 [<% list.|, Boolean element (), <% list.element(), 1050]
 boolean add (Boolean e )
 void add (int index , Boolean element )
-boolean addAll (Collection <? extends Boolean> c )
-boolean addAll (int index , Collection <? exten
+boolean addAll (Collection <? extends Bo
+boolean addAll (int index , Collection <
 void addFirst (Boolean e )
 void addLast (Boolean e )
 void clear ()
@@ -17,7 +17,7 @@ Iterator <Boolean> descendingIterator ()
 Boolean element ()
 boolean equals (Object o )
 Boolean get (int index )
-Class <?> getClass ()
+Class  getClass ()
 Boolean getFirst ()
 Boolean getLast ()
 int hashCode ()
@@ -26,7 +26,7 @@ boolean isEmpty ()
 Iterator <Boolean> iterator ()
 int lastIndexOf (Object o )
 ListIterator <Boolean> listIterator ()
-ListIterator <Boolean> listIterator (int index )
+ListIterator <Boolean> listIterator (int
 void notify ()
 void notifyAll ()
 boolean offer (Boolean e )
@@ -45,13 +45,13 @@ boolean remove (Object o )
 Boolean remove (int index )
 boolean removeAll (Collection <?> c )
 Boolean removeFirst ()
-boolean removeFirstOccurrence (Object o )
+boolean removeFirstOccurrence (Object o 
 Boolean removeLast ()
 boolean removeLastOccurrence (Object o )
 boolean retainAll (Collection <?> c )
-Boolean set (int index , Boolean element )
+Boolean set (int index , Boolean element
 int size ()
-List <Boolean> subList (int fromIndex , int toI
+List <Boolean> subList (int fromIndex , 
 Object[] toArray ()
 T[] toArray (T[] a )
 String toString ()
@@ -109,7 +109,7 @@ void notifyAll ()
 int ordinal ()
 String toString ()
 Suit valueOf (String name )
-T valueOf (Class <T> enumType , String name )
+T valueOf (Class <T> enumType , String n
 Suit[] values ()
 void wait ()
 void wait (long timeout )
@@ -129,9 +129,7 @@ End cursor position = 1593
 static
 com
 java
-javanet
 javax
-jp
 org
 sun
 sunw
@@ -145,13 +143,13 @@ int DAY_OF_YEAR
 int DECEMBER
 int DST_OFFSET
 void destroy ()
-void doDelete (HttpServletRequest req , HttpSe
-void doGet (HttpServletRequest req , HttpServl
-void doHead (HttpServletRequest req , HttpServ
-void doOptions (HttpServletRequest req , HttpS
-void doPost (HttpServletRequest req , HttpServ
-void doPut (HttpServletRequest req , HttpServl
-void doTrace (HttpServletRequest req , HttpSer
+void doDelete (HttpServletRequest req , 
+void doGet (HttpServletRequest req , Htt
+void doHead (HttpServletRequest req , Ht
+void doOptions (HttpServletRequest req ,
+void doPost (HttpServletRequest req , Ht
+void doPut (HttpServletRequest req , Htt
+void doTrace (HttpServletRequest req , H
 do
 double
 Deprecated
@@ -165,8 +163,8 @@ Enumeration getInitParameterNames ()
 Calendar getInstance ()
 Calendar getInstance (Locale aLocale )
 Calendar getInstance (TimeZone zone )
-Calendar getInstance (TimeZone zone , Locale a
-long getLastModified (HttpServletRequest req )
+Calendar getInstance (TimeZone zone , Lo
+long getLastModified (HttpServletRequest
 ServletConfig getServletConfig ()
 ServletContext getServletContext ()
 String getServletInfo ()
@@ -256,9 +254,7 @@ VirtualMachineError
 Void
 com
 java
-javanet
 javax
-jp
 org
 sun
 sunw

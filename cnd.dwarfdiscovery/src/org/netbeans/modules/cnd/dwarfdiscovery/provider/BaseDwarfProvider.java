@@ -320,7 +320,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Map<String,String> systemMacroDefinitionsCpp;
         private Map<String,String> normalizedPaths = new ConcurrentHashMap<String, String>();
         private String compileFlavor;
-        private String compileDirectory;
         private String cygwinDriveDirectory;
         
         public CompilerSettings(ProjectProxy project){
@@ -329,7 +328,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsCpp = DiscoveryUtils.getSystemMacroDefinitions(project, true);
             systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
             compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
-            compileDirectory = DiscoveryUtils.getCompilerDirectory(project);
             cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
         }
         
@@ -368,10 +366,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         public String getCompileFlavor() {
             return compileFlavor;
-        }
-
-        public String getCompileDirectory() {
-            return compileDirectory;
         }
 
         public String getCygwinDrive() {

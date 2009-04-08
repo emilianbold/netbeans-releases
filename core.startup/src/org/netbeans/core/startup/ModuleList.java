@@ -52,9 +52,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PushbackInputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +85,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
@@ -164,153 +168,7 @@ final class ModuleList implements Stamps.Updater {
         ev.log(Events.START_READ);
         final Set<Module> read = new HashSet<Module>();
         try {
-            folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-
-        Map<String, Map<String, Object>> cache = readCache();
-        String[] names;
-        if (cache != null) {
-            names = cache.keySet().toArray(new String[0]);
-        } else {
-            FileObject[] children = folder.getChildren();
-            List<String> arr = new ArrayList<String>(children.length);
-            for (FileObject f : children) {
-                if (f.hasExt("ser")) { // NOI18N
-                // Fine, skip over.
-                } else if (f.hasExt("xml")) { // NOI18N
-                    // Assume this is one of ours. Note fixed naming scheme.
-                    String nameDashes = f.getName(); // NOI18N
-                    char[] badChars = {'.', '/', '>', '='};
-                    for (int j = 0; j < 4; j++) {
-                        if (nameDashes.indexOf(badChars[j]) != -1) {
-                            throw new IllegalArgumentException("Bad name: " + nameDashes); // NOI18N
-                        }
-                    }
-                    String name = nameDashes.replace('-', '.').intern(); // NOI18N
-                    arr.add(name);
-                } else {
-                    LOG.fine("Strange file encountered in modules folder: " + f);
-                }
-            }
-            names = arr.toArray(new String[0]);
-        }
-        ev.log( Events.MODULES_FILE_SCANNED, names.length );
-
-	XMLReader reader = null;
-	
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
-            FileObject f = null;
-            try {
-
-                // Now name is the code name base of the module we expect to find.
-                // Check its format (throws IllegalArgumentException if bad):
-                Dependency.create(Dependency.TYPE_MODULE, name);
-
-                // OK, read it from disk.
-                Map<String,Object> props = cache == null ? null : cache.get(name);
-                if (props == null) {
-                    LOG.log(Level.FINEST, "no cache for {0}", name);
-                    f = folder.getFileObject(name.replace('.', '-') + ".xml");
-                    InputStream is = f.getInputStream();
-                    try {
-                        props = readStatus(new BufferedInputStream(is),true);
-                        if (props == null) {
-                            LOG.warning("Note - failed to parse " + f + " the quick way, falling back on XMLReader");
-                            is.close();
-                            is = f.getInputStream();
-                            InputSource src = new InputSource(is);
-                            // Make sure any includes etc. are handled properly:
-                            src.setSystemId(f.getURL().toExternalForm());
-                            if (reader == null) {
-                                try {
-                                    reader = XMLUtil.createXMLReader();
-                                } catch(SAXException e) {
-                                    throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
-                                }
-                                reader.setEntityResolver(listener);
-                                reader.setErrorHandler(listener);
-                            }
-                            props = readStatus(src,reader);
-                        }
-                    } finally {
-                        is.close();
-                    }
-                }
-                if (! name.equals(props.get("name"))) throw new IOException("Code name mismatch: " /* #25011 */ + name + " vs. " + props.get("name")); // NOI18N
-                Boolean enabledB = (Boolean)props.get("enabled"); // NOI18N
-                String jar = (String)props.get("jar"); // NOI18N
-                File jarFile;
-                try {
-                    jarFile = findJarByName(jar, name);
-                } catch (FileNotFoundException fnfe) {
-                    //LOG.fine("Cannot find: " + fnfe.getMessage());
-                    ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), enabledB);
-                    if (!Boolean.FALSE.equals(enabledB)) {
-                        try {
-                            f.delete();
-                        } catch (IOException ioe) {
-                            LOG.log(Level.WARNING, null, ioe);
-                        }
-                    }
-                    continue;
-                }
-
-                ModuleHistory history = new ModuleHistory(jar); // NOI18N
-                Integer prevReleaseI = (Integer)props.get("release"); // NOI18N
-                int prevRelease = (prevReleaseI == null ? -1 : prevReleaseI.intValue());
-                SpecificationVersion prevSpec = (SpecificationVersion)props.get("specversion"); // NOI18N
-                history.upgrade(prevRelease, prevSpec);
-                Boolean reloadableB = (Boolean)props.get("reloadable"); // NOI18N
-                boolean reloadable = (reloadableB != null ? reloadableB.booleanValue() : false);
-                boolean enabled = (enabledB != null ? enabledB.booleanValue() : false);
-                Boolean autoloadB = (Boolean)props.get("autoload"); // NOI18N
-                boolean autoload = (autoloadB != null ? autoloadB.booleanValue() : false);
-                Boolean eagerB = (Boolean)props.get("eager"); // NOI18N
-                boolean eager = (eagerB != null ? eagerB.booleanValue() : false);
-                String installer = (String)props.get("installer"); // NOI18N
-                if (installer != null) {
-                    String nameDashes = name.replace('.', '-');
-                    if (! installer.equals(nameDashes + ".ser")) throw new IOException("Incorrect installer ser name: " + installer); // NOI18N
-                    // Load from disk in mentioned file.
-                    FileObject installerSer = folder.getFileObject(nameDashes, "ser"); // NOI18N
-                    if (installerSer == null) throw new IOException("No such install ser: " + installer + "; I see only: " + Arrays.asList(folder.getChildren())); // NOI18N
-                    // Hope the stored state is not >Integer.MAX_INT! :-)
-                    byte[] buf = new byte[(int)installerSer.getSize()];
-                    InputStream is2 = installerSer.getInputStream();
-                    try {
-                        is2.read(buf);
-                    } finally {
-                        is2.close();
-                    }
-                    history.setInstallerState(buf);
-                    // Quasi-prop which is stored separately.
-                    props.put("installerState", buf); // NOI18N
-                }
-                Module m = mgr.create(jarFile, history, reloadable, autoload, eager);
-                read.add(m);
-                DiskStatus status = new DiskStatus();
-                status.module = m;
-                status.file = f;
-                //status.lastApprovedChange = children[i].lastModified().getTime();
-                status.pendingInstall = enabled;
-                // Will only really be flushed if mgr props != disk props, i.e
-                // if version changed or could not be enabled.
-                //status.pendingFlush = true;
-                status.setDiskProps(props);
-                statuses.put(name, status);
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Error encountered while reading " + name, e);
-            }
-            ev.log( Events.MODULES_FILE_PROCESSED, name );
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("read initial XML files: statuses=" + statuses);
-        }
-        ev.log(Events.FINISH_READ, read);
-        // Handle changes in the Modules/ folder on disk by parsing & applying them.
-        folder.addFileChangeListener(FileUtil.weakFileChangeListener (listener, folder));
-                }});
+            folder.getFileSystem().runAtomicAction(new ReadInitial(read));
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
         }
@@ -786,49 +644,50 @@ final class ModuleList implements Stamps.Updater {
      * you have to use a real parser.
      * @see "#26786"
      */
-    private Map<String, Object> readStatus(InputStream is,boolean checkEOF) throws IOException {
+    private Map<String, Object> readStatus(InputStream is, boolean checkEOF) throws IOException {
+        PushbackInputStream pbis = new PushbackInputStream(is, 1);
         Map<String,Object> m = new HashMap<String,Object>(15);
-        if (!expect(is, MODULE_XML_INTRO)) {
+        if (!expect(pbis, MODULE_XML_INTRO)) {
             LOG.fine("Could not read intro");
             return null;
         }
-        String name = readTo(is, '"');
+        String name = readTo(pbis, '"');
         if (name == null) {
             LOG.fine("Could not read code name base");
             return null;
         }
         m.put("name", name.intern()); // NOI18N
-        if (!expect(is, MODULE_XML_INTRO_END)) {
+        if (!expect(pbis, MODULE_XML_INTRO_END)) {
             LOG.fine("Could not read stuff after cnb");
             return null;
         }
         // Now we have <param>s some number of times, finally </module>.
     PARSE:
         while (true) {
-            int c = is.read();
+            int c = pbis.read();
             switch (c) {
             case ' ':
                 // <param>
-                if (!expect(is, MODULE_XML_DIV2)) {
+                if (!expect(pbis, MODULE_XML_DIV2)) {
                     LOG.fine("Could not read up to param");
                     return null;
                 }
-                String k = readTo(is, '"');
+                String k = readTo(pbis, '"');
                 if (k == null) {
                     LOG.fine("Could not read param");
                     return null;
                 }
                 k = k.intern();
-                if (is.read() != '>') {
+                if (pbis.read() != '>') {
                     LOG.fine("No > at end of <param> " + k);
                     return null;
                 }
-                String v = readTo(is, '<');
+                String v = readTo(pbis, '<');
                 if (v == null) {
                     LOG.fine("Could not read value of " + k);
                     return null;
                 }
-                if (!expect(is, MODULE_XML_DIV3)) {
+                if (!expect(pbis, MODULE_XML_DIV3)) {
                     LOG.fine("Could not read end of param " + k);
                     return null;
                 }
@@ -841,14 +700,14 @@ final class ModuleList implements Stamps.Updater {
                 break;
             case '<':
                 // </module>
-                if (!expect(is, MODULE_XML_END)) {
+                if (!expect(pbis, MODULE_XML_END)) {
                     LOG.fine("Strange ending");
                     return null;
                 }
                 if (!checkEOF) {
                     break PARSE;
                 }
-                if (is.read() != -1) {
+                if (pbis.read() != -1) {
                     LOG.fine("Trailing garbage");
                     return null;
                 }
@@ -867,7 +726,7 @@ final class ModuleList implements Stamps.Updater {
      * Newline conventions are normalized to Unix \n.
      * @return true upon success, false if stream contained something else
      */
-    private boolean expect(InputStream is, byte[] stuff) throws IOException {
+    private boolean expect(PushbackInputStream is, byte[] stuff) throws IOException {
         int len = stuff.length;
         boolean inNewline = false;
         for (int i = 0; i < len; ) {
@@ -890,12 +749,10 @@ final class ModuleList implements Stamps.Updater {
         if (stuff[len - 1] == 10) {
             // Expecting something ending in a \n - so we have to
             // read any further \r or \n and discard.
-            if (!is.markSupported()) throw new IOException("Mark not supported"); // NOI18N
-            is.mark(1);
             int c = is.read();
             if (c != -1 && c != 10 && c != 13) {
                 // Got some non-newline character, push it back!
-                is.reset();
+                is.unread(c);
             }
         }
         return true;
@@ -939,7 +796,7 @@ final class ModuleList implements Stamps.Updater {
         }
     }
 
-    private Map<String,Map<String,Object>> readCache() throws IOException {
+    final Map<String,Map<String,Object>> readCache() throws IOException {
         InputStream is = Stamps.getModulesJARs().asStream("all-modules.dat"); // NOI18N
         if (is == null) {
             // schedule write for later
@@ -947,33 +804,48 @@ final class ModuleList implements Stamps.Updater {
             return null;
         }
         LOG.log(Level.FINEST, "Reading cache all-modules.dat");
+        ObjectInputStream ois = new ObjectInputStream(is);
         
         Map<String,Map<String,Object>> ret = new HashMap<String, Map<String, Object>>(1333);
         while (is.available() > 0) {
-            Map<String, Object> prop = readStatus(is, false);
+            Map<String, Object> prop = readStatus(ois, false);
             if (prop == null) {
                 LOG.log(Level.CONFIG, "Cache is invalid all-modules.dat");
                 return null;
             }
+            Set<?> deps;
+            try {
+                deps = (Set<?>) ois.readObject();
+            } catch (ClassNotFoundException ex) {
+                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            }
+            prop.put("deps", deps);
             String cnb = (String)prop.get("name"); // NOI18N
             ret.put(cnb, prop);
         }
-            is.close();
 
-            return ret;
-        }
+
+        is.close();
+
+        return ret;
+    }
 
     final void writeCache() {
         Stamps.getModulesJARs().scheduleSave(this, "all-modules.dat", false);
     }
     
+    public void cacheReady() {
+    }
+
     public void flushCaches(DataOutputStream os) throws IOException {
+        ObjectOutputStream oss = new ObjectOutputStream(os);
         for (Module m : mgr.getModules()) {
             if (m.isFixed()) {
                 continue;
             }
             Map<String, Object> prop = computeProperties(m);
-            writeStatus(prop, os);
+            writeStatus(prop, oss);
+            oss.writeObject(m.getDependencies());
         }
     }
     
@@ -1819,7 +1691,163 @@ final class ModuleList implements Stamps.Updater {
         }
     }
 
-    public void cacheReady() {
+    private class ReadInitial implements AtomicAction {
+
+        private final Set<Module> read;
+
+        public ReadInitial(Set<Module> read) {
+            this.read = read;
+        }
+
+        public void run() throws IOException {
+            Map<String, Map<String, Object>> cache = readCache();
+            String[] names;
+            if (cache != null) {
+                names = cache.keySet().toArray(new String[0]);
+            } else {
+                FileObject[] children = folder.getChildren();
+                List<String> arr = new ArrayList<String>(children.length);
+                for (FileObject f : children) {
+                    if (f.hasExt("ser")) { // NOI18N
+                        // Fine, skip over.
+                    } else if (f.hasExt("xml")) {
+                        // NOI18N
+                        // Assume this is one of ours. Note fixed naming scheme.
+                        String nameDashes = f.getName(); // NOI18N
+                        char[] badChars = {'.', '/', '>', '='};
+                        for (int j = 0; j < 4; j++) {
+                            if (nameDashes.indexOf(badChars[j]) != -1) {
+                                throw new IllegalArgumentException("Bad name: " + nameDashes); // NOI18N
+                            }
+                        }
+                        String name = nameDashes.replace('-', '.').intern(); // NOI18N
+                        arr.add(name);
+                    } else {
+                        LOG.fine("Strange file encountered in modules folder: " + f);
+                    }
+                }
+                names = arr.toArray(new String[0]);
+            }
+            ev.log(Events.MODULES_FILE_SCANNED, names.length);
+            XMLReader reader = null;
+            for (int i = 0; i < names.length; i++) {
+                String name = names[i];
+                FileObject f = null;
+                try {
+                    // OK, read it from disk.
+                    Map<String, Object> props = cache == null ? null : cache.get(name);
+                    if (props == null) {
+                        // Now name is the code name base of the module we expect to find.
+                        // Check its format (throws IllegalArgumentException if bad):
+                        Dependency.create(Dependency.TYPE_MODULE, name);
+                        LOG.log(Level.FINEST, "no cache for {0}", name);
+                        f = folder.getFileObject(name.replace('.', '-') + ".xml");
+                        InputStream is = f.getInputStream();
+                        try {
+                            props = readStatus(new BufferedInputStream(is), true);
+                            if (props == null) {
+                                LOG.warning("Note - failed to parse " + f + " the quick way, falling back on XMLReader");
+                                is.close();
+                                is = f.getInputStream();
+                                InputSource src = new InputSource(is);
+                                // Make sure any includes etc. are handled properly:
+                                src.setSystemId(f.getURL().toExternalForm());
+                                if (reader == null) {
+                                    try {
+                                        reader = XMLUtil.createXMLReader();
+                                    } catch (SAXException e) {
+                                        throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
+                                    }
+                                    reader.setEntityResolver(listener);
+                                    reader.setErrorHandler(listener);
+                                }
+                                props = readStatus(src, reader);
+                            }
+                        } finally {
+                            is.close();
+                        }
+                    }
+                    if (!name.equals(props.get("name"))) {
+                        throw new IOException("Code name mismatch: " + name + " vs. " + props.get("name")); // NOI18N
+                    }
+                    Boolean enabledB = (Boolean) props.get("enabled"); // NOI18N
+                    String jar = (String) props.get("jar"); // NOI18N
+                    File jarFile;
+                    try {
+                        jarFile = findJarByName(jar, name);
+                    } catch (FileNotFoundException fnfe) {
+                        //LOG.fine("Cannot find: " + fnfe.getMessage());
+                        ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), enabledB);
+                        if (!Boolean.FALSE.equals(enabledB)) {
+                            try {
+                                f.delete();
+                            } catch (IOException ioe) {
+                                LOG.log(Level.WARNING, null, ioe);
+                            }
+                        }
+                        continue;
+                    }
+                    ModuleHistory history = new ModuleHistory(jar); // NOI18N
+                    Integer prevReleaseI = (Integer) props.get("release"); // NOI18N
+                    int prevRelease = prevReleaseI == null ? -1 : prevReleaseI.intValue();
+                    SpecificationVersion prevSpec = (SpecificationVersion) props.get("specversion"); // NOI18N
+                    history.upgrade(prevRelease, prevSpec);
+                    Boolean reloadableB = (Boolean) props.get("reloadable"); // NOI18N
+                    boolean reloadable = reloadableB != null ? reloadableB.booleanValue() : false;
+                    boolean enabled = enabledB != null ? enabledB.booleanValue() : false;
+                    Boolean autoloadB = (Boolean) props.get("autoload"); // NOI18N
+                    boolean autoload = autoloadB != null ? autoloadB.booleanValue() : false;
+                    Boolean eagerB = (Boolean) props.get("eager"); // NOI18N
+                    boolean eager = eagerB != null ? eagerB.booleanValue() : false;
+                    String installer = (String) props.get("installer"); // NOI18N
+                    if (installer != null) {
+                        String nameDashes = name.replace('.', '-');
+                        if (!installer.equals(nameDashes + ".ser")) {
+                            throw new IOException("Incorrect installer ser name: " + installer); // NOI18N
+                        }
+                        // Load from disk in mentioned file.
+                        FileObject installerSer = folder.getFileObject(nameDashes, "ser"); // NOI18N
+                        if (installerSer == null) {
+                            throw new IOException("No such install ser: " + installer + "; I see only: " + Arrays.asList(folder.getChildren())); // NOI18N
+                        }
+                        // Hope the stored state is not >Integer.MAX_INT! :-)
+                        byte[] buf = new byte[(int) installerSer.getSize()];
+                        InputStream is2 = installerSer.getInputStream();
+                        try {
+                            is2.read(buf);
+                        } finally {
+                            is2.close();
+                        }
+                        history.setInstallerState(buf);
+                        // Quasi-prop which is stored separately.
+                        props.put("installerState", buf); // NOI18N
+                    }
+                    NbInstaller.register(name, props.get("deps")); // NOI18N
+                    Module m = mgr.create(jarFile, history, reloadable, autoload, eager);
+                    NbInstaller.register(null, null);
+                    read.add(m);
+                    DiskStatus status = new DiskStatus();
+                    status.module = m;
+                    status.file = f;
+                    //status.lastApprovedChange = children[i].lastModified().getTime();
+                    status.pendingInstall = enabled;
+                    // Will only really be flushed if mgr props != disk props, i.e
+                    // if version changed or could not be enabled.
+                    //status.pendingFlush = true;
+                    status.setDiskProps(props);
+                    statuses.put(name, status);
+                } catch (Exception e) {
+                    LOG.log(Level.WARNING, "Error encountered while reading " + name, e);
+                }
+                ev.log(Events.MODULES_FILE_PROCESSED, name);
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("read initial XML files: statuses=" + statuses);
+            }
+            ev.log(Events.FINISH_READ, read);
+            // Handle changes in the Modules/ folder on disk by parsing & applying them.
+            folder.addFileChangeListener(FileUtil.weakFileChangeListener(listener, folder));
+        }
     }
     
 }

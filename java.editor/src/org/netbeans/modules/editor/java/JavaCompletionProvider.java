@@ -50,7 +50,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
-import org.netbeans.modules.parsing.spi.Parser;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -1542,6 +1541,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     toExclude = te;
                             }
                         }
+                        boolean insideNew = true;
                         HashSet<TypeElement> subtypes = new HashSet<TypeElement>();
                         if (queryType == COMPLETION_QUERY_TYPE) {
                             Set<? extends TypeMirror> smarts = env.getSmartTypes();
@@ -1557,6 +1557,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 subtypes.add(elem);
                                             }
                                         } else if (smart.getKind() == TypeKind.ARRAY) {
+                                            insideNew = false;
                                             try {
                                                 results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
                                             } catch (IllegalArgumentException iae) {}
@@ -1567,7 +1568,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (toExclude != null)
                             subtypes.add(toExclude);
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, subtypes, true);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, subtypes, insideNew);
                         break;
                     case LPAREN:
                     case COMMA:

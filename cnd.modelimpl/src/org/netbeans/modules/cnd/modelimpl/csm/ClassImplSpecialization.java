@@ -45,6 +45,10 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -55,9 +59,11 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements 
  * @author Vladimir Kvashin
  */
-public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
+public final class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
     private CharSequence qualifiedNameSuffix = "";
+
+    private SpecializationDescriptor specializationDesctiptor;
 
     private ClassImplSpecialization(AST ast, CsmFile file) {
         super(null, ast, file);
@@ -81,14 +87,23 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         assert qIdToken != null;
         qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope, ast);
+        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
 
         if (register) {
             register(getScope(), false);
         }
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-        ClassImplSpecialization impl = new ClassImplSpecialization(ast, file);
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
+        ClassImpl clsImpl = findExistingClassImplInContainer(container, ast);
+        ClassImplSpecialization impl = null;
+        if (clsImpl instanceof ClassImplSpecialization) {
+            // not our instance
+            impl = (ClassImplSpecialization) clsImpl;
+        }
+        if (impl == null) {
+            impl = new ClassImplSpecialization(ast, file);
+        }
         impl.init(scope, ast, register);
         return impl;
     }
@@ -118,17 +133,23 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
     }
 
+    public List<CsmSpecializationParameter> getSpecializationParameters() {
+        return (specializationDesctiptor != null) ? specializationDesctiptor.getSpecializationParameters() : Collections.<CsmSpecializationParameter>emptyList();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(qualifiedNameSuffix, output);
+        PersistentUtils.writeSpecializationDescriptor(specializationDesctiptor, output);
     }
 
     public ClassImplSpecialization(DataInput input) throws IOException {
         super(input);
         qualifiedNameSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
+        specializationDesctiptor = PersistentUtils.readSpecializationDescriptor(input);
     }
 
     @Override

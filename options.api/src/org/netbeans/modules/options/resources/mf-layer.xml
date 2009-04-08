@@ -43,9 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="Actions">
-        <folder name="System">
-            <file name="org-netbeans-core-actions-OptionsAction.instance_hidden"/>
-        </folder>
         <folder name="Window">
             <file name="org-netbeans-modules-options-OptionsWindowAction.instance"/>
         </folder>
@@ -60,7 +57,6 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"/>
                 <attr name="position" intvalue="1700"/>
             </file>
-            <file name="org-netbeans-core-actions-OptionsAction.instance_hidden"/>
         </folder>
     </folder>
     <folder name="OptionsDialog">

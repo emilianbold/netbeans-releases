@@ -48,9 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.ide.CountingSecurityManager.Mode;
@@ -61,36 +59,16 @@ import org.netbeans.test.ide.CountingSecurityManager.Mode;
  *
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
-public class IDECommitValidationTest extends JellyTestCase {
+public class IDECommitValidationTest extends IDEValidation {
 
-    private static boolean initBlacklistedClassesHandler() {        
-        String configFN = new IDECommitValidationTest("Dummy").getDataDir()
-                + File.separator + "BlacklistedClassesHandlerConfig.xml";
-        configFN = configFN.replace("java.kit", "ide.kit"); //temporary hack
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
-        
-        System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
-        if (bcHandler.initSingleton(configFN)) {
-            bcHandler.register();
-            System.out.println("BlacklistedClassesHandler handler added");
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    
     /** Need to be defined because of JUnit */
     public IDECommitValidationTest(String name) {
         super(name);
     }
     
     public static Test suite() throws IOException {
-        
-        boolean blacklistEnabled = initBlacklistedClassesHandler();
-        
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            IDEValidation.class
+            IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
         /* XXX: Enable as soon as there are no warnings during start
                 and exceptions are not that common
@@ -113,13 +91,10 @@ public class IDECommitValidationTest extends JellyTestCase {
 
         CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
         
-        if (blacklistEnabled) {
-            conf = conf.addTest("testBlacklistedClassesHandler");
-        }
         /* too easy to break:
         conf = conf.addTest("testReflectionUsage");
-        conf = conf.addTest("testWriteAccess");
          */
+        conf = conf.addTest("testWriteAccess");
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");

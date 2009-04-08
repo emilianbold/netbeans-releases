@@ -39,7 +39,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.res
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -48,7 +47,17 @@ import org.xml.sax.SAXException;
 /**
  * Copied from DDCatalog
  *
+ * Public ID is an identifier with the "SCHEMA:" prefix.
+ * Actually it can be anything, but it's required to have the prefix because
+ * of the "XML Entity Catalog" module. See the method
+ * org.netbeans.modules.xml.catalog.CatalogEntry.getSystemIDValue();.
+ * According to the method, a PublicID is considered as SystemID if it starts with
+ * the "SHEMA:" prefix!
+ * <p>
+ * System ID for a Schema files should be the same as its targetNamespace. 
+ *
  * @author ads
+ * @author Nikita Krjukov
  */
 public class BPELCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
         
@@ -180,37 +189,37 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor, EntityReso
         list.add(WS_ADDRESSING_ID);
         return list.listIterator();
     }
-    
+
     /**
      * Get registered systemid for given public Id or null if not registered.
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
         if (BPEL_2_0_ID.equals(publicId)) {
-            return URL_BPEL_2_0;
+            return BPEL_2_0;
             // FOR Code Complete? return URL_BPEL_2_0_DTD;
         }
         else if (BPEL_PLT_2_0_ID.equals(publicId)) {
-            return URL_BPEL_PLT_2_0;
+            return BPEL_PLT_2_0;
         }
         else if (EDITOR_EXT_ID.equals(publicId)) {
-            return URL_EDITOR_EXT;
+            return EDITOR_EXT;
         }
         else if (TRACE_2_0_ID.equals(publicId)) {
-            return URL_TRACE_2_0;
+            return TRACE_2_0;
         }
         else if (BPEL_1_1_ID.equals(publicId)) {
-            return URL_BPEL_1_1;
+            return BPEL_1_1;
             // FOR Code Complete? return URL_BPEL_1_1_DTD;
         }
         else if (BPEL_PLT_1_1_ID.equals(publicId)) {
-            return URL_BPEL_PLT_1_1;
+            return BPEL_PLT_1_1;
         }
         else if (WS_BPEL_SERVICE_REF_ID.equals(publicId)) {
-            return URL_WS_BPEL_SERVICE_REF;
+            return WS_BPEL_SERVICE_REF;
         }
         else if (WS_ADDRESSING_ID.equals(publicId)) {
-            return URL_WS_ADDRESSING;
+            return WS_ADDRESSING;
         }
         else {
             return null;

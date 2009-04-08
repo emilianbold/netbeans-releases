@@ -59,6 +59,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test basic {@link SuiteProject} stuff.
@@ -73,6 +74,7 @@ public class SuiteProjectTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setLayersAndInstances();
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     

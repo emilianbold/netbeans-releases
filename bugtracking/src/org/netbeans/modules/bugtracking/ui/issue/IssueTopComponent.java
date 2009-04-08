@@ -81,6 +81,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
     }
 
     /**
@@ -93,6 +94,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(Repository toSelect) {
+        initNewIssue(toSelect, false);
+    }
+
+    public void initNewIssue(Repository toSelect, boolean suggestedSelectionOnly) {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -119,9 +124,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
 
-        DefaultComboBoxModel repoModel;
-        if(toSelect != null) {
-            repoModel = new DefaultComboBoxModel();
+        if ((toSelect != null) && !suggestedSelectionOnly) {
+            /* fixed selection that cannot be changed by user */
+            DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
             repoModel.addElement(toSelect);
             repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setSelectedItem(toSelect);
@@ -129,11 +134,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             newButton.setEnabled(false);
             onRepoSelected();
         } else {
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
-            if(repositoryComboBox.getModel().getSize() > 0) {
+            boolean selected = setupRepositoryModel(toSelect);
+            if (!selected && (repositoryComboBox.getModel().getSize() > 0)) {
                 repositoryComboBox.setSelectedIndex(0);
+                selected = true;
+            }
+            if (selected) {
                 onRepoSelected();
             }
         }
@@ -315,7 +321,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentClosed() {
         openIssues.remove(this);
-        issue.removePropertyChangeListener(this);
+        if(issue != null) {
+            issue.removePropertyChangeListener(this);
+        }
     }
 
     /**
@@ -353,7 +361,53 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } 
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
+        }
+    }
+
+    private void setupRepositoryModel() {
+        setupRepositoryModel(null);
+    }
+
+    /**
+     * Initializes the combo-box's data model.
+     *
+     * @param  object (repository) to be preselected if possible, or {@code null}
+     * @return  {@code true} if the preferred selection was found and selected,
+     *          {@code false} otherwise
+     */
+    private boolean setupRepositoryModel(Object preferredSelection) {
+        assert (preferredSelection == null)
+               || (preferredSelection instanceof Repository);
+
+        if (preferredSelection == null) {
+            preferredSelection = repositoryComboBox.getSelectedItem();
+        }
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+
+        if (preferredSelection != null) {
+            for (int i = 0; i < repoModel.getSize(); i++) {
+                Repository r = (Repository) repoModel.getElementAt(i);
+                if (r == preferredSelection) {
+                    repoModel.setSelectedItem(r);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

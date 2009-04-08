@@ -120,6 +120,7 @@ import org.openide.util.actions.SystemAction;
 public class CompletionTest extends J2eeTestCase {
 
     private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
+    private static final int COMPLETION_PREFIX_LENGHT = 40;
     private static boolean projectsOpened = false;//open test projects
     protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
@@ -422,13 +423,11 @@ public class CompletionTest extends J2eeTestCase {
                 }
             }
             waitTypingFinished(doc);
-            doc.atomicLock();
             int rowStart = Utilities.getRowStart(doc, step.getOffset() + 1);
             int rowEnd = Utilities.getRowEnd(doc, step.getOffset() + 1);
-            String result2 = doc.getText(new int[]{rowStart, rowEnd});
-            doc.atomicUnlock();
-            String result = result2.trim();
-            int removed_whitespaces = result2.length() - result.length();
+            String fullResult = doc.getText(new int[]{rowStart, rowEnd});
+            String result = fullResult.trim();
+            int removed_whitespaces = fullResult.length() - result.length();
             if (!result.equals(step.getResult().trim())) {
                 ref("EE: unexpected CC result:\n< " + result + "\n> " + step.getResult());
             }
@@ -474,14 +473,14 @@ public class CompletionTest extends J2eeTestCase {
                 } else {
                     g.drawString(next.toString(), 0, 0);
                 }
-                dispText = g.getTextUni().trim();
+                dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
                 if (dispText.equals(step.getChoice())) {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }
                 if (printDirectly && !isJavaScript()) {
-                    ref(dispText);
+                    logIntoRef(dispText);
                 } else {
                     finalItems.add(dispText);
                 }
@@ -489,7 +488,7 @@ public class CompletionTest extends J2eeTestCase {
             if (printDirectly && isJavaScript()){
                 Collections.sort(finalItems);
                 for (String str : finalItems) {
-                    ref(str);
+                    logIntoRef(str);
                 }
             }
             class DefaultActionRunner implements Runnable {
@@ -515,7 +514,7 @@ public class CompletionTest extends J2eeTestCase {
                         Collections.sort(finalItems);
                     }
                     for (String str : finalItems) {
-                        ref(str);
+                        logIntoRef(str);
                     }
                 }
                 runInAWT(new DefaultActionRunner(selectedItem, editor));
@@ -530,6 +529,19 @@ public class CompletionTest extends J2eeTestCase {
             ref("Instant substitution performed");
         }
         return false;
+    }
+
+    private void logIntoRef(String message){
+        message = message.replaceAll("<\\?>", "");
+        ref(message);
+    }
+
+    private String getPrefix(String completionText){
+        if (completionText.length() > COMPLETION_PREFIX_LENGHT){
+            return completionText.substring(0, COMPLETION_PREFIX_LENGHT);
+        }else{
+            return completionText;
+        }
     }
 
     protected static void runInAWT(Runnable r) {

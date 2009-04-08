@@ -67,7 +67,7 @@ public class HtmlIndenter {
                 offset--;
             }
 
-            SyntaxElement element = HTMLSyntaxSupport.get(doc).getElementChain(offset);
+            SyntaxElement element = HtmlSyntaxSupport.get(doc).getElementChain(offset);
             if(element == null || element.getType() != SyntaxElement.TYPE_ENDTAG) {
                 LOGGER.info("Unexpected SyntaxElement at position " + offset + ": " + element);
                 return ;

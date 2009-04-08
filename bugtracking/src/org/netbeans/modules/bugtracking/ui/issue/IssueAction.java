@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,14 +70,39 @@ public class IssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        openQuery();
+    }
+
+    public static void openQuery() {
         openQuery(null);
     }
 
-    public static void openQuery(Issue issue) {
-        openIssue(issue, null);
+    public static void openQuery(Repository givenRepository) {
+        final Repository repository;
+        final boolean repositoryGiven;
+
+        if (givenRepository != null) {
+            repository = givenRepository;
+            repositoryGiven = true;
+        } else {
+            repository = BugtrackingOwnerSupport.getInstance()
+                         .getRepository(BugtrackingOwnerSupport.ContextType
+                                        .SELECTED_FILE_AND_ALL_PROJECTS);
+            repositoryGiven = false;
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                IssueTopComponent tc = new IssueTopComponent();
+                tc.initNewIssue(repository, !repositoryGiven);
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
 
-    public static void openIssue(final Issue issue, final Repository repository) {
+    public static void openIssue(final Issue issue, final Repository repository,
+                                 final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 IssueTopComponent tc = null;
@@ -86,7 +112,7 @@ public class IssueAction extends SystemAction {
                 if(tc == null) {
                     tc = new IssueTopComponent();
                 }
-                tc.initNewIssue(repository);
+                tc.initNewIssue(repository, suggestedSelectionOnly);
                 if(!tc.isOpened()) {
                     tc.open();
                 }

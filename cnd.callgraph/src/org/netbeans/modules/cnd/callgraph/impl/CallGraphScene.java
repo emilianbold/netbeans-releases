@@ -20,9 +20,13 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,6 +37,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.EditProvider;
@@ -108,6 +113,20 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             public void run() {
                 sceneLayout.invokeLayout();
                 validate();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
+    }
+
+    public void hideNode(final Function element) {
+        Runnable run = new Runnable() {
+            public void run() {
+                removeNodeWithEdges(element);
+                doLayout();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -207,10 +226,18 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
 
     protected Widget attachNodeWidget(Function node) {
-        LabelWidget label = new MyLabelWidget(this, node.getName());
+        String name = node.getName();
+        String scope = node.getScopeName();
+        Widget label;
+        if (scope != null && scope.length() > 0){
+            label = new MyMemberLabelWidget(this, scope, name);
+        } else {
+            label = new MyLabelWidget(this, name);
+        }
         if (node.isVurtual()) {
             label.setFont(defaultItalicFont);
         }
+        label.setToolTipText(node.getDescription());
         label.setBorder(BORDER_4);
         label.getActions().addAction(moveAction);
         label.getActions().addAction(hoverAction);
@@ -222,6 +249,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     protected Widget attachEdgeWidget(Call edge) {
         ConnectionWidget connection = new ConnectionWidget(this);
+        connection.setToolTipText(edge.getDescription());
         connection.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
         connection.getActions().addAction(hoverAction);
         connection.getActions().addAction(ActionFactory.createEditAction(new EdgeEditProvider(edge)));
@@ -267,16 +295,81 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     private static final class MyLabelWidget extends LabelWidget {
         public MyLabelWidget (Scene scene, String label) {
-            super (scene, label);
+            super(scene);
+            setFont(scene.getFont().deriveFont(Font.BOLD));
+            setLabel(label);
+        }
+
+        @Override
+        protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+            if (previousState.isHovered() == state.isHovered()) {
+                return;
+            }
+            setForeground(getScene().getLookFeel().getLineColor(state));
+            repaint();
+        }
+    }
+
+    private static final class MyMemberLabelWidget extends Widget  {
+        private String scope;
+        private String label;
+
+        public MyMemberLabelWidget (Scene scene, String scope, String label) {
+            super (scene);
+            this.scope = scope;
+            this.label = label;
+            setOpaque(false);
+            revalidate();
+            setCheckClipping(true);
         }
 
         @Override
         protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-            if (previousState.isHovered ()  == state.isHovered ()) {
+            if (previousState.isHovered() == state.isHovered()) {
                 return;
             }
-            setForeground (getScene().getLookFeel().getLineColor(state));
-            repaint ();
+            setForeground(getScene().getLookFeel().getLineColor(state));
+            repaint();
+        }
+
+        @Override
+        protected Rectangle calculateClientArea () {
+            Graphics2D gr = getGraphics();
+            Rectangle2D stringBounds1 = gr.getFontMetrics(getFont()).getStringBounds(scope, gr);
+            Rectangle2D stringBounds2 = gr.getFontMetrics(getFont().deriveFont(Font.BOLD)).getStringBounds(label, gr);
+            Rectangle2D stringBounds = new Rectangle2D.Double(stringBounds1.getX(), stringBounds1.getY(),
+                    Math.max(stringBounds1.getWidth(), stringBounds2.getWidth()), stringBounds1.getHeight()+stringBounds2.getHeight());
+            return roundRectangle(stringBounds);
+        }
+
+        private static Rectangle roundRectangle (Rectangle2D rectangle) {
+            int x1 = (int) Math.floor(rectangle.getX());
+            int y1 = (int) Math.floor(rectangle.getY());
+            int x2 = (int) Math.ceil(rectangle.getMaxX());
+            int y2 = (int) Math.ceil(rectangle.getMaxY());
+            return new Rectangle (x1, y1, x2 - x1, y2 - y1);
+        }
+    
+        @Override
+        protected void paintWidget () {
+            if (label == null) {
+                return;
+            }
+            Graphics2D gr = getGraphics();
+            gr.setFont(getFont());
+
+            FontMetrics fontMetrics = gr.getFontMetrics();
+            Rectangle clientArea = getClientArea();
+
+            int x = clientArea.x;
+            int y = 0;
+            AffineTransform previousTransform = gr.getTransform ();
+            gr.translate (x, y);
+            gr.setColor(getForeground());
+            gr.drawString (scope, 0, 0);
+            gr.setFont(getFont().deriveFont(Font.BOLD));
+            gr.drawString (label, 0, fontMetrics.getHeight());
+            gr.setTransform(previousTransform);
         }
     }
 
@@ -436,6 +529,8 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 menu.add(new GoToReferenceAction(f,0).getPopupPresenter());
                 menu.add(new ExpandCallees(f).getPopupPresenter());
                 menu.add(new ExpandCallers(f).getPopupPresenter());
+                menu.add(new JSeparator());
+                menu.add(new RemoveNode(f).getPopupPresenter());
             } else if (widget instanceof CallGraphScene) {
                 menu = new JPopupMenu();
                 menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
@@ -489,6 +584,29 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                     for(Call call : callModel.getCallers(function)){
                         addCallToScene(call);
                     }
+                }
+            });
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class RemoveNode extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        private Function function;
+        public RemoveNode(Function function) {
+            this.function = function;
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "RemoveNode"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    hideNode(function);
                 }
             });
         }

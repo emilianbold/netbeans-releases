@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     </entry>
         
     <!-- html editor settings -->
-    <entry name="identifier-acceptor" value="org.netbeans.modules.html.editor.HTMLSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
+    <entry name="identifier-acceptor" value="org.netbeans.modules.html.editor.HtmlSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
 
     <!-- jsp editor doesn't have own extra settings -->
     

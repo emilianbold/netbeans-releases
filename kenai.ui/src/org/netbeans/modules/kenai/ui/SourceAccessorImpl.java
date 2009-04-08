@@ -49,8 +49,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -62,7 +64,9 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
@@ -91,7 +95,11 @@ public class SourceAccessorImpl extends SourceAccessor {
         }
         KenaiFeature features[] = null;
         if (project != null) {
-            features = project.getFeatures(Type.SOURCE);
+            try {
+                features = project.getFeatures(Type.SOURCE);
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         for (KenaiFeature feature : features) {
             SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
@@ -122,6 +130,35 @@ public class SourceAccessorImpl extends SourceAccessor {
                 if (project!=null)
                     OpenProjects.getDefault().open(new Project[]{project}, false);
                 WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
+                selectProject(project);
+            }
+
+            private void selectProject(final Project p) {
+                final ExplorerManager em = ((ExplorerManager.Provider) WindowManager.getDefault().findTopComponent("projectTabLogical_tc")).getExplorerManager();
+
+                Node root = em.getRootContext();
+                // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
+                Node projNode = null;
+                for (Node n : root.getChildren().getNodes()) {
+                    Project prj = n.getLookup().lookup(Project.class);
+                    if (prj != null && prj.getProjectDirectory().equals(p.getProjectDirectory())) {
+                        projNode = n;
+                        break;
+                    }
+                }
+                if (projNode == null) {
+                    // fallback..
+                    projNode = root.getChildren().findChild(ProjectUtils.getInformation(p).getName());
+                }
+
+                if (projNode != null) {
+                    try {
+                        em.setSelectedNodes(new Node[]{projNode});
+                    } catch (Exception ignore) {
+                        // may ignore it
+                    }
+                }
+
             }
         };
     }
@@ -180,7 +217,6 @@ public class SourceAccessorImpl extends SourceAccessor {
             projectName = name;
             feature = ftr;
         }
-
     }
 
 }

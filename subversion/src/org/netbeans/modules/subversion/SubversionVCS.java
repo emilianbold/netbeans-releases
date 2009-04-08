@@ -58,6 +58,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -88,11 +89,13 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             Subversion.LOG.fine(" cached as unversioned");
             return null;
         }
+        File metadataRoot = null;
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             Subversion.LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
                 if (SvnUtils.isAdministrative(file)) {
                     Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
+                    metadataRoot = file;
                     file = file.getParentFile();
                     break;
                 }
@@ -120,6 +123,11 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         if(done.size() > 0) {
             Subversion.LOG.log(Level.FINE, " storing unversioned");
             unversionedParents.addAll(done);
+        }
+        if (topmost == null && metadataRoot != null) {
+            // .svn is considered managed, too, see #159453
+            Subversion.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
+            topmost = metadataRoot;
         }
         Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
         return topmost;
@@ -160,7 +168,10 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
                 return ra.equals(rb) && ra.equals(rr);
             } catch (SVNClientException e) {
-                Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b, e);
+                if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                    Subversion.LOG.log(Level.INFO, null, e);
+                }
+                Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b);
                 // root not found
                 return false;
             }

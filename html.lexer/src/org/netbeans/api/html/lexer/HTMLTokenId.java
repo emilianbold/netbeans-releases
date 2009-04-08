@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.html.lexer.HTMLLexer;
+import org.netbeans.lib.html.lexer.HtmlLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -126,7 +126,7 @@ public enum HTMLTokenId implements TokenId {
         
         @Override
         protected Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
-            return new HTMLLexer(info);
+            return new HtmlLexer(info);
         }
         
         @SuppressWarnings("unchecked")

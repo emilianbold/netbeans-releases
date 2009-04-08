@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.modules.web.core.syntax.completion.JavaJSPCompletionProvider.CompletionQueryDelegatedToJava;
+import org.netbeans.modules.web.core.syntax.completion.JavaJspCompletionProvider.CompletionQueryDelegatedToJava;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -87,6 +87,23 @@ public class AttrSupports {
             return list;
         }
         
+    }
+
+    public static class BodyContentSupport extends AttributeValueSupport.Default {
+
+        public BodyContentSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
+        }
+
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
+            list.add("scriptless");    // NOI18N
+            list.add("tagdependent");           // NOI18N
+            list.add("empty");        // NOI18N
+            return list;
+        }
+
     }
     
     public static class RootVersionSupport extends AttributeValueSupport.Default {

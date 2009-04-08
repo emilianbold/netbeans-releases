@@ -50,6 +50,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.NbBundle;
@@ -75,7 +76,6 @@ class Util {
     
     public static JPopupMenu createPopup( TaskListTable table ) {
         JPopupMenu popup = new JPopupMenu();
-        //TODO fix
         //show source
         Task t = table.getSelectedTask();
         if( null != t ) {
@@ -144,6 +144,7 @@ class Util {
     
         public void actionPerformed( ActionEvent e ) {
             TaskManagerImpl tm = TaskManagerImpl.getInstance();
+            tm.clearCache();
             tm.refresh( tm.getScope() );
         }
     }

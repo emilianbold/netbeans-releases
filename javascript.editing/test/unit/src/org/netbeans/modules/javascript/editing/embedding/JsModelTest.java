@@ -48,7 +48,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript.editing.AstUtilities;
@@ -111,7 +111,7 @@ public class JsModelTest extends JsTestBase {
 
     private Snapshot getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
         String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
-        String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
+        String HTML_MIME_TYPE = HtmlKit.HTML_MIME_TYPE;
 
         Language lexerLanguage;
         String mimeType;

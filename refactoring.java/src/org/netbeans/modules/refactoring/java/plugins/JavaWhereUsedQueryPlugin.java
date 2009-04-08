@@ -207,8 +207,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
+        fireProgressListenerStart(ProgressEvent.START, -1);
         Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStep(a.size());
         Problem problem = null;
         try {
             processFiles(a, new FindTask(elements));

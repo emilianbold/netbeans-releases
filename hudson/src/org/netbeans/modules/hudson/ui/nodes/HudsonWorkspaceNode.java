@@ -46,6 +46,7 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Node which displays the remote workspace for a job.
@@ -60,7 +61,7 @@ class HudsonWorkspaceNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return "Remote Workspace"; // XXX I18N
+        return NbBundle.getMessage(HudsonWorkspaceNode.class, "HudsonWorkspaceNode.displayName");
     }
 
     private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.api.db.explorer.node;
@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -162,10 +161,6 @@ public abstract class BaseNode extends AbstractNode {
         nodeProvider = provider;
     }
     
-    protected static ResourceBundle bundle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-    }
-
     /**
      * Initialize the node.  This method is called before the creation process
      * completes so that the sub class can perform any initialization it requires.
@@ -282,13 +277,13 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     protected void addProperty(String name, String desc, Class clazz, boolean writeable, Object value) {
-        String propName = bundle().getString(name);
+        String propName = NbBundle.getMessage (BaseNode.class, name);
 
         String propDesc;
         if (desc == null) {
             propDesc = propName;
         } else {
-            propDesc = bundle().getString(desc);
+            propDesc = NbBundle.getMessage (BaseNode.class, desc);
         }
         PropertySupport ps = new NodePropertySupport(this, name, clazz, propName, propDesc, writeable);
         props.add(ps);
@@ -330,7 +325,7 @@ public abstract class BaseNode extends AbstractNode {
         
         // get the actions from the registry
         Collection<Action> actions = actionRegistry.getActions();
-        return (Action[])actions.toArray(new Action[actions.size()]);
+        return actions.toArray (new Action[actions.size ()]);
     }
     
     /**

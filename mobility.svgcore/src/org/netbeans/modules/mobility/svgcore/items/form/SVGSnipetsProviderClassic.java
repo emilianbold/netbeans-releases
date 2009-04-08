@@ -49,12 +49,6 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider.class)
 public class SVGSnipetsProviderClassic implements SVGSnippetsProvider{
 
-    private static final String name = "Classic_snippet0"; //NOI18N
-
-//    public String getName() {
-//        return name;
-//    }
-
     public String getDisplayName() {
         return NbBundle.getMessage(SVGSnipetsProviderClassic.class, "LBL_SNIPPET_DISPLAY_NAME"); //NOI18N
     }

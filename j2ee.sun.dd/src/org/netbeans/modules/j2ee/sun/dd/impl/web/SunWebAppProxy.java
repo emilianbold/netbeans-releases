@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+import org.netbeans.modules.j2ee.sun.dd.api.web.Valve;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
@@ -640,28 +641,35 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp)webRoot).graphManager().getXmlDocument();
                 currentVersion = SunWebApp.VERSION_2_5_0;
+            }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_3_0_0;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunWebApp.VERSION_2_5_0)){
+            if(newVersion.equals(SunWebApp.VERSION_3_0_0)){
                 //This will always be an upgrade
-                generate2_50Graph(document);
-            }
-            if(newVersion.equals(SunWebApp.VERSION_2_4_1)){
+                generate3_00Graph(document);
+            } else if(newVersion.equals(SunWebApp.VERSION_2_5_0)){
+                if(currentVersion.equals(SunWebApp.VERSION_2_4_1) || currentVersion.equals(SunWebApp.VERSION_2_4_0) ||
+                        currentVersion.equals(SunWebApp.VERSION_2_3_0))
+                    generate2_50Graph(document);
+                else
+                    downgradeWebGraph(document, newVersion, currentVersion);
+            } else if(newVersion.equals(SunWebApp.VERSION_2_4_1)){
                 if(currentVersion.equals(SunWebApp.VERSION_2_4_0) || currentVersion.equals(SunWebApp.VERSION_2_3_0))
                     generate2_41Graph(document);
                 else
                     downgradeWebGraph(document, newVersion, currentVersion);
-            }
-            if(newVersion.equals(SunWebApp.VERSION_2_4_0)){
+            } else if(newVersion.equals(SunWebApp.VERSION_2_4_0)){
                 if(currentVersion.equals(SunWebApp.VERSION_2_3_0))
                     generate2_40Graph(document);
                 else
                     downgradeWebGraph(document, newVersion, currentVersion);
-            }
-            if(newVersion.equals(SunWebApp.VERSION_2_3_0)){
+            } else if(newVersion.equals(SunWebApp.VERSION_2_3_0)){
                 ////This will always be a downgrade
                 downgradeWebGraph(document, newVersion, currentVersion);
             }
@@ -671,7 +679,9 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     private void downgradeWebGraph(Document document, String downgradeVersion, String currentVersion){
             DDTreeWalker downgradeScanner = new DDTreeWalker(document, downgradeVersion, currentVersion);
             downgradeScanner.downgradeSunWebAppDocument();
-            if(downgradeVersion.equals(SunWebApp.VERSION_2_4_1)){
+            if(downgradeVersion.equals(SunWebApp.VERSION_2_5_0)){
+                generate2_50Graph(document);
+            }else if(downgradeVersion.equals(SunWebApp.VERSION_2_4_1)){
                 generate2_41Graph(document);
             }else if(downgradeVersion.equals(SunWebApp.VERSION_2_4_0)){
                 generate2_40Graph(document);
@@ -693,6 +703,13 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
         return document;
     } 
     
+    private void generate3_00Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
+
     private void generate2_50Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp webGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.createGraph(document);
@@ -897,6 +914,38 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
 
     public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?null:webRoot.getMessageDestinationRef();
+    }
+
+    public void setValve(int index, Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setValve(index, value);
+    }
+
+    public Valve getValve(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getValve(index);
+    }
+
+    public int sizeValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.sizeValve();
+    }
+
+    public void setValve(Valve[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setValve(value);
+    }
+
+    public Valve[] getValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getValve();
+    }
+
+    public int addValve(Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.addValve(value);
+    }
+
+    public int removeValve(Valve value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.removeValve(value);
+    }
+
+    public Valve newValve() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.newValve();
     }
 
     public int getStatus() {

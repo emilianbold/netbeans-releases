@@ -50,12 +50,12 @@ public class HudsonJobChangeFileConstants {
 
     private HudsonJobChangeFileConstants() {}
 
-    public static final String JOB_CHANGE_FILE_NAME = "job_change_file_name";
+    public static final String JOB_CHANGE_FILE_NAME = "job_change_file_name"; // NOI18N
     
-    public static final String JOB_CHANGE_FILE_EDIT_TYPE = "job_change_edit_type";
+    public static final String JOB_CHANGE_FILE_EDIT_TYPE = "job_change_edit_type"; // NOI18N
     
-    public static final String JOB_CHANGE_FILE_REVISION = "job_change_revision";
+    public static final String JOB_CHANGE_FILE_REVISION = "job_change_revision"; // NOI18N
     
-    public static final String JOB_CHANGE_FILE_PREVIOUS_REVISION = "job_change_previous_revision";
+    public static final String JOB_CHANGE_FILE_PREVIOUS_REVISION = "job_change_previous_revision"; // NOI18N
 
 }
