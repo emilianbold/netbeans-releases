@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.openide.util.Union2;
 
@@ -146,7 +147,8 @@ public class ComputeImports {
                 }
                 
                 //#122334: do not propose imports from the default package:
-                if (info.getElements().getPackageOf(te).getQualifiedName().length() != 0) {
+                if (info.getElements().getPackageOf(te).getQualifiedName().length() != 0 &&
+                        !Utilities.isExcluded(te.getQualifiedName())) {
                     classes.add(te);
                 }
             }
