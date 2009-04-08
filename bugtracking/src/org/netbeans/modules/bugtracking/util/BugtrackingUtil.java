@@ -97,28 +97,6 @@ public class BugtrackingUtil {
         return DialogDisplayer.getDefault().notify(dd) == ok;
     }
 
-    public static boolean showControllerComponent(final BugtrackingController bc) {
-        JComponent com = bc.getComponent();
-        final JButton ok = new JButton("Ok");
-        JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(com, "Repository?", true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, bc.getHelpContext(), null);
-        dd.setOptions(new Object[]{ok, cancel});
-        dd.setModal(true);
-        dd.setHelpCtx(bc.getHelpContext());
-        dd.setValid(false);
-        ok.setEnabled(false);
-        bc.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                boolean valid = bc.isValid();
-                dd.setValid(valid);
-                ok.setEnabled(valid);
-            }
-        });
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        return dd.getValue() == ok;
-    }
-
     public static Issue[] getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         List<Issue> issues = new ArrayList<Issue>();
@@ -135,7 +113,7 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.trim();
-        if(criteria.equals("")) {
+        if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
         List<Issue> ret = new ArrayList<Issue>();

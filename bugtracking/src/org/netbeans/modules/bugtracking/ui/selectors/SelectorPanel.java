@@ -88,18 +88,20 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
     boolean open() {
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_CreateTitle");
         dd = new DialogDescriptor(this, title);
+        updateRepoPanel((BugtrackingConnector) connectorCbo.getSelectedItem());
         validateController();
         boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
         return ret;
     }
 
     boolean edit(Repository repository, String errorMessage) {
+        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle");
+        dd = new DialogDescriptor(this, title);
+
         connectorCbo.setVisible(false);
         connectorLabel.setVisible(false);
         currentRepo = repository;
         setRepoPanel(repository);
-        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle");
-        dd = new DialogDescriptor(this, title);
         validateController();
         updateErrorLabel(errorMessage);
         boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
@@ -111,8 +113,7 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
     }
 
     void setConnectors(BugtrackingConnector[] connectors) {
-        connectorCbo.setModel(new DefaultComboBoxModel(connectors));
-        updateRepoPanel((BugtrackingConnector) connectorCbo.getSelectedItem());
+        connectorCbo.setModel(new DefaultComboBoxModel(connectors));        
     }
 
     /** This method is called from within the constructor to
@@ -205,6 +206,9 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
         JComponent comp = controller.getComponent();
         repoPanel.removeAll();
         repoPanel.add(comp, BorderLayout.CENTER);
+        if(dd != null) {
+            dd.setHelpCtx(controller.getHelpCtx());
+        }
         revalidate();
         repaint();
     }
