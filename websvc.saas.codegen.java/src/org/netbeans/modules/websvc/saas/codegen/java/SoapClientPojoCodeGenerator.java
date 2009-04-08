@@ -52,6 +52,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
@@ -74,6 +76,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
@@ -82,6 +85,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +111,16 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
                 Util.isJava(doc)) {
-            return true;
+            try {
+                WsdlSaasMethod wsm = (WsdlSaasMethod) method;
+                Project p = FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc));
+                new SoapClientSaasBean(wsm, p, JavaUtil.toJaxwsOperationInfos(wsm, p));
+                return true;
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, new IOException(
+                    NbBundle.getMessage(CodeSetupPanel.class, "WARN_UnsupportedDropTarget")
+                ));
+            }
         }
         return false;
     }
