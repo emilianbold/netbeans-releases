@@ -290,7 +290,6 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             if (pom.exists()) {
                 req.setPomFile(pom.getAbsolutePath());
             }
-//TODO??            req.setLocalRepositoryPath(embedder.getSettings().getLocalRepository());
             req.addEventMonitor(out);
             req.setTransferListener(new ProgressTransferListener());
             //            req.setReactorActive(true);

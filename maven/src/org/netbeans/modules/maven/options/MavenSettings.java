@@ -68,6 +68,7 @@ public class MavenSettings  {
     public static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
     public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
+    public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
 
     
     private static final MavenSettings INSTANCE = new MavenSettings();
@@ -167,7 +168,17 @@ public class MavenSettings  {
     public boolean isSynchronizeProxy() {
         return getPreferences().getBoolean(PROP_SYNCH_PROXY, true);
     }
+
+    public void setCustomLocalRepository(String text) {
+        if (text != null && text.trim().length() == 0) {
+            text = null;
+        }
+        getPreferences().put(PROP_CUSTOM_LOCAL_REPOSITORY, text);
+    }
     
+    public String getCustomLocalRepository() {
+        return getPreferences().get(PROP_CUSTOM_LOCAL_REPOSITORY, null);
+    }
     
     public File getCommandLinePath() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
@@ -306,5 +317,6 @@ public class MavenSettings  {
             }
         }
     };
+
     
 }

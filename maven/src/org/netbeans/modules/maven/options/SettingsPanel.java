@@ -558,10 +558,13 @@ public class SettingsPanel extends javax.swing.JPanel {
         
         cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
+        String repo = MavenSettings.getDefault().getCustomLocalRepository();
+        txtLocalRepository.setText(repo != null ? repo : "");
     }
     
     public void applyValues() {
         MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
+        MavenSettings.getDefault().setCustomLocalRepository(txtLocalRepository.getText());
         String cl = txtCommandLine.getText().trim();
         if (cl.length() == 0) {
             cl = null;

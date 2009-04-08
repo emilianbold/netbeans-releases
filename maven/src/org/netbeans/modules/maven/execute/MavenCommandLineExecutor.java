@@ -243,7 +243,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
-        LinkedHashSet<String> globals = new LinkedHashSet<String>();
+        String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
+        if (localRepo != null) {
+            toRet.add("-Dmaven.repo.local=" + localRepo);
+        }
+        
 
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
             toRet.add("--offline");//NOI18N
