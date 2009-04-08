@@ -19,8 +19,9 @@
 **/docs/GUIExamplesDescription.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
 **/modules/ext/debugger.html:
-profiler*/**/config/Services/filtersets-default.xml:
-profiler*/**/config/Services/filters-default.xml:
+**/*.jar:**/filtersets-default.xml:
+**/*.jar:**/filters-default.xml:
+**/*.jar:**/heapwalk/oqlqueries-default.xml:
 exclude **/*.jar:**/Bundle_noi18n.properties
 exclude **/batik-mod.jar:
 exclude **/json-*.jar:
