@@ -50,6 +50,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -136,15 +137,16 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf, 
-              "testPreconditions", "testNewWebProject", "testRegisterTomcat",
-              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testCompileAllJSP", "testCompileJSP",
-              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
-              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
-              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
-               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
+                "testPreconditions", "testNewWebProject", "testRegisterTomcat",
+                "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+                "testCompileAllJSP", "testCompileJSP",
+                "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
+                "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+                "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+                "testJSPNavigator", "testHTMLNavigator",
+                "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+                );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -705,7 +707,8 @@ public class WebProjectValidation extends J2eeTestCase {
         NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
         assertNotNull(navigatorOperator);
         JTreeOperator treeOperator = navigatorOperator.getTree();
-        Object root = treeOperator.getRoot();
+        TreeModel model = treeOperator.getModel();
+        Object root = model.getRoot();
         assertNotNull(root);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML

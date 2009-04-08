@@ -89,6 +89,7 @@ public class MavenWebProjectValidation extends WebProjectValidation {
               "testRunServlet","testCreateTLD", "testCreateTagHandler",
               "testRunTag","testNewHTML", "testRunHTML",
               "testNewSegment", "testNewDocument",
+              "testJSPNavigator", "testHTMLNavigator",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
         conf = conf.enableModules(".*").clusters(".*");
