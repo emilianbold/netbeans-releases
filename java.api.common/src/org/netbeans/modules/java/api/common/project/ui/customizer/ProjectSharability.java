@@ -37,17 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.j2seproject.api;
+package org.netbeans.modules.java.api.common.project.ui.customizer;
 
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * Ability to verify whether the project is currently sharable, and if not to make it so.
- * Will be in lookup of a j2seproject.
- * @since org.netbeans.modules.java.j2seproject/1 1.24
+ * Will be in project lookup.
+ * @since org.netbeans.modules.java.api.common/0 1.8
  */
-public interface J2SEProjectSharability {
+public interface ProjectSharability {
 
     /**
      * Checks whether the project is currently sharable.

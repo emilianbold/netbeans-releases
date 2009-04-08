@@ -556,7 +556,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         @Override
         String getDisplayText() {
-            return NbBundle.getMessage(PopupItem.class, "LBL_SearchCommand");
+            return NbBundle.getMessage(PopupItem.class, "LBL_SearchCommand");   // NOI18N
         }
     }
 }
