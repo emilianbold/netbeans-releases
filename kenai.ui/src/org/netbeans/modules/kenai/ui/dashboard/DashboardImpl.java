@@ -634,7 +634,11 @@ public final class DashboardImpl extends Dashboard {
                     ProjectAccessor accessor = ProjectAccessor.getDefault();
                     for( String id : projectIds ) {
                         ProjectHandle handle = accessor.getNonMemberProject(id, forceRefresh);
-                        projects.add(handle);
+                        if (handle!=null) {
+                            projects.add(handle);
+                        } else {
+                            projects=null;
+                        }
                     }
                     res[0] = projects;
                 }
