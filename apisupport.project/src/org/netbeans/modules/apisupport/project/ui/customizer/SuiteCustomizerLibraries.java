@@ -1448,6 +1448,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     if (refreshUniverse)
                         universe = null;
                     doUpdateDependencyWarnings();
+                    // XXX testing NPE
+                    libChildren.platformNodes.clear();
                 }
             });
         }
@@ -1661,7 +1663,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         String mdn = m.getDisplayName();
-        String mc = libChildren.findCluster(m.getCluster()).getDisplayName();
+        ClusterNode node = libChildren.findCluster(m.getCluster());
+        if (node == null) {
+            // #162155: dirty hack of race conditions; proper solution would be to copy everything for doUpdateDependencyWarnings,
+            // but null here means another refresh is in progress, thus it is safe to return here, last refresh in row will get everything straight.
+            return false;
+        }
+        String mc = node.getDisplayName();
         deps.addAll(m.getModuleDependencies());
         boolean ret = false;
         for (Dependency d : deps) {
@@ -1692,7 +1700,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
             String ddn = dep.getDisplayName();
             if (excluded.contains(dep)) {
-                String dc = libChildren.findCluster(dep.getCluster()).getDisplayName();
+                node = libChildren.findCluster(dep.getCluster());
+                if (node == null) // #162155
+                    return false;
+                String dc = node.getDisplayName();
                 // currently the only fixable error
                 FixInfo.putFixable(fi, cnb, new String[] {"ERR_excluded_dep", mdn, mc, ddn, dc});
                 // include added module again and see what happens...
@@ -1737,8 +1748,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             if (!found) {
                 if (wouldBeProvider != null) {
+                    node = libChildren.findCluster(wouldBeProvider.getCluster());
+                    if (node == null) // #162155
+                        return false;
                     String[] msg = new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
-                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()};
+                        wouldBeProvider.getDisplayName(), node.getDisplayName()};
                     if (possibleProviders.size() == 1) {
                         // exactly one (disabled) provider, can be fixed automatically
                         excluded.remove(wouldBeProvider);
