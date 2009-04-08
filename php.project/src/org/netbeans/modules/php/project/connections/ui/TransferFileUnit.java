@@ -41,21 +41,24 @@
 package org.netbeans.modules.php.project.connections.ui;
 
 import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
- *
  * @author Radek Matous
  */
 public class TransferFileUnit {
 
-    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
-        String o2Path = o2.getTransferFile().getRelativePath();
-        String o1Path = o1.getTransferFile().getRelativePath();
-        return o1Path.compareTo(o2Path);
+    private final TransferFile transferFile;
+    private boolean isMarked;
+
+    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
+        this.transferFile = transferFile;
+        this.isMarked = isMarked;
     }
 
-    private TransferFile transferFile;
-    private boolean isMarked;
+    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
+        return o1.getTransferFile().getRelativePath().compareTo(o2.getTransferFile().getRelativePath());
+    }
 
     protected TransferFile getTransferFile() {
         return transferFile;
@@ -65,13 +68,7 @@ public class TransferFileUnit {
         return isMarked;
     }
 
-    public void setMarked(boolean marked) {
-        this.isMarked = marked;
-    }
-
-
-    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
-        this.transferFile = transferFile;
+    public void setMarked(boolean isMarked) {
         this.isMarked = isMarked;
     }
 
@@ -79,21 +76,21 @@ public class TransferFileUnit {
         return getTransferFile().hashCode();
     }
 
-
     public boolean canBeMarked() {
         return true;
     }
 
-
     public final boolean isVisible(final String filter) {
-        return !getTransferFile().isDirectory() &&
-                (filter == null ||
-                filter.length() == 0 ||
-                getDisplayName().toLowerCase().contains(filter));
+        return getTransferFile().isFile()
+                && (!PhpProjectUtils.hasText(filter) || getDisplayName().toLowerCase().contains(filter));
     }
-
 
     String getDisplayName() {
         return getTransferFile().getRelativePath();
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
     }
 }

@@ -224,7 +224,6 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.bugAssigneeCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -235,7 +234,6 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.reporterCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reporterCheckBoxActionPerformed"/>
@@ -249,7 +247,6 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.ccCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -260,7 +257,6 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.commenterCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -935,7 +931,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="searchPanel" alignment="0" max="32767" attributes="1"/>
           <Component id="queryHeaderPanel" alignment="0" max="32767" attributes="2"/>
-          <Component id="noContentPanel" alignment="0" pref="820" max="32767" attributes="0"/>
+          <Component id="noContentPanel" alignment="0" pref="979" max="32767" attributes="0"/>
           <Component id="tableFieldsPanel" alignment="0" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
@@ -967,7 +963,7 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="tablePanel" alignment="0" pref="800" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" pref="939" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1010,7 +1006,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="677" max="32767" attributes="0"/>
+                      <EmptySpace pref="762" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1189,18 +1185,18 @@
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byTextContainer" alignment="0" pref="798" max="32767" attributes="2"/>
-                  <Component id="byLastChangeContainer" alignment="0" pref="798" max="32767" attributes="1"/>
+                  <Component id="byTextContainer" alignment="0" pref="937" max="32767" attributes="2"/>
+                  <Component id="byLastChangeContainer" alignment="0" pref="937" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" pref="798" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" pref="937" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" pref="798" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" pref="937" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
               </Group>
             </DimensionLayout>
@@ -1321,7 +1317,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" pref="724" max="32767" attributes="0"/>
+                          <Component id="urlTextField" pref="824" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1405,7 +1401,7 @@
                       <Component id="idTextField" min="-2" pref="191" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="gotoIssueButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="474" max="32767" attributes="0"/>
+                      <EmptySpace pref="576" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1490,7 +1486,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="524" max="32767" attributes="0"/>
+                          <EmptySpace pref="585" max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>

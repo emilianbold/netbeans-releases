@@ -64,7 +64,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import java.util.concurrent.Executor;
-import org.openide.util.Utilities;
+import org.netbeans.modules.openide.util.ActiveQueue;
 
 
 /** Implementation of the lookup from OpenAPIs that is based on the
@@ -687,7 +687,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     }
 
     private static ReferenceQueue<Object> activeQueue() {
-        return Utilities.activeReferenceQueue();
+        return ActiveQueue.queue();
     }
 
     /** Storage to keep the internal structure of Pairs and to answer

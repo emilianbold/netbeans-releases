@@ -58,9 +58,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
@@ -72,8 +69,12 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -195,7 +196,7 @@ public final class AntProjectHelper {
     private final ProjectProperties properties;
     
     /** Listener to XML files; needs to be held as an instance field so it is not GC'd */
-    private final FileChangeSupportListener fileListener;
+    private final FileChangeListener fileListener;
     
     /** True if currently saving XML files. */
     private boolean writingXML = false;
@@ -226,8 +227,8 @@ public final class AntProjectHelper {
         assert projectXml != null;
         properties = new ProjectProperties(this);
         fileListener = new FileListener();
-        FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PROJECT_XML_PATH));
-        FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+        FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
+        FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
     }
     
     /**
@@ -787,15 +788,16 @@ public final class AntProjectHelper {
         putConfigurationFragment(data, shared);
     }
     
-    private final class FileListener implements FileChangeSupportListener {
+    private final class FileListener implements FileChangeListener {
         
         public FileListener() {}
         
-        private void change(File f) {
+        private void change(FileEvent fe) {
             if (writingXML) {
                 return;
             }
             String path;
+            File f = FileUtil.toFile(fe.getFile());
             synchronized (modifiedMetadataPaths) {
                 if (f.equals(resolveFile(PROJECT_XML_PATH))) {
                     if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
@@ -817,19 +819,30 @@ public final class AntProjectHelper {
             }
             fireExternalChange(path);
         }
-        
-        public void fileCreated(FileChangeSupportEvent event) {
-            change(event.getPath());
+
+        public void fileFolderCreated(FileEvent fe) {
+            change(fe);
         }
-        
-        public void fileDeleted(FileChangeSupportEvent event) {
-            change(event.getPath());
+
+        public void fileDataCreated(FileEvent fe) {
+            change(fe);
         }
-        
-        public void fileModified(FileChangeSupportEvent event) {
-            change(event.getPath());
+
+        public void fileChanged(FileEvent fe) {
+            change(fe);
         }
-        
+
+        public void fileDeleted(FileEvent fe) {
+            change(fe);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            change(fe);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            change(fe);
+        }
     }
     
     /**
