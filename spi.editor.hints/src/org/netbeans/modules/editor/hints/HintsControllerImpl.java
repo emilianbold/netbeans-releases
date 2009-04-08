@@ -79,7 +79,7 @@ public final class HintsControllerImpl {
     
     public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        
+
         if (od == null)
             return ;
         

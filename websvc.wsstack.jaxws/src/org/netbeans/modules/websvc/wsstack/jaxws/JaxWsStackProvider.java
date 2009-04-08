@@ -88,14 +88,12 @@ public class JaxWsStackProvider {
         if (java_version.startsWith("1.6")) { //NOI18N
             int index = java_version.indexOf("_"); //NOI18N
             if (index > 0) {
-                String releaseVersion = java_version.substring(index+1);
-                try {
-                    Integer rv = Integer.valueOf(releaseVersion);
-                    if (rv >=4) return "2.1.1"; //NOI18N
-                    else return "2.0"; //NOI18N
-                } catch (NumberFormatException ex) {
-                    // return null for some strange jdk versions
-                    return null;
+                String releaseVersion = parseReleaseVersion(java_version.substring(index+1));
+                Integer rv = Integer.valueOf(releaseVersion);
+                if (rv >= 4) {
+                    return "2.1.1"; //NOI18N
+                } else {
+                    return "2.0"; //NOI18N
                 }
             } else {
                 // return null for some strange jdk versions
@@ -111,5 +109,18 @@ public class JaxWsStackProvider {
                 return null;
             }
         }
+    }
+
+    private static String parseReleaseVersion(String releaseVersion) {
+        StringBuffer buf = new StringBuffer();
+        for (int i=0; i<releaseVersion.length(); i++) {
+            char c = releaseVersion.charAt(i);
+            if (Character.isDigit(c)) {
+                buf.append(c);
+            } else {
+                break;
+            }
+        }
+        return buf.toString();
     }
 }

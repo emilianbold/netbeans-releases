@@ -1,7 +1,7 @@
 Name: JUnit
-Version:4.5
+Version: 4.5
 License: CPL-1.0
-OSR: 
+OSR: 6529 
 Origin: http://www.junit.org/index.htm
 Description: JUnit is a regression testing framework
 Files: junit-4.5-api.zip, junit-4.5.jar

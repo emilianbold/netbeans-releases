@@ -98,7 +98,7 @@ public class MetroConfigLoader {
 
         // metro.xml with tubelines is supported starting from Metro 2.0, which includes JAX-WS 2.2
         WSStackVersion version = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
-        if (version.compareTo(WSStackVersion.valueOf(2, 2, 0, 0)) < 0) return false;
+        if (version == null || version.compareTo(WSStackVersion.valueOf(2, 2, 0, 0)) < 0) return false;
 
         return true;
     }

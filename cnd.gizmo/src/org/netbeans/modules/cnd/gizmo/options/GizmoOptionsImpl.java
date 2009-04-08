@@ -47,12 +47,13 @@ import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.openide.util.NbBundle;
 
-public class GizmoOptions implements ConfigurationAuxObject {
+public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
 
     private PropertyChangeSupport pcs = null;
@@ -68,7 +69,7 @@ public class GizmoOptions implements ConfigurationAuxObject {
     // Synchronization
     private BooleanConfiguration synchronization;
     // Data Provider
-    public static final int SUNSTUDIO = 0;
+    public static final int SUN_STUDIO = 0;
     public static final int DTRACE = 1;
     private static final String[] DATA_PROVIDER_NAMES = {
 	  getString("SunStudio"),
@@ -76,7 +77,7 @@ public class GizmoOptions implements ConfigurationAuxObject {
     };
     private IntConfiguration dataProvider;
     
-    public GizmoOptions(String baseDir, PropertyChangeSupport pcs) {
+    public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
 
@@ -91,8 +92,8 @@ public class GizmoOptions implements ConfigurationAuxObject {
         clearChanged();
     }
 
-    public static GizmoOptions getOptions(Configuration conf) {
-        GizmoOptions gizmoOptions = (GizmoOptions) conf.getAuxObject(GizmoOptions.PROFILE_ID);
+    public static GizmoOptionsImpl getOptions(Configuration conf) {
+        GizmoOptionsImpl gizmoOptions = (GizmoOptionsImpl) conf.getAuxObject(GizmoOptionsImpl.PROFILE_ID);
         return gizmoOptions;
     }
 
@@ -106,73 +107,116 @@ public class GizmoOptions implements ConfigurationAuxObject {
 
 
     /**
-     * @return the profileOnRun
+     * Profile On Run
      */
     public BooleanConfiguration getProfileOnRun() {
         return profileOnRun;
     }
 
-    /**
-     * @param profileOnRun the profileOnRun to set
-     */
+    public boolean getProfileOnRunValue() {
+        return getProfileOnRun().getValue();
+    }
+
     public void setProfileOnRun(BooleanConfiguration profileOnRun) {
         this.profileOnRun = profileOnRun;
     }
 
+    public void setProfileOnRunValue(boolean profileOnRunValue) {
+        getProfileOnRun().setValue(profileOnRunValue);
+    }
+
+
     /**
-     * @return the cpu
+     * CPU
      */
     public BooleanConfiguration getCpu() {
         return cpu;
     }
 
-    /**
-     * @param cpu the cpu to set
-     */
+    public boolean getCpuValue() {
+        return getCpu().getValue();
+    }
+
     public void setCpu(BooleanConfiguration cpu) {
         this.cpu = cpu;
     }
 
+    public void setCpuValue(boolean cpu) {
+        getCpu().setValue(cpu);
+    }
+
     /**
-     * @return the memory
+     * Memory
      */
     public BooleanConfiguration getMemory() {
         return memory;
     }
 
-    /**
-     * @param memory the memory to set
-     */
+    public boolean getMemoryValue() {
+        return getMemory().getValue();
+    }
+
     public void setMemory(BooleanConfiguration memory) {
         this.memory = memory;
     }
 
+    public void setMemoryValue(boolean memory) {
+        getMemory().setValue(memory);
+    }
+
     /**
-     * @return the synchronization
+     * Synchronization
      */
     public BooleanConfiguration getSynchronization() {
         return synchronization;
     }
 
-    /**
-     * @param synchronization the synchronization to set
-     */
+    public boolean getSynchronizationValue() {
+        return getSynchronization().getValue();
+    }
+
     public void setSynchronization(BooleanConfiguration synchronization) {
         this.synchronization = synchronization;
     }
 
+    public void setSynchronizationValue(boolean synchronization) {
+        getSynchronization().setValue(synchronization);
+    }
+
     /**
-     * @return the dataProvider
+     * Data Provider
      */
     public IntConfiguration getDataProvider() {
         return dataProvider;
     }
 
-    /**
-     * @param dataProvider the dataProvider to set
-     */
+    public DataProvider getDataProviderValue() {
+        if (getDataProvider().getValue() == SUN_STUDIO) {
+            return DataProvider.SUN_STUDIO;
+        }
+        else if (getDataProvider().getValue() == DTRACE) {
+            return DataProvider.DTRACE;
+        }
+        assert true;
+        return GizmoOptions.DataProvider.DTRACE;
+    }
+
     public void setDataProvider(IntConfiguration dataProvider) {
         this.dataProvider = dataProvider;
+    }
+
+    public void setDataProviderValue(DataProvider dataProvider) {
+        int value = DTRACE;
+        if (dataProvider == DataProvider.SUN_STUDIO) {
+            value = SUN_STUDIO;
+        }
+        else if (dataProvider == DataProvider.DTRACE) {
+            value = DTRACE;
+        }
+        else {
+            assert true;
+        }
+        getDataProvider().setValue(value);
     }
 
     /**
@@ -218,7 +262,7 @@ public class GizmoOptions implements ConfigurationAuxObject {
     }
     
     public void assign(ConfigurationAuxObject auxObject) {
-        GizmoOptions gizmoOptions = (GizmoOptions)auxObject;
+        GizmoOptionsImpl gizmoOptions = (GizmoOptionsImpl)auxObject;
         
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
         getCpu().assign(gizmoOptions.getCpu());
@@ -229,8 +273,8 @@ public class GizmoOptions implements ConfigurationAuxObject {
 
     
     @Override
-    public GizmoOptions clone() {
-        GizmoOptions clone = new GizmoOptions(getBaseDir(), null);
+    public GizmoOptionsImpl clone() {
+        GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
 
         clone.setProfileOnRun(getProfileOnRun().clone());
         clone.setCpu(getCpu().clone());
@@ -249,7 +293,7 @@ public class GizmoOptions implements ConfigurationAuxObject {
 
     protected static String getString(String s) {
         if (bundle == null) {
-            bundle = NbBundle.getBundle(GizmoOptions.class);
+            bundle = NbBundle.getBundle(GizmoOptionsImpl.class);
         }
         return bundle.getString(s);
     }

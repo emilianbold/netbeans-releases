@@ -53,14 +53,8 @@ import org.openide.util.Cancellable;
 public interface XDebugStarter {
     /**
      * Starts session
-     * @param project
-     * @param run code that should initiate connection. Is called after listening
-     *            on defined port (typically 9000) started.
-     * @param startFile file to debug.
-     * @param closeSession
-     * @param pathMapping path mapping (remote, local); strings, never null
      */
-    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping);
+    void start(Project project, Callable<Cancellable> run, Properties properties);
 
     /**
      * @return true if session is already running
@@ -70,5 +64,28 @@ public interface XDebugStarter {
     /**
      * Stops session
      */
-    void stop();    
+    void stop();
+
+    /**
+     * @since 2.13
+     */
+    public static final class Properties {
+        public final FileObject startFile;
+        public final boolean closeSession;
+        // path mapping (remote, local); strings, never null
+        public final List<Pair<String, String>> pathMapping;
+        // <host, port> - can be null if not used
+        public final Pair<String, Integer> debugProxy;
+
+        private Properties(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy) {
+            this.startFile = startFile;
+            this.closeSession = closeSession;
+            this.pathMapping = pathMapping;
+            this.debugProxy = debugProxy;
+        }
+
+        public static Properties create(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy) {
+            return new Properties(startFile, closeSession, pathMapping, debugProxy);
+        }
+    }
 }

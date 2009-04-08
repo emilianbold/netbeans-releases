@@ -481,10 +481,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         try {
             if (instanceOf (Node.class)) {
                 Node n = (Node)instanceCreate ();
-                return new CookieAdjustingFilter(n);
+                if (n != null) { // #161888 robustness
+                    return new CookieAdjustingFilter(n);
+                }
             } else if (instanceOf (Node.Handle.class)) {
                 Node.Handle h = (Node.Handle) instanceCreate ();
-                return new CookieAdjustingFilter(h.getNode());
+                if (h != null) {
+                    return new CookieAdjustingFilter(h.getNode());
+                }
             }
         } catch (IOException ex) {
             err.log(Level.WARNING, null, ex);
