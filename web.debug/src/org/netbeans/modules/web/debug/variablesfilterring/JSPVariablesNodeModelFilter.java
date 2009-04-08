@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap;
+import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap.UnknownOwnerNameException;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.ImplicitLocals;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -166,7 +167,7 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
         if (node instanceof ImplicitLocals)
             sd = NbBundle.getMessage(JSPVariablesFilter.class, "TLT_IMPLICIT_LOCALS");
         else if (node instanceof AttributeMap) {
-            String tltAttributes = "";
+            String tltAttributes;
             String ownerName = ((AttributeMap)node).getOwnerName();
             if (ownerName.equals("request"))
                 tltAttributes = "TLT_REQUEST_ATTRIBUTES";
@@ -174,8 +175,9 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
                 tltAttributes = "TLT_SESSION_ATTRIBUTES";
             else if (ownerName.equals("application"))
                 tltAttributes = "TLT_APPLICATION_ATTRIBUTES";
+            else throw new UnknownOwnerNameException(ownerName);
             
-            sd = NbBundle.getMessage(JSPVariablesFilter.class, "TLT_REQUEST_ATTRIBUTES");
+            sd = NbBundle.getMessage(JSPVariablesFilter.class, tltAttributes);
         }
         else if (node instanceof AttributeMap.Attribute) {
             Variable attributeValue = ((AttributeMap.Attribute)node).getValue();
