@@ -56,7 +56,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;                                                                                                                                                                                                    
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position;
@@ -110,7 +111,8 @@ import org.openide.util.Parameters;
  *                                                                                                                                                                                                                             
  * @author Jan Becicka                                                                                                                                                                                                         
  */                                                                                                                                                                                                                            
-public final class TreePathHandle {                                                                                                                                                                                            
+public final class TreePathHandle {
+    private static Logger log = Logger.getLogger(TreePathHandle.class.getName());
 
     private final Delegate delegate;
     
@@ -606,6 +608,10 @@ public final class TreePathHandle {
             //tzezula: Very strange and probably useless
             if (file == null && source != null) {
                 FileObject fo = URLMapper.findFileObject(source);
+                if (fo == null) {
+                    log.log(Level.INFO, "There is no fileobject for source: " +source + ". Was this file removed?");
+                    return file;
+                }
                 file = fo;
                 if (fo.getNameExt().endsWith(FileObjects.SIG)) {
                     //NOI18N
