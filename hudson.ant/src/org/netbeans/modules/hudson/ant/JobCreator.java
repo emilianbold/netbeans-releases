@@ -150,7 +150,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         Element projectE = doc.getDocumentElement();
         StringBuilder targetsS = new StringBuilder();
         for (Map.Entry<Target,JCheckBox> entry : checkboxen.entrySet()) {
-            if (!entry.getValue().isSelected()) {
+            if (entry.getValue().isSelected()) {
                 if (targetsS.length() > 0) {
                     targetsS.append(' ');
                 }
