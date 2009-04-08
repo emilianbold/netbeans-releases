@@ -79,11 +79,21 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     
     private SchemaImpl schema;
     private SchemaComponentFactory csef;
+    private RefCacheSupport mRefCacheSupport;
     
     public SchemaModelImpl(ModelSource modelSource) {
         super(modelSource);	
         csef = new SchemaComponentFactoryImpl(this);
         //getAccess().setAutoSync(true);
+        mRefCacheSupport = new RefCacheSupport(this);
+    }
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public RefCacheSupport getRefCacheSupport() {
+        return mRefCacheSupport;
     }
     
     /**
@@ -158,7 +168,8 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             if (found == null && refToMe == null) {
                 Collection<SchemaModelReference> modelRefs = getMegaIncludedModelsRefs();
                 for (SchemaModelReference r : modelRefs) {
-                    SchemaModelImpl sm = resolve(r);
+                    SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
+                       mRefCacheSupport.optimizedResolve(r);
                     if (sm == null)
                         continue;
                     found = sm.resolve(namespace, localName, type, r, checked);
@@ -180,8 +191,10 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
                         continue;
                     }
                 }
+
+                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
+                    mRefCacheSupport.optimizedResolve(r);
                 
-                SchemaModelImpl sm = resolve(r);
                 if (sm != null && ! checked.contains(sm)) {
                     found = sm.resolve(namespace, localName, type, r, checked);
                 }
@@ -190,7 +203,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
                 }
             }
         }
-                
+        
         return found;
     }
     
@@ -227,7 +240,8 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             //try to resolve in all the includes found.
             Collection<Include> refs = m.getSchema().getIncludes();
             for(SchemaModelReference ref: refs) {
-                SchemaModel sm = resolve(ref);
+                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(ref) :
+                    mRefCacheSupport.optimizedResolve(ref);
                 if(sm == this) {
                     modelRefs.addAll(refs);
                     break;
