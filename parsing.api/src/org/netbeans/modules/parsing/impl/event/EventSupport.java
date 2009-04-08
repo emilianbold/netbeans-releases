@@ -329,6 +329,11 @@ public final class EventSupport {
                 if (editor != null) {
                     editor.addCaretListener(this);
                     editor.addPropertyChangeListener(this);
+                    final Document doc = editor.getDocument();
+                    final Source source = doc == null ? null : Source.create(doc);
+                    if (source != null) {
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                    }
                 }
             }
         }
