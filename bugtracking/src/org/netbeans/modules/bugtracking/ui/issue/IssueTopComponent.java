@@ -316,6 +316,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentOpened() {
         openIssues.add(this);
+        if(issue != null) {
+            issue.getController().opened();
+        }
     }
 
     @Override
@@ -323,6 +326,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.remove(this);
         if(issue != null) {
             issue.removePropertyChangeListener(this);
+            issue.getController().closed();
         }
     }
 

@@ -46,7 +46,6 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
@@ -84,7 +83,18 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.WHILE;
     }
-    
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (condition instanceof Disposable) {
+            ((Disposable) condition).dispose();
+        }
+        if (body instanceof Disposable) {
+            ((Disposable) body).dispose();
+        }
+    }
+
     private void renderIfNeed() {
         if( condition == null ) {
             render();

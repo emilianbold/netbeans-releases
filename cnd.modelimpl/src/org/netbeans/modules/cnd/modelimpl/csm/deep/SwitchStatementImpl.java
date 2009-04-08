@@ -69,6 +69,17 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         return CsmStatement.Kind.SWITCH;
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (condition instanceof Disposable) {
+            ((Disposable)condition).dispose();
+        }
+        if (body instanceof Disposable) {
+            ((Disposable)body).dispose();
+        }
+    }
+
     public CsmCondition getCondition() {
         if( condition == null ) {
             AST token = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_CONDITION);

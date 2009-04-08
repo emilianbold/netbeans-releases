@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
-
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
@@ -73,6 +70,14 @@ public class CaseStatementImpl extends StatementBase implements CsmCaseStatement
             }
         }
         return expression;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (expression instanceof Disposable) {
+            ((Disposable)expression).dispose();
+        }
     }
 
     public CsmStatement.Kind getKind() {

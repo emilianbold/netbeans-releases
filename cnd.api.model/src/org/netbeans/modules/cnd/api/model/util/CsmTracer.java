@@ -944,7 +944,7 @@ public final class CsmTracer {
                     print(sb.toString());
                     indent();
                     CsmClass refClass = frClass.getReferencedClass();
-                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName().toString()); // NOI18N
+                    print("REFERENCED CLASS: " + ((refClass == null) ? "*UNRESOLVED*" : refClass.getUniqueName().toString())); // NOI18N
                     unindent();
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION) {
                     dumpModel((CsmFunction) friend);

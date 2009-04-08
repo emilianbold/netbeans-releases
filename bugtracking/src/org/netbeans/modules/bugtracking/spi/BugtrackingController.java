@@ -96,6 +96,20 @@ public abstract class BugtrackingController {
     public abstract void applyChanges() throws IOException; 
 
     /**
+     * Should be called when this controllers parent component is openened
+     */
+    public void opened() {
+
+    }
+
+    /**
+     * Should be called when this controllers parent component is closed
+     */
+    public void closed() {
+
+    }
+    
+    /**
      * Registers a PropertyChangeListener
      * @param l
      */

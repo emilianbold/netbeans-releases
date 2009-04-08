@@ -44,7 +44,6 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -62,7 +61,6 @@ import org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 
 /** Mapper from FileObject -> URL.
  * Should be registered in default lookup. For details see {@link Lookup#getDefault()}.
@@ -281,49 +279,6 @@ public abstract class URLMapper {
                 threadCache.set(null);
             }
         }
-    }
-
-    private static Method toFileObjectMethod;
-    private static final String MASTER_URL_MAPPER = "org.netbeans.modules.masterfs.MasterURLMapper";  //NOI18N
-
-    /** Gets FileObject from masterfs through reflection if present, otherwise
-     * fallback to other mappers.
-     * @param file a file
-     * @return FileObject or null if not found
-     */
-    static FileObject toFileObject(File file) {
-        for (URLMapper mapper : getInstances()) {
-            if (mapper.getClass().getName().equals(MASTER_URL_MAPPER)) {
-                if (toFileObjectMethod == null) {
-                    try {
-                        toFileObjectMethod = mapper.getClass().getDeclaredMethod("toFileObject", File.class);  //NOI18N
-                        toFileObjectMethod.setAccessible(true);
-                    } catch (Exception ex) {
-                        // ignore
-                        break;
-                    }
-                }
-                try {
-                    // MasterURLMapper.toFileObject(file)
-                    return (FileObject) toFileObjectMethod.invoke(null, file);
-                } catch (Exception ex) {
-                    // ignore
-                }
-            }
-        }
-        // fallback if masterfs not present or reflection failed
-        URL url;
-        try {
-            url = file.toURI().toURL();
-        } catch (MalformedURLException ex) {
-            return null;
-        }
-
-        if ((url.getAuthority() != null) &&
-                (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
-            return null;
-        }
-        return findFileObject(url);
     }
 
     /*** Basic impl. for JarFileSystem, LocalFileSystem, MultiFileSystem */

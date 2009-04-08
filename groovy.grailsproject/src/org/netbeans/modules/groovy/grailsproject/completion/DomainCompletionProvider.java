@@ -210,7 +210,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.isLeaf() && project.getLookup().lookup(DomainCompletionProvider.class) != null) {
+        if (project != null && context.isLeaf() && project.getLookup().lookup(DomainCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
@@ -235,7 +235,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return Collections.emptyMap();
     }
 
-    private Map<MethodSignature, CompletionItem> getOrderMethods(CompletionContext context) {
+    // package access for tests
+    Map<MethodSignature, CompletionItem> getOrderMethods(CompletionContext context) {
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         if (LIST_ORDER_BY_METHOD.startsWith(context.getPrefix()) || context.getPrefix().startsWith(LIST_ORDER_BY_METHOD)) {
             for (String property : context.getProperties()) {
@@ -251,7 +252,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return result;
     }
 
-    private Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
+    // package access for tests
+    Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
         if (context.getProperties().isEmpty()) {
             return Collections.emptyMap();
         }
@@ -266,39 +268,59 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
                 prefix = "";
             }
 
+            if (LOGGER.isLoggable(Level.FINE)) {
+                int count = matcher.groupCount();
+                for (int i = 1; i <= count; i++) {
+                    LOGGER.log(Level.FINE, "Group {0} {1}", new Object[] {Integer.valueOf(i), matcher.group(i)});
+                }
+            }
+
             String name = context.getPrefix().substring(0, context.getPrefix().length() - prefix.length());
 
             Map<String, Integer> names = new HashMap<String, Integer>();
             Set<String> forbidden = new HashSet<String>();
             int paramCount = getUsedComparators(context, forbidden);
 
+            boolean noContinuation = (matcher.group(7) != null && matcher.group(8) != null);
+
             // comparator
             if (matcher.group(10) != null) {
                 // operator + property
-                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                if (!noContinuation) {
+                    names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                }
             // property
             } else if (matcher.group(9) != null) {
                 // comparator or (operator + property)
                 names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(9), forbidden, paramCount));
-                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                if (!noContinuation) {
+                    names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                }
             // operator
             } else if (matcher.group(7) != null) {
                 // property
                 names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
-            // comparator
-            } else if (matcher.group(4) != null) {
-                // operator + property
-                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
-            // property
-            } else if (matcher.group(3) != null) {
-                // comparator or (operator + property)
-                names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(3), forbidden, paramCount));
-                names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+            } else {
+                // only findBy|findByAll|countBy
+                if (!noContinuation) {
+                    names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
+                }
             }
+            // used for multiple operators
+//            // comparator
+//            else if (matcher.group(4) != null) {
+//                // operator + property
+//                //names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+//            // property
+//            } else if (matcher.group(3) != null) {
+//                // comparator or (operator + property)
+//                //names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(3), forbidden, paramCount));
+//                //names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+//            }
 
             for (Map.Entry<String, Integer> entry : names.entrySet()) {
                 addQueryEntries(result, context, matcher.group(1),
-                        entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue(), true);
+                        entry.getKey().substring(matcher.group(1).length()), entry.getValue().intValue(), !noContinuation);
             }
             if ("".equals(prefix) && !matcher.group(1).equals(context.getPrefix())) {
                 addQueryEntries(result, context, matcher.group(1),
@@ -380,7 +402,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         builder.append(propertyBuilder);
         builder.append("(LessThan(Equals)?|GreaterThan(Equals)?|Like|ILike|Equal|NotEqual|Between|IsNotNull|IsNull)?"); // NOI18N
         builder.append("(And|Or)"); // NOI18N
-        builder.append(")*"); // NOI18N
+        builder.append(")?"); // NOI18N
 
         builder.append("("); // NOI18N
         builder.append(propertyBuilder);

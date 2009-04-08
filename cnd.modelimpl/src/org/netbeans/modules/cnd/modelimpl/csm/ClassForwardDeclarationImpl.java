@@ -209,6 +209,9 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         if (ForwardClass.isForwardClass(cls)) {
             ((ForwardClass) cls).dispose();
         }
+        CsmNamespace scope = getContainingFile().getProject().getGlobalNamespace();
+        ((NamespaceImpl) scope).removeDeclaration(this);
+        ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         super.dispose();
     }
 

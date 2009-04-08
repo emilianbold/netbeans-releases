@@ -404,6 +404,9 @@ final class QueryTopComponent extends TopComponent
     public void componentOpened() {
         openQueries.add(this);
         Kenai.getDefault().addPropertyChangeListener(this);
+        if(query != null) {
+            query.getController().opened();
+        }
     }
 
     @Override
@@ -411,6 +414,7 @@ final class QueryTopComponent extends TopComponent
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
+            query.getController().closed();
         }
         Kenai.getDefault().removePropertyChangeListener(this);
     }

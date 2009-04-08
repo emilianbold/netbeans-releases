@@ -863,7 +863,21 @@ public final class FileUtil extends Object {
             file = normFile;
         }
 
-        FileObject retVal = URLMapper.toFileObject(file);
+        FileObject retVal = null;
+        try {
+            URL url = file.toURI().toURL();
+
+            if ((url.getAuthority() != null) &&
+                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
+                return null;
+            }
+
+            retVal = URLMapper.findFileObject(url);
+
+            /*probably temporary piece of code to catch the cause of #46630*/
+        } catch (MalformedURLException e) {
+            retVal = null;
+        }
 
         if (retVal != null) {
             if (getDiskFileSystem() == null) {
