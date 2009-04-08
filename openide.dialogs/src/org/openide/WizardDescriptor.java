@@ -114,9 +114,15 @@ import org.netbeans.api.progress.ProgressHandleFactory;
  * A list of <em>wizard panels</em> may be specified and these
  * may be traversed at the proper times using the "Previous"
  * and "Next" buttons (or "Finish" on the last one).
+ *
+ * <p><b>Related Tutorial</b>
+ *
+ * <ul>
+ * <li><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html">NetBeans Wizard Module Tutorial</a>
+ * <li><a href="doc-files/wizard-guidebook.html">Wizard Guide</a>
+ * </ul>
+ *
  * @see DialogDisplayer#createDialog
- * @see <a href="doc-files/wizard-guidebook.html">Wizard Guidebook
- * (describes the set of properties controlling the display of wizard panels)</a>
  */
 public class WizardDescriptor extends DialogDescriptor {
     /** "Next" button option.

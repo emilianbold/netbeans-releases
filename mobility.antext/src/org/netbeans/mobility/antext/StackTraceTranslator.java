@@ -87,7 +87,7 @@ public class StackTraceTranslator
         parsedClasses = new HashMap<ClassName,ClassFile>();
     }
     
-    public String translate(final String stackTrace)
+    public String translate(final String stackTrace, boolean isBci )
     {
         final String splitTrace[] = stackTrace.split("[\n\r]+", -1); //NOI18N
         String clNames[] = new String[splitTrace.length+1];
@@ -95,9 +95,55 @@ public class StackTraceTranslator
         int offsets[] = new int[splitTrace.length];
         boolean catches[] = new boolean[splitTrace.length];
         String result[] = new String[splitTrace.length];
-        for (int i=0; i<splitTrace.length; i++)
+        if ( isBci ){
+            fillArraysBci( splitTrace, clNames , mNames , offsets );
+        }
+        else {
+            fillArrays( splitTrace, clNames , mNames , offsets , catches );
+        }
+
+        String sig[] = new String[]{null};
+        for (int i=splitTrace.length - 1 ; i>=0; i--)
         {
-            final String st = splitTrace[i].trim();
+            if (clNames[i] == null)
+            {
+                sig[0] = null;
+                result[i] = splitTrace[i];
+            }
+            else
+            {
+                final Method m = findMethod(clNames[i], mNames[i], sig[0], 
+                        i > 0 ? clNames[i-1] : null, i > 0 ? mNames[i-1] : null,
+                        offsets[i], sig);
+                final int ln = m ==null ? -1 : getLineNumber(m.getCode(), offsets[i]);
+                if (ln < 0) {
+                    if ( isBci ){
+                        result[i] = "\tat " + splitTrace[i].substring(
+                            splitTrace[i].indexOf(clNames[i])); //NOI18N
+                    }
+                    else {
+                        result[i] = splitTrace[i];
+                    }
+                }
+                else {
+                        result[i] = (catches[i]&&!isBci ? "[catch] at " : "\tat ") +
+                            clNames[i] + "." + mNames[i] + "(" +
+                            m.getClassFile().getSourceFileName() + ":" +
+                            String.valueOf(ln) + ")"; //NOI18N
+                }
+            }
+        }
+        final StringBuffer sb = new StringBuffer();
+        for (int i=0; i<result.length; i++) sb.append(result[i]).append('\n');
+        return sb.toString();
+    }
+
+    private void fillArrays(String[] trace, String[] clNames,
+            String[] mNames, int[] offsets, boolean[] catches)
+    {
+        for (int i=0; i<trace.length; i++)
+        {
+            final String st = trace[i].trim();
             final int at = st.indexOf("at "); //NOI18N
             final int dot = st.lastIndexOf('.'); //NOI18N
             final int lb = st.lastIndexOf("(+"); //NOI18N
@@ -112,25 +158,28 @@ public class StackTraceTranslator
             catch (NumberFormatException nfe)
             {}
         }
-        String sig[] = new String[]{null};
-        for (int i=splitTrace.length - 1 ; i>=0; i--)
+    }
+
+    private void fillArraysBci(String[] trace, String[] clNames,
+            String[] mNames, int[] offsets)
+    {
+        for (int i=0; i<trace.length; i++)
         {
-            if (clNames[i] == null)
+            final String st = trace[i].trim();
+            final int at = st.indexOf("- "); //NOI18N
+            final int dot = st.lastIndexOf('.'); //NOI18N
+            final int brackets = st.lastIndexOf("(),"); //NOI18N
+            final int bci = st.lastIndexOf("bci="); //NOI18N
+            if ( dot > 2 && brackets > 4 && bci > 7) try
             {
-                sig[0] = null;
-                result[i] = splitTrace[i];
+                clNames[i] = st.substring(at + 2, dot).trim();
+                mNames[i] = st.substring(dot + 1, brackets).trim();
+                // bci is offset with in "+num" plus three
+                offsets[i] = Integer.parseInt(st.substring(bci+4).trim())+3;
             }
-            else
-            {
-                final Method m = findMethod(clNames[i], mNames[i], sig[0], i > 0 ? clNames[i-1] : null, i > 0 ? mNames[i-1] : null, offsets[i], sig);
-                final int ln = m ==null ? -1 : getLineNumber(m.getCode(), offsets[i]);
-                if (ln < 0) result[i] = splitTrace[i];
-                else result[i] = (catches[i] ? "[catch] at " : "\tat ") + clNames[i] + "." + mNames[i] + "(" + m.getClassFile().getSourceFileName() + ":" + String.valueOf(ln) + ")"; //NOI18N
-            }
+            catch (NumberFormatException nfe)
+            {}
         }
-        final StringBuffer sb = new StringBuffer();
-        for (int i=0; i<result.length; i++) sb.append(result[i]).append('\n');
-        return sb.toString();
     }
     
     private static void addURL(final List<URL> l, final File root, final String path)
@@ -174,18 +223,31 @@ public class StackTraceTranslator
         return lineTable[lineTable.length - 1];
     }
     
-    private Method findMethod(final String className, final String methodName, final String expectedSinature, final String expectedClassCall, final String expectedMethodCall, final int atOffset, String[] expCallMethodSignature)
+    private Method findMethod(final String className, final String methodName,
+            final String expectedSinature, final String expectedClassCall,
+            final String expectedMethodCall, final int atOffset,
+            String[] expCallMethodSignature)
     {
-        if (expCallMethodSignature != null && expCallMethodSignature.length == 1) expCallMethodSignature[0] = null;
+        if (expCallMethodSignature != null && expCallMethodSignature.length == 1) {
+            expCallMethodSignature[0] = null;
+        }
         final ClassFile cf = getClass(getClassName(className));
         if (cf == null) return null;
         if (expectedSinature != null)
         {
             final Method m = cf.getMethod(methodName, expectedSinature);
-            if (m != null && checkMethod(cf, m, expectedClassCall, expectedMethodCall, atOffset, expCallMethodSignature)) return m;
+            if (m != null && checkMethod(cf, m, expectedClassCall, 
+                    expectedMethodCall, atOffset, expCallMethodSignature))
+            {
+                return m;
+            }
         }
         for ( final Method m : (Collection<Method>)cf.getMethods() ) {
-            if (m.getName().equals(methodName) && checkMethod(cf, m, expectedClassCall, expectedMethodCall, atOffset, expCallMethodSignature)) return m;
+            if (m.getName().equals(methodName) && checkMethod(cf, m, expectedClassCall,
+                    expectedMethodCall, atOffset, expCallMethodSignature))
+            {
+                return m;
+            }
         }
         return null;
     }
@@ -195,9 +257,13 @@ public class StackTraceTranslator
         final Set<String> expectedParents = getParents(expectedClassCall);
         if (expectedParents.isEmpty() || expectedMethodCall == null) return true;
         final CPMethodInfo mi = getMethodCall(cf, method.getCode(), atOffset);
-        if (mi != null && expectedParents.contains(mi.getClassName().getInternalName()) && expectedMethodCall.equals(mi.getName()))
+        if (mi != null && expectedParents.contains(mi.getClassName().getInternalName())
+                && expectedMethodCall.equals(mi.getName()))
         {
-            if (expCallMethodSignature != null && expCallMethodSignature.length == 1) expCallMethodSignature[0] = mi.getDescriptor();
+            if (expCallMethodSignature != null && expCallMethodSignature.length == 1)
+            {
+                expCallMethodSignature[0] = mi.getDescriptor();
+            }
             return true;
         }
         return false;

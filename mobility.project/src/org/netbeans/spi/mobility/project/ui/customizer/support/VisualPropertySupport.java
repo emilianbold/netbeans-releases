@@ -447,7 +447,6 @@ public final class VisualPropertySupport {
         // Implementation of document listener ---------------------------------
         
         public void changedUpdate( final DocumentEvent e ) {
-            
             final Document document = e.getDocument();
             final String propertyName = (String)component2property.get( document );
             if( propertyName != null ) {

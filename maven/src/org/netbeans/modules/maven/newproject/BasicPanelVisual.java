@@ -270,7 +270,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         );
 
         lblEEVersion.setLabelFor(comboEEVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, "&Java EE Version:");
+        org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_JavaEE")); // NOI18N
 
         comboEEVersion.setModel(new DefaultComboBoxModel(panel.getEELevels()));
         comboEEVersion.addActionListener(new java.awt.event.ActionListener() {

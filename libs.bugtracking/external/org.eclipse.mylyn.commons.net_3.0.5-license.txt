@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
+Name: Mylyn Commons Network library
 Version: 3.0.5
-License: EPL
+License: EPL-v10
 OSR: 10108
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+Description: Mylyn Commons Network library
 
 Eclipse Public License - v 1.0
 
