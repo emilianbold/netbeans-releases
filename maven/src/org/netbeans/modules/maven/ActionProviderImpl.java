@@ -413,7 +413,7 @@ public class ActionProviderImpl implements ActionProvider {
             ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(project.getProjectDirectory());
             pnl.readMapping(mapping, project, maps);
             pnl.setShowDebug(MavenSettings.getDefault().isShowDebug());
-            pnl.setOffline(MavenSettings.getDefault().isOffline());
+            pnl.setOffline(MavenSettings.getDefault().isOffline() != null ? MavenSettings.getDefault().isOffline() : false);
             pnl.setRecursive(true);
             Object retValue = DialogDisplayer.getDefault().notify(dd);
             if (retValue == DialogDescriptor.OK_OPTION) {
