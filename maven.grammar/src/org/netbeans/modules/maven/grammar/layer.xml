@@ -103,6 +103,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="Popup">
                     <file name="generate-code">
+                        <attr name="position" intvalue="13"/>
                     </file>
                 </folder>
                 <folder name="CodeGeneratorContextProviders">
@@ -147,6 +148,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="Popup">
                     <file name="generate-code">
+                        <attr name="position" intvalue="13"/>
                     </file>
                 </folder>
             </folder>
