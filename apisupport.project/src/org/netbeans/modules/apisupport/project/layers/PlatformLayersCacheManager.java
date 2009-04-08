@@ -234,8 +234,8 @@ class PlatformLayersCacheManager {
         List<FileSystem> entries = new ArrayList<FileSystem>();
         
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenLayerFilesAction.class, "MSG_scanning_layers"));
-        handle.start(clusters.length + 1);
         try {
+            handle.start(clusters.length + 1);
             int c = 0;
             for (File cl : clusters) {
                 assert cl.isDirectory();

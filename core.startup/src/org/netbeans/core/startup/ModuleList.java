@@ -873,7 +873,10 @@ final class ModuleList implements Stamps.Updater {
         // be version-controlled we want to avoid gratuitous format changes.
         for (Map.Entry<String, Object> entry: new TreeMap<String, Object>(m).entrySet()) {
             String name = entry.getKey();
-            if (name.equals("installerState") || name.equals("name")) { // NOI18N
+            if (
+                name.equals("installerState") || name.equals("name") || // NOI18N
+                name.equals("deps") // NOI18N
+            ) {
                 // Skip this one, it is a pseudo-param.
                 continue;
             }
@@ -1036,7 +1039,7 @@ final class ModuleList implements Stamps.Updater {
         for (Module m : mgr.getModules()) {
             DiskStatus status = statuses.get(m.getCodeNameBase());
             if (status != null) {
-                moduleChanged(m, status);
+                 moduleChanged(m, status);
                 m.addPropertyChangeListener(listener);
             }
         }
@@ -1117,7 +1120,19 @@ final class ModuleList implements Stamps.Updater {
         synchronized (status) {
             LOG.log(Level.FINE, "moduleChanged: {0}", m);
             Map<String,Object> newProps = computeProperties(m);
-            if (! Utilities.compareObjects(status.diskProps, newProps)) {
+            int cnt = 0;
+            for (Map.Entry<String, Object> entry : status.diskProps.entrySet()) {
+                if (entry.getKey().equals("deps")) { // NOI18N
+                    continue;
+                }
+                Object snd = newProps.get(entry.getKey());
+                if (!entry.getValue().equals(snd)) {
+                    cnt = -1;
+                    break;
+                }
+                cnt++;
+            }
+            if (cnt != newProps.size()) {
                 if (LOG.isLoggable(Level.FINE)) {
                     Set<Map.Entry<String,Object>> changes = new HashSet<Map.Entry<String,Object>>(newProps.entrySet());
                     changes.removeAll(status.diskProps.entrySet());
