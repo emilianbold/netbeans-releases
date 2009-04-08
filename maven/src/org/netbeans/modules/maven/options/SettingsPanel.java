@@ -46,6 +46,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -56,8 +58,7 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import org.apache.maven.execution.MavenExecutionRequest;
+import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -70,7 +71,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -90,23 +90,12 @@ public class SettingsPanel extends javax.swing.JPanel {
     private ActionListener listener;
     private DocumentListener docList;
     private MavenOptionController controller;
+    private TextValueCompleter completer;
     
     /** Creates new form SettingsPanel */
     SettingsPanel(MavenOptionController controller) {
         initComponents();
         this.controller = controller;
-        cbDebug.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (cbDebug.isSelected()) {
-                    cbErrors.setEnabled(false);
-                    cbErrors.putClientProperty(CP_SELECTED, Boolean.valueOf(cbErrors.isSelected())); 
-                    cbErrors.setSelected(true);
-                } else {
-                    cbErrors.setEnabled(true);
-                    cbErrors.setSelected(((Boolean)cbErrors.getClientProperty(CP_SELECTED)).booleanValue());
-                }
-            }
-        });
         docList = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 documentChanged(e);
@@ -120,22 +109,49 @@ public class SettingsPanel extends javax.swing.JPanel {
         };
         initValues();
         listener = new ActionListenerImpl();
-        cbDebug.addActionListener(listener);
-        cbOffline.addActionListener(listener);
-        cbErrors.addActionListener(listener);
-        cbPluginRegistry.addActionListener(listener);
         cbSnapshots.addActionListener(listener);
-        rbChecksumLax.addActionListener(listener);
-        rbChecksumNone.addActionListener(listener);
-        rbChecksumStrict.addActionListener(listener);
-        rbFailEnd.addActionListener(listener);
-        rbFailFast.addActionListener(listener);
-        rbFailNever.addActionListener(listener);
-        rbNoPluginUpdate.addActionListener(listener);
-        rbPluginNone.addActionListener(listener);
-        rbPluginUpdate.addActionListener(listener);
         comIndex.addActionListener(listener);
+        completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " ");
         initEmbeddedVersion();
+    }
+
+    static String[] AVAILABLE_OPTIONS = new String[] {
+            "--offline", //NOI18N
+            "--debug", //NOI18N
+            "--errors", //NOI18N
+            "--batch-mode", //NOI18N
+            "--fail-fast", //NOI18N
+            "--fail-at-end", //NOI18N
+            "--fail-never", //NOI18N
+            "--strict-checksums", //NOI18N
+            "--lax-checksums", //NOI18N
+            "--check-plugin-updates", //NOI18N
+            "--no-plugin-updates", //NOI18N
+            "--update-snapshots", //NOI18N
+            "--no-plugin-registry" //NOI18N
+        };
+
+
+    static String[] getAvailableOptionsDescriptions() {
+        return new String[] {
+            "Work offline.",
+            "Produce execution debug output.",
+            "Produce execution error messages.",
+            "Run in non-interactive (batch) mode.",
+            "Stop at first failure in reactorized builds\n\nExclusive with --fail-at-end and --fail-never.",
+            "Only fail the build afterwards; allow all non-impacted builds to continue.\n\nExclusive with --fail-fast and --fail-never.",
+            "NEVER fail the build, regardless of project result.\n\nExclusive with --fail-fast and --fail-at-end.",
+            "Fail the build if checksums don't match.\n\n Exclusive with --lax-checksums.",
+            "Warn if checksums don't match.\n\nExclusive with --strict-checksums.",
+            "Force upToDate check for any relevant registered plugins.\n\nExclusive with --no-plugin-updates.",
+            "Suppress upToDate check for any relevant registered plugins.\n\nExclusive with --check-plugin-updates.",
+            "Forces a check for updated releases and snapshots on remote repositories.",
+            "Don't use ~/.m2/plugin-registry.xml for plugin versions"
+        };
+    }
+
+    private static List<String> getGlobalOptions() {
+        return Arrays.asList(AVAILABLE_OPTIONS);
     }
 
     private void initEmbeddedVersion()
@@ -218,13 +234,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
     
     private void initValues() {
-        cbDebug.setSelected(false);
-        cbErrors.setSelected(false);
-        cbOffline.setSelected(false);
-        rbPluginNone.setSelected(true);
-        cbPluginRegistry.setSelected(false);
-        rbFailFast.setSelected(true);
-        rbChecksumNone.setSelected(true);
         comIndex.setSelectedIndex(0);
         cbSnapshots.setSelected(true);
     }
@@ -269,22 +278,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         bgChecksums = new javax.swing.ButtonGroup();
         bgPlugins = new javax.swing.ButtonGroup();
         bgFailure = new javax.swing.ButtonGroup();
-        cbOffline = new javax.swing.JCheckBox();
-        cbDebug = new javax.swing.JCheckBox();
-        cbErrors = new javax.swing.JCheckBox();
-        pnlChecksums = new javax.swing.JPanel();
-        rbChecksumStrict = new javax.swing.JRadioButton();
-        rbChecksumLax = new javax.swing.JRadioButton();
-        rbChecksumNone = new javax.swing.JRadioButton();
-        pnlPlugins = new javax.swing.JPanel();
-        rbPluginUpdate = new javax.swing.JRadioButton();
-        rbNoPluginUpdate = new javax.swing.JRadioButton();
-        rbPluginNone = new javax.swing.JRadioButton();
-        pnlFail = new javax.swing.JPanel();
-        rbFailFast = new javax.swing.JRadioButton();
-        rbFailEnd = new javax.swing.JRadioButton();
-        rbFailNever = new javax.swing.JRadioButton();
-        cbPluginRegistry = new javax.swing.JCheckBox();
+        lblCommandLine = new javax.swing.JLabel();
+        txtCommandLine = new javax.swing.JTextField();
+        btnCommandLine = new javax.swing.JButton();
+        lblOptions = new javax.swing.JLabel();
+        txtOptions = new javax.swing.JTextField();
+        btnOptions = new javax.swing.JButton();
+        btnGoals = new javax.swing.JButton();
+        lblEmbeddedVersion = new javax.swing.JLabel();
+        lblExternalVersion = new javax.swing.JLabel();
         lblLocalRepository = new javax.swing.JLabel();
         txtLocalRepository = new javax.swing.JTextField();
         btnLocalRepository = new javax.swing.JButton();
@@ -292,164 +294,37 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
         cbSnapshots = new javax.swing.JCheckBox();
-        lblCommandLine = new javax.swing.JLabel();
-        txtCommandLine = new javax.swing.JTextField();
-        btnCommandLine = new javax.swing.JButton();
-        btnGoals = new javax.swing.JButton();
-        lblEmbeddedVersion = new javax.swing.JLabel();
-        lblExternalVersion = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbOffline, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbOffline.text")); // NOI18N
-        cbOffline.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbOffline.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbOffline.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbDebug, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbDebug.text")); // NOI18N
-        cbDebug.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbDebug.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbDebug.setOpaque(false);
+        txtCommandLine.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtCommandLine.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbErrors, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbErrors.text")); // NOI18N
-        cbErrors.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbErrors.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbErrors.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(btnCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnCommandLine.text")); // NOI18N
+        btnCommandLine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCommandLineActionPerformed(evt);
+            }
+        });
 
-        pnlChecksums.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.pnlChecksums.border.title"))); // NOI18N
-        pnlChecksums.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(lblOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOptions.text")); // NOI18N
 
-        bgChecksums.add(rbChecksumStrict);
-        org.openide.awt.Mnemonics.setLocalizedText(rbChecksumStrict, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbChecksumStrict.text")); // NOI18N
-        rbChecksumStrict.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbChecksumStrict.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbChecksumStrict.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(btnOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnOptions.text")); // NOI18N
+        btnOptions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOptionsActionPerformed(evt);
+            }
+        });
 
-        bgChecksums.add(rbChecksumLax);
-        org.openide.awt.Mnemonics.setLocalizedText(rbChecksumLax, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbChecksumLax.text")); // NOI18N
-        rbChecksumLax.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbChecksumLax.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbChecksumLax.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(btnGoals, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnGoals.text")); // NOI18N
+        btnGoals.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGoalsActionPerformed(evt);
+            }
+        });
 
-        bgChecksums.add(rbChecksumNone);
-        org.openide.awt.Mnemonics.setLocalizedText(rbChecksumNone, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbChecksumNone.text")); // NOI18N
-        rbChecksumNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbChecksumNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbChecksumNone.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(lblEmbeddedVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblEmbeddedVersion.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout pnlChecksumsLayout = new org.jdesktop.layout.GroupLayout(pnlChecksums);
-        pnlChecksums.setLayout(pnlChecksumsLayout);
-        pnlChecksumsLayout.setHorizontalGroup(
-            pnlChecksumsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlChecksumsLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(pnlChecksumsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbChecksumNone)
-                    .add(rbChecksumStrict)
-                    .add(rbChecksumLax))
-                .addContainerGap(53, Short.MAX_VALUE))
-        );
-        pnlChecksumsLayout.setVerticalGroup(
-            pnlChecksumsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlChecksumsLayout.createSequentialGroup()
-                .add(rbChecksumNone)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbChecksumStrict)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbChecksumLax, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
-        );
-
-        pnlPlugins.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.pnlPlugins.border.title"))); // NOI18N
-        pnlPlugins.setOpaque(false);
-
-        bgPlugins.add(rbPluginUpdate);
-        org.openide.awt.Mnemonics.setLocalizedText(rbPluginUpdate, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbPluginUpdate.text")); // NOI18N
-        rbPluginUpdate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbPluginUpdate.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbPluginUpdate.setOpaque(false);
-
-        bgPlugins.add(rbNoPluginUpdate);
-        org.openide.awt.Mnemonics.setLocalizedText(rbNoPluginUpdate, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbNoPluginUpdate.text")); // NOI18N
-        rbNoPluginUpdate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbNoPluginUpdate.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbNoPluginUpdate.setOpaque(false);
-
-        bgPlugins.add(rbPluginNone);
-        org.openide.awt.Mnemonics.setLocalizedText(rbPluginNone, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbPluginNone.text")); // NOI18N
-        rbPluginNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbPluginNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbPluginNone.setOpaque(false);
-
-        org.jdesktop.layout.GroupLayout pnlPluginsLayout = new org.jdesktop.layout.GroupLayout(pnlPlugins);
-        pnlPlugins.setLayout(pnlPluginsLayout);
-        pnlPluginsLayout.setHorizontalGroup(
-            pnlPluginsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlPluginsLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(pnlPluginsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbPluginNone)
-                    .add(rbPluginUpdate)
-                    .add(rbNoPluginUpdate))
-                .addContainerGap(38, Short.MAX_VALUE))
-        );
-        pnlPluginsLayout.setVerticalGroup(
-            pnlPluginsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlPluginsLayout.createSequentialGroup()
-                .add(rbPluginNone)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbPluginUpdate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbNoPluginUpdate)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        pnlFail.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.pnlFail.border.title"))); // NOI18N
-        pnlFail.setOpaque(false);
-
-        bgFailure.add(rbFailFast);
-        org.openide.awt.Mnemonics.setLocalizedText(rbFailFast, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbFailFast.text")); // NOI18N
-        rbFailFast.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbFailFast.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbFailFast.setOpaque(false);
-
-        bgFailure.add(rbFailEnd);
-        org.openide.awt.Mnemonics.setLocalizedText(rbFailEnd, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbFailEnd.text")); // NOI18N
-        rbFailEnd.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbFailEnd.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbFailEnd.setOpaque(false);
-
-        bgFailure.add(rbFailNever);
-        org.openide.awt.Mnemonics.setLocalizedText(rbFailNever, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbFailNever.text")); // NOI18N
-        rbFailNever.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbFailNever.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbFailNever.setOpaque(false);
-
-        org.jdesktop.layout.GroupLayout pnlFailLayout = new org.jdesktop.layout.GroupLayout(pnlFail);
-        pnlFail.setLayout(pnlFailLayout);
-        pnlFailLayout.setHorizontalGroup(
-            pnlFailLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlFailLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(pnlFailLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbFailEnd)
-                    .add(rbFailNever)
-                    .add(rbFailFast))
-                .addContainerGap(142, Short.MAX_VALUE))
-        );
-        pnlFailLayout.setVerticalGroup(
-            pnlFailLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlFailLayout.createSequentialGroup()
-                .add(rbFailFast)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbFailEnd)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbFailNever)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbPluginRegistry, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbPluginRegistry.text")); // NOI18N
-        cbPluginRegistry.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbPluginRegistry.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbPluginRegistry.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(lblExternalVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblExternalVersion.text", new Object[] {})); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblLocalRepository, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblLocalRepository.text")); // NOI18N
 
@@ -472,30 +347,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSnapshots, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbSnapshots.text")); // NOI18N
-        cbSnapshots.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbSnapshots.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
-
-        txtCommandLine.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtCommandLine.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnCommandLine.text")); // NOI18N
-        btnCommandLine.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCommandLineActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnGoals, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnGoals.text")); // NOI18N
-        btnGoals.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGoalsActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblEmbeddedVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblEmbeddedVersion.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblExternalVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblExternalVersion.text", new Object[] {})); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -505,45 +357,39 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(pnlFail, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, cbErrors, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
-                            .add(btnGoals)
-                            .add(cbOffline)
-                            .add(cbDebug)
-                            .add(cbPluginRegistry))
+                        .add(lblIndex)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(pnlPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(pnlChecksums, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblLocalRepository)
-                            .add(lblIndex))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtLocalRepository, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                            .add(comIndex, 0, 271, Short.MAX_VALUE)
+                            .add(comIndex, 0, 225, Short.MAX_VALUE)
                             .add(cbSnapshots))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(btnLocalRepository)
-                            .add(btnIndex)))
+                        .add(btnIndex))
                     .add(layout.createSequentialGroup()
-                        .add(lblCommandLine)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblCommandLine)
+                            .add(lblOptions)
+                            .add(lblLocalRepository))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, lblEmbeddedVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblEmbeddedVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                                 .add(6, 6, 6)
                                 .add(btnCommandLine))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                            .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(txtOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                                    .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, btnLocalRepository)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, btnOptions)))))
+                    .add(btnGoals))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {btnCommandLine, btnIndex, btnLocalRepository}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {btnCommandLine, btnIndex, btnLocalRepository, btnOptions}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -556,29 +402,20 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .add(btnCommandLine))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(55, 55, 55)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(btnGoals)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbOffline)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbDebug)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbErrors)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbPluginRegistry))
-                    .add(pnlChecksums, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(pnlPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(pnlFail, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblLocalRepository)
-                    .add(btnLocalRepository)
-                    .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(lblOptions)
+                    .add(txtOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnOptions))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(btnLocalRepository)
+                        .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(lblLocalRepository))
+                .add(18, 18, 18)
+                .add(btnGoals)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 114, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btnIndex)
                     .add(lblIndex)
@@ -675,6 +512,16 @@ public class SettingsPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_btnGoalsActionPerformed
+
+    private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptionsActionPerformed
+        GlobalOptionsPanel pnl = new GlobalOptionsPanel();
+        DialogDescriptor dd = new DialogDescriptor(pnl, "Add Global Option(s)");
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (ret == DialogDescriptor.OK_OPTION) {
+            txtOptions.setText(txtOptions.getText() + pnl.getSelectedOnes());
+        }
+
+    }//GEN-LAST:event_btnOptionsActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -685,10 +532,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnLocalRepository;
-    private javax.swing.JCheckBox cbDebug;
-    private javax.swing.JCheckBox cbErrors;
-    private javax.swing.JCheckBox cbOffline;
-    private javax.swing.JCheckBox cbPluginRegistry;
+    private javax.swing.JButton btnOptions;
     private javax.swing.JCheckBox cbSnapshots;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JLabel lblCommandLine;
@@ -696,42 +540,16 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblExternalVersion;
     private javax.swing.JLabel lblIndex;
     private javax.swing.JLabel lblLocalRepository;
-    private javax.swing.JPanel pnlChecksums;
-    private javax.swing.JPanel pnlFail;
-    private javax.swing.JPanel pnlPlugins;
-    private javax.swing.JRadioButton rbChecksumLax;
-    private javax.swing.JRadioButton rbChecksumNone;
-    private javax.swing.JRadioButton rbChecksumStrict;
-    private javax.swing.JRadioButton rbFailEnd;
-    private javax.swing.JRadioButton rbFailFast;
-    private javax.swing.JRadioButton rbFailNever;
-    private javax.swing.JRadioButton rbNoPluginUpdate;
-    private javax.swing.JRadioButton rbPluginNone;
-    private javax.swing.JRadioButton rbPluginUpdate;
+    private javax.swing.JLabel lblOptions;
     private javax.swing.JTextField txtCommandLine;
     private javax.swing.JTextField txtLocalRepository;
+    private javax.swing.JTextField txtOptions;
     // End of variables declaration//GEN-END:variables
     
-    public void setValues(org.netbeans.modules.maven.model.settings.Settings sett) {
+    public void setValues() {
         changed = false;
-        if (sett != null) {
-            Boolean offline = sett.isOffline();
-            cbOffline.setSelected(offline != null ? offline.booleanValue() : false);
-            txtLocalRepository.setText(sett.getLocalRepository() != null ? sett.getLocalRepository() : "");
-        } else {
-            //TODO report broken settings xml file.
-            cbOffline.setEnabled(false);
-            txtLocalRepository.setEnabled(false);
-            btnLocalRepository.setEnabled(false);
-            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(SettingsPanel.class, "ERR_Wrong_Settings_file"));
-            DialogDisplayer.getDefault().notify(msg);
-        }
 
-        cbPluginRegistry.setSelected(MavenSettings.getDefault().isUsePluginRegistry());
-        cbErrors.setSelected(MavenSettings.getDefault().isShowErrors());
-        cbErrors.putClientProperty(CP_SELECTED, Boolean.valueOf(cbErrors.isSelected()));
-        cbDebug.setSelected(MavenSettings.getDefault().isShowDebug());
-        
+        txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
         txtCommandLine.getDocument().removeDocumentListener(docList);
         File command = MavenSettings.getDefault().getCommandLinePath();
         txtCommandLine.setText(command != null ? command.getAbsolutePath() : ""); //NOI18N
@@ -739,46 +557,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         txtCommandLine.getDocument().addDocumentListener(docList);
         
         cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
-        String failureBehaviour = MavenSettings.getDefault().getFailureBehaviour();
-        if (MavenExecutionRequest.REACTOR_FAIL_FAST.equals(failureBehaviour)) {
-            rbFailFast.setSelected(true);
-        } else if (MavenExecutionRequest.REACTOR_FAIL_AT_END.equals(failureBehaviour)) {
-            rbFailEnd.setSelected(true);
-        } else if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(failureBehaviour)) {
-            rbFailNever.setSelected(true);
-        }
-        String checksums = MavenSettings.getDefault().getChecksumPolicy();
-        if (MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals(checksums)) {
-            rbChecksumLax.setSelected(true);
-        } else if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(checksums)) {
-            rbChecksumStrict.setSelected(true);
-        } else {
-            rbChecksumNone.setSelected(true);
-        }
-        Boolean updates = MavenSettings.getDefault().getPluginUpdatePolicy();
-        if (Boolean.TRUE.equals(updates)) {
-            rbPluginUpdate.setSelected(true);
-        } else if (Boolean.FALSE.equals(updates)) {
-            rbNoPluginUpdate.setSelected(true);
-        } else {
-            rbPluginNone.setSelected(true);
-        }
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
     }
     
-    public void applyValues(org.netbeans.modules.maven.model.settings.Settings sett) {
-        if (sett != null) {
-            sett.setOffline(cbOffline.isSelected() ? Boolean.TRUE : null);
-            String locrepo = txtLocalRepository.getText().trim();
-            if (locrepo.length() == 0) {
-                locrepo = null;
-            }
-            sett.setLocalRepository(locrepo);
-        }
-        
-        MavenSettings.getDefault().setUsePluginRegistry(cbPluginRegistry.isSelected());
-        MavenSettings.getDefault().setShowDebug(cbDebug.isSelected());
-        MavenSettings.getDefault().setShowErrors(cbErrors.isSelected());
+    public void applyValues() {
+        MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
         String cl = txtCommandLine.getText().trim();
         if (cl.length() == 0) {
             cl = null;
@@ -790,21 +573,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             MavenSettings.getDefault().setCommandLinePath(null);
         }
-        
-        String checksums = null;
-        checksums = rbChecksumStrict.isSelected() ? MavenExecutionRequest.CHECKSUM_POLICY_FAIL : checksums;
-        checksums = rbChecksumLax.isSelected() ? MavenExecutionRequest.CHECKSUM_POLICY_WARN : checksums;
-        MavenSettings.getDefault().setChecksumPolicy(checksums);
-        
-        Boolean updates = null;
-        updates = rbPluginUpdate.isSelected() ? Boolean.TRUE : updates;
-        updates = rbNoPluginUpdate.isSelected() ? Boolean.FALSE : updates;
-        MavenSettings.getDefault().setPluginUpdatePolicy(updates);
-        
-        String failureBehaviour = MavenExecutionRequest.REACTOR_FAIL_FAST;
-        failureBehaviour = rbFailEnd.isSelected() ? MavenExecutionRequest.REACTOR_FAIL_AT_END : failureBehaviour;
-        failureBehaviour = rbFailNever.isSelected() ? MavenExecutionRequest.REACTOR_FAIL_NEVER : failureBehaviour;
-        MavenSettings.getDefault().setFailureBehaviour(failureBehaviour);
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
         RepositoryPreferences.getInstance().setIncludeSnapshots(cbSnapshots.isSelected());
         changed = false;

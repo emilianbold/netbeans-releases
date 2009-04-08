@@ -45,10 +45,10 @@ import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import hidden.org.codehaus.plexus.util.cli.Commandline;
 import hidden.org.codehaus.plexus.util.cli.StreamConsumer;
 import java.io.File;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -59,12 +59,7 @@ import org.openide.util.Utilities;
  * @author mkleint
  */
 public class MavenSettings  {
-    public static final String PROP_DEBUG = "showDebug"; // NOI18N
-    public static final String PROP_ERRORS = "showErrors"; //NOI18N
-    public static final String PROP_CHECKSUM_POLICY = "checksumPolicy"; //NOI18N
-    public static final String PROP_PLUGIN_POLICY = "pluginUpdatePolicy"; //NOI18N
-    public static final String PROP_FAILURE_BEHAVIOUR = "failureBehaviour"; //NOI18N
-    public static final String PROP_USE_REGISTRY = "usePluginRegistry"; //NOI18N
+    public static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
     public static final String PROP_SYNCH_PROXY = "synchronizeProxySettings"; //NOI18N
     public static final String PROP_USE_COMMANDLINE = "useCommandLineMaven"; //NOI18N
     public static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
@@ -80,6 +75,51 @@ public class MavenSettings  {
     public static MavenSettings getDefault() {
         return INSTANCE;
     }
+
+    public boolean isInteractive() {
+        return !hasOption("--batch", "-B");
+    }
+
+    public Boolean isOffline() {
+        if (hasOption("--offline", "-o")) {
+            return Boolean.TRUE;
+        }
+        return null;
+    }
+
+    public boolean isShowDebug() {
+        return hasOption("--debug", "-X");
+    }
+
+    public boolean isShowErrors() {
+        return hasOption("--errors", "-e");
+    }
+
+    public boolean isUpdateSnapshots() {
+        return hasOption("--update-snapshots", "-U");
+    }
+
+
+    public boolean hasOption(String longName, String shortName) {
+        String defOpts = getDefaultOptions();
+        if (defOpts != null) {
+            try {
+                String[] strs = CommandLineUtils.translateCommandline(defOpts);
+                for (String s : strs) {
+                    s = s.trim();
+                    if (s.startsWith(shortName) || s.startsWith(longName)) {
+                        return true;
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + defOpts);
+                //will check for contains of -X be enough?
+                return defOpts.contains(longName) || defOpts.contains(shortName);
+            }
+        }
+        return false;
+    }
+
     
     protected final Preferences getPreferences() {
         return NbPreferences.forModule(MavenSettings.class);
@@ -101,52 +141,15 @@ public class MavenSettings  {
     
     private MavenSettings() {
     }
+
+    public String getDefaultOptions() {
+        return getPreferences().get(PROP_DEFAULT_OPTIONS, ""); //NOI18N
+    }
+
+    public void setDefaultOptions(String options) {
+        putProperty(PROP_DEFAULT_OPTIONS, options);
+    }
     
-
-    public boolean isShowDebug() {
-        return getPreferences().getBoolean(PROP_DEBUG, false);
-    }
-
-    public void setShowDebug(boolean showDebug) {
-        getPreferences().putBoolean(PROP_DEBUG, showDebug);
-    }
-
-    public boolean isShowErrors() {
-        return getPreferences().getBoolean(PROP_ERRORS, false);
-    }
-
-    public void setShowErrors(boolean showErrors) {
-        getPreferences().putBoolean(PROP_ERRORS, showErrors);
-    }
-
-    public String getChecksumPolicy() {
-        return getPreferences().get(PROP_CHECKSUM_POLICY, null);
-    }
-
-    public void setChecksumPolicy(String checksumPolicy) {
-        putProperty(PROP_CHECKSUM_POLICY, checksumPolicy);
-    }
-
-    public Boolean getPluginUpdatePolicy() {
-        String prop = getProperty(PROP_PLUGIN_POLICY);
-        return prop == null ? null : Boolean.parseBoolean(prop);
-    }
-
-    public void setPluginUpdatePolicy(Boolean pluginUpdatePolicy) {
-        if (pluginUpdatePolicy == null) {
-            getPreferences().remove(PROP_PLUGIN_POLICY);
-        } else {
-            putProperty(PROP_PLUGIN_POLICY, pluginUpdatePolicy.toString());
-        }
-    }
-
-    public String getFailureBehaviour() {
-        return getPreferences().get(PROP_FAILURE_BEHAVIOUR, MavenExecutionRequest.REACTOR_FAIL_FAST);
-    }
-
-    public void setFailureBehaviour(String failureBehaviour) {
-        putProperty(PROP_FAILURE_BEHAVIOUR, failureBehaviour);
-    }
 
     public String getLastArchetypeGroupId() {
         return getPreferences().get(PROP_LAST_ARCHETYPE_GROUPID, "com.mycompany"); //NOI18N
@@ -156,14 +159,6 @@ public class MavenSettings  {
         putProperty(PROP_LAST_ARCHETYPE_GROUPID, groupId);
     }
 
-
-    public boolean isUsePluginRegistry() {
-        return getPreferences().getBoolean(PROP_USE_REGISTRY, true);
-    }
-
-    public void setUsePluginRegistry(boolean usePluginRegistry) {
-        getPreferences().putBoolean(PROP_USE_REGISTRY, usePluginRegistry);
-    }
     
     public void setSynchronizeProxy(boolean sync) {
         getPreferences().putBoolean(PROP_SYNCH_PROXY, sync);

@@ -53,8 +53,8 @@ import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactInfo;
 import org.sonatype.nexus.index.ArtifactScanningListener;
 import org.sonatype.nexus.index.NexusIndexer;
+import org.sonatype.nexus.index.ScanningResult;
 import org.sonatype.nexus.index.context.IndexingContext;
-import org.sonatype.nexus.index.scan.ScanningResult;
 
 /**
  *

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -178,15 +179,6 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             ProgressTransferListener.setAggregateHandle(handle);
             out = new JavaOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             IOBridge.pushSystemInOutErr(out);
-            boolean debug = clonedConfig.isShowDebug();
-            req.setShowErrors(debug || clonedConfig.isShowError());
-            if (debug) {
-                req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
-                out.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
-            } else {
-                req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
-                out.setThreshold(MavenEmbedderLogger.LEVEL_INFO);
-            }
             
             File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
             File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false);//NOI18N
@@ -210,12 +202,79 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             super.buildPlan.setEmbedder(embedder);
             
             req.addActiveProfiles(clonedConfig.getActivatedProfiles());
+            Boolean offline = clonedConfig.isOffline();
+            boolean interactive = clonedConfig.isInteractive();
+            String reactorFailure = null;
+            String globalChecksum = null;
+            boolean updateSnapshots = config.isUpdateSnapshots();
+            boolean debug = clonedConfig.isShowDebug();
+            boolean errors = clonedConfig.isShowError();
+            String opts = MavenSettings.getDefault().getDefaultOptions();
+            if (opts != null) {
+                try {
+                    String[] s = CommandLineUtils.translateCommandline(opts);
+                    for (String one : s) {
+                        one = one.trim();
+                        if (one.startsWith("-D")) {
+                            //check against the config.getProperties
+                        } else {
+                            if (one.equals("-X") || one.equals("--debug")) {
+                                continue;
+                            }
+                            if (one.equals("-e") || one.equals("--errors")) {
+                                continue;
+                            }
+                            if (one.equals("--update-snapshots") || one.equals("-U")) {
+                                continue;
+                            }
+                            if (one.equals("--batch-mode") || one.equals("-B")) {
+                                continue;
+                            }
+                            if ((one.equals("--offline") || one.equals("-o"))) {
+                                if (config.isOffline() != null && !config.isOffline().booleanValue()) {
+                                    continue;
+                                } else {
+                                    offline = Boolean.TRUE;
+                                }
+                            }
+                            if (one.equals("--fail-fast") || one.equals("-ff")) {
+                                reactorFailure = MavenExecutionRequest.REACTOR_FAIL_FAST;
+                            }
+                            if (one.equals("--fail-never") || one.equals("-fn")) {
+                                reactorFailure = MavenExecutionRequest.REACTOR_FAIL_NEVER;
+                            }
+                            if (one.equals("--fail-at-end") || one.equals("-fae")) {
+                                reactorFailure = MavenExecutionRequest.REACTOR_FAIL_AT_END;
+                            }
+                            if (one.equals("--strict-checksums") || one.equals("-C")) {
+                                globalChecksum = MavenExecutionRequest.CHECKSUM_POLICY_FAIL;
+                            }
+                            if (one.equals("--lax-checksums") || one.equals("-c")) {
+                                globalChecksum = MavenExecutionRequest.CHECKSUM_POLICY_WARN;
+                            }
+                        }
+                        //what to do with those others?
+                    }
+
+                } catch (Exception ex1) {
+                    Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + opts);
+                }
+
+            }
+            req.setShowErrors(debug || errors);
+            if (debug) {
+                req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
+                out.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
+            } else {
+                req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
+                out.setThreshold(MavenEmbedderLogger.LEVEL_INFO);
+            }
             
             //            req.activateDefaultEventMonitor();
-            if (clonedConfig.isOffline() != null) {
-                req.setOffline(clonedConfig.isOffline().booleanValue());
+            if (offline != null) {
+                req.setOffline(offline.booleanValue());
             }
-            req.setInteractiveMode(clonedConfig.isInteractive());
+            req.setInteractiveMode(interactive);
 //TODO            req.setSettings(settings);
             req.setGoals(checkForArchetype(clonedConfig.getGoals()));
             //mavenCLI adds all System.getProperties() in there as well..
@@ -235,12 +294,14 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             req.addEventMonitor(out);
             req.setTransferListener(new ProgressTransferListener());
             //            req.setReactorActive(true);
-            
-            req.setReactorFailureBehavior(MavenSettings.getDefault().getFailureBehaviour());
+            if (reactorFailure != null) {
+                req.setReactorFailureBehavior(reactorFailure);
+            }
             req.setStartTime(new Date());
-            req.setGlobalChecksumPolicy(MavenSettings.getDefault().getChecksumPolicy());
-            
-            req.setUpdateSnapshots(clonedConfig.isUpdateSnapshots());
+            if (globalChecksum != null) {
+                req.setGlobalChecksumPolicy(globalChecksum);
+            }
+            req.setUpdateSnapshots(updateSnapshots);
             req.setRecursive(clonedConfig.isRecursive());
             MavenExecutionResult res = embedder.execute(req);
             CLIReportingUtils.logResult(req, res, out);
