@@ -118,8 +118,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
  * <p><b>Related Tutorial</b>
  *
  * <ul>
- * <p><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html">NetBeans Wizard Module Tutorial</a>
- * <p><a href="doc-files/wizard-guidebook.html">Wizard Guide</a>
+ * <li><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html">NetBeans Wizard Module Tutorial</a>
+ * <li><a href="doc-files/wizard-guidebook.html">Wizard Guide</a>
  * </ul>
  *
  * @see DialogDisplayer#createDialog
