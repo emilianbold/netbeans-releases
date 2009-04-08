@@ -385,13 +385,28 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
         private List<? extends FileDescription> getFileNames(String text) {
+            String searchField;
+            switch (searchType) {
+                case CASE_INSENSITIVE_PREFIX:
+                case CASE_INSENSITIVE_REGEXP:
+                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
+                    
+                default:
+                    searchField = FileIndexer.FIELD_NAME; break;
+            }
+
             Collection<? extends FileObject> roots = QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList());
             try {
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
-                Collection<? extends IndexResult> results = q.query(panel.isCaseSensitive() ? FileIndexer.FIELD_NAME : FileIndexer.FIELD_CASE_INSENSITIVE_NAME, text, searchType);
+                Collection<? extends IndexResult> results = q.query(searchField, text, searchType);
                 ArrayList<FileDescription> files = new ArrayList<FileDescription>();
                 for(IndexResult r : results) {
                     FileObject file = r.getFile();
+                    if (file == null || !file.isValid()) {
+                        // the file has been deleted in the meantime
+                        continue;
+                    }
+
                     Project project = FileOwnerQuery.getOwner(file);
                     boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
                     FileDescription fd = new FileDescription(

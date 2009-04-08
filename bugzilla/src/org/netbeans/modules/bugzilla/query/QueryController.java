@@ -122,7 +122,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final Map<String, QueryParameter> parameters;
 
     private static int counter;
-    private RequestProcessor rp = new RequestProcessor("Bugzilla query - " + counter++, 1);  // NOI18N
+    private RequestProcessor rp = new RequestProcessor("Bugzilla query - " + counter++, 1, true);  // NOI18N
     private Task task;
 
     private final BugzillaRepository repository;

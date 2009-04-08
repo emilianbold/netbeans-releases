@@ -55,6 +55,7 @@ import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * Library models typed bundle of typed volumes.
@@ -80,14 +81,17 @@ public final class Library {
 
     private final LibraryManager manager;
 
+    private final PropertyChangeListener listener;
+
     Library(LibraryImplementation impl, LibraryManager manager) {
         this.impl = impl;
-        this.impl.addPropertyChangeListener (new PropertyChangeListener () {
+        this.listener = new PropertyChangeListener () {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 Library.this.fireChange (propName,evt.getOldValue(),evt.getNewValue());
             }
-        });
+        };
+        this.impl.addPropertyChangeListener (WeakListeners.propertyChange(listener, this.impl));
         this.manager = manager;
     } // end create
 

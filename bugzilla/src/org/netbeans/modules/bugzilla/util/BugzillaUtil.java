@@ -53,8 +53,9 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,13 +66,15 @@ public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
         JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        DialogDescriptor descriptor = new DialogDescriptor (
                 panel,
                 title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(panel.getClass()),
+                null);
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 

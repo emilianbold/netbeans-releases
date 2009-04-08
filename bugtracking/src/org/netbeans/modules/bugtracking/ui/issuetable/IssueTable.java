@@ -375,7 +375,7 @@ public class IssueTable implements MouseListener, AncestorListener {
             }
             if(renderer instanceof JComponent) {
                 JComponent l = (JComponent) renderer;
-                l.putClientProperty("format", format);
+                l.putClientProperty("format", format);                          // NOI18N
                 ((JComponent) renderer).setToolTipText(tooltip);
                 if(background != null) {
                     l.setBackground(background);
@@ -389,7 +389,7 @@ public class IssueTable implements MouseListener, AncestorListener {
 
         @Override
         protected void paintComponent(Graphics g) {
-            MessageFormat format = (MessageFormat) getClientProperty("format");
+            MessageFormat format = (MessageFormat) getClientProperty("format"); // NOI18N
             String s = computeFitText(getText());
             if(format != null) {
                 StringBuffer sb = new StringBuffer();

@@ -54,7 +54,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.api.J2SEProjectSharability;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -68,7 +68,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk
  */
-public class CustomizerProviderImpl implements CustomizerProvider2, J2SEProjectSharability {
+public class CustomizerProviderImpl implements CustomizerProvider2, ProjectSharability {
     
     private final J2SEProject project;
     private final UpdateHelper updateHelper;
