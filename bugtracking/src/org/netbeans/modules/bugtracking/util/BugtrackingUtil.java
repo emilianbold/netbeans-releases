@@ -80,6 +80,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -93,30 +94,17 @@ public class BugtrackingUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
         JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(panel, title, true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        final DialogDescriptor dd =
+            new DialogDescriptor(
+                    panel,
+                    title,
+                    true,
+                    new Object[]{ok, cancel},
+                    ok,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(panel.getClass()),
+                    null);
         return DialogDisplayer.getDefault().notify(dd) == ok;
-    }
-
-    public static boolean showControllerComponent(final BugtrackingController bc) {
-        JComponent com = bc.getComponent();
-        final JButton ok = new JButton("Ok");
-        JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(com, "Repository?", true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, bc.getHelpContext(), null);
-        dd.setOptions(new Object[]{ok, cancel});
-        dd.setModal(true);
-        dd.setHelpCtx(bc.getHelpContext());
-        dd.setValid(false);
-        ok.setEnabled(false);
-        bc.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                boolean valid = bc.isValid();
-                dd.setValid(valid);
-                ok.setEnabled(valid);
-            }
-        });
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        return dd.getValue() == ok;
     }
 
     public static Issue[] getOpenIssues() {
@@ -135,7 +123,7 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.trim();
-        if(criteria.equals("")) {
+        if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
         List<Issue> ret = new ArrayList<Issue>();

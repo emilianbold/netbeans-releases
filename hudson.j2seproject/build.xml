@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="hudson.j2seproject">
-    <description>Builds, tests, and runs the project org.netbeans.modules.hudson.j2seproject</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
-</project>

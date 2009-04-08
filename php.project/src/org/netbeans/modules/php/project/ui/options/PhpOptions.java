@@ -42,12 +42,12 @@ package org.netbeans.modules.php.project.ui.options;
 import java.io.IOException;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  * Helper class to get actual PHP properties like debugger port etc.
@@ -56,6 +56,9 @@ import org.openide.util.NbPreferences;
  * @since 1.2
  */
 public final class PhpOptions {
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
+    private static final String PREFERENCES_PATH = "general"; // NOI18N
 
     // these constants are used in API javadoc so therefore public modifier
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
@@ -92,7 +95,7 @@ public final class PhpOptions {
     }
 
     private Preferences getPreferences() {
-        return NbPreferences.forModule(PhpOptions.class);
+        return PhpPreferences.getPreferences(true).node(PREFERENCES_PATH);
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {

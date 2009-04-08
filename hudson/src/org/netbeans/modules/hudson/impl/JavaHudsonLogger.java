@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.j2seproject;
+package org.netbeans.modules.hudson.impl;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -57,7 +57,6 @@ import org.openide.windows.OutputWriter;
 /**
  * Handles Java stack traces for Hudson.
  * Currently just hyperlinks any classes found in open projects.
- * XXX not specific to j2seproject; ideally would be in a module just depending on Java APIs.
  */
 @ServiceProvider(service=HudsonLogger.class, position=100)
 public class JavaHudsonLogger implements HudsonLogger {
