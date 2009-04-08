@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -186,6 +187,17 @@ public final class DashboardImpl extends Dashboard {
 
     private static class Holder {
         private static final DashboardImpl theInstance = new DashboardImpl();
+    }
+
+    public void selectAndExpand(KenaiProject project) {
+        for (TreeListNode n:model.getRootNodes()) {
+            if (n instanceof ProjectNode) {
+                if (((ProjectNode)n).getProject().getId().equals(project.getName())) {
+                    treeList.setSelectedValue(n, true);
+                    n.setExpanded(true);
+                }
+            }
+        }
     }
 
     /**
