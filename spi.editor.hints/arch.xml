@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-      <api name="EditorHintsSPI" category="stable" group="java" type="export" url="@TOP@index.html">
+      <api name="EditorHintsSPI" category="devel" group="java" type="export" url="@TOP@index.html">
           allows to show errors in the editor, with possible fixes.
       </api>
   </p>
@@ -137,7 +137,52 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+      <usecase name="redunderline">
+          Assume that you have a module using e.g. Parsing API to parse the source
+          files and wants to mark the errors in the editor to be shown as red
+          underlined in the editor. Here is the pseudo code that achieves this:
+<pre>
+Document doc = ...;
+ArrayList&lt;ErrorDescription&gt; errors = new ArrayList&lt;ErrorDescription&gt;();
+for (&lt;all errors from the parser that have parsed the doc&gt;) {
+    errors.add(
+        <b>ErrorDescriptionFactory.createErrorDescription<b>(
+            Severity.ERROR,
+            d.getMessage(Locale.getDefault()),
+            doc,
+            doc.createPosition(start),
+            doc.createPosition(end)
+        )
+    );
+}
+<b>HintsController.setErrors<b>(doc, "myerrors", errors);
+</pre>
+      </usecase>
+      <usecase name="warningwithfix">
+          Adding a warning with fixes:
+<pre>
+static final class FixImpl implements Fix {
+...
+}
+...
+Document doc = ...;
+List&lt;Fix&gt; <b>fixes<b> = Arrays.&lt;Fix&gt;asList(new FixImpl(...));
+ArrayList&lt;ErrorDescription&gt; warnings = new ArrayList&lt;ErrorDescription&gt;();
+for (&lt;all places where the warning should be displayed&gt;) {
+    warnings.add(
+        ErrorDescriptionFactory.createErrorDescription(
+            Severity.WARNING,
+            displayName,
+            <b>fixes</b>,
+            doc,
+            doc.createPosition(start),
+            doc.createPosition(end)
+        )
+    );
+}
+HintsController.setErrors(doc, "mywarnings", warnings);
+</pre>
+      </usecase>
   </p>
  </answer>
 
