@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -97,7 +96,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
-    protected static final int LAST_USED_FLAG_INDEX = 3;
+    private static final byte FLAGS_INVALID = 1 << 4;
+    protected static final int LAST_USED_FLAG_INDEX = 4;
     private byte flags;
     
     private static final boolean CHECK_SCOPE = false;
@@ -675,12 +675,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if(params != null && params.size() > 0) {
             sb.append('<');
             int limit = 0;
-            for (Iterator iter = params.iterator(); iter.hasNext();) {
+            for (Iterator<CsmTemplateParameter> iter = params.iterator(); iter.hasNext();) {
                 if (limit >= PARAMETERS_LIMIT) {
                     break;
                 }
                 limit++;
-                CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
+                CsmTemplateParameter param = iter.next();
                 if (CsmKindUtilities.isVariableDeclaration(param)) {
                     CsmVariable var = (CsmVariable) param;
                     CsmType type = var.getType();
@@ -716,10 +716,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         this.unregisterInProject();
         _disposeParameters();
+        setFlags(FLAGS_INVALID, true);
     }
-    
+
+    @Override
+    public boolean isValid() {
+        return !hasFlags(FLAGS_INVALID) && super.isValid();
+    }
+
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.scopeRef == null) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
@@ -754,7 +760,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            // wrong assert, see IZ#158605
+            // this is possible situation when scope is already invalidated (see IZ#154264)
             //assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;

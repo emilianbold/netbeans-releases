@@ -440,7 +440,7 @@ public class JsIndexer extends EmbeddingIndexer {
             OffsetRange range = LexUtilities.getCommentBlock(result.getSnapshot(), astOffset, true);
             if (range != OffsetRange.NONE) {
                 range = LexUtilities.getLexerOffsets(result, range);
-                if (LOG.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     LOG.fine("DocOffset: elementStart=" + IndexedElement.encode(element.getNode().getSourceStart())
                             + ", rowStart=" + IndexedElement.encode(astOffset)
                             + ", rowStart-in-doc=" + IndexedElement.encode(result.getSnapshot().getOriginalOffset(astOffset))
@@ -911,7 +911,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "javascript"; // NOI18N
-        public static final int VERSION = 7;
+        public static final int VERSION = 8;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

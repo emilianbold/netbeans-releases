@@ -59,6 +59,7 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -393,15 +394,19 @@ public final class DtraceDataCollector
     }
 
     public ValidationStatus validate(final DLightTarget target) {
+        return validate(target, this, true);
+    }
+
+    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource ,boolean notify) {
         if (validationStatus.isValid()) {
             return validationStatus;
         }
 
         ValidationStatus oldStatus = validationStatus;
         ValidationStatus newStatus = doValidation(target);
-
-        notifyStatusChanged(oldStatus, newStatus);
-
+        if (notify){
+          notifyStatusChanged(validatebleSource, oldStatus, newStatus);
+        }
         validationStatus = newStatus;
         return newStatus;
     }
@@ -457,7 +462,7 @@ public final class DtraceDataCollector
         validationListeners.remove(listener);
     }
 
-    protected void notifyStatusChanged(
+    void notifyStatusChanged(Validateable validatable,
             ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus.equals(newStatus)) {
             return;
@@ -466,9 +471,17 @@ public final class DtraceDataCollector
         ValidationListener[] ll =
                 validationListeners.toArray(new ValidationListener[0]);
 
-        for (ValidationListener l : ll) {
-            l.validationStateChanged(this, oldStatus, newStatus);
+        if (validatable == null){
+          validatable = this;
         }
+        for (ValidationListener l : ll) {
+            l.validationStateChanged(validatable, oldStatus, newStatus);
+        }
+    }
+
+    protected void notifyStatusChanged(
+            ValidationStatus oldStatus, ValidationStatus newStatus) {
+       notifyStatusChanged(this, oldStatus, newStatus);
     }
 
     public void targetStateChanged(

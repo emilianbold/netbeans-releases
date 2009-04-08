@@ -94,7 +94,24 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
         renderIfNeed();
         return body;
     }
-    
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (condition instanceof Disposable) {
+            ((Disposable) condition).dispose();
+        }
+        if (init instanceof Disposable) {
+            ((Disposable) init).dispose();
+        }
+        if (iteration instanceof Disposable) {
+            ((Disposable) iteration).dispose();
+        }
+        if (body instanceof Disposable) {
+            ((Disposable) body).dispose();
+        }        
+    }
+
     private void renderIfNeed() {
         if( ! rendered ) {
             rendered = true;

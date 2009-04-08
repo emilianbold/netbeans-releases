@@ -78,6 +78,14 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+        if (declarators != null) {
+            Utils.disposeAll(declarators);
+        }
+    }
+
+    @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }

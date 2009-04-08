@@ -40,13 +40,7 @@
 package org.netbeans.modules.bugtracking.bridge.kenai;
 
 import java.net.PasswordAuthentication;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
 /**
@@ -56,38 +50,18 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
 public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
-    private final Set<String> kenaiUrls = new HashSet<String>();
-
     @Override
     public boolean isKenai(String url) {
-        synchronized(kenaiUrls) {
-            if(kenaiUrls.contains(url)) {
-                return true;
-            }
-        }
-        boolean ret = false;
-        try {
-            ret = KenaiProject.forRepository(url) != null;
-        } catch (KenaiException ex) { }
-
-        if(ret) {
-            synchronized(kenaiUrls) {
-                kenaiUrls.add(url);
-            }
-        }
-        return ret;
+        return KenaiUtil.isKenai(url);
     }
     
     @Override
-    public PasswordAuthentication getPasswordAuthentication(String url) {
-        PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-        if(a != null) {
-            return a;
-        } else {
-            if(!UIUtils.showLogin()) {
-                return null;
-            }
-        }
-        return Kenai.getDefault().getPasswordAuthentication();
+    public PasswordAuthentication getPasswordAuthentication() {
+        return KenaiUtil.getPasswordAuthentication(true);
+    }
+
+    @Override
+    public boolean showLogin() {
+        return KenaiUtil.showLogin();
     }
 }
