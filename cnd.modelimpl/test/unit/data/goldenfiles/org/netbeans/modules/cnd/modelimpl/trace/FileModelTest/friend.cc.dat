@@ -73,7 +73,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
             RETURNS int TEXT=int  [12:5/206-12:8/209]
     FRIENDS:
         CLASS_FRIEND_DECLARATION A2 [11:5/185-11:11/191] FriendClassImpl
-            C:A2
+            REFERENCED CLASS: C:A2
         FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
             SIGNATURE moo2(int)
             UNIQUE NAME f:moo2(int)
@@ -162,7 +162,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
             RETURNS int TEXT=int  [12:5/206-12:8/209]
     FRIENDS:
         CLASS_FRIEND_DECLARATION A2 [11:5/185-11:11/191] FriendClassImpl
-            C:A2
+            REFERENCED CLASS: C:A2
         FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
             SIGNATURE moo2(int)
             UNIQUE NAME f:moo2(int)
@@ -195,6 +195,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
             REFERENCED FRIEND FUNCTION: soo2  [5:5/71-5:26/92]
             PARAMETERS:
             RETURNS int TEXT=int  [16:12/331-16:15/334]
+CLASS_FORWARD_DECLARATION A2 [11:5/185-11:21/201]
 FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
     SIGNATURE moo2(int)
     UNIQUE NAME f:moo2(int)

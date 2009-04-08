@@ -217,7 +217,7 @@ public class MainProjectScanningScope extends TaskScanningScope
             currentProject = newProject;
         }
         
-        if( callbackRefresh )
+        if( callbackRefresh && null != callback )
             callback.refresh();
     }
     

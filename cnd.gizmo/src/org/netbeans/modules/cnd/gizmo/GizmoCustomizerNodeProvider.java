@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
+//@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class GizmoCustomizerNodeProvider implements CustomizerNodeProvider {
 
     private CustomizerNode customizerNode = null;

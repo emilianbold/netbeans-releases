@@ -54,7 +54,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -265,7 +264,7 @@ public final class Unresolved implements Disposable {
     }
     
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.projectRef == null) {
             // restore container from it's UID
             this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
             assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;

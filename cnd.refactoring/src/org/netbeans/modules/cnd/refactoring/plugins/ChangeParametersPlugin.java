@@ -118,7 +118,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         Collection<CsmFile> files = new HashSet<CsmFile>();
         CsmFile startFile = getStartCsmFile();
         for (CsmObject obj : objs) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, null);
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             refactoring.getContext().add(ar);
             files.addAll(getRelevantFiles(startFile, obj, refactoring));

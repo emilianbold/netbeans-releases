@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
 import java.util.NoSuchElementException;
+import org.netbeans.modules.cnd.debugger.gdb.TypeInfo;
 
 /**
  * Read the field information from a struct/union/class returned by gdb. This class is
@@ -81,7 +82,7 @@ public class FieldTokenizer {
         }
 	if (anon_count > 0) {
 	    retval[0] = Integer.toString(anon_count);
-	    retval[1] = "<anon-count>"; // NOI18N
+	    retval[1] = TypeInfo.ANON_COUNT;
 	    anon_count = 0;
 	} else {
 	    retval[0] = null;
@@ -124,7 +125,7 @@ public class FieldTokenizer {
         if (field.endsWith("}")) { // NOI18N
             // This happens for anonymous structs/unions/classes...
             retval[0] = field;
-            retval[1] = "<anonymous" + ++anon_count + ">"; // NOI18N
+            retval[1] = TypeInfo.ANONYMOUS_PREFIX + ++anon_count + ">"; // NOI18N
         } else {
             int pos = field.lastIndexOf(' ');
             if (pos != -1) {

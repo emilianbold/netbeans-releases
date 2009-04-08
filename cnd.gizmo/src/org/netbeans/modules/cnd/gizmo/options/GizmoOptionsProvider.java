@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,49 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.gizmo.options;
 
-package org.netbeans.modules.project.ant;
-import java.io.File;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 
-import java.util.EventObject;
-
-import org.openide.filesystems.FileObject;
-
-import org.openide.filesystems.FileUtil;
-
-/**
- * Event indicating that a file named by a given path was created, deleted, or changed.
- * @author Jesse Glick
- */
-public final class FileChangeSupportEvent extends EventObject {
-
-    public static final int EVENT_CREATED = 0;
-    public static final int EVENT_DELETED = 1;
-    public static final int EVENT_MODIFIED = 2;
-
-    private final int type;
-    private final File path;
-    
-    FileChangeSupportEvent(FileChangeSupport support, int type, File path) {
-        super(support);
-        this.type = type;
-        this.path = path;
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
+public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
+    /**
+     * Creates an instance of the auxiliary information object
+     */
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
+        GizmoOptions gizmoOptions = new GizmoOptions(baseDir, pcs);
+        return gizmoOptions;
     }
-    
-    public int getType() {
-        return type;
-    }
-    
-    public File getPath() {
-        return path;
-    }
-    
-    public FileObject getFileObject() {
-        return FileUtil.toFileObject(path);
-    }
-    
-    public String toString() {
-        return "FCSE[" + "CDM".charAt(type) + ":" + path + "]"; // NOI18N
-    }
-    
 }

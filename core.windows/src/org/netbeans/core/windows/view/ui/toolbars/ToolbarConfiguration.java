@@ -43,6 +43,7 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -142,8 +143,8 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
 
     private void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
-        MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
-        boolean fullScreen = frame.isFullScreenMode();
+        Frame frame = WindowManager.getDefault().getMainWindow();
+        boolean fullScreen = (frame instanceof MainWindow) && ((MainWindow)frame).isFullScreenMode();
 
         Map<String, ToolbarConstraints> name2constr = collectAllConstraints();
         // generate list of available toolbars
