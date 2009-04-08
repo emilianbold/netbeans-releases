@@ -277,6 +277,10 @@ public class StackTraceSupport {
         final FileObject fo = search(path);
         if ( fo != null ) {
             final File file = FileUtil.toFile(fo);
+            if(file == null) {
+                // XXX any chance to disable the action if it's not a real io.File - e.g. a jdk class?
+                return;
+            }
             Collection<? extends VCSSupport> supports = Lookup.getDefault().lookupAll(VCSSupport.class);
             if(supports == null) {
                 return;

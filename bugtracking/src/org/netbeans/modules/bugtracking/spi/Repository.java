@@ -42,7 +42,9 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.openide.nodes.Node;
 
 /**
  * 
@@ -52,12 +54,13 @@ import org.netbeans.modules.bugtracking.util.IssueCache;
  */
 public abstract class Repository {
 
+    private RepositoryNode node;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
      * a query was saved or removed
      */
-    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed";
+    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
 
     /**
      * Returns the icon for this repository
@@ -76,6 +79,17 @@ public abstract class Repository {
      * @return
      */
     public abstract String getTooltip();
+
+    /**
+     * Returns a Node representing this repository
+     * @return
+     */
+    public Node getNode() {
+        if(node == null) {
+            node = new RepositoryNode(this);
+        }
+        return node;
+    }
 
     /**
      * Returns the repositories url
@@ -103,14 +117,18 @@ public abstract class Repository {
     public abstract BugtrackingController getController();
 
     /**
-     * Creates a new query instance.
-     * @return
+     * Creates a new query instance. Might block for a longer time.
+     *
+     * @return a new Query instance or null if it's not possible
+     * to access the repository.
      */
     public abstract Query createQuery(); 
 
     /**
-     * Creates an issue
-     * @return
+     * Creates a new Issue instance. Might block for a longer time.
+     *
+     * @return return a new Issue instance or null if it's not possible
+     * to access the repository.
      */
     public abstract Issue createIssue();
 

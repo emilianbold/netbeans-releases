@@ -100,7 +100,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="queriesPanel" pref="198" max="32767" attributes="0"/>
+                                  <Component id="queriesPanel" pref="260" max="32767" attributes="0"/>
                               </Group>
                               <Component id="findIssuesLabel" min="-2" max="-2" attributes="0"/>
                           </Group>

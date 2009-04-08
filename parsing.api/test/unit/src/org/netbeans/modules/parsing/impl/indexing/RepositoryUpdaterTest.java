@@ -490,7 +490,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
-    @RandomlyFails
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -556,8 +555,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()}, new URL[0]);
         f3.delete();
         assertTrue (handler.await());
-        assertTrue(indexerFactory.indexer.awaitIndex());
-        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
         assertEquals(0, eindexerFactory.indexer.indexCounter);
         assertEquals(0,eindexerFactory.indexer.expectedDeleted.size());
         assertEquals(0, eindexerFactory.indexer.expectedDirty.size());

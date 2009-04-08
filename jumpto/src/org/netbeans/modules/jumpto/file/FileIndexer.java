@@ -84,6 +84,9 @@ public final class FileIndexer extends CustomIndexer {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : deleted) {
                     is.removeDocuments(i);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("removed " + i.getURL() + "/" + i.getRelativePath());
+                    }
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
@@ -96,6 +99,9 @@ public final class FileIndexer extends CustomIndexer {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {
                     is.markDirtyDocuments(i);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("dirty " + i.getURL() + "/" + i.getRelativePath());
+                    }
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
@@ -125,8 +131,11 @@ public final class FileIndexer extends CustomIndexer {
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         try {
+            long tm1 = System.currentTimeMillis();
+            int cnt = 0;
             IndexingSupport is = IndexingSupport.getInstance(context);
             for(Indexable i : files) {
+                cnt++;
                 String nameExt = getNameExt(i);
                 if (nameExt.length() > 0) {
                     IndexDocument d = is.createDocument(i);
@@ -137,7 +146,15 @@ public final class FileIndexer extends CustomIndexer {
                         d.addPair(FIELD_MIME_TYPE, mimeType, false, true);
                     }
                     is.addDocument(d);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("added " + i.getURL() + "/" + i.getRelativePath());
+                    }
                 }
+            }
+            long tm2 = System.currentTimeMillis();
+            
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Processed " + cnt + " files in " + (tm2 - tm1) + "ms."); //NOI18N
             }
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);

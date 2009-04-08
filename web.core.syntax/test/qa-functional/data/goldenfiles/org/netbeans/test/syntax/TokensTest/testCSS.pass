@@ -1,4 +1,5 @@
-S:/* -------- DIRECT STYLES FOR TAGS-----------*/
+COMMENT:/* -------- DIRECT STYLES FOR TAGS-----------*/
+S:
 
 IDENT:body
 COMMA:,

@@ -3,7 +3,7 @@
 <!-- completion for tags -->
 <%--CC
 <|
-< jsp:root >
+jsp:root
 <jsp:root
 --%>
 
@@ -17,6 +17,6 @@ language
 <!-- completion for end tags -->
 <%--CC
 <jsp:body><html></|
-< /jsp:body >
+/jsp:body
 <jsp:body><html></jsp:body>
 --%>
