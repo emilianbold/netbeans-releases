@@ -171,7 +171,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
     }
 
     public ValidationStatus validate(DLightTarget target) {
-        return collector.validate(target);
+        return collector.validate(target, this, true);
     }
 
     public void invalidate() {

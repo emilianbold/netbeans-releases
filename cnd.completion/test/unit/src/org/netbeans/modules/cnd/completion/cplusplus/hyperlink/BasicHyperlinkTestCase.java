@@ -599,6 +599,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ151588.cc", 11, 26, "IZ151588.cc", 3, 5);
     }
 
+    public void testIZ161901() throws Exception {
+        // IZ#161901 : unresolved friend class forward
+        performTest("IZ161901.cc", 3, 22, "IZ161901.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -71,6 +71,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     @Override
     public void addNotify() {
         super.addNotify();
+        // XXX use controler.opened() instead
         controller.populate();
     }
 

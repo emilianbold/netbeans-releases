@@ -360,6 +360,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 + " -- CloneableEditor.DoInitialize.initNonVisual"
                 + " name:" + getName()
                 + " SET kit:" + kit
+                + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                 + " Thread:[" + Thread.currentThread().getName() + "]");
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
@@ -386,6 +387,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initCustomEditor"
             + " name:" + getName()
+            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
             + " Thread:[" + Thread.currentThread().getName() + "]" + " ENTER");
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
@@ -407,7 +409,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     } else {
                         log = "Pane is not QuietEditorPane";
                     }
-                    rec.setParameters(new Object [] {sb.toString(), log});
+                    rec.setParameters(new Object [] {"1.0", sb.toString(), log, support.getLog()});
                     logger.log(rec);
                     throw new IllegalStateException("Unexpected UI class:" + tmp.getUI().getClass().getName(), ex);
                 }
@@ -481,6 +483,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)"
             + " kit:" + kit
+            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
             + " Thread:[" + Thread.currentThread().getName() + "]");
             tmp.setEditorKit(kit);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
@@ -490,6 +493,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             tmp.setDocument(doc);
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initDocument"
+            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
             + " RETURN TRUE"
             + " Thread:[" + Thread.currentThread().getName() + "]");
             return true;
@@ -509,6 +513,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initVisual"
             + " name:" + getName()
+            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
             + " ENTER"
             + " Thread:[" + Thread.currentThread().getName() + "]");
             if (LOG.isLoggable(Level.FINE)) {
@@ -608,7 +613,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             new Runnable() {
                 public void run() {
                     sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                    + " -- CloneableEditor.componentClosed.run ENTER");
+                    + " -- CloneableEditor.componentClosed.run ENTER"
+                    + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
+                    + " Thread:[" + Thread.currentThread().getName() + "]");
                     // #23486: pane could not be initialized yet.
                     if (pane != null) {
                         // #114608 - commenting out setting of the empty document
@@ -619,7 +626,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         // calling it with null does not impact performance, because the pane
                         // will not create new document and typically nobody listens on "editorKit" prop change
                         sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                        + " -- CloneableEditor.componentClosed.run INVOKE pane.setEditorKit(null)");
+                        + " -- CloneableEditor.componentClosed.run INVOKE pane.setEditorKit(null)"
+                        + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
+                        + " Thread:[" + Thread.currentThread().getName() + "]");
                         pane.setEditorKit(null);
                     }
 

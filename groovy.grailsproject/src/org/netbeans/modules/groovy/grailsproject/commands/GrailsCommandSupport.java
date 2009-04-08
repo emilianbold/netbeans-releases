@@ -211,6 +211,7 @@ public final class GrailsCommandSupport {
         }
 
         synchronized (this) {
+            // FIXME this is 1.0 code only
             if (pluginListener == null) {
                 pluginListener = new PluginListener();
                 File folder = FileUtil.toFile(project.getProjectDirectory());

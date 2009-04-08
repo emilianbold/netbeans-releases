@@ -1,0 +1,33 @@
+class TestDomain {
+
+    String name
+    int age
+
+    def test1() {
+        TestDomain.findBy
+    }
+
+    def test2() {
+        TestDomain.findByAg
+    }
+
+    def test3() {
+        TestDomain.findByAge
+    }
+
+    def test4() {
+        TestDomain.findByAgeAnd
+    }
+
+    def test5() {
+        TestDomain.findByAgeAndNa
+    }
+
+    def test6() {
+        TestDomain.findByAgeAndName
+    }
+
+    def test7() {
+        TestDomain.find
+    }
+}

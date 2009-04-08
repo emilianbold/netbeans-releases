@@ -76,7 +76,18 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
     public List<CsmExceptionHandler> getHandlers() {
         return handlers;
     }
-    
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (tryStatement instanceof Disposable) {
+            ((Disposable) tryStatement).dispose();
+        }
+        if (handlers != null) {
+            Utils.disposeAll(handlers);
+        }
+    }
+
     private void render(AST ast, boolean global) {
         handlers = new ArrayList<CsmExceptionHandler>();
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {

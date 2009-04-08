@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
 import java.util.ResourceBundle;
@@ -53,56 +52,57 @@ import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class RunProfileNodeProvider implements CustomizerNodeProvider {
-    
+
     /**
      * Creates an instance of a customizer node
      */
     private CustomizerNode customizerNode = null;
-    
+
     public CustomizerNode factoryCreate() {
         if (customizerNode == null) {
             customizerNode = createProfileNode();
         }
-	return customizerNode;
+        return customizerNode;
     }
-    
+
     public CustomizerNode createProfileNode() {
-            return new RunProfileCustomizerNode(
+        return new RunProfileCustomizerNode(
                 "Run", // NOI18N
                 getString("RUNNING"),
                 null);
     }
 
     static class RunProfileCustomizerNode extends CustomizerNode {
-	public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-	    super(name, displayName, children);
-	}
+
+        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
 
         @Override
-	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-	    RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
             boolean isRemote = false;
             if (configuration instanceof MakeConfiguration) {
                 isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
             }
-	    return runProfile != null ? runProfile.getSheet(isRemote) : null;
-	    //return configurationDescriptor.getSheet(project, configuration);
-	}
-        
+            return runProfile != null ? runProfile.getSheet(isRemote) : null;
+        //return configurationDescriptor.getSheet(project, configuration);
+        }
+
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsRunning"); // NOI18N
         }
     }
-    
     /** Look up i18n strings here */
     private ResourceBundle bundle;
+
     protected String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(RunProfileNodeProvider.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(RunProfileNodeProvider.class);
+        }
+        return bundle.getString(s);
     }
 }
