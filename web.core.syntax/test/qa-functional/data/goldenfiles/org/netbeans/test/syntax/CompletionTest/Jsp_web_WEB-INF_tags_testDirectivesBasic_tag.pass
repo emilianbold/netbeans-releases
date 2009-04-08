@@ -1,11 +1,11 @@
-[<%@|, <%@ attribute % >, <%@attribute  %>, 122]
+[<%@|, attribute, <%@attribute  %>, 114]
 <%@ attribute % >
 <%@ include % >
 <%@ tag % >
 <%@ taglib % >
 <%@ variable % >
-End cursor position = 136
-[<%@tag |, large-icon, <%@tag large-icon="", 216]
+End cursor position = 128
+[<%@tag |, large-icon, <%@tag large-icon="", 208]
 body-content
 description
 display-name
@@ -17,8 +17,8 @@ language
 large-icon
 pageEncoding
 small-icon
-End cursor position = 236
-[<%@tag pageEncoding="U|", UTF-8, <%@tag pageEncoding="UTF-8", 324]
+End cursor position = 228
+[<%@tag pageEncoding="U|", UTF-8, <%@tag pageEncoding="UTF-8", 316]
 US-ASCII
 UTF-16
 UTF-16BE
@@ -27,4 +27,4 @@ UTF-32
 UTF-32BE
 UTF-32LE
 UTF-8
-End cursor position = 351
+End cursor position = 343

@@ -99,12 +99,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/arrays1.php");
     }
 
+    public void testArrays2() throws Exception{
+        reformatFileContents("testfiles/formatting/arrays2.php");
+    }
+
     public void testSubsequentQuotes() throws Exception{
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
     }
 
     public void testMultilineString() throws Exception{
         reformatFileContents("testfiles/formatting/multiline_string.php");
+    }
+    
+    public void testIfElseAlternativeSyntax() throws Exception{
+        reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
 
     public void test161049() throws Exception{

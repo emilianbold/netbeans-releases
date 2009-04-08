@@ -3,7 +3,7 @@
 <!-- completion for HTML tags -->
 <%--CC
 <jsp:body><h|
-<html>
+html
 <jsp:body><html>
 --%>
 
@@ -18,7 +18,7 @@ lang
 <%--CC
 <jsp:body><html dir="|
 rtl
-<jsp:body><html dir="rtl"
+<jsp:body><html dir="rtl
 --%>
 
 <!-- completion for HTML entities -->
@@ -31,7 +31,7 @@ rtl
 <!-- completion for HTML end tags -->
 <%--CC
 <jsp:body><html></|
-</html>
+/html
     <jsp:body><html></html>
 --%>
 

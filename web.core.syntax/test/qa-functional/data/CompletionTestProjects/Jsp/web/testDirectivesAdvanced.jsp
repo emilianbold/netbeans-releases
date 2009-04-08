@@ -34,7 +34,7 @@ context.xml
 <%-- completion for custom tags #58437 --%>
 <%--CC
 <c:v|
-< c:view >
+c:view
 <c:view
 --%>
 

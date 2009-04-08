@@ -44,7 +44,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.openide.util.NbPreferences;
 
 /**
  * Helper class to get miscellaneous properties related to single PHP project
@@ -52,6 +51,9 @@ import org.openide.util.NbPreferences;
  * @author Tomas Mysik
  */
 public final class ProjectSettings {
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
+    private static final String PROJECT_PREFERENCES_PATH = "projects";//NOI18N
 
     private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
     private static final String DEBUG_URLS = "debugUrls"; // NOI18N
@@ -62,7 +64,8 @@ public final class ProjectSettings {
     }
 
     private static Preferences getPreferences(Project project) {
-        return NbPreferences.forModule(ProjectSettings.class).node(ProjectUtils.getInformation(project).getName());
+        return PhpPreferences.getPreferences(false).node(PROJECT_PREFERENCES_PATH).
+                node(ProjectUtils.getInformation(project).getName());
     }
 
     /**
