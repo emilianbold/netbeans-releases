@@ -111,7 +111,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
-        handle.start();
+        handle.start(5);
 
         String newPrjName = (String) wizard.getProperty(PROP_PRJ_NAME);
         String newPrjTitle = (String) wizard.getProperty(PROP_PRJ_TITLE);
@@ -130,7 +130,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         // Create project
         try {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                "NewKenaiProject.progress.creatingProject"));
+                "NewKenaiProject.progress.creatingProject"), 1);
 
             logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName +
                     ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense); // NOI18N
@@ -148,7 +148,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         if (!NO_REPO.equals(newPrjScmType)) {
             try {
                 handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                        "NewKenaiProject.progress.creatingRepo"));
+                        "NewKenaiProject.progress.creatingRepo"),2);
                 String displayName = getScmDisplayName(newPrjScmType);
                 String description = getScmDescription(newPrjScmType);
                 String extScmUrl = (Utilities.EXT_REPO.equals(newPrjScmType) ? newPrjScmUrl : null);
@@ -173,7 +173,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         if (!NO_ISSUES.equals(newPrjIssues)) {
             try {
                 handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                        "NewKenaiProject.progress.creatingIssues"));
+                        "NewKenaiProject.progress.creatingIssues"),3);
                 String displayName = getIssuesDisplayName(newPrjIssues);
                 String description = getIssuesDescription(newPrjIssues);
                 String extIssuesUrl = (Utilities.EXT_ISSUES.equals(newPrjIssues) ? newPrjIssuesUrl : null);
@@ -207,7 +207,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 }
                 if (scmLoc != null) {
                     handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                            "NewKenaiProject.progress.repositoryCheckout"));
+                            "NewKenaiProject.progress.repositoryCheckout"),4);
                     logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() +
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
                     PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
@@ -227,7 +227,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
                                 if (autoCommit) {
                                     handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                                    "NewKenaiProject.progress.repositoryCommit"));
+                                    "NewKenaiProject.progress.repositoryCommit"),5);
                                     Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 }
                             } else {
