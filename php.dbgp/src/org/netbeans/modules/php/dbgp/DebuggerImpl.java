@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
 /**
@@ -63,14 +60,15 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping) {
-        assert startFile != null;
+    public void start(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
+        assert properties.startFile != null;
         SessionId sessionId = getSessionId(project);
         if (sessionId == null) {
-            sessionId = new SessionId(startFile);
+            sessionId = new SessionId(properties.startFile);
             DebuggerOptions options = new DebuggerOptions();
-            options.debugForFirstPageOnly = closeSession;
-            options.pathMapping = pathMapping;
+            options.debugForFirstPageOnly = properties.closeSession;
+            options.pathMapping = properties.pathMapping;
+            options.debugProxy = properties.debugProxy;
 
             debug(sessionId, options, run);
             long started = System.currentTimeMillis();

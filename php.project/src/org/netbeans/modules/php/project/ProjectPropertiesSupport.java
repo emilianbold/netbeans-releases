@@ -40,19 +40,15 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -201,7 +197,7 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
-     * @return run as type, {@link RunAsType#LOCAL} is the default.
+     * @return run as type, {@link PhpProjectProperties.RunAsType#LOCAL} is the default.
      */
     public static PhpProjectProperties.RunAsType getRunAs(PhpProject project) {
         PhpProjectProperties.RunAsType runAsType = null;
@@ -337,6 +333,18 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * Get debugger proxy (as pair of host, port) or <code>null</code> if it's not set.
+     * @return debugger proxy (as pair of host, port) or <code>null</code> if it's not set.
+     */
+    public static Pair<String, Integer> getDebugProxy(PhpProject project) {
+        String host = getString(project, PhpProjectProperties.DEBUG_PROXY_HOST, null);
+        if (!PhpProjectUtils.hasText(host)) {
+            return null;
+        }
+        return Pair.of(host, getInt(project, PhpProjectProperties.DEBUG_PROXY_PORT, PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT));
+    }
+
+    /**
      * @return instance of Pair<String, String> or null
      */
     private static Pair<String, String> getCopySupportPair(PhpProject project) {
@@ -368,6 +376,18 @@ public final class ProjectPropertiesSupport {
             return defaultValue;
         }
         return stringValue;
+    }
+
+    private static int getInt(PhpProject project, String property, int defaultValue) {
+        String stringValue = project.getEvaluator().getProperty(property);
+        if (stringValue != null) {
+            try {
+                return Integer.valueOf(stringValue);
+            } catch (NumberFormatException exc) {
+                // ignored
+            }
+        }
+        return defaultValue;
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
