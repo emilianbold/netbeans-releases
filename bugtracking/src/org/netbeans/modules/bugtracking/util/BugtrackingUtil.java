@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +50,6 @@ import java.util.logging.Level;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -67,7 +63,6 @@ import org.netbeans.modules.bugtracking.patch.ContextualPatch;
 import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
@@ -213,15 +208,18 @@ public class BugtrackingUtil {
         ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
         JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        DialogDescriptor descriptor = new DialogDescriptor(
                 chooser,
                 bundle.getString("LBL_ApplyPatch"), // NOI18N
+                true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.patchContextChooser")); // NOI18N
         File context = null;
-        if (DialogDisplayer.getDefault().notify(descriptor) == ok) {
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
             context = chooser.getSelectedFile();
         }
         return context;
