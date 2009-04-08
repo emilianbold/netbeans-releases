@@ -44,6 +44,6 @@ made subject to such option by the copyright holder.
 
 <editor-preferences>
 
-    <entry name="identifier-acceptor" value="org.netbeans.modules.html.editor.HTMLSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
+    <entry name="identifier-acceptor" value="org.netbeans.modules.html.editor.HtmlSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
 
 </editor-preferences>

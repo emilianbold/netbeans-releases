@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -61,11 +62,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * implementation of offsetable object to represent functions' parameters
  * @author Vladimir Voskresensky
  */
-public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> implements CsmParameterList<T, K> {
+public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableIdentifiableBase<T> implements CsmParameterList<K> {
 
-    private final Collection/*<K>or<CsmUID<K>>*/ parameters;
+    private final Collection<?>/*<K>or<CsmUID<K>>*/ parameters;
 
-    protected ParameterListImpl(CsmFile file, int start, int end, Collection/*<K>or<CsmUID<K>>*/ parameters) {
+    protected ParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<K>or<CsmUID<K>>*/ parameters) {
         super(file, start, end);
         if (parameters == null || parameters.isEmpty()) {
             this.parameters = null;
@@ -99,10 +100,10 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
         } else {
             Object first = parameters.iterator().next();
             Collection<K> out;
-            if (first instanceof CsmUID) {
-                out = UIDCsmConverter.UIDsToCsmObjects(parameters);
+            if (first instanceof CsmUID<?>) {
+                out = UIDCsmConverter.UIDsToCsmObjects((Collection<CsmUID<K>>)parameters);
             } else {
-                out = new ArrayList<K>(parameters);
+                out = new ArrayList<K>((Collection<K>)parameters);
             }
             return out;
         }
@@ -115,8 +116,8 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
         } else {
             Object first = parameters.iterator().next();
             Collection<CsmUID<K>> out = null;
-            if (first instanceof CsmUID) {
-                out = parameters;
+            if (first instanceof CsmUID<?>) {
+                out = (Collection<CsmUID<K>>)parameters;
             }
             return out;
         }
@@ -128,8 +129,8 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
     }
 
     @Override
-    protected CsmUID createUID() {
-        return UIDUtilities.createParamListUID(this);
+    protected CsmUID<CsmParameterList<K>> createUID() {
+        return UIDUtilities.createParamListUID((CsmParameterList<K>)this);
     }
 
 //    @Override
@@ -180,15 +181,15 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
     //    return new ParameterListImpl<T, K>(file, start, end, parameters);
     //}
 
-    public static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTMacro macro) {
+    public static ParameterListImpl<CsmParameterList<CsmMacroParameter>, CsmMacroParameter> create(CsmFile file, APTMacro macro) {
         return create(file, macro.getName(), macro.getParams());
     }
 
-    public static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTDefine define) {
+    public static ParameterListImpl<CsmParameterList<CsmMacroParameter>, CsmMacroParameter> create(CsmFile file, APTDefine define) {
         return create(file, define.getName(), define.getParams());
     }
 
-    private static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTToken name, Collection<APTToken> params) {
+    private static ParameterListImpl<CsmParameterList<CsmMacroParameter>, CsmMacroParameter> create(CsmFile file, APTToken name, Collection<APTToken> params) {
         return null;
     }
 }

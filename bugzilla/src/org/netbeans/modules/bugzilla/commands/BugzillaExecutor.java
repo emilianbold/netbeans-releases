@@ -42,6 +42,7 @@ package org.netbeans.modules.bugzilla.commands;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -54,7 +55,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * Executes commands against one bugzilla Repository handles errors
+ * Executes commands against one bugzilla Repository and handles errors
  * 
  * @author Tomas Stupka
  */
@@ -62,6 +63,10 @@ public class BugzillaExecutor {
 
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
+    private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
+    private static final String COULD_NOT_BE_FOUND           = "could not be found";            // NOI18N
+    private static final String REPOSITORY                   = "repository";                    // NOI18N
+    private static final String MIDAIR_COLLISION             = "mid-air collision occurred while submitting to"; // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -81,7 +86,7 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(null);
 
         } catch (CoreException ce) {
-            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this);
+            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository);
             if(handler != null) {
 
                 String msg = handler.getMessage();
@@ -93,13 +98,9 @@ public class BugzillaExecutor {
                     if(handler.handle()) {
                         // execute again
                         execute(cmd);
-                    } else {
-                        // notify user cancel
-                        notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                     }
                 }
             }
-
             return;
                 
         } catch(MalformedURLException me) {
@@ -123,55 +124,63 @@ public class BugzillaExecutor {
         return true;
     }
 
-    private static void notifyErrorMessage(String msg) {
-        NotifyDescriptor nd =
-                new NotifyDescriptor(
-                    msg, 
-                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
-                    NotifyDescriptor.DEFAULT_OPTION,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    new Object[] {NotifyDescriptor.OK_OPTION},
-                    NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(nd);
-    }
-
     private static abstract class ExceptionHandler {
 
         protected String errroMsg;
         protected CoreException ce;
         protected BugzillaExecutor executor;
+        protected BugzillaRepository repository;
 
-        protected ExceptionHandler(CoreException ce, String msg, BugzillaExecutor executor) {
+        protected ExceptionHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
             this.errroMsg = msg;
             this.ce = ce;
             this.executor = executor;
+            this.repository = repository;
         }
 
-        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor) {
-            String errormsg = getAuthenticateError(ce);
-            if(errormsg != null && INVALID_USERNAME_OR_PASSWORD.equals(errormsg.trim().toLowerCase())) {
-                return new AuthenticationHandler(
-                        ce,
-                        errormsg,
-                        executor);
+        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository) {
+            String errormsg = getLoginError(ce);
+            if(errormsg != null) {
+                return new LoginHandler(ce, errormsg, executor, repository);
             }
             errormsg = getNotFoundError(ce);
             if(errormsg != null) {
-                return new NotFoundHandler(
-                        ce, 
-                        errormsg,
-                        executor);
+                return new NotFoundHandler(ce, errormsg, executor, repository);
             }
-
-            return new DefaultHandler(ce, null, null, executor);
+            errormsg = getMidAirColisionError(ce);
+            if(errormsg != null) {
+                errormsg = MessageFormat.format(errormsg, repository.getDisplayName());
+                return new DefaultHandler(ce, errormsg, executor, repository);
+            }
+            return new DefaultHandler(ce, null, executor, repository);
         }
 
         abstract boolean handle();
 
-        private static String getAuthenticateError(CoreException ce) {
+        private static String getLoginError(CoreException ce) {
             String msg = getMessage(ce);
-            if(msg != null && INVALID_USERNAME_OR_PASSWORD.equals(msg.trim().toLowerCase())) {
-                return "Invalid Username or Password"; // XXX bundle me
+            if(msg != null) {
+                msg = msg.trim().toLowerCase();
+                if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
+                   msg.contains(INVALID_USERNAME_OR_PASSWORD))
+                {
+                    return "Invalid Username or Password"; // XXX bundle me
+                } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
+                         (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
+                {
+                    return "Unable login to repository."; // XXX replace with own bundle value
+                }
+            }
+            return null;
+        }
+
+        private static String getMidAirColisionError(CoreException ce) {
+            String msg = getMessage(ce);
+            if(msg != null) {
+                msg = msg.trim().toLowerCase();
+                if(msg.startsWith(MIDAIR_COLLISION)) {
+                    return "Mid-air collision occurred while submitting to ''{0}''.\nRefresh the issue and re-submit changes."; // XXX bundle me
+                }
             }
             return null;
         }
@@ -183,8 +192,11 @@ public class BugzillaExecutor {
                 return "Host not found";
             }
             String msg = getMessage(ce);
-            if(msg != null && HTTP_ERROR_NOT_FOUND.equals(msg.trim().toLowerCase())) {
-                return "Host not found";
+            if(msg != null) {
+                msg = msg.trim().toLowerCase();
+                if(HTTP_ERROR_NOT_FOUND.equals(msg)) {
+                    return "Host not found";
+                }
             }
             return null;
         }
@@ -204,17 +216,18 @@ public class BugzillaExecutor {
             return errroMsg;
         }
 
-        private static void notifyError(CoreException ce) {
+        private static void notifyError(CoreException ce, BugzillaRepository repository) {
             IStatus status = ce.getStatus();
             if (status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
                 if(html != null && !html.trim().equals("")) {                       // NOI18N
                     final HtmlPanel p = new HtmlPanel();
-                    p.setHtml(html);
+                    String label = NbBundle.getMessage(BugzillaExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()});
+                    p.setHtml(html, label);
                     NotifyDescriptor descriptor = new NotifyDescriptor (
                         p,
-                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_RemoteResponse"),
+                        NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"),
                         NotifyDescriptor.DEFAULT_OPTION,
                         NotifyDescriptor.INFORMATION_MESSAGE,
                         new Object[] {NotifyDescriptor.OK_OPTION},
@@ -228,9 +241,21 @@ public class BugzillaExecutor {
             notifyErrorMessage(msg);
         }
 
-        private static class AuthenticationHandler extends ExceptionHandler {
-            public AuthenticationHandler(CoreException ce, String msg, BugzillaExecutor executor) {
-                super(ce, msg, executor);
+        static void notifyErrorMessage(String msg) {
+            NotifyDescriptor nd =
+                    new NotifyDescriptor(
+                        msg,
+                        NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        new Object[] {NotifyDescriptor.OK_OPTION},
+                        NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
+        private static class LoginHandler extends ExceptionHandler {
+            public LoginHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
+                super(ce, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -238,12 +263,16 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                return BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                if(!ret) {
+                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser"));
+                }
+                return ret;
             }
         }
         private static class NotFoundHandler extends ExceptionHandler {
-            public NotFoundHandler(CoreException ce, String msg, BugzillaExecutor executor) {
-                super(ce, msg, executor);
+            public NotFoundHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
+                super(ce, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -251,12 +280,16 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                return BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                if(!ret) {
+                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser"));
+                }
+                return ret;
             }
         }
         private static class DefaultHandler extends ExceptionHandler {
-            public DefaultHandler(CoreException ce, String msg, BugzillaCommand cmd, BugzillaExecutor executor) {
-                super(ce, msg, executor);
+            public DefaultHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
+                super(ce, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -264,7 +297,11 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                notifyError(ce);
+                if(errroMsg != null) {
+                    notifyErrorMessage(errroMsg);
+                } else {
+                    notifyError(ce, repository);
+                }
                 return false;
             }
         }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 
@@ -166,8 +168,27 @@ public final class SuiteProperties extends ModuleProperties {
     
     void setActivePlatform(NbPlatform newPlaf) {
         NbPlatform oldPlaf = this.activePlatform;
-        this.activePlatform = newPlaf;
-        clusterPath = null; // reset on platform change
+        if (clusterPath != null) {
+            // translate cluster.path for new platform
+            EditableProperties ep = new EditableProperties();
+            storeClusterPath(ep);
+            this.activePlatform = newPlaf;
+            PropertyEvaluator pe = PropertyUtils.sequentialPropertyEvaluator(null,
+                    PropertyUtils.fixedPropertyProvider(ep),
+                    new PropertyProvider() {
+
+                        public Map<String, String> getProperties() {
+                            return getEvaluator().getProperties();
+                        }
+
+                        public void addChangeListener(ChangeListener l) {
+                        }
+
+                        public void removeChangeListener(ChangeListener l) {
+                        }
+                    });
+            clusterPath = ClusterUtils.evaluateClusterPath(getProjectDirectoryFile(), pe, getActivePlatform().getDestDir());
+        }
         firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
     }
     
@@ -271,45 +292,7 @@ public final class SuiteProperties extends ModuleProperties {
                 }
             }
             if (clusterPathChanged) {
-                ArrayList<String> cp = new ArrayList<String>();
-                ArrayList<String> cpwdc = new ArrayList<String>();
-                boolean anyDisabled = false;
-
-                for (ClusterInfo ci : clusterPath) {
-                    if (ci.isPlatformCluster()) {
-                        String cluster = ci.getClusterDir().getName();
-                        String entry = toPlatformClusterEntry(cluster);
-                        cp.add(entry);
-                        cpwdc.add(entry);
-                    } else {
-                        String entry = PropertyUtils.relativizeFile(getProjectDirectoryFile(), ci.getClusterDir());
-                        if (ci.isEnabled()) {
-                            cp.add(entry);
-                        } else {
-                            anyDisabled = true;
-                        }
-                        cpwdc.add(entry);
-
-                        if (ci.isExternalCluster()) {
-                            if (ci.getSourceRoots() != null) {
-                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
-                                ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
-                            }
-                            if (ci.getJavadocRoots() != null) {
-                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_JAVADOC_SUFFIX;
-                                ep.setProperty(propName, Util.urlsToAntPath(ci.getJavadocRoots()));
-                            }
-                            ModuleList.refreshClusterModuleList(ci.getClusterDir());
-                        }
-                    }
-                }
-                if (anyDisabled) {
-                    ep.setProperty(CLUSTER_PATH_WDC_PROPERTY, SuiteUtils.getAntProperty(cpwdc));
-                } else {
-                    ep.remove(CLUSTER_PATH_WDC_PROPERTY);
-                }
-                ep.setProperty(CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(cp));
-                ep.remove(ENABLED_CLUSTERS_PROPERTY);
+                storeClusterPath(ep);
             }
             getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
             if (refreshBuildScripts) {
@@ -402,6 +385,46 @@ public final class SuiteProperties extends ModuleProperties {
     
     public BasicBrandingModel getBrandingModel() {
         return brandingModel;
+    }
+
+    private void storeClusterPath(EditableProperties ep) {
+        ArrayList<String> cp = new ArrayList<String>();
+        ArrayList<String> cpwdc = new ArrayList<String>();
+        boolean anyDisabled = false;
+        for (ClusterInfo ci : clusterPath) {
+            if (ci.isPlatformCluster()) {
+                String cluster = ci.getClusterDir().getName();
+                String entry = toPlatformClusterEntry(cluster);
+                cp.add(entry);
+                cpwdc.add(entry);
+            } else {
+                String entry = PropertyUtils.relativizeFile(getProjectDirectoryFile(), ci.getClusterDir());
+                if (ci.isEnabled()) {
+                    cp.add(entry);
+                } else {
+                    anyDisabled = true;
+                }
+                cpwdc.add(entry);
+                if (ci.isExternalCluster()) {
+                    if (ci.getSourceRoots() != null) {
+                        String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
+                        ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                    }
+                    if (ci.getJavadocRoots() != null) {
+                        String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_JAVADOC_SUFFIX;
+                        ep.setProperty(propName, Util.urlsToAntPath(ci.getJavadocRoots()));
+                    }
+                    ModuleList.refreshClusterModuleList(ci.getClusterDir());
+                }
+            }
+        }
+        if (anyDisabled) {
+            ep.setProperty(CLUSTER_PATH_WDC_PROPERTY, SuiteUtils.getAntProperty(cpwdc));
+        } else {
+            ep.remove(CLUSTER_PATH_WDC_PROPERTY);
+        }
+        ep.setProperty(CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(cp));
+        ep.remove(ENABLED_CLUSTERS_PROPERTY);
     }
 
 }

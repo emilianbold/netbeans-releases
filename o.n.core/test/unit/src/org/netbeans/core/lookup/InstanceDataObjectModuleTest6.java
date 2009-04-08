@@ -41,7 +41,7 @@
 
 package org.netbeans.core.lookup;
 
-import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.core.NbLoaderPool;
 import org.openide.util.Lookup;
 
 /** A test.
@@ -76,7 +76,7 @@ public class InstanceDataObjectModuleTest6 extends InstanceDataObjectModuleTestH
             assertTrue("Got a result change after module reload", l.gotSomething());
 
             ERR.log("wait for loader pool");
-            LoaderPoolNode.waitFinished();
+            NbLoaderPool.waitFinished();
             ERR.log("Pool refreshed");
             
             assertTrue("SomeAction<1> instance not found after module reload",

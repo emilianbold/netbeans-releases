@@ -92,6 +92,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
     public static final String REMOTE_PERMISSIONS = "remote.permissions"; // NOI18N
+    public static final String REMOTE_UPLOAD_DIRECTLY = "remote.upload.directly"; // NOI18N
     public static final String DEBUG_URL = "debug.url"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_REMOTE = "debug.path.mapping.remote"; // NOI18N
     public static final String DEBUG_PATH_MAPPING_LOCAL = "debug.path.mapping.local"; // NOI18N
@@ -110,6 +111,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
         REMOTE_PERMISSIONS,
+        REMOTE_UPLOAD_DIRECTLY,
         DEBUG_URL,
         DEBUG_PATH_MAPPING_REMOTE,
         DEBUG_PATH_MAPPING_LOCAL,
@@ -123,9 +125,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static enum UploadFiles {
         MANUALLY ("LBL_UploadFilesManually", "TXT_UploadFilesManually"), // NOI18N
-        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"); // NOI18N
-        // disabled because of lack of time for NB 6.5
-        //ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
+        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"), // NOI18N
+        ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
 
         private final String label;
         private final String description;

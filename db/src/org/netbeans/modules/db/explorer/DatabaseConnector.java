@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer;
@@ -43,10 +43,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -88,10 +86,6 @@ public class DatabaseConnector {
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
-    }
-
-    protected static ResourceBundle bundle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -192,7 +186,7 @@ public class DatabaseConnector {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
 
-                message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
+                message = NbBundle.getMessage (DatabaseConnector.class, "EXC_ConnectionError", exc.getMessage()); // NOI18N
             }
 
             // XXX hack for Derby
@@ -264,7 +258,7 @@ public class DatabaseConnector {
         TableColumn col = null;
 
         try {
-            CreateTable cmd = (CreateTable) spec.createCommandCreateTable("DUMMY"); //NOI18N
+            CreateTable cmd = spec.createCommandCreateTable ("DUMMY"); //NOI18N
 
             // When the metadata api bug fix is available, we can just ask if the
             // collections contain the column and then eliminate the special methods
@@ -274,7 +268,7 @@ public class DatabaseConnector {
             } else if (containsIndexColumn(table.getIndexes(), column)) {
                 col = cmd.createUniqueColumn(column.getName());
             } else {
-                col = (TableColumn)cmd.createColumn(column.getName());
+                col = cmd.createColumn (column.getName ());
             }
 
             Schema schema = table.getParent();

@@ -166,7 +166,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     }
     
     boolean isStreamClosed() {
-        return out == null ? true : streamClosedSet ? streamClosed : false;
+        return out == null ? true : streamClosed;
     }
     
     public void select() {
@@ -196,17 +196,10 @@ class NbIO implements InputOutput, Lookup.Provider {
         //do nothing
     }
 
-    boolean hasStreamClosed() {
-        return streamClosedSet;
-    }
-
     private boolean streamClosed = false;
-    private boolean streamClosedSet = false;
     public void setStreamClosed(boolean value) {
-        if (Controller.LOG) Controller.log ("setStreamClosed on " + this + " to " + value);
-        if (streamClosed != value || !streamClosedSet) {
+        if (streamClosed != value) {
             streamClosed = value;
-            streamClosedSet = true;
             post (this, IOEvent.CMD_STREAM_CLOSED, value);
         }
     }
@@ -223,7 +216,6 @@ class NbIO implements InputOutput, Lookup.Provider {
     public void reset() {
         if (Controller.LOG) Controller.log (this + ": reset");
         closed = false;
-        streamClosedSet = false;
         streamClosed = false;
 
         if (in != null) {

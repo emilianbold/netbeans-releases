@@ -70,9 +70,8 @@ import org.openide.util.RequestProcessor;
  */
 public class GdbWatchVariable extends AbstractVariable implements PropertyChangeListener {
     
-    private Watch watch;
-    private WatchesTreeModel model;
-    private long creationTime;
+    private final Watch watch;
+    private final WatchesTreeModel model;
     private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
@@ -80,7 +79,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.model = model;
         this.watch = watch;
         name = watch.getExpression();
-        creationTime = System.currentTimeMillis();
         fields = new Field[0];
         type = null;
         value = null;
@@ -101,18 +99,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public void remove() {
         watch.remove();
         getDebugger().removePropertyChangeListener(this);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof GdbWatchVariable &&
-                    creationTime == ((GdbWatchVariable) o).creationTime &&
-                    getFullName(true).equals(((GdbWatchVariable) o).getFullName(true));
-    }
-    
-    @Override
-    public int hashCode() {
-        return name.hashCode() + (int) (creationTime & 0xffffffff);
     }
     
     @Override

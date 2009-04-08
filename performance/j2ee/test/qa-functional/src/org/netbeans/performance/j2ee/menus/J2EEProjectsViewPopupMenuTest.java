@@ -97,7 +97,11 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     public void testEARConfFilesNodePopupMenu(){
         testNode(getEARProjectNode(), "Configuration Files");
     }
-    
+
+    public void testEARServerFilesNodePopupMenu(){
+        testNode(getEARProjectNode(), "Server Resources");
+    }
+
     public void testApplicationXmlPopupMenu(){
         testNode(getEARProjectNode(), "Configuration Files|application.xml");
     }
@@ -122,16 +126,24 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
         testNode(getEJBProjectNode(), null);
     }
 
+    public void testWebProjectNodePopupMenu() {
+        testNode(getWebProjectNode(), null);
+    }
+
+    public void testWebPagesNodePopupMenu() {
+        testNode(getWebProjectNode(), "Web Pages");
+    }
+
     public void testEJBsNodePopupMenu() {
         testNode(getEJBProjectNode(), "Enterprise Beans");
+    }
+
+    public void testEJBsSourceNodePopupMenu() {
+        testNode(getEJBProjectNode(), "Source Packages");
     }
     
     public void testSessionBeanNodePopupMenu() {
         testNode(getEJBProjectNode(), "Enterprise Beans|TestSessionSB");
-    }
-    
-    public void testEntityBeanNodePopupMenu() {
-        testNode(getEJBProjectNode(), "Enterprise Beans|TestEntityEB");
     }
     
     public void testEjbJarXmlPopupMenu(){

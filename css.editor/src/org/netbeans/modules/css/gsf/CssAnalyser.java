@@ -47,7 +47,7 @@ import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
-import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
@@ -67,20 +67,20 @@ public class CssAnalyser {
     private static final String INVALID_CONTENT = "invalid_content";
     
     public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
-        final ArrayList<Error> errors = new ArrayList();
+        final ArrayList<Error> errors = new ArrayList<Error>();
         final PropertyModel model = PropertyModel.instance();
         NodeVisitor visitor = new NodeVisitor() {
 
             public void visit(SimpleNode node) {
-                if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                    SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CSSParserTreeConstants.JJTPROPERTY);
-                    SimpleNode valueNode = SimpleNodeUtil.getChildByType(node, CSSParserTreeConstants.JJTEXPR);
+                if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
+                    SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTPROPERTY);
+                    SimpleNode valueNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTEXPR);
 
                     if (propertyNode != null) {
                         String propertyName = propertyNode.image().trim();
                         //check for vendor specific properies - ignore them
                         Property property = model.getProperty(propertyName);
-                        if (!CSSGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
+                        if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             Error error =
                                     new DefaultError(UNKNOWN_PROPERTY,
@@ -96,7 +96,7 @@ public class CssAnalyser {
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!CSSGSFParser.containsGeneratedCode(valueImage)) {
+                            if (!CssGSFParser.containsGeneratedCode(valueImage)) {
                                 CssPropertyValue pv = new CssPropertyValue(property, valueImage);
                                 if (!pv.success()) {
                                     String errorMsg = null;
@@ -123,7 +123,7 @@ public class CssAnalyser {
 
                     }
 
-                } else if(node.kind() == CSSParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
+                } else if(node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
                     Error error =
                             new DefaultError(INVALID_CONTENT,
                             NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT),

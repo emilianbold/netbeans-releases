@@ -41,9 +41,11 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
+import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -51,9 +53,12 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.mercurial.api.Mercurial;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -68,25 +73,42 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     private Kenai kenai = Kenai.getDefault();
 
     @Override
-    public List<ProjectHandle> getMemberProjects(LoginHandle login) {
+    public List<ProjectHandle> getMemberProjects(LoginHandle login, boolean force) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-            for (KenaiProject prj : kenai.getMyProjects(true)) {
+            for (KenaiProject prj : kenai.getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
+                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
+                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                        try {
+                            Subversion.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
+                        try {
+                            Mercurial.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                }
             }
             return l;
         } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getMyProject() failed", ex);
+            return null;
         }
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(String projectId) {
+    public ProjectHandle getNonMemberProject(String projectId, boolean force) {
         try {
-            return new ProjectHandleImpl(kenai.getProject(projectId,true));
+            return new ProjectHandleImpl(kenai.getProject(projectId,force));
         } catch (KenaiException ex) {
-            throw new RuntimeException(ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getProject() " + projectId + " failed", ex);
+            return null;
         }
     }
 
@@ -121,18 +143,26 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getOpenWikiAction(ProjectHandle project) {
-        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.WIKI);
-        if (wiki.length==1) {
-            return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+        try {
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.WIKI);
+            if (wiki.length == 1) {
+                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+            }
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
         }
         return null;
     }
 
     @Override
     public ActionListener getOpenDownloadsAction(ProjectHandle project) {
-        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.DOWNLOADS);
-        if (wiki.length==1) {
-            return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+        try {
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.DOWNLOADS);
+            if (wiki.length == 1) {
+                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
+            }
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
         }
         return null;
     }

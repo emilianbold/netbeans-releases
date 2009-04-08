@@ -95,7 +95,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -103,6 +102,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -163,7 +163,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         add(filtersPanel, BorderLayout.SOUTH);
     }
 
-    static void selectByNode(Node nd, POMQName name, int layer) {
+    static void selectByNode(Node nd, String elementName, int layer) {
         if (nd == null) {
             return;
         }
@@ -176,17 +176,23 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             if (objs[layer] != null && objs[layer] instanceof POMComponent) {
                 POMComponent pc = (POMComponent) objs[layer];
                 int pos;
-                if (name != null) {
-                    //TODO if not a simple child, then this fails.
-                    pos = pc.findChildElementPosition(name.getQName());
+                if (elementName != null) {
+                    QName qn = POMQName.createQName(elementName, pc.getModel().getPOMQNames().isNSAware());
+                    NodeList nl = pc.getPeer().getElementsByTagName(qn.getLocalPart());
+                    if (nl != null && nl.getLength() > 0) {
+                        pos = pc.getModel().getAccess().findPosition(nl.item(0));
+                    } else {
+                        pos = -1;
+                    }
                 } else {
                     pos = pc.getModel().getAccess().findPosition(pc.getPeer());
                 }
                 if (pos != -1) {
                     select(nd, pos, layer);
                 }
-            } else if (objs[layer] != null && name == null) {
-                selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class), layer);
+            } else if (objs[layer] != null && elementName == null) {
+                String name = getElementNameFromNode(nd);
+                selectByNode(nd.getParentNode(), name, layer);
             }
         }
     }
@@ -205,6 +211,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (dobj == null) {
                     return;
                 }
+                dobj = ROUtil.checkPOMFileObjectReadOnly(dobj);
                 EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
                     return;
@@ -227,14 +234,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
                             component.setCaretPosition(pos);
-                            if ("pom".equals(dobj.getPrimaryFile().getExt())) {
-                                //make temporarily non-editable??
-//                                component.setEditable(false);
-//                                TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
-//                                String dn = tc.getDisplayName();
-//                                tc.setDisplayName(dn + " r/o");
-
-                            }
                         }
                     } catch (IOException ioe) {
                     }
@@ -407,6 +406,24 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
     }
 
+    private static String getElementNameFromNode(Node childNode) {
+        String qnName;
+        QName qn = childNode.getLookup().lookup(QName.class);
+        if (qn == null) {
+            POMQName pqn = childNode.getLookup().lookup(POMQName.class);
+            if (pqn != null) {
+                qn = pqn.getQName();
+            }
+        }
+        if (qn != null) {
+            qnName = qn.getLocalPart();
+        } else {
+            //properties
+            qnName = childNode.getLookup().lookup(String.class);
+        }
+        return qnName;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -563,20 +580,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         }
                     }
                     if (currentObj != null && currentObj instanceof String) {
-                        String qnName;
-                        QName qn = childNode.getLookup().lookup(QName.class);
-                        if (qn == null) {
-                            POMQName pqn = childNode.getLookup().lookup(POMQName.class);
-                            if (pqn != null) {
-                                qn = pqn.getQName();
-                            }
-                        }
-                        if (qn != null) {
-                            qnName = qn.getLocalPart();
-                        } else {
-                            //properties
-                            qnName = childNode.getLookup().lookup(String.class);
-                        }
+                        String qnName = getElementNameFromNode(childNode);
 
                         if (qnName == null || (!(currentpc instanceof POMExtensibilityElement))) {
                             //TODO can be also string in lookup;

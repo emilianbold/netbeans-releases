@@ -79,31 +79,21 @@ class NbWriter extends OutputWriter {
      *
      * @throws IOException
      */
-    public void reset() throws IOException {
-        if (!((OutWriter) out).hasStorage() && !((OutWriter) out).isDisposed() || ((OutWriter) out).isEmpty()) {
-            //Someone calling reset multiple times or on initialization
-            if (!out().isDisposed()) {
-                if (Controller.LOG) Controller.log ("Extra call to Reset on " + this + " for " + out);
-                //#49173 - Clear action causes call to reset(); call to start writing
-                //more output is another call to reset(), so it is ignored - so
-                //the tab title is not updated when a new stream is updated.
-                owner.setStreamClosed(false);
-                return;
-            }
+    public synchronized void reset() throws IOException {
+        if (!out().isDisposed() && out().isEmpty()) {
+            return;
         }
-        synchronized (this) {
-            if (out != null) {
-                if (Controller.LOG) Controller.log ("Disposing old OutWriter");
-                out().dispose();
-            }
-            if (Controller.LOG) Controller.log ("NbWriter.reset() replacing old OutWriter");
-            out = new OutWriter(owner);
-            lock = out;
-            if (err != null) {
-                err.setWrapped((OutWriter) out);
-            }
-            owner.reset();
+        if (out != null) {
+            if (Controller.LOG) Controller.log ("Disposing old OutWriter");
+            out().dispose();
         }
+        if (Controller.LOG) Controller.log ("NbWriter.reset() replacing old OutWriter");
+        out = new OutWriter(owner);
+        lock = out;
+        if (err != null) {
+            err.setWrapped((OutWriter) out);
+        }
+        owner.reset();
     }
 
     OutWriter out() {

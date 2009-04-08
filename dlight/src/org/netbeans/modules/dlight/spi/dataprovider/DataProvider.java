@@ -61,6 +61,6 @@ public interface DataProvider extends VisualizerDataProvider{
    * It will be invoked automatically when needed.</i></b>
    * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
    */
-  public void attachTo(DataStorage storage);
+  void attachTo(DataStorage storage);
 
 }

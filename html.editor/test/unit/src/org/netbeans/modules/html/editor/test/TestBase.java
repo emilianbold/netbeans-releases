@@ -46,7 +46,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
@@ -61,8 +61,8 @@ public class TestBase extends CslTestBase {
     }
 
     protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.HTML_MIME_TYPE);
-        doc.putProperty(PROP_MIME_TYPE, HTMLKit.HTML_MIME_TYPE);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.HTML_MIME_TYPE);
+        doc.putProperty(PROP_MIME_TYPE, HtmlKit.HTML_MIME_TYPE);
         doc.putProperty(Language.class, HTMLTokenId.language());
         return doc;
     }
@@ -74,6 +74,6 @@ public class TestBase extends CslTestBase {
 
     @Override
     protected String getPreferredMimeType() {
-        return HTMLKit.HTML_MIME_TYPE;
+        return HtmlKit.HTML_MIME_TYPE;
     }
 }

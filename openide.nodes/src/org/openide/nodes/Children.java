@@ -41,7 +41,6 @@
 
 package org.openide.nodes;
 
-import java.awt.Panel;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -61,6 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 
 /** 
 * Factory for the child Nodes of a Node.  Every Node has a Children object.
@@ -1432,7 +1432,8 @@ public abstract class Children extends Object {
                     T a = keys.get(i);
                     for (int j = i + 1; j < sz; j++) {
                         T b = keys.get(j);
-                        assert !(a.equals(b) && a.hashCode() != b.hashCode()) : "bad equals/hashCode in " + a + " vs. " + b;
+                        assert !(a.equals(b) && a.hashCode() != b.hashCode()) : "bad equals/hashCode in " + a + " vs. " + b
+                                + " class: " + b.getClass().getName();
                     }
                 }
             }
@@ -1671,6 +1672,7 @@ public abstract class Children extends Object {
         * @param map to track number of occurrences in the array
         */
         public final void updateListAndMap(T obj, Collection<? super Dupl<T>> list, java.util.Map<T,Object> map) {
+            Parameters.notNull("obj", obj);
             // optimized for first occurrence
             // of each object because often occurrences should be rare
             Object prev = map.put(obj, this);

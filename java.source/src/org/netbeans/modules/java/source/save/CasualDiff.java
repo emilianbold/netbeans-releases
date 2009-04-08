@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -1013,6 +1013,7 @@ public class CasualDiff {
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
         localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
         if (oldT.elsepart == null && newT.elsepart != null) {
+            printer.printElse(newT, newT.thenpart.getKind() == Kind.BLOCK);
         } else if (oldT.elsepart != null && newT.elsepart == null) {
             // remove else part
             copyTo(localPointer, partBounds[1]);
@@ -1097,11 +1098,14 @@ public class CasualDiff {
         // detail
         if (oldT.detail != newT.detail) {
             if (oldT.detail == null) {
+                copyTo(localPointer, condBounds[1]);
+                localPointer = condBounds[1];
                 printer.print(" : ");
                 printer.print(newT.detail);
             } else {
                 int[] detailBounds = getBounds(oldT.detail);
                 if (newT.detail == null) {
+                    copyTo(localPointer, condBounds[1]);
                     localPointer = detailBounds[1];
                 } else {
                     copyTo(localPointer, detailBounds[0]);
@@ -2429,7 +2433,7 @@ public class CasualDiff {
         }
         while (newC != null) {
             if (Style.WHITESPACE != newC.style()) {
-//                printer.print(newC.getText());
+//                printer.print(newC.getText());                
                 printer.printComment(newC, !trailing, false);
                 lastPos += newC.endPos() - newC.pos();
             }

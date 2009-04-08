@@ -69,7 +69,7 @@ public class JettyOutputProcessorFactory implements OutputProcessorFactory {
             return new String[] {"mojo-execute#jetty:run", "mojo-execute#hpi:run"}; // NOI18N
         }
 
-        private static final Pattern LINE = Pattern.compile(".*Started SelectChannelConnector @ 0[.]0[.]0[.]0:(\\d+)");
+        private static final Pattern LINE = Pattern.compile(".*Started SelectChannelConnector @ 0[.]0[.]0[.]0:(\\d+)"); // NOI18N
 
         public void processLine(String line, OutputVisitor visitor) {
             Matcher m = LINE.matcher(line);

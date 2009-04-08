@@ -156,7 +156,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
-    private final Lookup lookup;
+    private Lookup lookup;
     private final UpdateHelper updateHelper;
     private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
@@ -313,7 +313,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            new J2SESources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new J2SESources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
@@ -335,6 +335,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         );
+        lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
     }
     

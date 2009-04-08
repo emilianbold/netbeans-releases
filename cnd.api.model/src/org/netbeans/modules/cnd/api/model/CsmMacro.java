@@ -49,8 +49,8 @@ import java.util.List;
  */
 public interface CsmMacro extends CsmNamedElement, CsmOffsetable {
 
-    List<? extends CharSequence> getParameters();
-    CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList();
+    List<CharSequence> getParameters();
+    CsmParameterList<CsmMacroParameter> getParameterList();
     
     CharSequence getBody();
     

@@ -69,7 +69,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -254,7 +253,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     // Private methods ---------------------------------------------------------
         
-    private static boolean isAllUpper( String text ) {
+    public static boolean isAllUpper( String text ) {
         for( int i = 0; i < text.length(); i++ ) {
             if ( !Character.isUpperCase( text.charAt( i ) ) ) {
                 return false;
@@ -264,7 +263,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return true;
     }
     
-    private static int containsWildCard( String text ) {
+    public static int containsWildCard( String text ) {
         for( int i = 0; i < text.length(); i++ ) {
             if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
                 return i;                
@@ -275,7 +274,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     
-    private static boolean isCamelCase(String text) {
+    public static boolean isCamelCase(String text) {
          return camelCasePattern.matcher(text).matches();
     }
     

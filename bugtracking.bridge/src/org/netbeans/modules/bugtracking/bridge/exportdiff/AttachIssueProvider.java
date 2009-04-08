@@ -47,10 +47,10 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
@@ -76,7 +76,7 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     }
 
     @Override
-    public void handeDiffFile(File file) {
+    public void handleDiffFile(File file) {
         LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
 
         Issue issue = panel.getIssue();
@@ -102,11 +102,11 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
         Repository repoToSelect = null;
         if(files.length > 0) {
             for (File file : files) {
-                repoToSelect = support.getRepository(file);
+                repoToSelect = support.getRepository(file, false);
                 if(repoToSelect == null) {
-                    LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
                 } else {
-                    LOG.log(Level.FINE, " found repository " + repoToSelect + " for " + file);  // NOI18N
+                    LOG.log(Level.FINE, " found issue tracker " + repoToSelect + " for " + file);  // NOI18N
                     break;
                 }
             }

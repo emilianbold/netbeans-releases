@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@ package org.netbeans.modules.db.explorer;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,7 +53,6 @@ public class DatabaseUILogger {
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.ui.db.explorer"); // NOI18N
     private static final Logger LOGGER_USG = Logger.getLogger("org.netbeans.ui.metrics.db.explorer"); // NOI18N
-    private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; // NOI18N
 
     private DatabaseUILogger() {}
 
@@ -66,16 +64,12 @@ public class DatabaseUILogger {
     private static void log(String message, Object parameter) {
         LogRecord record = new LogRecord(Level.INFO, message);
         record.setParameters(new Object[] { parameter });
-        record.setResourceBundle(NbBundle.getBundle(BUNDLE));
-        record.setResourceBundleName(BUNDLE);
         LOGGER.log(record);
     }
 
     private static void logUsage(String message, Object parameter) {
         LogRecord record = new LogRecord(Level.INFO, message);
         record.setParameters(new Object[] { parameter });
-        record.setResourceBundle(NbBundle.getBundle(BUNDLE));
-        record.setResourceBundleName(BUNDLE);
         LOGGER_USG.log(record);
     }
 }

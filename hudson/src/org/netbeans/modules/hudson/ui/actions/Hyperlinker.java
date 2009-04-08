@@ -42,6 +42,8 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,10 +56,12 @@ import org.netbeans.modules.hudson.spi.HudsonLogger;
 import org.netbeans.modules.hudson.spi.HudsonLogger.HudsonLogSession;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputEvent;
@@ -90,30 +94,55 @@ class Hyperlinker {
         // PlainLogger is last and always handles it
     }
 
+    static class PlainLoggerLogic {
+        private static final Pattern REMOTE_URL = Pattern.compile("\\b(https?://[^\\s)>]+)");
+        private final HudsonJob job;
+        /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
+        private final Pattern hyperlinkable;
+        PlainLoggerLogic(HudsonJob job, String jobName) {
+            this.job = job;
+            // XXX support Windows build servers (using backslashes)
+            String jobNameQ = Pattern.quote(jobName);
+            hyperlinkable = Pattern.compile("\\s*(?:\\[.+\\] )?/.+/(?:jobs/" + jobNameQ + "/workspace|workspace/" + jobNameQ + // NOI18N
+                    ")/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)"); // NOI18N
+        }
+        OutputListener findHyperlink(String line) {
+            try {
+                Matcher m = hyperlinkable.matcher(line);
+                if (m.matches()) {
+                    final String path = m.group(1);
+                    final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
+                    final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
+                    final String message = m.group(4);
+                    return new Hyperlink(job, path, message, row, col);
+                }
+                m = REMOTE_URL.matcher(line);
+                if (m.matches()) {
+                    return new URLHyperlink(new URL(m.group()));
+                }
+            } catch (MalformedURLException x) {
+                LOG.log(Level.FINE, null, x);
+            }
+            return null;
+        }
+    }
+
     @ServiceProvider(service=HudsonLogger.class)
     public static final class PlainLogger implements HudsonLogger {
         public HudsonLogSession createSession(final HudsonJob job) {
             return new HudsonLogSession() {
-                // XXX support Windows build servers (using backslashes)
-                /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
-                private final Pattern hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
-                        "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
+                final PlainLoggerLogic logic = new PlainLoggerLogic(job, job.getName());
                 public boolean handle(String line, OutputWriter stream) {
-                    Matcher m = hyperlinkable.matcher(line);
-                    if (m.matches()) {
-                        final String path = m.group(1);
-                        final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
-                        final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
-                        final String message = m.group(4);
+                    OutputListener link = logic.findHyperlink(line);
+                    if (link != null) {
                         try {
-                            stream.println(line, new Hyperlink(job, path, message, row, col));
+                            stream.println(line, link);
+                            return true;
                         } catch (IOException x) {
                             LOG.log(Level.INFO, null, x);
-                            stream.println(line);
                         }
-                    } else {
-                        stream.println(line);
                     }
+                    stream.println(line);
                     return true;
                 }
             };
@@ -171,13 +200,13 @@ class Hyperlinker {
                         // XXX #159829: consider aligning local line number with remote line number somehow
                     }
                     if (f == null) {
-                        StatusDisplayer.getDefault().setStatusText("Looking for " + path + "..."); // XXX I18N
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.looking_for", path));
                         f = job.getRemoteWorkspace().findResource(path);
                         LOG.log(Level.FINE, "Tried to find remote file at {0} using {1}", new Object[] {f, path});
                     }
                     if (f == null) {
                         if (force) {
-                            StatusDisplayer.getDefault().setStatusText("No file " + path + " found in remote workspace."); // XXX I18N
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.not_found", path));
                             Toolkit.getDefaultToolkit().beep();
                         }
                         return;
@@ -190,7 +219,33 @@ class Hyperlinker {
         }
 
         public void outputLineCleared(OutputEvent ev) {}
+
+        public @Override String toString() {
+            return path + ":" + row + ":" + col + ":" + message; // NOI18N
+        }
         
+    }
+
+    private static class URLHyperlink implements OutputListener {
+
+        private final URL u;
+
+        URLHyperlink(URL u) {
+            this.u = u;
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+            URLDisplayer.getDefault().showURL(u);
+        }
+
+        public void outputLineSelected(OutputEvent ev) {}
+
+        public void outputLineCleared(OutputEvent ev) {}
+
+        public @Override String toString() {
+            return u.toString();
+        }
+
     }
 
 }

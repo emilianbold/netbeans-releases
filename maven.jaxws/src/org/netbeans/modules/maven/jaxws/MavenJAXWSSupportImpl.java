@@ -76,7 +76,6 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
             "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     private final static String SERVLET_LISTENER =
             "com.sun.xml.ws.transport.http.servlet.WSServletContextListener"; //NOI18N
-    private  Boolean generateNonJsr109Stuff;
     /** Constructor.
      *
      * @param prj project
@@ -89,15 +88,13 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         services.add(service);
 
         if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
-
-            if (generateNonJsr109Stuff == null) {
-                FileObject ddFolder = getDeploymentDescriptorFolder();
-                if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-                    // ask user if non jsr109 stuff should be generated
-                    generateNonJsr109Stuff = Boolean.valueOf(WSUtils.generateNonJsr109Artifacts(prj));
-                } else {
-                    generateNonJsr109Stuff = Boolean.TRUE;
-                }
+            boolean generateNonJsr109Stuff = false;
+            FileObject ddFolder = getDeploymentDescriptorFolder();
+            if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+                // ask user if non jsr109 stuff should be generated
+                generateNonJsr109Stuff = WSUtils.generateNonJsr109Artifacts(prj);
+            } else {
+                generateNonJsr109Stuff = true;
             }
             if (generateNonJsr109Stuff) {
                 // modify web.xml file

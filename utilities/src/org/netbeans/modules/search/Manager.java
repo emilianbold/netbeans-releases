@@ -94,13 +94,13 @@ final class Manager {
     
     private boolean moduleBeingUninstalled = false;
 
-    private List<Runnable> pendingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> pendingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
     
     private TaskListener taskListener;
     
-    private List<Runnable> currentTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> currentTasks = Collections.synchronizedList(new LinkedList<Runnable>());
 
-    private List<Runnable> stoppingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> stoppingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
 
     private boolean searchWindowOpen = false;
     
@@ -521,17 +521,21 @@ final class Manager {
     }
 
     private boolean haveRunningReplaceTask(){
-        for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
-            if (iter.next() instanceof ReplaceTask)
-                return true;
+        synchronized(currentTasks){
+            for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
+                if (iter.next() instanceof ReplaceTask)
+                    return true;
+            }
         }
         return false;
     }
 
     private boolean haveRunningSearchTask(){
-        for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
-            if (iter.next() instanceof SearchTask)
-                return true;
+        synchronized(currentTasks){
+            for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
+                if (iter.next() instanceof SearchTask)
+                    return true;
+            }
         }
         return false;
     }

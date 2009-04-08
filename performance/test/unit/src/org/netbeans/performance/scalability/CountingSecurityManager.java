@@ -43,6 +43,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Permission;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -140,9 +141,6 @@ public final class CountingSecurityManager extends SecurityManager {
                 throw new SecurityException();
             }
         }
-        if (perm.getName().equals("exitVM")) {
-            throw new SecurityException();
-        }
     }
 
     @Override
@@ -169,8 +167,8 @@ public final class CountingSecurityManager extends SecurityManager {
         private static final boolean streamCreation = false;
         /** singleton instance */
         private static Statistics INSTANCE;
-        private Map<String, Integer> isDirInvoc = new HashMap<String, Integer>();
-        private Map<String, Integer> stacks = new HashMap<String, Integer>();
+        private Map<String, Integer> isDirInvoc = Collections.synchronizedMap(new HashMap<String, Integer>());
+        private Map<String, Integer> stacks = Collections.synchronizedMap(new HashMap<String, Integer>());
 
         private Statistics() {
         }
@@ -227,21 +225,25 @@ public final class CountingSecurityManager extends SecurityManager {
         ////////////////////////////////////////////////////////////////////////////
         // private members
         void print(PrintWriter out) {
-            for (String s : isDirInvoc.keySet()) {
-                out.printf("%4d", isDirInvoc.get(s));
-                out.println("; " + s);
+            synchronized (isDirInvoc) {
+                for (String s : isDirInvoc.keySet()) {
+                    out.printf("%4d", isDirInvoc.get(s));
+                    out.println("; " + s);
+                }
             }
             int absoluteStacks = 0;
-            for (String s : stacks.keySet()) {
-                int value = stacks.get(s);
-                absoluteStacks += value;
-            }
-            int min = absoluteStacks / 50;
-            for (String s : stacks.keySet()) {
-                int value = stacks.get(s);
-                if (value > min) {
-                    out.printf("count %5d; Stack:\n", value);
-                    out.println(s);
+            synchronized (stacks) {
+                for (String s : stacks.keySet()) {
+                    int value = stacks.get(s);
+                    absoluteStacks += value;
+                }
+                int min = absoluteStacks / 50;
+                for (String s : stacks.keySet()) {
+                    int value = stacks.get(s);
+                    if (value > min) {
+                        out.printf("count %5d; Stack:\n", value);
+                        out.println(s);
+                    }
                 }
             }
             out.println("Total stacks recorded: " + absoluteStacks);

@@ -43,6 +43,7 @@ package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
 import org.openide.filesystems.FileSystem;
+import org.openide.nodes.AbstractNode;
 
 /**
  * Instance of the Hudson Job in specified instance
@@ -53,10 +54,43 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      * Describes state of the Hudson Job
      */
     public enum Color {
-        aborted, aborted_anime,
-        blue, blue_anime,
-        disabled,
-        red, red_anime, yellow, yellow_anime, grey, grey_anime
+        blue("blue"), blue_anime("blue_run"), // NOI18N
+        yellow("yellow") { // NOI18N
+            public @Override String colorizeDisplayName(String displayName) {
+                return "<font color='#989800'>" + displayName + "</font>"; // NOI18N
+            }
+        }, yellow_anime("yellow_run") { // NOI18N
+            public @Override String colorizeDisplayName(String displayName) {
+                return "<font color='#989800'>" + displayName + "</font>"; // NOI18N
+            }
+        },
+        red("red") { // NOI18N
+            public @Override String colorizeDisplayName(String displayName) {
+                return "<font color='#A40000'>" + displayName + "</font>"; // NOI18N
+            }
+        }, red_anime("red_run") { // NOI18N
+            public @Override String colorizeDisplayName(String displayName) {
+                return "<font color='#A40000'>" + displayName + "</font>"; // NOI18N
+            }
+        },
+        disabled("grey"), // NOI18N
+        aborted("grey"), aborted_anime("grey"), // NOI18N
+        grey("grey"), grey_anime("grey"); // NOI18N
+        private final String iconBaseName;
+        private Color(String iconBaseName) {this.iconBaseName = iconBaseName;}
+        /**
+         * Suitable for {@link AbstractNode#setIconBaseWithExtension(String)}.
+         */
+        public String iconBase() {
+            return "org/netbeans/modules/hudson/ui/resources/" + iconBaseName + ".png"; // NOI18N
+        }
+        /**
+         * Adds color to a label if necessary.
+         * @param displayName an HTML display name (must have already escaped HTML metachars)
+         */
+        public String colorizeDisplayName(String displayName) {
+            return displayName;
+        }
     }
     
     /**

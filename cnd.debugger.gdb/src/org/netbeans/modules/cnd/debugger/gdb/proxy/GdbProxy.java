@@ -419,7 +419,7 @@ public class GdbProxy {
      */
     public void exec_interrupt() {
         if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (Utilities.isWindows()) {
+            if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 debugger.kill(18);
             } else {
                 debugger.kill(2);
@@ -586,6 +586,10 @@ public class GdbProxy {
         engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
     }
 
+    public void stack_list_arguments(int showValues) {
+        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
+    }
+
     /**
      * Send "-stack-select-frame frameNumber" to the debugger
      * This command tells gdb to change the current frame.
@@ -653,6 +657,18 @@ public class GdbProxy {
      */
     public CommandBuffer whatis(String symbol) {
         return engine.sendCommandEx("whatis " + symbol); // NOI18N
+    }
+
+    public static enum HandleAction {
+        nostop, stop, print, noprint, pass, nopass
+    };
+
+    public void handle(String signal, HandleAction action) {
+        engine.sendCommand("handle " + signal + " " + action); // NOI18N
+    }
+
+    public void sugnal(String signal) {
+        engine.sendCommand("signal " + signal); // NOI18N
     }
 
     /**

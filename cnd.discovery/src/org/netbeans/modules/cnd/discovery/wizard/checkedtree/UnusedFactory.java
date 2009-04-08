@@ -74,7 +74,7 @@ public class UnusedFactory {
     }
     
     private static AbstractRoot makeRoot(Set<String> set){
-        AbstractRoot root = new Root("");
+        AbstractRoot root = new Root("",""); //NOI18N
         for(String path : set){
             ((Root)root).addChild(path);
         }

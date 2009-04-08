@@ -12,6 +12,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
 public class AstMethodElement extends AstElement implements MethodElement {
     private List<String> parameters;
@@ -20,15 +21,17 @@ public class AstMethodElement extends AstElement implements MethodElement {
     private MetaMethod method;
     boolean GDK;
 
-    public AstMethodElement(ASTNode node) {
-        super(node);
+    public AstMethodElement(GroovyParserResult info, ASTNode node) {
+        super(info, node);
     }
     
     // We need this variant to drag the Class to which this Method belongs with us.
     // This is used in the CodeCompleter complete/document pair.
     
-    public AstMethodElement(ASTNode node, Class clz, MetaMethod method, boolean GDK) {
-        super(node);
+    public AstMethodElement(GroovyParserResult info, ASTNode node,
+            Class clz, MetaMethod method, boolean GDK) {
+
+        super(info, node);
         this.clz = clz;
         this.method = method;
         this.GDK = GDK;

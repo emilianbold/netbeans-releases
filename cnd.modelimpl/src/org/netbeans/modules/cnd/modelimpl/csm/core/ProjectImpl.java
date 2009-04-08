@@ -144,11 +144,8 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             file.setBuffer(buf);
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                DeepReparsingUtils.reparseOnEdit(file, this);
-            } else {
-                ParserQueue.instance().add(file, getPreprocHandler(buf.getFile()).getState(), ParserQueue.Position.HEAD);
-            }
+            // no need for deep parsing util call here, because it will be called as external notification change anyway
+//            DeepReparsingUtils.reparseOnEdit(file, this);
         }
     }
 

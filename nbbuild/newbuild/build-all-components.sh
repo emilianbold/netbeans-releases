@@ -184,6 +184,26 @@ if [ "${TEST_CODE}" = 1 ]; then
     exit 1;
 fi
 
+#Build XML modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.xml -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+create_test_result "build.XML.modules" "Build XML modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build XML modules"
+#    exit $ERROR_CODE;
+fi
+
+#Build SOA modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.soa -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+create_test_result "build.SOA.modules" "Build SOA modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build SOA modules"
+#    exit $ERROR_CODE;
+fi
+
 #Build UML modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.uml -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?

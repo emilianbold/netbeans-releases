@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -66,6 +67,16 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     public TemplateParameterTypeImpl(CsmType type, CsmTemplateParameter parameter) {
         this.type = type;
         this.parameter = UIDCsmConverter.objectToUID(parameter);
+    }
+
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+        this.type = TypeFactory.createType(type.type, pointerDepth, reference, arrayDepth, _const);
+        this.parameter = type.parameter;
+    }
+
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, List<CsmSpecializationParameter> instantiationParams) {
+        this.type = TypeFactory.createType(type.type, instantiationParams);
+        this.parameter = type.parameter;
     }
 
     public CsmTemplateParameter getParameter() {
@@ -136,7 +147,7 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
         return type.isReference();
     }
 
-    public List<CsmType> getInstantiationParams() {
+    public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }
 

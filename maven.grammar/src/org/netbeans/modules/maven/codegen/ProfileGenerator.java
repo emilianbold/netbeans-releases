@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.codegen;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationFile;
@@ -98,8 +100,12 @@ public class ProfileGenerator implements CodeGenerator {
     }
 
     public void invoke() {
+        try {
+            model.sync();
+        } catch (IOException ex) {
+            Logger.getLogger(ProfileGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
+        }
         if (!model.getState().equals(State.VALID)) {
-            //TODO report somehow, status line?
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ProfileGenerator.class, "MSG_Cannot_Parse"));
             return;
         }
@@ -112,72 +118,70 @@ public class ProfileGenerator implements CodeGenerator {
             Profile prof = model.getProject().findProfileById(id);
             boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
             if (prof == null) {
-                model.startTransaction();
-                prof = model.getFactory().createProfile();
-                prof.setId(id);
-                if (panel.generateDependencies()) {
-                    Dependency dep = model.getFactory().createDependency();
-                    dep.setGroupId("foo"); //NOI18N
-                    dep.setArtifactId("bar"); //NOI18N
-                    dep.setVersion("1.0"); //NOI18N
-                    if (pomPackaging) {
-                        DependencyManagement dm = model.getFactory().createDependencyManagement();
-                        prof.setDependencyManagement(dm);
-                        dm.addDependency(dep);
-                    } else {
-                        prof.addDependency(dep);
-                    }
-                }
-                if (panel.generatePlugins()) {
-                    BuildBase base = model.getFactory().createBuildBase();
-                    prof.setBuildBase(base);
-                        Plugin plug = model.getFactory().createPlugin();
-                        plug.setGroupId("foo"); //NOI18N
-                        plug.setArtifactId("bar"); //NOI18N
-                        plug.setVersion("1.0"); //NOI18N
-                    if (pomPackaging) {
-                        PluginManagement pm = model.getFactory().createPluginManagement();
-                        base.setPluginManagement(pm);
-                        pm.addPlugin(plug);
-                    } else {
-                        base.addPlugin(plug);
-                    }
-                }
-                if (panel.isActivation()) {
-                    Activation act = model.getFactory().createActivation();
-                    prof.setActivation(act);
-                    if (panel.isActiovationByProperty()) {
-                        ActivationProperty prop = model.getFactory().createActivationProperty();
-                        act.setActivationProperty(prop);
-                        prop.setName("foo");//NOI18N
-                        prop.setValue("bar");//NOI18N
-                    }
-                    if (panel.isActiovationByFile()) {
-                        ActivationFile file = model.getFactory().createActivationFile();
-                        act.setActivationFile(file);
-                        file.setExists("${basedir}/foo.bar"); //NOI18N
-                    }
-                    if (panel.isActiovationByOS()) {
-                        ActivationOS os = model.getFactory().createActivationOS();
-                        if (Utilities.isMac()) {
-                            os.setFamily("MacOS");//NOI18N
-                        } else if (Utilities.isUnix()) {
-                            os.setFamily("Linux");//NOI18N
-                        } else {
-                            os.setFamily("Windows"); //NOI18N
-                        }
-                        act.setActivationOS(os);
-                    }
-                }
-                model.getProject().addProfile(prof);
-                model.endTransaction();
                 try {
-                    model.sync();
-                    int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
-                    component.setCaretPosition(pos);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    model.startTransaction();
+                    prof = model.getFactory().createProfile();
+                    prof.setId(id);
+                    if (panel.generateDependencies()) {
+                        Dependency dep = model.getFactory().createDependency();
+                        dep.setGroupId("foo"); //NOI18N
+                        dep.setArtifactId("bar"); //NOI18N
+                        dep.setVersion("1.0"); //NOI18N
+                        if (pomPackaging) {
+                            DependencyManagement dm = model.getFactory().createDependencyManagement();
+                            prof.setDependencyManagement(dm);
+                            dm.addDependency(dep);
+                        } else {
+                            prof.addDependency(dep);
+                        }
+                    }
+                    if (panel.generatePlugins()) {
+                        BuildBase base = model.getFactory().createBuildBase();
+                        prof.setBuildBase(base);
+                            Plugin plug = model.getFactory().createPlugin();
+                            plug.setGroupId("foo"); //NOI18N
+                            plug.setArtifactId("bar"); //NOI18N
+                            plug.setVersion("1.0"); //NOI18N
+                        if (pomPackaging) {
+                            PluginManagement pm = model.getFactory().createPluginManagement();
+                            base.setPluginManagement(pm);
+                            pm.addPlugin(plug);
+                        } else {
+                            base.addPlugin(plug);
+                        }
+                    }
+                    if (panel.isActivation()) {
+                        Activation act = model.getFactory().createActivation();
+                        prof.setActivation(act);
+                        if (panel.isActiovationByProperty()) {
+                            ActivationProperty prop = model.getFactory().createActivationProperty();
+                            act.setActivationProperty(prop);
+                            prop.setName("foo");//NOI18N
+                            prop.setValue("bar");//NOI18N
+                        }
+                        if (panel.isActiovationByFile()) {
+                            ActivationFile file = model.getFactory().createActivationFile();
+                            act.setActivationFile(file);
+                            file.setExists("${basedir}/foo.bar"); //NOI18N
+                        }
+                        if (panel.isActiovationByOS()) {
+                            ActivationOS os = model.getFactory().createActivationOS();
+                            if (Utilities.isMac()) {
+                                os.setFamily("MacOS");//NOI18N
+                            } else if (Utilities.isUnix()) {
+                                os.setFamily("Linux");//NOI18N
+                            } else {
+                                os.setFamily("Windows"); //NOI18N
+                            }
+                            act.setActivationOS(os);
+                        }
+                    }
+                    model.getProject().addProfile(prof);
+                } finally {
+                    model.endTransaction();
                 }
+                int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
+                component.setCaretPosition(pos);
             }
         }
     }

@@ -43,7 +43,6 @@ import com.sun.javadoc.Doc;
 import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.CompilationUnitTree;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -51,12 +50,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Maps lexer javadoc tokens to Tags. Not thread safe.<p/>
@@ -86,8 +84,8 @@ public final class DocPositions {
         return DocPositionsManager.get(javac).get(javadoc, jdts);
     }
     
-    private DocPositions(Doc javadoc, TokenSequence<JavadocTokenId> jdts, Document doc) {
-        this.env = new Env(jdts, doc, javadoc);
+    private DocPositions(Doc javadoc, TokenSequence<JavadocTokenId> jdts, Snapshot snapshot) {
+        this.env = new Env(jdts, snapshot, javadoc);
     }
 
     /**
@@ -258,7 +256,7 @@ public final class DocPositions {
                     : endOffset;
             UnclosedTag tag = new UnclosedTag(
                     tokenName.toString(), UNCLOSED_INLINE_TAG, env.javadoc);
-            tag.text = JavadocCompletionUtils.getCharSequence(env.doc, startOffset, endOffset);
+            tag.text = env.snapshot.getText().subSequence(startOffset, endOffset);
             addTag(tag, new int[] {startOffset, endOffset}, false);
             
         }
@@ -336,7 +334,7 @@ public final class DocPositions {
             int[] span = positions.get(env.btag);
             span[1] = offset;
             if (NONAME_BLOCK_TAG == env.btag.kind()) {
-                ((UnclosedTag) env.btag).text = JavadocCompletionUtils.getCharSequence(env.doc, span[0], span[1]);
+                ((UnclosedTag) env.btag).text = env.snapshot.getText().subSequence(span[0], span[1]);
             }
             env.bscan = false;
         }
@@ -364,14 +362,14 @@ public final class DocPositions {
     
     private static final class Env {
 
-        public Env(TokenSequence<JavadocTokenId> jdts, Document doc, Doc javadoc) {
+        public Env(TokenSequence<JavadocTokenId> jdts, Snapshot snapshot, Doc javadoc) {
             this.jdts = jdts;
-            this.doc = doc;
+            this.snapshot = snapshot;
             this.wjavadoc = new  WeakReference<Doc>(javadoc);
         }
         
         private TokenSequence<JavadocTokenId> jdts;
-        private Document doc;
+        private Snapshot snapshot;
         private final WeakReference<Doc> wjavadoc;
         private Doc javadoc;
         private Tag[] btags;
@@ -486,32 +484,27 @@ public final class DocPositions {
                 = new WeakHashMap<CompilationUnitTree, DocPositions.DocPositionsManager>();
         
         private final Map<Doc, DocPositions> cache = new WeakHashMap<Doc, DocPositions>();
-        private final Reference<Document> doc;
+        private final Reference<Snapshot> snapshot;
 
-        public DocPositionsManager(Document doc) {
-            this.doc = new WeakReference<Document>(doc);
+        public DocPositionsManager(Snapshot snapshot) {
+            this.snapshot = new WeakReference<Snapshot>(snapshot);
         }
 
         public static DocPositionsManager get(CompilationInfo javac) {
-            try {
-                Document doc = javac.getDocument();
-                CompilationUnitTree cut = javac.getCompilationUnit();
-                DocPositionsManager dpm = managers.get(cut);
-                if (dpm == null) {
-                    dpm = new DocPositionsManager(doc);
-                    managers.put(cut, dpm);
-                }
-                return dpm;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+            Snapshot snapshot = javac.getSnapshot();
+            CompilationUnitTree cut = javac.getCompilationUnit();
+            DocPositionsManager dpm = managers.get(cut);
+            if (dpm == null) {
+                dpm = new DocPositionsManager(snapshot);
+                managers.put(cut, dpm);
             }
+            return dpm;
         }
         
         public DocPositions get(Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
             DocPositions dp = cache.get(javadoc);
             if (dp == null) {
-                dp = new DocPositions(javadoc, jdts, doc.get());
+                dp = new DocPositions(javadoc, jdts, snapshot.get());
                 cache.put(javadoc, dp);
             }
             return dp;

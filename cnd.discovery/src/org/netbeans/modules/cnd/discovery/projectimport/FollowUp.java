@@ -180,16 +180,17 @@ public class FollowUp extends JPanel {
         }
     }
 
-
     public static void showFollowUp(final ImportProject importer, final NativeProject project) {
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FollowUp panel = new FollowUp(importer, project);
-                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("Dialog_Title"), // NOI18N
-                        true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                        DialogDescriptor.DEFAULT_ALIGN, null, null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                dlg.setVisible(true);
+                if (importer.isProjectOpened()){
+                    FollowUp panel = new FollowUp(importer, project);
+                    DialogDescriptor descriptor = new DialogDescriptor(panel, getString("Dialog_Title"), // NOI18N
+                            true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+                    dlg.setVisible(true);
+                }
             }
         };
         String title;

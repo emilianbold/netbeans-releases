@@ -709,6 +709,7 @@ public class RunTask extends Task
     private class StackTraceTranslatorHandler extends PumpStreamHandler
     {        
         protected final StackTraceTranslator stt;
+        private boolean isBci;
         
         StackTraceTranslatorHandler(File root, String[] pathElements)
         {
@@ -746,13 +747,18 @@ public class RunTask extends Task
                 
                 protected synchronized void flush(boolean forced)
                 {
-                	final Pattern STACK_TRACE_REGEXP_LINE = Pattern.compile("((?:\t| *|\\[catch\\] )at )((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*[a-zA-Z_$][a-zA-Z0-9_$]*)\\.([a-zA-Z_$<][a-zA-Z0-9_$>]*)\\(\\+([0-9]+)\\)[\t ]*[\n\r]*"); //NOI18N
+                    final Pattern STACK_TRACE_REGEXP_LINE = Pattern.compile("((?:\t| *|\\[catch\\] )at )((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*[a-zA-Z_$][a-zA-Z0-9_$]*)\\.([a-zA-Z_$<][a-zA-Z0-9_$>]*)\\(\\+([0-9]+)\\)[\t ]*[\n\r]*"); //NOI18N
+                    final Pattern STACK_TRACE_BCI_REGEXP_LINE = Pattern.compile("((?:\t| *)- )((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*[a-zA-Z_$][a-zA-Z0-9_$]*)\\.([a-zA-Z_$<][a-zA-Z0-9_$>]*)\\(\\), bci=([0-9]+)[\t ]*[\n\r]*"); //NOI18N
                     try
                     {
                         if (buffer.size() > 0)
                         {
                             String line = buffer.toString(); //XXX may need handle encoding here
-                            if (STACK_TRACE_REGEXP_LINE.matcher(line).matches())
+                            boolean bci = STACK_TRACE_BCI_REGEXP_LINE.matcher(line).matches();
+                            if ( bci ){
+                                isBci = true;
+                            }
+                            if (STACK_TRACE_REGEXP_LINE.matcher(line).matches() || bci)
                             {
                                 sb.append(line);
                                 buffer.reset();
@@ -762,7 +768,8 @@ public class RunTask extends Task
                         {
                             if (sb.length() > 0) try
                             {
-                                os.write(stt.translate(sb.toString()).getBytes()); //XXX may need handle encoding here
+                                String translate = stt.translate(sb.toString(), isBci);
+                                os.write( translate.getBytes()); //XXX may need handle encoding here
                                 sb.setLength(0);
                             }
                             catch (IOException ioe)

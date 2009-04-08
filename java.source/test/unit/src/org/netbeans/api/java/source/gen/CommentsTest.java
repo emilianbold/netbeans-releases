@@ -282,8 +282,8 @@ public class CommentsTest extends GeneratorTest {
                         Comment.Style.JAVADOC, 
                         NOPOS, 
                         NOPOS, 
-                        1, // to ensure indentation
-                        "/** Comentario \n*/"),
+                        NOPOS, // to ensure indentation
+                        "Comentario"),
                         true
                 );
                 workingCopy.rewrite(method, copy);

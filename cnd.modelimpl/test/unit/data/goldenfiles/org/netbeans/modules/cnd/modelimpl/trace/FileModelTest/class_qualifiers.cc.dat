@@ -25,7 +25,7 @@ STRUCT S3 (S3 ) [10:1/88-12:2/128] lcurly=114 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC i [11:5/120-11:11/126]  TYPE: int TEXT=int  [11:5/120-11:8/123]  INIT: null  SCOPE: S3 
-VARIABLE s3 [12:3/129-12:5/131]  TYPE: S3 TEXT=S3  [10:1/88-12:2/128]  INIT: null  SCOPE: $Global$ 
+VARIABLE s3 [12:3/129-12:5/131]  TYPE: S3 TEXT=S3  [10:1/88-12:2/128]  INIT: null  SCOPE: class_qualifiers.cc
 CLASS C1 (C1 ) [14:1/134-16:2/166] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -52,7 +52,6 @@ STRUCT S3 (S3 ) [10:1/88-12:2/128] lcurly=114 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC i [11:5/120-11:11/126]  TYPE: int TEXT=int  [11:5/120-11:8/123]  INIT: null  SCOPE: S3 
-VARIABLE s3 [12:3/129-12:5/131]  TYPE: S3 TEXT=S3  [10:1/88-12:2/128]  INIT: null  SCOPE: $Global$ 
 CLASS C1 (C1 ) [14:1/134-16:2/166] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:

@@ -246,6 +246,6 @@ public class RPMPackager implements PackagerDescriptor {
 
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
+        return NbBundle.getMessage(RPMPackager.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
     }
 }

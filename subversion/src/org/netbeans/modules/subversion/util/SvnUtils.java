@@ -68,9 +68,11 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SubversionVCS;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -243,6 +245,15 @@ public class SvnUtils {
      */
     public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
         return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
+    }
+
+    public static File getTopManagedFolder(File file) {
+        File topManaged = file;
+        while (file != null && isManaged(file)) {
+            topManaged = file;
+            file = file.getParentFile();
+        }
+        return topManaged;
     }
 
     /**
@@ -447,7 +458,12 @@ public class SvnUtils {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -479,7 +495,13 @@ public class SvnUtils {
             }
 
             path.add(0, file.getName());
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(repositoryURL == null && fileIsManaged) {
@@ -523,7 +545,12 @@ public class SvnUtils {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -534,7 +561,13 @@ public class SvnUtils {
                 }
             }
 
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(repositoryURL == null && fileIsManaged) {
@@ -584,7 +617,12 @@ public class SvnUtils {
                 }
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                        // log this exception if needed and break the execution
+                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                    } else {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
 
@@ -608,7 +646,13 @@ public class SvnUtils {
             }
 
             path.insert(0, file.getName()).insert(0, "/");
-            file = file.getParentFile();
+            File parent = file.getParentFile();
+            if (parent == null) {
+                // .svn in root folder
+                break;
+            } else {
+                file = parent;
+            }
 
         }
         if(fileURL == null && fileIsManaged) {
@@ -852,7 +896,9 @@ public class SvnUtils {
         try {
             url = getRepositoryUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
             return null;
         }
         return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());
@@ -1266,4 +1312,41 @@ public class SvnUtils {
         return false;
     }
 
+    public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
+        // NOI18N
+        CommitOptions[] commitOptions = new CommitOptions[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            SvnFileNode node = nodes[i];
+            File file = node.getFile();
+            if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
+                commitOptions[i] = CommitOptions.EXCLUDE;
+            } else {
+                switch (node.getInformation().getStatus()) {
+                    case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                        commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
+                        break;
+                    case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+                    case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                        commitOptions[i] = CommitOptions.COMMIT_REMOVE;
+                        break;
+                    default:
+                        commitOptions[i] = CommitOptions.COMMIT;
+                }
+            }
+        }
+        return commitOptions;
+    }
+
+
+    private static CommitOptions getDefaultCommitOptions(File file) {
+        if (file.isFile()) {
+            if (getMimeType(file).startsWith("text")) {
+                return CommitOptions.ADD_TEXT;
+            } else {
+                return CommitOptions.ADD_BINARY;
+            }
+        } else {
+            return CommitOptions.ADD_DIRECTORY;
+        }
+    }
  }

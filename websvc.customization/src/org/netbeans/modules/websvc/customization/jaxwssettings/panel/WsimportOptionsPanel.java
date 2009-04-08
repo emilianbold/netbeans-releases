@@ -46,9 +46,9 @@ package org.netbeans.modules.websvc.customization.jaxwssettings.panel;
 
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.Map;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,7 +68,10 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
         this.wsimportOptions = wsimportOptions;
         this.jaxbOptions = jaxbOptions;
         this.wsimportOptionParent = wsimportOptionParent;
-        columnNames = new String[]{"Option", "Value"};
+        columnNames = new String[] {
+            NbBundle.getMessage(WsimportOptionsPanel.class,"HEADING_OPTION"),
+            NbBundle.getMessage(WsimportOptionsPanel.class,"HEADING_VALUE")
+        };
         reservedOptions = getReservedOptions();
         initComponents();
         
@@ -77,10 +80,10 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
     private List<String> getReservedOptions() {
         if (reservedOptions == null) {
             reservedOptions = new ArrayList<String>();
-            reservedOptions.add("destdir");
-            reservedOptions.add("wsdl");
-            reservedOptions.add("sourcedestdir");
-            reservedOptions.add("catalog");
+            reservedOptions.add("destdir"); //NOI18N
+            reservedOptions.add("wsdl"); //NOI18N
+            reservedOptions.add("sourcedestdir"); //NOI18N
+            reservedOptions.add("catalog"); //NOI18N
         }
         return reservedOptions;
     }

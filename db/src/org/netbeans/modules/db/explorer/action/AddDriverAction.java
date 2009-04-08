@@ -43,7 +43,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.List;
 import org.netbeans.api.db.explorer.DatabaseException;
 
@@ -57,11 +56,12 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class AddDriverAction extends BaseAction {
     @Override
     public String getName() {
-        return bundle().getString("AddNewDriver"); // NOI18N
+        return NbBundle.getMessage (AddDriverAction.class, "AddNewDriver"); // NOI18N
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -85,21 +85,21 @@ public class AddDriverAction extends BaseAction {
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         String name = dlgPanel.getDisplayName();
-                        List drvLoc = dlgPanel.getDriverLocation();
+                        List<URL> drvLoc = dlgPanel.getDriverLocation();
                         String drvClass = dlgPanel.getDriverClass();
 
                         StringBuffer err = new StringBuffer();
                         if (drvLoc.size() < 1)
-                            err.append(bundle().getString("AddDriverDialog_MissingFile")); //NOI18N
+                            err.append(NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_MissingFile")); //NOI18N
                         if (drvClass == null || drvClass.equals("")) {
                             if (err.length() > 0)
                                 err.append(", "); //NOI18N
                             
-                            err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
+                            err.append(NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_MissingClass")); //NOI18N
                         }
                         if (err.length() > 0) {
-                            String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"),
-                                    err.toString()); //NOI18N
+                            String message = NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_ErrorMessage", // NOI18N
+                                    err.toString());
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
 
                             return;
@@ -113,7 +113,7 @@ public class AddDriverAction extends BaseAction {
                             name = drvClass;
 
                         try {
-                            driver = JDBCDriver.create(name, name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()]));
+                            driver = JDBCDriver.create(name, name, drvClass, drvLoc.toArray(new URL[0]));
                             JDBCDriverManager.getDefault().addDriver(driver);
                         } catch (DatabaseException exc) {
                             Exceptions.printStackTrace(exc);
@@ -122,7 +122,7 @@ public class AddDriverAction extends BaseAction {
                 }
             };
 
-            DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle().getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage (AddDriverAction.class, "AddDriverDialogTitle"), true, actionListener); //NOI18N
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);

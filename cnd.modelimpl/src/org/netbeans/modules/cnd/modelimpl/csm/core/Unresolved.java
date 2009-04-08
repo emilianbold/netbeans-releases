@@ -123,7 +123,7 @@ public final class Unresolved implements Disposable {
         }
 
 	@Override
-	protected CsmUID createUID() {
+	protected CsmUID<CsmClass> createUID() {
 	    return UIDUtilities.createUnresolvedClassUID(getName().toString(), getProject());
 	}
 	
@@ -280,14 +280,13 @@ public final class Unresolved implements Disposable {
         return getDummyForUnresolved(getName(nameTokens));
     }
     
-    @SuppressWarnings("unchecked")
     public CsmClass getDummyForUnresolved(CharSequence name) {
         name = NameCache.getManager().getString(name);
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
         UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
             cls = new UnresolvedClass(name.toString());
-            dummiesForUnresolved.put(name, new SoftReference(cls));
+            dummiesForUnresolved.put(name, new SoftReference<UnresolvedClass>(cls));
 	    cls.register();
         }
         return cls;

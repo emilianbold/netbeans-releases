@@ -107,7 +107,9 @@ public class ResultSetJXTable extends JXTableDecorator {
         setDefaultCellRenderers();
         setDefaultCellEditors();
 
-        columnToolTips = dView.getDataViewDBTable().getColumnToolTips();
+        if (dView.getDataViewDBTable() != null) {
+            columnToolTips = dView.getDataViewDBTable().getColumnToolTips();
+        }
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
         columnWidthList = getColumnWidthList();
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
@@ -136,6 +138,7 @@ public class ResultSetJXTable extends JXTableDecorator {
         SwingUtilities.invokeLater(run);
     }
 
+    @SuppressWarnings("deprecation")
     protected void setDefaultCellRenderers() {
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(String.class, new ResultSetCellRenderer());

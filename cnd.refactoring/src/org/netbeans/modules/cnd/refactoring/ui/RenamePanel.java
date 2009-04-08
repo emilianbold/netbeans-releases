@@ -75,9 +75,9 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         this.parent = parent;
         this.origObject = origObject;
         initComponents();
-        String labelText = "<html><font style=\"color: red\"><br>&nbsp;WARNING: This feature is in development and inaccurate!<br>" + //NOI18N
-                "&nbsp;Use Preview to check renamed objects</font></html>"; // NOI18N        
-        jPanel1.add(new JLabel(labelText));
+//        String labelText = "<html><font style=\"color: red\"><br>&nbsp;WARNING: This feature is in development and inaccurate!<br>" + //NOI18N
+//                "&nbsp;Use Preview to check renamed objects</font></html>"; // NOI18N
+//        jPanel1.add(new JLabel(labelText));
         updateReferencesCheckBox.setVisible(showUpdateReferences);
         nameField.setEnabled(editable);
         //parent.setPreviewEnabled(false);

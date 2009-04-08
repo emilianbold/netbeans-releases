@@ -138,7 +138,7 @@ public class BeanClassFinder {
             staticFlag = true;
         }
 
-        if(logicalBean.getFactoryMethod() != null) {
+        if(logicalBean.getFactoryMethod() != null && implClass != null) {
             implClass = getFactoryMethodReturnTypeName(implClass, logicalBean.getFactoryMethod(), staticFlag);
         }
         

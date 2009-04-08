@@ -307,28 +307,23 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 + " Name:" + CloneableEditor.this.getName());
             }
             Task prepareTask = support.prepareDocument();
-            // load the doc synchronously
-            if (prepareTask == null) {
-                Throwable exc = support.getPrepareDocumentRuntimeException();
-                if (exc instanceof CloneableEditorSupport.DelegateIOExc) {
-                    if ("org.openide.text.DataEditorSupport$Env$ME".equals(exc.getCause().getClass().getName())) {
-                        if (exc.getCause() instanceof UserQuestionException) {
-                            UserQuestionException e = (UserQuestionException) exc.getCause();
-                            try {
-                                e.confirmed();
-                            } catch (IOException ioe) {
-                            }
-                            prepareTask = support.prepareDocument();
+            assert prepareTask != null : "Failed to get prepareTask";
+            prepareTask.waitFinished();
+            Throwable ex = support.getPrepareDocumentRuntimeException();
+            if (ex instanceof CloneableEditorSupport.DelegateIOExc) {
+                if ("org.openide.text.DataEditorSupport$Env$ME".equals(ex.getCause().getClass().getName())) {
+                    if (ex.getCause() instanceof UserQuestionException) {
+                        UserQuestionException e = (UserQuestionException) ex.getCause();
+                        try {
+                            e.confirmed();
+                        } catch (IOException ioe) {
                         }
+                        prepareTask = support.prepareDocument();
+                        assert prepareTask != null : "Failed to get prepareTask";
+                        prepareTask.waitFinished();
                     }
                 }
             }
-            if (prepareTask == null) {
-                LOG.log(Level.WARNING,"Failed to get prepareTask");
-                return;
-            }
-            prepareTask.waitFinished();
-
             // Init action map: cut,copy,delete,paste actions.
             javax.swing.ActionMap am = getActionMap();
 
@@ -343,8 +338,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.copyAction, getAction(DefaultEditorKit.copyAction));
             paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
-            
-            
+
+
             EditorKit k = support.cesKit();
             if (newInitialize() && k instanceof Callable) {
                 try {
@@ -361,6 +356,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     LOG.log(Level.INFO,"Failed to open document",exc);
                 }
                 kit = k;
+                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " -- CloneableEditor.DoInitialize.initNonVisual"
+                + " name:" + getName()
+                + " SET kit:" + kit
+                + " Thread:[" + Thread.currentThread().getName() + "]");
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE,"DoInitialize.initNonVisual doc and kit are set"
@@ -385,7 +385,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private void initCustomEditor() {
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
             + " -- CloneableEditor.DoInitialize.initCustomEditor"
-            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
+            + " name:" + getName()
+            + " Thread:[" + Thread.currentThread().getName() + "]" + " ENTER");
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
                 sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
@@ -437,8 +438,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private boolean initDocument() {
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument ENTER");
             EditorKit k;
             Document d;
             synchronized (this) {
@@ -477,12 +476,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 }
             }
             if (tmp.getDocument() == doc) {
-                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                + " -- CloneableEditor.DoInitialize.initDocument RETURN FALSE 1");
                 return false;
             }
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)");
+            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)"
+            + " kit:" + kit
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             tmp.setEditorKit(kit);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
@@ -490,7 +489,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
             sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument RETURN TRUE 1");
+            + " -- CloneableEditor.DoInitialize.initDocument"
+            + " RETURN TRUE"
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             return true;
         }
         
@@ -499,15 +500,17 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (isInInitVisual) {
                 return;
             }
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initVisual"
-            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
             isInInitVisual = true;
             // wait for document and init it
             if (!initDocument()) {
                 isInInitVisual = false;
                 return;
             }
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initVisual"
+            + " name:" + getName()
+            + " ENTER"
+            + " Thread:[" + Thread.currentThread().getName() + "]");
             if (LOG.isLoggable(Level.FINE)) {
                 /*Exception ex = new Exception();
                 StringWriter sw = new StringWriter(500);

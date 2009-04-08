@@ -1,6 +1,7 @@
 <?php
 
-    // get this with “pear install Crypt_HMAC”
+    // Get this by installing Crypt_HMAC using
+    //      pear install Crypt_HMAC
     require_once "Crypt/HMAC.php";
     include_once "org_netbeans_saas/RestConnection.php";
     include_once "__NAME__Profile.php";

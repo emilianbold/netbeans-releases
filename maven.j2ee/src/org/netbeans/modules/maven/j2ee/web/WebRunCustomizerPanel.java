@@ -148,7 +148,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String[] ids = Deployment.getDefault().getServerInstanceIDs();
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
-        col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc != null && sc.getServerInstanceId() != null) {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
+        } else {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        }
         for (int i = 0; i < ids.length; i++) {
             Wrapper wr = new Wrapper(ids[i]);
             col.add(wr);
@@ -303,11 +308,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         //TODO - not sure this is necessary since the PoHImpl listens on project changes.
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        poh.setContextPath(txtContextPath.getText().trim());
         poh.hackModuleServerChange();
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        if (moduleProvider != null) { //#150030 can be null sometimes?
-            moduleProvider.getWebModuleImplementation().setContextPath(txtContextPath.getText().trim());
-        }
         boolean bool = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, bool ? null : Boolean.FALSE.toString());

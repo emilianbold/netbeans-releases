@@ -47,7 +47,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author marekfukala
  */
-public class CssAstElement extends CSSElement {
+public class CssAstElement extends CssElement {
 
     private SimpleNode node;
 

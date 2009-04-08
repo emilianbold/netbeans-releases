@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -59,6 +59,7 @@ import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -85,6 +86,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
     private final MetadataElementHandle<View> viewHandle;
     private final DatabaseConnection connection;
 
+    @SuppressWarnings("unchecked")
     private ViewNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
@@ -179,7 +181,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_View"); //NOI18N
+        return NbBundle.getMessage (ViewNode.class, "ND_View"); //NOI18N
     }
 
     @Override

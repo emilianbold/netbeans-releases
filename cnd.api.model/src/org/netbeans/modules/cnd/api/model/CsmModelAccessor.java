@@ -87,10 +87,6 @@ public final class CsmModelAccessor {
             return CsmModelState.OFF;
         }
 
-        public Cancellable enqueue(Runnable task) {
-            return cancellableStub;
-        }
-
         public Cancellable enqueue(Runnable task, CharSequence name) {
             return cancellableStub;
         }

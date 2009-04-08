@@ -49,10 +49,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
@@ -79,6 +79,7 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,7 +102,7 @@ public class SvnClientExceptionHandler {
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
-
+    
     private class CertificateFailure {
         int mask;
         String error;
@@ -171,30 +172,51 @@ public class SvnClientExceptionHandler {
         }
         throw getException();
     }
-         
+       
+    public boolean handleKenaiAuthorisation(VCSKenaiSupport kenaiSupport, String url) {
+        PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(url);
+        if(pa == null) {
+            return false;
+        }
+
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+        
+        adapter.setUsername(user != null ? user : "");
+        adapter.setPassword(password != null ? new String(password) : "");
+
+        return true;
+    }
+
     private boolean handleRepositoryConnectError() {                
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
-        Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
-        repository.selectUrl(url, true);
-        
-        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N        
-        String title = ((exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) ? 
-                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") : 
-                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
-        Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
-                retryButton);
 
-        boolean ret = (option == retryButton);
-        if(ret) {
-            RepositoryConnection rc = repository.getSelectedRC();
-            String username = rc.getUsername();
-            String password = rc.getPassword();
+        VCSKenaiSupport kenaiSupport = Subversion.getInstance().getKenaiSupport();
+        if(kenaiSupport != null && kenaiSupport.isKenai(url.toString())) {
+            return handleKenaiAuthorisation(kenaiSupport, url.toString());
+        } else {
+            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            repository.selectUrl(url, true);
 
-            adapter.setUsername(username);
-            adapter.setPassword(password);                                        
-            SvnModuleConfig.getDefault().insertRecentUrl(rc);
-        }                 
-        return ret;
+            JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
+            String title = ((exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) ?
+                                org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") :
+                                org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
+            Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
+                    retryButton);
+
+            boolean ret = (option == retryButton);
+            if(ret) {
+                RepositoryConnection rc = repository.getSelectedRC();
+                String username = rc.getUsername();
+                String password = rc.getPassword();
+
+                adapter.setUsername(username);
+                adapter.setPassword(password);
+                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+            }
+            return ret;
+        }
     }
 
     private boolean handleNoCertificateError() throws Exception {
@@ -544,7 +566,7 @@ public class SvnClientExceptionHandler {
             return EX_CLOSED_CONNECTION;
         } else if(isCommitFailed(msg)) {
             return EX_COMMIT_FAILED;
-        } else if(isNoSvnClient(msg)) {               
+        } else if(isNoCliSvnClient(msg)) {
             return EX_NO_SVN_CLIENT;
         } else if(isHTTP403(msg)) {
             return EX_HTTP_FORBIDDEN;
@@ -598,6 +620,11 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
                msg.indexOf("is not a working copy") > -1;                                   // NOI18N
+    }
+
+    public static boolean isTooOldClientForWC(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("this client is too old") > -1;                                   // NOI18N
     }
     
     public static boolean isWrongURLInRevision(String msg) {        
@@ -684,10 +711,15 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("out of date") > -1 || msg.indexOf("out-of-date") > -1;                                             // NOI18N
     }
     
-    private static boolean isNoSvnClient(String msg) {
+    public static boolean isNoCliSvnClient(String msg) {
         msg = msg.toLowerCase();
         return (msg.indexOf("command line client adapter is not available") > -1) || 
                (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
+    }
+
+    public static boolean isUnsupportedJavaHl(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf(CommandlineClient.ERR_JAVAHL_NOT_SUPPORTED) > -1;
     }
 
     public static boolean isMissingOrLocked(String msg) {
@@ -714,7 +746,7 @@ public class SvnClientExceptionHandler {
     }
     
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
-        if(isNoSvnClient(ex.getMessage())) {
+        if(isNoCliSvnClient(ex.getMessage())) {
             if(isUI) {
                 notifyNoClient();
             }
@@ -729,7 +761,7 @@ public class SvnClientExceptionHandler {
             String msg = getCustomizedMessage(ex);  
             if(msg == null) {
                 if(ex instanceof SVNClientException) {
-                    msg = parseExceptionMessage((SVNClientException) ex);    
+                    msg = parseExceptionMessage((SVNClientException) ex);
                 } else {
                     msg = ex.getMessage();                        
                 }                
@@ -770,6 +802,10 @@ public class SvnClientExceptionHandler {
         String msg = ex.getMessage();
         msg = msg.replace("svn: warning: ", "");
         msg = msg.replace("svn: ", "");
+        if (isTooOldClientForWC(msg)) {
+            // add an additional message for old clients
+            msg += NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OldClient");    // NOI18N
+        }
         return msg;
     }
 

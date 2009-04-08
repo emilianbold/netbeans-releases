@@ -85,12 +85,12 @@ public class KeyUtilities {
         return createProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
     }
 
-    public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase obj) {
+    public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj);
     }
 
-    public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
+    public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj, index);
     }
@@ -105,7 +105,7 @@ public class KeyUtilities {
         return KeyManager.instance().getSharedUID(new IncludeKey(incl));
     }
 
-    public static <T extends CsmParameterList, K extends CsmNamedElement> Key createParamListKey(CsmParameterList<T, K> paramList) {
+    public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {
         assert paramList != null;
         return new ParamListKey(paramList);
     }

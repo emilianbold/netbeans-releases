@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -59,7 +57,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -129,7 +126,7 @@ public final class IcanproProject implements Project, AntProjectListener {
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
 
@@ -138,11 +135,7 @@ public final class IcanproProject implements Project, AntProjectListener {
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
         // sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,

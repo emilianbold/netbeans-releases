@@ -147,6 +147,17 @@ public abstract class ModuleInstaller {
     public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
         return true;
     }
+
+    /**
+     * Similar to {@link #shouldDelegateResource} but checks whether the
+     * {@linkplain ModuleManager#getClassLoader() system class loader} should delegate to the classpath.
+     * @param pkg as in {@link #shouldDelegateResource}
+     * @return true if it is acceptable to delegate to startup JARs or the JRE
+     * @since org.netbeans.bootstrap/1 2.17
+     */
+    public boolean shouldDelegateClasspathResource(String pkg) {
+        return true;
+    }
     
     /** Scan a disabled module JAR file for its manifest contents.
      * Subclasses may implement this efficiently, e.g. to use a special cache.
@@ -189,6 +200,15 @@ public abstract class ModuleInstaller {
      * @see "#46833"
      */
     public String[] refineProvides (Module m) {
+        return null;
+    }
+
+    /** Loads dependencies cached from previous run, if possible.
+     * @param cnb the code name base of the module to get dependencies for
+     * @return null or set of dependencies for the module
+     * @since 2.18
+     */
+    protected Set<Dependency> loadDependencies(String cnb) {
         return null;
     }
 

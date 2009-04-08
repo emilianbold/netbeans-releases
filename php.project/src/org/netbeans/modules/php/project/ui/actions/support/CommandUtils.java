@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -285,6 +283,21 @@ public final class CommandUtils {
     }
 
     /**
+     * Get an array of <b>valid</b> {@link FileObject}s for context or selected nodes.
+     * @param context context to search in.
+     * @return an array of <b>valid</b> {@link FileObject}s for context or selected nodes or an empty array, never <code>null</code>.
+     * @see #fileForContextOrSelectedNodes(Lookup, FileObject)
+     */
+    public static FileObject[] filesForContextOrSelectedNodes(Lookup context) {
+
+        FileObject[] files = filesForContext(context);
+        if (files.length == 0) {
+            files = filesForSelectedNodes();
+        }
+        return files;
+    }
+
+    /**
      * Get a <b>valid</b> {@link FileObject} for context or selected nodes.
      * Return <code>null</code> if any {@link FileObject} is invalid.
      * @param context context to search in.
@@ -292,12 +305,8 @@ public final class CommandUtils {
      * @see #fileForContextOrSelectedNodes(Lookup, FileObject)
      */
     public static FileObject fileForContextOrSelectedNodes(Lookup context) {
-
-        FileObject[] files = filesForContext(context);
-        if (files.length == 0) {
-            files = filesForSelectedNodes();
-        }
-        return (files != null && files.length > 0) ? files[0] : null;
+        FileObject[] files = filesForContextOrSelectedNodes(context);
+        return files.length > 0 ? files[0] : null;
     }
 
     /**
@@ -450,22 +459,13 @@ public final class CommandUtils {
         assert !queryWithoutQMark.startsWith("&");
         assert !queryWithoutQMark.startsWith("?");
 
-        String query = originalURL.getQuery();
-        if (PhpProjectUtils.hasText(query)) {
-            queryWithoutQMark = query + "&" + queryWithoutQMark; // NOI18N
+        String urlExternalForm = originalURL.toExternalForm();
+        if (PhpProjectUtils.hasText(originalURL.getQuery())) {
+            urlExternalForm += "&" + queryWithoutQMark; // NOI18N
+        } else {
+            urlExternalForm += "?" + queryWithoutQMark; // NOI18N
         }
-        URI retval;
-        try {
-            //TODO: check the conversion becaus eof #159928
-            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
-                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(),
-                    queryWithoutQMark, originalURL.getRef());
-        } catch (URISyntaxException ex) {
-            MalformedURLException mex = new MalformedURLException(ex.getLocalizedMessage());
-            mex.initCause(ex);
-            throw mex;
-        }
-        return retval.toURL();
+        return new URL(urlExternalForm);
     }
 
     private static String getDebugArguments() {

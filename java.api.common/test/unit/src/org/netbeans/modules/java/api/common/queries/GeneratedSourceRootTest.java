@@ -278,7 +278,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
                         "test-roots", false, "test.{0}{1}.dir");
                 lookup = Lookups.fixed(
                     aux,
-                    new TestSources(helper, evaluator, src, test),
+                    new TestSources(this, helper, evaluator, src, test),
                     new ClassPathProviderImpl(this.helper, evaluator, src, test),
                     QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator, src, test),
                     QuerySupport.createBinaryForSourceQueryImplementation(src, test, helper, evaluator),
@@ -293,6 +293,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
     }
     /** Simplified copy of J2SESources. */
     private static class TestSources implements Sources, PropertyChangeListener, ChangeListener {
+        private final Project project;
         private final AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private final SourceRoots sourceRoots;
@@ -300,7 +301,8 @@ public class GeneratedSourceRootTest extends NbTestCase {
         private SourcesHelper sourcesHelper;
         private Sources delegate;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        TestSources(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
+        TestSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
+            this.project = project;
             this.helper = helper;
             this.evaluator = evaluator;
             this.evaluator.addPropertyChangeListener(this);
@@ -326,7 +328,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
             });
         }
         private Sources initSources() {
-            sourcesHelper = new SourcesHelper(helper, evaluator);
+            sourcesHelper = new SourcesHelper(project, helper, evaluator);
             register(sourceRoots);
             register(testRoots);
             sourcesHelper.addNonSourceRoot("${build.dir}");

@@ -102,14 +102,16 @@ public final class CreateHostVisualPanel2 extends JPanel {
     }
 
     private String hostname;
+    private int port;
     private ToolsCacheManager cacheManager;
 
-    void init(String hostname, ToolsCacheManager cacheManager) {
+    void init(String hostname, Integer port, ToolsCacheManager cacheManager) {
         this.hostname = hostname;
+        this.port = (port == null) ? ExecutionEnvironmentFactory.DEFAULT_PORT : port.intValue();
         this.cacheManager = cacheManager;
     }
 
-    String getLoginName() {
+    private String getLoginName() {
         return textLoginName.getText();
     }
 
@@ -240,7 +242,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
     private Runnable runOnFinish = null;
 
     private ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.getExecutionEnvironment(getLoginName(), hostname);
+        return ExecutionEnvironmentFactory.getExecutionEnvironment(getLoginName(), hostname, port);
     }
 
     private void revalidateRecord(String password, boolean rememberPassword) {

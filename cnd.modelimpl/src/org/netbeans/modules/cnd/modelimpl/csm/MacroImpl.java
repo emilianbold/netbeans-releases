@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -92,7 +91,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * immutable list of parameters, 
      * i.e. [a, b] or null if macros without parameters
      */
-    private final List<? extends CharSequence> params;
+    private final List<CharSequence> params;
     
     public static SystemMacroImpl createSystemMacro(CharSequence macroName, String macroBody, CsmFile unresolved, Kind kind) {
         return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
@@ -100,8 +99,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     
     public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
-        assert(macroName != null);
-        assert(macroName.length() > 0);
+        macroName = macroName == null ? CharSequenceKey.empty() : macroName;
         assert(macroBody != null);
         this.name = NameCache.getManager().getString(macroName);
         this.kind = kind;
@@ -117,7 +115,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
     }
     
-    public List<? extends CharSequence> getParameters() {
+    public List<CharSequence> getParameters() {
         return params;
     }
     
@@ -140,7 +138,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         retValue.append(getName());
         if (getParameters() != null) {
             retValue.append("["); // NOI18N
-            for (Iterator<? extends CharSequence> it = getParameters().iterator(); it.hasNext();) {
+            for (Iterator<CharSequence> it = getParameters().iterator(); it.hasNext();) {
                 CharSequence param = it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
@@ -206,11 +204,11 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
 
 
-    protected CsmUID createUID() {
+    protected CsmUID<CsmMacro> createUID() {
         return UIDUtilities.createMacroUID(this);
     }
 
-    public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
+    public CsmParameterList<CsmMacroParameter> getParameterList() {
         throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 }

@@ -78,8 +78,8 @@ public class Util {
                 return null;
             }
 
-            String prefix = "_dlight_" + getBriefName(resourceFileName);
-            File result_file = File.createTempFile(prefix, ".d");
+            String prefix = "_dlight_" + getBriefName(resourceFileName);//NOI18N
+            File result_file = File.createTempFile(prefix, ".d");//NOI18N
             result_file.deleteOnExit();
 
             OutputStream os = new FileOutputStream(result_file);
@@ -146,8 +146,8 @@ public class Util {
      * @return the base path for the given class
      */
     public static String getBasePath(Class cls) {
-        String path = cls.getName().replace('.', '/');
-        int pos = path.lastIndexOf('/');
+        String path = cls.getName().replace('.', '/');//NOI18N
+        int pos = path.lastIndexOf('/');//NOI18N
         return (pos > 0) ? path.substring(0, pos) : path;
     }
 

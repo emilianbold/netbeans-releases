@@ -458,10 +458,9 @@ for more information about this.
   
 <!-- TemplateWizard: -->
      
-    <api type="export" group="property" name="isRemoteAndSlow" category="private" >
-        <p>NewObjectWizardPanel: The Attribute "isRemoteAndSlow" will be checked for on the targetFolder,
-        and if it is found and <b>true</b>, then 
-        targetFolder.getPrimaryFile().getFileObject will NOT be called.</p>
+    <api type="export" group="property" name="isRemoteAndSlow" category="friend">
+        If the file attribute <code>isRemoteAndSlow</code> is <code>true</code> on a folder,
+        the New File wizard and folder children will avoid asking for its children.
     </api>
   
   

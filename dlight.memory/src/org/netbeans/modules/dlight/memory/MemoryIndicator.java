@@ -38,14 +38,22 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  * Memory usage indicator
@@ -53,8 +61,9 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
  */
 public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
-    private final MemoryIndicatorPanel panel;
+    private  MemoryIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private long lastValue;
 
     public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
         super(configuration);
@@ -78,9 +87,51 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
             for (String column : row.getColumnNames()) {
                 if (acceptedColumnNames.contains(column)) {
                     String value = row.getStringValue(column); //TODO: change to Long
-                    panel.setValue(Long.parseLong(value));
+                    lastValue = Long.parseLong(value);
                 }
             }
+        }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastValue);
+    }
+
+    @Override
+    protected void repairNeeded(boolean needed) {
+        if (needed) {
+            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    DLightExecutorService.submit(new Callable<Boolean>() {
+                        public Boolean call() throws Exception {
+                            UIThread.invoke(new Runnable() {
+                                public void run() {
+                                    panel.getPanel().setOverlay(null);
+                                }
+                            });
+                            return result.get();
+                        }
+                    }, "Click On Repair in Memory Indicator task");//NOI18N
+                }
+            });
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setEnabled(false);
+                    panel.getPanel().setOverlay(repairPanel);
+                }
+            });
+        } else {
+            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
+                "<html><center>Will show data on the next run</center></html>" :
+                "<html><center>Invalid</center></html>");
+            label.setForeground(GraphConfig.TEXT_COLOR);
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setOverlay(label);
+                }
+            });
         }
     }
 }

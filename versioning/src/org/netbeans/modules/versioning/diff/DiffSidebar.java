@@ -59,6 +59,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.*;
 import org.openide.awt.UndoRedo;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -203,8 +204,40 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             // delete annotations (arrows) are rendered between lines
             diff = getDifference(line);
             if (diff != null && diff.getType() != Difference.DELETE) diff = null;
+        } else if (diff.getType() == Difference.DELETE) {
+            Difference diffPrev = getDifference(line);
+            if (diffPrev != null && diffPrev.getType() == Difference.DELETE) {
+                // two delete arrows next to each other cause some selection problems, select the closer one
+                diff = getCloserDifference(event, diffPrev, diff);
+            }
         }
         return diff;
+    }
+
+    /**
+     * In case of two neighboring DELETE differences which meet on the same line, this method returns a difference
+     * which' annotation is closer (in y-axis) to the click-point
+     * @param event event with the click-point
+     * @param previous a difference reaching out from the previous line
+     * @param next a difference reaching out from the next line
+     * @return
+     */
+    private Difference getCloserDifference(MouseEvent event, Difference previous, Difference next) {
+        Difference returnedDiff = next;
+        JTextComponent component = editorUI.getComponent();
+        if (component != null) {
+            BaseTextUI textUI = (BaseTextUI) component.getUI();
+            try {
+                Rectangle rec = textUI.modelToView(component, textUI.viewToModel(component, new Point(0, event.getY())));
+                if (rec != null && event.getY() < rec.getY() + rec.getHeight() / 2) {
+                    // previous difference is closer to the click
+                    returnedDiff = previous;
+                }
+            } catch (BadLocationException ex) {
+                // not interested, default next is returned
+            }
+        }
+        return returnedDiff;
     }
 
     void onDiff(Difference diff) {

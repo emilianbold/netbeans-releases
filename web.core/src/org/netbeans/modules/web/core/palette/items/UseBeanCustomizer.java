@@ -49,7 +49,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.JspPaletteUtilities;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -153,7 +153,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
             descriptor.setValid(false);
             return;
         }
-        if (JSPPaletteUtilities.idExists(jTextField2.getText(), beanData)) {
+        if (JspPaletteUtilities.idExists(jTextField2.getText(), beanData)) {
             statusLine.setErrorMessage(bundle.getString("Error_not_uniq_ID")); // NOI18N
             descriptor.setValid(false);
             return;
@@ -163,7 +163,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
             descriptor.setValid(false);
             return;
         }
-        if (!JSPPaletteUtilities.typeExists(target, jTextField1.getText())) {
+        if (!JspPaletteUtilities.typeExists(target, jTextField1.getText())) {
             statusLine.setErrorMessage(bundle.getString("Error_No_Such_class")); // NOI18N
             descriptor.setValid(false);
             return;

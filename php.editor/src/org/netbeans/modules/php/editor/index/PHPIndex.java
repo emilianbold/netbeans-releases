@@ -64,7 +64,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -116,7 +115,7 @@ public class PHPIndex {
 
     public static PHPIndex get(ParserResult info){
         // TODO: specify the claspath ids to improve performance and avoid conflicts
-        return get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP), Collections.<String>emptySet()));
+        return get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(), Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP), Collections.<String>emptySet()));
     }
 
     public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {
@@ -408,8 +407,15 @@ public class PHPIndex {
                 
                 if (!methods.containsKey(methodName) || className.equals(typeName)){
                     methods.put(methodName, method);
-                    if (currentFile != null && currentFile.equals(method.getFileObject())) {
-                        currentFileClasses.add(className);
+                    try {                        
+                        URI sourceURI = currentFile != null ? currentFile.getURL().toURI() : null;
+                        if (sourceURI != null && sourceURI.equals(URI.create(method.getFilenameUrl()))) {
+                            currentFileClasses.add(className);
+                        }
+                    } catch (FileStateInvalidException fileStateInvalidException) {
+                        Exceptions.printStackTrace(fileStateInvalidException);
+                    } catch (URISyntaxException uRISyntaxException) {
+                        Exceptions.printStackTrace(uRISyntaxException);
                     }
                 }
             }

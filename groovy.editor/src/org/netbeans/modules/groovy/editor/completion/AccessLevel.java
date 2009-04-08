@@ -130,7 +130,10 @@ public enum AccessLevel {
     public static Set<AccessLevel> create(ClassNode source, ClassNode type) {
         Set<AccessLevel> levels;
 
-        if (type.equals(source)) {
+        if (source == null) {
+            // may happen in GSP
+            levels = EnumSet.of(AccessLevel.PUBLIC);
+        } else if (type.equals(source)) {
             levels = EnumSet.allOf(AccessLevel.class);
         } else if (getPackageName(source).equals(getPackageName(type))) {
             levels = EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
@@ -147,11 +150,11 @@ public enum AccessLevel {
     public static Set<AccessLevel> update(Set<AccessLevel> levels, ClassNode source, ClassNode type) {
         HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(levels);
         // leav flag
-        if (!type.equals(source)) {
+        if (source == null || !type.equals(source)) {
             modifiedAccess.remove(AccessLevel.PRIVATE);
         }
 
-        if (!getPackageName(source).equals(getPackageName(type))) {
+        if (source == null || !getPackageName(source).equals(getPackageName(type))) {
             modifiedAccess.remove(AccessLevel.PACKAGE);
         } else {
             modifiedAccess.add(AccessLevel.PACKAGE);

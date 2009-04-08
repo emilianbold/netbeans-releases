@@ -79,6 +79,6 @@ class SVGComponentSourcePinPresenter extends FlowEventSourcePinPresenter {
 
     @Override
     protected DesignEventFilter getEventFilter() {
-        return super.getEventFilter().addParentFilter(getComponent(), 1, false);
+        return super.getEventFilter().setGlobal(Boolean.TRUE);
     }
 }

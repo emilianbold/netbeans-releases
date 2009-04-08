@@ -54,6 +54,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
 import org.openide.filesystems.FileObject;
@@ -140,7 +141,8 @@ public class ProjectCustomizerTest extends NbTestCase {
         
         return result;
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2398
     public void testCategoriesAreReclaimable() throws Exception {
         for (Reference<?> ref : runTestCategoriesAreReclaimable()) {
             assertGC("Is reclaimable", ref);

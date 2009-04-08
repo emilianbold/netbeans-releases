@@ -37,7 +37,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
 //    boolean ascending = true;
   int compares;
   protected TableModel model;
-  private static final boolean TRACE = Boolean.getBoolean("table.sorter.trace");
+  private static final boolean TRACE = Boolean.getBoolean("table.sorter.trace");//NOI18N
 
   public TableSorter() {
     indexes = new int[0]; // For consistency.
@@ -65,7 +65,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
     fireTableStructureChanged();
     fireTableChanged(new TableModelEvent(this));
     tablemodel.addTableModelListener(this);
-    if (TRACE) System.out.printf("Sorter: @%d setModel\n", hashCode());
+    if (TRACE) System.out.printf("Sorter: @%d setModel\n", hashCode());//NOI18N
     reallocateIndexes();
 
   }
@@ -228,7 +228,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
   }
 
   public void tableChanged(TableModelEvent e) {
-    if (TRACE) System.out.printf("Sorter: @%d tableChanged\n", hashCode());
+    if (TRACE) System.out.printf("Sorter: @%d tableChanged\n", hashCode());//NOI18N
     reallocateIndexes();
 
     fireTableChanged(e);
@@ -236,7 +236,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
 
   public synchronized void checkModel() {
         if (indexes.length != model.getRowCount()) {
-            if (TRACE) System.out.printf("Sorter: @%d not informed of a change in model.\n", hashCode());
+            if (TRACE) System.out.printf("Sorter: @%d not informed of a change in model.\n", hashCode());//NOI18N
             reallocateIndexes();
         }
     }

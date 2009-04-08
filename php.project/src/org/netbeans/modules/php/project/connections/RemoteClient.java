@@ -47,16 +47,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.php.project.connections.spi.RemoteClient.PathInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,6 +78,7 @@ import org.openide.windows.InputOutput;
  */
 public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
+    private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = AdvancedProperties.create(null, null, false, false);
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final Set<String> IGNORED_REMOTE_DIRS = new HashSet<String>(Arrays.asList(".", "..")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
@@ -83,10 +87,11 @@ public class RemoteClient implements Cancellable {
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
+    private static enum Operation { UPLOAD, DOWNLOAD, DELETE };
+
     private final RemoteConfiguration configuration;
-    private final InputOutput io;
+    private final AdvancedProperties properties;
     private final String baseRemoteDirectory;
-    private final boolean preservePermissions;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
     private volatile boolean cancelled = false;
 
@@ -94,49 +99,50 @@ public class RemoteClient implements Cancellable {
      * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.spi.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String, boolean)
      */
     public RemoteClient(RemoteConfiguration configuration) {
-        this(configuration, null, null, false);
+        this(configuration, DEFAULT_ADVANCED_PROPERTIES);
     }
 
     /**
      * Create a new remote client.
      * @param configuration {@link RemoteConfiguration remote configuration} of a connection.
-     * @param io {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
-     *           Displays all the commands received from server.
-     * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
-     *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
-     *                                      set as default base remote directory. Can be <code>null</code>.
-     * @param preservePermissions <code>true</code> if permissions should be preserved; please note that this is not supported for local
-     *                            files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
+     * @param properties advanced properties of a connection.
      */
-    public RemoteClient(RemoteConfiguration configuration, InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions) {
+    public RemoteClient(RemoteConfiguration configuration, AdvancedProperties properties) {
         assert configuration != null;
+        assert properties != null;
 
         this.configuration = configuration;
-        this.io = io;
-        this.preservePermissions = preservePermissions;
+        this.properties = properties;
 
         // base remote directory
-        StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
-        if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
-            if (!additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
+        StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
+        if (PhpProjectUtils.hasText(properties.additionalInitialSubdirectory)) {
+            if (!properties.additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
                 throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.SEPARATOR);
             }
-            baseDir.append(additionalInitialSubdirectory);
+            baseDirBuffer.append(properties.additionalInitialSubdirectory);
         }
-        baseRemoteDirectory = baseDir.toString().replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
+        String baseDir = baseDirBuffer.toString();
+        // #150646 - should not happen now, likely older nb project metadata
+        if (baseDir.length() > 1
+                && baseDir.endsWith(TransferFile.SEPARATOR)) {
+            baseDir = baseDir.substring(0, baseDir.length() - 1);
+        }
+
+        baseRemoteDirectory = baseDir.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
 
         assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("Remote client created with configuration: %s, base remote directory: %s, preserve permissions: %b",
-                    configuration, baseRemoteDirectory, preservePermissions));
+            LOGGER.fine(String.format("Remote client created with configuration: %s, advanced properties: %s, base remote directory: %s",
+                    configuration, properties, baseRemoteDirectory));
         }
 
 
         // remote client itself
         org.netbeans.modules.php.project.connections.spi.RemoteClient client = null;
         for (RemoteConnectionProvider provider : RemoteConnections.get().getConnectionProviders()) {
-            client = provider.getRemoteClient(configuration, io);
+            client = provider.getRemoteClient(configuration, properties.io);
             if (client != null) {
                 break;
             }
@@ -173,6 +179,26 @@ public class RemoteClient implements Cancellable {
 
     public void reset() {
         cancelled = false;
+    }
+
+    public boolean exists(TransferFile file) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Checking whether file %s exists", file));
+        cdBaseRemoteDirectory();
+        boolean exists = remoteClient.exists(file.getParentRelativePath(), file.getName());
+        LOGGER.fine(String.format("Exists: %b", exists));
+        return exists;
+    }
+
+    public boolean rename(TransferFile from, TransferFile to) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.fine(String.format("Moving file from %s to %s", from, to));
+        cdBaseRemoteDirectory();
+        boolean success = remoteClient.rename(from.getRelativePath(), to.getRelativePath());
+        LOGGER.fine(String.format("Success: %b", success));
+        return success;
     }
 
     public Set<TransferFile> prepareUpload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
@@ -288,7 +314,24 @@ public class RemoteClient implements Cancellable {
             }
 
             String fileName = file.getName();
-            String tmpFileName = fileName + REMOTE_TMP_NEW_SUFFIX;
+
+            int oldPermissions = -1;
+            if (properties.preservePermissions) {
+                oldPermissions = remoteClient.getPermissions(fileName);
+                LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
+            } else {
+                LOGGER.fine("Permissions are not preserved.");
+            }
+
+            String tmpFileName = null;
+            if (properties.uploadDirectly) {
+                LOGGER.fine("File will be uploaded directly.");
+                tmpFileName = fileName;
+            } else {
+                tmpFileName = fileName + REMOTE_TMP_NEW_SUFFIX;
+                LOGGER.fine("File will be uploaded using a temporary file.");
+            }
+
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Uploading file " + fileName + " => " + remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + tmpFileName);
             }
@@ -300,30 +343,26 @@ public class RemoteClient implements Cancellable {
                     if (remoteClient.storeFile(tmpFileName, is)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX));
+                            String f = file.getRelativePath() + (properties.uploadDirectly ? "" : REMOTE_TMP_NEW_SUFFIX);
+                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, f));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX));
+                        String f = file.getRelativePath() + (properties.uploadDirectly ? "" : REMOTE_TMP_NEW_SUFFIX);
+                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, f));
                     }
                 }
             } finally {
                 is.close();
                 if (success) {
-                    int oldPermissions = -1;
-                    if (preservePermissions) {
-                        oldPermissions = remoteClient.getPermissions(fileName);
-                        LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
-                    } else {
-                        LOGGER.fine("Permissions are not preserved.");
+                    if (!properties.uploadDirectly) {
+                        success = moveRemoteFile(tmpFileName, fileName);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
+                        }
                     }
 
-                    success = moveRemoteFile(tmpFileName, fileName);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
-                    }
-
-                    if (preservePermissions && success && oldPermissions != -1) {
+                    if (properties.preservePermissions && success && oldPermissions != -1) {
                         int newPermissions = remoteClient.getPermissions(fileName);
                         LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
                         if (oldPermissions != newPermissions) {
@@ -342,7 +381,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(fileName, true));
+                    transferFailed(transferInfo, file, getOperationFailureMessage(Operation.UPLOAD, fileName));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
@@ -436,13 +475,8 @@ public class RemoteClient implements Cancellable {
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
-                    StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
-                    if (file.getRelativePath() != TransferFile.CWD) {
-                        relativePath.append(TransferFile.SEPARATOR);
-                        relativePath.append(file.getRelativePath());
-                    }
-                    String relPath = relativePath.toString();
-                    for (RemoteFile child : remoteClient.listFiles(new PathInfo(baseRemoteDirectory, relPath))) {
+                    String relPath = getRemoteRelativePath(file);
+                    for (RemoteFile child : remoteClient.listFiles()) {
                         if (isVisible(child)) {
                             LOGGER.fine("File " + child + " added to download queue");
                             queue.offer(TransferFile.fromRemoteFile(child, baseRemoteDirectory, relPath));
@@ -586,7 +620,7 @@ public class RemoteClient implements Cancellable {
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
-                    transferFailed(transferInfo, file, getUploadDownloadFailureMessage(file.getName(), false));
+                    transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     boolean deleted = tmpLocalFile.delete();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
@@ -658,6 +692,104 @@ public class RemoteClient implements Cancellable {
         return new File(localFile, transferFile.getRelativePath(true));
     }
 
+    public Set<TransferFile> prepareDelete(FileObject baseLocalDirectory, FileObject... filesToDelete) throws RemoteException {
+        LOGGER.fine("Preparing files to delete => calling prepareUpload because in fact the same operation is done");
+        return prepareUpload(baseLocalDirectory, filesToDelete);
+    }
+
+    public TransferInfo delete(Set<TransferFile> filesToDelete) throws RemoteException {
+        assert filesToDelete != null;
+        assert filesToDelete.size() > 0 : "At least one file to upload must be specified";
+
+        ensureConnected();
+
+        final long start = System.currentTimeMillis();
+        TransferInfo transferInfo = new TransferInfo();
+
+        try {
+            // first, remove all the files
+            //  then remove _empty_ directories (motivation is to prevent data loss; somebody else could upload some file there)
+            Set<TransferFile> files = getFiles(filesToDelete);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Only files: %s => %s", filesToDelete, files));
+            }
+            delete(transferInfo, files);
+
+            Set<TransferFile> dirs = getDirectories(filesToDelete);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Only dirs: %s => %s", filesToDelete, dirs));
+            }
+            delete(transferInfo, dirs);
+
+            assert filesToDelete.size() == files.size() + dirs.size() : String.format("%s does not match files and dirs: %s %s", filesToDelete, files, dirs);
+        } finally {
+            transferInfo.setRuntime(System.currentTimeMillis() - start);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(transferInfo.toString());
+            }
+        }
+        return transferInfo;
+    }
+
+    private void delete(TransferInfo transferInfo, Set<TransferFile> filesToDelete) {
+        for (TransferFile file : filesToDelete) {
+            if (cancelled) {
+                LOGGER.fine("Delete cancelled");
+                break;
+            }
+
+            try {
+                deleteFile(transferInfo, file);
+            } catch (IOException exc) {
+                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                continue;
+            } catch (RemoteException exc) {
+                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                continue;
+            }
+        }
+    }
+
+    private void deleteFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
+        boolean success = false;
+        cdBaseRemoteDirectory();
+        if (file.isDirectory()) {
+            // folder => try to delete it but it can fail (most probably when it's not empty)
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Deleting directory: " + file);
+            }
+            success = remoteClient.deleteDirectory(file.getRelativePath());
+            LOGGER.fine("Folder deleted: " + success);
+        } else {
+            // file => simply delete it
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Deleting file: " + file);
+            }
+
+            success = remoteClient.deleteFile(file.getRelativePath());
+            LOGGER.fine("File deleted: " + success);
+        }
+
+        if (success) {
+            transferSucceeded(transferInfo, file);
+        } else {
+            String msg = null;
+            if (!remoteClient.exists(file.getParentRelativePath(), file.getName())) {
+                msg = NbBundle.getMessage(RemoteClient.class, "MSG_FileNotExists", file.getName());
+            } else {
+                // maybe non empty dir?
+                if (file.isDirectory()
+                        && cdBaseRemoteDirectory(file.getParentRelativePath(), false)
+                        && remoteClient.listFiles().size() > 0) {
+                    msg = NbBundle.getMessage(RemoteClient.class, "MSG_FolderNotEmpty", file.getName());
+                } else {
+                    msg = getOperationFailureMessage(Operation.DELETE, file.getName());
+                }
+            }
+            transferFailed(transferInfo, file, msg);
+        }
+    }
+
     private void transferSucceeded(TransferInfo transferInfo, TransferFile file) {
         transferInfo.addTransfered(file);
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -704,10 +836,24 @@ public class RemoteClient implements Cancellable {
         }
     }
 
-    private String getUploadDownloadFailureMessage(String fileName, boolean upload) {
+    private String getOperationFailureMessage(Operation operation, String fileName) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
-            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_CannotUploadFile" : "MSG_CannotDownloadFile", fileName);
+            String key = null;
+            switch (operation) {
+                case UPLOAD:
+                    key = "MSG_CannotUploadFile"; // NOI18N
+                    break;
+                case DOWNLOAD:
+                    key = "MSG_CannotDownloadFile"; // NOI18N
+                    break;
+                case DELETE:
+                    key = "MSG_CannotDeleteFile"; // NOI18N
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown operation type: " + operation);
+            }
+            message = NbBundle.getMessage(RemoteClient.class, key, fileName);
         }
         return message;
     }
@@ -876,5 +1022,90 @@ public class RemoteClient implements Cancellable {
             return fileName;
         }
         return fileName.substring(0, index);
+    }
+
+    private String getRemoteRelativePath(TransferFile file) {
+        StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
+        if (file.getRelativePath() != TransferFile.CWD) {
+            relativePath.append(TransferFile.SEPARATOR);
+            relativePath.append(file.getRelativePath());
+        }
+        return relativePath.toString();
+    }
+
+    private Set<TransferFile> getFiles(Set<TransferFile> all) {
+        Set<TransferFile> files = new HashSet<TransferFile>();
+        for (TransferFile file : all) {
+            if (file.isFile()) {
+                files.add(file);
+            }
+        }
+        return files;
+    }
+
+    private Set<TransferFile> getDirectories(Set<TransferFile> all) {
+        // we need to get longest paths first to be able to delete directories properly
+        //  (e.g. to have [a/b, a] and not [a, a/b])
+        Set<TransferFile> dirs = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
+            private final String SEPARATOR = Pattern.quote(TransferFile.SEPARATOR);
+            public int compare(TransferFile o1, TransferFile o2) {
+                int cmp = o2.getRelativePath().split(SEPARATOR).length - o1.getRelativePath().split(SEPARATOR).length;
+                // do not miss any item
+                return cmp != 0 ? cmp : 1;
+            }
+        });
+        for (TransferFile file : all) {
+            if (file.isDirectory()) {
+                dirs.add(file);
+            }
+        }
+        return dirs;
+    }
+
+    /**
+     * Advanced properties for a {@link RemoteClient}.
+     */
+    public static final class AdvancedProperties {
+        public final InputOutput io;
+        public final String additionalInitialSubdirectory;
+        public final boolean preservePermissions;
+        public final boolean uploadDirectly;
+
+        private AdvancedProperties(InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions, boolean uploadDirectly) {
+            this.io = io;
+            this.additionalInitialSubdirectory = additionalInitialSubdirectory;
+            this.preservePermissions = preservePermissions;
+            this.uploadDirectly = uploadDirectly;
+        }
+
+        /**
+         * Create advanced properties for a {@link RemoteClient}.
+         * @param io {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
+         *           Displays all the commands received from server.
+         * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
+         *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
+         *                                      set as default base remote directory. Can be <code>null</code>.
+         * @param preservePermissions <code>true</code> if permissions should be preserved; please note that this is not supported for local
+         *                            files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
+         * @param uploadDirectly whether to upload files <b>without</b> a temporary file. <b>Warning:</b> can be dangerous.
+         */
+        public static AdvancedProperties create(InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions, boolean uploadDirectly) {
+            return new AdvancedProperties(io, additionalInitialSubdirectory, preservePermissions, uploadDirectly);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("AdvancedProperties [ io: ");
+            sb.append(io);
+            sb.append(", additionalInitialSubdirectory: ");
+            sb.append(additionalInitialSubdirectory);
+            sb.append(", preservePermissions: ");
+            sb.append(preservePermissions);
+            sb.append(", uploadDirectly: ");
+            sb.append(uploadDirectly);
+            sb.append(" ]");
+            return sb.toString();
+        }
     }
 }

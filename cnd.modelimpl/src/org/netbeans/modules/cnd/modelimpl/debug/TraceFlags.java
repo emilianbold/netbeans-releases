@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 public class TraceFlags {
     public static final boolean TRACE_CPU_CPP = false;
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
+    public static final boolean TRACE_PARSER_PROGRESS = Boolean.getBoolean("cnd.parser.progress.trace"); // NOI18N
     public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace"); // NOI18N
     public static final boolean TRACE_PARSER_QUEUE_POLL = TRACE_PARSER_QUEUE || Boolean.getBoolean("cnd.parser.queue.trace.poll"); // NOI18N
     public static final boolean TRACE_CLOSE_PROJECT = DebugUtils.getBoolean("cnd.trace.close.project", false); // NOI18N
@@ -67,9 +68,6 @@ public class TraceFlags {
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
 
 
-    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", true);     // NOI18N
-    public static final boolean NO_HEADERS_REPARSE = DebugUtils.getBoolean("cnd.no.hdr.reparse", false); // NOI18N
-    
     /** 
      * swithces off parsing function bodies
      */
@@ -116,7 +114,6 @@ public class TraceFlags {
     public static final boolean CLOSE_AFTER_PARSE = DebugUtils.getBoolean("cnd.close.ide.after.parse", false); // NOI18N
     public static final int     CLOSE_TIMEOUT = Integer.getInteger("cnd.close.ide.timeout",0); // in seconds // NOI18N
 
-    public static final boolean USE_DEEP_REPARSING = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing", true); // NOI18N
     public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false); // NOI18N
     public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.optimistic", false); // NOI18N
 

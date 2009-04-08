@@ -60,13 +60,19 @@ made subject to such option by the copyright holder.
         <copy file="windows/GdbKillProc.exe" todir="${cluster}/bin"/>
     </target>
 
-    <target name="test-unit-dep-build" depends="projectized-common.test-unit-dep-build">
+    <target name="test-unit">
         <copy todir="build/testapps">
             <fileset dir="test/testapps"/>
         </copy>
-        <exec executable="make" dir="build/testapps">
+        <!--
+             dkonecny 1.4.2009: make seems to be missing on Solaris builder of
+             web-main team repo. hotfixing this to make build pass. please improve
+             this script to work on all platforms
+        -->
+        <exec executable="make" dir="build/testapps" failifexecutionfails="no">
             <arg value="all"/>
         </exec>
+        <ant target="projectized-common.test-unit" />
     </target>
 
 </project>

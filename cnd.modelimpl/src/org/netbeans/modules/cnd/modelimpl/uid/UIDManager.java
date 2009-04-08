@@ -73,11 +73,11 @@ public class UIDManager {
      * @exception NullPointerException If the <code>uid</code> parameter
      *                                 is <code>null</code>.
      */
-    public final CsmUID getSharedUID(CsmUID uid) {
+    public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
         if (uid == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }
-        CsmUID outUID = null;
+        CsmUID<T> outUID = null;
         synchronized (lock) {
             outUID = storage.getSharedUID(uid);
         }
@@ -92,7 +92,7 @@ public class UIDManager {
 
     private static final class UIDStorage {
 
-        private final WeakSharedSet<CsmUID>[] instances;
+        private final WeakSharedSet<CsmUID<?>>[] instances;
         private final int sliceNumber; // primary number for better distribution
         private final int initialCapacity;
 
@@ -100,14 +100,14 @@ public class UIDManager {
             this.sliceNumber = sliceNumber;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<CsmUID>[] ar = new WeakSharedSet[sliceNumber];
+            WeakSharedSet<CsmUID<?>>[] ar = new WeakSharedSet[sliceNumber];
             for (int i = 0; i < ar.length; i++) {
-                ar[i] = new WeakSharedSet<CsmUID>(initialCapacity);
+                ar[i] = new WeakSharedSet<CsmUID<?>>(initialCapacity);
             }
             instances = ar;
         }
 
-        private WeakSharedSet<CsmUID> getDelegate(CsmUID uid) {
+        private WeakSharedSet<CsmUID<?>> getDelegate(CsmUID<?> uid) {
             int index = uid.hashCode() % sliceNumber;
             if (index < 0) {
                 index += sliceNumber;
@@ -115,8 +115,9 @@ public class UIDManager {
             return instances[index];
         }
 
-        public final CsmUID getSharedUID(CsmUID uid) {
-            return getDelegate(uid).addOrGet(uid);
+        @SuppressWarnings("unchecked")
+        public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
+            return (CsmUID<T>) getDelegate(uid).addOrGet(uid);
         }
 
         public final void dispose() {
