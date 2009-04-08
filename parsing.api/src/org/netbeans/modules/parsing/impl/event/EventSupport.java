@@ -310,7 +310,7 @@ public final class EventSupport {
         }
                 
         public void editorRegistryChanged() {
-            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
+            final JTextComponent editor = EditorRegistry.focusedComponent();
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
