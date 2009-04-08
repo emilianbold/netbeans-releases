@@ -50,6 +50,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ155578() throws Exception {
+        // IZ155578: Overloaded functions with tpedef'ed argument types break Code Assistance
+        performTest("iz155578.cpp", 6, 20, "iz155578.cpp", 6, 5);
+        performTest("iz155578.cpp", 7, 20, "iz155578.cpp", 7, 5);
+    }
+
     public void testIZ159307() throws Exception {
         // IZ#159307: Wrong recognition of local constructor as global function
         performTest("iz159307.cpp", 13, 12, "iz159307.cpp", 7, 9);

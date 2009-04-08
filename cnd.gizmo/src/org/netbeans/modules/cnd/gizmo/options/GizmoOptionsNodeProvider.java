@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,22 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.runprofiles;
+package org.netbeans.modules.cnd.gizmo.options;
 
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
-public class RunProfileNodeProvider implements CustomizerNodeProvider {
+public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
     /**
      * Creates an instance of a customizer node
@@ -68,40 +66,54 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
     }
 
     public CustomizerNode createProfileNode() {
-        return new RunProfileCustomizerNode(
-                "Run", // NOI18N
-                getString("RUNNING"),
+        return new GizmoOptionsCustomizerNode(
+                "Profile", // NOI18N
+                getString("ProfilNodeTxt"),
                 null);
     }
 
-    static class RunProfileCustomizerNode extends CustomizerNode {
+    class GizmoOptionsCustomizerNode extends CustomizerNode {
 
-        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+        public GizmoOptionsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
         }
 
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-            boolean isRemote = false;
-            if (configuration instanceof MakeConfiguration) {
-                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
-            }
-            return runProfile != null ? runProfile.getSheet(isRemote) : null;
-        //return configurationDescriptor.getSheet(project, configuration);
+            GizmoOptions gizmoOptions = GizmoOptions.getOptions(configuration);
+            return createSheet(gizmoOptions);
         }
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsRunning"); // NOI18N
+            return new HelpCtx("ProjectPropsGizmo"); // NOI18N // FIXUP: need real help tag from Ann
         }
     }
+
+
+    private Sheet createSheet(GizmoOptions gizmoOptions) {
+        Sheet sheet = new Sheet();
+
+        Sheet.Set set = new Sheet.Set();
+        set.setName("General"); // NOI18N
+        set.setDisplayName(getString("GeneralName"));
+        
+        set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, "profileonrun", getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, "cpu", getString("cpu_txt"), getString("cpu_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, "memory", getString("memory_txt"), getString("memory_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getSynchronization(), true, "synchronization", getString("synchronization_txt"), getString("synchronization_help"))); // NOI18N
+        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, "dataprovider", getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N
+        
+        sheet.put(set);
+        return sheet;
+    }
+
     /** Look up i18n strings here */
     private ResourceBundle bundle;
 
     protected String getString(String s) {
         if (bundle == null) {
-            bundle = NbBundle.getBundle(RunProfileNodeProvider.class);
+            bundle = NbBundle.getBundle(GizmoOptionsNodeProvider.class);
         }
         return bundle.getString(s);
     }

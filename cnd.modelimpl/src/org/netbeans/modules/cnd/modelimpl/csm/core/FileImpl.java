@@ -594,7 +594,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void onDispose() {
         projectLock.writeLock().lock();
         try {
-            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            if (projectRef == null) {
                 // restore container from it's UID
                 this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;

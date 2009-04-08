@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,21 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.runprofiles;
+package org.netbeans.modules.cnd.gizmo.options;
 
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
-public class RunProfileProvider implements ConfigurationAuxObjectProvider {
-
+public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object
      */
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        RunProfile runProfile = new RunProfile(baseDir, pcs);
-        return runProfile;
+        GizmoOptions gizmoOptions = new GizmoOptions(baseDir, pcs);
+        return gizmoOptions;
     }
 }

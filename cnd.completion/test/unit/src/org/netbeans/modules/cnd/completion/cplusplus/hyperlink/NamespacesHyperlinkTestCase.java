@@ -52,6 +52,13 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
 
+    public void testTypeIdName() throws Exception {
+        // IZ#162160: typeid(obj).name is not resolved
+        performTest("typeid.cpp", 24, 25, "typeinfo.h", 21, 5);
+        performTest("typeid.cpp", 25, 30, "typeinfo.h", 21, 5);
+        performTest("typeid.cpp", 25, 40, "typeinfo.h", 21, 5);
+    }
+
     public void testUsingInOtherNsDef() throws Exception {
         // IZ#159223: Unresolved ids from namespace with usings
         performTest("using_in_ns.cpp", 11, 24, "using_in_ns.cpp", 3, 9); // AA in struct B : public AA {
