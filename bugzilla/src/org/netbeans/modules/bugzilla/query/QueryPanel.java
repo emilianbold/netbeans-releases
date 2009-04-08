@@ -44,6 +44,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.DefaultComboBoxModel;
@@ -56,6 +60,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
@@ -65,7 +70,8 @@ import org.openide.util.ImageUtilities;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class QueryPanel extends javax.swing.JPanel {
+public class QueryPanel extends javax.swing.JPanel implements FocusListener {
+
     final ExpandablePanel byText;
     final ExpandablePanel byDetails;
     final ExpandablePanel byPeople;
@@ -140,6 +146,50 @@ public class QueryPanel extends javax.swing.JPanel {
         saveErrorLabel.setVisible(false);
 
         filterComboBox.setRenderer(new FilterCellRenderer());
+
+        bugAssigneeCheckBox.addFocusListener(this);
+        cancelChangesButton.addFocusListener(this);
+        ccCheckBox.addFocusListener(this);
+        changedFromTextField.addFocusListener(this);
+        changedList.addFocusListener(this);
+        changedToTextField.addFocusListener(this);
+        commentComboBox.addFocusListener(this);
+        commentTextField.addFocusListener(this);
+        commenterCheckBox.addFocusListener(this);
+        componentList.addFocusListener(this);
+        filterComboBox.addFocusListener(this);
+        gotoIssueButton.addFocusListener(this);
+        idTextField.addFocusListener(this);
+        keywordsButton.addFocusListener(this);
+        keywordsComboBox.addFocusListener(this);
+        keywordsTextField.addFocusListener(this);
+        modifyButton.addFocusListener(this);
+        newValueTextField.addFocusListener(this);
+        peopleComboBox.addFocusListener(this);
+        peopleTextField.addFocusListener(this);
+        priorityList.addFocusListener(this);
+        productList.addFocusListener(this);
+        queryNameTextField.addFocusListener(this);
+        refreshButton.addFocusListener(this);
+        refreshCheckBox.addFocusListener(this);
+        removeButton.addFocusListener(this);
+        reporterCheckBox.addFocusListener(this);
+        resolutionList.addFocusListener(this);
+        saveButton.addFocusListener(this);
+        saveChangesButton.addFocusListener(this);
+        searchButton.addFocusListener(this);
+        seenButton.addFocusListener(this);
+        severityList.addFocusListener(this);
+        statusList.addFocusListener(this);
+        summaryComboBox.addFocusListener(this);
+        summaryTextField.addFocusListener(this);
+        tablePanel.addFocusListener(this);
+        tableSummaryLabel.addFocusListener(this);
+        urlTextField.addFocusListener(this);
+        urlToggleButton.addFocusListener(this);
+        versionList.addFocusListener(this);
+        webButton.addFocusListener(this);
+
         validate();
         repaint();
     }
@@ -1231,6 +1281,23 @@ public class QueryPanel extends javax.swing.JPanel {
 
     void setLastRefresh(String lastRefresh) {
         lastRefreshDateLabel.setText(lastRefresh);
+    }
+
+    public void focusGained(FocusEvent e) {
+        Component c = e.getComponent();
+        if(c instanceof JComponent) {
+            Point p = SwingUtilities.convertPoint(c.getParent(), c.getLocation(), QueryPanel.this);
+            final Rectangle r = new Rectangle(p, c.getSize());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    QueryPanel.this.scrollRectToVisible(r);
+                }
+            });
+        }
+    }
+
+    public void focusLost(FocusEvent e) {
+        // do nothing
     }
 
     class ExpandablePanel {
