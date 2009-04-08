@@ -1613,7 +1613,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             IfTree iff = (IfTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), iff.getCondition()) <= env.getOffset()) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, iff, env.getOffset());
-                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                if (last != null && (last.token().id() == JavaTokenId.RPAREN || last.token().id() == JavaTokenId.ELSE)) {
                     localResult(env);
                     addKeywordsForStatement(env);
                 }

@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.modules.java.source.ActivatedDocumentListener;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -132,7 +131,6 @@ public final class JavaDataObject extends MultiDataObject {
                 public void save() throws java.io.IOException {
                     ((JavaEditorSupport)findCloneableOpenSupport()).saveDocument();
                     getDataObject().setModified(false);
-                    ActivatedDocumentListener.removeFromModified(getDataObject().getPrimaryFile());
                 }
             }
             
@@ -161,7 +159,6 @@ public final class JavaDataObject extends MultiDataObject {
                     javaData.getCookieSet().add(this.saveCookie);
                     javaData.setModified(true);
                 }
-                ActivatedDocumentListener.addToModified(getDataObject().getPrimaryFile());
             }
             
             public void removeSaveCookie() {
@@ -171,7 +168,6 @@ public final class JavaDataObject extends MultiDataObject {
                     javaData.setModified(false);
                 }
 
-                ActivatedDocumentListener.addToModified(getDataObject().getPrimaryFile());
             }
         }
         
@@ -201,39 +197,6 @@ public final class JavaDataObject extends MultiDataObject {
         public @Override boolean close(boolean ask) {
             return super.close(ask);
         }
-
-        @Override
-        protected StyledDocument createStyledDocument(EditorKit kit) {
-            final StyledDocument document = super.createStyledDocument(kit);
-            document.addDocumentListener(new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) {
-                    updated();
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    updated();
-                }
-                private void updated() {
-                    Object sourceProperty = document.getProperty(Document.StreamDescriptionProperty);
-
-                    if (!(sourceProperty instanceof DataObject))
-                        return ;
-
-                    DataObject source = (DataObject) sourceProperty;
-
-                    if (source == null)
-                        return ;
-
-                    FileObject file = source.getPrimaryFile();
-
-                    if (file != null && DataObject.getRegistry().getModifiedSet().contains(source)) {
-                        ActivatedDocumentListener.addToModified(file);
-                    }
-                }
-                public void changedUpdate(DocumentEvent e) {}
-            });
-            return document;
-        }
-        
     }
     
     private static final class JavaEditor extends CloneableEditor {
