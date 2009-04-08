@@ -39,6 +39,7 @@
 
 package org.netbeans.api.extexecution;
 
+import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
@@ -95,6 +96,8 @@ public final class ExecutionDescriptor {
 
     private final String optionsPath;
 
+    private final Charset charset;
+
     /**
      * Creates the new descriptor. All properties are initalized to
      * <code>null</code> or <code>false</code>.
@@ -120,6 +123,7 @@ public final class ExecutionDescriptor {
         this.inputOutput = data.inputOutput;
         this.rerunCondition = data.rerunCondition;
         this.optionsPath = data.optionsPath;
+        this.charset = data.charset;
     }
 
     /**
@@ -518,7 +522,7 @@ public final class ExecutionDescriptor {
     }
 
     /**
-     * Returns a descriptor with configured options path. If not configured
+     * Returns a descriptor with configured options path. If configured
      * value is not <code>null</code> the {@link ExecutionService} will
      * display the button in the output tab displaying the proper options
      * when pressed.
@@ -546,6 +550,35 @@ public final class ExecutionDescriptor {
 
     String getOptionsPath() {
         return optionsPath;
+    }
+
+    /**
+     * Returns a descriptor with configured charset. If configured
+     * value is not <code>null</code> the {@link ExecutionService} will
+     * use the given charset to decode the process streams. When
+     * <code>null</code> the platform default will be used.
+     * <p>
+     * Note that in the most common scenario of execution of OS native
+     * process you shouldn't need to set the charset. The platform default
+     * (which is the default used) is just the right choice.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param charset charset, <code>null</code> allowed
+     * @return this descriptor with configured charset
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor charset(@NullAllowed Charset charset) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.charset(charset));
+    }
+
+    Charset getCharset() {
+        return charset;
     }
 
     /**
@@ -642,6 +675,8 @@ public final class ExecutionDescriptor {
 
         private String optionsPath;
 
+        private Charset charset;
+
         public DescriptorData() {
             super();
         }
@@ -663,6 +698,7 @@ public final class ExecutionDescriptor {
             this.inputOutput = descriptor.inputOutput;
             this.rerunCondition = descriptor.rerunCondition;
             this.optionsPath = descriptor.optionsPath;
+            this.charset = descriptor.charset;
         }
 
         public DescriptorData inputOutput(InputOutput io) {
@@ -745,5 +781,9 @@ public final class ExecutionDescriptor {
             return this;
         }
 
+        public DescriptorData charset(Charset charset) {
+            this.charset = charset;
+            return this;
+        }
     }
 }

@@ -1,9 +1,9 @@
-Name: Bugzilla Connector
-Version: 3.0.1
-License: EPL
-OSR: ?
+Name: Mylyn Commons library
+Version: 3.0.5
+License: EPL-v10
+OSR: 10108
 Origin: http://www.eclipse.org/mylyn/
-Description: Java connector to Bugzilla issue tracking system
+Description: Mylyn Commons library
 
 Eclipse Public License - v 1.0
 

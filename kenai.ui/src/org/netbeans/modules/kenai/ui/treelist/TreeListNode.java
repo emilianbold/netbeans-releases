@@ -236,7 +236,7 @@ public abstract class TreeListNode {
         return expanded && isExpandable();
     }
 
-    final void setExpanded( boolean expanded ) {
+    public final void setExpanded( boolean expanded ) {
         if( !isExpandable() )
             throw new IllegalStateException();
         if( this.expanded == expanded )

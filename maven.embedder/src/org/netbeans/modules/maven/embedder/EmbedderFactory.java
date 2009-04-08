@@ -87,6 +87,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
 import org.netbeans.modules.maven.embedder.exec.NBBuildPlanner;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -98,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -114,6 +116,7 @@ public final class EmbedderFactory {
     private static SettingsFileListener fileListener = new SettingsFileListener();
     private static Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
+
     /** Creates a new instance of EmbedderFactory */
     private EmbedderFactory() {
     }
@@ -125,6 +128,21 @@ public final class EmbedderFactory {
         project = null;
         wasReset = true;
     }
+
+    private static void setLocalRepoPreference(Configuration req) {
+        Preferences prefs = NbPreferences.root().node("org/netbeans/modules/maven"); //NOI18N
+        String localRepo = prefs.get("localRepository", null); //NOI18N
+        if (localRepo != null) {
+            File file = new File(localRepo);
+            if (file.exists() && file.isDirectory()) {
+                req.setLocalRepository(file);
+            } else if (!file.exists()) {
+                file.mkdirs();
+                req.setLocalRepository(file);
+            }
+        }
+    }
+
 
     public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
         MavenEmbedder projectEmbedder;
@@ -141,6 +159,7 @@ public final class EmbedderFactory {
         if (projectEmbedder == null) {
             Configuration req = new DefaultConfiguration();
             req.setClassLoader(EmbedderFactory.class.getClassLoader());
+            setLocalRepoPreference(req);
            
             //TODO remove explicit activation
             req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
@@ -241,6 +260,7 @@ public final class EmbedderFactory {
     public static MavenEmbedder createOnlineEmbedder() {
         Configuration req = new DefaultConfiguration();
         req.setClassLoader(EmbedderFactory.class.getClassLoader());
+        setLocalRepoPreference(req);
 
         //TODO remove explicit activation
         req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
@@ -367,6 +387,7 @@ public final class EmbedderFactory {
         Configuration req = new DefaultConfiguration();
         req.setClassWorld(world);
         req.setMavenEmbedderLogger(logger);
+        setLocalRepoPreference(req);
 
         //TODO remove explicit activation
         req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N

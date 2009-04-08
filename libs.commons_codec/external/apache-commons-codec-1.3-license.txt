@@ -1,5 +1,5 @@
 Name: Apache Jakarta Http client
-Version: 3.1
+Version: 1.3
 License: Apache-2.0
 OSR: 5465
 Description: Http client

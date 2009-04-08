@@ -68,14 +68,15 @@ public class BeanRunConfig implements RunConfig {
     private List<String> goals;
     private String executionName;
     private Properties properties;
+    //for these delegate to default options for defaults.
     private boolean showDebug = MavenSettings.getDefault().isShowDebug();
     private boolean showError = MavenSettings.getDefault().isShowErrors();
-    private Boolean offline;
+    private Boolean offline = MavenSettings.getDefault().isOffline();
+    private boolean updateSnapshots = MavenSettings.getDefault().isUpdateSnapshots();
+    private boolean interactive = MavenSettings.getDefault().isInteractive();
     private List<String> activate;
-    private boolean updateSnapshots = false;
     private boolean recursive = true;
     private String taskName;
-    private boolean interactive = true;
     private RunConfig parent;
     private String actionName;
     private FileObject selectedFO;

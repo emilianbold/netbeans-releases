@@ -89,7 +89,6 @@ public final class AddCast implements ErrorRule<Void> {
     private static final Set<String> ERROR_CODES = new HashSet<String>(Arrays.asList(
             "compiler.err.prob.found.req", // NOI18N
             "compiler.err.cant.apply.symbol", // NOI18N
-            "compiler.err.cant.resolve.location", // NOI18N
             "compiler.err.cant.resolve.location.args")); // NOI18N
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, Tree[] leaf) {

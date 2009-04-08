@@ -87,6 +87,7 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
+import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
@@ -255,7 +256,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            req.setProperty("netbeans.execution", "true"); //NOI18N
+            req.setProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = embedder.readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
@@ -293,6 +294,17 @@ public final class NbMavenProjectImpl implements Project {
         return toRet;
     }
 
+    //#158700
+    private Properties createSystemPropsForProjectLoading() {
+        Properties props = new Properties();
+        props.setProperty("netbeans.execution", "true"); //NOI18N
+        EmbedderFactory.fillEnvVars(props);
+        props.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
+        //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
+        // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
+        return props;
+    }
+
     /**
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
      * when one the pom files have changed.
@@ -312,7 +324,7 @@ public final class NbMavenProjectImpl implements Project {
                 // that will not be used in current pom anyway..
                 // #135070
                 req.setRecursive(false);
-                req.setProperty("netbeans.execution", "true"); //NOI18N
+                req.setProperties(createSystemPropsForProjectLoading());
                 MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
                 project = res.getProject();
                 if (res.hasExceptions()) {
