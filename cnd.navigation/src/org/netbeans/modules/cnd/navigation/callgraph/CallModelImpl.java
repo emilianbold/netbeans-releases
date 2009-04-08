@@ -205,7 +205,7 @@ public class CallModelImpl implements CallModel {
                         if (CsmKindUtilities.isFunction(o) &&
                             !CsmKindUtilities.isFunction(r.getOwner())){
                             o = getFunctionDeclaration((CsmFunction)o);
-                            if (!set.containsKey(o)) {
+                            if (!set.containsKey((CsmFunction)o)) {
                                 set.put((CsmFunction)o, r);
                             }
                         }
@@ -273,7 +273,7 @@ public class CallModelImpl implements CallModel {
             } else if (CsmKindUtilities.isClassifier(element)) {
                 String name = ((CsmClassifier) element).getName().toString();
                 if (name.length() == 0 && (element instanceof CsmCompoundClassifier)) {
-                    Collection list = ((CsmCompoundClassifier) element).getEnclosingTypedefs();
+                    Collection<CsmTypedef> list = ((CsmCompoundClassifier) element).getEnclosingTypedefs();
                     if (list.size() > 0) {
                         return null;
                     }

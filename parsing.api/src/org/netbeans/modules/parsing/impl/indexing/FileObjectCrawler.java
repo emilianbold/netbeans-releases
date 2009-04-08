@@ -96,13 +96,13 @@ public class FileObjectCrawler extends Crawler {
                 collect(fo.getChildren(), root, cache, supportedMimeTypes);
             } else {
                 final String mime = fo.getMIMEType();
-                boolean ignore = "content/unknown".equals(mime); //NOI18N
+//                boolean ignore = "content/unknown".equals(mime); //NOI18N
+//
+//                if (!ignore && supportedMimeTypes != null) {
+//                    ignore = !supportedMimeTypes.contains(mime);
+//                }
 
-                if (!ignore && supportedMimeTypes != null) {
-                    ignore = !supportedMimeTypes.contains(mime);
-                }
-
-                if (!ignore) {
+                if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
                         indexable = new LinkedList<Indexable>();
