@@ -423,6 +423,11 @@ final class QueryTopComponent extends TopComponent
         if(query != null) {
             query.getController().opened();
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                repositoryComboBox.requestFocus();
+            }
+        });
     }
 
     @Override
