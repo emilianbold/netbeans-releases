@@ -89,6 +89,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     final PhpProjectProperties properties;
     String originalEncoding;
     boolean notified;
+    boolean visible;
     private String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
@@ -147,6 +148,18 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
         // check init values
         validateFields();
+    }
+
+    @Override
+    public void addNotify() {
+        visible = true;
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        visible = false;
+        super.removeNotify();
     }
 
     private void initEncoding() {
@@ -232,6 +245,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     void validateFields() {
+        if (!visible) {
+            // #160249
+            category.setValid(true);
+            return;
+        }
         if (!copyFilesVisual.getState()) {
             // document roots not read yet
             category.setValid(false);

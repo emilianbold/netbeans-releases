@@ -382,9 +382,11 @@ public final class ProjectEar extends J2eeApplicationProvider
                             null,ioe);
                     continue;
                 }
-                String modName = modArchive.getNameExt();
-                long modSize = modArchive.getSize();
-                filter.add(modName+"."+modSize);        // NOI18N
+                if (modArchive != null) {
+                    String modName = modArchive.getNameExt();
+                    long modSize = modArchive.getSize();
+                    filter.add(modName+"."+modSize);        // NOI18N
+                }
             }
             
             ArrayList<FileObject> filteredContent = new ArrayList<FileObject>(5);

@@ -273,6 +273,9 @@ introduced by support for multiple source roots. -jglick
                         <isfalse value="${{directory.deployment.supported}}"/>
                     </and>
                 </condition>
+                <condition property="do.tmp.war.package">
+                    <isfalse value="${{directory.deployment.supported}}"/>
+                </condition>
                 
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
                 
@@ -1130,6 +1133,7 @@ exists or setup the property manually. For example like this:
             
             <target name="do-ear-dist">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.tmp.war.package</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.web.dir}}/META-INF/MANIFEST.MF">
