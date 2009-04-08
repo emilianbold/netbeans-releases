@@ -458,9 +458,4 @@ public class ErrorHintsTest extends HintsTestBase {
         performTest("org.netbeans.test.java.hints.MakeClassAbstract3", "abstract", 3, 1);
     }
     
-    @Override
-    protected boolean createCaches() {
-        return false;
-    }
-    
 }

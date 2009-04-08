@@ -452,6 +452,7 @@ public class EditorContextImpl extends EditorContext {
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.CPLUSPLUS_MIME_TYPE, l);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.HEADER_MIME_TYPE, l);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.ASM_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.FORTRAN_MIME_TYPE, l);
     }
     
     /**

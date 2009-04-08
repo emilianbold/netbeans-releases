@@ -43,13 +43,11 @@ package org.openide.explorer.view;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.ImageIcon;
-import javax.swing.JTable;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.outline.CheckRenderDataProvider;
 import org.netbeans.swing.outline.Outline;
-import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.nodes.Node;
 
 /**
@@ -57,9 +55,9 @@ import org.openide.nodes.Node;
  * @author David Strupl
  */
 class NodeRenderDataProvider implements CheckRenderDataProvider {
-    
+
     private Outline table;
-    
+
     /** Creates a new instance of NodeRenderDataProvider */
     public NodeRenderDataProvider(Outline table) {
         this.table = table;
@@ -74,7 +72,10 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
         if (n == null) {
             throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + o + " of class " + o.getClass().getName());
         }
-        return n.getDisplayName();
+        String text = n.getHtmlDisplayName();
+        if( null == text )
+            text = n.getDisplayName();
+        return text;
     }
 
     public java.awt.Color getForeground(Object o) {
@@ -117,7 +118,11 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
     }
 
     public boolean isHtmlDisplayName(Object o) {
-        return false;
+        Node n = Visualizer.findNode(o);
+        if (n == null) {
+            throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + o + " of class " + o.getClass().getName());
+        }
+        return null != n.getHtmlDisplayName();
     }
 
     private CheckableNode getCheckCookie(Object o) {

@@ -634,13 +634,14 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         String val = v.substring(pos + 1, v.length() - 1);
                         int start = 0;
                         int end = GdbUtils.findNextComma(val, 0);
+                        int anon = 1;
                         while (end != -1) {
                             String vfrag = val.substring(start, end).trim();
-                            addField(completeFieldDefinition(this, map, vfrag));
+                            anon = completeFieldDefinition(this, map, vfrag, anon);
                             start = end + 1;
                             end = GdbUtils.findNextComma(val, end + 1);
                         }
-                        addField(completeFieldDefinition(this, map, val.substring(start).trim()));
+                        completeFieldDefinition(this, map, val.substring(start).trim(), anon);
                     } else {
                         log.fine("AV.createChildren: 0 length value for " + getFullName(false));
                     }
@@ -689,75 +690,65 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     /**
      * Complete and create the field information. Its OK to return null because addField
      * ignores it.
+     * @return new counter of the anonymous elements
      */
-    private static AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info) {
+    private int completeFieldDefinition(AbstractVariable parent, Map<String, Object> map, String info, int anon_count) {
         if (info.charAt(0) == '{') { // we've got an anonymous class/struct/union...
-            int count = 0;
-            try {
-                count = Integer.parseInt((String) map.get("<anon-count>")); // NOI18N
-            } catch (NumberFormatException nfe) {
-                // do nothing
-            }
-            info = info.substring(1, info.length() - 1);
-            for (int i = 1; i <= count; i++) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> m = (Map<String, Object>) map.get("<anonymous" + i + ">"); // NOI18N
-                int start = 0;
-                int end = GdbUtils.findNextComma(info, 0);
-                while (end != -1) {
-                    String vfrag = info.substring(start, end).trim();
-                    parent.addField(completeFieldDefinition(parent, m, vfrag));
-                    start = end + 1;
-                    end = GdbUtils.findNextComma(info, end + 1);
-                }
-                parent.addField(completeFieldDefinition(parent, m, info.substring(start).trim()));
+            @SuppressWarnings("unchecked")
+            Map<String, Object> typeMap = (Map<String, Object>) map.get(TypeInfo.ANONYMOUS_PREFIX + anon_count + ">"); // NOI18N
+            if (typeMap != null) {
+                String fType = (String) typeMap.get(TypeInfo.NAME);
+                addField(new AbstractField(parent, "", fType, info)); // NOI18N
+                return ++anon_count;
+            } else {
+                log.warning("GdbDebugger.completeFieldDefinition: Missing type information for " + info);
             }
         } else {
-            String name, type, value;
+            String fName, fType, fValue;
             int pos = info.indexOf('=');
             if (pos != -1) {
                 if (info.charAt(0) == '<') {
-                    name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
-                    type = info.substring(1, pos - 2).trim();
-                    value = info.substring(pos + 1).trim();
-                    if (type.length() == 0) {
+                    fName = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
+                    fType = info.substring(1, pos - 2).trim();
+                    fValue = info.substring(pos + 1).trim();
+                    if (fType.length() == 0) {
                         // I think this is handling a gdb bug. Its hard to say because the exact response
                         // from gdb isn't well documented. In any case, this is triggered when the value
                         // of a superclass is an empty string (<> = {...}). Since we've parsed the super
                         // class already, I'm assuming single inheritance and taking the super from the map.
-                        type = (String) map.get("<super1>"); // NOI18N
+                        fType = (String) map.get(TypeInfo.SUPER_PREFIX + "1>"); // NOI18N
                     }
-                    if (name.startsWith("_vptr")) { // NOI18N
-                        return null;
+                    if (fName.startsWith("_vptr")) { // NOI18N
+                        return anon_count;
                     }
                 } else {
-                    name = info.substring(0, pos - 1).trim();
-                    value = info.substring(pos + 1).trim();
-                    if (name.startsWith("_vptr")) { // NOI18N
-                        return null;
+                    fName = info.substring(0, pos - 1).trim();
+                    fValue = info.substring(pos + 1).trim();
+                    if (fName.startsWith("_vptr")) { // NOI18N
+                        return anon_count;
                     }
-                    Object o = map.get(name);
+                    Object o = map.get(fName);
                     if (o instanceof String) {
-                        type = o.toString();
+                        fType = o.toString();
                     } else if (o instanceof Map) {
-                        type = (String) ((Map) o).get("<name>"); // NOI18N
-			if (type == null) {
-			    log.warning("GdbDebugger.completeFieldDefinition: Missing <name> from map");
-			    return null; // FIXME (See IZ 157133)
+                        fType = (String) ((Map) o).get(TypeInfo.NAME);
+			if (fType == null) {
+			    log.warning("GdbDebugger.completeFieldDefinition: Missing " + TypeInfo.NAME + " from map");
+			    return anon_count; // FIXME (See IZ 157133)
 			}
-                    } else if (isNumber(value)) {
-                        type = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else if (isNumber(fValue)) {
+                        fType = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {
-                        log.warning("Cannot determine field type for " + name); // NOI18N
-                        return null;
+                        log.warning("Cannot determine field type for " + fName); // NOI18N
+                        return anon_count;
                     }
                 }
-                return new AbstractField(parent, name, type, value);
-            } else if (info.trim().equals("<No data fields>")) { // NOI18N
-                return new AbstractField(parent, "", "", info.trim()); // NOI18N
+                addField(new AbstractField(parent, fName, fType, fValue));
+            } else if (info.trim().equals(TypeInfo.NO_DATA_FIELDS)) { // NOI18N
+                addField(new AbstractField(parent, "", "", info.trim())); // NOI18N
             }
         }
-        return null;
+        return anon_count;
     }
 
     private static void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
@@ -991,7 +982,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      *
      * @parameter field A field to add.
      */
-    public void addField(Field field) {
+    private void addField(Field field) {
         if (field != null) {
             int n = fields.length;
             Field[] fv = new Field[n + 1];

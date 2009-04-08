@@ -53,6 +53,11 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class TypeInfo {
+    public static final String ANONYMOUS_PREFIX = "<anonymous";  // NOI18N
+    public static final String NAME = "<name>";  // NOI18N
+    public static final String NO_DATA_FIELDS = "<No data fields>";  // NOI18N
+    public static final String SUPER_PREFIX = "<super";  // NOI18N
+    public static final String ANON_COUNT = "<anon-count>";  // NOI18N
     
     private final GdbDebugger debugger;
     private String resolvedType;
@@ -221,7 +226,7 @@ public class TypeInfo {
             } else {
                 n = rawInfo.substring(0, pos0).trim();
             }
-            m.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
+            m.put(NAME, n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
         }
         String ri = rawInfo;
         if (pos1 == -1 && pos2 == -1) {
@@ -234,7 +239,7 @@ public class TypeInfo {
         if (fields != null) {
             m = parseFields(m, shortenType(resolvedType), fields);
             if (m.isEmpty()) {
-                m.put("<" + ri.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
+                m.put("<" + ri.substring(0, pos1) + ">", NO_DATA_FIELDS); // NOI18N
             }
         }
         return m;
@@ -288,7 +293,7 @@ public class TypeInfo {
                         i = pos;
                     }
                 } else if (c == ',') {
-                    m.put("<super" + scount++ + ">", info.substring(start, i).trim()); // NOI18N
+                    m.put(SUPER_PREFIX + scount++ + ">", info.substring(start, i).trim()); // NOI18N
                     if ((i + 1) < info.length()) {
                         info = info.substring(i + 1);
                         i = 0;
@@ -297,14 +302,14 @@ public class TypeInfo {
                 }
             }
         }
-        m.put("<super" + scount++ + ">", info.substring(start).trim()); // NOI18N
+        m.put(SUPER_PREFIX + scount++ + ">", info.substring(start).trim()); // NOI18N
         return m;
     }
         
     private Map<String, Object> parseFields(Map<String, Object> m, String name, String info) {
         if (info != null) {
-            if (m.get("<name>") == null) { // NOI18N
-                m.put("<name>", name); // NOI18N
+            if (m.get(NAME) == null) { // NOI18N
+                m.put( NAME, name); // NOI18N
             }
             int pos, pos2;
             FieldTokenizer tok = new FieldTokenizer(info);
@@ -317,7 +322,7 @@ public class TypeInfo {
                         Map<String, Object> m2 = new HashMap<String, Object>();
                         m = parseFields(m2, shortenType(field[0]), field[0].substring(pos + 1, pos2).trim());
                         m.put(field[1], m2);
-                    } else if (field[1].startsWith("<anonymous") || field[0].endsWith("}")) { // NOI18N
+                    } else if (field[1].startsWith(ANONYMOUS_PREFIX) || field[0].endsWith("}")) { // NOI18N
                         // replace string def with Map
                         pos = field[0].indexOf('{');
                         String frag = field[0].substring(pos + 1, field[0].length() - 1).trim();
@@ -358,7 +363,7 @@ public class TypeInfo {
      */
     private boolean isNonAnonymousCSUDef(String[] field) {
         String info = field[0];
-        if (!field[1].startsWith("<anonymous") && // NOI18N
+        if (!field[1].startsWith(ANONYMOUS_PREFIX) && // NOI18N
                 (info.startsWith("class {") || info.startsWith("struct {") || info.startsWith("union {"))) { // NOI18N
             int start = info.indexOf('{');
             int end = GdbUtils.findMatchingCurly(info, start) + 1;

@@ -1855,11 +1855,12 @@ public class CasualDiff {
                     }
                     oldT = oldIter.next(); ++i;
                     copyTo(lastOldPos, getOldPos(oldT));
+
                     if (treesMatch(oldT, item.element, false)) {
                         lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
                     } else {
                         printer.print(item.element);
-                        lastOldPos = endPos(oldT);
+                        lastOldPos = Math.max(testPos, endPos(oldT));
                     }
                     break;
                 }
@@ -1904,6 +1905,7 @@ public class CasualDiff {
                         lastOldPos = endOffset;
                     } else {
                         lastOldPos = endPos(item.element);
+//                        lastOldPos = Math.max(testPos, endPos(item.element));
                     }
                     oldT = oldIter.next(); ++i;
                     break;

@@ -50,9 +50,10 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.exceptions.*;
 
-import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 
 /**
  * This is an utility class to avoid exposing deployment interface
@@ -70,7 +71,7 @@ import java.util.Iterator;
 
 public class ServerProgress implements ProgressObject {
     private Object server;
-    private java.util.Vector listeners = new java.util.Vector();
+    private List<ProgressListener> listeners = new CopyOnWriteArrayList();
     private DeploymentStatus status;
     
     /** Creates a new instance of StartServerProgress */
@@ -111,10 +112,9 @@ public class ServerProgress implements ProgressObject {
     public void setStatusStopCompleted(String message) {
         notify(createCompletedProgressEvent(CommandType.STOP, message)); 
     }
-    protected synchronized void notify(ProgressEvent pe) {
-        for (Iterator i=listeners.iterator(); i.hasNext();) {
-            ProgressListener pol = (ProgressListener) i.next();
-            pol.handleProgressEvent(pe);
+    protected void notify(ProgressEvent pe) {
+        for (ProgressListener listener : listeners) {
+            listener.handleProgressEvent(pe);
         }
     } 
 
@@ -153,14 +153,10 @@ public class ServerProgress implements ProgressObject {
         return new ProgressEvent(server, null, status);
     }    
 //-------------- JSR88 ProgressObject -----------------
-    public synchronized void addProgressListener(ProgressListener pol) {
+    public void addProgressListener(ProgressListener pol) {
         listeners.add(pol);
     }
-    public synchronized void removeProgressListener(ProgressListener pol) {
-        /*for (Iterator i=listeners.iterator(); i.hasNext();) {
-            if(i.next().equals(pol))
-                i.remove();
-        }*/
+    public void removeProgressListener(ProgressListener pol) {
         listeners.remove(pol);
     }
     

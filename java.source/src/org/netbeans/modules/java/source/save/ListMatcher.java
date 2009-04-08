@@ -323,7 +323,7 @@ public final class ListMatcher<E> {
             // when operation is remove, ensure that there is not following 
             // insert - in such case, we can merge these two operation to
             // modify operation.
-            if (item.operation == Operation.DELETE && 
+            if (item.operation == Operation.DELETE &&
                 !copy.empty() && copy.peek().operation == Operation.INSERT) 
             {
                 // yes, it is modify operation.

@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.net.PasswordAuthentication;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -182,10 +183,10 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return null;
     }
 
-    private void getKenaiAuthData(VCSKenaiSupport kenaiSupport) {
+    private void getKenaiAuthData(SvnKenaiSupport support) {
         final String urlString = url.toString();
         
-        PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(urlString);
+        PasswordAuthentication pa = support.getPasswordAuthentication(urlString, true);
         if(pa == null) {
             return;
         }
@@ -205,9 +206,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {        
-        VCSKenaiSupport kenaiSupport = Subversion.getInstance().getKenaiSupport();
-        if(kenaiSupport != null && kenaiSupport.isKenai(url.toString())) {
-            getKenaiAuthData(kenaiSupport);
+        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
+        if(support != null && support.isKenai(url.toString())) {
+            getKenaiAuthData(support);
         } else {
             String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");                 // NOI18N
 
