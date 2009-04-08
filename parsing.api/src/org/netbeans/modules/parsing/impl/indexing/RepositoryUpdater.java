@@ -342,7 +342,27 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        // XXX: what should we do here? Mimic fileDeleted() followed by fileDataCreated()?
+        final FileObject newFile = fe.getFile();
+        final String oldNameExt = fe.getExt().length() == 0 ? fe.getName() : fe.getName() + "." + fe.getExt(); //NOI18N
+        final URL root = getOwningSourceRoot(newFile);
+        boolean processed = false;
+
+        if (root != null) {
+            FileObject rootFo = URLMapper.findFileObject(root);
+            String oldFilePath = FileUtil.getRelativePath(rootFo, newFile.getParent()) + "/" + oldNameExt; //NOI18N
+            scheduleWork(new DeleteWork(root, oldFilePath.toString()), false);
+
+            if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
+                scheduleWork(new FileListWork(root, Collections.singleton(newFile), false), false);
+            }
+            processed = true;
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("File renamed (" + (processed ? "processed" : "ignored") + "): " //NOI18N
+                    + FileUtil.getFileDisplayName(newFile) + " Owner: " + root
+                    + " Original Name: " + oldNameExt); //NOI18N
+        }
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -915,28 +935,28 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final class DeleteWork extends Work {
 
         private final URL root;
-        private final FileObject[] files;
+        private final String relativePath;
 
-        public DeleteWork (URL root, FileObject file) {
+        public DeleteWork (URL root, String relativePath) {
             super(false);
             
             assert root != null;
-            assert file != null;
+            assert relativePath != null;
             this.root = root;
-            this.files = new FileObject[] { file };
+            this.relativePath = relativePath;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("DeleteWork: root=" + root + ", file=" + file);
+                LOGGER.fine("DeleteWork: root=" + root + ", file=" + relativePath);
             }
+        }
+
+        public DeleteWork (URL root, FileObject file) {
+            this(root, FileUtil.getRelativePath(URLMapper.findFileObject(root), file));
         }
 
         public @Override void getDone() {
 //            updateProgress(root);
             try {
-                final ArrayList<Indexable> indexables = new ArrayList<Indexable>(files.length);
-                final FileObject rootFo = URLMapper.findFileObject(root);
-                for (int i=0; i< files.length; i++) {
-                    indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, FileUtil.getRelativePath(rootFo, files[i]))));
-                }
+                final Collection<Indexable> indexables = Collections.singleton(SPIAccessor.getInstance().create(new DeletedIndexable (root, relativePath)));
                 delete(indexables, root);
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {

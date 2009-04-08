@@ -61,14 +61,17 @@ class ProxyClient {
     /**
      * @return instance or null if proxy isn't enabled
      */
-    static ProxyClient getInstance() {
-        boolean isProxyEnabled = false;//TODO: PhpOptions.getInstance().isProxyEnabled();
-        return isProxyEnabled ? new ProxyClient() : null;
+    static ProxyClient getInstance(DebuggerOptions options) {
+        return options.getDebugProxy() != null ? new ProxyClient(options) : null;
     }
 
-    private ProxyClient() {
-        this.proxyHost = "localhost";//TODO: PhpOptions.getInstance().getProxyHost();
-        this.proxyPort = 9001;//TODO: PhpOptions.getInstance().getProxyPort;
+    private ProxyClient(DebuggerOptions options) {
+        assert options != null;
+        assert options.getDebugProxy().first != null;
+        assert options.getDebugProxy().second != null;
+
+        this.proxyHost = options.getDebugProxy().first;
+        this.proxyPort = options.getDebugProxy().second;
         this.idePort = PhpOptions.getInstance().getDebuggerPort();
         this.ideKey = PhpOptions.getInstance().getDebuggerSessionId();
     }

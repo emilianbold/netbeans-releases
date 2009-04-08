@@ -986,10 +986,16 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             result = retriever.getWsdlUrl();
         } else {
             // If no download yet, then use what the user has typed.
-            if (wsdlSource==WSDL_FROM_URL)
-                result = WsdlRetriever.beautifyUrlName(jTxtWsdlURL.getText().trim());
-            else if (wsdlSource==WSDL_FROM_PROJECT)
+            if (wsdlSource==WSDL_FROM_URL) {
+                String wsdlUrl = WsdlRetriever.beautifyUrlName(jTxtWsdlURL.getText().trim());
+                try {
+                    result = URLDecoder.decode(wsdlUrl,"UTF-8"); //NOI18N
+                } catch (UnsupportedEncodingException ex) {
+                    result = wsdlUrl;
+                }
+            } else if (wsdlSource==WSDL_FROM_PROJECT) {
                 result = jTxtWsdlProject.getText().trim();
+            }
         }
         return result;
     }

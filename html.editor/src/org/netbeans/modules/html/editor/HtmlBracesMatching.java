@@ -197,6 +197,9 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     }
 
                     HtmlParserResult result = (HtmlParserResult) resultIterator.getParserResult();
+                    if(result == null) {
+                        return ;
+                    }
                     AstNode root = result.root();
 
                     int searched = result.getSnapshot().getEmbeddedOffset(context.getSearchOffset());

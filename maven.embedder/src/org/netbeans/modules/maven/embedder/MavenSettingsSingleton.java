@@ -43,8 +43,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.apache.maven.embedder.ConfigurationValidationResult;
-import org.apache.maven.embedder.DefaultConfiguration;
 import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.settings.Settings;

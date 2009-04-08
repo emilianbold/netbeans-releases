@@ -308,11 +308,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         //TODO - not sure this is necessary since the PoHImpl listens on project changes.
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        poh.setContextPath(txtContextPath.getText().trim());
         poh.hackModuleServerChange();
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        if (moduleProvider != null) { //#150030 can be null sometimes?
-            moduleProvider.getWebModuleImplementation().setContextPath(txtContextPath.getText().trim());
-        }
         boolean bool = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, bool ? null : Boolean.FALSE.toString());
