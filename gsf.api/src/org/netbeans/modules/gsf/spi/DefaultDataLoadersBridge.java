@@ -59,16 +59,6 @@ public class DefaultDataLoadersBridge extends DataLoadersBridge {
 
     @Override
     public StyledDocument getDocument(FileObject file) {
-        // vlv: [+]
-        if ( !file.isValid()) {
-            return null;
-        }
-        Object attr = file.getAttribute(Document.StreamDescriptionProperty);
-
-        if (attr instanceof StyledDocument) {
-            return (StyledDocument) attr;
-        }
-        // vlv: [-]
         try {
             DataObject d = DataObject.find(file);
             EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
@@ -136,22 +126,7 @@ public class DefaultDataLoadersBridge extends DataLoadersBridge {
 
     @Override
     public String getLine(Document doc, int lineNumber) {
-        // vlv: [+]
-        // DataObject dObj = (DataObject) doc.getProperty(doc.StreamDescriptionProperty);
-        Object obj = doc.getProperty(doc.StreamDescriptionProperty);
-        DataObject dObj = null;
-
-        if (obj instanceof FileObject) {
-            try {
-                dObj = DataObject.find((FileObject) obj);
-            } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-        else if (obj instanceof DataObject) {
-            dObj = (DataObject) obj;
-        }
-        // vlv: [-]
+        DataObject dObj = (DataObject) doc.getProperty(doc.StreamDescriptionProperty);
         LineCookie lc = dObj.getCookie(LineCookie.class);
         Line line = lc.getLineSet().getCurrent(lineNumber);
 

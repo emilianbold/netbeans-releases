@@ -324,17 +324,6 @@ public class PatternsTest extends RestTestBase {
                 if (name != null) {
                     createdFiles.add(getFileFromProject(name + "Cl")); //NOI18N
                 } else {
-
-                    //workaround for http://www.netbeans.org/issues/show_bug.cgi?id=155125
-                    try {
-                        FileObject x = getProject().getProjectDirectory();
-                        FileObject y = FileUtil.createFolder(x.getFileObject("src/java"), getRestPackage().replace('.', '/'));
-                        FileObject r = FileUtil.moveFile(x.getFileObject("web/GenericResource.java"), y, "GenericResource");
-                        DataObject.find(r).getCookie(EditCookie.class).edit();
-                    } catch (Exception e) {
-                        throw new AssertionError("Is IZ#155125 fixed?");
-                    }
-
                     createdFiles.add(getFileFromProject("GenericResource")); //NOI18N
                 }
                 break;

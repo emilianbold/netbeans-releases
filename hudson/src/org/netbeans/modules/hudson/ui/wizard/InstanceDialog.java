@@ -117,10 +117,8 @@ public class InstanceDialog extends DialogDescriptor {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
                     }
-                } catch (MalformedURLException x) {
-                    assert false : x; // should have been caught by form validator already
                 } catch (IOException x) {
-                    LOG.log(Level.FINE, null, x);
+                    LOG.log(Level.INFO, null, x);
                     problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
                     return;
                 } catch (IllegalArgumentException x) { // JRE #6797318

@@ -84,7 +84,6 @@ public class SoapClientEditorDrop implements ActiveEditorDrop {
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
         final Document targetDoc = targetComponent.getDocument();
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
-        Project targetProject = FileOwnerQuery.getOwner(targetSource);
         WSOperation op = method.getWsdlOperation();
         final String displayName = op.getName();
         

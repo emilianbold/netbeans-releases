@@ -46,11 +46,20 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -180,6 +189,29 @@ public final class ConnectionBuilder {
         RETRY: while (true) {
             if (conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).setInstanceFollowRedirects(false);
+            }
+            if (conn instanceof HttpsURLConnection) {
+                // #161324: permit self-signed SSL certificates.
+                try {
+                    SSLContext sc = SSLContext./* XXX JDK 6: getDefault() */getInstance("SSL"); // NOI18N
+                    sc.init(null, new TrustManager[] {
+                        new X509TrustManager() {
+                            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return new X509Certificate[0];
+                            }
+                        }
+                    }, new SecureRandom());
+                    ((HttpsURLConnection) conn).setSSLSocketFactory(sc.getSocketFactory());
+                    ((HttpsURLConnection) conn).setHostnameVerifier(new HostnameVerifier() {
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    });
+                } catch (Exception x) {
+                    LOG.log(Level.FINE, "could not disable SSL verification", x);
+                }
             }
             URL curr = conn.getURL();
             LOG.log(Level.FINER, "Trying to open {0}", curr);
