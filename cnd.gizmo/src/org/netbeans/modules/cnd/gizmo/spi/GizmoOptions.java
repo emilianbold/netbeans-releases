@@ -38,19 +38,78 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.gizmo.options;
 
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
+package org.netbeans.modules.cnd.gizmo.spi;
 
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
-public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
+import java.beans.PropertyChangeListener;
+
+public interface GizmoOptions {
+    
+    public static enum DataProvider {
+        SUN_STUDIO,
+        DTRACE,
+    };
+
     /**
-     * Creates an instance of the auxiliary information object
+     * @return the profileOnRun
      */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        GizmoOptionsImpl gizmoOptions = new GizmoOptionsImpl(baseDir, pcs);
-        return gizmoOptions;
-    }
+    public boolean getProfileOnRunValue();
+
+    /**
+     * @param profileOnRunOption the profileOnRunOption value to set
+     */
+    public void setProfileOnRunValue(boolean profileOnRunValue);
+
+    /**
+     * @return the cpu
+     */
+    public boolean getCpuValue();
+
+    /**
+     * @param cpu the cpu value to set
+     */
+    public void setCpuValue(boolean cpu);
+
+    /**
+     * @return the memory
+     */
+    public boolean getMemoryValue();
+
+    /**
+     * @param memory the memory value to set
+     */
+    public void setMemoryValue(boolean memory);
+
+    /**
+     * @return the synchronization
+     */
+    public boolean getSynchronizationValue();
+
+    /**
+     * @param synchronization the synchronization value to set
+     */
+    public void setSynchronizationValue(boolean synchronization);
+
+    /**
+     * @return the dataProvider
+     */
+    public DataProvider getDataProviderValue();
+
+    /**
+     * @param dataProvider the dataProvider to set
+     */
+    public void setDataProviderValue(DataProvider dataProvider);
+
+    /**
+     *  Adds property change listener.
+     *  @param l new listener.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l);
+    
+    /**
+     *  Removes property change listener.
+     *  @param l removed listener.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l);
+
 }

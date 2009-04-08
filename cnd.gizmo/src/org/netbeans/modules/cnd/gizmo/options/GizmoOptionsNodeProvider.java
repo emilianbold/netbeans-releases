@@ -80,7 +80,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            GizmoOptions gizmoOptions = GizmoOptions.getOptions(configuration);
+            GizmoOptionsImpl gizmoOptions = GizmoOptionsImpl.getOptions(configuration);
             return createSheet(gizmoOptions);
         }
 
@@ -91,7 +91,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
     }
 
 
-    private Sheet createSheet(GizmoOptions gizmoOptions) {
+    private Sheet createSheet(GizmoOptionsImpl gizmoOptions) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
