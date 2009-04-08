@@ -37,31 +37,27 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.j2seproject.api;
+package org.netbeans.modules.php.project;
 
-import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
- * Ability to verify whether the project is currently sharable, and if not to make it so.
- * Will be in lookup of a j2seproject.
- * @since org.netbeans.modules.java.j2seproject/1 1.24
+ * @author Radek Matous
  */
-public interface J2SEProjectSharability {
+public class PhpPreferences {
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing private preferences which are not imported
+    private static final String PRIVATE_PREFERENCES_PATH = "private";//NOI18N
 
     /**
-     * Checks whether the project is currently sharable.
-     * @return true if it is self-contained, false if it has external file references
-     * @see AntProjectHelper#isSharableProject
+     * @param importEnabled true means that preferences in this preferences node are
+     * expected to be imported through import/export dialog in Options Dialog and also
+     * by upgrader when first started new NB version
+     * @return instance of Preferences node
      */
-    boolean isSharable();
-
-    /**
-     * Offers to make the project sharable.
-     * This should be called in EQ and just opens some GUI.
-     * The user may or may not proceed.
-     * @see SharableLibrariesUtils#showMakeSharableWizard
-     */
-    void makeSharable();
-
+    public static final Preferences getPreferences(boolean importEnabled) {
+        Preferences forModule = NbPreferences.forModule(PhpPreferences.class);
+        return (importEnabled) ? forModule : forModule.node(PRIVATE_PREFERENCES_PATH);
+    }
 }

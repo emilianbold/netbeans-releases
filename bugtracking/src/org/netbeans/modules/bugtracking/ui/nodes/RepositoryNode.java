@@ -41,13 +41,11 @@ package org.netbeans.modules.bugtracking.ui.nodes;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.DialogDisplayer;
@@ -61,21 +59,13 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Tomas Stupka
  */
-class RepositoryNode extends AbstractNode implements PropertyChangeListener {
+public class RepositoryNode extends AbstractNode {
     private Repository repository;
-    private String name;
 
     public RepositoryNode(Repository repository) {
         super(Children.LEAF);
-        setName("bugtrackingrepository"); // NOI18N
         this.repository = repository;
-        repository.getController().addPropertyChangeListener(this);
-        name = repository.getDisplayName();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return name;
+        setName(repository.getDisplayName());
     }
 
     @Override
@@ -91,12 +81,17 @@ class RepositoryNode extends AbstractNode implements PropertyChangeListener {
                     QueryAction.openQuery(null, repository);
                 }
             },
-            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) {
+            new AbstractAction(SystemAction.get(IssueAction.class).getName()) {
+                public void actionPerformed(ActionEvent e) {
+                    IssueAction.openIssue(repository);
+                }
+            },
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.editRepository(repository);
                 }
             },
-            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getDisplayName() }), // NOI18N
@@ -114,14 +109,6 @@ class RepositoryNode extends AbstractNode implements PropertyChangeListener {
                 }
             }
         };
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_APPLIED)) {
-            String oldName = name;
-            name = repository.getDisplayName();
-            fireNameChange(oldName, name);
-        }
     }
 
 }

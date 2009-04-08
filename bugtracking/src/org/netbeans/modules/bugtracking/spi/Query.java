@@ -69,17 +69,17 @@ public abstract class Query implements Comparable<Query> {
     /**
      * querie issues list was changed
      */
-    public static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";
+    public static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
 
     /**
      * query was saved
      */
-    public static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";
+    public static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
 
     /**
      * qeury was removed
      */
-    public static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";
+    public static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
 
     private List<QueryNotifyListener> notifyListeners;
@@ -351,7 +351,7 @@ public abstract class Query implements Comparable<Query> {
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_AllIssuesFilter");     // NOI18N
         }
         @Override
         public boolean accept(Issue issue) {
@@ -361,7 +361,7 @@ public abstract class Query implements Comparable<Query> {
     private static class NotSeenFilter extends Filter {
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_UnseenIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_UnseenIssuesFilter");  // NOI18N
         }
         @Override
         public boolean accept(Issue issue) {
@@ -375,7 +375,7 @@ public abstract class Query implements Comparable<Query> {
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_NewIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_NewIssuesFilter");     // NOI18N
         }
         @Override
         public boolean accept(Issue issue) {
@@ -390,7 +390,7 @@ public abstract class Query implements Comparable<Query> {
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_ObsoleteIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_ObsoleteIssuesFilter");// NOI18N
         }
         @Override
         public boolean accept(Issue issue) {
@@ -405,7 +405,7 @@ public abstract class Query implements Comparable<Query> {
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllButObsoleteIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_AllButObsoleteIssuesFilter");  // NOI18N
         }
         @Override
         public boolean accept(Issue issue) {

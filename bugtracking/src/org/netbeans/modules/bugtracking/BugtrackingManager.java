@@ -66,13 +66,13 @@ public final class BugtrackingManager implements LookupListener {
     private static final BugtrackingManager instance = new BugtrackingManager();
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed";
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
 
     private boolean                 initialized;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
+    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1);
+    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1); // NOI18N
 
     /**
      * Holds all registered connectors.
@@ -137,7 +137,7 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
 
         BugtrackingRuntime.getInstance().init();
-        LOG.fine("Bugtracking manager initialized");
+        LOG.fine("Bugtracking manager initialized"); // NOI18N
         initialized = true;
     }
 

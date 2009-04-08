@@ -1462,7 +1462,7 @@ exists or setup the property manually. For example like this:
             <target name="-post-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
-                <fail if="tests.failed">Some tests failed; see details above.</fail>
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
             </target>
             
             <target name="test-report">
@@ -1507,7 +1507,7 @@ exists or setup the property manually. For example like this:
             <target name="-post-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
-                <fail if="tests.failed">Some tests failed; see details above.</fail>
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
             </target>
             
             <target name="test-single">

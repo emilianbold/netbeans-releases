@@ -246,7 +246,7 @@ private void autoSyncCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             msgs.setInformationMessage(NbBundle.getMessage(InstanceDialog.class, "MSG_EmptyName"));
             return;
         }
-        if (HudsonManagerImpl.getInstance().getInstanceByName(name) != null) {
+        if (HudsonManagerImpl.getDefault().getInstanceByName(name) != null) {
             msgs.setErrorMessage(NbBundle.getMessage(InstanceDialog.class, "MSG_ExistName"));
             return;
         }

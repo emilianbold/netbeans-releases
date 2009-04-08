@@ -1,12 +1,12 @@
-[<l|, < l:myTag >, <l:myTag, 786]
+[<l|, l:myTag, <l:myTag, 782]
 < l:myTag >
-<label>
-<legend>
-<li>
-<link>
-End cursor position = 795
-[<l:myTag |, title, <l:myTag title="", 877]
+<label >
+<legend >
+<li >
+<link >
+End cursor position = 791
+[<l:myTag |, title, <l:myTag title="", 873]
 author
 price_info
 title
-End cursor position = 894
+End cursor position = 890
