@@ -256,9 +256,10 @@ final class BasicSearchCriteria {
             if (LOG.isLoggable(FINEST)) {
                 LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
             }
-            int flags = Pattern.UNICODE_CASE;
+            int flags = 0;
             if (!caseSensitive) {
                 flags |= Pattern.CASE_INSENSITIVE;
+                flags |= Pattern.UNICODE_CASE;
             }
             textPattern = Pattern.compile(textPatternExpr, flags);
             return true;
@@ -280,9 +281,10 @@ final class BasicSearchCriteria {
         }
         assert textPatternExpr != null;
         try {
-            int flags = Pattern.UNICODE_CASE;
+            int flags = 0;
             if (!caseSensitive) {
                 flags |= Pattern.CASE_INSENSITIVE;
+                flags |= Pattern.UNICODE_CASE;
             }
             if (LOG.isLoggable(FINEST)) {
                 LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -57,6 +58,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -68,6 +72,7 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDescriptor;
@@ -95,21 +100,22 @@ public class RunAsWebAdvanced extends JPanel {
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport;
 
-    RunAsWebAdvanced(PhpProject project, String debugUrl, String urlPreview, String remotePaths, String localPaths) {
+    RunAsWebAdvanced(PhpProject project, Properties properties) {
         assert project != null;
-        assert urlPreview != null;
+        assert properties != null;
 
         this.project = project;
 
         initComponents();
-        setDebugUrl(debugUrl, urlPreview);
+        setDebugUrl(properties);
+        setDebugProxy(properties);
 
         String[] columnNames = {
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_ServerPath"),
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_LocalPath"),
         };
         // tmysik init data
-        pathMappingTableModel = new PathMappingTableModel(columnNames, getPathMappings(remotePaths, localPaths));
+        pathMappingTableModel = new PathMappingTableModel(columnNames, getPathMappings(properties.remotePaths, properties.localPaths));
         pathMappingTable.setModel(pathMappingTableModel);
         pathMappingTable.setDefaultRenderer(LocalPathCell.class, new LocalPathCellRenderer());
         pathMappingTable.addMouseListener(new LocalPathCellMouseListener(pathMappingTable));
@@ -133,6 +139,22 @@ public class RunAsWebAdvanced extends JPanel {
                 handleButtonStates();
             }
         });
+        DocumentListener defaultDocumentListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                validateFields();
+            }
+        };
+        proxyHostTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        proxyPortTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     public boolean open() {
@@ -192,6 +214,15 @@ public class RunAsWebAdvanced extends JPanel {
                 PhpProjectUtils.implode(locals, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
     }
 
+    public Pair<String, String> getDebugProxy() {
+        String proxyHost = proxyHostTextField.getText();
+        String proxyPort = null;
+        if (PhpProjectUtils.hasText(proxyHost)) {
+            proxyPort = proxyPortTextField.getText();
+        }
+        return Pair.of(proxyHost, proxyPort);
+    }
+
     void validateFields() {
         assert notificationLineSupport != null;
 
@@ -214,6 +245,16 @@ public class RunAsWebAdvanced extends JPanel {
                 return;
             } else if (!isLocalPathValid(localPath)) {
                 notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_LocalPathNotValid", localPath));
+                descriptor.setValid(false);
+                return;
+            }
+        }
+
+        String proxyHost = proxyHostTextField.getText();
+        if (PhpProjectUtils.hasText(proxyHost)) {
+            String err = RemoteValidator.validatePort(proxyPortTextField.getText());
+            if (err != null) {
+                notificationLineSupport.setErrorMessage(err);
                 descriptor.setValid(false);
                 return;
             }
@@ -294,7 +335,8 @@ public class RunAsWebAdvanced extends JPanel {
         return getTableSelectedRow() != -1;
     }
 
-    private void setDebugUrl(String debugUrl, String urlPreview) {
+    private void setDebugUrl(Properties properties) {
+        String debugUrl = properties.debugUrl;
         if (debugUrl == null) {
             debugUrl = DebugUrl.DEFAULT_URL.name();
         }
@@ -311,7 +353,16 @@ public class RunAsWebAdvanced extends JPanel {
             default:
                 throw new IllegalArgumentException("Unknown debug url type: " + debugUrl);
         }
-        defaultUrlPreviewLabel.setText(urlPreview);
+        defaultUrlPreviewLabel.setText(properties.urlPreview);
+    }
+
+    private void setDebugProxy(Properties properties) {
+        proxyHostTextField.setText(properties.proxyHost);
+        String port = properties.proxyPort;
+        if (RemoteValidator.validatePort(port) != null) {
+            port = String.valueOf(PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT);
+        }
+        proxyPortTextField.setText(port);
     }
 
     /** This method is called from within the constructor to
@@ -334,7 +385,12 @@ public class RunAsWebAdvanced extends JPanel {
         pathMappingTable = new JTable();
         newPathMappingButton = new JButton();
         removePathMappingButton = new JButton();
-        infoLabel = new JLabel();
+        pathMappingInfoLabel = new JLabel();
+        proxyLabel = new JLabel();
+        proxyHostLabel = new JLabel();
+        proxyHostTextField = new JTextField();
+        proxyPortLabel = new JLabel();
+        proxyPortTextField = new JTextField();
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
 
@@ -375,13 +431,22 @@ public class RunAsWebAdvanced extends JPanel {
 
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
-
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.infoLabel.text"));
+
+        Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
+        pathMappingInfoLabel.setEnabled(false);
+
+
+
+        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
+        Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text"));
+        Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
+        proxyPortTextField.setPreferredSize(new Dimension(46, 19));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -390,7 +455,7 @@ public class RunAsWebAdvanced extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(removePathMappingButton)
@@ -403,7 +468,16 @@ public class RunAsWebAdvanced extends JPanel {
                     .add(askUrlRadioButton)
                     .add(doNotOpenBrowserRadioButton)
                     .add(pathMappingLabel)
-                    .add(infoLabel))
+                    .add(pathMappingInfoLabel)
+                    .add(proxyLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(proxyHostLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyPortLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -430,10 +504,18 @@ public class RunAsWebAdvanced extends JPanel {
                         .add(newPathMappingButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(removePathMappingButton))
-                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
+                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(infoLabel)
-                .add(0, 0, 0))
+                .add(pathMappingInfoLabel)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(proxyLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(proxyHostLabel)
+                    .add(proxyPortLabel)
+                    .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -469,11 +551,16 @@ public class RunAsWebAdvanced extends JPanel {
     private JLabel defaultUrlPreviewLabel;
     private JRadioButton defaultUrlRadioButton;
     private JRadioButton doNotOpenBrowserRadioButton;
-    private JLabel infoLabel;
     private JButton newPathMappingButton;
+    private JLabel pathMappingInfoLabel;
     private JLabel pathMappingLabel;
     private JScrollPane pathMappingScrollPane;
     private JTable pathMappingTable;
+    private JLabel proxyHostLabel;
+    private JTextField proxyHostTextField;
+    private JLabel proxyLabel;
+    private JLabel proxyPortLabel;
+    private JTextField proxyPortTextField;
     private JButton removePathMappingButton;
     // End of variables declaration//GEN-END:variables
 
@@ -547,6 +634,24 @@ public class RunAsWebAdvanced extends JPanel {
                     validateFields();
                 }
             }
+        }
+    }
+
+    public static final class Properties {
+        public final String debugUrl;
+        public final String urlPreview;
+        public final String remotePaths;
+        public final String localPaths;
+        public final String proxyHost;
+        public final String proxyPort;
+
+        public Properties(String debugUrl, String urlPreview, String remotePaths, String localPaths, String proxyHost, String proxyPort) {
+            this.debugUrl = debugUrl;
+            this.urlPreview = urlPreview;
+            this.remotePaths = remotePaths;
+            this.localPaths = localPaths;
+            this.proxyHost = proxyHost;
+            this.proxyPort = proxyPort;
         }
     }
 }

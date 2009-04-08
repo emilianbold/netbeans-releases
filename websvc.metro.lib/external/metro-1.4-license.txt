@@ -1,8 +1,8 @@
 Name: METRO
 Version: 1.4
 Description: METRO
-License: CDDL-1.0 or GPL v2.0 with CPE
-OSR:
+License: CDDL-GPL-2-CP
+OSR: ?
 Origin: https://metro.dev.java.net/
 Files: metro.zip, metro-doc.zip
 

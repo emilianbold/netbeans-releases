@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.xml.sax.Attributes;
 
 public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
-    private GizmoOptions gizmoOptions;
+    private GizmoOptionsImpl gizmoOptions;
 
     private final static String PROFILE_ON_RUN_ELEMENT = "profileOnRun"; // NOI18N
     private final static String CPU_ELEMENT = "cpu"; // NOI18N
@@ -60,7 +60,7 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     private final static int thisversion = 1;
 
-    public GizmoOptionsXMLCodec(GizmoOptions gizmoOptions) {
+    public GizmoOptionsXMLCodec(GizmoOptionsImpl gizmoOptions) {
         this.gizmoOptions = gizmoOptions;
     }
 
@@ -70,7 +70,7 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public String tag() {
-        return GizmoOptions.PROFILE_ID;
+        return GizmoOptionsImpl.PROFILE_ID;
     }
 
     // interface XMLDecoder
@@ -113,8 +113,8 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         }
     }
 
-    private static void encode(XMLEncoderStream xes, GizmoOptions gizmoOptions) {
-        xes.elementOpen(GizmoOptions.PROFILE_ID, getVersion());
+    private static void encode(XMLEncoderStream xes, GizmoOptionsImpl gizmoOptions) {
+        xes.elementOpen(GizmoOptionsImpl.PROFILE_ID, getVersion());
         if (gizmoOptions.getProfileOnRun().getModified()) {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
@@ -130,7 +130,7 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
         }
-        xes.elementClose(GizmoOptions.PROFILE_ID);
+        xes.elementClose(GizmoOptionsImpl.PROFILE_ID);
     }
 
     // interface XMLEncoder

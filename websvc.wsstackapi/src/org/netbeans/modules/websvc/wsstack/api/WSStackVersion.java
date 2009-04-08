@@ -119,6 +119,10 @@ public final class WSStackVersion implements Comparable<WSStackVersion> {
      * @return 0(if equals), 1(if greater). -1(if less) 
      */
     public int compareTo(WSStackVersion v2) {
+
+        if (v2 == null) {
+            throw new IllegalArgumentException("Cannot pass null as parameter of WSStackVersion.compareTo(WSStackVersion)"); //NOI18N
+        }
         // Compare identity
         if (this == v2) return 0;
         

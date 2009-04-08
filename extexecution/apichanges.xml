@@ -109,6 +109,20 @@ is the proper place.
     <changes>
         <change>
             <api name="extexecution_api"/>
+            <summary>Configurable charset for process streams</summary>
+            <version major="1" minor="14"/>
+            <date day="7" month="4" year="2008"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added charset() method to ExecutionDescriptor to configure
+                the charset used to decode process streams.
+            </description>
+            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
+            <issue number="161607"/>
+        </change>
+        <change>
+            <api name="extexecution_api"/>
             <summary>Published as a stable API</summary>
             <version major="1" minor="13"/>
             <date day="20" month="11" year="2008"/>

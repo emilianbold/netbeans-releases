@@ -1,7 +1,7 @@
 Name: H2
 Version: 1.0.79
 Description: Java SQL database
-License: H2
+License: MPL-1.1
 OSR: 11138
 Origin: http://www.h2database.com/
 Source: http://code.google.com/p/h2database/source/checkout

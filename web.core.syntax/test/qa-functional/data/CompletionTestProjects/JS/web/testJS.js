@@ -8,9 +8,9 @@ var myvariable="variable";
 
 
 /**CC
-cons|
-const
-const
+de|
+debugger
+debugger
 */
 
 /**CC

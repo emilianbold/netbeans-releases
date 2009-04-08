@@ -159,14 +159,15 @@ public class KillableProcess extends Process {
         return nativeProcess.exitValue();
     }
 
-    private static class PidLineProcessor implements LineProcessor {
+    // package for tests
+    static class PidLineProcessor implements LineProcessor {
 
         private final Pattern pattern;
 
         private AtomicInteger pid = new AtomicInteger(-1);
 
         public PidLineProcessor(String command, String remark) {
-            pattern = Pattern.compile("^.*grails.bat(\\s+-D\\S*=\\S*)*\\s+" // NOI18N
+            pattern = Pattern.compile("^.*grails.bat\"?(\\s+-D\\S*=(\"(\\s|\\S)*\")|(\\S*))*\\s+" // NOI18N
                     + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark)
                     + ".*\\s+(\\d+)(\\s+.*)?$"); // NOI18N
         }
@@ -177,7 +178,7 @@ public class KillableProcess extends Process {
             Matcher matcher = pattern.matcher(line);
             try {
                 if (matcher.matches()) {
-                    pid.set(Integer.parseInt(matcher.group(2)));
+                    pid.set(Integer.parseInt(matcher.group(5)));
                 }
             } catch (NumberFormatException ex) {
                 LOGGER.log(Level.INFO, null, ex);

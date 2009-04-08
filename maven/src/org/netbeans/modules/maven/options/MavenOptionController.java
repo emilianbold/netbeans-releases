@@ -77,46 +77,12 @@ class MavenOptionController extends OptionsPanelController {
         listeners = new ArrayList<PropertyChangeListener>();
     }
 
-    private SettingsModel createModel() {
-        ModelSource source = null;
-        File mavenFolder = MavenSettingsSingleton.getInstance().getM2UserDir();
-        FileObject mavenFO = FileUtil.toFileObject(mavenFolder);
-        if (mavenFO != null) {
-            FileObject settingsFO = mavenFO.getFileObject("settings.xml");
-            if (settingsFO != null) {
-                source = Utilities.createModelSource(settingsFO);
-            }
-        }
-        if (source == null) {
-            File file = new File(mavenFolder, "settings.xml"); //NOI18N
-            source = Utilities.createModelSourceForMissingFile(file, true, TEMPLATE, "text/xml"); //NOI18N
-        }
-        assert source != null;
-        return SettingsModelFactory.getDefault().getModel(source);
-    }
-    
     public void update() {
-        if (setts == null) {
-            setts = createModel();
-        }
-        getPanel().setValues(setts.getSettings());
+        getPanel().setValues();
     }
     
     public void applyChanges() {
-        if (setts == null) {
-            setts = createModel();
-        }
-        setts.startTransaction();
-        try {
-            getPanel().applyValues(setts.getSettings());
-        } finally {
-            setts.endTransaction();
-        }
-        try {
-            Utilities.saveChanges(setts);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        getPanel().applyValues();
     }
     
     public void cancel() {

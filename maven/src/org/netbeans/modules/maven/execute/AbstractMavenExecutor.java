@@ -50,7 +50,6 @@ import java.util.Properties;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -184,7 +183,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         stop.setExecutor(this);
     }
 
-    protected final Properties excludeNetBeansProperties(Properties props) {
+    public static final Properties excludeNetBeansProperties(Properties props) {
         Properties toRet = new Properties();
         Enumeration<String> en = (Enumeration<String>) props.propertyNames();
         while (en.hasMoreElements()) {

@@ -48,6 +48,9 @@ import org.openide.util.Lookup;
 
 public final class InfoAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
+        if ("noui".equals(e.getActionCommand())) { // NOI18N
+            return;
+        }
         Help h = (Help)Lookup.getDefault().lookup(Help.class);
         if (h == null) {
             Toolkit.getDefaultToolkit().beep();

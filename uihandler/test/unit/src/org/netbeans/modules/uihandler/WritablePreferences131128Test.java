@@ -41,19 +41,21 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.prefs.PreferencesFactory;
 import javax.swing.JDialog;
 import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.openide.util.PreferencesProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /**
@@ -65,10 +67,13 @@ import org.openide.util.NbPreferences;
  */
 public class WritablePreferences131128Test extends TestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        MockServices.setServices(Displayer.class, MockPreferencesProviderImpl.class);
+        Collection pp = Lookup.getDefault().lookupAll(PreferencesProvider.class);
+    }
+
     public void testPreferencies() throws Exception {
-        // it works only if this class extends plain TestCase
-        System.setProperty("java.util.prefs.PreferencesFactory", "org.netbeans.modules.uihandler.WritablePreferences131128Test$MyPreferencesFactory");//NOI18N
-        MockServices.setServices(Displayer.class);
         UIHandler.registerExceptionHandler(true);
         Installer o = Installer.findObject(Installer.class, true);
         assertNotNull("Installer wasn't created.", o);
@@ -77,14 +82,14 @@ public class WritablePreferences131128Test extends TestCase {
         Preferences prefs = NbPreferences.forModule(WritablePreferences131128Test.class);
         prefs.putBoolean("anything", true);
         Thread.sleep(1000);
-        assertEquals("Musn't cycle when preferences are not writable.", 4, MyPreferencesFactory.flushSpiCount);
+        assertTrue("Musn't cycle when preferences are not writable.", MockPreferencesProviderImpl.flushSpiCount <= 4);
         assertTrue("DialogDisplayer.notify not called to inform user about not writable preferences.", Displayer.notifyCalled);
     }
 
     public static final class Displayer extends DialogDisplayer {
 
         public static boolean notifyCalled = false;
-        
+
         public Object notify(NotifyDescriptor descriptor) {
             notifyCalled = true;
             return NotifyDescriptor.CLOSED_OPTION;
@@ -100,20 +105,16 @@ public class WritablePreferences131128Test extends TestCase {
         }
     }
 
-    public static class MyPreferencesFactory implements PreferencesFactory {
+    public static class MockPreferencesProviderImpl implements PreferencesProvider {
 
         public static int flushSpiCount = 0;
 
-        /** Creates a new instance  */
-        public MyPreferencesFactory() {
-        }
-
-        public Preferences userRoot() {
-            return NbPreferences.userRootImpl();
-        }
-
-        public Preferences systemRoot() {
+        public Preferences preferencesForModule(Class cls) {
             return NbPreferences.systemRootImpl();
+        }
+
+        public Preferences preferencesRoot() {
+            return NbPreferences.userRootImpl();
         }
 
         private static class NbPreferences extends AbstractPreferences {
@@ -164,7 +165,7 @@ public class WritablePreferences131128Test extends TestCase {
                 try {
                     flushSpi();
                 } catch (BackingStoreException ex) {
-                    Logger.getLogger(MyPreferencesFactory.class.getName()).log(Level.SEVERE, "putSpi", ex);
+                    Logger.getLogger(MockPreferencesProviderImpl.class.getName()).log(Level.SEVERE, "putSpi", ex);
                 }
             }
 

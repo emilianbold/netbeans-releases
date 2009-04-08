@@ -29,7 +29,7 @@
                 <equals arg1="${{bdj.deployment.dir}}" arg2="" trim="true"/>
             </or>
         </condition>
-        <fail if="bdj.deployment.dir.invalid">Deployment directory is set!</fail>
+        <fail if="bdj.deployment.dir.invalid">Deployment directory is not set!</fail>
         <property name="deployment.dir" location="${{dist.dir}}"/>
         <patternset id="deployment.patternset">
             <include name="${{dist.jar}}"/>

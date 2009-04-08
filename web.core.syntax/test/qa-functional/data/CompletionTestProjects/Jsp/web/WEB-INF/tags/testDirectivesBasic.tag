@@ -3,7 +3,7 @@
 <%-- completion for TAG directives --%>
 <%--CC
 <%@|
-<%@ attribute % >
+attribute
 <%@attribute  %>
 --%>
 

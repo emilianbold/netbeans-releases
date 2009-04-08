@@ -43,7 +43,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 abstract class PopupItem {
     
@@ -76,13 +76,13 @@ abstract class PopupItem {
                 return displayText;
             }
             int lastIdx = 0;
-            sb.append("<html>");
+            sb.append("<html>");                                                // NOI18N
             while(idx > -1) {
                 sb.append(displayText.substring(lastIdx, idx));
                 if(idx > -1) {
-                    sb.append("<b>");
+                    sb.append("<b>");                                           // NOI18N
                     sb.append(text);
-                    sb.append("</b>");
+                    sb.append("</b>");                                          // NOI18N
                 }
                 lastIdx = idx + text.length();
                 idx = displayText.indexOf(displayText, lastIdx);
@@ -90,7 +90,7 @@ abstract class PopupItem {
             if(lastIdx < displayText.length()) {                
                 sb.append(displayText.substring(lastIdx, displayText.length()));
             } 
-            sb.append("</html>");
+            sb.append("</html>");                                               // NOI18N
             return sb.toString();
         }
 
@@ -99,7 +99,7 @@ abstract class PopupItem {
         }
 
         public static String getIssueDescription(Issue issue) {
-            return issue.getID() + " - " + issue.getSummary();
+            return issue.getID() + " - " + issue.getSummary();                  // NOI18N
         }
 
     }

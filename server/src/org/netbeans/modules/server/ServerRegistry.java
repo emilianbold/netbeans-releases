@@ -40,6 +40,8 @@
 package org.netbeans.modules.server;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
@@ -56,27 +58,36 @@ public final class ServerRegistry {
 
     public static final String SERVERS_PATH = "Servers"; // NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(ServerRegistry.class.getName());
+
     private static ServerRegistry registry;
+
+    private static ProviderLookupListener l;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final Lookup.Result<ServerInstanceProvider> result;
 
+    private final Lookup lookup;
+
     private ServerRegistry() {
-        Lookup lookup = Lookups.forPath(SERVERS_PATH);
+        lookup = Lookups.forPath(SERVERS_PATH);
         result = lookup.lookupResult(ServerInstanceProvider.class);
     }
 
     public static synchronized ServerRegistry getInstance() {
         if (registry == null) {
             registry = new ServerRegistry();
-            registry.result.addLookupListener(new ProviderLookupListener(registry.changeSupport));
+            registry.result.allItems();
+            registry.result.addLookupListener(l = new ProviderLookupListener(registry.changeSupport));
         }
         return registry;
     }
 
     public Collection<? extends ServerInstanceProvider> getProviders() {
-        return result.allInstances();
+        Collection<? extends ServerInstanceProvider> ret = result.allInstances();
+        LOGGER.log(Level.FINE, "Returning providers {0}", ret);
+        return ret;
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -96,6 +107,7 @@ public final class ServerRegistry {
         }
 
         public void resultChanged(LookupEvent ev) {
+            LOGGER.log(Level.FINE, "Provider lookup change {0}", ev);
             changeSupport.fireChange();
         }
 

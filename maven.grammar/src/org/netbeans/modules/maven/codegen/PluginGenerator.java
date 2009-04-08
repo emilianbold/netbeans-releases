@@ -121,46 +121,47 @@ public class PluginGenerator implements CodeGenerator {
             NBVersionInfo vi = pluginPanel.getPlugin();
             if (vi != null) {
                 //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
-                model.startTransaction();
-                int pos = component.getCaretPosition();
-                PluginContainer container = findContainer(pos, model);
-
-                Plugin plug = model.getFactory().createPlugin();
-                plug.setGroupId(vi.getGroupId());
-                plug.setArtifactId(vi.getArtifactId());
-                plug.setVersion(vi.getVersion());
-
-                if (pluginPanel.isConfiguration()) {
-                    Configuration config = model.getFactory().createConfiguration();
-                    //it would be nice to figure all mandatory parameters without a default value..
-                    config.setSimpleParameter("foo", "bar");
-                    plug.setConfiguration(config);
-                }
-
-                if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
-                    PluginExecution ex = model.getFactory().createExecution();
-                    String id = null;
-                    for (String goal : pluginPanel.getGoals()) {
-                        ex.addGoal(goal);
-                        if (id == null) {
-                            id = goal;
-                        }
-                    }
-                    if (id !=null) {
-                        ex.setId(id);
-                    }
-                    plug.addExecution(ex);
-                    //shall we add execution configuration if
-                }
-
-                container.addPlugin(plug);
-                model.endTransaction();
+                int newPos = -1;
                 try {
-                    model.sync();
-                    pos = model.getAccess().findPosition(plug.getPeer());
-                    component.setCaretPosition(pos);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    model.startTransaction();
+                    int pos = component.getCaretPosition();
+                    PluginContainer container = findContainer(pos, model);
+
+                    Plugin plug = model.getFactory().createPlugin();
+                    plug.setGroupId(vi.getGroupId());
+                    plug.setArtifactId(vi.getArtifactId());
+                    plug.setVersion(vi.getVersion());
+
+                    if (pluginPanel.isConfiguration()) {
+                        Configuration config = model.getFactory().createConfiguration();
+                        //it would be nice to figure all mandatory parameters without a default value..
+                        config.setSimpleParameter("foo", "bar");
+                        plug.setConfiguration(config);
+                    }
+
+                    if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
+                        PluginExecution ex = model.getFactory().createExecution();
+                        String id = null;
+                        for (String goal : pluginPanel.getGoals()) {
+                            ex.addGoal(goal);
+                            if (id == null) {
+                                id = goal;
+                            }
+                        }
+                        if (id !=null) {
+                            ex.setId(id);
+                        }
+                        plug.addExecution(ex);
+                        //shall we add execution configuration if
+                    }
+
+                    container.addPlugin(plug);
+                    newPos = model.getAccess().findPosition(plug.getPeer());
+                } finally {
+                    model.endTransaction();
+                }
+                if (newPos != -1) {
+                    component.setCaretPosition(newPos);
                 }
             }
         }
