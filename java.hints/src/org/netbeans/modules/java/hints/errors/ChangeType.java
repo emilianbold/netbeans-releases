@@ -46,11 +46,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -118,9 +120,15 @@ public final class ChangeType implements ErrorRule<Void> {
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
                 expected = info.getTrees().getTypeMirror(path);
                 found = ((VariableTree) scope).getInitializer();
-                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, info.getTrees().getTypeMirror(new TreePath(path, found)));
+                resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+
+                if (resolved.getKind() == TypeKind.ERROR) {
+                    resolved = info.getTrees().getOriginalType((ErrorType) resolved);
+                }
+                
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, resolved);
             }
-            
+
             if (expected != null && resolved != null) {
                 if (resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
                 } else if (resolved.getKind() != TypeKind.ERROR &&
