@@ -38,19 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.gizmo.options;
 
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
+package org.netbeans.modules.cnd.gizmo.api;
 
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
-public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
-    /**
-     * Creates an instance of the auxiliary information object
-     */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        GizmoOptionsImpl gizmoOptions = new GizmoOptionsImpl(baseDir, pcs);
+import org.netbeans.modules.cnd.gizmo.options.GizmoOptionsImpl;
+import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+
+public class GizmoOptionsProvider {
+    
+    public static GizmoOptions getOptions(Configuration conf) {
+        GizmoOptions gizmoOptions = (GizmoOptions) conf.getAuxObject(GizmoOptionsImpl.PROFILE_ID);
         return gizmoOptions;
     }
 }
