@@ -107,10 +107,56 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexResult-getRoot-getRelativePath">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexResult.getRoot and getRelativePath</summary>
+      <version major="1" minor="9"/>
+      <date day="2" month="4" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexResult.getRoot()</code> and <code>IndexResult.getRelativePath()</code>
+              methods.
+          </p>
+      </description>
+  </change>
+
+  <change id="IndexingManager-refreshAllIndicies">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexingManager.refreshAllIndicies()</summary>
+      <version major="1" minor="8"/>
+      <date day="27" month="3" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexingManager.refreshAllIndicies(String)</code> method
+              for refreshing all indicies created by a given indexer.
+          </p>
+      </description>
+  </change>
+
+  <change id="QuerySupport-findRoots">
+      <api name="ParsingAPI"/>
+      <summary>Adding QuerySupport.findRoots(...) methods</summary>
+      <version major="1" minor="7"/>
+      <date day="27" month="3" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding two <code>QuerySupport.findRoots(...)</code> methods that can be used
+              for finding classpath roots from classpaths marked with specific IDs
+              and supplied by specific project.
+          </p>
+      </description>
+  </change>
+
   <change id="IndexingManager-refreshIndexAndWait">
       <api name="ParsingAPI"/>
       <summary>Adding IndexingManager.refreshIndexAndWait()</summary>
-      <version major="1" minor="5"/>
+      <version major="1" minor="6"/>
       <date day="2" month="3" year="2009"/>
       <author login="vstejskal"/>
       <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
@@ -142,7 +188,7 @@ is the proper place.
   <change id="Explicit-index-refresh">
       <api name="ParsingAPI"/>
       <summary>Support for explicit index refreshing</summary>
-      <version major="1" minor="3"/>
+      <version major="1" minor="6"/>
       <date day="26" month="2" year="2009"/>
       <author login="vstejskal"/>
       <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="yes" addition="yes" modification="no"/>

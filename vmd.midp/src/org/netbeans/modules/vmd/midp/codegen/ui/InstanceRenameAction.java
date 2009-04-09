@@ -56,6 +56,7 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -102,7 +103,7 @@ import org.openide.windows.TopComponent;
  */
 public class InstanceRenameAction extends SystemAction implements ActionContext {
 
-    InstanceRenameAction(){
+    public InstanceRenameAction() {
     }
 
     public static final String DISPLAY_NAME = NbBundle.getMessage(
@@ -118,21 +119,21 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
 
             public void run() {
                 LifecycleManager.getDefault().saveAll();
-                 
+
                 if (myComponent == null || myComponent.get() == null) {
                     throw new IllegalArgumentException("No DesignComponent attached to RenameAction"); //NOI18N
                 }
 
                 final String[] names = new String[2];
                 myComponent.get().getDocument().getTransactionManager().
-                    readAccess(new Runnable() {
+                        readAccess(new Runnable() {
 
                     public void run() {
-                        names[0] = myComponent.get().readProperty( 
+                        names[0] = myComponent.get().readProperty(
                                 ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().
                                 toString();
-                        names[1] = getGetterName( myComponent.get(), names[0]);
-                        
+                        names[1] = getGetterName(myComponent.get(), names[0]);
+
                     }
                 });
 
@@ -143,12 +144,10 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
 
                     public void run() {
                         try {
-                            DataObjectContext context = ProjectUtils.
-                                    getDataObjectContextForDocument(
+                            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(
                                     myComponent.get().getDocument());
                             DataObject dataObject = context.getDataObject();
-                            DataObjectInterface dataObjectInteface = IOSupport.
-                                    getDataObjectInteface(dataObject);
+                            DataObjectInterface dataObjectInteface = IOSupport.getDataObjectInteface(dataObject);
                             StyledDocument styledDocument =
                                     dataObjectInteface.getEditorDocument();
                             JavaSource javaSource = JavaSource.forDocument(
@@ -161,20 +160,17 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                                     getActivated();
 
                             Lookup lookup = null;
-                            if (visitor.getField() == null )
-                            {
+                            if (visitor.getField() == null) {
                                 SystemAction.get(RenameAction.class).
-                                        actionPerformed( e );
+                                        actionPerformed(e);
                                 return;
                             }
                             if (visitor.getMethod() == null ||
-                                    names[1]==null)
-                            {
+                                    names[1] == null) {
                                 lookup = Lookups.singleton(visitor.getField());
-                            }
-                            else {
+                            } else {
                                 lookup = Lookups.fixed(visitor.getField(),
-                                         visitor.getMethod());
+                                        visitor.getMethod());
                             }
                             final InstaceRenameRefactoring refactoring =
                                     new InstaceRenameRefactoring(lookup);
@@ -195,15 +191,14 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
 
                                 public void stop(ProgressEvent event) {
                                     if (refactoring.getResult() == null ||
-                                            !refactoring.getResult().isFatal())
-                                    {
-                                        updateModel( refactoring.getNewFieldName());
+                                            !refactoring.getResult().isFatal()) {
+                                        updateModel(refactoring.getNewFieldName());
                                     }
                                 }
                             });
                             RefactoringUI ui = new RenameRefactoringUI(refactoring,
-                                     visitor.getInfo(),  oldName, myComponent.get(),
-                                     visitor.getMethod() != null && names[1]!=null);
+                                    visitor.getInfo(), oldName, myComponent.get(),
+                                    visitor.getMethod() != null && names[1] != null);
                             UI.openRefactoringUI(ui, activetc);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -213,7 +208,7 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                 invokeAfterScanFinished(task);
             }
 
-            private void updateModel(final String newName ) {
+            private void updateModel(final String newName) {
                 myComponent.get().getDocument().getTransactionManager().
                         writeAccess(new Runnable() {
 
@@ -247,9 +242,8 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                     javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
                     SwingConstants.LEFT);                           // NOI18N
             label.setBorder(new EmptyBorder(12, 12, 11, 11));
-            DialogDescriptor dd = new DialogDescriptor(label, DISPLAY_NAME.
-                    replace("&", ""), true,
-                    new Object[]{getString("LBL_CancelAction",      // NOI18N
+            DialogDescriptor dd = new DialogDescriptor(label, DISPLAY_NAME.replace("&", ""), true,
+                    new Object[]{getString("LBL_CancelAction", // NOI18N
                         new Object[]{DISPLAY_NAME})}, null, 0, null, listener);
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
@@ -282,14 +276,13 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
         SystemAction.get(RenameAction.class).setComponent(component);
     }
 
-    protected void setActionComponent( DesignComponent component ){
+    protected void setActionComponent(DesignComponent component) {
         myComponent = new WeakReference<DesignComponent>(component);
     }
 
-    static String getGetterName(final DesignComponent component, 
-            final String fieldName)
-    {
-        if ( fieldName == null || fieldName.length() == 0 ){
+    static String getGetterName(final DesignComponent component,
+            final String fieldName) {
+        if (fieldName == null || fieldName.length() == 0) {
             return "";
         }
         if (component.getDocument().getTransactionManager().isAccess()) {
@@ -303,16 +296,15 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                 }
             }
             return null;
-        }
-        else {
+        } else {
             final String[] result = new String[1];
             component.getDocument().getTransactionManager().readAccess(
                     new Runnable() {
 
-                public void run() {
-                    result[0] = getGetterName(component, fieldName);
-                }
-            });
+                        public void run() {
+                            result[0] = getGetterName(component, fieldName);
+                        }
+                    });
             return result[0];
         }
     }
@@ -394,21 +386,20 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                     if (sname.equals(myMember)) {
                         myFieldHandle = TreePathHandle.create(path, myInfo);
                     }
-                }
-                else if (tr.getKind() == Tree.Kind.METHOD) {
+                } else if (tr.getKind() == Tree.Kind.METHOD) {
                     Trees trees = myInfo.getTrees();
                     TreePath path = new TreePath(getCurrentPath(), tr);
                     Element el = trees.getElement(path);
                     String sname = el.getSimpleName().toString();
                     if (sname.equals(myMethod)) {
-                        ExecutableElement method = (ExecutableElement)el;
+                        ExecutableElement method = (ExecutableElement) el;
                         List<? extends VariableElement> params =
                                 method.getParameters();
-                        if ( params == null || params.size() == 0 ){
+                        if (params == null || params.size() == 0) {
                             myMethodHandle = TreePathHandle.create(path, myInfo);
                         }
                     }
-                } 
+                }
             }
             return null;
         }
@@ -422,23 +413,22 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
             scan(parameter.getCompilationUnit(), null);
         }
 
-        TreePathHandle getField(){
+        TreePathHandle getField() {
             return myFieldHandle;
         }
 
-        TreePathHandle getMethod(){
+        TreePathHandle getMethod() {
             return myMethodHandle;
         }
 
-        CompilationInfo getInfo(){
+        CompilationInfo getInfo() {
             return myInfo;
         }
-        
         private CompilationInfo myInfo;
         private String myMember;
         private String myMethod;
-        private TreePathHandle myFieldHandle ;
-        private TreePathHandle myMethodHandle ;
+        private TreePathHandle myFieldHandle;
+        private TreePathHandle myMethodHandle;
     }
     private static RequestProcessor.Task waitTask = null;
     private static Dialog waitDialog = null;

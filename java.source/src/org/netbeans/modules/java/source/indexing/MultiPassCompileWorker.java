@@ -41,10 +41,8 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
-import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
@@ -76,7 +74,6 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -136,6 +133,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                     if (active == null) {
                         if (!toProcess.isEmpty()) {
                             active = createTuple(context, javaContext, toProcess.removeFirst());
+                            if (active == null)
+                                continue;
                             isBigFile = false;
                         } else {
                             active = bigFiles.removeFirst();
@@ -254,59 +253,67 @@ final class MultiPassCompileWorker extends CompileWorker {
                     finished.add(active.indexable);
                     active = null;
                     state  = 0;
-                } catch (CouplingAbort a) {
-                    //coupling error
-                    //TODO: check if the source sig file ~ the source java file:
-                    TreeLoader.dumpCouplingAbort(a, active.jfo);
+                } catch (CouplingAbort ca) {
+                    //Coupling error
+                    TreeLoader.dumpCouplingAbort(ca, active.jfo);
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
                     state = 0;
-                } catch (Throwable t) {
+                } catch (OutputFileManager.InvalidSourcePath isp) {
+                    //Deleted project - log & ignore
                     if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                        final String message = String.format("batchCompile caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                    FileUtil.getFileDisplayName(context.getRoot()),
+                        final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                     active.jfo.toUri().toString(),
+                                    FileUtil.getFileDisplayName(context.getRoot()),
                                     bootPath == null   ? null : bootPath.toString(),
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
                                     );
-                        JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
+                        JavaIndex.LOG.log(Level.FINEST, message, isp);
                     }
+                } catch (MissingPlatformError mpe) {
+                    //No platform - log & ignore
+                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                        final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                    active.jfo.toUri().toString(),
+                                    FileUtil.getFileDisplayName(context.getRoot()),
+                                    bootPath == null   ? null : bootPath.toString(),
+                                    classPath == null  ? null : classPath.toString(),
+                                    sourcePath == null ? null : sourcePath.toString()
+                                    );
+                        JavaIndex.LOG.log(Level.FINEST, message, mpe);
+                    }
+                } catch (Throwable t) {
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
                     }
-                    else if (t instanceof OutputFileManager.InvalidSourcePath) {
-                        //Handled above
-                        throw (OutputFileManager.InvalidSourcePath) t;
-                    }
-                    else if (t instanceof MissingPlatformError) {
-                        //Handled above
-                        throw (MissingPlatformError) t;
-                    }
                     else {
+                        if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
+                            final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                            final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                            final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                            final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                        active.jfo.toUri().toString(),
+                                        FileUtil.getFileDisplayName(context.getRoot()),
+                                        bootPath == null   ? null : bootPath.toString(),
+                                        classPath == null  ? null : classPath.toString(),
+                                        sourcePath == null ? null : sourcePath.toString()
+                                        );
+                            JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
+                        }
                         //When a javac failed with the Exception mark a file
                         //causing this exceptin as compiled
                         //otherwise tasklist will reschedule the parse again
                         //and the RepositoryUpdater ends in infinite loop of reparse.
-                        finished.add(active.indexable);
+                        if (active != null)
+                            finished.add(active.indexable);
                         diagnosticListener.cleanDiagnostics();
-                        if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {
-                            final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                            final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                            final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                            t = Exceptions.attachMessage(t, String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s", //NOI18N
-                                    FileUtil.getFileDisplayName(context.getRoot()),
-                                    active.jfo.toUri().toString(),
-                                    bootPath == null   ? null : bootPath.toString(),
-                                    classPath == null  ? null : classPath.toString(),
-                                    sourcePath == null ? null : sourcePath.toString()
-                                    ));
-// XXX: commenting out because of #160618
-//                            Exceptions.printStackTrace(t);
-                        }
                         jt = null;
                         active = null;
                     }

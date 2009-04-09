@@ -42,7 +42,7 @@
 package org.netbeans.modules.html.palette.items;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
+import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -71,7 +71,7 @@ public class BUTTON implements ActiveEditorDrop {
         if (accept) {
             String body = createBody();
             try {
-                HTMLPaletteUtilities.insert(body, targetComponent);
+                HtmlPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }

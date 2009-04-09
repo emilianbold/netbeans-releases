@@ -231,12 +231,41 @@ public abstract class CsmFileTaskFactory {
     private static final int IMMEDIATELY = 0;
     
     public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
-        runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay());
+        runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay(), true);
     }
-    
-    private final void runTask(FileObject fobj, PhaseRunner.Phase phase, int delay) {
-        TaskData pr = fobj2task.get(fobj);
-        if (pr != null) {
+
+    private void runAllTasks(PhaseRunner.Phase phase, int delay) {
+        Set<FileObject> fos;
+        synchronized (this) {
+            fos = fobj2task.keySet();
+        }
+        for (FileObject fo : fos) {
+            runTask(fo, phase, delay, false);
+        }
+    }
+
+    private final void runTask(FileObject eventFobj, PhaseRunner.Phase phase, int delay, boolean checkFileDependency) {
+        List<TaskData> tasks = new ArrayList<TaskData>();
+        List<FileObject> fobjs = new ArrayList<FileObject>();
+        if (false && checkFileDependency) {
+            Set<FileObject> fos;
+            synchronized (this) {
+                fos = new HashSet<FileObject>(fobj2task.keySet());
+            }
+            CsmFile evntCsmFile = getCsmFile(eventFobj, false);
+            for (FileObject fileObject : fos) {
+
+            }
+        } else {
+            TaskData pr = fobj2task.get(eventFobj);
+            if (pr != null) {
+                tasks.add(pr);
+                fobjs.add(eventFobj);
+            }
+        }
+        for (int i = 0; i < tasks.size(); i++) {
+            TaskData pr = tasks.get(i);
+            FileObject fobj = fobjs.get(i);
             pr.runner.cancel();
             if (pr.task != null) {
                 pr.task.cancel();
@@ -295,13 +324,19 @@ public abstract class CsmFileTaskFactory {
 
         @Override
         public void fileParsingFinished(CsmFile file) {
-            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSED, IMMEDIATELY);
+            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSED, IMMEDIATELY, true);
         }
 
         @Override
         public void fileParsingStarted(CsmFile file) {
-            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY);
+            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY, true);
         }
+
+        @Override
+        public void projectParsingFinished(CsmProject project) {
+            runAllTasks(PhaseRunner.Phase.PROJECT_PARSED, IMMEDIATELY);
+        }
+
     }
     
     private class ModelListener implements CsmModelListener {
@@ -322,7 +357,7 @@ public abstract class CsmFileTaskFactory {
                         Document doc = CsmUtilities.getDocument(fobj);
                         if (doc != null) {
                             synchronized (this) {
-                                runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
+                                runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY, true);
                                 fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false)));
                             }
                         }
@@ -341,6 +376,7 @@ public abstract class CsmFileTaskFactory {
             INIT,
             PARSING_STARTED, 
             PARSED, 
+            PROJECT_PARSED,
             CLEANUP
         };
         public abstract void run(Phase phase);

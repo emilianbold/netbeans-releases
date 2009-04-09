@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -78,7 +78,7 @@ public class ProgressPanel extends JPanel {
 
         DialogDescriptor dd = new DialogDescriptor(
                 this,
-                NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("MSG_PleaseWait"),
+                NbBundle.getMessage (ProgressPanel.class, "MSG_PleaseWait"),
                 true,
                 new Object[0],
                 DialogDescriptor.NO_OPTION,
@@ -179,7 +179,7 @@ public class ProgressPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(holder, gridBagConstraints);
 
-        cancelButton.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("LBL_Cancel"));
+        cancelButton.setText(NbBundle.getMessage (ProgressPanel.class, "LBL_Cancel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

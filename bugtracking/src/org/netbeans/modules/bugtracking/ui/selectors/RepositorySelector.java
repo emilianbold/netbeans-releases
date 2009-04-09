@@ -69,7 +69,7 @@ public class RepositorySelector {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
-        BugtrackingManager.getInstance().addRepository(repo);
+        BugtrackingManager.getInstance().fireRepositoriesChanged();
         return repo;
     }
 

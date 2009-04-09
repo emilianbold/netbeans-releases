@@ -54,9 +54,19 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
  */
 public abstract class Crawler {
 
-    protected Crawler (final URL root, boolean checkTimeStamps) throws IOException {
+    /**
+     *
+     * @param root
+     * @param checkTimeStamps
+     * @param mimeTypesToCheck The set of mime types that the <code>Crawler</code> should check.
+     *   Can be <code>null</code> in which case all mime types will be checked.
+     *
+     * @throws java.io.IOException
+     */
+    protected Crawler (final URL root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
         this.root = root;
         this.timeStamps = checkTimeStamps ? TimeStamps.forRoot(root) : null;
+        this.mimeTypesToCheck = mimeTypesToCheck;
     }
 
 //    public final synchronized String getDigest () throws IOException {
@@ -87,21 +97,25 @@ public abstract class Crawler {
     // private implementation
     // -----------------------------------------------------------------------
 
+    private final URL root;
+    private final TimeStamps timeStamps;
+    private final Set<String> mimeTypesToCheck;
+
 //    private String digest;
     private Map<String, Collection<Indexable>> cache;
     private Collection<Indexable> deleted;
-    private final TimeStamps timeStamps;
-    private final URL root;
 
     private void init () throws IOException {
         if (this.cache == null) {
-            this.cache = collectResources(PathRecognizerRegistry.getDefault().getMimeTypes());
+            this.cache = collectResources(mimeTypesToCheck);
             if (timeStamps != null) {
                 final Set<String> unseen = timeStamps.store();
                 deleted = new ArrayList<Indexable>(unseen.size());
                 for (String u : unseen) {
                     deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
                 }
+            } else {
+                deleted = Collections.<Indexable>emptyList();
             }
         }
     }

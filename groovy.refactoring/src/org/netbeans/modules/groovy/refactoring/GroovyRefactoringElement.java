@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.AstElement;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,8 +61,8 @@ public class GroovyRefactoringElement extends AstElement {
     private final FileObject fileObject;
     private final AstPath path;
 
-    public GroovyRefactoringElement(ModuleNode root, ASTNode node, FileObject fileObject) {
-        super(node);
+    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject) {
+        super(info, node);
         this.root = root;
         this.fileObject = fileObject;
         this.path = new AstPath(root, node.getLineNumber(), node.getColumnNumber());

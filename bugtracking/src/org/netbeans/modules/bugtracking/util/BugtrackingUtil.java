@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,21 +47,23 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.patch.ContextualPatch;
 import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
@@ -74,42 +73,34 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
+ * @author Marian Petras
  */
 public class BugtrackingUtil {
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
         JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(panel, title, true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        final DialogDescriptor dd =
+            new DialogDescriptor(
+                    panel,
+                    title,
+                    true,
+                    new Object[]{ok, cancel},
+                    ok,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(panel.getClass()),
+                    null);
         return DialogDisplayer.getDefault().notify(dd) == ok;
-    }
-
-    public static boolean showControllerComponent(final BugtrackingController bc) {
-        JComponent com = bc.getComponent();
-        final JButton ok = new JButton("Ok");
-        JButton cancel = new JButton("Cancel");
-        final DialogDescriptor dd = new DialogDescriptor(com, "Repository?", true, new Object[]{ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, bc.getHelpContext(), null);
-        dd.setOptions(new Object[]{ok, cancel});
-        dd.setModal(true);
-        dd.setHelpCtx(bc.getHelpContext());
-        dd.setValid(false);
-        ok.setEnabled(false);
-        bc.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                boolean valid = bc.isValid();
-                dd.setValid(valid);
-                ok.setEnabled(valid);
-            }
-        });
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        return dd.getValue() == ok;
     }
 
     public static Issue[] getOpenIssues() {
@@ -128,7 +119,7 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.trim();
-        if(criteria.equals("")) {
+        if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
         List<Issue> ret = new ArrayList<Issue>();
@@ -187,23 +178,36 @@ public class BugtrackingUtil {
         panel.setLayout(layout);
         JLabel label = new JLabel(message);
         panel.add(label);
-        int gap = LayoutStyle.getSharedInstance().getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
+        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
         panel.add(bar);
-        panel.add(Box.createVerticalStrut(100));
-        Issue issue = null;
+        panel.add(Box.createVerticalStrut(gap));
         ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
+        JLabel hintLabel = new JLabel(bundle.getString("MSG_SelectIssueHint")); // NOI18N
+        hintLabel.setEnabled(false);
+        panel.add(hintLabel);
+        panel.add(Box.createVerticalStrut(80));
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                layoutStyle.getContainerGap(panel, SwingConstants.NORTH, null),
+                layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
+                0,
+                layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
+        Issue issue = null;
 
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 bundle.getString("LBL_Issues"), // NOI18N
+                true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
-        if (DialogDisplayer.getDefault().notify(descriptor) == ok) {
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.issueChooser")); // NOI18N
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
             issue = bar.getIssue();
         }
         return issue;
@@ -214,15 +218,18 @@ public class BugtrackingUtil {
         ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
         JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        DialogDescriptor descriptor = new DialogDescriptor(
                 chooser,
                 bundle.getString("LBL_ApplyPatch"), // NOI18N
+                true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.patchContextChooser")); // NOI18N
         File context = null;
-        if (DialogDisplayer.getDefault().notify(descriptor) == ok) {
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
             context = chooser.getSelectedFile();
         }
         return context;
@@ -253,4 +260,109 @@ public class BugtrackingUtil {
         }
         file.delete();
     }
+
+    public static File getLargerContext() {
+        FileObject openFile = getOpenFileObj();
+        if (openFile != null) {
+            File largerContext = getLargerContext(openFile);
+            if (largerContext != null) {
+                return largerContext;
+            }
+        }
+
+        return getContextFromProjects();
+    }
+
+    public static File getContextFromProjects() {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            return getLargerContext(mainProject);       //null or non-null
+        }
+
+        Project[] openProjects = projects.getOpenProjects();
+        if ((openProjects != null) && (openProjects.length == 1)) {
+            return getLargerContext(openProjects[0]);
+        }
+
+        return null;
+    }
+
+    public static File getLargerContext(File file) {
+        return getLargerContext(file, null);
+    }
+
+    public static File getLargerContext(FileObject fileObj) {
+        return getLargerContext(null, fileObj);
+    }
+
+    public static File getLargerContext(File file, FileObject fileObj) {
+        if ((file == null) && (fileObj == null)) {
+            throw new IllegalArgumentException(
+                    "both File and FileObject are null");               //NOI18N
+        }
+
+        assert (file == null)
+               || (fileObj == null)
+               || FileUtil.toFileObject(file).equals(fileObj);
+
+        if (fileObj == null) {
+            fileObj = FileUtil.toFileObject(file);
+        } else if (file == null) {
+            file = FileUtil.toFile(fileObj);
+        }
+
+        if (!fileObj.isValid()) {
+            return null;
+        }
+
+        Project parentProject = FileOwnerQuery.getOwner(fileObj);
+        if (parentProject != null) {
+            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+            if (parentProjectFolder.equals(fileObj) && (file != null)) {
+                return file;
+            }
+            File folder = FileUtil.toFile(parentProjectFolder);
+            if (folder != null) {
+                return folder;
+            }
+        }
+
+        if (fileObj.isFolder()) {
+            return file;                        //whether it is null or non-null
+        } else {
+            fileObj = fileObj.getParent();
+            assert fileObj != null;      //every non-folder should have a parent
+            return FileUtil.toFile(fileObj);    //whether it is null or non-null
+        }
+    }
+
+    public static File getLargerContext(Project project) {
+        FileObject projectFolder = project.getProjectDirectory();
+        assert projectFolder != null;
+
+        return FileUtil.toFile(projectFolder);
+    }
+
+    private static FileObject getOpenFileObj() {
+        TopComponent activatedTopComponent = TopComponent.getRegistry()
+                                             .getActivated();
+        if (activatedTopComponent == null) {
+            return null;
+        }
+
+        DataObject dataObj = activatedTopComponent.getLookup()
+                             .lookup(DataObject.class);
+        if ((dataObj == null) || !dataObj.isValid()) {
+            return null;
+        }
+
+        return dataObj.getPrimaryFile();
+    }
+
 }
+
+
+
+ 

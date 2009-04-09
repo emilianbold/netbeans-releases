@@ -40,9 +40,13 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.awt.Image;
+import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -57,19 +61,18 @@ public class KenaiRepository extends BugzillaRepository {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private String urlParam;
-    private Query[] definedQueries;
     private Image icon;
-    private String userMail;
     private String product;
+    private KenaiQuery myIssues;
+    private KenaiQuery allIssues;
+    private String host;
 
-    public KenaiRepository(String repoName, String url, String user, String password, String host, String urlParam, String product) {
-        super(repoName, url, user, password);
+    public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
+        super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        // XXX escape @?
-        // XXX what if user already mail address?
-        userMail = user + "@"+ host; // NOI18N
         this.product = product;
+        this.host = host;
     }
 
     @Override
@@ -99,26 +102,42 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     private Query[] getDefinedQueries() {
-        if(definedQueries == null) {
-            // XXX read first - store at least because of last refresh
+        List<Query> queries = new ArrayList<Query>();
 
+        // my issues - only if username provided
+        if(KenaiUtil.isLoggedIn()) {
+            if(myIssues == null) {
+                StringBuffer url = new StringBuffer();
+                url.append(urlParam);
+
+                // XXX escape @?
+                // XXX what if user already mail address?
+                String user = getKenaiUser();
+                if(user == null) {
+                    user = "";                                                  // NOI18N
+                }
+                String userMail = user + "@"+ host;                             // NOI18N
+                url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+
+                myIssues =
+                    new KenaiQuery(
+                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                        this,
+                        url.toString(),
+                        product,
+                        true,
+                        true);
+            }
+            queries.add(myIssues);
+        }
+
+        // all issues
+        if(allIssues == null) {
             StringBuffer url = new StringBuffer();
-            url.append(urlParam);
-            url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
-
-            KenaiQuery myIssues = 
-                new KenaiQuery(
-                    NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
-                    this,
-                    url.toString(),
-                    product,
-                    true,
-                    true);
-
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            KenaiQuery allIssues = 
+            allIssues =
                 new KenaiQuery(
                     NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
                     this,
@@ -126,17 +145,54 @@ public class KenaiRepository extends BugzillaRepository {
                     product,
                     true,
                     true);
-
-            definedQueries = new Query[] {myIssues, allIssues};
         }
-        return definedQueries;
+        queries.add(allIssues);
+        return queries.toArray(new Query[queries.size()]);
     }
 
     @Override
     protected BugzillaConfiguration createConfiguration() {
         KenaiConfiguration c = BugzillaConfiguration.create(this, KenaiConfiguration.class);
-        c.setProducts(product);
-        return c;
+        if(c != null) {
+            c.setProducts(product);
+            return c;
+        }
+        return null;
+    }
+
+    protected void setCredentials(String user, String password) {
+        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
+    }
+
+    @Override
+    public boolean authenticate(String errroMsg) {
+        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        if(pa == null) {
+            return false;
+        }
+
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+
+        setCredentials(user, new String(password));
+
+        return true;
+    }
+
+    private static String getKenaiUser() {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+        if(pa != null) {
+            return pa.getUserName();
+        }
+        return "";
+    }
+
+    private static String getKenaiPassword() {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+        if(pa != null) {
+            return new String(pa.getPassword());
+        }
+        return "";
     }
 
 }

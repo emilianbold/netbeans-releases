@@ -70,6 +70,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -182,9 +183,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
         updateRemoteConnectionHint();
 
-        // preserve permissions
         preservePermissionsCheckBox.addActionListener(new CheckBoxUpdater(
                 PhpProjectProperties.REMOTE_PERMISSIONS, preservePermissionsCheckBox));
+        uploadDirectlyCheckBox.addActionListener(new CheckBoxUpdater(
+                PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY, uploadDirectlyCheckBox));
     }
 
     @Override
@@ -230,6 +232,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         boolean preservePermissions = Boolean.parseBoolean(getValue(PhpProjectProperties.REMOTE_PERMISSIONS));
         preservePermissionsCheckBox.setSelected(preservePermissions);
+
+        boolean uploadDirectly = Boolean.parseBoolean(getValue(PhpProjectProperties.REMOTE_UPLOAD_DIRECTLY));
+        uploadDirectlyCheckBox.setSelected(uploadDirectly);
     }
 
     @Override
@@ -256,6 +261,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return;
         }
 
+        // #150179 - index file not mandatory
+        if (!PhpProjectUtils.hasText(indexFile)) {
+            indexFile = null;
+        }
         err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         if (err != null) {
             validateCategory(err);
@@ -351,6 +360,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesHintLabel = new JLabel();
         preservePermissionsCheckBox = new JCheckBox();
         preservePermissionsLabel = new JLabel();
+        uploadDirectlyCheckBox = new JCheckBox();
+        uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
         setFocusTraversalPolicy(null);
@@ -411,6 +422,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
         preservePermissionsLabel.setEnabled(false);
+
+
+        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
+        uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
+        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
+        uploadDirectlyLabel.setEnabled(false);
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -463,6 +480,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(21, 21, 21)
                 .add(preservePermissionsLabel)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(uploadDirectlyCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(21, 21, 21)
+                .add(uploadDirectlyLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
@@ -509,7 +533,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(preservePermissionsCheckBox)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(preservePermissionsLabel)
-                .add(18, 18, 18)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(uploadDirectlyCheckBox)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(uploadDirectlyLabel)
+                .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(advancedButton)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -568,17 +596,22 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
-        RunAsWebAdvanced advanced = new RunAsWebAdvanced(
-                project,
+        RunAsWebAdvanced.Properties props = new RunAsWebAdvanced.Properties(
                 getValue(PhpProjectProperties.DEBUG_URL),
                 urlHintLabel.getText(),
                 getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE),
-                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL));
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL),
+                getValue(PhpProjectProperties.DEBUG_PROXY_HOST),
+                getValue(PhpProjectProperties.DEBUG_PROXY_PORT));
+        RunAsWebAdvanced advanced = new RunAsWebAdvanced(project, props);
         if (advanced.open()) {
             Pair<String, String> pathMapping = advanced.getPathMapping();
+            Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 
@@ -597,6 +630,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JLabel remoteConnectionLabel;
     private JComboBox runAsComboBox;
     private JLabel runAsLabel;
+    private JCheckBox uploadDirectlyCheckBox;
+    private JLabel uploadDirectlyLabel;
     private JLabel uploadDirectoryLabel;
     private JTextField uploadDirectoryTextField;
     private JComboBox uploadFilesComboBox;

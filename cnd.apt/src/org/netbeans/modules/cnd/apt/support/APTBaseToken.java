@@ -88,11 +88,11 @@ public class APTBaseToken implements APTToken {
         this.setText(text);
     }
     
-    public int getType() {
+    public final int getType() {
         return type;
     }
 
-    public void setType(int t) {
+    public final void setType(int t) {
         type = t;
     }
 
@@ -103,11 +103,11 @@ public class APTBaseToken implements APTToken {
     public void setFilename(String name) {
     }
     
-    public int getOffset() {
+    public final int getOffset() {
         return offset;
     }
 
-    public void setOffset(int o) {
+    public final void setOffset(int o) {
         this.offset = o;
     }
 
@@ -119,38 +119,36 @@ public class APTBaseToken implements APTToken {
         // do nothing
     }
 
-    public CharSequence getTextID() {
-//        return textID;
+    public final CharSequence getTextID() {
         return this.text;
     }
 
-    public void setTextID(CharSequence textID) {
-//        this.textID = textID;
+    public final void setTextID(CharSequence textID) {
+        this.text = TextCache.getManager().getString(textID);
     }
 
-    public String getText() {
-        // TODO: think about LW chars
+    public final String getText() {
         return text.toString();
     }
 
-    public void setText(String t) {
+    public final void setText(String t) {
         text = TextCache.getManager().getString(t);
     }
 
-    public int getLine() {
+    public final int getLine() {
         return line;
     }
 
-    public void setLine(int l) {
+    public final void setLine(int l) {
         line = l;
     }
 
     /** Return token's start column */
-    public int getColumn() {
+    public final int getColumn() {
         return col;
     }
 
-    public void setColumn(int c) {
+    public final void setColumn(int c) {
         col = c;
     }
 

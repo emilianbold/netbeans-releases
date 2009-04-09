@@ -62,11 +62,12 @@ public final class OpenKenaiProjectAction implements ActionListener {
             KenaiProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
                 for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj));
+                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj), false);
                 }
+                KenaiTopComponent.findInstance().open();
+                KenaiTopComponent.findInstance().requestActive();
             }
         }
 
     }
-    
 }

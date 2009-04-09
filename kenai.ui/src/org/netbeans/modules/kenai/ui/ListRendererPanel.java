@@ -45,9 +45,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -59,8 +57,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,23 +80,24 @@ public class ListRendererPanel extends javax.swing.JPanel {
         initComponents();
         searchInfo = kp;
 
-        MultiLabel projectDescLabel = new MultiLabel();
-        descPanel.add(projectDescLabel, BorderLayout.CENTER);
-
         projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
-        projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
-        tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
-
+        try {
+            projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
+            projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
+            tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
+        }
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
-            descPanel.setBackground(jlist.getSelectionBackground());
+            projectDescLabel.setBackground(jlist.getSelectionBackground());
         } else {
             if (index % 2 == 0) {
                 setBackground(new Color(225, 225, 225));
-                descPanel.setBackground(new Color(225, 225, 225));
+                projectDescLabel.setBackground(new Color(225, 225, 225));
             } else {
                 setBackground(jlist.getBackground());
-                descPanel.setBackground(jlist.getBackground());
+                projectDescLabel.setBackground(jlist.getBackground());
             }
         }
 
@@ -105,20 +107,6 @@ public class ListRendererPanel extends javax.swing.JPanel {
         //descPane.setText(getSubstrWithElipsis(kenaiProject.kenaiProject.getDescription(), fm, getWidth(), 5.0f, g2d));
         //descArea.setText("<html>" + kenaiProject.kenaiProject.getDescription() + "</html>");
 
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        Container parent = getParent();
-        int width = 0;
-        while (parent != null) {
-            if (parent instanceof JViewport) {
-                width = parent.getWidth();
-                break;
-            }
-            parent = parent.getParent();
-        }
-        return new Dimension(width, super.getPreferredSize().height + 10);
     }
 
     private String highlighthPattern(String txt, String ptrn) {
@@ -145,7 +133,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
         projectNameLabel = new JLabel();
         tagsLabel = new JLabel();
         detailsLabel = new JLabel();
-        descPanel = new JPanel();
+        projectDescLabel = new JTextArea();
 
         setLayout(new GridBagLayout());
 
@@ -184,7 +172,10 @@ public class ListRendererPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(10, 10, 4, 6);
         add(detailsLabel, gridBagConstraints);
 
-        descPanel.setLayout(new BorderLayout());
+        projectDescLabel.setLineWrap(true);
+        projectDescLabel.setWrapStyleWord(true);
+        projectDescLabel.setFocusable(false);
+        projectDescLabel.setOpaque(false);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -192,13 +183,13 @@ public class ListRendererPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(8, 6, 0, 0);
-        add(descPanel, gridBagConstraints);
+        add(projectDescLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JPanel descPanel;
     private JLabel detailsLabel;
+    private JTextArea projectDescLabel;
     private JLabel projectNameLabel;
     private JLabel repoPathLabel;
     private JLabel tagsLabel;

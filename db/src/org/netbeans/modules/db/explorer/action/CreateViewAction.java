@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -52,6 +52,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -107,8 +108,8 @@ public class CreateViewAction extends BaseAction {
         try {
             boolean viewsSupported = connection.getConnector().getDriverSpecification(schemaName).areViewsSupported();
             if (!viewsSupported) {
-                String message = MessageFormat.format(bundle().getString("MSG_ViewsAreNotSupported"), 
-                        new String[] {connection.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
+                String message = NbBundle.getMessage (CreateViewAction.class, "MSG_ViewsAreNotSupported", // NOI18N
+                        connection.getConnection().getMetaData().getDatabaseProductName().trim());
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
@@ -121,12 +122,12 @@ public class CreateViewAction extends BaseAction {
                 SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
             }
         } catch(Exception exc) {
-            DbUtilities.reportError(bundle().getString("ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
+            DbUtilities.reportError(NbBundle.getMessage (CreateViewAction.class, "ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
         }
      }
 
     @Override
     public String getName() {
-        return bundle().getString("AddView"); // NOI18N
+        return NbBundle.getMessage (CreateViewAction.class, "AddView"); // NOI18N
     }
 }

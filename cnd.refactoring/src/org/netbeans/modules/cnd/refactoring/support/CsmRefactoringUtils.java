@@ -91,7 +91,7 @@ public final class CsmRefactoringUtils {
         Project p = FileOwnerQuery.getOwner(f);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < opened.length; i++) {
-            if (p == opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 return true;
             }
         }
@@ -117,7 +117,8 @@ public final class CsmRefactoringUtils {
         return referencedObject;
     }
 
-    public static CsmProject getContextCsmProject(CsmObject contextObject) {
+    public static Collection<CsmProject> getContextCsmProjects(CsmObject contextObject) {
+        Collection<CsmProject> prjs = new HashSet<CsmProject>();
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
             contextFile = ((CsmOffsetable)contextObject).getContainingFile();
@@ -127,48 +128,60 @@ public final class CsmRefactoringUtils {
         CsmProject csmProject = null;
         if (contextFile != null) {
             csmProject = contextFile.getProject();
+            prjs.add(csmProject);
+            if (false) {
+                // try another projects which could share the same file
+                FileObject fileObject = CsmUtilities.getFileObject(contextFile);
+                if (fileObject != null) {
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject);
+                    for (CsmFile csmFile : csmFiles) {
+                        prjs.add(csmFile.getProject());
+                    }
+                }
+            }
         } else if (CsmKindUtilities.isNamespace(contextObject)) {
-            csmProject = ((CsmNamespace)contextObject).getProject();
+            prjs.add(((CsmNamespace)contextObject).getProject());
         }
-        return csmProject;
+        return prjs;
     }
 
-    public static Collection<CsmProject> getRelatedCsmProjects(CsmObject origObject, boolean allProjects) {
+    public static Collection<CsmProject> getRelatedCsmProjects(CsmObject origObject, CsmProject p) {
         Collection<CsmProject> out = Collections.<CsmProject>emptyList();
-        if (!allProjects) {
-            CsmProject p = getContextCsmProject(origObject);
+        if (p != null) {
             out = Collections.singleton(p);
         } else {
             // for now return all...
             Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
-            out = all;
-            CsmProject p = getContextCsmProject(origObject);
-            if (p != null && p.isArtificial()) {
-                // add all libraries as well
-                Set<CsmProject> libs = new HashSet<CsmProject>();
-                for (CsmProject csmProject : all) {
-                    libs.addAll(csmProject.getLibraries());
+            out = new HashSet<CsmProject>(all);
+            Collection<CsmProject> prjs = getContextCsmProjects(origObject);
+            for (CsmProject prj : prjs) {
+                if (prj != null && prj.isArtificial()) {
+                    // add all libraries as well
+                    Set<CsmProject> libs = new HashSet<CsmProject>();
+                    for (CsmProject csmProject : all) {
+                        libs.addAll(csmProject.getLibraries());
+                    }
+                    out.addAll(libs);
                 }
-                out = new ArrayList<CsmProject>(all);
-                out.addAll(libs);
             }
         }
         return out;
     }
     
-    public static Project getContextProject(CsmObject contextObject) {
-        CsmProject csmProject = getContextCsmProject(contextObject);
-        Project out = null;
-        if (csmProject != null) {
-            Object o = csmProject.getPlatformProject();
-            if (o instanceof NativeProject) {
-                o = ((NativeProject)o).getProject();
-            }                
-            if (o instanceof Project) {
-                out = (Project)o;
+    public static Collection<Project> getContextProjects(CsmObject contextObject) {
+        Collection<CsmProject> csmProjects = getContextCsmProjects(contextObject);
+        Collection<Project> out = new ArrayList<Project>();
+        for (CsmProject csmProject : csmProjects) {
+            if (csmProject != null) {
+                Object o = csmProject.getPlatformProject();
+                if (o instanceof NativeProject) {
+                    o = ((NativeProject)o).getProject();
+                }
+                if (o instanceof Project) {
+                    out.add((Project)o);
+                }
             }
         }
-        
         return out;
     }
         
@@ -270,9 +283,9 @@ public final class CsmRefactoringUtils {
 
     public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
-        while (decl instanceof CsmReference) {
-            decl = ((CsmReference)decl).getOwner();
-        }
+//        while (decl instanceof CsmReference) {
+//            decl = ((CsmReference)decl).getOwner();
+//        }
         if (CsmKindUtilities.isOffsetable(decl)) {
             return findInnerFileObject((CsmOffsetable)decl);
         }

@@ -710,6 +710,12 @@ final class ColorUtil {
                                             Color brightC, Color darkC) {
         Paint oldPaint = g.getPaint();
 
+        //#161755 - for some reason UIManager doesn't have to find colors defined in AquaLFCustoms class
+        if( null == brightC )
+            brightC = Color.gray;
+        if( null == darkC )
+            darkC = Color.gray;
+
         g.setPaint( new GradientPaint(rect.x, rect.y, brightC, rect.x, rect.y+rect.height/2, darkC) );
         g.fillRect(rect.x, rect.y, rect.width, rect.height);
         g.setPaint(oldPaint);

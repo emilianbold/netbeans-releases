@@ -94,6 +94,10 @@ public final class ServerUtilities {
         return null == gip ? null : new ServerUtilities(gip);
     }
 
+    public void finishServerInitialization() {
+        gip.getInstances();
+    }
+
     /**
      * Returns the ServerInstance object for the server with the specified URI.
      * 

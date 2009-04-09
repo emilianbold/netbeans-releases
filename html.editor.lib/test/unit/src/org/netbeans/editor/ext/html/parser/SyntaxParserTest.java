@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 
 /** SyntaxParser unit tests
  *
@@ -73,7 +73,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
     public void testOpenTag() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div>";
         doc.insertString(0, text, null);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
@@ -105,7 +105,7 @@ public class SyntaxParserTest extends TestBase {
     }
     
     public void testEndTag() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "</div>";
         doc.insertString(0, text, null);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
@@ -137,7 +137,7 @@ public class SyntaxParserTest extends TestBase {
     }
     
      public void testTagWithOneAttribute() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div align=\"center\"/>";
         doc.insertString(0, text, null);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
@@ -182,7 +182,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
         public void testTagWithUnquotedAttribute() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div align=center/>";
         doc.insertString(0, text, null);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
@@ -228,7 +228,7 @@ public class SyntaxParserTest extends TestBase {
     
     //+ new line and tab in the tag and whitespaces around the equal operator
     public void testTagWithOneAttribute2() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div \t \n align =\t \"center\"/>";
         //             012345 67 890123456 78 9012345 678
         doc.insertString(0, text, null);
@@ -274,7 +274,7 @@ public class SyntaxParserTest extends TestBase {
     }
     
     public void testTagWithMoreAttributes() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div align=\"center\" \t\n title=\"mydiv\" />";
         //             012345678901 2345678 90 1 23456789 012345 6789
         doc.insertString(0, text, null);
@@ -328,7 +328,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
     public void testEntityReference() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "&nbsp; &amp;";
         //             012345678901
         doc.insertString(0, text, null);
@@ -364,7 +364,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
     public void testComment() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<!-- comment -->";
         //             01234567890123456
         doc.insertString(0, text, null);
@@ -394,7 +394,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
     public void testMultipleComments() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String comments = "<!-- comment1 --><!-- comment2 -->";
         String text = comments + "\n";
 
@@ -427,7 +427,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
     public void testMultipleCommentsSeparated() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
 
         String comment1 = "<!-- comment1 -->";
         String comment2 = "<!-- comment2 -->";
@@ -467,7 +467,7 @@ public class SyntaxParserTest extends TestBase {
     }
     
      public void testSimpleSGMLDeclaration() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<!X Y Z>";
         //             0123456789
         doc.insertString(0, text, null);
@@ -503,7 +503,7 @@ public class SyntaxParserTest extends TestBase {
     }
      
      public void testSGMLDeclaration() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<!X -- comment -- Y \n \t Z>";
         //             0123456789
         doc.insertString(0, text, null);
@@ -539,7 +539,7 @@ public class SyntaxParserTest extends TestBase {
     }
     
      public void testDoctype() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<!DOCTYPE html \t PUBLIC \"id part 2\" \n \"file\">";
         //             0123456789
         doc.insertString(0, text, null);
@@ -575,7 +575,7 @@ public class SyntaxParserTest extends TestBase {
     }
      
      public void testDoctypeSimplePublicId() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<!DOCTYPE html \t PUBLIC \"simpleid\" \n \"file\">";
         //             0123456789
         doc.insertString(0, text, null);
@@ -611,7 +611,7 @@ public class SyntaxParserTest extends TestBase {
     }
 
       public void testTagWithStyleAttributes() throws BadLocationException {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         String text = "<div style=\"color:red\"/>";
         //             012345678901 2345678 90 1 23456789 012345 6789
         doc.insertString(0, text, null);

@@ -127,7 +127,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
-            getFile().addMacro(createMacro((APTDefine) apt));
+            MacroImpl macro = createMacro((APTDefine) apt);
+            if (macro != null) {
+                getFile().addMacro(macro);
+            }
         }
     }
 
@@ -144,7 +147,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void postInclude(APTInclude apt, FileImpl included) {
         if (needMacroAndIncludes()) {
-            getFile().addInclude(createInclude(apt, included));
+            getFile().addInclude(createInclude(apt, included), included == null);
         }
     }
 
@@ -170,7 +173,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     private MacroImpl createMacro(APTDefine define) {
-
+        // create even for invalid macro (to have possibility of showing error HL)
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
@@ -183,13 +186,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
 
         SimpleOffsetableImpl pos = getOffsetable(define.getToken());
-        List bodyTokens = define.getBody();
+        List<APTToken> bodyTokens = define.getBody();
         APTToken last;
         String body = "";
         if (bodyTokens.isEmpty()) {
             last = define.getName();
         } else {
-            last = (APTToken) bodyTokens.get(bodyTokens.size() - 1);
+            last = bodyTokens.get(bodyTokens.size() - 1);
             //APTToken start = (APTToken) bodyTokens.get(0);
             // FIXUP (performance/memory). For now:
             // 1) nobody uses macros.getText

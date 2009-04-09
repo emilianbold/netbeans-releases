@@ -44,9 +44,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
@@ -69,9 +72,11 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -107,20 +112,40 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         this.defaultScope = Scope.CURRENT;
         initComponents();
     }
-    
+
     public enum Scope {
         ALL,
-        CURRENT
+        CURRENT,
+        USER_SPECIFIED
+    };
+    
+    private static final class ProjectScope {
+        JLabel label;
+        CsmProject project;
+
+        public ProjectScope(JLabel label, CsmProject project) {
+            this.label = label;
+            this.project = project;
+        }
+
+        public CsmProject getProject() {
+            return project;
+        }
+
+        public JLabel getLabel() {
+            return label;
+        }
     }
     
-    public Scope getScope() {
-        if (scope.getItemCount() == 0) {
-            return defaultScope;
+    public CsmProject getScopeProject() {
+        if (defaultScope == Scope.ALL) {
+            return null;
+        } else if (defaultScope == Scope.CURRENT) {
+            return ((ProjectScope)scope.getItemAt(1)).getProject();
+        } else {
+            assert defaultScope == Scope.USER_SPECIFIED;
+            return ((ProjectScope)scope.getSelectedItem()).getProject();
         }
-        if (scope.getSelectedIndex() == 1) {
-            return Scope.CURRENT;
-        }
-        return Scope.ALL;
     }
     
     private volatile boolean initialized = false;
@@ -154,23 +179,33 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         initFields();
 
-        final JLabel currentProject;
-        final JLabel allProjects;
+        final List<ProjectScope> currentProjects;
+        final ProjectScope allProjects;
         CsmObject refObject = getReferencedObject();
         if ((refObject != null) && !CsmKindUtilities.isLocalVariable(refObject)) {
-            Project p = CsmRefactoringUtils.getContextProject(this.origObject);
-            if (p!=null) {
-                ProjectInformation pi = ProjectUtils.getInformation(p);
-                currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
-                allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); // NOI18N
+            Collection<Project> ps = CsmRefactoringUtils.getContextProjects(this.origObject);
+            if (!ps.isEmpty()) {
+                defaultScope = Scope.USER_SPECIFIED;
+                currentProjects = new ArrayList<ProjectScope>();
+                Icon icon = null;
+                for (Project p : ps) {
+                    ProjectInformation pi = ProjectUtils.getInformation(p);
+                    icon = pi.getIcon();
+                    CsmProject prj = CsmModelAccessor.getModel().getProject(p);
+                    ProjectScope prjScope = new ProjectScope(new JLabel(pi.getDisplayName(), icon, SwingConstants.LEFT), prj);
+                    currentProjects.add(prjScope);
+                }
+                allProjects = new ProjectScope(new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), icon, SwingConstants.LEFT), null); // NOI18N
             } else {
                 defaultScope = Scope.ALL;
-                currentProject = null;
+                currentProjects = null;
                 allProjects = null;
             }
         } else {
             defaultScope = Scope.CURRENT;
-            currentProject = null;
+            ProjectScope prjScope = new ProjectScope(null, ((CsmVariable)refObject).getContainingFile().getProject());
+            currentProjects = new ArrayList<ProjectScope>();
+            currentProjects.add(prjScope);
             allProjects = null;
         }
         final String labelText;
@@ -241,7 +276,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             StringBuilder macroName = new StringBuilder(((CsmMacro)refObject).getName());
             if (((CsmMacro)refObject).getParameters() != null) {
                 macroName.append("("); // NOI18N
-                Iterator<? extends CharSequence> params = ((CsmMacro)refObject).getParameters().iterator();
+                Iterator<CharSequence> params = ((CsmMacro)refObject).getParameters().iterator();
                 if (params.hasNext()) {
                     macroName.append(params.next());
                     while (params.hasNext()) {
@@ -325,11 +360,19 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //                    c_usages.setVisible(false);
 //                    c_directOnly.setVisible(false);
                 }
-                if (currentProject!=null) {
-                    scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject }));
+                if (currentProjects != null) {
+                    Object[] model = new Object[currentProjects.size() + 1];
+                    model[0] = allProjects;
+                    for (int i = 0; i < currentProjects.size(); i++) {
+                        model[i+1] = currentProjects.get(i);
+                    }
+                    scope.setModel(new DefaultComboBoxModel(model));
                     int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                     scope.setSelectedIndex(defaultItem);
                     scope.setRenderer(new JLabelRenderer());
+                    if (defaultScope == Scope.CURRENT) {
+                        scopePanel.setVisible(false);
+                    }
                 } else {
                     scopePanel.setVisible(false);
                 }                
@@ -678,9 +721,9 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
             
-            if ( value != null ) {
-                setText(((JLabel)value).getText());
-                setIcon(((JLabel)value).getIcon());
+            if ( value != null && ((ProjectScope)value).getLabel() != null ) {
+                setText(((ProjectScope)value).getLabel().getText());
+                setIcon(((ProjectScope)value).getLabel().getIcon());
             }
             
             if ( isSelected ) {

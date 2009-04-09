@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase implements CsmIdentifiable, Persistent, SelfPersistent {
     
-    private CsmUID uid = null;
+    private CsmUID<?> uid = null;
 
     protected OffsetableIdentifiableBase(AST ast, CsmFile file) {
         super(ast, file);
@@ -75,14 +75,14 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         super(containingFile, startOffset, endOffset);
     }
 
-    protected abstract CsmUID createUID();
+    protected abstract CsmUID<?> createUID();
 
     @SuppressWarnings("unchecked")
     public CsmUID<T> getUID() {
         if (uid == null) {
             uid = createUID();
         }
-        return uid;
+        return (CsmUID<T>) uid;
     }
 
     protected final void setSelfUID() {

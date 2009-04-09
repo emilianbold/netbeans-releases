@@ -186,6 +186,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public void setFolder(Folder folder) {
+        if (folder == null && file == null) {
+            // store file in field. method getFile() will works after removing item
+            getCanonicalFile();
+        }
         this.folder = folder;
         if (folder == null) { // Item is removed, let's clean up.
             synchronized (this) {
@@ -245,7 +249,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (aPath != null) {
             return FileUtil.normalizeFile(new File(aPath));
         }
-        return null;
+        return file;
     }
 
     public File getCanonicalFile() {

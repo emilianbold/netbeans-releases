@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -71,6 +72,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -91,6 +93,11 @@ public class CustomizerDialog {
     // Option command names
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
+
+    private static final String CUSTOMIZER_DIALOG_X = "CustomizerDailog.dialog.x";
+    private static final String CUSTOMIZER_DIALOG_Y = "CustomizerDailog.dialog.y";
+    private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerDailog.dialog.width";
+    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerDailog.dialog.height";
 
     public static Dialog createDialog( ActionListener okOptionListener, ActionListener storeListener, final CustomizerPane innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories, 
@@ -147,8 +154,34 @@ public class CustomizerDialog {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
 
+        Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerDialog.class);
+        int dialogX = prefs.getInt(CUSTOMIZER_DIALOG_X, 0);
+        int dialogY = prefs.getInt(CUSTOMIZER_DIALOG_Y, 0);
+        int dialogWidth = prefs.getInt(CUSTOMIZER_DIALOG_WIDTH, 0);
+        int dialogHeight = prefs.getInt(CUSTOMIZER_DIALOG_HEIGHT, 0);
+        if ((dialogWidth != 0) && (dialogHeight != 0)) {
+            //Check bounds if saved size is bigger than size of current display, dialog should use the same display
+            //as main window
+            int maxWidth = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().width;
+            if (dialogWidth > maxWidth) {
+                dialogWidth = maxWidth * 3 / 4;
+            }
+            int maxHeight = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().height;
+            if (dialogHeight > maxHeight) {
+                dialogHeight = maxHeight * 3 / 4;
+            }
+
+            dialog.setBounds(dialogX, dialogY, dialogWidth, dialogHeight);
+        }
+
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
+                Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerDialog.class);
+                prefs.putInt(CUSTOMIZER_DIALOG_X, e.getWindow().getX());
+                prefs.putInt(CUSTOMIZER_DIALOG_Y, e.getWindow().getY());
+                prefs.putInt(CUSTOMIZER_DIALOG_WIDTH, e.getWindow().getWidth());
+                prefs.putInt(CUSTOMIZER_DIALOG_HEIGHT, e.getWindow().getHeight());
+
                 innerPane.clearPanelComponentCache();
                 List<ProjectCustomizer.Category> queue = new LinkedList<ProjectCustomizer.Category>(Arrays.asList(categories));
 

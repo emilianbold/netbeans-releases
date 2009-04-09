@@ -45,10 +45,12 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -59,11 +61,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -111,11 +115,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private TopComponent resultView;
     private Set<String> editItemsSet = new HashSet<String>();
     private ArrayList<String> editItemsList = new ArrayList<String>();
-    private JPopupMenu editItemsMenu;
     private JButton dropDownButton;
 
     private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
 
+    private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
     private RequestProcessor.Task evalTask =
             new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
@@ -126,10 +130,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public CodeEvaluator() {
         initComponents();
         codePane = new JEditorPane();
+        codePane.setMinimumSize(new Dimension(0,0));
         historyPanel = new HistoryPanel();
 
-        historyToggleButton.setMargin(new Insets(2, 3, 2, 3));
-        historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
         dropDownButton = createDropDownButton();
@@ -162,41 +165,77 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         defaultInstance = this;
     }
 
+    public void pasteExpression(String expr) {
+        codePane.setText(expr);
+        if (!isOpened()) {
+            open();
+        }
+        requestActive();
+    }
+
     private JButton createDropDownButton() {
-        editItemsMenu = new JPopupMenu();
         Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/drop_down_arrow.png", false);
-        final JButton button = new JButton(icon);
-        button.setToolTipText(NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip"));
+        final JButton button = new DropDownButton();
+        button.setIcon(icon);
+        String tooltipText = NbBundle.getMessage(CodeEvaluator.class, "CTL_Expressions_Dropdown_tooltip");
+        button.setToolTipText(tooltipText);
         button.setEnabled(false);
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        Dimension size = new Dimension(icon.getIconWidth() + 3, icon.getIconHeight() + 2);
         button.setPreferredSize(size);
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setFocusable(false);
-        button.addActionListener(new ActionListener() {
+        AbstractAction action = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                if (editItemsMenu.isShowing()) {
-                    editItemsMenu.setVisible(false);
-                } else {
-                    editItemsMenu.show(button, 0, button.getHeight());
+                if ("pressed".equals(e.getActionCommand())) {
+                    JComponent jc = (JComponent) e.getSource();
+                    Point p = new Point(jc.getWidth(), jc.getHeight());
+                    SwingUtilities.convertPointToScreen(p, jc);
+                    if (!ButtonPopupSwitcher.isShown()) {
+                        SwitcherTableItem[] items = createSwitcherItems();
+                        ButtonPopupSwitcher.selectItem(jc, items, p.x, p.y);
+                    }
+                    //Other portion of issue 37487, looks funny if the
+                    //button becomes pressed
+                    if (jc instanceof AbstractButton) {
+                        AbstractButton jb = (AbstractButton) jc;
+                        jb.getModel().setPressed(false);
+                        jb.getModel().setRollover(false);
+                        jb.getModel().setArmed(false);
+                        jb.repaint();
+                    }
                 }
             } // actionPerformed
-        });
+
+            @Override
+            public boolean isEnabled() {
+                return !editItemsList.isEmpty();
+            }
+
+        };
+        action.putValue(Action.SMALL_ICON, icon);
+        action.putValue(Action.SHORT_DESCRIPTION, tooltipText);
+        button.setAction(action);
         return button;
+    }
+
+    private SwitcherTableItem[] createSwitcherItems() {
+        SwitcherTableItem[] items = new SwitcherTableItem[editItemsList.size()];
+        int x = 0;
+        for (String item : editItemsList) {
+            items[x++] = new SwitcherTableItem(new MenuItemActivatable(item), item);
+        }
+        return items;
     }
 
     public void recomputeDropDownItems() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                editItemsMenu.removeAll();
                 for (String str : editItemsList) {
                     StringTokenizer tok = new StringTokenizer(str, "\n"); // NOI18N
                     String dispName = "";
                     while (dispName.trim().length() == 0 && tok.hasMoreTokens()) {
                         dispName = tok.nextToken();
                     }
-                    JMenuItem item = new JMenuItem(dispName, null);
-                    item.addActionListener(new MenuItemListener(str));
-                    editItemsMenu.add(item);
                 }
                 dropDownButton.setEnabled(!editItemsList.isEmpty());
             }
@@ -296,25 +335,16 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        historyToggleButton = new javax.swing.JToggleButton();
         editorScrollPane = new javax.swing.JScrollPane();
         separatorPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
         evaluateButton = new javax.swing.JButton();
         emptyPanel = new javax.swing.JPanel();
 
-        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/eval_history.png"))); // NOI18N
-        historyToggleButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.historyToggleButton.text")); // NOI18N
-        historyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Show_History")); // NOI18N
-        historyToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                historyToggleButtonActionPerformed(evt);
-            }
-        });
-
         setLayout(new java.awt.GridBagLayout());
 
         editorScrollPane.setBorder(null);
+        editorScrollPane.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -326,7 +356,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         separatorPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
         separatorPanel.setMaximumSize(new java.awt.Dimension(1, 32767));
-        separatorPanel.setMinimumSize(new java.awt.Dimension(1, 10));
+        separatorPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
@@ -335,11 +365,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
         rightPanel.setLayout(new java.awt.GridBagLayout());
 
-        evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.gif"))); // NOI18N
+        evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.png"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
-        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 20));
+        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 22));
         evaluateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 evaluateButtonActionPerformed(evt);
@@ -352,6 +382,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
 
+        emptyPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         emptyPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -369,24 +400,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         evaluate();
     }//GEN-LAST:event_evaluateButtonActionPerformed
 
-    private void historyToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyToggleButtonActionPerformed
-        boolean toggled = historyToggleButton.isSelected();
-        if (toggled) {
-            // show history
-            editorScrollPane.setViewportView(historyPanel);
-        } else {
-            // show editor pane
-            editorScrollPane.setViewportView(codePane);
-        }
-        computeEvaluationButtonState();
-    }//GEN-LAST:event_historyToggleButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane editorScrollPane;
     private javax.swing.JPanel emptyPanel;
     private javax.swing.JButton evaluateButton;
-    private javax.swing.JToggleButton historyToggleButton;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JPanel separatorPanel;
     // End of variables declaration//GEN-END:variables
@@ -394,6 +412,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public static void openEvaluator() {
         CodeEvaluator evaluator = getInstance();
         evaluator.open ();
+        evaluator.codePane.selectAll();
         evaluator.requestActive ();
     }
 
@@ -443,9 +462,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//                if (result == null && resultView == null) { // [TODO]
-//                    return ; // Ignore when nothing to display and nothing is initialized.
-//                }
                 if (preferences.getBoolean("show_evaluator_result", false)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
@@ -466,6 +482,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private void addResultToHistory(final String expr, Variable result) {
+        if (lastEvaluationRecord != null) {
+            historyPanel.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
+                    lastEvaluationRecord.value, lastEvaluationRecord.toString);
+        }
         String type = result.getType();
         String value = result.getValue();
         String toString = ""; // NOI18N
@@ -473,21 +493,21 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             try {
                 toString = ((ObjectVariable) result).getToStringValue ();
             } catch (InvalidExpressionException ex) {
-            } finally {
             }
         } else {
             toString = value;
         }
-        historyPanel.addItem(expr, type, value, toString);
+        lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (editItemsSet.contains(expr)) {
-                    editItemsList.remove(expr);
-                    editItemsList.add(0, expr);
+                String expr2 = expr.trim();
+                if (editItemsSet.contains(expr2)) {
+                    editItemsList.remove(expr2);
+                    editItemsList.add(0, expr2);
                 } else {
-                    editItemsList.add(0, expr);
-                    editItemsSet.add(expr);
+                    editItemsList.add(0, expr2);
+                    editItemsSet.add(expr2);
                     if (editItemsList.size() > 20) { // [TODO] constant
                         String removed = editItemsList.remove(editItemsList.size() - 1);
                         editItemsSet.remove(removed);
@@ -506,7 +526,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.isControlDown()) {
             e.consume();
-            evaluate();
+            if (debuggerRef.get() != null) {
+                evaluate();
+            }
+        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            e.consume();
+            close();
         }
     }
 
@@ -634,9 +659,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             //System.out.println("evaluate: '"+exp+"'");
             try {
                 JPDADebugger debugger = debuggerRef.get();
-                Variable var = debugger.evaluate(exp);
-                addResultToHistory(exp, var);
-                displayResult(var);
+                if (debugger != null) {
+                    Variable var = debugger.evaluate(exp);
+                    addResultToHistory(exp, var);
+                    displayResult(var);
+                }
             } catch (InvalidExpressionException ieex) {
                 String message = ieex.getLocalizedMessage();
                 Throwable t = ieex.getTargetException();
@@ -677,18 +704,51 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     }
 
-    private class MenuItemListener implements ActionListener {
+    private class MenuItemActivatable implements SwitcherTableItem.Activatable {
 
-        private String str;
+        String text;
 
-        MenuItemListener(String str) {
-            this.str = str;
+        MenuItemActivatable(String str) {
+            text = str;
         }
 
-        public void actionPerformed(ActionEvent e) {
-            codePane.setText(str);
+        public void activate() {
+            codePane.setText(text);
         }
 
+    }
+
+    private static class DropDownButton extends JButton {
+
+        @Override
+        protected void processMouseEvent(MouseEvent me) {
+            super.processMouseEvent(me);
+            if (isEnabled() && me.getID() == MouseEvent.MOUSE_PRESSED) {
+                getAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "pressed"));
+            }
+        }
+
+        protected String getTabActionCommand(ActionEvent e) {
+            return null;
+        }
+
+        void performAction( ActionEvent e ) {
+        }
+
+    }
+
+    private static class HistoryRecord {
+        String expr;
+        String type;
+        String value;
+        String toString;
+
+        HistoryRecord(String expr, String type, String value, String toString) {
+            this.expr = expr;
+            this.type = type;
+            this.value = value;
+            this.toString = toString;
+        }
     }
 
 }

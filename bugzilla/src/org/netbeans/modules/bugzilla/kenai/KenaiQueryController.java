@@ -68,11 +68,17 @@ public class KenaiQueryController extends QueryController {
         super.enableFields(bl);
 
         if(predefinedQuery) {
-            // overide - for predefined kenai queries are those always disabled
+            // override - for predefined kenai queries are those always disabled
             panel.modifyButton.setEnabled(false);
             panel.removeButton.setEnabled(false);
         }
     }
 
+    @Override
+    public void closed() {
+        super.closed();
+        // override
+        scheduleForRefresh();
+    }
 
 }

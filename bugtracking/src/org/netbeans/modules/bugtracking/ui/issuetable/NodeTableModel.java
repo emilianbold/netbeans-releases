@@ -664,9 +664,9 @@ public class NodeTableModel extends AbstractTableModel {
         panel.setLayout(new GridBagLayout());
         
         panel.getAccessibleContext().setAccessibleName( 
-                NbBundle.getBundle(NodeTableModel.class).getString("ACSN_ColumnDialog") );
+                NbBundle.getBundle(NodeTableModel.class).getString("ACSN_ColumnDialog") );  // NOI18N
         panel.getAccessibleContext().setAccessibleDescription( 
-                NbBundle.getBundle(NodeTableModel.class).getString("ACSD_ColumnDialog") );
+                NbBundle.getBundle(NodeTableModel.class).getString("ACSD_ColumnDialog") );  // NOI18N
 
         ArrayList<JCheckBox> boxes = new ArrayList<JCheckBox>(allPropertyColumns.length);
         boolean[] oldvalues = new boolean[allPropertyColumns.length];
@@ -685,7 +685,7 @@ public class NodeTableModel extends AbstractTableModel {
         labelConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         labelConstraints.weightx = 1.0;
 
-        JLabel desc = new JLabel(NbBundle.getBundle(NodeTableModel.class).getString("LBL_ColumnDialogDesc"));
+        JLabel desc = new JLabel(NbBundle.getBundle(NodeTableModel.class).getString("LBL_ColumnDialogDesc")); // NOI18N
         panel.add(desc, labelConstraints);
 
         GridBagConstraints firstConstraints = new GridBagConstraints();
@@ -726,7 +726,7 @@ public class NodeTableModel extends AbstractTableModel {
             j++;
         }
 
-        String title = NbBundle.getMessage(NodeTableModel.class, "LBL_ColumnDialogTitle");
+        String title = NbBundle.getMessage(NodeTableModel.class, "LBL_ColumnDialogTitle"); // NOI18N
 
         if ((viewName != null) && (viewName.length() > 0)) {
             title = viewName + " - " + title; // NOI18N

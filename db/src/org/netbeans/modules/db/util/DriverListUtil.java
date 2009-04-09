@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.util.NbBundle;
@@ -58,11 +57,6 @@ public class DriverListUtil {
 
     private static List<JdbcUrl> urls = new LinkedList<JdbcUrl>();
         
-    private static String getMessage(String key, String ... params) {
-        return NbBundle.getMessage(DriverListUtil.class, key, params);
-    }
-
-            //private default constructor -> singleton
     private DriverListUtil() {
     }
     
@@ -128,23 +122,23 @@ public class DriverListUtil {
         "RmiJdbc.RJDriver",
         "jdbc:rmi://<HOST>[:<PORT>]/jdbc:cloudscape:<DB>");
         
-        add(getMessage("DRIVERNAME_JavaDbEmbedded"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_JavaDbEmbedded"),
         "org.apache.derby.jdbc.EmbeddedDriver",
         "jdbc:derby:<DB>[;<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_JavaDbNetwork"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_JavaDbNetwork"),
         "org.apache.derby.jdbc.ClientDriver",
         "jdbc:derby://<HOST>[:<PORT>]/<DB>[;<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_DB2JCC"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_DB2JCC"),
             "com.ibm.db2.jcc.DB2Driver",
             "jdbc:db2://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_DB2JCC"), getMessage("TYPE_IDS"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_DB2JCC"), NbBundle.getMessage(DriverListUtil.class, "TYPE_IDS"),
                 "com.ibm.db2.jcc.DB2Driver",
                 "jdbc:ids://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_DB2JCC"), getMessage("TYPE_Cloudscape"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_DB2JCC"), NbBundle.getMessage(DriverListUtil.class, "TYPE_Cloudscape"),
                 "com.ibm.db2.jcc.DB2Driver",
                 "jdbc:db2j:net://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
 
@@ -212,11 +206,11 @@ public class DriverListUtil {
         "org.hsql.jdbcDriver",
         "jdbc:HypersonicSQL:<DB>");
         
-        add(getMessage("DRIVERNAME_JTDS"), getMessage("TYPE_ForSQLServer"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_JTDS"), NbBundle.getMessage(DriverListUtil.class, "TYPE_ForSQLServer"),
         "net.sourceforge.jtds.jdbc.Driver",
         "jdbc:jtds:sqlserver://<HOST>[:<PORT>][/<DB>][;<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_JTDS"), getMessage("TYPE_ForSybase"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_JTDS"), NbBundle.getMessage(DriverListUtil.class, "TYPE_ForSybase"),
         "net.sourceforge.jtds.jdbc.Driver",
         "jdbc:jtds:sybase://<HOST>[:<PORT>][/<DB>][;<ADDITIONAL>]", true);
 
@@ -244,11 +238,11 @@ public class DriverListUtil {
         "com.microsoft.jdbc.sqlserver.SQLServerDriver",
         "jdbc:microsoft:sqlserver://<HOST>[:<PORT>][;DatabaseName=<DB>]");
 
-        add(getMessage("DRIVERNAME_MSSQL2005"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_MSSQL2005"),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         "jdbc:sqlserver://[<HOST>[\\<INSTANCE>][:<PORT>]][;databaseName=<DB>][;<ADDITIONAL>]", true);
         
-        add(getMessage("DRIVERNAME_MySQL"),
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_MySQL"),
                 "com.mysql.jdbc.Driver", 
                 "jdbc:mysql://[<HOST>[:<PORT>]][/<DB>][?<ADDITIONAL>]", true); // NOI18N
         
@@ -256,36 +250,36 @@ public class DriverListUtil {
         "org.gjt.mm.mysql.Driver",
         "jdbc:mysql://<HOST>[:<PORT>]/<DB>");
         
-        add(getMessage("DRIVERNAME_OracleThin"), 
-                getMessage("TYPE_SID"), "oracle.jdbc.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleThin"),
-                getMessage("TYPE_Service"), "oracle.jdbc.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleThin"),
-                getMessage("TYPE_TNSName"), "oracle.jdbc.OracleDriver",
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
                 
-        add(getMessage("DRIVERNAME_OracleOCI"), 
-                "OCI8 " + getMessage("TYPE_SID"), "oracle.jdbc.driver.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+                "OCI8 " + NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci8:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleOCI"),
-                "OCI8 " + getMessage("TYPE_Service"), "oracle.jdbc.driver.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+                "OCI8 " + NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci8:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleOCI"),
-                getMessage("TYPE_TNSName"), "oracle.jdbc.driver.OracleDriver",
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleOCI"), 
-                getMessage("TYPE_SID"), "oracle.jdbc.driver.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(getMessage("DRIVERNAME_OracleOCI"),
-                getMessage("TYPE_Service"), "oracle.jdbc.driver.OracleDriver", 
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+                NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
         
         add("Oracle (DataDirect Connect for JDBC)",
@@ -296,7 +290,7 @@ public class DriverListUtil {
         "postgresql.Driver",
         "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]");
         
-        add(getMessage("DRIVERNAME_PostgreSQL"), // 7.0 and later
+        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_PostgreSQL"), // 7.0 and later
         "org.postgresql.Driver",
         "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]", true);
         
@@ -402,14 +396,14 @@ public class DriverListUtil {
     
     public static String findFreeName(String name) {
         String ret;
-        Vector names = new Vector();
+        Vector<String> names = new Vector<String> ();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (int i = 0; i < drivers.length; i++)
             names.add(drivers[i].getDisplayName());
         
         if (names.contains(name))
             for (int i = 1;;i++) {
-                ret = name + " (" + i + ")";
+                ret = name + " (" + i + ")"; // NOI18N
                 if (!names.contains(ret))
                     return ret;
             }

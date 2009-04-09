@@ -1,9 +1,10 @@
 Name: PHPDocumentor Documentaion
-Version: 1.4.0
-License: GNU Lesser General Public License
+Version: 1.4
+License: LGPL-2.1
 OSR: 9775
 Description: Documentation for PHPDocumentor tags
 Origin: http://www.phpdoc.org/
+Files: phpdocdesc.zip, predefined_vars.zip
 
 GNU Lesser General Public License
 

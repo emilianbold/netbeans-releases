@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.openide.util.NbBundle;
@@ -75,6 +76,7 @@ public class BadgeProvider {
         boolean badgeStateChanged = false;
         synchronized (listLock){
             boolean oldState = storage.contains(project);
+            CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
             ProjectFiles: for( CsmFile file : project.getAllFiles() ) {
                 if (!file.getErrors().isEmpty()) {
                     if (!storage.contains(file)) {
@@ -83,7 +85,7 @@ public class BadgeProvider {
                     }
                     continue ProjectFiles;
                 }
-                for (CsmInclude incl : file.getIncludes()) {
+                for (CsmInclude incl : fiq.getBrokenIncludes(file)) {
                     if (incl.getIncludeFile() == null) {
                         if (!storage.contains(file)) {
                             storage.add(file);
@@ -114,22 +116,11 @@ public class BadgeProvider {
         synchronized (listLock){
             boolean oldState = storage.contains(project);
             boolean badFile = false;
-            if (!file.getErrors().isEmpty()) {
+            if (CsmFileInfoQuery.getDefault().hasBrokenIncludes(file) || !file.getErrors().isEmpty()) {
                 badFile = true;
                 if (!storage.contains(file)) {
                     storage.add(file);
                     badgeStateChanged = true;
-                }
-            } else {
-                for (CsmInclude incl : file.getIncludes()){
-                    if (incl.getIncludeFile() == null) {
-                        if (!storage.contains(file)){
-                            storage.add(file);
-                            badgeStateChanged = true;
-                        }
-                        badFile = true;
-                        break;
-                    }
                 }
             }
             if (!badFile && storage.contains(file)){

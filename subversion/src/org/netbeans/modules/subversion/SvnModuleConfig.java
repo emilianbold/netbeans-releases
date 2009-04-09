@@ -72,7 +72,8 @@ public class SvnModuleConfig {
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
     private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
     
-    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
+    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N
+    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";                                 // NOI18N
 
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
@@ -169,6 +170,14 @@ public class SvnModuleConfig {
 
     public void setShowFileAllInfo(boolean value) {
         getPreferences().putBoolean(SEARCH_HISTORY_ALL_INFO, value);
+    }
+
+    public boolean getAutoOpenOutput() {
+        return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);
+    }
+
+    public void setAutoOpenOutputo(boolean value) {
+        getPreferences().putBoolean(AUTO_OPEN_OUTPUT_WINDOW, value);
     }
 
     public RepositoryConnection getRepositoryConnection(String url) {

@@ -159,7 +159,7 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>

@@ -47,6 +47,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,10 +58,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
@@ -72,7 +77,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexey Vladykin
  */
-public class SQLStackStorage {
+public final class SQLStackStorage {
 
     public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
         FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
@@ -99,7 +104,7 @@ public class SQLStackStorage {
             demanglingService = factory.getForCurrentSession();
         } else {
             demanglingService = null;
-       }
+        }
     }
 
     private void initTables() throws SQLException, IOException {
@@ -183,8 +188,8 @@ public class SQLStackStorage {
         return result;
     }
 
-    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit){
-        try{
+    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+        try {
             List<FunctionCall> result = new ArrayList<FunctionCall>();
             PreparedStatement select = sqlStorage.prepareStatement(
                 "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
@@ -196,7 +201,7 @@ public class SQLStackStorage {
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String func_name = rs.getString(2);
-                if (demanglingService != null){
+                if (demanglingService != null) {
                     try {
                         func_name = demanglingService.demangle(func_name).get();
                     } catch (InterruptedException ex) {
@@ -209,8 +214,57 @@ public class SQLStackStorage {
             }
             rs.close();
             return result;
-        }catch(SQLException ex){
-        }                    
+        } catch (SQLException ex) {
+        }
+        return Collections.emptyList();
+    }
+
+    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
+        List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+        try {
+            Collection<FunctionMetric> metrics = new ArrayList<FunctionMetric>();
+            for (Column metricColumn : metricsColumn) {
+                FunctionMetric metric = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(metricColumn.getColumnName(), metricColumn.getColumnUName(), metricColumn.getColumnClass()));
+                metrics.add(metric);
+            }
+            String functionColumnName = functionDescription.getNameColumn();
+            String offesetColumnName = functionDescription.getOffsetColumn();
+            String functionUniqueID = functionDescription.getUniqueColumnName();
+//          ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
+            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            PreparedStatement select = sqlStorage.prepareStatement(metadata.getViewStatement());
+//            select.setMaxRows(limit);
+            ResultSet rs = select.executeQuery();
+            while (rs.next()) {
+                Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
+                for (FunctionMetric m : metrics) {
+                    try {
+                        rs.findColumn(m.getMetricID());
+                        Object value = rs.getObject(m.getMetricID());
+                        if (m.getMetricValueClass() == Time.class && value != null) {
+                            value = new Time(Long.valueOf(value + ""));
+                        }
+                        metricValues.put(m, value);
+                    } catch (SQLException e) {
+                    }
+                }
+                //should create functions themself
+                String func_name = rs.getString(functionColumnName);
+                if (demanglingService != null) {
+                    try {
+                        func_name = demanglingService.demangle(func_name).get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), func_name, func_name), offesetColumnName != null ? rs.getLong(offesetColumnName): -1, metricValues));
+            }
+            rs.close();
+            return result;
+        } catch (SQLException ex) {
+        }
         return Collections.emptyList();
     }
 
@@ -359,7 +413,7 @@ public class SQLStackStorage {
 
         @Override
         public int hashCode() {
-            return 13 * callerId + 17 * funcId + ((int)(offset >> 32) | (int)offset);
+            return 13 * callerId + 17 * funcId + ((int) (offset >> 32) | (int) offset);
         }
     }
 
@@ -401,10 +455,21 @@ public class SQLStackStorage {
 
         private final Map<FunctionMetric, Object> metrics;
 
-        FunctionCallImpl(Function function, Map<FunctionMetric, Object> metrics) {
-            super(function);
+        FunctionCallImpl(Function function, long offset, Map<FunctionMetric, Object> metrics) {
+            super(function, offset);
             this.metrics = metrics;
         }
+
+        FunctionCallImpl(Function function, Map<FunctionMetric, Object> metrics) {
+            this(function, 0, metrics);
+        }
+
+        @Override
+        public String getDisplayedName() {
+            return getFunction().getName() + (hasOffset() ?  ("+0x" + getOffset()) : "");
+        }
+
+
 
         @Override
         public Object getMetricValue(FunctionMetric metric) {
@@ -471,7 +536,7 @@ public class SQLStackStorage {
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(funcOrNode? "func" : "node"); // NO18N
+            buf.append(funcOrNode ? "func" : "node"); // NO18N
             buf.append(" id=").append(objId); // NOI18N
             buf.append(": time_incl+=").append(cpuTimeInclusive); // NOI18N
             buf.append(", time_excl+=").append(cpuTimeExclusive); // NOI18N
@@ -543,7 +608,7 @@ public class SQLStackStorage {
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
 //                                    if (demanglingService == null) {
-                                        stmt.setString(3, addFunctionCmd.name.toString());
+                                    stmt.setString(3, addFunctionCmd.name.toString());
 //                                    } else {
 //                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
 //                                        try {

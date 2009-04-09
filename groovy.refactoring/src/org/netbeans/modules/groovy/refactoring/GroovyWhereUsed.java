@@ -102,7 +102,7 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
                         BaseDocument doc = Utils.getDocument(result, fo);
                         for (ASTNode node : usages) {
                             refactoringElements.add(whereUsedQuery,
-                                    new WhereUsedElement(new GroovyRefactoringElement(moduleNode, node, fo), doc));
+                                    new WhereUsedElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
                         }
                     }
                 });

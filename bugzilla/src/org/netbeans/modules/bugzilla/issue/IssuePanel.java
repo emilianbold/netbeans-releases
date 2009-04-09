@@ -40,15 +40,19 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -68,6 +72,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -90,6 +95,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
+    private boolean submitting;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -121,6 +127,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
+        if (submitting) {
+            return;
+        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -151,7 +160,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     changedUpdate(e);
                 }
                 public void changedUpdate(DocumentEvent e) {
-                    updateMessagePanel();
+                    updateNoSummary();
                 }
             });
         }
@@ -170,7 +179,14 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private int oldCommentCount;
     private void reloadForm(boolean force) {
+        int noWarnings = fieldWarnings.size();
+        int noErrors = fieldErrors.size();
+        if (force) {
+            fieldWarnings.clear();
+            fieldErrors.clear();
+        }
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
         headerLabel.setVisible(!isNew);
@@ -186,6 +202,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        submitButton.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
@@ -194,17 +211,17 @@ public class IssuePanel extends javax.swing.JPanel {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
             headerLabel.setText(headerTxt);
-            reloadField(force, summaryField, BugzillaIssue.IssueField.SUMMARY);
-            reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
-            reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
-            reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
-            reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
-            reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
-            reloadField(force, osCombo, BugzillaIssue.IssueField.OS);
-            reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
-            String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
+            reloadField(force, summaryField, BugzillaIssue.IssueField.SUMMARY, summaryWarning, summaryLabel);
+            reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT, productWarning, productLabel);
+            reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT, null, null);
+            reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT, componentWarning, componentLabel);
+            reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION, versionWarning, versionLabel);
+            reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM, platformWarning, platformLabel);
+            reloadField(force, osCombo, BugzillaIssue.IssueField.OS, osWarning, osLabel);
+            reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION, null, null); // Must be before statusCombo
+            String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS, statusWarning, statusLabel);
             initStatusCombo(status);
-            reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
+            reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION, resolutionWarning, resolutionLabel);
             String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
             if ("DUPLICATE".equals(initialResolution)) { // NOI18N
                 duplicateField.setEditable(false);
@@ -216,59 +233,118 @@ public class IssuePanel extends javax.swing.JPanel {
                 duplicateField.setBorder(field.getBorder());
                 duplicateField.setBackground(field.getBackground());
             }
-            reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
-            reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
+            reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY, priorityWarning, priorityLabel);
+            reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY, severityWarning, severityLabel);
             if (usingTargetMilestones) {
-                reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
+                reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
             }
-            reloadField(force, urlField, BugzillaIssue.IssueField.URL);
-            reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS);
+            reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
+            reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
             format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
             String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
             reportedField.setText(reportedTxt);
+            fixPrefSize(reportedField);
             modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
-            reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO);
-            reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT);
-            reloadField(force, ccField, BugzillaIssue.IssueField.CC);
-            reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON);
-            reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS);
+            fixPrefSize(modifiedField);
+            reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+            reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
+            reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
+            reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
+            reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS, blocksWarning, blocksLabel);
         }
+        int newCommentCount = issue.getComments().length;
+        if (!force && oldCommentCount != newCommentCount) {
+            String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.commentAddedWarning"); // NOI18N
+            if (!fieldWarnings.contains(message)) {
+                fieldWarnings.add(0, message);
+            }
+        }
+        oldCommentCount = newCommentCount;
         commentsPanel.setIssue(issue);
         attachmentsPanel.setIssue(issue);
         if (force) {
             addCommentArea.setText(""); // NOI18N
         }
         updateFieldStatuses();
-        updateMessagePanel();
+        updateNoSummary();
+        if ((fieldWarnings.size() != noWarnings) || (fieldErrors.size() != noErrors)) {
+            updateMessagePanel();
+        }
         reloading = false;
     }
 
-    private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
+    private static void fixPrefSize(JTextField textField) {
+        // The preferred size of JTextField on (Classic) Windows look and feel
+        // is one pixel shorter. The following code is a workaround.
+        textField.setPreferredSize(null);
+        Dimension dim = textField.getPreferredSize();
+        Dimension fixedDim = new Dimension(dim.width+1, dim.height);
+        textField.setPreferredSize(fixedDim);
+    }
+
+    private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field, JLabel warningLabel, JLabel fieldLabel) {
         String currentValue = null;
         if (issue.getTaskData().isNew()) {
             force = true;
         }
         if (!force) {
             if (component instanceof JComboBox) {
-                currentValue  = ((JComboBox)component).getSelectedItem().toString();
+                Object value = ((JComboBox)component).getSelectedItem();
+                currentValue  = (value == null) ? "" : value.toString(); // NOI18N
             } else if (component instanceof JTextField) {
                 currentValue = ((JTextField)component).getText();
             }
         }
         String initialValue = initialValues.get(field);
         String newValue = issue.getFieldValue(field);
-        if (force || currentValue.equals(initialValue)) {
+        boolean valueModifiedByUser = (currentValue != null) && (initialValue != null) && !currentValue.equals(initialValue);
+        boolean valueModifiedByServer = (initialValue != null) && (newValue != null) && !initialValue.equals(newValue);
+        if (force || !valueModifiedByUser) {
             if (component instanceof JComboBox) {
                 ((JComboBox)component).setSelectedItem(newValue);
             } else if (component instanceof JTextField) {
                 ((JTextField)component).setText(newValue);
             }
+            if (force) {
+                if (warningLabel != null) {
+                    warningLabel.setIcon(null);
+                }
+            } else {
+                if (valueModifiedByServer) {
+                    if (warningLabel != null) {
+                        warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+                        String fieldName = fieldName(fieldLabel);
+                        String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
+                        String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
+                        fieldWarnings.add(message);
+                        warningLabel.setToolTipText(message);
+                    }
+                }
+            }
             currentValue = newValue;
         } else {
-            // PENDING conflict during refresh
+            if (valueModifiedByServer && (warningLabel != null)) {
+                warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+                String fieldName = fieldName(fieldLabel);
+                String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedError"); // NOI18N
+                String message = MessageFormat.format(messageFormat, fieldName, newValue);
+                fieldErrors.add(message);
+                warningLabel.setToolTipText(message);
+            }
+        }
+        if (BugzillaIssue.IssueField.SUMMARY == field) {
+            warningLabel.setVisible(warningLabel.getIcon() != null);
         }
         initialValues.put(field, newValue);
         return currentValue;
+    }
+
+    private String fieldName(JLabel fieldLabel) {
+        String txt = fieldLabel.getText().trim();
+        if (txt.endsWith(":")) { // NOI18N
+            txt = txt.substring(0, txt.length()-1);
+        }
+        return txt;
     }
 
     private void initCombos() {
@@ -408,29 +484,64 @@ public class IssuePanel extends javax.swing.JPanel {
         ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));
         blocksField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(blocksLabel));
         dependsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(dependsLabel));
+        CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
+        blocksField.getDocument().addDocumentListener(cyclicDependencyListener);
+        dependsField.getDocument().addDocumentListener(cyclicDependencyListener);
     }
 
-    private boolean noSummary = false;
-    private void updateMessagePanel() {
+    private void updateNoSummary() {
         if (summaryField.getText().trim().length() == 0) {
             if (!noSummary) {
                 noSummary = true;
-                messagePanel.removeAll();
-                submitButton.setEnabled(false);
-                JLabel noSummaryLabel = new JLabel();
-                noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-                String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
-                noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
-                messagePanel.add(noSummaryLabel);
-                messagePanel.setVisible(true);
-                messagePanel.revalidate();
+                updateMessagePanel();
             }
         } else {
             if (noSummary) {
                 noSummary = false;
-                submitButton.setEnabled(true);
-                messagePanel.setVisible(false);
+                updateMessagePanel();
             }
+        }
+    }
+
+    private boolean noSummary = false;
+    private boolean cyclicDependency = false;
+    private List<String> fieldErrors = new LinkedList<String>();
+    private List<String> fieldWarnings = new LinkedList<String>();
+    private void updateMessagePanel() {
+        messagePanel.removeAll();
+        if (noSummary) {
+            JLabel noSummaryLabel = new JLabel();
+            noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
+            String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+            noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+            messagePanel.add(noSummaryLabel);
+        }
+        if (cyclicDependency) {
+            JLabel cyclicDependencyLabel = new JLabel();
+            cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
+            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(cyclicDependencyLabel);
+        }
+        if (noSummary || cyclicDependency) {
+            submitButton.setEnabled(false);
+        } else {
+            submitButton.setEnabled(true);
+        }
+        for (String fieldError : fieldErrors) {
+            JLabel errorLabel = new JLabel(fieldError);
+            errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+            messagePanel.add(errorLabel);
+        }
+        for (String fieldWarning : fieldWarnings) {
+            JLabel warningLabel = new JLabel(fieldWarning);
+            warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+            messagePanel.add(warningLabel);
+        }
+        if (noSummary || cyclicDependency || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+            messagePanel.setVisible(true);
+            messagePanel.revalidate();
+        } else {
+            messagePanel.setVisible(false);
         }
     }
 
@@ -439,10 +550,21 @@ public class IssuePanel extends javax.swing.JPanel {
         super.addNotify();
         if (issue != null) {
             // Hack - reset any previous modifications when the issue window is reopened
+            // XXX any chance to get rid of the hack?
             reloadForm(true);
+
+            issue.opened();
         }
     }
-    
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -512,6 +634,25 @@ public class IssuePanel extends javax.swing.JPanel {
         summaryField = new javax.swing.JTextField();
         summaryLabel = new javax.swing.JLabel();
         messagePanel = new javax.swing.JPanel();
+        productWarning = new javax.swing.JLabel();
+        urlWarning = new javax.swing.JLabel();
+        componentWarning = new javax.swing.JLabel();
+        versionWarning = new javax.swing.JLabel();
+        platformWarning = new javax.swing.JLabel();
+        osWarning = new javax.swing.JLabel();
+        statusWarning = new javax.swing.JLabel();
+        resolutionWarning = new javax.swing.JLabel();
+        priorityWarning = new javax.swing.JLabel();
+        severityWarning = new javax.swing.JLabel();
+        milestoneWarning = new javax.swing.JLabel();
+        keywordsWarning = new javax.swing.JLabel();
+        assignedToWarning = new javax.swing.JLabel();
+        qaContactWarning = new javax.swing.JLabel();
+        ccWarning = new javax.swing.JLabel();
+        dependsOnWarning = new javax.swing.JLabel();
+        blocksWarning = new javax.swing.JLabel();
+        dummyWarning = new javax.swing.JLabel();
+        summaryWarning = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -615,7 +756,7 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyAttachmentsPanel.setLayout(dummyAttachmentsPanelLayout);
         dummyAttachmentsPanelLayout.setHorizontalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 382, Short.MAX_VALUE)
+            .add(0, 459, Short.MAX_VALUE)
         );
         dummyAttachmentsPanelLayout.setVerticalGroup(
             dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -654,14 +795,14 @@ public class IssuePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, separator)
-            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE)
+            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 577, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(headerLabel)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(450, Short.MAX_VALUE)
+                .addContainerGap(527, Short.MAX_VALUE)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
@@ -687,7 +828,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(messagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(messagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(submitButton)
@@ -698,22 +839,57 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(osCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(osCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(osWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(layout.createSequentialGroup()
                                         .add(keywordsField)
                                         .add(0, 0, 0)
-                                        .add(keywordsButton))
-                                    .add(urlField)
-                                    .add(targetMilestoneCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(severityCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, priorityCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(resolutionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(statusCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(productCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(componentCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(versionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(platformCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .add(18, 18, 18)
+                                        .add(keywordsButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(keywordsWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(urlField)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(urlWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(targetMilestoneCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(milestoneWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(severityCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(severityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                        .add(priorityCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(priorityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(resolutionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(statusCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(statusWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(productCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(productWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(componentCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(componentWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(versionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(platformCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(platformWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(reportedLabel)
                                     .add(modifiedLabel)
@@ -730,18 +906,44 @@ public class IssuePanel extends javax.swing.JPanel {
                                         .add(layout.createSequentialGroup()
                                             .add(blocksField)
                                             .add(0, 0, 0)
-                                            .add(blocksButton))
+                                            .add(blocksButton)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(blocksWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                                         .add(layout.createSequentialGroup()
                                             .add(dependsField)
                                             .add(0, 0, 0)
-                                            .add(dependsOnButton))
-                                        .add(ccField)
-                                        .add(assignedField)
+                                            .add(dependsOnButton)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                                        .add(layout.createSequentialGroup()
+                                            .add(ccField)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(ccWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                                        .add(layout.createSequentialGroup()
+                                            .add(assignedField)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(assignedToWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                                         .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(qaContactField)
-                                        .add(duplicateField))))
-                            .add(scrollPane1)
-                            .add(summaryField))
+                                        .add(layout.createSequentialGroup()
+                                            .add(qaContactField)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(qaContactWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                                        .add(layout.createSequentialGroup()
+                                            .add(duplicateField)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))))
+                            .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(summaryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .add(10, 10, 10))))
         );
 
@@ -759,73 +961,95 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(productLabel)
                             .add(productCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(reportedLabel)
-                            .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(productWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(componentLabel)
                             .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(modifiedLabel)
-                            .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(componentWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(versionLabel)
-                            .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(platformLabel)
                     .add(platformCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(assignedLabel)
-                    .add(assignedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(assignedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(platformWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(assignedToWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(qaContactLabel)
                     .add(qaContactField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(osLabel)
-                    .add(osCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(osCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(osWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(qaContactWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ccLabel)
-                    .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(statusLabel)
-                    .add(ccField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(ccLabel)
+                        .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(statusLabel)
+                        .add(ccField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(statusWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(ccWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(resolutionLabel)
                     .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(duplicateLabel))
+                    .add(duplicateLabel)
+                    .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(dependsLabel)
-                    .add(dependsOnButton))
+                    .add(dependsOnButton)
+                    .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(blocksLabel)
                     .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(priorityLabel)
                     .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(blocksButton))
+                    .add(blocksButton)
+                    .add(priorityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(blocksWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(severityLabel)
-                    .add(severityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(severityLabel)
+                        .add(severityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(severityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(targetMilestoneLabel)
-                    .add(targetMilestoneCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(targetMilestoneCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(milestoneWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(dummyLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(dummyLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(urlLabel)
+                            .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(urlWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keywordsLabel)
                     .add(keywordsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keywordsButton))
+                    .add(keywordsButton)
+                    .add(keywordsWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -836,7 +1060,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(summaryLabel))
+                    .add(summaryLabel)
+                    .add(summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addCommentLabel)
@@ -946,6 +1171,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
         targetMilestoneCombo.setVisible(usingTargetMilestones);
+        milestoneWarning.setVisible(usingTargetMilestones);
         TaskData data = issue.getTaskData();
         if (data.isNew()) {
             issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
@@ -1043,7 +1269,10 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                boolean ret = false;
                 try {
+                    submitting = true;
+                    ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1054,13 +1283,23 @@ public class IssuePanel extends javax.swing.JPanel {
                             // PENDING notify user
                         }
                     }
-                    issue.submitAndRefresh();
                 } finally {
+                    submitting = false;
                     handle.finish();
-                    reloadFormInAWT(true);
+                    if(ret) {
+                        reloadFormInAWT(true);
+                    }
                 }
             }
         });
+        if (isNew) {
+            BugzillaRepository repository = issue.getRepository();
+            if (repository != null) {
+                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
+                        BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
+                        repository);
+            }
+        }
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -1151,63 +1390,82 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel addCommentLabel;
     private javax.swing.JTextField assignedField;
     private javax.swing.JLabel assignedLabel;
+    private javax.swing.JLabel assignedToWarning;
     private javax.swing.JLabel attachmentsLabel;
     private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
+    private javax.swing.JLabel blocksWarning;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextField ccField;
     private javax.swing.JLabel ccLabel;
+    private javax.swing.JLabel ccWarning;
     private javax.swing.JComboBox componentCombo;
     private javax.swing.JLabel componentLabel;
+    private javax.swing.JLabel componentWarning;
     private javax.swing.JTextField dependsField;
     private javax.swing.JLabel dependsLabel;
     private javax.swing.JButton dependsOnButton;
+    private javax.swing.JLabel dependsOnWarning;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
+    private javax.swing.JLabel dummyWarning;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel headerLabel;
     private javax.swing.JButton keywordsButton;
     private javax.swing.JTextField keywordsField;
     private javax.swing.JLabel keywordsLabel;
+    private javax.swing.JLabel keywordsWarning;
     private javax.swing.JPanel messagePanel;
+    private javax.swing.JLabel milestoneWarning;
     private javax.swing.JTextField modifiedField;
     private javax.swing.JLabel modifiedLabel;
     private javax.swing.JComboBox osCombo;
     private javax.swing.JLabel osLabel;
+    private javax.swing.JLabel osWarning;
     private javax.swing.JComboBox platformCombo;
     private javax.swing.JLabel platformLabel;
+    private javax.swing.JLabel platformWarning;
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
+    private javax.swing.JLabel priorityWarning;
     private javax.swing.JComboBox productCombo;
     private javax.swing.JTextField productField;
     private javax.swing.JLabel productLabel;
+    private javax.swing.JLabel productWarning;
     private javax.swing.JTextField qaContactField;
     private javax.swing.JLabel qaContactLabel;
+    private javax.swing.JLabel qaContactWarning;
     private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
     private javax.swing.JTextField reportedField;
     private javax.swing.JLabel reportedLabel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
+    private javax.swing.JLabel resolutionWarning;
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JSeparator separator;
     private javax.swing.JComboBox severityCombo;
     private javax.swing.JLabel severityLabel;
+    private javax.swing.JLabel severityWarning;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JLabel statusWarning;
     private javax.swing.JButton submitButton;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
+    private javax.swing.JLabel summaryWarning;
     private javax.swing.JComboBox targetMilestoneCombo;
     private javax.swing.JLabel targetMilestoneLabel;
     private javax.swing.JTextField urlField;
     private javax.swing.JLabel urlLabel;
+    private javax.swing.JLabel urlWarning;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
+    private javax.swing.JLabel versionWarning;
     // End of variables declaration//GEN-END:variables
 
     class CancelHighlightDocumentListener implements DocumentListener {
@@ -1227,6 +1485,46 @@ public class IssuePanel extends javax.swing.JPanel {
 
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
+        }
+    }
+
+    class CyclicDependencyDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            Set<Integer> bugs1 = bugs(blocksField.getText());
+            Set<Integer> bugs2 = bugs(dependsField.getText());
+            bugs1.retainAll(bugs2);
+            if (bugs1.isEmpty()) {
+                if (cyclicDependency) {
+                    cyclicDependency = false;
+                    updateMessagePanel();
+                }
+            } else {
+                if (!cyclicDependency) {
+                    cyclicDependency = true;
+                    updateMessagePanel();
+                }
+            }
+        }
+
+        private Set<Integer> bugs(String values) {
+            Set<Integer> bugs = new HashSet<Integer>();
+            StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                try {
+                    bugs.add(Integer.parseInt(token));
+                } catch (NumberFormatException nfex) {}
+            }
+            return bugs;
         }
 
     }

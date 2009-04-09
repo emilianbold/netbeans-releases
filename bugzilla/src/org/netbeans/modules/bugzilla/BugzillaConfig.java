@@ -56,10 +56,13 @@ import org.openide.util.NbPreferences;
 public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
-    private static final String LAST_CHANGE_FROM = "bugzilla.last_change_from"; // XXX
-    private static final String REPO_NAME        = "bugzilla.repository_";
-    private static final String QUERY_NAME       = "bugzilla.query_";
-    private static final String DELIMITER        = "<=>";
+    private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
+    private static final String REPO_NAME           = "bugzilla.repository_";           // NOI18N
+    private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
+    private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
+    private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
+    private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
+    private static final String DELIMITER           = "<=>";                            // NOI18N
 
     private BugzillaConfig() { }
 
@@ -72,6 +75,30 @@ public class BugzillaConfig {
 
     public Preferences getPreferences() {
         return NbPreferences.forModule(BugzillaConfig.class);
+    }
+
+    public void setQueryRefreshInterval(int i) {
+        getPreferences().putInt(QUERY_REFRESH_INT, i);
+    }
+
+    public void setIssueRefreshInterval(int i) {
+        getPreferences().putInt(ISSUE_REFRESH_INT, i);
+    }
+
+    public void setQueryAutoRefresh(String queryName, boolean refresh) {
+        getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
+    }
+
+    public int getQueryRefreshInterval() {
+        return getPreferences().getInt(QUERY_REFRESH_INT, 30);
+    }
+
+    public int getIssueRefreshInterval() {
+        return getPreferences().getInt(ISSUE_REFRESH_INT, 15);
+    }
+
+    public boolean getQueryAutoRefresh(String queryName) {
+        return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
@@ -111,24 +138,33 @@ public class BugzillaConfig {
     public void putRepository(String repoName, BugzillaRepository repository) {
         String user = repository.getUsername();
         String password = BugtrackingUtil.scramble(repository.getPassword());
-        // XXX AuthenticationType.HTTP, AuthenticationType.PROXY
+
+        String httpUser = repository.getHttpUsername();
+        String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
         String url = repository.getUrl();
-        getPreferences().put(REPO_NAME + repoName, url + DELIMITER + user + DELIMITER + password);
+        getPreferences().put(
+                REPO_NAME + repoName,
+                url + DELIMITER +
+                user + DELIMITER +
+                password + DELIMITER +
+                httpUser + DELIMITER +
+                httpPassword);
     }
 
     public BugzillaRepository getRepository(String repoName) {
-        String repoString = getPreferences().get(REPO_NAME + repoName, "");
-        if(repoString.equals("")) {
+        String repoString = getPreferences().get(REPO_NAME + repoName, "");     // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3;
+        assert values.length == 3 || values.length == 5;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);
-        // XXX AuthenticationType.HTTP, AuthenticationType.PROXY
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
 
-        return new BugzillaRepository(repoName, url, user, password);
+        return new BugzillaRepository(repoName, url, user, password, httpUser, httpPassword);
     }
 
     public String[] getRepositories() {
@@ -172,6 +208,6 @@ public class BugzillaConfig {
     }
 
     public String getLastChangeFrom() {
-        return getPreferences().get(LAST_CHANGE_FROM, "");
+        return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
     }
 }

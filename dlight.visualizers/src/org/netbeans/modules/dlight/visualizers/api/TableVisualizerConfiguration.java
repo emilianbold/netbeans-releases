@@ -95,7 +95,7 @@ public final class TableVisualizerConfiguration implements VisualizerConfigurati
     }
 
     public final DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:table");
+        return DataModelSchemeProvider.getInstance().getScheme("model:table");//NOI18N
     }
 
     public final String getID() {

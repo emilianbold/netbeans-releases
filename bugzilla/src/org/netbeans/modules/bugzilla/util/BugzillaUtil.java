@@ -53,8 +53,9 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,16 +63,23 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaUtil {
+
     public static boolean show(JPanel panel, String title, String okName) {
+        return show(panel, title, okName, new HelpCtx(panel.getClass()));
+    }
+
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor (
                 panel,
                 title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                helpCtx,
+                null);
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 
@@ -82,6 +90,16 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id) {
+        return getTaskData(repository, id, true);
+    }
+
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
@@ -89,7 +107,10 @@ public class BugzillaUtil {
                 taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
             }
         };
-        repository.getExecutor().execute(cmd);
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
         return taskData[0];
     }
 

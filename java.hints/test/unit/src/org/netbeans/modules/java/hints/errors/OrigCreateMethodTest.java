@@ -88,8 +88,4 @@ public class OrigCreateMethodTest extends HintsTestBase {
         return "org/netbeans/test/java/hints/OrigCreateMethodTest/";
     }
     
-    @Override
-    protected boolean createCaches() {
-        return false;
-    }
 }

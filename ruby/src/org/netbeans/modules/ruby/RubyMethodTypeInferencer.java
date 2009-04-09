@@ -38,18 +38,16 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 final class RubyMethodTypeInferencer {
 
@@ -68,6 +66,10 @@ final class RubyMethodTypeInferencer {
         assert AstUtilities.isCall(nodeToInfer) : "Must be a call node";
         this.callNodeToInfer = nodeToInfer;
         this.knowledge = knowledge;
+    }
+
+    private boolean enabled() {
+        return TypeInferenceSettings.getDefault().getMethodTypeInference();
     }
 
     RubyIndex getIndex() {
@@ -112,6 +114,11 @@ final class RubyMethodTypeInferencer {
                     return FindersHelper.pickFinderType((CallNode) callNodeToInfer, name, receiverType);
                 }
             }
+        }
+
+        // this can be very time consuming, return if TI is not enabled
+        if (!enabled()) {
+            return RubyType.createUnknown();
         }
 
         RubyType resultType = new RubyType();

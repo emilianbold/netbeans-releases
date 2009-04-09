@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,6 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ResourceBundle;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -64,8 +63,6 @@ public class ConnectionDialog {
     private transient JTabbedPane tabs;
     private transient Exception storedExp;
     
-    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-        
     final DialogDescriptor descriptor;
     final Dialog dialog;
     
@@ -108,18 +105,18 @@ public class ConnectionDialog {
         tabs.addChangeListener(tabListener);
 
         // base panel for set base info for connection
-        tabs.addTab( bundle.getString("BasePanelTitle"), // NOI18N
+        tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "BasePanelTitle"), // NOI18N
                     /*icon*/ null, basePane, 
-                    bundle.getString("BasePanelHint") ); // NOI18N
+                    NbBundle.getMessage (ConnectionDialog.class, "BasePanelHint") ); // NOI18N
 
         // extend panel for select schema name
-        tabs.addTab( bundle.getString("ExtendPanelTitle"), // NOI18N
+        tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelTitle"), // NOI18N
                     /*icon*/ null, 
                     extendPane, 
-                    bundle.getString("ExtendPanelHint") ); // NOI18N
+                    NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelHint") ); // NOI18N
 
-        tabs.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ConnectDialogA11yName"));
-        tabs.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogA11yDesc"));
+        tabs.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yName"));
+        tabs.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yDesc"));
 
         descriptor = new DialogDescriptor(tabs, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION, 
                      DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);

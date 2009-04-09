@@ -327,11 +327,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
 
     public Cancellable enqueue(Runnable task, CharSequence name) {
-        return enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name); // NOI18N
-    }
-
-    public Cancellable enqueue(Runnable task) {
-        return enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix);
+        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
     public static ModelImpl instance() {
@@ -665,4 +661,5 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //private double fatalThreshold = 0.99;
     private final Set<Object> disabledProjects = new HashSet<Object>();
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
+    private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
 }

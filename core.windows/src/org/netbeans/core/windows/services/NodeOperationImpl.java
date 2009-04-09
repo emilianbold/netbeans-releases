@@ -39,37 +39,44 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.core.windows.services;
 
-
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.FocusTraversalPolicy;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.WeakHashMap;
-import org.netbeans.core.NbMainExplorer;
-import org.netbeans.core.NbSheet;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultEditorKit;
+import org.netbeans.core.windows.view.ui.NbSheet;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.*;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.border.EmptyBorder;
-
-
-// XXX Before as org.netbeans.core.NbNodeOperation.
 
 /** Class that provides operations on nodes. Any part of system can
  * ask for opening a customizer or explorer on any node. These actions
@@ -77,7 +84,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author  Ian Formanek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.nodes.NodeOperation.class, supersedes="org.netbeans.modules.openide.explorer.NodeOperationImpl")
+@ServiceProvider(service=NodeOperation.class, supersedes="org.netbeans.modules.openide.explorer.NodeOperationImpl")
 public final class NodeOperationImpl extends NodeOperation {
 
     /** Shows an explorer on the given root Node.
@@ -86,9 +93,7 @@ public final class NodeOperationImpl extends NodeOperation {
     public void explore (final Node n) {
         Mutex.EVENT.readAccess (new Runnable () {
                 public void run () {
-                    NbMainExplorer.ExplorerTab et = new NonPersistentExplorerTab ();
-                    et.setRootContext (n);
-                    et.adjustComponentPersistence();
+                    TopComponent et = new ExplorerPanel(n);
 
                     Mode target = WindowManager.getDefault().findMode("explorer");
                     if (target != null) {
@@ -98,6 +103,34 @@ public final class NodeOperationImpl extends NodeOperation {
                     et.requestActive();
                 }
             });
+    }
+
+    private static class ExplorerPanel extends TopComponent implements ExplorerManager.Provider {
+        private ExplorerManager manager = new ExplorerManager();
+        public ExplorerPanel(Node n) {
+            manager = new ExplorerManager();
+            manager.setRootContext(n);
+            ActionMap map = getActionMap();
+            map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+            map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+            map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+            map.put("delete", ExplorerUtils.actionDelete(manager, true));
+            associateLookup(ExplorerUtils.createLookup (manager, map));
+        }
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        public @Override void addNotify() {
+            super.addNotify();
+            ExplorerUtils.activateActions(manager, true);
+        }
+        public @Override void removeNotify() {
+            ExplorerUtils.activateActions(manager, false);
+            super.removeNotify();
+        }
+        public @Override int getPersistenceType() {
+            return TopComponent.PERSISTENCE_NEVER;
+        }
     }
 
     /** Tries to open customization for specified node. The dialog is
@@ -363,18 +396,6 @@ public final class NodeOperationImpl extends NodeOperation {
                     dlg.setVisible(true);
                 }
             });
-    }
-    
-    /** Not serializable explorer tab used in explore from here.
-     */
-    private static class NonPersistentExplorerTab extends NbMainExplorer.ExplorerTab {
-        public int getPersistenceType() {
-            return PERSISTENCE_NEVER;
-        }
-        
-        protected String preferredID() {
-            return "NonPersistentExplorerTab";
-        }
     }
 
     /**

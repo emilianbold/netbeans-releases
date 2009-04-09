@@ -40,44 +40,21 @@
  */
 package org.netbeans.modules.mercurial.ui.properties;
 
-import java.awt.Dialog;
-import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
 import java.util.Properties;
 import java.util.Enumeration;
 import javax.swing.JOptionPane;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -134,6 +111,9 @@ public class HgProperties implements ListSelectionListener {
             support = new HgProgressSupport() {
                 protected void perform() {
                     Properties props = HgModuleConfig.getDefault().getProperties(root);
+                    if (props == null) {
+                        return;
+                    }
                     HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
                     initHgProps = new HgPropertiesNode[props.size()];
                     int i = 0;
@@ -161,21 +141,25 @@ public class HgProperties implements ListSelectionListener {
             support = new HgProgressSupport() {
                 protected void perform() {
                     HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+                    try {
                     for (int i = 0; i < hgPropertiesNodes.length; i++) {
-                        String hgPropertyName = hgPropertiesNodes[i].getName();
-                        String hgPropertyValue = hgPropertiesNodes[i].getValue();
-                        boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
-                        if (bPropChanged && hgPropertyValue.trim().length() >= 0 ) {
-                            if (hgPropertyName.equals(HGPROPNAME_USERNAME) &&
-                                    !HgModuleConfig.getDefault().isUserNameValid(hgPropertyValue)) {
-                                JOptionPane.showMessageDialog(null,
-                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
-                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
-                                        JOptionPane.WARNING_MESSAGE);
-                            }else{
-                                HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                            String hgPropertyName = hgPropertiesNodes[i].getName();
+                            String hgPropertyValue = hgPropertiesNodes[i].getValue();
+                            boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
+                            if (bPropChanged && hgPropertyValue.trim().length() >= 0) {
+                                if (hgPropertyName.equals(HGPROPNAME_USERNAME) &&
+                                        !HgModuleConfig.getDefault().isUserNameValid(hgPropertyValue)) {
+                                    JOptionPane.showMessageDialog(null,
+                                            NbBundle.getMessage(HgProperties.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
+                                            NbBundle.getMessage(HgProperties.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
+                                            JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                                }
                             }
                         }
+                    } catch (IOException ex) {
+                        HgModuleConfig.notifyParsingError();
                     }
                     HgRepositoryContextCache.getInstance().reset();
                 }

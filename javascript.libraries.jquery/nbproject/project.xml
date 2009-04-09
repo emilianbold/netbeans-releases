@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.javascript.libraries</code-name-base>
                     <run-dependency>
 			<release-version>1</release-version>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>0.2</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

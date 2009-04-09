@@ -68,6 +68,7 @@ public class RegisterValue {
 
     @Override
     public String toString() {
-        return getValue();
+        String mod = modified ? " (modified)" : ""; // NOI18N
+        return name + "=" + value + mod; // NOI18N
     }
 }

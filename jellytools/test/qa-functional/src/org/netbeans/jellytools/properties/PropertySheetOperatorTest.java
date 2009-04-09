@@ -40,11 +40,9 @@
  */
 package org.netbeans.jellytools.properties;
 
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -58,32 +56,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class PropertySheetOperatorTest extends JellyTestCase {
     
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    /** Method used for explicit testsuite definition
-     * @return  created suite
-     */
-    public static NbTestSuite suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PropertySheetOperatorTest("testInvoke"));
-        suite.addTest(new PropertySheetOperatorTest("testTblSheet"));
-        suite.addTest(new PropertySheetOperatorTest("testGetDescriptionHeader"));
-        suite.addTest(new PropertySheetOperatorTest("testGetDescription"));
-        suite.addTest(new PropertySheetOperatorTest("testSortByName"));
-        suite.addTest(new PropertySheetOperatorTest("testSortByCategory"));
-        suite.addTest(new PropertySheetOperatorTest("testShowDescriptionArea"));
-        suite.addTest(new PropertySheetOperatorTest("testHelp"));
-        suite.addTest(new PropertySheetOperatorTest("testVerify"));
-        // have to be the last
-        suite.addTest(new PropertySheetOperatorTest("testClose"));
-        return suite;
-         */
+    public static Test suite() {
         return (NbTestSuite) createModuleTest(PropertySheetOperatorTest.class, 
         "testInvoke",
         "testTblSheet",
@@ -92,7 +65,6 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         "testSortByName",
         "testSortByCategory",
         "testShowDescriptionArea",
-        "testHelp",
         "testVerify",
         // have to be the last
         "testClose");
@@ -186,20 +158,6 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         // try to find description header label
         label = pso.findSubComponent(new JLabelOperator.JLabelFinder());
         assertNotNull("Description area was not shown.", label);
-    }
-    
-    /** Test of help method */
-    public void testHelp() {
-        OptionsOperator oo = OptionsOperator.invoke();
-        oo.switchToClassicView();
-        // select root
-        PropertySheetOperator psoOptions = oo.getPropertySheet("");
-        try {
-            psoOptions.help();
-            new HelpOperator().close();
-        } finally {
-            oo.close();
-        }
     }
     
     /** Test of verify method */

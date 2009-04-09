@@ -54,6 +54,8 @@ import java.io.File;
 import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -114,12 +116,8 @@ public class ViewAction extends ContextAction {
                 logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND_INFO")); // NOI18N
                 logger.output(""); // NOI18N
-                JOptionPane.showMessageDialog(null,
-                        NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND"),// NOI18N
-                        NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND_TITLE"),// NOI18N
-                        JOptionPane.INFORMATION_MESSAGE);
-                logger.closeLog();
-                return;
+                logger.outputInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND"));    // NOI18N
+                logger.outputInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND_TITLE"));  // NOI18N
             }
             if(!bHgkPropExists){
                 boolean bConfirmSetHgkProp = false;
@@ -129,8 +127,15 @@ public class ViewAction extends ContextAction {
                 if (bConfirmSetHgkProp) {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_SETHGK_PROP_DO_INFO")); // NOI18N
-                    HgConfigFiles.getSysInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
-                }else{
+                    HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+                    if (hcf.getException() == null) {
+                        hcf.setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
+                    } else {
+                        Mercurial.LOG.log(Level.WARNING, ViewAction.class.getName() + ": Cannot set hgk property"); // NOI18N
+                        Mercurial.LOG.log(Level.INFO, null, hcf.getException());
+                        HgModuleConfig.notifyParsingError();
+                    }
+                } else {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_NOTSETHGK_PROP_INFO")); // NOI18N
                     logger.output(""); // NOI18N
@@ -143,10 +148,11 @@ public class ViewAction extends ContextAction {
                     "MSG_VIEW_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
             logger.output(""); // NOI18N
             HgCommand.doView(root, logger);
-            logger.closeLog();
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            logger.closeLog();
         }
     }
 

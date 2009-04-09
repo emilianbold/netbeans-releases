@@ -330,7 +330,9 @@ public final class DocumentUtilities {
             if (offset >= 0 && offset + length > text.length()) {
                 badOffset = length;
             }
-            throw new BadLocationException(e.getMessage(), badOffset);
+            BadLocationException ble = new BadLocationException(e.getMessage(), badOffset);
+            ble.initCause(e);
+            throw ble;
         }
     }
     
@@ -668,8 +670,10 @@ public final class DocumentUtilities {
             try {
                 doc.getText(index, 1, segment);
             } catch (BadLocationException e) {
-                throw new IndexOutOfBoundsException(e.getMessage()
+                IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException(e.getMessage()
                     + " at offset=" + e.offsetRequested()); // NOI18N
+                ioobe.initCause(e);
+                throw ioobe;
             }
             char ch = segment.array[segment.offset];
             segment.array = null; // Allow GC of large char arrays

@@ -234,10 +234,22 @@ public class SftpClient implements RemoteClient {
     }
 
     public boolean deleteFile(String pathname) throws RemoteException {
+        return delete(pathname, false);
+    }
+
+    public boolean deleteDirectory(String pathname) throws RemoteException {
+        return delete(pathname, true);
+    }
+
+    private boolean delete(String pathname, boolean directory) throws RemoteException {
         try {
             sftpLogger.info("DELE " + pathname); // NOI18N
 
-            sftpClient.rm(pathname);
+            if (directory) {
+                sftpClient.rmdir(pathname);
+            } else {
+                sftpClient.rm(pathname);
+            }
 
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_FileDeleteOk"));
             return true;
@@ -264,14 +276,16 @@ public class SftpClient implements RemoteClient {
         }
     }
 
-    public List<RemoteFile> listFiles(PathInfo pathInfo) throws RemoteException {
+    public List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
+        String pwd = null;
         try {
+            pwd = sftpClient.pwd();
             sftpLogger.info("LIST"); // NOI18N
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirListing"));
 
             @SuppressWarnings("unchecked")
-            Vector<ChannelSftp.LsEntry> files = sftpClient.ls(sftpClient.pwd());
+            Vector<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
             result = new ArrayList<RemoteFile>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
                 result.add(new RemoteFileImpl(entry));
@@ -279,9 +293,9 @@ public class SftpClient implements RemoteClient {
 
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
         } catch (SftpException ex) {
-            LOGGER.log(Level.FINE, "Error while listing files for " + pathInfo, ex);
+            LOGGER.log(Level.FINE, "Error while listing files for " + pwd, ex);
             sftpLogger.error(ex.getLocalizedMessage());
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pathInfo.getFullPath()), ex);
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pwd), ex);
         }
         return result;
     }
@@ -362,6 +376,17 @@ public class SftpClient implements RemoteClient {
             sftpLogger.error(ex.getLocalizedMessage());
             return false;
         }
+    }
+
+    public boolean exists(String parent, String name) throws RemoteException {
+        String fullPath = parent + "/" + name; // NOI18N
+        try {
+            sftpClient.ls(fullPath);
+            return true;
+        } catch (SftpException ex) {
+            LOGGER.log(Level.FINE, "Error while checking existence of " + fullPath, ex);
+        }
+        return false;
     }
 
     private ChannelSftp.LsEntry getFile(String path) throws SftpException {

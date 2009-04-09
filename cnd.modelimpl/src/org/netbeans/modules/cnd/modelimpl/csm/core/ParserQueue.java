@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -81,7 +80,7 @@ public final class ParserQueue {
         TAIL
     }
 
-    public static class Entry implements Comparable<Entry> {
+    public static final class Entry implements Comparable<Entry> {
 
         private final FileImpl file;
         /** either APTPreprocHandler.State or Collection<APTPreprocHandler.State> */
@@ -153,7 +152,17 @@ public final class ParserQueue {
             Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) this.ppState;
             for (APTPreprocHandler.State state : ppStates) {
                 if (state != FileImpl.DUMMY_STATE) {
-                    states.add(state);
+                    if (!states.contains(state)) {
+                        states.add(state);
+                    } else {
+                        if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                            System.err.println("array already has the state " + state);
+                        }
+                    }
+                } else {
+                    if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                        System.err.println("skip adding dummy state");
+                    }
                 }
             }
         }
@@ -194,7 +203,7 @@ public final class ParserQueue {
         @Override
         public int hashCode() {
             int hash = 5;
-            hash = 97 * hash + (this.position != null ? this.position.hashCode() : 0);
+            hash = 97 * hash + (this.position != null ? this.position.ordinal() : 0);
             hash = 97 * hash + this.serial;
             return hash;
         }
@@ -273,7 +282,7 @@ public final class ParserQueue {
         private final Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        private final Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
+        private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
         private volatile boolean notifyListeners;
 
         ProjectData(boolean notifyListeners) {
@@ -434,7 +443,7 @@ public final class ParserQueue {
             System.err.println("ParserQueue: waitReady() ..."); // NOI18N
         }
         synchronized (lock) {
-            while (queue.isEmpty() && state != State.OFF) {
+            while (findFirstNotBeeingParsedEntry(false) == null && state != State.OFF) {
                 lock.wait();
             }
         }
@@ -462,7 +471,37 @@ public final class ParserQueue {
         }
     }
 
-    public Entry poll(AtomicReference<FileImpl.State> fileState) throws InterruptedException {
+    private Entry findFirstNotBeeingParsedEntry(boolean removeFoundEntryFromQueue) {
+        Entry e = null;
+        FileImpl file = null;
+        ProjectData data = null;
+        ProjectBase project = null;
+        Iterator<Entry> iterator = queue.iterator();
+        // 'poll' that filters out files that are being parsed.
+        // Used to prevent parsing the same file from different threads at the same time.
+        while (true) {
+            if (!iterator.hasNext()) {
+                return null;
+            }
+            e = iterator.next();
+            file = e.getFile();
+            project = file.getProjectImpl(true);
+            data = getProjectData(project, true);
+            if (data.filesBeingParsed.contains(file)) {
+                if (TraceFlags.TRACE_PARSER_QUEUE) {
+                    System.err.println("beeing parsed by another thread " + file); // NOI18N
+                }
+            } else {
+                if (removeFoundEntryFromQueue) {
+                    iterator.remove();
+                }
+                break;
+            }
+        }
+        return e;
+    }
+
+    public Entry poll() throws InterruptedException {
 
         synchronized (suspendLock) {
             while (state == State.SUSPENDED) {
@@ -482,16 +521,14 @@ public final class ParserQueue {
         FileImpl file = null;
 
         synchronized (lock) {
-            e = queue.poll();
+            ProjectData data = null;
+            e = findFirstNotBeeingParsedEntry(true);
             if (e == null) {
                 return null;
             }
             file = e.getFile();
-            if (fileState != null) {
-                fileState.set(file.getState());
-            }
             project = file.getProjectImpl(true);
-            ProjectData data = getProjectData(project, true);
+            data = getProjectData(project, true);
             data.filesInQueue.remove(file);
             data.filesBeingParsed.add(file);
             lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
@@ -658,10 +695,8 @@ public final class ParserQueue {
     }
 
     private boolean needEnqueue(FileImpl file) {
-        // we know, that each file is parsed only once =>
-        // let's speed up work with queue ~75% by skipping such files
-        // Also check that file project was not closed
-        return !file.isParsed() && !file.getProjectImpl(true).isDisposing() || addAlways;
+        // with multiple parse we can not check parsed state
+        return !file.getProjectImpl(true).isDisposing() || addAlways;
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
@@ -697,6 +732,7 @@ public final class ParserQueue {
                     stopWatch.stopAndReport("=== Stopping parser queue stopwatch: \t"); // NOI18N
                 }
             }
+            lock.notifyAll();
         }
         ProgressSupport.instance().fireFileParsingFinished(file);
         if (lastFileInProject) {

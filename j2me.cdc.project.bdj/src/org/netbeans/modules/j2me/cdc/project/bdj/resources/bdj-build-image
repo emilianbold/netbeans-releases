@@ -88,6 +88,7 @@
         <property name="bdj.deployment.certificate.dir" value="${{bdj.deployment.dir}}/CERTIFICATE"/>
         <property name="bdj.deployment.certificate.backup.dir" value="${{bdj.deployment.certificate.dir}}/BACKUP"/>
 
+        <mkdir dir="${{bdj.deployment.dir}}" />
         <mkdir dir="${{bdj.deployment.bdmv.dir}}"/>
         <mkdir dir="${{bdj.deployment.bdmv.dir}}/AUXDATA"/>
         <mkdir dir="${{bdj.deployment.bdmv.dir}}/BDJO"/>

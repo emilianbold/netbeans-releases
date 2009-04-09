@@ -42,11 +42,9 @@
 package org.netbeans.modules.php.project.connections.ui;
 
 /**
- *
  * @author Jiri Rechtacek
  */
 public interface TransferFileTableChangeListener {
-    public void updateUnitsChanged ();
-    public void buttonsChanged ();
-    public void filterChanged ();    
+    void updateUnitsChanged();
+    void filterChanged();
 }

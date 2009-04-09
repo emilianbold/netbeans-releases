@@ -75,4 +75,15 @@ public interface HudsonJobBuild {
      */
     FileSystem getArtifacts();
 
+    /**
+     * Gets modules contained in a Maven-type job.
+     * Will be empty for non-Maven jobs.
+     */
+    Collection<? extends HudsonMavenModuleBuild> getMavenModules();
+
+    /**
+     * Display name comprised of job display name and build number.
+     */
+    String getDisplayName();
+
 }

@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
@@ -165,7 +166,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
          * @param tokenSequence  The token sequence for the RHTML code
          */
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
+            TokenHierarchy th = snapshot.getTokenHierarchy();
+            if(th == null) {
+                //the token hierarchy may be null if the language is not initialized yet
+                //for example if ergonomics is used and j2ee cluster not activated
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
 
             //TODO - implement the "classpath" import for other projects

@@ -79,36 +79,39 @@ public abstract class NotificationDisplayer {
 
     /**
      * Create and show new notification with the default priority.
-     * @param title Notification title
+     * @param title Notification title. Html is not supported, any html tags will
+     * be escaped.
      * @param icon Notification icon
      * @param detailsText Detailed description of the notification. If detailsAction
-     * is non-null then this text will be presented as a clickable link.
+     * is non-null then this text will be presented as a clickable link. Html is
+     * not supported, any html tags will be escaped.
      * @param detailsAction Action to invoke when user click details text or null.
      * @return New notification.
      */
     public Notification notify( String title, Icon icon,
-            String detailsText, ActionListener detailsAction ) throws NullPointerException {
-        return notify( title, icon, detailsText, detailsAction, Priority.NORMAL)
-                ;
+            String detailsText, ActionListener detailsAction ) {
+        return notify( title, icon, detailsText, detailsAction, Priority.NORMAL);
     }
 
     /**
      * Create and show new notification.
-     * @param title Notification title
+     * @param title Notification title. Html is not supported, any html tags will
+     * be escaped.
      * @param icon Notification icon
      * @param detailsText Detailed description of the notification. If detailsAction
-     * is non-null then this text will be presented as a clickable link.
+     * is non-null then this text will be presented as a clickable link. Html is
+     * not supported, any html tags will be escaped.
      * @param detailsAction Action to invoke when user click details text or null.
      * @param priority Notification priority
      * @return New notification.
      */
     public abstract Notification notify( String title, Icon icon,
-            String detailsText, ActionListener detailsAction, Priority priority)
-            throws NullPointerException;
+            String detailsText, ActionListener detailsAction, Priority priority);
 
     /**
      * Create and show new notification with customized content.
-     * @param title Notification title
+     * @param title Notification title. Html is not supported, any html tags will
+     * be escaped.
      * @param icon Notification icon
      * @param balloonDetails Component that will show below notification title 
      * in a balloon.
@@ -118,9 +121,7 @@ public abstract class NotificationDisplayer {
      * @return New notification.
      */
     public abstract Notification notify( String title, Icon icon,
-            JComponent balloonDetails, JComponent popupDetails, Priority priority)
-            throws NullPointerException;
-
+            JComponent balloonDetails, JComponent popupDetails, Priority priority);
 
     /**
      * Simple implementation of NotificationDisplayer which shows the notifications

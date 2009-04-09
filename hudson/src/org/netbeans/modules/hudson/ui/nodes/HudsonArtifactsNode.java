@@ -41,11 +41,14 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.awt.Image;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Node which displays the artifacts for a build.
@@ -53,13 +56,21 @@ import org.openide.nodes.Node;
 class HudsonArtifactsNode extends AbstractNode {
 
     HudsonArtifactsNode(HudsonJobBuild build) {
-        super(DataFolder.findFolder(build.getArtifacts().getRoot()).createNodeChildren(DataFilter.ALL));
+        this(build.getArtifacts());
+    }
+
+    HudsonArtifactsNode(HudsonMavenModuleBuild module) {
+        this(module.getArtifacts());
+    }
+
+    private HudsonArtifactsNode(FileSystem fs) {
+        super(DataFolder.findFolder(fs.getRoot()).createNodeChildren(DataFilter.ALL));
         setName("artifact"); // NOI18N
     }
 
     @Override
     public String getDisplayName() {
-        return "Artifacts"; // XXX I18N
+        return NbBundle.getMessage(HudsonArtifactsNode.class, "HudsonArtifactsNode.displayName");
     }
 
     private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();

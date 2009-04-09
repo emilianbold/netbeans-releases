@@ -41,21 +41,26 @@
 
 package org.netbeans.performance.j2ee.dialogs;
 
+import java.awt.event.KeyEvent;
+import javax.swing.JScrollPane;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JScrollPaneOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
+
+
 
 /**
  * Test of dialogs from EJB source editor.
@@ -65,9 +70,9 @@ import org.netbeans.performance.j2ee.setup.J2EESetup;
 public class InvokeSBActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
-    private JPopupMenuOperator jmpo;
+    private JDialogOperator jdo;
     private Node openFile;
-    private String popupMenu = null;
+    private int listItem=0;
     private String dialogTitle = null;
     
     /**
@@ -96,45 +101,62 @@ public class InvokeSBActionTest extends PerformanceTestCase {
         return suite;
     }
 
-    public void testAddBusinessMethodDialogInSB(){
-        popupMenu = "Add|Business Method";
-        dialogTitle = "Business Method";
+    public void testAddPropertyDialogInSB(){
+//        popupMenu = "Add Property...";
+        dialogTitle = "Add Property";
+        listItem=2;
         doMeasurement();
     }
 
-
-/*    public void testCallEJBDialog(){
-        popupMenu = "Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
-        dialogTitle = "Call Enterprise Bean";
+    public void testOverrideMethodDialogInSB(){
+//        popupMenu = "Override Methods...";
+        dialogTitle = "Generate Override Methods";
+        listItem=1;
         doMeasurement();
-    }*/
+    }
+
+    public void testCallEnterpriseBeanDialogInSB(){
+ //       popupMenu = "Call Enterprise Bean...";
+        dialogTitle = "Call Enterprise Bean";
+        listItem=3;
+        doMeasurement();
+    }
+
+    public void testSendEmailDialogInSB(){
+ //       popupMenu = "Send E-mail...";
+        dialogTitle = "Specify Mail Resource";
+        listItem=6;
+        doMeasurement();
+    }
+
     
     public void initialize() {
         
-        // open a java file in the editor
-        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestSessionSB");
-        
-/*        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionSB");
+        new OpenAction().performAPI(openFile);
+        editor = new EditorWindowOperator().getEditor("TestSessionSB.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        editor.select(11);*/
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
-        jmpo=openFile.callPopup();
-        // do nothing
+        editor.setCaretPosition(16, 1);
+        editor.pushKey(java.awt.event.KeyEvent.VK_INSERT,java.awt.event.KeyEvent.ALT_MASK);
+        jdo=   new JDialogOperator();
+        JListOperator list = new JListOperator(jdo);
+        list.setSelectedIndex(listItem);
    }
     
     public ComponentOperator open(){
-        jmpo.pushMenu(popupMenu);
-        //new ActionNoBlock(null,popupMenu).perform(jmpo);
-        return new NbDialogOperator(dialogTitle);
+        jdo.pushKey(KeyEvent.VK_ENTER);
+        return null;
+    }
+
+    public void close() {
+        new NbDialogOperator(dialogTitle).cancel();
     }
 
     public void shutdown(){
-//        editor.closeDiscard();
+        editor.closeDiscard();
     }
     
 }

@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(projectTypes={@ProjectType(id="org-netbeans-modules-j2ee-web-project"), @ProjectType(id="org-netbeans-modules-maven")}, service=ProjectProfilingSupport.class)
+@ProjectServiceProvider(projectTypes={@ProjectType(id="org-netbeans-modules-web-project"), @ProjectType(id="org-netbeans-modules-maven")}, service=ProjectProfilingSupport.class)
 public class WebProfilingSupport extends ProjectProfilingSupport {
     public WebProfilingSupport(Project project) {
         super(project);

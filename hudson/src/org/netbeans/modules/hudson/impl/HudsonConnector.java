@@ -67,7 +67,6 @@ import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -103,7 +102,7 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1");
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -129,20 +128,17 @@ public class HudsonConnector {
     }
     
     public synchronized void startJob(final HudsonJob job) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
         handle.start();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
-                } catch (IOException e) {
-                    LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
-                } finally {
-                    handle.finish();
-                }
-            }
-        });
+        try {
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
+        } catch (IOException e) {
+            LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
+        } finally {
+            handle.finish();
+        }
+        instance.synchronize();
     }
 
     /**
@@ -157,12 +153,12 @@ public class HudsonConnector {
             return Collections.emptySet();
         }
         List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
-        NodeList buildDetails = docBuild.getElementsByTagName("build"); // HUDSON-3267: might be root elt
+        NodeList buildDetails = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
         for (int i = 0; i < buildDetails.getLength(); i++) {
             Element build = (Element) buildDetails.item(i);
-            int number = Integer.parseInt(Utilities.xpath("number", build));
-            boolean building = Boolean.valueOf(Utilities.xpath("building", build));
-            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build));
+            int number = Integer.parseInt(Utilities.xpath("number", build)); // NOI18N
+            boolean building = Boolean.valueOf(Utilities.xpath("building", build)); // NOI18N
+            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build)); // NOI18N
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
@@ -234,7 +230,7 @@ public class HudsonConnector {
                             
                             if (e.getNodeType() == Node.ELEMENT_NODE) {
                                 if (e.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                                    cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view);
+                                    cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
                                 }
                             }
                         }
@@ -276,7 +272,7 @@ public class HudsonConnector {
                         } catch (IllegalArgumentException x) {
                             Exceptions.attachMessage(x,
                                     "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
-                                    color + "' among " + Arrays.toString(Color.values()));
+                                    color + "' among " + Arrays.toString(Color.values())); // NOI18N
                             Exceptions.printStackTrace(x);
                             job.putProperty(JOB_COLOR, Color.red_anime);
                         }
@@ -311,6 +307,10 @@ public class HudsonConnector {
                             job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                         } else if (d.getNodeName().equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
                             job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                        } else if (d.getNodeName().equals("module")) { // NOI18N
+                            Element e = (Element) d;
+                            job.addModule(Utilities.xpath("name", e), Utilities.xpath("displayName", e), // NOI18N
+                                    Color.valueOf(Utilities.xpath("color", e)), Utilities.xpath("url", e)); // NOI18N
                         }
                     }
                 }
@@ -322,7 +322,7 @@ public class HudsonConnector {
                         continue;
                     }
                     
-                    if (null != cache.get(v.getName() + "/" + job.getName()))
+                    if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                         job.addView(v);
                 }
                 
@@ -338,7 +338,7 @@ public class HudsonConnector {
         
         try {
 
-            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson");
+            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersionImpl(sVersion);
             }
@@ -350,7 +350,6 @@ public class HudsonConnector {
     }
     
     Document getDocument(String url) {
-        LOG.log(Level.FINER, "Loading: {0}", url);
         Document doc = null;
         
         try {
@@ -401,4 +400,5 @@ public class HudsonConnector {
         
         return doc;
     }
+
 }

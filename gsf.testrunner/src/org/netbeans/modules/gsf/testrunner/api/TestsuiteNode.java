@@ -127,6 +127,9 @@ public class TestsuiteNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
+        if (report != null && Status.ABORTED == report.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+        }
         if (containsFailed()) {
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
         }
@@ -149,6 +152,7 @@ public class TestsuiteNode extends AbstractNode {
         setDisplayName();
         setChildren(new TestsuiteNodeChildren(report, filtered));
         setShortDescription(toTooltipText(getOutput()));
+        fireIconChange();
     }
     
     /**
@@ -168,31 +172,36 @@ public class TestsuiteNode extends AbstractNode {
         if (report == null) {
             if (suiteName != TestSuite.ANONYMOUS_SUITE) {
                 displayName = NbBundle.getMessage(
-                                          getClass(),
+                                          TestsuiteNode.class,
                                           "MSG_TestsuiteRunning",       //NOI18N
                                           suiteName);
             } else {
                 displayName = NbBundle.getMessage(
-                                          getClass(),
+                                          TestsuiteNode.class,
                                           "MSG_TestsuiteRunningNoname");//NOI18N
             }
+        } else if (report.isAborted()){
+            displayName = NbBundle.getMessage(
+                                          TestsuiteNode.class,
+                                          "MSG_TestsuiteAborted",        //NOI18N
+                                          suiteName);
         } else if (!report.completed){
             boolean containsFailed = containsFailed();
             displayName = containsFailed
                           ? NbBundle.getMessage(
-                                          getClass(),
+                                          TestsuiteNode.class,
                                           "MSG_TestsuiteFailed",        //NOI18N
                                           suiteName)
                           : suiteName;
             displayName = NbBundle.getMessage(
-                                      getClass(),
+                                      TestsuiteNode.class,
                                       "MSG_TestsuiteRunning",       //NOI18N
                                       displayName);
         } else {
             boolean containsFailed = containsFailed();
             displayName = containsFailed
                           ? NbBundle.getMessage(
-                                          getClass(),
+                                          TestsuiteNode.class,
                                           "MSG_TestsuiteFailed",        //NOI18N
                                           suiteName)
                           : suiteName;
@@ -210,7 +219,7 @@ public class TestsuiteNode extends AbstractNode {
         if (suiteName != TestSuite.ANONYMOUS_SUITE) {
             buf.append(suiteName);
         } else {
-            buf.append(NbBundle.getMessage(getClass(),
+            buf.append(NbBundle.getMessage(TestsuiteNode.class,
                                            "MSG_TestsuiteNoname"));     //NOI18N
         }
         if (report != null) {
@@ -225,7 +234,7 @@ public class TestsuiteNode extends AbstractNode {
         if (report == null || !report.completed){
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
             buf.append(NbBundle.getMessage(
-                                    getClass(),
+                                    TestsuiteNode.class,
                                     "MSG_TestsuiteRunning_HTML"));      //NOI18N
         }
         return buf.toString();
@@ -233,7 +242,9 @@ public class TestsuiteNode extends AbstractNode {
     
     static String suiteStatusToMsg(Status status, boolean html) {
         String result = null;
-        if (Status.ERROR == status || Status.FAILED == status) {
+        if(Status.ABORTED == status){
+            result = "MSG_TestsuiteAborted"; //NOI18N
+        } else if (Status.ERROR == status || Status.FAILED == status) {
             result = "MSG_TestsuiteFailed"; //NOI18N
         } else if (Status.PENDING == status) {
             result = "MSG_TestsuitePending"; //NOI18N

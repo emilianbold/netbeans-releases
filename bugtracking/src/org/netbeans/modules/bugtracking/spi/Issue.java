@@ -60,27 +60,27 @@ public abstract class Issue {
 
     private final PropertyChangeSupport support;
 
-    public static final String ATTR_DATE_MODIFICATION = "date.modification";
+    public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
 
     /**
      * Seen property id
      */
-    public static String LABEL_NAME_SEEN = "issue.seen";
+    public static String LABEL_NAME_SEEN = "issue.seen";                        // NOI18N
     
     /**
      * Recetn Changes property id
      */
-    public static String LABEL_RECENT_CHANGES = "issue.recent_changes";
+    public static String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
 
     /**
      * issue data were changed
      */
-    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed";
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
     /**
      * issues seen state changed
      */
-    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed";
+    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
 
     /**
      * No information available

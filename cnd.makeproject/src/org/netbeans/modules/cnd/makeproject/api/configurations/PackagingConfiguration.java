@@ -70,6 +70,7 @@ public class PackagingConfiguration {
     private StringConfiguration type;
     private BooleanConfiguration verbose;
     private VectorConfiguration<PackagerInfoElement> info;
+    private VectorConfiguration<String> additionalInfo;
     private VectorConfiguration<PackagerFileElement> files;
     private StringConfiguration output;
     private StringConfiguration tool;
@@ -81,6 +82,7 @@ public class PackagingConfiguration {
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
         verbose = new BooleanConfiguration(null, true);
         info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
+        additionalInfo = new VectorConfiguration<String>(null); // NOI18N
         files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
@@ -205,6 +207,14 @@ public class PackagingConfiguration {
         this.info = svr4Header;
     }
 
+    public VectorConfiguration<String> getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void setAdditionalInfo(VectorConfiguration<String> additionalInfo) {
+        this.additionalInfo = additionalInfo;
+    }
+
     public VectorConfiguration<PackagerFileElement> getFiles() {
         return files;
     }
@@ -251,6 +261,7 @@ public class PackagingConfiguration {
         getType().assign(conf.getType());
         getVerbose().assign(conf.getVerbose());
         getInfo().assign(conf.getInfo());
+        getAdditionalInfo().assign(conf.getAdditionalInfo());
         getFiles().assign(conf.getFiles());
         getOutput().assign(conf.getOutput());
         getTool().assign(conf.getTool());
@@ -264,6 +275,7 @@ public class PackagingConfiguration {
         clone.setType(getType().clone());
         clone.setVerbose(getVerbose().clone());
         clone.setInfo(getInfo().clone());
+        clone.setAdditionalInfo(getAdditionalInfo().clone());
         clone.setFiles(getFiles().clone());
         clone.setOutput(getOutput().clone());
         clone.setTool(getTool().clone());
@@ -367,6 +379,8 @@ public class PackagingConfiguration {
         }
 
         public void propertyChange(PropertyChangeEvent arg0) {
+            toolNodeProp.setCanWrite(getToolDefault().length() > 0);
+            optionsNodeProp.setCanWrite(getToolDefault().length() > 0);
             if (!output.getModified()) {
                 outputNodeProp.setDefaultValue(getOutputDefault());
                 output.reset();

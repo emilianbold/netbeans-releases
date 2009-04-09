@@ -54,6 +54,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -83,17 +84,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         new String[] {"/GlassFishEE6/Instances"},
                         "GlassFish v3", "org.glassfish.v3ee6.installRoot",
                         "GlassFish v3 Domain",
-                        "Presonal GlassFish v3 Domain",
+                        "Personal GlassFish v3 Domain",
                         "GlassFish_v3", "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",
                         "last-v3ee6-install-root",
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" },
                         new String[0], true);
-                RegisteredDDCatalog catalog = getDDCatalog();
-                if (null != catalog) {
-                    catalog.registerEE6RunTimeDDCatalog(singletonEe6);
-                    refreshCatalogFromFirstInstance(singletonEe6, catalog);
-                }
             }
         }
         return singletonEe6;
@@ -118,16 +114,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             singleton = new GlassfishInstanceProvider(uriFragments, instanceDirs,
                     "GlassFish v3 Prelude", "org.glassfish.v3.installRoot",
                         "GlassFish v3 Prelude Domain",
-                        "Presonal GlassFish v3 Prelude Domain",
+                        "Personal GlassFish v3 Prelude Domain",
                         "GlassFish_v3_Prelude", "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
                         "last-install-root", new String[0],
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, false);
-            RegisteredDDCatalog catalog = getDDCatalog();
-            if (null != catalog) {
-                catalog.registerPreludeRunTimeDDCatalog(singleton);
-                refreshCatalogFromFirstInstance(singleton, catalog);
-            }
         }
         return singleton;
     }
@@ -167,12 +158,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
-        try {
-            registerDefaultInstance();
-            loadServerInstances();
-        } catch(RuntimeException ex) {
-            getLogger().log(Level.INFO, null, ex);
-        }
     }
 
     public static synchronized boolean initialized() {
@@ -328,6 +313,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
         synchronized (instanceMap) {
+            if (instanceMap.isEmpty()) {
+                init();
+            }
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
             }
@@ -372,6 +360,24 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     boolean requiresJdk6OrHigher() {
         return needsJdk6;
+    }
+
+    private void init() {
+        try {
+            registerDefaultInstance();
+            loadServerInstances();
+        } catch(RuntimeException ex) {
+            getLogger().log(Level.INFO, null, ex);
+        }
+        RegisteredDDCatalog catalog = getDDCatalog();
+        if (null != catalog) {
+            if (this.equals(singleton)) {
+                catalog.registerPreludeRunTimeDDCatalog(this);
+            } else {
+                catalog.registerEE6RunTimeDDCatalog(this);
+            }
+            refreshCatalogFromFirstInstance(this, catalog);
+        }
     }
     
     // ------------------------------------------------------------------------
@@ -576,7 +582,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                 f.getCanonicalPath());
                         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
                                 f.getCanonicalPath() + File.separator + "glassfish");
-                        if (f.canWrite()) {
+                        if (Utils.canWrite(f)) { // f.canWrite()) {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultDomainName);
                             ip.put(GlassfishModule.HTTPPORT_ATTR,
                                     Integer.toString(8080));

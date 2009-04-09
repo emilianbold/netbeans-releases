@@ -142,7 +142,7 @@ public class CompletionTestPerformer {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
-        CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, false, !unsorted);
+        CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, false, !unsorted, true);
         
         CompletionItem[] array =  res == null ? new CompletionItem[0] : res.getItems().toArray(new CompletionItem[res.getItems().size()]);
         assert array != null;

@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
@@ -76,7 +76,7 @@ public class TestBase2 extends CslTestBase {
 
     @Override
     protected BaseKit getEditorKit(String mimeType) {
-        return new HTMLKit();
+        return new HtmlKit();
     }
 
 }

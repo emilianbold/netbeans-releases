@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -130,31 +129,27 @@ public final class DeepReparsingUtils {
         if (file == null) {
             return;
         }
-        if (TraceFlags.USE_DEEP_REPARSING) {
-            Set<CsmFile> top = project.getGraph().getTopParentFiles(file);
-            Set<CsmFile> coherence = project.getGraph().getIncludedFiles(file);
-            Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
-            for (CsmFile parent : coherence) {
-                if (!top.contains(parent)) {
-                    CsmProject parentPoject = parent.getProject();
-                    if (project.equals(parentPoject)) {
-                        invalidateFileAndPreprocState(project, parent);
-                    } else {
-                        coherenceLibrary.add(parent);
-                    }
+        Set<CsmFile> top = project.getGraph().getTopParentFiles(file);
+        Set<CsmFile> coherence = project.getGraph().getIncludedFiles(file);
+        Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
+        for (CsmFile parent : coherence) {
+            if (!top.contains(parent)) {
+                CsmProject parentPoject = parent.getProject();
+                if (project.equals(parentPoject)) {
+                    invalidateFileAndPreprocState(project, parent);
+                } else {
+                    coherenceLibrary.add(parent);
                 }
             }
-            if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                gatherCoherenceLibrary(coherenceLibrary);
-                invalidateFileAndPreprocState(coherenceLibrary);
-            }
-            addToReparse(project, nativeFile, file);
-            top.remove(file);
-            // coherence already invalidated, pass empty set
-            addToReparse(project, top, new HashSet<CsmFile>(0), false);
-        } else {
-            addToReparse(project, nativeFile, file);
         }
+        if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+            gatherCoherenceLibrary(coherenceLibrary);
+            invalidateFileAndPreprocState(coherenceLibrary);
+        }
+        addToReparse(project, nativeFile, file);
+        top.remove(file);
+        // coherence already invalidated, pass empty set
+        addToReparse(project, top, new HashSet<CsmFile>(0), false);
     }
 
     private static void gatherCoherenceLibrary(Set<CsmFile> coherenceLibrary) {
@@ -178,51 +173,42 @@ public final class DeepReparsingUtils {
     public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectBase project) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
-                Set<CsmFile> top = new HashSet<CsmFile>();
-                Set<CsmFile> coherence = new HashSet<CsmFile>();
-                Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
-                for (NativeFileItem item : items) {
-                    if (project.acceptNativeItem(item)) {
-                        FileImpl file = project.getFile(item.getFile());
-                        if (file != null) {
-                            pairs.put(file, item);
-                            top.addAll(project.getGraph().getTopParentFiles(file));
-                            coherence.addAll(project.getGraph().getIncludedFiles(file));
-                        }
-                    }
-                }
-                for (CsmFile parent : coherence) {
-                    if (!top.contains(parent)) {
-                        CsmProject parentPoject = parent.getProject();
-                        if (project.equals(parentPoject)) {
-                            invalidateFileAndPreprocState(project, parent);
-                        } else {
-                            coherenceLibrary.add(parent);
-                        }
-                    }
-                }
-                if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                    gatherCoherenceLibrary(coherenceLibrary);
-                    invalidateFileAndPreprocState(coherenceLibrary);
-                }
-                for (CsmFile parent : top) {
-                    if (parent.getProject() == project) {
-                        FileImpl parentImpl = (FileImpl) parent;
-                        if (pairs.containsKey(parentImpl)) {
-                            NativeFileItem item = pairs.get(parentImpl);
-                            addToReparse(project, item, parentImpl);
-                        } else {
-                            addToReparse(project, parentImpl, true);
-                        }
-                    }
-                }
-            } else {
-                for (NativeFileItem item : items) {
+            Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
+            Set<CsmFile> top = new HashSet<CsmFile>();
+            Set<CsmFile> coherence = new HashSet<CsmFile>();
+            Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
+            for (NativeFileItem item : items) {
+                if (project.acceptNativeItem(item)) {
                     FileImpl file = project.getFile(item.getFile());
                     if (file != null) {
-                        addToReparse(project, item, file);
+                        pairs.put(file, item);
+                        top.addAll(project.getGraph().getTopParentFiles(file));
+                        coherence.addAll(project.getGraph().getIncludedFiles(file));
+                    }
+                }
+            }
+            for (CsmFile parent : coherence) {
+                if (!top.contains(parent)) {
+                    CsmProject parentPoject = parent.getProject();
+                    if (project.equals(parentPoject)) {
+                        invalidateFileAndPreprocState(project, parent);
+                    } else {
+                        coherenceLibrary.add(parent);
+                    }
+                }
+            }
+            if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+                gatherCoherenceLibrary(coherenceLibrary);
+                invalidateFileAndPreprocState(coherenceLibrary);
+            }
+            for (CsmFile parent : top) {
+                if (parent.getProject() == project) {
+                    FileImpl parentImpl = (FileImpl) parent;
+                    if (pairs.containsKey(parentImpl)) {
+                        NativeFileItem item = pairs.get(parentImpl);
+                        addToReparse(project, item, parentImpl);
+                    } else {
+                        addToReparse(project, parentImpl, true);
                     }
                 }
             }
@@ -248,9 +234,6 @@ public final class DeepReparsingUtils {
     }
 
     private static void reparseOnAdded(String name, ProjectBase project) {
-        if (!TraceFlags.USE_DEEP_REPARSING) {
-            return;
-        }
         Set<CsmFile> resolved = new HashSet<CsmFile>();
         for (CsmFile file : project.getAllFiles()) {
             for (CsmInclude incl : file.getIncludes()) {
@@ -273,9 +256,6 @@ public final class DeepReparsingUtils {
     }
 
     static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
-        if (!TraceFlags.USE_DEEP_REPARSING) {
-            return;
-        }
         Set<String> names = new HashSet<String>();
         for (NativeFileItem item : toReparse) {
             names.add(item.getFile().getName());
@@ -316,9 +296,6 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at file removed.
      */
     public static void reparseOnRemoved(FileImpl impl, ProjectBase project) {
-        if (!TraceFlags.USE_DEEP_REPARSING) {
-            return;
-        }
         Set<CsmFile> topParents = project.getGraph().getTopParentFiles(impl);
         Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(impl);
         project.getGraph().removeFile(impl);
@@ -328,9 +305,6 @@ public final class DeepReparsingUtils {
     }
 
     static void reparseOnRemoved(List<FileImpl> toReparse, ProjectBase project) {
-        if (!TraceFlags.USE_DEEP_REPARSING) {
-            return;
-        }
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
         for (FileImpl impl : toReparse) {
@@ -349,12 +323,9 @@ public final class DeepReparsingUtils {
                 invalidateFileAndPreprocState(project, incl);
             }
         }
-        boolean progress = false;
         try {
-            if (topParents.size() > 5) {
-                ParserQueue.instance().onStartAddingProjectFiles(project);
-                progress = true;
-            }
+            // send notifications
+            ParserQueue.instance().onStartAddingProjectFiles(project);
             for (CsmFile parent : topParents) {
                 if (parent.getProject() == project) {
                     FileImpl parentImpl = (FileImpl) parent;
@@ -364,9 +335,8 @@ public final class DeepReparsingUtils {
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
         } finally {
-            if (progress) {
-                ParserQueue.instance().onEndAddingProjectFiles(project);
-            }
+            // send notifications
+            ParserQueue.instance().onEndAddingProjectFiles(project);
         }
     }
 

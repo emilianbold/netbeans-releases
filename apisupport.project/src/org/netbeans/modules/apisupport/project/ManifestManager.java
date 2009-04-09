@@ -80,6 +80,7 @@ public final class ManifestManager {
     private String[] neededTokens;
     private String localizingBundle;
     private String layer;
+    private String generatedLayer;
     private String classPath;
     private PackageExport[] publicPackages;
     private String[] friendNames;
@@ -100,7 +101,9 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
     public static final String AUTO_UPDATE_SHOW_IN_CLIENT = "AutoUpdate-Show-In-Client"; // NOI18N
-    
+
+    private static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
+
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
     public static final ManifestManager NULL_INSTANCE = new ManifestManager();
@@ -113,7 +116,7 @@ public final class ManifestManager {
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
             String implVer, String provTokensString, String requiredTokens, String neededTokens,
-            String locBundle, String layer, String classPath,
+            String locBundle, String layer, boolean withGeneratedLayer, String classPath,
             PackageExport[] publicPackages, String[] friendNames,
             boolean deprecated, Boolean autoUpdateShowInClient, String moduleDependencies) {
         this.codeNameBase = cnb;
@@ -126,6 +129,8 @@ public final class ManifestManager {
         this.neededTokens = parseTokens(neededTokens); // XXX could be lazy-loaded
         this.localizingBundle = locBundle;
         this.layer = layer;
+        if (withGeneratedLayer)
+            this.generatedLayer = GENERATED_LAYER_PATH;
         this.classPath = classPath;
         this.publicPackages = (publicPackages == null)
                 ? EMPTY_EXPORTED_PACKAGES : publicPackages;
@@ -166,6 +171,10 @@ public final class ManifestManager {
     }
     
     public static ManifestManager getInstanceFromJAR(File jar) {
+        return getInstanceFromJAR(jar, false);
+    }
+
+    public static ManifestManager getInstanceFromJAR(File jar, boolean withGeneratedLayer) {
         try {
             if (!jar.isFile()) {
                 throw new IOException("No such JAR: " + jar); // NOI18N
@@ -176,7 +185,8 @@ public final class ManifestManager {
                 if (m == null) { // #87064
                     throw new IOException("No manifest in " + jar); // NOI18N
                 }
-                return ManifestManager.getInstance(m, true);
+                withGeneratedLayer = withGeneratedLayer && (jf.getJarEntry(GENERATED_LAYER_PATH) != null);
+                return ManifestManager.getInstance(m, true, withGeneratedLayer);
             } finally {
                 jf.close();
             }
@@ -187,6 +197,10 @@ public final class ManifestManager {
     }
     
     public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
+        return getInstance(manifest, loadPublicPackages, false);
+    }
+
+    public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
         String codenamebase = null;
@@ -227,6 +241,7 @@ public final class ManifestManager {
                 attr.getValue(OPENIDE_MODULE_NEEDS),
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
+                withGeneratedLayer,
                 attr.getValue(CLASS_PATH),
                 publicPackages,
                 friendNames,
@@ -343,6 +358,10 @@ public final class ManifestManager {
     
     public String getLayer() {
         return layer;
+    }
+
+    public String getGeneratedLayer() {
+        return generatedLayer;
     }
     
     public String getClassPath() {

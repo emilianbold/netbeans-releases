@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -48,10 +50,23 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public final class PerfanDataStorage extends DataStorage {
 
+    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
     private Erprint erprint;
 
     public PerfanDataStorage() {
         super();
+    }
+
+    public final Map<String, String> getInfo() {
+        return serviceInfoMap;
+    }
+
+    public final String getValue(String name) {
+        return serviceInfoMap.get(name);
+    }
+
+    public final String put(String name, String value) {
+        return serviceInfoMap.put(name, value);
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
@@ -80,6 +95,14 @@ public final class PerfanDataStorage extends DataStorage {
      */
     public String[] getTopFunctions(Metrics metrics, int limit) {
         return erprint.getHotFunctions(metrics, limit, true);
+    }
+
+    public String[] getTopFunctions(String command, Metrics metrics, int limit) {
+        return erprint.getHotFunctions(command, metrics, limit, true);
+    }
+
+    public FunctionStatistic getFunctionStatistic(String function){
+        return erprint.getFunctionStatistic(function, true);
     }
 
     public ExperimentStatistics fetchSummaryData() {

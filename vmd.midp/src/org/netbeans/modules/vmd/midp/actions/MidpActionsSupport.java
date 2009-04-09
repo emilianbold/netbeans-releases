@@ -54,7 +54,6 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditParentAction;
 import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameAction;
-import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameSourceAction;
 import org.openide.actions.PropertiesAction;
 
 
@@ -65,7 +64,11 @@ import org.openide.util.actions.SystemAction;
  */
 public final class MidpActionsSupport {
     
-    public static void addCommonActionsPresenters(List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
+    public static void addCommonActionsPresenters(List<Presenter> presenters,
+            boolean allowEdit, boolean allowGoToSource,
+            boolean allowRename, boolean allowDelete,
+            boolean allowProperties)
+    {
         if (allowEdit)
             presenters.add(ActionsPresenter.create(20,SystemAction.get(DesignerEditAction.class)));
         if (allowGoToSource)
@@ -76,22 +79,7 @@ public final class MidpActionsSupport {
             presenters.add(ActionsPresenter.create(40, SystemAction.get(DeleteAction.class)));
         if (allowProperties)
             presenters.add(ActionsPresenter.create(60, SystemAction.get(PropertiesAction.class)));
-    }
-
-    public static void addCommonEventSourceActionsPresenters(List<Presenter> presenters,
-            boolean allowEdit, boolean allowGoToSource, boolean allowRename,
-            boolean allowDelete, boolean allowProperties)
-    {
-        if (allowEdit)
-            presenters.add(ActionsPresenter.create(20,SystemAction.get(DesignerEditAction.class)));
-        if (allowGoToSource)
-            presenters.add(ActionsPresenter.create(20, SystemAction.get(GoToSourceAction.class)));
-        if (allowRename)
-            presenters.add(ActionsPresenter.create(30, SystemAction.get(InstanceRenameSourceAction.class)));
-        if (allowDelete)
-            presenters.add(ActionsPresenter.create(40, SystemAction.get(DeleteAction.class)));
-        if (allowProperties)
-            presenters.add(ActionsPresenter.create(60, SystemAction.get(PropertiesAction.class)));
+         
     }
 
     public static void addCommonClassActionsPresenters(List<Presenter> presenters, 

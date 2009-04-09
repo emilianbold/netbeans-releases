@@ -144,8 +144,6 @@ public abstract class TreeListNode {
 
                     if( expanded ) {
                         startLoadingChildren();
-                        if( null != listener )
-                            listener.childrenAdded(TreeListNode.this);
                     }
                 }
             }
@@ -153,13 +151,17 @@ public abstract class TreeListNode {
     }
     
     final JComponent getRenderer( Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowHeight ) {
-        if( null == renderer ) {
-            renderer = new RendererPanel( this );
+        RendererPanel res = null;
+        synchronized( this ) {
+            if( null == renderer ) {
+                renderer = new RendererPanel( this );
+            }
+            res = renderer;
         }
 
-        renderer.configure(foreground, background, isSelected, hasFocus, getNestingDepth(), rowHeight);
+        res.configure(foreground, background, isSelected, hasFocus, getNestingDepth(), rowHeight);
 
-        return renderer;
+        return res;
     }
 
     /**
@@ -234,7 +236,7 @@ public abstract class TreeListNode {
         return expanded && isExpandable();
     }
 
-    final void setExpanded( boolean expanded ) {
+    public final void setExpanded( boolean expanded ) {
         if( !isExpandable() )
             throw new IllegalStateException();
         if( this.expanded == expanded )
@@ -242,12 +244,15 @@ public abstract class TreeListNode {
         this.expanded = expanded;
         if( null != listener ) {
             if( this.expanded ) {
+                boolean childrenLoaded = true;
                 synchronized( LOCK ) {
                     if( null == children ) {
+                        childrenLoaded = false;
                         startLoadingChildren();
                     }
                 }
-                listener.childrenAdded(this);
+                if( childrenLoaded )
+                    listener.childrenAdded(this);
             } else {
                 synchronized( LOCK ) {
                     if( null != loader ) {
@@ -261,7 +266,9 @@ public abstract class TreeListNode {
     }
 
     final protected void fireContentChanged() {
-        renderer = null;
+        synchronized( this ) {
+            renderer = null;
+        }
         if( null != listener )
             listener.contentChanged(this);
     }

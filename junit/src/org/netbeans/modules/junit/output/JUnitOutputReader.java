@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -146,7 +147,8 @@ final class JUnitOutputReader {
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
                       final AntSessionInfo sessionInfo,
-                      final Project project) {
+                      final Project project,
+                      final Properties props) {
         this.project = project;
         this.sessionType = sessionInfo.getSessionType();
         this.antScript = FileUtil.normalizeFile(session.getOriginatingScript());
@@ -155,8 +157,8 @@ final class JUnitOutputReader {
             FileObject fileObj = FileUtil.toFileObject(antScript);
             this.project = FileOwnerQuery.getOwner(fileObj);
         }
-        this.testSession = new JUnitTestSession("", this.project, sessionType, new JUnitTestRunnerNodeFactory());
-        testSession.setRerunHandler(new JUnitExecutionManager(session));
+        this.testSession = new JUnitTestSession("", this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
+        testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
     }
 
     Project getProject() {
@@ -574,7 +576,13 @@ final class JUnitOutputReader {
             }else{
                 report.update(testSession.getReport(lastSuiteTime));
             }
-            manager.displayReport(testSession, report, true);
+            switch(state){
+                case SUITE_STARTED:
+                case TESTCASE_STARTED:
+                    report.setAborted(true);
+                default:
+                    manager.displayReport(testSession, report, true);
+            }
             report = null;
             lastSuiteTime = 0;
         }
@@ -640,11 +648,13 @@ final class JUnitOutputReader {
      */
     private void displayOutput(final String text, final boolean error) {
         manager.displayOutput(testSession,text, error);
-        List<String> addedLines = new ArrayList<String>();
-        addedLines.add(text);
-        Testcase tc = testSession.getCurrentTestCase();
-        if (tc != null){
-            tc.addOutputLines(addedLines);
+        if (state == State.TESTCASE_STARTED){
+            List<String> addedLines = new ArrayList<String>();
+            addedLines.add(text);
+            Testcase tc = testSession.getCurrentTestCase();
+            if (tc != null){
+                tc.addOutputLines(addedLines);
+            }
         }
     }
     

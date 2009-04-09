@@ -625,7 +625,7 @@ public class ElementJavadoc {
                         dim = dim.substring(2) + "..."; //NOI18N
                 }
                 if (i < params.length - 1) {
-                    sb.append(",\n"); //NOI18N
+                    sb.append(", "); //NOI18N
                     appendSpace(sb, len);
                 }
             }
@@ -633,7 +633,7 @@ public class ElementJavadoc {
         }
         Type[] exs = mdoc.thrownExceptionTypes();
         if (exs.length > 0) {
-            sb.append("\nthrows "); //NOI18N
+            sb.append(" throws "); //NOI18N
             for (int i = 0; i < exs.length; i++) {
                 appendType(sb, exs[i], false, false, false);
                 if (i < exs.length - 1)
@@ -693,13 +693,13 @@ public class ElementJavadoc {
             if (cdoc.isClass()) {
                 Type supercls = cdoc.superclassType();
                 if (supercls != null) {
-                    sb.append("\nextends "); //NOI18N
+                    sb.append(" extends "); //NOI18N
                     appendType(sb, supercls, false, false, false);
                 }
             }
             Type[] ifaces = cdoc.interfaceTypes();
             if (ifaces.length > 0) {
-                sb.append(cdoc.isInterface() ? "\nextends " : "\nimplements "); //NOI18N
+                sb.append(cdoc.isInterface() ? " extends " : " implements "); //NOI18N
                 for (int i = 0; i < ifaces.length; i++) {
                     appendType(sb, ifaces[i], false, false, false);
                     if (i < ifaces.length - 1)
@@ -724,7 +724,7 @@ public class ElementJavadoc {
         StringBuilder sb = new StringBuilder();
         for (AnnotationDesc annotationDesc : annotations) {
             AnnotationTypeDoc annotationType = annotationDesc.annotationType();
-            if (annotationType != null) {
+            if (annotationType != null && isDocumented(annotationType)) {
                 appendType(sb, annotationType, false, false, true);
                 ElementValuePair[] pairs = annotationDesc.elementValues();
                 if (pairs.length > 0) {
@@ -739,10 +739,18 @@ public class ElementJavadoc {
                     }
                     sb.append(')'); //NOI18N
                 }
-                sb.append('\n'); //NOI18N
+                sb.append("<br>"); //NOI18N
             }
         }
         return sb;
+    }
+
+    private boolean isDocumented(AnnotationTypeDoc annotationType) {
+        for (AnnotationDesc annotationDesc : annotationType.annotations()) {
+            if ("java.lang.annotation.Documented".equals(annotationDesc.annotationType().qualifiedTypeName()))
+                return true;
+        }
+        return false;
     }
     
     private void appendAnnotationValue(StringBuilder sb, AnnotationValue av) {

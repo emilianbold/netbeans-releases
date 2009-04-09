@@ -66,13 +66,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -100,8 +99,11 @@ public class KenaiSearchPanel extends JPanel {
     private PanelType panelType;
 
     private ProgressHandle progressHandle;
+    private boolean progressRunning;
 
     private boolean multiSelection;
+
+    private KenaiProjectsListModel listModel;
 
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel) {
@@ -266,6 +268,12 @@ public class KenaiSearchPanel extends JPanel {
     
     private void invokeSearch() {
 
+        if (getListModel() != null) {
+            getListModel().stopLoading();
+        }
+
+        searchButton.setEnabled(false);
+
         boolean showProgressAndRepaint = false;
         final JPanel progressPanel = createProgressPanel();
 
@@ -283,10 +291,9 @@ public class KenaiSearchPanel extends JPanel {
             showProgressAndRepaint = true;
         }
 
-
         if (showProgressAndRepaint) {
             add(BorderLayout.CENTER, progressPanel);
-            progressHandle.start();
+            startProgress();
             revalidate();
             repaint();
         }
@@ -297,13 +304,13 @@ public class KenaiSearchPanel extends JPanel {
                 String searchPattern = searchTextField.getText();
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiErrorMessage em) {
-                    if ("400 Bad Request".equals(em.getStatus())) {//NOI18N
+                } catch (KenaiException em) {
+                    if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
                         EventQueue.invokeLater(new Runnable() {
-
                             public void run() {
-                                progressHandle.finish();
+                                finishProgress();
                                 remove(progressPanel);
+                                searchButton.setEnabled(true);
                                 add(BorderLayout.CENTER, badRequestPanel);
                                 revalidate();
                                 repaint();
@@ -313,10 +320,6 @@ public class KenaiSearchPanel extends JPanel {
                     } else {
                         Exceptions.printStackTrace(em);
                     }
-
-                }catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-                    // XXX show some error to user
                 }
                 if (projectsIterator != null && projectsIterator.hasNext()) {
                     // XXX createModel
@@ -325,8 +328,9 @@ public class KenaiSearchPanel extends JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             kenaiProjectsList.setModel(listModel);
-                            progressHandle.finish();
+                            finishProgress();
                             remove(progressPanel);
+                            searchButton.setEnabled(true);
                             add(BorderLayout.CENTER, scrollPane);
                             revalidate();
                             repaint();
@@ -335,8 +339,9 @@ public class KenaiSearchPanel extends JPanel {
                 } else {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            progressHandle.finish();
+                            finishProgress();
                             remove(progressPanel);
+                            searchButton.setEnabled(true);
                             add(BorderLayout.CENTER, noMatchingLabelPanel);
                             revalidate();
                             repaint();
@@ -348,8 +353,6 @@ public class KenaiSearchPanel extends JPanel {
 
     }
 
-    private KenaiProjectsListModel listModel;
-
     private synchronized void setListModel(KenaiProjectsListModel model) {
         listModel = model;
     }
@@ -358,13 +361,27 @@ public class KenaiSearchPanel extends JPanel {
         return listModel;
     }
 
+    private synchronized void startProgress() {
+        if (!progressRunning && progressHandle != null) {
+            progressHandle.start();
+            progressRunning = true;
+        }
+    }
+
+    private synchronized void finishProgress() {
+        if (progressRunning && progressHandle != null) {
+            progressHandle.finish();
+            progressRunning = false;
+        }
+    }
+
     @Override
     public void removeNotify() {
         super.removeNotify();
         // cancel running tasks
         KenaiProjectsListModel model = getListModel();
         if (model != null) {
-            model.cancel();
+            model.stopLoading();
         }
     }
 
@@ -375,57 +392,66 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
 
-        private RequestProcessor.Task task;
+        private boolean stopLoading;
 
         public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
             this.projects = projects;
             this.pattern = pattern;
-            task = RequestProcessor.getDefault().post(this);
+            RequestProcessor.getDefault().post(this);
         }
 
         public void run() {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
+                    //TODO: remove me as soon as projects.json?full=true is
+                    //implemented on kenai.com
+                    try {
+                        project.getDescription();
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    //end of TODO
                     if (PanelType.OPEN.equals(panelType)) {
-                        addElement(new KenaiProjectSearchInfo(project, pattern));
+                        addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {
-                        KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
-                        for (KenaiFeature repo : repos) {
-                            if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
-                                addElement(new KenaiProjectSearchInfo(project, repo, pattern));
+                        try {
+                            KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
+                            for (KenaiFeature repo : repos) {
+                                if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
+                                    addElementLater(new KenaiProjectSearchInfo(project, repo, pattern));
+                                }
                             }
+                        } catch (KenaiException kenaiException) {
+                            Exceptions.printStackTrace(kenaiException);
                         }
                     }
-                    if (Thread.interrupted()) {
+                    Thread.yield();
+                    if (stopLoading) {
                         return;
                     }
                 }
             }
         }
 
-        public void cancel() {
-            task.cancel();
+        public synchronized void stopLoading() {
+            stopLoading = true;
+        }
+
+        private void addElementLater(final KenaiProjectSearchInfo kenaiProjectSearchInfo) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    addElement(kenaiProjectSearchInfo);
+                }
+            });
         }
 
     }
-
-    private static class KenaiRepositoriesListModel extends DefaultListModel {
-
-        public KenaiRepositoriesListModel() {
-            
-        }
-
-    }
-
-    // ----------
 
     private class KenaiProjectsListRenderer implements ListCellRenderer {
-
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             return new ListRendererPanel(list, ((KenaiProjectSearchInfo) value), index, isSelected, cellHasFocus, panelType);
         }
-
     }
 
     // ----------

@@ -5,5 +5,3 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/resources/mf-layer.xml
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Recommends: org.netbeans.modules.gsf
-

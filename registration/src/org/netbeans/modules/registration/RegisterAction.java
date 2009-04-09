@@ -121,6 +121,10 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(RegisterAction.class,"ACSN_Register_title"));
+            dlg.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(RegisterAction.class,"ACSD_Register_title"));
             dlg.setResizable(false);
             dlg.setVisible(true);
         } finally {

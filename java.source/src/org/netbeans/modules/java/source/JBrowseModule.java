@@ -59,8 +59,6 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -70,8 +68,6 @@ public class JBrowseModule extends ModuleInstall {
     
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
     
-    private static final RequestProcessor RP = new RequestProcessor("java.source module install", 1);                  //NOI18N
-    
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
     }
@@ -79,16 +75,6 @@ public class JBrowseModule extends ModuleInstall {
     public @Override void restored() {
         super.restored();
         JavaSourceTaskFactoryManager.register();
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            public void run () {
-                RP.post(new Runnable() {
-                    public void run() {
-                        RepositoryUpdater.getDefault();
-                        ActivatedDocumentListener.register();
-                    }
-                });
-            }
-        });
         if (ENABLE_MBEANS) {
             registerMBeans();
         }

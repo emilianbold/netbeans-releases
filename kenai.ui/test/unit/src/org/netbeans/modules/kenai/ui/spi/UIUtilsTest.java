@@ -69,12 +69,11 @@ public class UIUtilsTest {
     @Test
     public void testEncodeDecode() {
         String testpass = "pswd";
-        char[] pwd = testpass.toCharArray();
-        byte[] result = UIUtils.encode(new String(pwd).getBytes());
+        String scram = Scrambler.getInstance().scramble(testpass);
         Preferences preferences=NbPreferences.forModule(UIUtils.class);
-        preferences.putByteArray("kenai.test.password", result);
-        byte[]p=preferences.getByteArray("kenai.test.password", null);
-        String r = new String(UIUtils.decode(p));
+        preferences.put("kenai.test.password", scram);
+        String newp=preferences.get("kenai.test.password", null);
+        String r = Scrambler.getInstance().descramble(newp);
         assertEquals(testpass, r);
         // TODO review the generated test code and remove the default call to fail.
     }

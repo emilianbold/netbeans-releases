@@ -42,6 +42,8 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -50,6 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
@@ -81,23 +84,30 @@ public class CreateJob extends AbstractAction {
     }
 
     public CreateJob(HudsonInstance instance) {
-        super("New Build..."); // XXX I18N
+        super(NbBundle.getMessage(CreateJob.class, "CreateJob.new_build"));
         this.instance = instance;
     }
 
     public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
+        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateJob.class, "CreateJob.title"));
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
-        JButton createButton = new JButton("Create"); // XXX I18N
+        final JButton createButton = new JButton(NbBundle.getMessage(CreateJob.class, "CreateJob.create"));
         createButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
-                        dialog.get().dispose();
                     }
                 });
+                dialog.get().dispose();
+            }
+        });
+        dd.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
+                    createButton.setEnabled(dd.isValid());
+                }
             }
         });
         panel.init(dd, instance);
@@ -114,15 +124,16 @@ public class CreateJob extends AbstractAction {
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
             String createItemURL = instance.getUrl() + "createItem?name=" + Utilities.uriEncode(name); // NOI18N
             new ConnectionBuilder().instance(instance).url(createItemURL).
-                    header("Content-Type", "text/xml").
+                    header("Content-Type", "text/xml"). // NOI18N
                     postData(baos.toByteArray()).
                     httpConnection().disconnect();
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + Utilities.uriEncode(name) + "/")); // NOI18N
             ((HudsonInstanceImpl) instance).synchronize();
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
+            OpenProjects.getDefault().open(new Project[] {project}, false);
         } catch (IOException x) {
-            // XXX too harsh, should report at a low level and show message
+            // XXX too harsh, should report at a low level and show message (unless this already has a localized message)
             Exceptions.printStackTrace(x);
         }
     }

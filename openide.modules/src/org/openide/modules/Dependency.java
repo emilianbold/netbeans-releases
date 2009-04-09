@@ -41,6 +41,7 @@
 
 package org.openide.modules;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,11 +50,15 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.util.Utilities;
 
-/** A dependency a module can have.
+/** A dependency a module can have. Since version 7.10 this class is
+ * {@link Serializable}.
+ * 
  * @author Jesse Glick
  * @since 1.24
  */
-public final class Dependency {
+public final class Dependency implements Serializable {
+    static final long serialVersionUID = 9548259318L;
+
     /** Dependency on another module. */
     public final static int TYPE_MODULE = 1;
 
@@ -413,6 +418,7 @@ public final class Dependency {
     }
 
     /** Overridden to compare contents. */
+    @Override
     public boolean equals(Object o) {
         if (o.getClass() != Dependency.class) {
             return false;
@@ -425,11 +431,13 @@ public final class Dependency {
     }
 
     /** Overridden to hash by contents. */
+    @Override
     public int hashCode() {
         return 772067 ^ type ^ name.hashCode();
     }
 
     /** Unspecified string representation for debugging. */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer(100);
 

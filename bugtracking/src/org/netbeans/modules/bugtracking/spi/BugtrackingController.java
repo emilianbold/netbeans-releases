@@ -54,12 +54,7 @@ public abstract class BugtrackingController {
     /**
      * Some data in the controllers component where changed
      */
-    public static String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";
-
-    /**
-     * The data in the controllers component where applied
-     */
-    public static String EVENT_COMPONENT_DATA_APPLIED   = "bugtracking.data.applied";
+    public static String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";   // NOI18N
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -96,12 +91,36 @@ public abstract class BugtrackingController {
     public abstract void applyChanges() throws IOException; 
 
     /**
+     * Should be called when this controllers parent component is openened
+     */
+    public void opened() {
+
+    }
+
+    /**
+     * Should be called when this controllers parent component is closed
+     */
+    public void closed() {
+
+    }
+    
+    /**
+     * 
+     * Get current help context asociated with this panel.
+     * 
+     * 
+     * @return current help context
+     */
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    /**
      * Registers a PropertyChangeListener
      * @param l
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         support.addPropertyChangeListener(l);
-        fireDataChanged();
     }
 
     /**
@@ -117,13 +136,6 @@ public abstract class BugtrackingController {
      */
     protected void fireDataChanged() {
         support.firePropertyChange(EVENT_COMPONENT_DATA_CHANGED, null, null);
-    }
-
-    /**
-     * Signals that the data in this controler where applied
-     */
-    protected void fireDataApplied() {
-        support.firePropertyChange(EVENT_COMPONENT_DATA_APPLIED, null, null);
     }
 
 }

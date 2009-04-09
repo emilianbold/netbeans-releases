@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -102,6 +103,15 @@ public final class RefactoringContextAction extends AbstractAction implements Co
         }
 
         public JComponent[] synchMenuPresenters(JComponent[] items) {
+            JComponent[] comps = new JComponent[1];
+            for (JComponent item : items) {
+                if (item instanceof Actions.MenuItem) {
+                    comps[0] = item;
+                    // update menu items to reflect Action.isEnabled
+                    ((Actions.MenuItem) item).synchMenuPresenters(comps);
+                }
+            }
+            // returns most up-to date items
             return createMenuItems();
         }
 

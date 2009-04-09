@@ -217,7 +217,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
             resultSetAnchorOffset = caretOffset;
             filterPrefix = "";
             queryAnchorOffset = -1;
-            if (doc != null) {
+            if (CompletionSupport.isPreprocessorDirectiveCompletionEnabled(doc, caretOffset)) {
                 doc.readLock();
                 try {
                     TokenSequence<CppTokenId> ppTs = CndLexerUtilities.getCppTokenSequence(doc, caretOffset, true, true);

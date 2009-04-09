@@ -63,11 +63,9 @@ import org.openide.util.Utilities;
 class MainProjectIterator implements Iterator<FileObject> {
     
     private Iterator<FileObject> iterator;
-    private Collection<FileObject> editedFiles;
     
     /** Creates a new instance of MainProjectIterator */
-    public MainProjectIterator( Collection<FileObject> editedFiles ) {
-        this.editedFiles = editedFiles;
+    public MainProjectIterator() {
     }
     
     public boolean hasNext() {
@@ -107,7 +105,7 @@ class MainProjectIterator implements Iterator<FileObject> {
         if( isMainProject )
             addDependantProjects( currentProject, roots );
         
-        return new FileObjectIterator( roots, editedFiles );
+        return new FileObjectIterator( roots );
     }
     
     private void addDependantProjects( Project mainProject, ArrayList<FileObject> roots ) {
