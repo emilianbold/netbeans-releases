@@ -255,8 +255,15 @@ made subject to such option by the copyright holder.
         </folder>    
             
         <folder name="Components">
-	    <file name="projectTabLogical_tc.settings" url="projectsLogical.settings"/>
+            <file name="projectTabLogical_tc.settings" url="projectsLogical.settings"/>
             <file name="projectTab_tc.settings" url="projects.settings"/>
+        </folder>
+
+        <folder name="Groups">
+            <folder name="OpenedProjects">
+                <file name="projectTabLogical_tc.wstcgrp" url="projectsLogical.wstcgrp"/>
+                <file name="projectTab_tc.wstcgrp" url="projects.wstcgrp"/>
+            </folder>
         </folder>
         
     </folder>
