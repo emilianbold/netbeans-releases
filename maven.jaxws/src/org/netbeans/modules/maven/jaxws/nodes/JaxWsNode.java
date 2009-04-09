@@ -306,12 +306,12 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     /**
      * get URL for Web Service WSDL file
      */
-    public String getWebServiceURL() {
+    private String getWebServiceURL() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || WSStackUtils.DEVNULL.equals(serverInstanceID)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
+            Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
             return "";
         }
         // getting port and host name
