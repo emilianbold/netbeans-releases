@@ -236,13 +236,19 @@ public class CosChecker implements PrerequisitesChecker {
                         FileObject fo = outputDir.getFileObject(relPath);
                         if (fo == null) {
                             File outFileDir = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath).getParentFile());
-                            outFileDir.mkdirs();
-                            FileUtil.refreshFor(outFileDir);
-                            FileObject parentDir = FileUtil.toFileObject(outFileDir);
-                            try {
-                                fo = parentDir.createData(file.getName());
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                            if (outFileDir.mkdirs()) {
+                                FileUtil.refreshFor(outFileDir);
+                                FileObject parentDir = FileUtil.toFileObject(outFileDir);
+                                try {
+                                    fo = parentDir.createData(file.getName());
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            } else {
+                                //#162180
+                                //well, just skip the resource with some logging..
+                                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot create folder " + outFileDir + ", skipping copying of resource for Compile on Save."); //NOI18N
+                                continue;
                             }
                         }
                         FileObject sourceFO = FileUtil.toFileObject(file);
