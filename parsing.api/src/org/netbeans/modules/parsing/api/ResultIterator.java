@@ -176,8 +176,9 @@ public final class ResultIterator {
             return null;
         ResultIterator resultIterator = embeddingToResultIterator.get (embedding);
         if (resultIterator == null) {
+            SourceCache cache = sourceCache.getCache (embedding);
             resultIterator = new ResultIterator (
-                sourceCache.getCache (embedding), 
+                cache,
                 task
             );
             embeddingToResultIterator.put(embedding, resultIterator);
