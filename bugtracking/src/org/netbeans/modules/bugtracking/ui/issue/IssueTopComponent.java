@@ -344,6 +344,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                repositoryComboBox.requestFocus();
+            }
+        });
     }
 
     @Override
