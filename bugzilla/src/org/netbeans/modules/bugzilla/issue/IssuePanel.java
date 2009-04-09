@@ -1269,9 +1269,10 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                boolean ret = false;
                 try {
                     submitting = true;
-                    issue.submitAndRefresh();
+                    ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1285,7 +1286,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 } finally {
                     submitting = false;
                     handle.finish();
-                    reloadFormInAWT(true);
+                    if(ret) {
+                        reloadFormInAWT(true);
+                    }
                 }
             }
         });
