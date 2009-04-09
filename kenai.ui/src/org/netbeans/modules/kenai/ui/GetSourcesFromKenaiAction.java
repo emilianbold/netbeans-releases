@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.mercurial.api.Mercurial;
@@ -94,7 +95,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
             final KenaiFeature feature = sourcesInfo.feature;
 
-            if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
+            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
@@ -112,7 +113,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         }
                     }
                 });
-            } else if (Utilities.HG_REPO.equals(feature.getService())) { // XXX service or name
+            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
