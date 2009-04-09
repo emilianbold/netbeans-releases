@@ -50,7 +50,7 @@ public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
      * Creates an instance of the auxiliary information object
      */
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        GizmoOptions gizmoOptions = new GizmoOptions(baseDir, pcs);
+        GizmoOptionsImpl gizmoOptions = new GizmoOptionsImpl(baseDir, pcs);
         return gizmoOptions;
     }
 }

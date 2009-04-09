@@ -4,7 +4,7 @@
 <%-- completion for HTML tags --%>
 <%--CC
 <h|
-<html>
+html
 <html>
 --%>
 
@@ -19,7 +19,7 @@ href
 <%--CC
 <p dir="|
 rtl
-<p dir="rtl"
+<p dir="rtl
 --%>
 
 <%-- completion for HTML entities --%>
@@ -31,15 +31,15 @@ rtl
 
 <%-- completion for body HTML tag --%>
 <%--CC
-<bo|
-<body>
+<b|
+body
 <body>
 --%>
 
 <%-- meta should not be offered --%>
 <%--CC
 <head><meta></|
-</head>
+/head
 <head><meta></head>
 --%>
 

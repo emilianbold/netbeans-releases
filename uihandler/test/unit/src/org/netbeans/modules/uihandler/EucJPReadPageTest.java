@@ -65,22 +65,15 @@ public class EucJPReadPageTest extends NbTestCase {
     public EucJPReadPageTest(String testName) {
         super(testName);
     }
-    
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.INFO;
-    }
-    
 
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
+        MemoryURL.initialize();
+        DD.d = null;
+        MockServices.setServices(DD.class);
+        Locale.setDefault(new Locale("te", "ST"));
         
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
@@ -88,10 +81,7 @@ public class EucJPReadPageTest extends NbTestCase {
         // setup the listing
         installer.restored();
         
-        Locale.setDefault(new Locale("te", "ST"));
         Installer.dontWaitForUserInputInTests();
-        DD.d = null;
-        MockServices.setServices(DD.class);
     }
 
     @Override

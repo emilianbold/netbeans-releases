@@ -8,18 +8,18 @@
 <%-- completion for JSP elements --%>
 <%--CC
 <f:a|
-< f:attribute / >
+f:attribute
 <f:attribute
 --%>
 
 <%--CC
 <f:v|
-< f:view >
+f:view
 <f:view
 --%>
 
 <%--CC
 <h:|
-< h:form >
+h:form
 <h:form
 --%>

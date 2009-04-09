@@ -50,7 +50,6 @@ import org.openide.loaders.DataObject;
 import org.openidex.search.DataObjectSearchGroup;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openidex.search.FileObjectSearchGroup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
 
@@ -59,7 +58,7 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  * @author  kaktus
  */
-final class SpecialSearchGroup extends FileObjectSearchGroup {
+final class SpecialSearchGroup extends DataObjectSearchGroup {
 
     final BasicSearchCriteria basicCriteria;
     final boolean hasExtraSearchTypes;

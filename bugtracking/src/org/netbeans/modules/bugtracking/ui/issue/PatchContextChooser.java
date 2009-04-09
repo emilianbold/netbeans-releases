@@ -148,7 +148,7 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
                     .add(layout.createSequentialGroup()
                         .add(locationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locationField)
+                        .add(locationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(locationButton)))
                 .addContainerGap())
@@ -164,8 +164,7 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(locationLabel)
                     .add(locationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(locationButton))
-                .addContainerGap())
+                    .add(locationButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

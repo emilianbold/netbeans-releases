@@ -47,8 +47,12 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +67,7 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
@@ -91,7 +96,7 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  */
 final class QueryTopComponent extends TopComponent
-                              implements PropertyChangeListener, QueryNotifyListener {
+                              implements PropertyChangeListener, QueryNotifyListener, FocusListener {
 
     private static QueryTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -181,6 +186,9 @@ final class QueryTopComponent extends TopComponent
                 }
             });
 
+            newButton.addFocusListener(this);
+            repositoryComboBox.addFocusListener(this);
+
             queriesPanel.setVisible(false);
         }
     }
@@ -222,7 +230,7 @@ final class QueryTopComponent extends TopComponent
             }
         });
 
-        scrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        scrollPane.setBorder(null);
 
         jPanel2.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -282,7 +290,7 @@ final class QueryTopComponent extends TopComponent
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, Short.MAX_VALUE))
+                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 313, Short.MAX_VALUE))
                     .add(findIssuesLabel))
                 .addContainerGap())
         );
@@ -415,6 +423,11 @@ final class QueryTopComponent extends TopComponent
         if(query != null) {
             query.getController().opened();
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                repositoryComboBox.requestFocus();
+            }
+        });
     }
 
     @Override
@@ -489,6 +502,23 @@ final class QueryTopComponent extends TopComponent
 
     public void finished() {
         /* the query was finished */
+    }
+
+    public void focusGained(FocusEvent e) {
+        Component c = e.getComponent();
+        if(c instanceof JComponent) {
+            Point p = SwingUtilities.convertPoint(c.getParent(), c.getLocation(), repoPanel);
+            final Rectangle r = new Rectangle(p, c.getSize());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    repoPanel.scrollRectToVisible(r);
+                }
+            });
+        }
+    }
+
+    public void focusLost(FocusEvent e) {
+        // do nothing
     }
 
     final static class ResolvableHelper implements Serializable {
@@ -633,6 +663,7 @@ final class QueryTopComponent extends TopComponent
                 Query q = savedQueries[i];
                 q.addPropertyChangeListener(this);
                 ql = new QueryButton(repo, q);
+                ql.addFocusListener(this);
                 ql.setText(q.getDisplayName());
                 queriesPanel.add(ql);
                 if(i < savedQueries.length - 1) {

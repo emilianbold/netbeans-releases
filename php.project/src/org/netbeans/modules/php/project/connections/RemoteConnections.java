@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
@@ -60,7 +61,6 @@ import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  * @author Tomas Mysik
@@ -68,7 +68,7 @@ import org.openide.util.NbPreferences;
 public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
-
+    // Do not change arbitrary - consult with layer's folder OptionsExport 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
@@ -91,6 +91,10 @@ public final class RemoteConnections {
         }
         panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
+    }
+
+    private static Preferences getPreferences() {
+        return PhpPreferences.getPreferences(true).node(PREFERENCES_PATH);
     }
 
     /**
@@ -235,7 +239,7 @@ public final class RemoteConnections {
     }
 
     private void saveRemoteConnections() {
-        Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
+        Preferences remoteConnections = getPreferences();
         for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
             String config = entry.getKey();
             if (config == null) {
@@ -288,7 +292,7 @@ public final class RemoteConnections {
         }
 
         private void readConfigs() {
-            Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
+            Preferences remoteConnections = getPreferences();
             try {
                 for (String name : remoteConnections.childrenNames()) {
                     Preferences node = remoteConnections.node(name);

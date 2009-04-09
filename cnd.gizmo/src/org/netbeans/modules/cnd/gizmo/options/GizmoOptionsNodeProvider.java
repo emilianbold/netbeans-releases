@@ -80,7 +80,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            GizmoOptions gizmoOptions = GizmoOptions.getOptions(configuration);
+            GizmoOptionsImpl gizmoOptions = GizmoOptionsImpl.getOptions(configuration);
             return createSheet(gizmoOptions);
         }
 
@@ -91,18 +91,18 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
     }
 
 
-    private Sheet createSheet(GizmoOptions gizmoOptions) {
+    private Sheet createSheet(GizmoOptionsImpl gizmoOptions) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         
-        set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, "profileonrun", getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
-        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, "cpu", getString("cpu_txt"), getString("cpu_help"))); // NOI18N
-        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, "memory", getString("memory_txt"), getString("memory_help"))); // NOI18N
-        set.put(new BooleanNodeProp(gizmoOptions.getSynchronization(), true, "synchronization", getString("synchronization_txt"), getString("synchronization_help"))); // NOI18N
-        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, "dataprovider", getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, GizmoOptionsImpl.PROFILE_ON_RUN_PROP, getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, GizmoOptionsImpl.CPU_PROP, getString("cpu_txt"), getString("cpu_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, GizmoOptionsImpl.MEMORY_PROP, getString("memory_txt"), getString("memory_help"))); // NOI18N
+        set.put(new BooleanNodeProp(gizmoOptions.getSynchronization(), true, GizmoOptionsImpl.SYNCHRONIZATION_PROP, getString("synchronization_txt"), getString("synchronization_help"))); // NOI18N
+        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, GizmoOptionsImpl.DATA_PROVIDER_PROP, getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N
         
         sheet.put(set);
         return sheet;

@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -696,7 +697,8 @@ public class AntProjectHelperTest extends NbTestCase {
         // or other general fixed metadata
         // XXX try overwriting data
     }
-    
+
+    @RandomlyFails // in last assertion in NB-Core-Build #2426 & #2431; maybe due to #2bbacd6640a5?
     public void test68872() throws Exception {
         AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull("AuxiliaryConfiguration present", aux);

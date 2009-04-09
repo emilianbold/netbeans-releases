@@ -60,7 +60,12 @@ public class DebugScript  extends RunScript {
                 run();
             }
         } else {
-            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true, ProjectPropertiesSupport.getDebugPathMapping(provider.getProject()));
+            XDebugStarter.Properties props = XDebugStarter.Properties.create(
+                    provider.getStartFile(),
+                    true,
+                    ProjectPropertiesSupport.getDebugPathMapping(provider.getProject()),
+                    ProjectPropertiesSupport.getDebugProxy(provider.getProject()));
+            dbgStarter.start(provider.getProject(), callable, props);
         }
     }
 

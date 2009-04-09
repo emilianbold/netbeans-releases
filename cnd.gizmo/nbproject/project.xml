@@ -166,7 +166,10 @@
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.cnd.gizmo.api</package>
+                <package>org.netbeans.modules.cnd.gizmo.spi</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

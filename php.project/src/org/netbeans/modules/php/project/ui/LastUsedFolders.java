@@ -41,14 +41,16 @@ package org.netbeans.modules.php.project.ui;
 
 import java.io.File;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.PhpPreferences;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbPreferences;
 
 /**
  * Helper class to remember the last selected folders for every file chooser in PHP project.
  * @author Tomas Mysik
  */
 public final class LastUsedFolders {
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
     private static final String LAST_USED_FOLDERS_NODE = "lastUsedFoldersNode";
 
     private static final String OPTIONS_PHP_INTERPRETER = "optionsInterpreter"; // NOI18N
@@ -65,7 +67,7 @@ public final class LastUsedFolders {
     }
 
     private static Preferences getPreferences() {
-        return NbPreferences.forModule(LastUsedFolders.class).node(LAST_USED_FOLDERS_NODE);
+        return PhpPreferences.getPreferences(false).node(LAST_USED_FOLDERS_NODE);
     }
 
     private static File getFile(String option) {

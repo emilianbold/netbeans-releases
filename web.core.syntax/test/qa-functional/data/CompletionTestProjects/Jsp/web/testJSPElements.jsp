@@ -6,7 +6,7 @@
 <%-- completion for JSP elements --%>
 <%--CC
 <jsp:|
-< jsp:text >
+jsp:text
 <jsp:text
 --%>
 

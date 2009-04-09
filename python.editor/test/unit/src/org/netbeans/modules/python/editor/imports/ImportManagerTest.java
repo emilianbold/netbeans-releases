@@ -362,5 +362,13 @@ public class ImportManagerTest extends PythonTestBase {
         checkOrganize("testfiles/imports/futures.py", false, true, false, true, true);
     }
 
+    public void testFixInit() throws Exception {
+        checkOrganize("testfiles/package/subpackage1/__init__.py", true, true, false, true, false);
+    }
+
+    public void testFixInit2() throws Exception {
+        checkOrganize("testfiles/imports/__init__.py", true, true, false, true, false);
+    }
+
     // TODO - try manually importing zlib - doesn't go to the right place (and check for system libs)
 }

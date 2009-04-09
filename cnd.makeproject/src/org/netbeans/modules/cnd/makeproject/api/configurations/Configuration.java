@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,6 +182,22 @@ public abstract class Configuration implements ProjectConfiguration {
     public void cloneConf(Configuration clone) {
         // name is already cloned
         clone.setDefault(isDefault());
+    }
+
+    /**
+     *  Adds property change listener.
+     *  @param l new listener.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    /**
+     *  Removes property change listener.
+     *  @param l removed listener.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
     }
 
     public RunProfile getProfile() {

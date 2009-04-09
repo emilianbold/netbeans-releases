@@ -596,17 +596,22 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
-        RunAsWebAdvanced advanced = new RunAsWebAdvanced(
-                project,
+        RunAsWebAdvanced.Properties props = new RunAsWebAdvanced.Properties(
                 getValue(PhpProjectProperties.DEBUG_URL),
                 urlHintLabel.getText(),
                 getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE),
-                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL));
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL),
+                getValue(PhpProjectProperties.DEBUG_PROXY_HOST),
+                getValue(PhpProjectProperties.DEBUG_PROXY_PORT));
+        RunAsWebAdvanced advanced = new RunAsWebAdvanced(project, props);
         if (advanced.open()) {
             Pair<String, String> pathMapping = advanced.getPathMapping();
+            Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 
