@@ -317,6 +317,10 @@ public class SimplifiedJspServlet {
     }
 
     private void displayServletAPIMissingWarning() {
+        if (fobj == null){
+            return; //issue #160889
+        }
+
         try {
             DataObject doJsp = DataObject.find(fobj);
             EditorCookie editor = doJsp.getCookie(EditorCookie.class);
