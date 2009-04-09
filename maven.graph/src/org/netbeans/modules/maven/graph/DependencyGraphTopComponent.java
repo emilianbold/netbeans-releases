@@ -87,6 +87,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 //    private Project project;
     private Lookup.Result<DependencyNode> result;
     private Lookup.Result<MavenProject> result2;
+    private Lookup.Result<POMModel> result3;
+
     private DependencyGraphScene scene;
     private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
