@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,26 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.welcome.content;
+package org.netbeans.modules.welcome.ui;
 
-import java.awt.LayoutManager;
-import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author S.Aubrecht
+ * @author S. Aubrecht
  */
-public class BackgroundPanel extends JPanel {
+public class SampleProjectAction extends AbstractAction {
 
-    public BackgroundPanel( LayoutManager lm ) {
-        super( lm );
-        setOpaque(true);
-        setBackground(Utils.getColor(Constants.COLOR_SCREEN_BACKGROUND));
+    public void actionPerformed(ActionEvent e) {
+        Action sampleProject = createSampleProjectAction();
+        if( null != sampleProject ) {
+            sampleProject.putValue( "PRESELECT_CATEGORY", "Samples" ); // NOI18N
+
+            sampleProject.actionPerformed( e );
+        }
     }
+
+    private static Action createSampleProjectAction() {
+        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
+        if( null == loader )
+            loader = ClassLoader.getSystemClassLoader();
+        try {
+            Class clazz = Class.forName( "org.netbeans.modules.project.ui.actions.NewProject", true, loader ); // NOI18N
+            Method getDefault = clazz.getMethod( "newSample"); // NOI18N
+            Object newSample = getDefault.invoke( null );
+            if( newSample instanceof Action )
+                return (Action)newSample;
+        } catch( Exception e ) {
+            Logger.getLogger(SampleProjectAction.class.getName()).log( Level.INFO, null, e );
+        }
+        return null;
+    }
+
 }

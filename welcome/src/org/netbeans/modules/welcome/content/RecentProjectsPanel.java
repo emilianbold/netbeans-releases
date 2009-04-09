@@ -69,7 +69,7 @@ import org.openide.filesystems.URLMapper;
  * 
  * @author S. Aubrecht
  */
-public class RecentProjectsPanel extends BackgroundPanel implements Constants {
+public class RecentProjectsPanel extends JPanel implements Constants {
     
     private static final int MAX_PROJECTS = 10;
     private PropertyChangeListener changeListener;
@@ -77,6 +77,7 @@ public class RecentProjectsPanel extends BackgroundPanel implements Constants {
     /** Creates a new instance of RecentProjectsPanel */
     public RecentProjectsPanel() {
         super( new BorderLayout() );
+        setOpaque(false);
     }
 
     @Override

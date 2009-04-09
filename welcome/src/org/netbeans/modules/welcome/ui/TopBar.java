@@ -43,28 +43,40 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
-import javax.swing.JComponent;
+import java.awt.Insets;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author S. Aubrecht
  */
-class TopBar extends JComponent implements Constants {
+class TopBar extends JPanel implements Constants {
 
     private Image imgCenter;
     private Image imgLeft;
     private Image imgRight;
     
     public TopBar() {
+        super( new GridBagLayout() );
         imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
         imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
         imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
         
-        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)-14) );
+        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
+
+        WebLink nbLogo = new WebLink(null, "http://www.netbeans.org", false); //NOI18N
+        Icon icon = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/nb_logo.png")); //NOI18N
+        nbLogo.setIcon( icon );
+        nbLogo.setPressedIcon( icon );
+        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
     }
 
     @Override

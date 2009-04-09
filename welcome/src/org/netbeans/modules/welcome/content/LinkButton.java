@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -59,7 +60,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.border.EmptyBorder;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -71,10 +71,16 @@ public abstract class LinkButton extends JButton
     private boolean underline = false;
 
     final ImageIcon BULLET_ICON = ImageUtilities.loadImageIcon(BULLET_IMAGE, false);
+    private final Color defaultForeground;
 
     public LinkButton( String label, boolean showBullet ) {
+        this( label, showBullet, Utils.getColor(LINK_COLOR) );
+    }
+
+    public LinkButton( String label, boolean showBullet, Color foreground ) {
         super( label );
-        setForeground( Utils.getColor(LINK_COLOR) );
+        this.defaultForeground = foreground;
+        setForeground( defaultForeground );
         setFont( BUTTON_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
@@ -116,12 +122,13 @@ public abstract class LinkButton extends JButton
     public void mouseExited(MouseEvent e) {
         if( isEnabled() ) {
             underline = false;
-            setForeground( Utils.getColor(isVisited() ? VISITED_LINK_COLOR : LINK_COLOR) );
+            setForeground( isVisited() ? Utils.getColor(VISITED_LINK_COLOR): defaultForeground );
             repaint();
             onMouseExited( e );
         }
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = Utils.prepareGraphics( g );
         super.paintComponent(g2);
