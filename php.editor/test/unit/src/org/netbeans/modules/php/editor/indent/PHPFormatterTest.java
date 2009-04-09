@@ -71,6 +71,14 @@ public class PHPFormatterTest extends PHPTestBase {
         }
     }
 
+    public void testCommentsInStatements() throws Exception{
+        reformatFileContents("testfiles/formatting/real_life/comments_in_statements.php");
+    }
+
+    public void testIfElseStatement() throws Exception{
+        reformatFileContents("testfiles/formatting/real_life/else_if.php");
+    }
+
     public void testContinuedExpression() throws Exception{
         reformatFileContents("testfiles/formatting/continued_expression.php");
     }
