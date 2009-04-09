@@ -41,9 +41,11 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
 
 /**
@@ -78,8 +80,19 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     WSUtils.updateClients(prj, jaxWsSupport);
-                    if (jaxWsSupport.getServices().size() > 0) {
+                    List<JaxWsService> services = jaxWsSupport.getServices();
+                    if (services.size() > 0) {
                         MavenModelUtils.reactOnServerChanges(prj);
+                        if (WSUtils.isWeb(prj)) {
+                            for (JaxWsService s : services) {
+                                if (s.isServiceProvider()) {
+                                    // add|remove sun-jaxws.xml and WS entries to web.xml file
+                                    // depending on selected target server
+                                    WSUtils.checkNonJSR109Entries(prj);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
