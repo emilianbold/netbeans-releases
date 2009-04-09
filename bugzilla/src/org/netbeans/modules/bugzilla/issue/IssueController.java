@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -64,6 +65,7 @@ public class IssueController extends BugtrackingController {
             scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
             scrollPane.getVerticalScrollBar().setUnitIncrement(size);
         }
+        BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
         issuePanel = scrollPane;
     }
 
