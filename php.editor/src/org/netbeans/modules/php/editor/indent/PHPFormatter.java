@@ -95,7 +95,7 @@ public class PHPFormatter implements Formatter {
     }
 
     public boolean needsParserResult() {
-        return false;
+        return true;
     }
 
     public void reindent(Context context) {
