@@ -240,7 +240,7 @@ public class KenaiTest extends NbTestCase {
     public void testLogin() throws Exception {
         System.out.println("testLogin");
         try {
-            instance.login("jerry", "mouse".toCharArray());
+            instance.login("jerry_randomname", "mouse".toCharArray());
             assert false : "Bogus login successful";
         } catch (KenaiException e) {
             // this is the expected result
@@ -602,7 +602,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testCreateFeature"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
 //        _suite.addTest(new KenaiTest("testIsAuthorized2"));
-        _suite.addTest(new KenaiTest("testGetFeatures"));
+//        _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));

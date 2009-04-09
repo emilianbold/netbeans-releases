@@ -57,12 +57,12 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     public void run() {
-        HudsonManagerImpl.getInstance().getInstances();
+        HudsonManagerImpl.getDefault().getInstances();
     }
 
     public @Override void uninstalled() {
         if (active()) {
-            HudsonManagerImpl.getInstance().terminate();
+            HudsonManagerImpl.getDefault().terminate();
         }
     }
 

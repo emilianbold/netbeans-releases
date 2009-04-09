@@ -12,7 +12,7 @@ href
 <%--CC
 <p dir="|
 rtl
-<p dir="rtl"
+<p dir="rtl
 --%>
 
 <%-- completion for HTML entities --%>

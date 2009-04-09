@@ -43,16 +43,26 @@ package org.netbeans.modules.web.debug.variablesfilterring;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap;
+import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap.UnknownOwnerNameException;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.ImplicitLocals;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -61,8 +71,15 @@ import org.openide.util.datatransfer.PasteType;
  */
 public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
     
+    private static final int TO_STRING_LENGTH_LIMIT = 10000;
+    
+    private RequestProcessor evaluationRP;
+    private final Map<ObjectVariable, String> shortDescriptionMap = new IdentityHashMap<ObjectVariable, String>();
+    private final Collection modelListeners = new HashSet();
+
     /** Creates a new instance of JSPVariablesNodeModelFilter */
-    public JSPVariablesNodeModelFilter() {
+    public JSPVariablesNodeModelFilter(ContextProvider lookupProvider) {
+        evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
     }
 
     /**
@@ -150,7 +167,7 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
         if (node instanceof ImplicitLocals)
             sd = NbBundle.getMessage(JSPVariablesFilter.class, "TLT_IMPLICIT_LOCALS");
         else if (node instanceof AttributeMap) {
-            String tltAttributes = "";
+            String tltAttributes;
             String ownerName = ((AttributeMap)node).getOwnerName();
             if (ownerName.equals("request"))
                 tltAttributes = "TLT_REQUEST_ATTRIBUTES";
@@ -158,25 +175,70 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
                 tltAttributes = "TLT_SESSION_ATTRIBUTES";
             else if (ownerName.equals("application"))
                 tltAttributes = "TLT_APPLICATION_ATTRIBUTES";
+            else throw new UnknownOwnerNameException(ownerName);
             
-            sd = NbBundle.getMessage(JSPVariablesFilter.class, "TLT_REQUEST_ATTRIBUTES");
+            sd = NbBundle.getMessage(JSPVariablesFilter.class, tltAttributes);
         }
         else if (node instanceof AttributeMap.Attribute) {
             Variable attributeValue = ((AttributeMap.Attribute)node).getValue();
             String type = attributeValue.getType ();
-            try {
-                String stringValue = attributeValue.getValue();
-                if (attributeValue instanceof ObjectVariable)
-                    stringValue = ((ObjectVariable)attributeValue).getToStringValue();
-                sd = "(" + type + ") " + stringValue;
-            } catch (InvalidExpressionException iee) {
-                sd = iee.getLocalizedMessage();
+            String stringValue = attributeValue.getValue();
+            if (attributeValue instanceof ObjectVariable) {
+                final ObjectVariable ov = (ObjectVariable) attributeValue;
+
+                synchronized (shortDescriptionMap) {
+                    Object shortDescription = shortDescriptionMap.remove(ov);
+                    if (shortDescription != null) {
+                        return "(" + type + ") " + shortDescription;
+                    }
+                }
+                // Called from AWT - we need to postpone the work...
+                evaluationRP.post(new Runnable() {
+                    public void run() {
+                        String shortDescription = getShortDescriptionSynch(ov);
+                        if (shortDescription != null && !"".equals(shortDescription)) {
+                            synchronized (shortDescriptionMap) {
+                                shortDescriptionMap.put(ov, shortDescription);
+                            }
+                            fireModelChange(new ModelEvent.NodeChanged(JSPVariablesNodeModelFilter.this,
+                                ov, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
+                        }
+                    }
+                });
+                return "";
+                //stringValue = ov.getToStringValue();
             }
+            sd = "(" + type + ") " + stringValue;
         }
         else
             sd = original.getShortDescription(node);
                 
         return sd;
+    }
+
+    private static String getLimitedToString(ObjectVariable v) throws InvalidExpressionException {
+        String toString = null;
+        try {
+            java.lang.reflect.Method toStringMethod =
+                    v.getClass().getMethod("getToStringValue",  // NOI18N
+                                           new Class[] { Integer.TYPE });
+            toStringMethod.setAccessible(true);
+            toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (toString == null) {
+            toString = v.getToStringValue();
+        }
+        return toString;
+    }
+
+    private String getShortDescriptionSynch (ObjectVariable v) {
+        try {
+            return getLimitedToString(v);
+        } catch (InvalidExpressionException ex) {
+            return ex.getLocalizedMessage();
+        }
     }
 
     /**
@@ -186,6 +248,9 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
      * @param l the listener to remove
      */
     public void removeModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
     }
 
     /**
@@ -195,6 +260,19 @@ public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
      * @param l the listener to add
      */
     public void addModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
+    }
+
+    private void fireModelChange(ModelEvent me) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged(me);
+        }
     }
 
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {

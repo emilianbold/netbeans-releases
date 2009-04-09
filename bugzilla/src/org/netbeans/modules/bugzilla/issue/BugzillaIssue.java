@@ -184,6 +184,10 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh");
+        if(refresh != null && refresh.equals("true")) {
+            return;
+        }
         repository.scheduleForRefresh(getID());
     }
 
@@ -706,6 +710,11 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(cmd);
+
+        if(wasNew) {
+            // a new issue was created -> refresh all queries
+            repository.refreshAllQueries();
+        }
     }
 
     public boolean refresh() {
@@ -756,10 +765,14 @@ public class BugzillaIssue extends Issue {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
             when = d;
-            // XXX check for NULL
-            String author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
-            if ((author == null) || author.trim().equals("")) { // NOI18N
-                author = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getValue();
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            String author = null;
+            if(authorAttr != null) {
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                author = nameAttr != null ? nameAttr.getValue() : null;
+            }
+            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { // NOI18N
+                author = authorAttr.getValue();
             }
             who = author;
             number = Long.parseLong(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER).getValues().get(0));// XXX value or values?
@@ -810,9 +823,16 @@ public class BugzillaIssue extends Issue {
             date = d;
             filename = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME).getValue();
             desc = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION).getValues().get(0);// XXX value or values?
-            String who = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
-            if ((who == null) || (who.trim().equals(""))) { // NOI18N
-                who = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getValue();
+
+            // XXX value or values?
+            String who = null;
+            TaskAttribute authorAttr = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR);
+            if(authorAttr != null) {
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                who = nameAttr != null ? nameAttr.getValue() : null;
+            }
+            if ( ((who == null) || who.trim().equals("")) && authorAttr != null) { // NOI18N
+                who = authorAttr.getValue();
             }
             author = who;
             contentType = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE).getValue();

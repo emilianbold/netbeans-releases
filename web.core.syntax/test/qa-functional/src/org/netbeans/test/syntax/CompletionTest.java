@@ -475,7 +475,7 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
-                if (dispText.equals(step.getChoice())) {
+                if ((selectedItem == null) && (dispText.contains(step.getChoice()))) {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }
@@ -533,6 +533,7 @@ public class CompletionTest extends J2eeTestCase {
 
     private void logIntoRef(String message){
         message = message.replaceAll("<\\?>", "");
+        message = message.replaceAll("<\\? >", "");
         ref(message);
     }
 

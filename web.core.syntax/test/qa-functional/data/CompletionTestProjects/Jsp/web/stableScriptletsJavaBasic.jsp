@@ -31,7 +31,7 @@ TestBean testBean
 <%-- Java completion for variables methods and fields between more sriptlets --%>
 <%--CC
 <% testBean.|
-void setName (String name )
+void setName
 <% testBean.setName(name)
 --%>
 

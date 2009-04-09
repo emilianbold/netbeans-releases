@@ -44,14 +44,13 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
-import javax.swing.JComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.semantic.RemoveUnusedImportFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -77,7 +76,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
     private Imports duplicate;
     private Imports defaultPackage; 
     private Imports samePackage; 
-    private Imports forbiddenPackage; 
+    private Imports excludedPackage;
     private Imports unused; 
     private Imports star;
         
@@ -109,10 +108,10 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         return d.defaultPackage;
     }
     
-    public static Imports createForbidden() {
+    public static Imports createExcluded() {
         Imports d = getDelegate();
-        d.forbiddenPackage = new Imports( ImportHintKind.FORBIDDEN );
-        return d.forbiddenPackage;
+        d.excludedPackage = new Imports( ImportHintKind.EXCLUDED );
+        return d.excludedPackage;
     }
     
     public static Imports createSamePackage() {
@@ -223,15 +222,17 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
                 }
 
                 break;
-            case FORBIDDEN:
-                Imports forbidPackage = getDelegate().forbiddenPackage;
-                String[] regexps = getRegexps(forbidPackage.getPreferences(null));
-                if (forbidPackage != null &&
-                        forbidPackage.isEnabled() &&
-                        isForbidden(ms.getExpression().toString(), regexps)) {
+            case EXCLUDED:
+                Imports excludePackage = getDelegate().excludedPackage;
+				String pkg = ms.getExpression().toString();
+				String klass = ms.getIdentifier().toString();
+				String exp = pkg + "." + (!klass.equals("*") ? klass : ""); //NOI18N
+                if (excludePackage != null &&
+                        excludePackage.isEnabled() &&
+                        Utilities.isExcluded(exp)) {
                     result.add(ErrorDescriptionFactory.createErrorDescription(
-                            forbidPackage.getSeverity().toEditorSeverity(),
-                            forbidPackage.getDisplayName(),
+                            excludePackage.getSeverity().toEditorSeverity(),
+                            excludePackage.getDisplayName(),
                             NO_FIXES,
                             ci.getFileObject(),
                             (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
@@ -316,16 +317,6 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         return p;
     }
     
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        if ( kind == ImportHintKind.FORBIDDEN ) {
-            return new ForbiddenImportsCustomizer( node );
-        }
-        else {
-            return super.getCustomizer(node);
-        }
-    }
-
     public void preferenceChange(PreferenceChangeEvent evt) {
         if ( kind == ImportHintKind.UNUSED ) {
             RemoveUnusedImportFix.setEnabled(isEnabled());
@@ -361,52 +352,21 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
                         ihk );
     }
     
-    private String[] getRegexps( Preferences node ) {
-        
-        String[] texts = ForbiddenImportsCustomizer.getForbiddenImports(node);
-        String[] result = new String[texts.length]; 
-        
-        for (int i = 0; i < texts.length; i++) {
-            String t = texts[i];
-            t = t.replace(".", "\\.");
-            t = t.replace("**", ";;" );
-            t = t.replace("*", "[^\\.]*");
-            t = t.replace(";;", ".*");
-            result[i] = t;
-        }
-
-        return result;
-    }
-    
-    private static boolean isForbidden( String pkg, String regexps[] ) {
-        
-        Pattern p;
-               
-        for( String rg : regexps ) {
-            
-            if ( Pattern.matches(rg, pkg)) {
-                return true;
-            }
-            
-        }
-                
-        return false;
-    }
-    
     private static enum ImportHintKind {
+
         DELEGATE,
         UNUSED,
         DUPLICATE,
         SAME_PACKAGE,
         DEFAULT_PACKAGE,
-        FORBIDDEN,
+        EXCLUDED,
         STAR;
-        
+
         boolean defaultOn() {
-        
-            switch( this ) {
+
+            switch (this) {
                 case DELEGATE:
-                case FORBIDDEN:
+                case EXCLUDED:
                 case SAME_PACKAGE:
                 case DEFAULT_PACKAGE:
                 case UNUSED:
@@ -415,7 +375,6 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
                     return false;
             }
         }
-        
     }
 
     private static class ImportsFix implements Fix, Task<WorkingCopy> {

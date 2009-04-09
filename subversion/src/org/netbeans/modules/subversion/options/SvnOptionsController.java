@@ -93,8 +93,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public void update() {
         
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
-        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());                   
-                      
+        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
+        panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
         annotationSettings.update();
         repository.refreshUrlHistory();
         
@@ -106,7 +106,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
             SvnClientFactory.reset();
         }
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
-        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());            
+        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
+        SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
         
         // {folder} variable setting
         annotationSettings.applyChanges();

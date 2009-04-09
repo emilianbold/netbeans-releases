@@ -46,56 +46,26 @@ import javax.swing.JPopupMenu;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
-
-import java.util.Collection;
 import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.StringTokenizer;
-
-import java.io.PrintStream;
-
+import java.util.List;
+import java.util.Map;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-
 import org.netbeans.jellytools.MainWindowOperator;
-
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 
 /**
  * @author  lhasik@netbeans.org, mmirilovic@netbeans.org
  */
 public class MenuChecker {
 
-    /** Creates a new instance of MenuChecker */
-    public MenuChecker() {
-    }
-
-    /** Check whether JPopupMenu <b>popup</b> contains <B>item</B> ?
-     * @param popup looking for menu item in this popup menu
-     * @param item looking for this item
-     * @return true-popup contains item, false-doesn't contain item */
-    public boolean containsMenuItem(javax.swing.JPopupMenu popup, String item) {
-        MenuElement [] elements = popup.getSubElements();
-        for(int k=0; k < elements.length; k++) {
-
-            if(elements[k] instanceof JMenuItem) {
-                if(item.equals(((JMenuItem)elements[k]).getText())) return true;
-            }
-        }
-        return false;
-    }
-
     /** Open all menus in menubar
      * @param menu  to be visited */
-    public static void visitMenuBar(JMenuBar menu) {
-        MenuElement [] elements = menu.getSubElements();
-
+    private static void visitMenuBar(JMenuBar menu) {
         JMenuBarOperator op = new JMenuBarOperator(menu);
-
-        for(int k=0; k < elements.length; k++) {
-            if(elements[k] instanceof JMenuItem) {
-                op.pushMenu(((JMenuItem)elements[k]).getText(), "/", true, true);
+        for (MenuElement element : menu.getSubElements()) {
+            if (element instanceof JMenuItem) {
+                op.pushMenu(op.parseString(((JMenuItem) element).getText(), "/"), new DefaultStringComparator(true, true));
                 try {
                     op.wait(200);
                 }catch(Exception e) {}
@@ -106,18 +76,19 @@ public class MenuChecker {
     /** Get MenuBar and tranfer it to ArrayList.
      * @param menu menu to be tranfered
      * @return tranfered menubar */
-    public static ArrayList getMenuBarArrayList(JMenuBar menu) {
+    private static List<NbMenu> getMenuBarArrayList(JMenuBar menu) {
         visitMenuBar(menu);
 
         MenuElement [] elements = menu.getSubElements();
 
-        ArrayList list = new ArrayList();
+        List<NbMenu> list = new ArrayList<NbMenu>();
         for(int k=0; k < elements.length; k++) {
-            if(elements[k] instanceof JMenuItem) {
-                list.add(NbMenu.getNbMenu((JMenuItem)elements[k]));
+//            if(elements[k] instanceof JMenuItem) {
+//                list.add(new NbMenu((JMenuItem)elements[k], null));
                 JMenuBarOperator menuOp = new JMenuBarOperator(menu);
-                list.add(getMenuArrayList(menuOp.getMenu(k)));
-            }
+                JMenu item = menuOp.getMenu(k);
+                list.add(new NbMenu(item, getMenuArrayList(item)));
+//            }
             /*if(elements[k] instanceof JMenuBar) {
                 JMenuBarOperator menuOp = new JMenuBarOperator(menu);
                 list.add(getMenuArrayList(menuOp.getMenu(0)));
@@ -130,17 +101,21 @@ public class MenuChecker {
     /** Get Menu and tranfer it to ArrayList.
      * @param menu menu to be tranfered
      * @return tranfered menu */
-    public static ArrayList getMenuArrayList(JMenu menu) {
+    private static List<NbMenu> getMenuArrayList(JMenu menu) {
         MenuElement [] elements = menu.getSubElements();
-        ArrayList list = new ArrayList();
+        List<NbMenu> list = new ArrayList<NbMenu>();
 
         for(int k=0; k < elements.length; k++) {
 
-            if(elements[k] instanceof JPopupMenu)
-                list.add(getPopupMenuArrayList((JPopupMenu)elements[k]));
+            if (elements[k] instanceof JPopupMenu) {
+                JPopupMenu item = (JPopupMenu) elements[k];
+                list.add(new NbMenu(item, getPopupMenuArrayList(item)));
+            }
 
-            if(elements[k] instanceof JMenuItem)
-                list.add(NbMenu.getNbMenu((JMenuItem)elements[k]));
+            if (elements[k] instanceof JMenuItem) {
+                JMenuItem item = (JMenuItem) elements[k];
+                list.add(new NbMenu(item, null));
+            }
 
         }
         return list;
@@ -149,345 +124,116 @@ public class MenuChecker {
     /** Get PopupMenu and transfer it to ArrayList.
      * @param popup menu to be tranfered
      * @return transfered menu */
-    public static ArrayList getPopupMenuArrayList(JPopupMenu popup) {
+    private static List<NbMenu> getPopupMenuArrayList(JPopupMenu popup) {
         MenuElement [] elements = popup.getSubElements();
-        ArrayList list = new ArrayList();
+        List<NbMenu> list = new ArrayList<NbMenu>();
 
         for(int k=0; k < elements.length; k++) {
-            if(elements[k] instanceof JMenu)
-                list.add(getMenuArrayList((JMenu)elements[k]));
-
-            if(elements[k] instanceof JMenuItem)
-                list.add(NbMenu.getNbMenu((JMenuItem)elements[k]));
-        }
-        return list;
-    }
-
-    /**
-     * @param a aarray to be printed
-     * @param stream where
-     * @param x level of array */
-    public static void printArray(ArrayList a, PrintStream stream, int x) {
-        Iterator it = a.iterator();
-        while(it.hasNext()) {
-            Object o = it.next();
-
-            if(o instanceof NbMenu) {
-
-                for(int i=0;i<x;i++)
-                    stream.print("-");
-
-                stream.println(((NbMenu)o).name);
-            }
-
-            if(o instanceof ArrayList) {
-                printArray((ArrayList)o, stream, x + 1);
-            }
-        }
-    }
-
-    /**
-     * @param menu
-     * @return  */
-    public static TreeSet getSortedMenuBar(JMenuBar menu, String menuToTest) {
-
-        StringTokenizer menuT = new StringTokenizer(menuToTest, ", ");
-        HashSet menuTT = new HashSet();
-
-        while(menuT.hasMoreTokens())
-            menuTT.add(menuT.nextToken());
-
-        MenuElement [] elements = menu.getSubElements();
-        TreeSet list = new TreeSet();
-
-        for(int k=0; k < elements.length; k++) {
-            if(elements[k] instanceof JMenuItem) {
-                //NbMenu m = NbMenu.getNbMenu((JMenuItem)elements[k]);
-                JMenuBarOperator menuOp = new JMenuBarOperator(menu);
-                //m.addSubMenu(getMenuArrayList(menuOp.getMenu(k)));
-                JMenu m = menuOp.getMenu(k);
-                if(menuTT.contains(m.getLabel())){
-                    list.addAll((Collection)getSortedMenu(menuOp.getMenu(k)));
-                }
-            }
-            /*if(elements[k] instanceof JMenuBar) {
-                JMenuBarOperator menuOp = new JMenuBarOperator(menu);
-                list.add(getMenuArrayList(menuOp.getMenu(0)));
-            }
-             */
-        }
-        return list;
-    }
-
-    /**
-     * @param menu
-     * @return  */
-    public static TreeSet getSortedMenu(JMenu menu) {
-        menu.list();
-        MenuElement [] elements = menu.getSubElements();
-        TreeSet list = new TreeSet();
-        NbMenu last = NbMenu.getNbMenu(menu);
-        list.add(last);
-
-        for(int k=0; k < elements.length; k++) {
-            if(elements[k] instanceof JPopupMenu) {
-                //NbMenu last = (NbMenu)list.get(list.size() - 1);
-                last.addSubMenu(getSortedPopupMenu((JPopupMenu)elements[k], ""));
-            }
-            if(elements[k] instanceof JMenuItem) {
-                last = NbMenu.getNbMenu((JMenuItem)elements[k]);
-                list.add(last);
-            }
-
-        }
-        return list;
-    }
-
-    /**
-     * @param popup
-     * @return  */
-    public static TreeSet getSortedPopupMenu(JPopupMenu popup, String menuNotTest) {
-        StringTokenizer menuT = new StringTokenizer(menuNotTest, ", ");
-        HashSet menuTT = new HashSet();
-
-        while(menuT.hasMoreTokens())
-            menuTT.add(menuT.nextToken());
-
-        MenuElement [] elements = popup.getSubElements();
-        TreeSet list = new TreeSet();
-
-        for(int k=0; k < elements.length; k++) {
-
-            if(elements[k] instanceof JMenu) {
-                JMenu m = (JMenu) elements[k];
-                if(!menuTT.contains(m.getLabel()))
-                    list.addAll(getSortedMenu(m));
-            }
-
-            if(elements[k] instanceof JMenuItem) {
-                list.add(NbMenu.getNbMenu((JMenuItem)elements[k]));
+            if (elements[k] instanceof JMenu) {
+                JMenu item = (JMenu) elements[k];
+                list.add(new NbMenu(item, getMenuArrayList(item)));
+            } else if (elements[k] instanceof JMenuItem) {
+                JMenuItem item = (JMenuItem) elements[k];
+                list.add(new NbMenu(item, null));
             }
         }
         return list;
     }
 
-    /** Print (unsorted) structure of menu - as it really looks
-     * @param menu
-     * @param stream  */
-    public static void printMenuBarStructure(JMenuBar menu, PrintStream stream, String menuToBeTested, boolean printEnabledOnly, boolean sorted) {
-        if(sorted){
-            printSorted(getSortedMenuBar(menu, menuToBeTested), stream, 1, printEnabledOnly);
-            stream.close();
-        }else
-            printArray(getMenuBarArrayList(menu), stream, 1);
+    private static NbMenu menuBar() {
+        JMenuBar bar = MainWindowOperator.getDefault().getJMenuBar();
+        return new NbMenu(bar, getMenuBarArrayList(bar));
     }
 
-    /** Print (unsorted) structure of menu - as it really looks
-     * @param menu
-     * @param stream  */
-    public static void printPopupMenuStructure(JPopupMenu menu, PrintStream stream, String menuNotToBeTested, boolean printEnabledOnly, boolean sorted) {
-        if(sorted){
-            printSorted(getSortedPopupMenu(menu, menuNotToBeTested), stream, 1, printEnabledOnly);
-            stream.close();
-        }else{
-            printArray(getPopupMenuArrayList(menu), stream, 1);
-        }
-    }
-
-    /** Print Sorted collection.
-     * @param a Collection to be sorted.
-     * @param stream output stream
-     * @param x indentation */
-    public static void printSorted(Collection a, PrintStream stream, int x, boolean printEnabledOnly) {
-        Iterator it = a.iterator();
-
-        while(it.hasNext()) {
-            Object o = it.next();
-            if(o instanceof NbMenu) {
-                NbMenu item = (NbMenu)o;
-
-                if(!(printEnabledOnly ^ item.enabled)){
-                    for(int i=0;i<x;i++) stream.print("-");
-                    stream.println(item.name);
-                }
-
-                if(item.submenu != null) {
-                    printSorted(item.getSubMenu(), stream, x+1, printEnabledOnly);
-                }
-
-            }
-        }
+    private static String subprefix(String prefix, NbMenu item) {
+        return item.name == null ? prefix : prefix + "[" + item.name + "] ";
     }
 
     public static String checkMnemonicCollision() {
-        return checkMnemonicCollision(getMenuBarArrayList(MainWindowOperator.getDefault().getJMenuBar())).toString();
+        StringBuilder collisions = new StringBuilder("");
+        NbMenu all = menuBar();
+        //System.err.println(all);
+        checkMnemonicCollision(all, "", collisions);
+        return collisions.toString();
     }
 
-
-    /** Check mnemonics in menu structure.
-     * @param list
-     * @return  */
-    private static StringBuffer checkCollision(ArrayList list, boolean checkShortCuts) {
-        StringBuffer collisions = new StringBuffer("");
-        Iterator it = list.iterator();
-
-        HashMap check = new HashMap();
-
-        while(it.hasNext()) {
-            Object o = it.next();
-
-            if(o instanceof NbMenu) {
-                NbMenu item = (NbMenu)o;
-
-                if(checkShortCuts){
-                    if(item.mnemo != 0) {
-                        Integer mnemonic = new Integer(item.mnemo);
-                        //stream.println("checking : " + item.name + " - " + item.mnemo);
-                        if(check.containsKey(mnemonic)) {
-                            char k = (char) item.mnemo;
-                            collisions.append("\n !!!!!! Collision! mnemonic='" + k +  "' : " + item.name + " is in collision with " + check.get(mnemonic));
-                        } else {
-                            check.put(mnemonic, item.name);
-                        }
-                    }
-                }else{
-                    if(item.mnemo != 0) {
-                        Integer mnemonic = new Integer(item.mnemo);
-                        //stream.println("checking : " + item.name + " - " + item.mnemo);
-                        if(check.containsKey(mnemonic)) {
-                            char k = (char) item.mnemo;
-                            collisions.append("\n !!!!!! Collision! mnemonic='" + k +  "' : " + item.name + " is in collision with " + check.get(mnemonic));
-                        } else {
-                            check.put(mnemonic, item.name);
-                        }
-                    }
+    /** Check mnemonics in menu structure. */
+    private static void checkMnemonicCollision(NbMenu menu, String prefix, StringBuilder collisions) {
+        if (menu.submenu == null) {
+            return;
+        }
+        Map<Integer,String> check = new HashMap<Integer,String>();
+        for (NbMenu item : menu.submenu) {
+            if (item.mnemo != 0) {
+                if (check.containsKey(item.mnemo)) {
+                    char k = (char) item.mnemo;
+                    collisions.append("\n" + prefix + "mnemonic='" + k +  "' : " + item.name + " collides with " + check.get(item.mnemo));
+                } else {
+                    check.put(item.mnemo, item.name);
                 }
             }
-
-            if(o instanceof ArrayList) {
-                collisions.append(checkMnemonicCollision((ArrayList)o));
-            }
+            checkMnemonicCollision(item, subprefix(prefix, item), collisions);
         }
-
-        return collisions;
     }
-
-
-
-    /** Check mnemonics in menu structure.
-     * @param list
-     * @return  */
-    private static StringBuffer checkMnemonicCollision(ArrayList list) {
-        StringBuffer collisions = new StringBuffer("");
-        Iterator it = list.iterator();
-
-        HashMap check = new HashMap();
-
-        while(it.hasNext()) {
-            Object o = it.next();
-
-            if(o instanceof NbMenu) {
-                NbMenu item = (NbMenu)o;
-                if(item.mnemo != 0) {
-                    Integer mnemonic = new Integer(item.mnemo);
-                    //stream.println("checking : " + item.name + " - " + item.mnemo);
-                    if(check.containsKey(mnemonic)) {
-                        char k = (char) item.mnemo;
-                        collisions.append("\n !!!!!! Collision! mnemonic='" + k +  "' : " + item.name + " is in collision with " + check.get(mnemonic));
-                    } else {
-                        check.put(mnemonic, item.name);
-                    }
-                }
-            }
-
-            if(o instanceof ArrayList) {
-                collisions.append(checkMnemonicCollision((ArrayList)o));
-            }
-        }
-
-        return collisions;
-    }
-
-
 
     public static String checkShortCutCollision() {
-        return checkShortCutCollision(getMenuBarArrayList(MainWindowOperator.getDefault().getJMenuBar())).toString();
+        StringBuilder collisions = new StringBuilder("");
+        checkShortCutCollision(menuBar(), "", collisions);
+        return collisions.toString();
     }
 
-    /** check shortcuts in menu structure
-     * @param a
-     * @return  */
-    private static StringBuffer checkShortCutCollision(ArrayList a) {
-        StringBuffer collisions = new StringBuffer("");
-        Iterator it = a.iterator();
-        HashMap check = new HashMap();
-
-        while(it.hasNext()) {
-            Object o = it.next();
-
-            if(o instanceof NbMenu) {
-                NbMenu item = (NbMenu)o;
-
-                if(item.accelerator != null) {
-                    //stream.println("checking : " + item.name + " - " + item.accelerator);
-                    if(check.containsKey(item.accelerator)) {
-                        collisions.append("\n !!!!!! Collision! accelerator ='" + item.accelerator +  "' : " + item.name + " is in collision with " + check.get(item.accelerator));
-                    } else {
-                        check.put(item.accelerator, item.name);
-                    }
+    /** check shortcuts in menu structure */
+    private static void checkShortCutCollision(NbMenu menu, String prefix, StringBuilder collisions) {
+        if (menu.submenu == null) {
+            return;
+        }
+        Map<String,String> check = new HashMap<String,String>();
+        for (NbMenu item : menu.submenu) {
+            if (item.accelerator != null) {
+                if (check.containsKey(item.accelerator)) {
+                    collisions.append("\n" + prefix + "accelerator ='" + item.accelerator +  "' : " + item.name + " collides with " + check.get(item.accelerator));
+                } else {
+                    check.put(item.accelerator, item.name);
                 }
             }
+            checkShortCutCollision(item, subprefix(prefix, item), collisions);
+        }
+    }
 
-            if(o instanceof ArrayList) {
-                collisions.append(checkShortCutCollision((ArrayList)o));
-            }
+    private static class NbMenu {
+        /** label of menuitem */
+        final String name;
+        /** mnemonic in int */
+        final int mnemo;
+        /** jasne ? */
+        final String accelerator;
+        final List<NbMenu> submenu;
+
+        NbMenu(JMenuItem menu, List<NbMenu> submenu) {
+            name = menu.getText();//getLabel();
+            accelerator = (menu.getAccelerator() == null) ? null : menu.getAccelerator().toString();
+            mnemo = menu.getMnemonic();
+            this.submenu = submenu;
         }
 
-        return collisions;
+        NbMenu(JPopupMenu menu, List<NbMenu> submenu) {
+            name = menu.getLabel();
+            accelerator = null;
+            mnemo = 0;
+            this.submenu = submenu;
+        }
+
+        NbMenu(JMenuBar menubar, List<NbMenu> submenu) {
+            name = "menubar";
+            accelerator = null;
+            mnemo = 0;
+            this.submenu = submenu;
+        }
+
+        public @Override String toString() {
+            return submenu == null ? name : name + submenu;
+        }
+
     }
 
 }
-
-
-class NbMenu implements Comparable {
-    /** label of menuitem */
-    public String name;
-    /** mnemonic in int */
-    public int mnemo;
-    /** jasne ? */
-    public String accelerator;
-    public boolean enabled;
-    TreeSet submenu = null;
-
-    /**
-     * @param it
-     * @return instance of NbMenu constructed from parameter it */
-    public static NbMenu getNbMenu(JMenuItem it) {
-        NbMenu item = new NbMenu();
-        item.name = it.getText();//getLabel();
-        item.accelerator = (it.getAccelerator() == null) ? null : it.getAccelerator().toString();
-        item.mnemo = it.getMnemonic();
-        item.enabled = it.isEnabled();
-        return item;
-    }
-    /**
-     * @param m  */
-    public void addSubMenu(TreeSet m) {
-        submenu = m;
-    }
-
-    /**
-     * @return  */
-    public TreeSet getSubMenu() {
-        return submenu;
-    }
-
-    /** needed for comparing in TreeSet
-     * @param obj
-     * @return  */
-    public int compareTo(Object obj) {
-        NbMenu n = (NbMenu)obj;
-        return (name != null) ? name.compareTo(n.name) : n.name.compareTo(name);
-    }
-}
-

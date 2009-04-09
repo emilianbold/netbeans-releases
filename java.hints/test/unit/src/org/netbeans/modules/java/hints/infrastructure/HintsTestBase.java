@@ -509,7 +509,6 @@ public class HintsTestBase extends NbTestCase {
             
             assertFile(dump, golden, diff, new WhitespaceIgnoringDiff());
         } finally {
-            SourceUtilsTestUtil2.ignoreCompileRequests();
             LifecycleManager.getDefault().saveAll();
         }
     }

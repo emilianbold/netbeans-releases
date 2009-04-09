@@ -31,7 +31,7 @@ TestBean testBean
 <%-- Java completion for variables methods and fields between more sriptlets --%>
 <%--CC
 <% testBean.|
-void setName (String name )
+void setName
 <% testBean.setName(name)
 --%>
 
@@ -66,7 +66,7 @@ void clear ()
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
 <%--CC
 <% org.test.TestBean t = new org.test.TestBean(); t.| %>
-void setName (String name )
+void setName
 <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>
 --%>
 

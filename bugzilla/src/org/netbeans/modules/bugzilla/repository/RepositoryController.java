@@ -184,6 +184,11 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
+    }
+
+    @Override
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -203,7 +208,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             getHttpUser(),
             getHttpPassword());
         Bugzilla.getInstance().addRepository(repository);
-        fireDataApplied();
+        repository.getNode().setName(newName);
     }
 
     void populate() {
@@ -266,7 +271,9 @@ public class RepositoryController extends BugtrackingController implements Docum
             public boolean cancel() {
                 panel.progressPanel.setVisible(false);
                 panel.validateLabel.setVisible(false);
-                if(task[0] != null) task[0].cancel();
+                if(task[0] != null) {
+                    task[0].cancel();
+                }
                 return true;
             }
         };

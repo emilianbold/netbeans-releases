@@ -282,7 +282,7 @@ public final class ParserQueue {
         private final Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        private final Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
+        private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
         private volatile boolean notifyListeners;
 
         ProjectData(boolean notifyListeners) {

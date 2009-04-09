@@ -222,16 +222,25 @@ public final class NamingFactory {
     }
 
     private static List collectChildren(FileName parent) {
-        Collection c = nameMap.values();
-        List ratval = new ArrayList();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            Reference ref = (Reference) it.next();
-            FileNaming naming = (FileNaming) ref.get();
-            if (isChild(parent, naming)) {
-                ratval.add(naming);
+        List retval = new ArrayList();
+        for (Object value : nameMap.values()) {
+            if (value instanceof List) {
+                for (Object item : (List) value) {
+                    Reference ref = (Reference) item;
+                    FileNaming naming = (FileNaming) ref.get();
+                    if (isChild(parent, naming)) {
+                        retval.add(naming);
+                    }
+                }
+            } else {
+                Reference ref = (Reference) value;
+                FileNaming naming = (FileNaming) ref.get();
+                if (isChild(parent, naming)) {
+                    retval.add(naming);
+                }
             }
         }
-        return ratval;
+        return retval;
     }
     
     private static boolean isChild(FileName parent, FileNaming naming) {

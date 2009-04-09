@@ -7,16 +7,14 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.CardLayout;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 
 /**
  *
- * @author  pbuzek
+ * @author Tomas Stupka
  */
-public class BugtrackingOptionsPanel extends javax.swing.JPanel {
+class BugtrackingOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form VcsAdvancedOptionsPanel */
     public BugtrackingOptionsPanel() {

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -158,7 +159,8 @@ class ConfigActionScript extends ConfigAction {
                     .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
                     .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
                     .outProcessorFactory(redirector)
-                    .postExecution(redirector);
+                    .postExecution(redirector)
+                    .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
 
         }
 

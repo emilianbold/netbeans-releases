@@ -265,11 +265,16 @@ public final class ExecutionService {
 
                     executor = Executors.newFixedThreadPool(descriptor.isInputVisible() ? 3 : 2);
 
+                    Charset charset = descriptor.getCharset();
+                    if (charset == null) {
+                        charset = Charset.defaultCharset();
+                    }
+
                     tasks.add(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(outStream), Charset.defaultCharset()),
+                        InputReaders.forStream(new BufferedInputStream(outStream), charset),
                         createOutProcessor(out)));
                     tasks.add(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(errStream), Charset.defaultCharset()),
+                        InputReaders.forStream(new BufferedInputStream(errStream), charset),
                         createErrProcessor(err)));
                     if (descriptor.isInputVisible()) {
                         tasks.add(InputReaderTask.newTask(
@@ -314,7 +319,7 @@ public final class ExecutionService {
                             }
                         }
                     } catch (Throwable t) {
-                        LOGGER.log(Level.WARNING, null, t);
+                        LOGGER.log(Level.INFO, null, t);
                         throw new WrappedException(t);
                     } finally {
                         try {

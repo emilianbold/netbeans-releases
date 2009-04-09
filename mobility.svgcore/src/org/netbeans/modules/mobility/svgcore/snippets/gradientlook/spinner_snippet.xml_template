@@ -1,7 +1,7 @@
 <g id="%%COMPONENT_ID%%"  transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
 	<!-- Metadata information. Please don't edit. -->
         <text display="none">type=spinner</text>
-        <rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)"                       stroke-width="2" visibility="hidden">
+        <rect x="-5.0" id="_12"  y="-3.0" rx="5" ry="5" width="46" height="26" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
         </rect>

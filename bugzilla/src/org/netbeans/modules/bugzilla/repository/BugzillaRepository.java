@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
@@ -116,12 +117,20 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query createQuery() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         BugzillaQuery q = new BugzillaQuery(this);        
         return q;
     }
 
     @Override
     public Issue createIssue() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         TaskAttributeMapper attributeMapper =
                 Bugzilla.getInstance()
                     .getRepositoryConnector()
@@ -355,6 +364,10 @@ public class BugzillaRepository extends Repository {
         return executor;
     }
 
+    public boolean authenticate(String errroMsg) {
+        return BugtrackingUtil.editRepository(this, errroMsg);
+    }
+
     private class Cache extends IssueCache {
         Cache() {
             super(BugzillaRepository.this.getUrl());
@@ -469,6 +482,15 @@ public class BugzillaRepository extends Repository {
         Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), name}); // NOI18N
         synchronized(queriesToRefresh) {
             queriesToRefresh.remove(query);
+        }
+    }
+
+    public void refreshAllQueries() {
+        Query[] qs = getQueries();
+        for (Query q : qs) {
+            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+            QueryController qc = ((BugzillaQuery) q).getController();
+            qc.onRefresh();
         }
     }
 

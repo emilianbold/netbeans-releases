@@ -144,7 +144,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     public void propertyChange(PropertyChangeEvent evt) {
         int lnum = EditorContextBridge.getContext().getCurrentLineNumber();
         String mimeType = EditorContextBridge.getContext().getCurrentMIMEType();
-	boolean isValid = (MIMENames.isHeaderOrCppOrC(mimeType) 
+	boolean isValid = (MIMENames.isFortranOrHeaderOrCppOrC(mimeType)
                 || mimeType.equals(MIMENames.ASM_MIME_TYPE))
                         && lnum > 0;
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isValid);

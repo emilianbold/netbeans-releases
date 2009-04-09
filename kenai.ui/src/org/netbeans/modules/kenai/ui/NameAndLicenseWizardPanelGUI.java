@@ -250,7 +250,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     @Override
     public String getName() {
         return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                panel.isFinishPanel() ?
+                panel==null || panel.isFinishPanel() ?
                     "NameAndLicenseWizardPanelGUI.shareLocalName":
                     "NameAndLicenseWizardPanelGUI.panelName");
     }

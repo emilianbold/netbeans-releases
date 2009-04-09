@@ -45,9 +45,11 @@ import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
@@ -57,6 +59,7 @@ import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -111,6 +114,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return true;
     }
     
+    @Override
     public boolean startProfilingSession(final Project project, final FileObject profiledClassFile, final boolean isTest, final Properties properties) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() { startMaven(project, profiledClassFile, isTest, properties); }
