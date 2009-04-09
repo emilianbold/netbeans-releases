@@ -99,8 +99,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeA
         } else if (node instanceof SpecialNode) {
             return ((SpecialNode)node).isLeaf();
         }
-        return true;
-        //throw new UnknownTypeException(node.toString());
+        throw new UnknownTypeException(node.toString());
     }
 
     @Override

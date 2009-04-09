@@ -110,7 +110,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
 	if (element.equals(ARGS_ELEMENT)) {
-	    profile.setArgs(currentText);
+	    profile.setArgsRaw(currentText);
 	}
 	else if (element.equals(RUNDIR_ELEMENT)) {
 	    profile.setRunDir(currentText);
