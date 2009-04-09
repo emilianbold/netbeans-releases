@@ -89,7 +89,7 @@ public class BugtrackingUtil {
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton("Cancel");
+        JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
         final DialogDescriptor dd =
             new DialogDescriptor(
                     panel,
