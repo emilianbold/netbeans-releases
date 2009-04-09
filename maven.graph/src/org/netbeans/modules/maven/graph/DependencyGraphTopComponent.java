@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -214,6 +215,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         result.addLookupListener(this);
         result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
         result2.addLookupListener(this);
+        result3 = getLookup().lookup(new Lookup.Template<POMModel>(POMModel.class));
+        result3.addLookupListener(this);
         createScene();
     }
     
@@ -391,6 +394,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+        Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
         if (prj != null && "error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId())) { //NOI18N
             setPaneText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "Err_CannotLoad"));
@@ -398,9 +402,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
             final DependencyNode root = it1.next();
+            final POMModel model = it3.hasNext() ? it3.next() : null;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this);
+                    scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
                     GraphConstructor constr = new GraphConstructor(scene);
                     root.accept(constr);
                     SwingUtilities.invokeLater(new Runnable() {
