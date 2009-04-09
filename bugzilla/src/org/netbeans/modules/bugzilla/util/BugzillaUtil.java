@@ -63,7 +63,12 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaUtil {
+
     public static boolean show(JPanel panel, String title, String okName) {
+        return show(panel, title, okName, new HelpCtx(panel.getClass()));
+    }
+
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
         JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor (
@@ -73,7 +78,7 @@ public class BugzillaUtil {
                 new Object[] {ok, cancel},
                 ok,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(panel.getClass()),
+                helpCtx,
                 null);
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }

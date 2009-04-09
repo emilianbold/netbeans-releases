@@ -505,7 +505,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private String getName() {
         String name = null;
-        if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
+        if(BugzillaUtil.show(
+                panel.savePanel,
+                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
+                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
+                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel"))) { // NOI18N
             name = panel.queryNameTextField.getText();
             if(name == null || name.trim().equals("")) { // NOI18N
                 return null;
