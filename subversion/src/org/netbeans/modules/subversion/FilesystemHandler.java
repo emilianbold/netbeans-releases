@@ -202,14 +202,14 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Tries to determine if the <code>file</code> is supposed to be really removed by svn or not.<br/>
      * i.e. unversioned files should not be removed at all.
-     * This method refreshed the file cache synchronally, do not run it directly from Interceptor methods, use a separated thread.
      * @param file file sheduled for removal
      * @return <code>true</code> if the <code>file</code> shall be really removed, <code>false</code> otherwise.
      */
     private boolean shallRemove(SvnClient client, File file) throws SVNClientException {
         boolean retval = true;
         ISVNStatus status = getStatus(client, file);
-        if (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+        if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
+            Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
             retval = false;
         } else if (Utilities.isMac() || Utilities.isWindows()) {
             String existingFilename = FileUtils.getExistingFilenameInParent(file);
