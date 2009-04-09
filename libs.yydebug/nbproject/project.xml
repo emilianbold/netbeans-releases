@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
                 <package>jay.yydebug</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/yydebug.jar</runtime-relative-path>
-                <binary-origin>external/yydebug.jar</binary-origin>
+                <runtime-relative-path>ext/yydebug-1.0.2.jar</runtime-relative-path>
+                <binary-origin>external/yydebug-1.0.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
