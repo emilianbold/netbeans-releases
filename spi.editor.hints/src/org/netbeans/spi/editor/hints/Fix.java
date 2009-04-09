@@ -41,12 +41,16 @@
 
 package org.netbeans.spi.editor.hints;
 
-/**TODO: icon?
- *
+/**
+ * Allows to perform a change when the user selects the hint.
  * @author Jan Lahoda
  */
 public interface Fix {
 
+    /**
+     * The text displayed to the user as the fix description.
+     * @return
+     */
     public abstract String getText();
 
     /**
@@ -57,9 +61,4 @@ public interface Fix {
      *  determined.
      */
     public abstract ChangeInfo implement() throws Exception;
-    
-    public abstract int hashCode();
-    
-    public abstract boolean equals(Object o);
-
 }
