@@ -19,7 +19,7 @@
     <Component class="javax.swing.JLabel" name="repoPathLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="ListRendererPanel.repoPathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="KenaiProjectsListRenderer.repoPathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -31,7 +31,7 @@
     <Component class="javax.swing.JLabel" name="projectNameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="ListRendererPanel.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="KenaiProjectsListRenderer.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -43,7 +43,7 @@
     <Component class="javax.swing.JLabel" name="tagsLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="ListRendererPanel.tagsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="KenaiProjectsListRenderer.tagsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -55,7 +55,7 @@
     <Component class="javax.swing.JLabel" name="detailsLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="ListRendererPanel.detailsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/kenai/ui/Bundle.properties" key="KenaiProjectsListRenderer.detailsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
