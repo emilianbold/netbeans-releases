@@ -73,7 +73,7 @@ import org.openide.util.TaskListener;
 public class ConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 27938464212508L;
     
-    final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
+    final DownloadProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private FeatureInfo featureInfo;
     private Callable<JComponent> callable;
     private final Boolean autoActivate;
@@ -181,18 +181,17 @@ public class ConfigurationPanel extends JPanel {
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
-        final boolean[] success = new boolean[1];
         final FeatureInfo info = featureInfo;
         Task task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
-                success[0] = ModulesInstaller.installModules(progressMonitor, info);
+                ModulesInstaller.installModules(progressMonitor, info);
             }
         });
         task.addTaskListener(new TaskListener() {
 
             public void taskFinished(org.openide.util.Task task) {
-                if (success[0]) {
+                if (!progressMonitor.error) {
                     SwingUtilities.invokeLater(new Runnable() {
                         private String msg;
 
@@ -234,6 +233,7 @@ public class ConfigurationPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class DownloadProgressMonitor implements ProgressMonitor {
+        private boolean error = false;
 
         public void onDownload(ProgressHandle progressHandle) {
             updateProgress(progressHandle);
@@ -262,6 +262,19 @@ public class ConfigurationPanel extends JPanel {
                     progressPanel.add(tmpProgressPanel);
                     progressPanel.revalidate();
                     progressPanel.repaint();
+                }
+            });
+        }
+
+        public void onError(final String message) {
+            error = true;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    // TODO: mark as html
+                    setError("<html>" + message + "</html>"); // NOI18N
+                    progressPanel.removeAll();
+                    progressPanel.add(errorLabel);
                 }
             });
         }
