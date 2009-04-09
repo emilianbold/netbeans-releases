@@ -154,6 +154,9 @@ public class ImportEntry implements Comparable<ImportEntry> {
         if (asName == null) {
             return (other.asName == null) ? 0 : 1;
         }
+        if (other.asName == null) {
+            return -1;
+        }
         return asName.compareTo(other.asName);
     }
 
