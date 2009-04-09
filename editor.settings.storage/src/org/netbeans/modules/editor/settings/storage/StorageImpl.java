@@ -47,6 +47,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +56,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
@@ -553,27 +556,57 @@ public final class StorageImpl <K extends Object, V extends Object> {
         // -------------------------------------------------------------------
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            processEvent(fe);
+            // just ignore these
         }
 
         public void fileChanged(FileEvent fe) {
-            processEvent(fe);
+            if (!filterEvents(fe)) {
+                boolean processed = processFile(fe.getFile());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("fileChanged (" + (processed ? "processed" : "ignored" ) + "): " //NOI18N
+                        + fe.getFile().getPath());
+                }
+            }
         }
 
         public void fileDataCreated(FileEvent fe) {
-            processEvent(fe);
+            if (!filterEvents(fe)) {
+                boolean processed = processFile(fe.getFile());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("fileDataCreated (" + (processed ? "processed" : "ignored" ) + "): " //NOI18N
+                        + fe.getFile().getPath());
+                }
+            }
         }
 
         public void fileDeleted(FileEvent fe) {
-            processEvent(fe);
+            if (!filterEvents(fe)) {
+                boolean processed = processFile(fe.getFile());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("fileDeleted (" + (processed ? "processed" : "ignored" ) + "): " //NOI18N
+                        + fe.getFile().getPath());
+                }
+            }
         }
 
         public void fileFolderCreated(FileEvent fe) {
-            processEvent(fe);
+            if (!filterEvents(fe)) {
+                boolean processed = processKids(fe.getFile());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("fileFolderCreated (" + (processed ? "processed" : "ignored" ) + "): " //NOI18N
+                        + fe.getFile().getPath());
+                }
+            }
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            processEvent(fe);
+            if (!filterEvents(fe)) {
+                boolean processed = processKids(fe.getFile().getParent());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("fileRenamed (" + (processed ? "processed" : "ignored" ) + "): " //NOI18N
+                        + fe.getFile().getPath());
+                }
+            }
         }
 
         // -------------------------------------------------------------------
@@ -590,8 +623,14 @@ public final class StorageImpl <K extends Object, V extends Object> {
         // -------------------------------------------------------------------
 
         public FilesystemTracker(FileSystem fileSystem) {
+            this.controlledFilesPattern = Pattern.compile("^Editors/(.*)" + storageDescription.getId() + "(.*)"); //NOI18N
             this.fileSystem = fileSystem;
             this.fileSystem.addFileChangeListener(FileUtil.weakFileChangeListener(this, this.fileSystem));
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(this + " sensitive to " //NOI18N
+                    + controlledFilesPattern.pattern() + " paths and " //NOI18N
+                    + storageDescription.getMimeType() + "setting files"); //NOI18N
+            }
         }
 
         // runs under StorageImpl.this.lock
@@ -611,18 +650,110 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
         private final FileSystem fileSystem;
         private final RequestProcessor.Task refreshCacheTask= RequestProcessor.getDefault().create(this);
+        private final List<Reference<FileEvent>> recentEvents = new LinkedList<Reference<FileEvent>>();
+        private final Pattern controlledFilesPattern;
 
         private volatile FileSystem.AtomicAction atomicAction;
 
-        // runs asynchronously when events are fired from the filesystem
-        private void processEvent(FileEvent fe) {
-            if (!ignoreFilesystemEvents && fe.getFile().getPath().startsWith("Editors")) { //NOI18N
-                final FileSystem.AtomicAction aa = atomicAction;
-                if (aa == null || !fe.firedFrom(aa)) {
-                    refreshCacheTask.schedule(71);
+        private boolean filterEvents(FileEvent event) {
+            // filter out anything that does not match required file path pattern
+            if (!controlledFilesPattern.matcher(event.getFile().getPath()).matches()) {
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer(event.getFile().getPath() + " does not match: " + controlledFilesPattern.pattern()); //NOI18N
                 }
+                return true;
+            }
+
+            // filter out our own events
+            final FileSystem.AtomicAction aa = atomicAction;
+            if (aa != null && event.firedFrom(aa)) {
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("Filesystem event for " + event.getFile().getPath() + " caused by saving settings"); //NOI18N
+                }
+                return true;
+            }
+            
+            // filter out duplicate events, maybe this does not have any effect
+            synchronized (recentEvents) {
+                for(Iterator<Reference<FileEvent>> i = recentEvents.iterator(); i.hasNext(); ) {
+                    Reference<FileEvent> ref = i.next();
+                    FileEvent e = ref.get();
+                    if (e == null) {
+                        i.remove();
+                    } else {
+                        if (e == event) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Filtering out duplicate filesystem event (1): original=[" + printEvent(e) + "]" //NOI18N
+                                    + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
+                            }
+                            return true;
+                        }
+                        
+                        if (e.getTime() == event.getTime() && e.getFile().getPath().equals(event.getFile().getPath())) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Filtering out duplicate filesystem event (2): original=[" + printEvent(e) + "]" //NOI18N
+                                        + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
+                            }
+                            return true;
+                        }
+                    }
+                }
+
+                if (recentEvents.size() > 100) {
+                    recentEvents.remove(recentEvents.size() - 1);
+                }
+                recentEvents.add(0, new WeakReference<FileEvent>(event));
+                return false;
             }
         }
 
+        // runs asynchronously when events are fired from the filesystem
+        private boolean processFile(FileObject f) {
+            if (!ignoreFilesystemEvents
+                && f.isData()
+                && (f.getMIMEType().equals(storageDescription.getMimeType())
+                    || f.getNameExt().equals(storageDescription.getLegacyFileName()))
+            ) {
+                refreshCacheTask.schedule(71);
+                return true;
+            } else {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Not a settings file: " + f.getPath() + ", mimeType=" + f.getMIMEType()); //NOI18N
+                }
+                return false;
+            }
+        }
+
+        private boolean processKids(FileObject f) {
+            assert f.isFolder() == true : "Expecting folder, but got: " + f; //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(f.getPath() + " has " + f.getChildren().length + " children"); //NOI18N
+            }
+
+            for(FileObject ff : f.getChildren()) {
+                if (ff.isData()) {
+                    if (processFile(ff)) {
+                        return true;
+                    }
+                } else {
+                    if (controlledFilesPattern.matcher(ff.getPath()).matches()) {
+                        if (processKids(ff)) {
+                            return true;
+                        }
+                    } else if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine(ff.getPath() + " does not match: " + controlledFilesPattern.pattern()); //NOI18N
+                    }
+                }
+            }
+            return false;
+        }
+
+        private String printEvent(FileEvent event) {
+            return event.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(event)) //NOI18N
+                    + ", ts=" + event.getTime() //NOI18N
+                    + ", path=" + event.getFile().getPath(); //NOI18N
+        }
     } // End of FilesystemTracker class
+
 }
+
