@@ -381,7 +381,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
         private ObjectVariable owner = null;
         private String ownerName = null;
 
-        public class UnknownOwnerNameException extends RuntimeException {
+        public static class UnknownOwnerNameException extends RuntimeException {
             public UnknownOwnerNameException(String name) {
                 super("Unknown owner name: " + name);
             }

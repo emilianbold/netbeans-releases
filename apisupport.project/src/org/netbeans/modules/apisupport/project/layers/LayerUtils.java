@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,7 +73,6 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.layers.PlatformLayersCacheManager.PLFSCacheEntry;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
@@ -106,7 +104,6 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Misc support for dealing with layers.
@@ -776,68 +773,6 @@ public class LayerUtils {
                     }
                 });
         return cache;
-    }
-
-    /**
-     * Constructs a list of filesystems representing the XML layers of the supplied platform module JARs.
-     */
-    private static FileSystem[] getPlatformLayers(Set<File> platformJars) throws IOException {
-        // TODO delete when cache is in place
-        List<FileSystem> layers = new ArrayList<FileSystem>();
-        JAR: for (File jar : platformJars) {
-            ManifestManager mm = ManifestManager.getInstanceFromJAR(jar);
-            for (String tok : mm.getRequiredTokens()) {
-                if (tok.startsWith("org.openide.modules.os.")) { // NOI18N
-                    // Best to exclude platform-specific modules, e.g. ide/applemenu, as they can cause confusion.
-                    continue JAR;
-                }
-            }
-            String layer = mm.getLayer();
-            if (layer != null) {
-                URL u = new URL("jar:" + jar.toURI() + "!/" + layer);
-                try {
-                    // XXX nbres: and such URL protocols may not work in platform layers
-                    // (cf. org.openide.filesystems.ExternalUtil.findClass)
-                    FileSystem xfs = new XMLFileSystem(u);
-                    boolean hasMasks = false;
-                    Enumeration e = xfs.getRoot().getChildren(true);
-                    while (e.hasMoreElements()) {
-                        FileObject f = (FileObject) e.nextElement();
-                        if (f.getNameExt().endsWith("_hidden")) { // NOI18N
-                            // #63295: put it at the beginning. Not as good as following module deps but probably close enough.
-                            hasMasks = true;
-                            break;
-                        }
-                    }
-                    if (hasMasks) {
-                        layers.add(0, xfs);
-                    } else {
-                        layers.add(xfs);
-                    }
-                } catch (SAXException e) {
-                    throw (IOException) new IOException(e.toString()).initCause(e);
-                }
-            }
-            { // #149136: load generated layers too
-                // XXX might be faster to use ManifestManager's original opening of JAR to see if it really had such a layer
-                URL generatedLayer = new URL("jar:" + jar.toURI() + "!/META-INF/generated-layer.xml");
-                boolean ok = true;
-                try {
-                    generatedLayer.openConnection().connect();
-                } catch (IOException x) {
-                    // ignore, probably just means resource does not exist
-                    ok = false;
-                }
-                if (ok) {
-                    try {
-                        layers.add(new XMLFileSystem(generatedLayer));
-                    } catch (SAXException x) {
-                        throw (IOException) new IOException(x.toString()).initCause(x);
-                    }
-                }
-            }
-        }
-        return layers.toArray(new FileSystem[layers.size()]);
     }
     
     /**
