@@ -465,7 +465,12 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, JComboBox combo) {
-        storeFieldValue(field, combo.getSelectedItem().toString());
+        Object value = combo.getSelectedItem();
+        // It (normally) should not happen that value is null, but issue 159804 shows that
+        // some strange configurations (or other bugs) can lead into this situation
+        if (value != null) {
+            storeFieldValue(field, value.toString());
+        }
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, JTextComponent textComponent) {
