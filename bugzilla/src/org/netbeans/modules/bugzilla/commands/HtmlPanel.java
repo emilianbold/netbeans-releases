@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.openide.awt.HtmlBrowser;
+
 /**
  *
  * @author tomas
@@ -50,8 +58,28 @@ public class HtmlPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    void setHtml(String html, String label) {
+    void setHtml(final String baseUrl, String html, String label) {
         pane.setText(html);
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
+                String desc = e.getDescription();
+                URL url = null;
+                try {
+                    url = new URL(baseUrl + "/" + desc);
+                } catch (MalformedURLException mue) {
+                    Bugzilla.LOG.log(Level.WARNING, null, mue);
+                    return;
+                }
+                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                assert displayer != null : "HtmlBrowser.URLDisplayer found.";
+                if (displayer != null) {
+                    displayer.showURL(url);
+                } else {
+                    Bugzilla.LOG.info("No URLDisplayer found.");
+                }
+            }
+        });
         this.label.setText(label);
     }
 
@@ -69,6 +97,7 @@ public class HtmlPanel extends javax.swing.JPanel {
         label = new javax.swing.JLabel();
 
         pane.setContentType(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "HtmlPanel.pane.contentType")); // NOI18N
+        pane.setEditable(false);
         jScrollPane1.setViewportView(pane);
 
         label.setText(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "MSG_ServerResponse")); // NOI18N
