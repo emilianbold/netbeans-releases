@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
@@ -106,15 +105,15 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         TestUtilities.copyStringToFile(dataFile, code);
 
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-                    new JavaCustomIndexer.Factory()});
+//        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
+//                    new JavaCustomIndexer.Factory()});
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, getExtraClassPathElements());
         
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
-        
+
         assertNotNull(ec);
-        
+
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
