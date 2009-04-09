@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -93,10 +94,20 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
         return retval;
     }
 
-    public Collection<? extends FileObject> filesForClassName(final FileObject fo,
+    public Collection<? extends FileObject> filesForClassName(FileObject sourceRootDirectory,
             final String clsName) {
+        if (sourceRootDirectory.isData()) { throw new IllegalArgumentException(); }
         final List<FileObject> retval = new ArrayList<FileObject>();
-        Source source = Source.create(fo);
+        Enumeration<? extends FileObject> childsEnum = sourceRootDirectory.getChildren(true);
+        while (childsEnum.hasMoreElements()) {
+            FileObject child = childsEnum.nextElement();
+            if (child.isData()) {
+                sourceRootDirectory = child;
+                break;
+            }
+        }
+        FileObject sourceFileObject = sourceRootDirectory;
+        Source source = Source.create(sourceFileObject);
         if (source != null) {
             try {
                 ParserManager.parse(Collections.singleton(source), new UserTask() {

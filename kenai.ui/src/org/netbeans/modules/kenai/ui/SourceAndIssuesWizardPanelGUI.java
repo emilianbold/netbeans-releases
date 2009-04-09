@@ -231,11 +231,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     for (Iterator<KenaiService> iter = repoList.iterator(); iter.hasNext();) {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
-                        if (Utilities.SVN_REPO.equals(serviceName)) {
+                        if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, SVN_REPO_ITEM));
-                        } else if (Utilities.HG_REPO.equals(serviceName)) {
+                        } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, HG_REPO_ITEM));
-                        } else if (Utilities.EXT_REPO.equals(serviceName)) {
+                        } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, EXT_REPO_ITEM));
                         }
                     }
@@ -247,11 +247,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     for (Iterator<KenaiService> iter = issuesList.iterator(); iter.hasNext();) {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
-                        if (Utilities.BGZ_ISSUES.equals(serviceName)) {
+                        if (KenaiService.Names.BUGZILLA.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, BGZ_ISSUES_ITEM));
-                        } else if (Utilities.JIRA_ISSUES.equals(serviceName)) {
+                        } else if (KenaiService.Names.JIRA.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, JIRA_ISSUES_ITEM));
-                        } else if (Utilities.EXT_ISSUES.equals(serviceName)) {
+                        } else if (KenaiService.Names.EXTERNAL_ISSUES.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, EXT_ISSUES_ITEM));
                         }
                     }
@@ -295,9 +295,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private void updateRepoNamePreview() {
         String prjName = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
         String repoTypeName;
-        if (Utilities.SVN_REPO.equals(getRepoType())) {
+        if (KenaiService.Names.SUBVERSION.equals(getRepoType())) {
             repoTypeName = SVN_REPO_NAME;
-        } else if (Utilities.HG_REPO.equals(getRepoType())) {
+        } else if (KenaiService.Names.MERCURIAL.equals(getRepoType())) {
             repoTypeName = HG_REPO_NAME;
         } else {
             return;
@@ -316,10 +316,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     // XXX should check whether user did some edit in the field also
     private void setDefaultRepoName() {
-        if (Utilities.SVN_REPO.equals(getRepoType()) &&
+        if (KenaiService.Names.SUBVERSION.equals(getRepoType()) &&
                 (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
             setRepoName(SVN_DEFAULT_NAME);
-        } else if (Utilities.HG_REPO.equals(getRepoType()) &&
+        } else if (KenaiService.Names.MERCURIAL.equals(getRepoType()) &&
                 (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
             setRepoName(HG_DEFAULT_NAME);
         }
@@ -629,13 +629,13 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         KenaiServiceItem selObject = (KenaiServiceItem) repoComboBox.getSelectedItem();
 
         if (selObject != null && selObject.getService() != null) {
-            if (Utilities.SVN_REPO.equals(selObject.getService().getName()) ||
-                    Utilities.HG_REPO.equals(selObject.getService().getName())) {
+            if (KenaiService.Names.SUBVERSION.equals(selObject.getService().getName()) ||
+                    KenaiService.Names.MERCURIAL.equals(selObject.getService().getName())) {
                 showRepoOnKenaiGUI();
                 setDefaultRepoName();
                 updateRepoNamePreview();
                 updateRepoPath();
-            } else if (Utilities.EXT_REPO.equals(selObject.getService().getName())) {
+            } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(selObject.getService().getName())) {
                 showExtRepoGUI();
             } 
         } else {
@@ -670,10 +670,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         KenaiServiceItem selObject = (KenaiServiceItem) issuesComboBox.getSelectedItem();
 
         if (selObject != null && selObject.getService() != null) {
-            if (Utilities.BGZ_ISSUES.equals(selObject.getService().getName()) ||
-                    Utilities.JIRA_ISSUES.equals(selObject.getService().getName())) {
+            if (KenaiService.Names.BUGZILLA.equals(selObject.getService().getName()) ||
+                    KenaiService.Names.JIRA.equals(selObject.getService().getName())) {
                 showIssuesOnKenaiGUI();
-            } else if (Utilities.EXT_ISSUES.equals(selObject.getService().getName())) {
+            } else if (KenaiService.Names.EXTERNAL_ISSUES.equals(selObject.getService().getName())) {
                 showExtIssuesGUI();
             } 
         } else {
@@ -769,18 +769,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private String checkForInfos() {
         String localRepoPath = getRepoLocal();
-        if ((Utilities.SVN_REPO.equals(getRepoType()) ||
-                Utilities.HG_REPO.equals(getRepoType())) &&
+        if ((KenaiService.Names.SUBVERSION.equals(getRepoType()) ||
+                KenaiService.Names.MERCURIAL.equals(getRepoType())) &&
                 ("".equals(localRepoPath) || localRepoPath == null)) {
             return "Local repository folder path is required";
         }
         String extRepoUrl = getRepoUrl();
-        if (Utilities.EXT_REPO.equals(getRepoType()) &&
+        if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(getRepoType()) &&
                 ("".equals(extRepoUrl) || extRepoUrl == null)) {
             return "External repository URL is required";
         }
         String extIssuesUrl = getIssuesUrl();
-        if (Utilities.EXT_ISSUES.equals(getIssuesType()) &&
+        if (KenaiService.Names.EXTERNAL_ISSUES.equals(getIssuesType()) &&
                 ("".equals(extIssuesUrl) || extIssuesUrl == null)) {
             return "External issue tracking URL is required";
         }
