@@ -7,5 +7,5 @@
 <tc-ref version="2.0">
     <module name="org.netbeans.modules.projectui" spec="1.0" />
     <tc-id id="projectTab_tc" />
-    <state opened="true" />
+    <state opened="false" />
 </tc-ref>

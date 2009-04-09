@@ -20,8 +20,10 @@
         <p>This panel contains the following tabs where you can set editor options.</p>
         
         <ul>
-            <li><b>General.</b> This tab enables you to customize global code folding and code completion settings.</li>
+            <li><b>General.</b> This tab enables you to customize global code folding and camel case settings.</li>
             <li><b>Formatting.</b> This tab enables you to customize global indentation for files in the Source Editor.</li>
+            <li><b>Code Completion.</b> This tab enables you to customize code completion for
+             the languages that support this feature.</li>
             <li><b>Code Templates.</b> This tab enables you to customize the abbreviations for terms that you want the editor to expand automatically.</li>
             <li><b>Hints.</b> This tab enables you to customize hints and tips that help you as you type in the Source Editor.</li>
             <li><b>Mark Occurrences.</b> This tab enables you to specify which occurrences of Java keywords will be marked
@@ -38,32 +40,6 @@
                 Code folding is applied only to editor types that support code folding, such as the Java editor.</li>
                 <li><b>Collapse by Default.</b> Select the types of code blocks that are are collapsed by default.</li>
             </ul>
-            
-        <h4>Code Completion</h4>
-        <p>As you are typing in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically. 
-        You can set the following code completion properties.</p>
-        <ul>
-            <li><b>Auto Popup Completion Window.</b> When selected, enables the editor to display a code completion box with 
-            options for how to complete an expression.  
-            <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
-            <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
-            only one possible completion for the expression. The expression is completed automatically, but
-            only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
-            <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
-            that you are typing. </li>
-            <li><b>Show Deprecated Members in Code Completion.</b> If selected, any deprecrated class elements that are available are shown 
-            in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
-            <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket, 
-            brace, or quotation mark after you type the first one.</li>
-            <li><b>Auto Popup Documentation Window.</b> When selected, the documentation window appears
-             automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
-            <li><b>Guess Filled Method Arguments.</b> Specifies whether the names of local variables and fields
-            with matching types are generated as the method call arguments, instead of parameter names.</li>
-        </ul>
-            
-            <!--The code completion feature works by displaying a completion box that suggests possible ways of completing the expression that you are typing. 
-            In addition, a box also appears that shows the Javadoc documentation for the item currently selected in the completion box.</li>
-            -->
 
             <h3>Formatting tab</h3>
         <p>This tab enables you to specify the following Java source code formatting settings:</p>
@@ -85,24 +61,46 @@
             <li><b>Right Margin.</b> Specifies the location of the right margin, which is 80 characters by default. </li>
         </ul>
         <p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
-
     
+        <h3>Code Completion</h3>
+
+        <p>As you are typing in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically.
+        You can set the following code completion properties.</p>
+        <ul>
+            <li><b>Auto Popup Completion Window.</b> When selected, enables the editor to display a code completion box with
+            options for how to complete an expression.
+            <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
+            <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of
+            only one possible completion for the expression. The expression is completed automatically, but
+            only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
+            <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression
+            that you are typing. </li>
+            <li><b>Show Deprecated Members in Code Completion.</b> If selected, any deprecrated class elements that are available are shown
+            in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
+            <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket,
+            brace, or quotation mark after you type the first one.</li>
+            <li><b>Auto Popup Documentation Window.</b> When selected, the documentation window appears
+             automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
+            <li><b>Guess Filled Method Arguments.</b> Specifies whether the names of local variables and fields
+            with matching types are generated as the method call arguments, instead of parameter names.</li>
+        </ul>
+
         <h3>Code Templates tab</h3>
         <p>Use this tab to modify the abbreviations for terms that you want the editor to expand automatically.
         Select a language from the drop-down list to see the abbreviations available.
         For each language you can do the following:
         <ul>
-            <li>Select an abbreviation from the list and type in the Abbreviation or Expanded Text field to modify the abbreviation.</li> 
+            <li>Select an abbreviation from the list and type in the Abbreviation or Expanded Text field to modify the abbreviation.</li>
             <li>Select an abbreviation from the list and click Remove to remove the abbreviation.</li>
             <li>Click New and type the abbreviation and description in the respective fields.</li>
-        </ul> 
-        <p>You can use the Expand Template On drop-down list to change the 
-        key or key combination that is used to expand the abbreviations. 
-        By default, abbreviations are expanded when you press Tab. 
+        </ul>
+        <p>You can use the Expand Template On drop-down list to change the
+        key or key combination that is used to expand the abbreviations.
+        By default, abbreviations are expanded when you press Tab.
         The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
         <p>Using <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editor_template_syntax.html">special code template syntax</a>,
         you can add further functionality to new or existing abbreviations.
-        
+
         <h3>Macros tab</h3>
         <p>Use this tab to edit, add, and remove Source Editor macros.
         The macro names and shortcuts are listed in the upper pane. 
@@ -116,7 +114,6 @@
         <ul class="note">        
             <li>It is generally easier to add a new macro by recording it than by adding one manually in the Macro Code editor. 
         </ul>
-        
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>

@@ -62,6 +62,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -130,6 +131,9 @@ public class TaskManagerImpl extends TaskManager {
 
                 setWorkingStatus(false);
             } else {
+                boolean dirtyCache = NbPreferences.forModule(TaskManagerImpl.class).getBoolean("dirtyCache", false);
+                NbPreferences.forModule(TaskManagerImpl.class).putBoolean("dirtyCache", false);
+                
                 //turn on or switch scope/filter
                 if( null == newFilter )
                     newFilter = TaskFilter.EMPTY;
@@ -154,7 +158,7 @@ public class TaskManagerImpl extends TaskManager {
                     attachFileScanners( newFilter );
                     attachPushScanners( newScope, newFilter );
 
-                    if( scannersHaveChanged ) {
+                    if( scannersHaveChanged || dirtyCache ) {
                         clearCache();
                     } else {
                         startLoading();
@@ -303,6 +307,12 @@ public class TaskManagerImpl extends TaskManager {
 
     public void clearCache() {
         IndexingManager.getDefault().refreshAllIndicies(TaskIndexerFactory.INDEXER_NAME);
+    }
+
+    void makeCacheDirty() {
+        synchronized( this ) {
+            NbPreferences.forModule(TaskManagerImpl.class).putBoolean("dirtyCache", true);
+        }
     }
 
     public void refresh( final TaskScanningScope scopeToRefresh ) {

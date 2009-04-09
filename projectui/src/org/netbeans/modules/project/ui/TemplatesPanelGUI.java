@@ -82,7 +82,6 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -134,6 +133,14 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         if (categoryName != null) {
             try {
                 ((org.netbeans.modules.project.ui.TemplatesPanelGUI.ExplorerProviderPanel) this.categoriesPanel).setSelectedNode(categoryName);
+                //expand explicitly selected category
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Node[] sel = ((ExplorerProviderPanel)categoriesPanel).getSelectedNodes();
+                        if( sel.length == 1 )
+                            ((CategoriesPanel)categoriesPanel).btv.expandNode(sel[0]);
+                    }
+                });
             }
             catch (NodeNotFoundException ex) {
                 // if categoryName is null then select first category leastwise
@@ -549,7 +556,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         public void selectFirstCategory () {
             btv.selectFirstCategory ();
         }
-        
+
     }
     
     private static class TemplatesListView extends ListView implements ActionListener {
