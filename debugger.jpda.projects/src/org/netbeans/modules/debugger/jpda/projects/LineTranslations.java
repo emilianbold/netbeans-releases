@@ -353,7 +353,6 @@ class LineTranslations {
         
         private LineBreakpoint lb;
         private DataObject dataObject;
-        private LineCookie lc;
         private Line line;
         private boolean updatingLine = false;
         
@@ -363,7 +362,7 @@ class LineTranslations {
         }
         
         public synchronized void attach() throws IOException {
-            this.lc = dataObject.getCookie (LineCookie.class);
+            LineCookie lc = dataObject.getCookie (LineCookie.class);
             if (lc == null) return ;
             lb.addPropertyChangeListener(this);
             try {
@@ -396,18 +395,15 @@ class LineTranslations {
                 return ;
             }
             if (!updatingLine && LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
-                boolean haveDocL = line != null;
+                line.removePropertyChangeListener(this);
+                if (dataObject == null) return ;
+                LineCookie lc = dataObject.getCookie (LineCookie.class);
                 try {
                     line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
-                    if (!haveDocL) {
-                        line.addPropertyChangeListener(this);
-                    }
+                    line.addPropertyChangeListener(this);
                 } catch (IndexOutOfBoundsException ioobex) {
                     // ignore document changes for BP with bad line number
-                    if (haveDocL) {
-                        line.removePropertyChangeListener(this);
-                        line = null;
-                    }
+                    line = null;
                 }
             }
             if (LineBreakpoint.PROP_URL.equals(evt.getPropertyName())) {
@@ -416,9 +412,10 @@ class LineTranslations {
                 
                 // update DataObject
                 this.dataObject = getDataObject(lb.getURL());
+                if (dataObject == null) return ;
                 
                 // attach
-                this.lc = dataObject.getCookie (LineCookie.class);
+                LineCookie lc = dataObject.getCookie (LineCookie.class);
                 try {
                     this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                     line.addPropertyChangeListener(this);

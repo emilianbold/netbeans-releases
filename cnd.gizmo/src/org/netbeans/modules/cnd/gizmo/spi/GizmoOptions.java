@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.gizmo.spi;
 
-import java.beans.PropertyChangeListener;
-
 public interface GizmoOptions {
     
     public static enum DataProvider {
@@ -99,17 +97,4 @@ public interface GizmoOptions {
      * @param dataProvider the dataProvider to set
      */
     public void setDataProviderValue(DataProvider dataProvider);
-
-    /**
-     *  Adds property change listener.
-     *  @param l new listener.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener l);
-    
-    /**
-     *  Removes property change listener.
-     *  @param l removed listener.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener l);
-
 }

@@ -138,9 +138,11 @@ public final class SourceUtils {
         Parameters.notNull("subtype", subtype); // NOI18N
         Parameters.notNull("supertype", supertype); // NOI18N
 
-        TypeMirror typeMirror = controller.getTreeUtilities().parseType(supertype, subtype);
-        if (typeMirror != null) {
-            return controller.getTypes().isSubtype(subtype.asType(), typeMirror);
+        if (controller.getElements().getTypeElement(supertype) != null) {
+            TypeMirror typeMirror = controller.getTreeUtilities().parseType(supertype, subtype);
+            if (typeMirror != null) {
+                return controller.getTypes().isSubtype(subtype.asType(), typeMirror);
+            }
         }
         return false;
     }
