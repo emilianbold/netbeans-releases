@@ -357,6 +357,7 @@ public class AttachmentsPanel extends JPanel {
                 attachment.addPropertyChangeListener(getDeletedListener());
             }
             newAttachments.add(attachment);
+            BugtrackingUtil.keepFocusedComponentVisible(attachment);
             revalidate();
         }
 
