@@ -195,7 +195,7 @@ public final class NbMavenProjectImpl implements Project {
         sharability = new MavenSharabilityQueryImpl(this);
         watcher = ACCESSOR.createWatcher(this);
         subs = new SubprojectProviderImpl(this, watcher);
-        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs);
+        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
         updater1 = new Updater();
         updater2 = new Updater(USER_DIR_FILES);
         state = projectState;
@@ -688,8 +688,9 @@ public final class NbMavenProjectImpl implements Project {
     private class LazyLookup extends ProxyLookup {
         private Lookup lookup;
         boolean initialized = false;
-        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info, SharabilityQueryImplementation shara, SubprojectProvider subs) {
-            setLookups(Lookups.fixed(ths, watcher, info, shara, subs));
+        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info, 
+                SharabilityQueryImplementation shara, SubprojectProvider subs, FileObject projectFO) {
+            setLookups(Lookups.fixed(ths, watcher, info, shara, subs, projectFO));
         }
 
         @Override
@@ -741,6 +742,7 @@ public final class NbMavenProjectImpl implements Project {
         Lookup staticLookup = Lookups.fixed(new Object[]{
                     projectInfo,
                     this,
+                    fileObject,
                     new CacheDirProvider(this),
                     new MavenForBinaryQueryImpl(this),
                     new MavenBinaryForSourceQueryImpl(this),

@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -85,6 +86,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 //    private Project project;
     private Lookup.Result<DependencyNode> result;
     private Lookup.Result<MavenProject> result2;
+    private Lookup.Result<POMModel> result3;
+
     private DependencyGraphScene scene;
     private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
@@ -217,6 +220,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         result.addLookupListener(this);
         result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
         result2.addLookupListener(this);
+        result3 = getLookup().lookup(new Lookup.Template<POMModel>(POMModel.class));
+        result3.addLookupListener(this);
         createScene();
     }
     
@@ -394,41 +399,44 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+        Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final Project nbProj = getLookup().lookup(Project.class);
-        if (it2.hasNext() && it1.hasNext()) {
-            final MavenProject prj = it2.next();
-            final DependencyNode root = it1.next();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this);
-                    GraphConstructor constr = new GraphConstructor(scene);
-                    root.accept(constr);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            JComponent sceneView = scene.getView();
-                            if (sceneView == null) {
-                                sceneView = scene.createView();
-                            }
-                            pane.setViewportView(sceneView);
-                            scene.cleanLayout(pane);
-                            scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
-                            txtFind.setEnabled(true);
-                            btnBigger.setEnabled(true);
-                            btnSmaller.setEnabled(true);
-                            comScopes.setEnabled(true);
-                            if (scene.getMaxNodeDepth() > 1) {
-                                lblPath.setVisible(true);
-                                ((SpinnerNumberModel)maxPathSpinner.getModel()).
-                                        setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
-                                maxPathSpinner.setEnabled(true);
-                                maxPathSpinner.setVisible(true);
-                            }
-                            depthHighlight();
-                        }
-                    });
-                }
-            });
+        if (!it1.hasNext() || !it2.hasNext()) {
+            return;
         }
+        final MavenProject prj = it2.next();
+        final DependencyNode root = it1.next();
+        final POMModel model = it3.hasNext() ? it3.next() : null;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
+                GraphConstructor constr = new GraphConstructor(scene);
+                root.accept(constr);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JComponent sceneView = scene.getView();
+                        if (sceneView == null) {
+                            sceneView = scene.createView();
+                        }
+                        pane.setViewportView(sceneView);
+                        scene.cleanLayout(pane);
+                        scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+                        txtFind.setEnabled(true);
+                        btnBigger.setEnabled(true);
+                        btnSmaller.setEnabled(true);
+                        comScopes.setEnabled(true);
+                        if (scene.getMaxNodeDepth() > 1) {
+                            lblPath.setVisible(true);
+                            ((SpinnerNumberModel)maxPathSpinner.getModel()).
+                                    setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
+                            maxPathSpinner.setEnabled(true);
+                            maxPathSpinner.setVisible(true);
+                        }
+                        depthHighlight();
+                    }
+                });
+            }
+        });
     }
 
     public JComponent getVisualRepresentation() {

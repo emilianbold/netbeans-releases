@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,7 +66,12 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -138,7 +144,16 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     @SuppressWarnings("unchecked")
                     List<String> profiles = im.getMavenProject().getActiveProfiles();
                     mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
-                    //TODO add editable model to the lookup, to allow editing of dependencies..
+                    FileObject fo = prj.getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        ModelSource ms = Utilities.createModelSource(fo);
+                        if (ms.isEditable()) {
+                            POMModel model = POMModelFactory.getDefault().getModel(ms);
+                            if (model != null) {
+                                ic.add(model);
+                            }
+                        }
+                    }
                 }
                 ic.add(mvnprj);
                 DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
