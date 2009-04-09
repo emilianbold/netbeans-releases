@@ -56,6 +56,13 @@ made subject to such option by the copyright holder.
         <xsl:variable name="name" select="/p:project/p:configuration/sproject:data/sproject:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="basedir">..</xsl:attribute>
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
             <property file="nbproject/private/platform-private.properties"/>
             <property file="nbproject/platform.properties"/>
             <macrodef name="property" uri="http://www.netbeans.org/ns/nb-module-suite-project/1">
