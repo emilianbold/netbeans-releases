@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
+package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
 import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
