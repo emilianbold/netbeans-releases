@@ -84,7 +84,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
         oper.setCaretPosition(9, 10);
         txtOper.typeText("whilen");
         txtOper.pressKey(KeyEvent.VK_TAB);
-        //compareGoldenFile(oper);
+        compareGoldenFile(oper);
         } finally {
             oper.closeDiscardAll();
         }
