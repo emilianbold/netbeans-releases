@@ -38,7 +38,7 @@
  */
 
 /*
- * ListRendererPanel.java
+ * KenaiProjectsListRenderer.java
  *
  * Created on Jan 20, 2009, 11:10:53 AM
  */
@@ -46,7 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -57,9 +57,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
+import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -69,16 +68,15 @@ import org.openide.util.NbBundle;
  * 
  * @author Milan
  */
-public class ListRendererPanel extends javax.swing.JPanel {
+public class KenaiProjectsListRenderer extends javax.swing.JPanel implements ListCellRenderer {
 
-    private KenaiSearchPanel.KenaiProjectSearchInfo searchInfo;
-
-    /** Creates new form ListRendererPanel */
-    public ListRendererPanel(JList jlist, KenaiSearchPanel.KenaiProjectSearchInfo kp, int index, 
-            boolean isSelected, boolean hasFocus, KenaiSearchPanel.PanelType pType) {
-
+    public KenaiProjectsListRenderer() {
         initComponents();
-        searchInfo = kp;
+    }
+
+    public Component getListCellRendererComponent(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+        KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
 
         projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
         try {
@@ -106,7 +104,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
 
         //descPane.setText(getSubstrWithElipsis(kenaiProject.kenaiProject.getDescription(), fm, getWidth(), 5.0f, g2d));
         //descArea.setText("<html>" + kenaiProject.kenaiProject.getDescription() + "</html>");
-
+        return this;
     }
 
     private String highlighthPattern(String txt, String ptrn) {
@@ -137,7 +135,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
 
         setLayout(new GridBagLayout());
 
-        repoPathLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.repoPathLabel.text")); // NOI18N
+        repoPathLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.repoPathLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -145,7 +143,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 6, 0, 0);
         add(repoPathLabel, gridBagConstraints);
 
-        projectNameLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.projectNameLabel.text")); // NOI18N
+        projectNameLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -154,7 +152,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 6, 0, 0);
         add(projectNameLabel, gridBagConstraints);
 
-        tagsLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.tagsLabel.text")); // NOI18N
+        tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -164,7 +162,7 @@ public class ListRendererPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(10, 6, 4, 0);
         add(tagsLabel, gridBagConstraints);
 
-        detailsLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.detailsLabel.text")); // NOI18N
+        detailsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.detailsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
