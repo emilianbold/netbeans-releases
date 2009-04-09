@@ -101,7 +101,9 @@ public final class AutoUpgrade {
     private static void upgradeBuildProperties(final File sourceFolder, final String[] version) throws IOException {
         File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
         String[] regexForSelection = new String[]{
-            "^nbplatform[.](?!default[.]netbeans[.]dest[.]dir).+[.].+=.+$"//NOI18N
+            "^nbplatform[.](?!default[.]netbeans[.]dest[.]dir).+[.].+=.+$", //NOI18N
+            // #161616
+            "^var[.].*"  //NOI18N
         };
         Copy.appendSelectedLines(new File(sourceFolder, "build.properties"), //NOI18N
                 userdir, regexForSelection);
