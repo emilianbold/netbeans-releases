@@ -49,13 +49,13 @@ import org.openide.filesystems.FileObject;
 public interface PhpUnitSupport {
     /**
      * Get the names of PHP classes from the given {@link FileObject file object}.
-     * @param fo {@link FileObject file object} to investigate.
+     * @param fo {@link FileObject file object} source file to investigate.
      * @return collection of class names, never <code>null</code>.
      */
     Collection<? extends String> getClassNames(final FileObject fo);
     /**
      * Collects files contating class name
-     * @param fo
+     * @param fo directory representing source root or test root
      * @param clsName
      * @return collection of {@link FileObject file objects} containing the class
      * with passed clsName, never <code>null</code>.

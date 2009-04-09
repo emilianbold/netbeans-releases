@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.project.util;
 
-import org.netbeans.modules.php.project.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Queue;
@@ -47,7 +46,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,6 +71,8 @@ import org.openide.util.RequestProcessor;
  * @author Radek Matous
  */
 public class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener {
+    private static final int PROGRESS_INITIAL_DELAY = 1000;
+
     private volatile PhpProject project;
     private volatile boolean isProjectOpened;
     private ProxyOperationFactory operationFactory;
@@ -320,30 +325,39 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                     boolean localRetval = true;
                     boolean remoteRetval = true;
                     if (!localFactoryError && localHandler != null) {
+                        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
+                        progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                         try {
+                            progress.start();
                             localRetval = localHandler.call();
-                        } catch(Exception exc) {
-                            LOGGER.log(Level.INFO,"Copy Support Fail: ", exc);//NOI18N
-                            String message = NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail");//NOI18N
+                        } catch (Exception exc) {
+                            LOGGER.log(Level.INFO, "Copy Support Fail: ", exc);
+                            String message = NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail");
                             Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
                             if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
                                 localFactoryError = true;
-                                LOGGER.log(Level.INFO,"Copy Support Disabled By User", exc);//NOI18N
+                                LOGGER.log(Level.INFO, "Copy Support Disabled By User", exc);
                             }
+                        } finally {
+                            progress.finish();
                         }
                     }
                     if (!remoteFactoryError && remoteHandler != null) {
+                        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
+                        progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                         try {
+                            progress.start();
                             remoteRetval = remoteHandler.call();
-                        } catch(Exception exc) {
-                            LOGGER.log(Level.INFO,"Remote On Save Fail: ", exc);//NOI18N
-                            String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");//NOI18N
+                        } catch (Exception exc) {
+                            LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
+                            String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
                             Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
                             if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
                                 remoteFactoryError = true;
-                                LOGGER.log(Level.INFO,"Remote On Save  Disabled By User", exc);//NOI18N
+                                LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", exc);
                             }
-
+                        } finally {
+                            progress.finish();
                         }
 
                     }
