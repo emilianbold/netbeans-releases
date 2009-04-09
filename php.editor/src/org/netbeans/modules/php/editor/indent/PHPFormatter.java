@@ -80,31 +80,9 @@ import org.openide.util.Exceptions;
 
 
 /**
- * Formatting and indentation for Ruby.
- *
- * @todo Handle RHTML!
- *      - 4 space indents
- *      - conflicts with HTML formatter (HtmlIndentTask)
- *      - The Ruby indentation should be indented into the HTML level as well!
- *          (so I should look at the previous HTML level for my initial context
- *           whenever the balance is 0.)
- * @todo Use configuration object to pass in Ruby conventions
- * @todo Use the provided parse tree, if any, to for example check heredoc nodes
- *   and see if they are indentable.
- * @todo If you select a complete line, the endOffset is on a new line; adjust it back
- * @todo If line ends with \ I definitely have a line continuation!
- * @todo Use the Context.modifyIndent() method to change line indents instead of
- *   the current document/formatter method
- * @todo This line screws up formatting:
- *        alias __class__ class #:nodoc:
- * @todo Why doesn't this format correctly?
- * <pre>
-class Module
-  alias_method :class?, :===
-end
- * </pre>
- *
+ * Formatting and indentation for PHP
  * @author Tor Norbye
+ * @author Tomasz.Slota@Sun.COM
  */
 public class PHPFormatter implements Formatter {
 
@@ -117,7 +95,7 @@ public class PHPFormatter implements Formatter {
     }
 
     public boolean needsParserResult() {
-        return false;
+        return true;
     }
 
     public void reindent(Context context) {

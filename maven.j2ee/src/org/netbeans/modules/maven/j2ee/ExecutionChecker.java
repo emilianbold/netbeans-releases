@@ -59,6 +59,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -205,7 +206,11 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             } else {
                                 SessionContent sc = project.getLookup().lookup(SessionContent.class);
                                 sc.setServerInstanceId(instanceId);
+                                WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
                                 POHImpl poh = project.getLookup().lookup(POHImpl.class);
+                                if (prv != null) {
+                                    poh.setContextPath(prv.getWebModuleImplementation().getContextPath());
+                                }
                                 poh.hackModuleServerChange();
                                 //provider instance not relevant from here
                                 provider = null;
