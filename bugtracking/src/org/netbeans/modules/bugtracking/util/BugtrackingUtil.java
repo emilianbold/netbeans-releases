@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,8 +56,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -361,8 +369,44 @@ public class BugtrackingUtil {
         return dataObj.getPrimaryFile();
     }
 
+    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
+        keepFocusedComponentVisible(scrollPane.getViewport().getView());
+    }
+
+    public static void keepFocusedComponentVisible(Component component) {
+        FocusListener listener= getScrollingFocusListener();
+        component.removeFocusListener(listener); // Making sure that it is not added twice
+        component.addFocusListener(listener);
+        if (component instanceof Container) {
+            for (Component subComponent : ((Container)component).getComponents()) {
+                keepFocusedComponentVisible(subComponent);
+            }
+        }
+    }
+
+    private static FocusListener scrollingFocusListener;
+    private static FocusListener getScrollingFocusListener() {
+        if (scrollingFocusListener == null) {
+            scrollingFocusListener = new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    if (!e.isTemporary()) {
+                        Component comp = e.getComponent();
+                        Container cont = comp.getParent();
+                        if (cont instanceof JViewport) {
+                            // comp is JViewport's view;
+                            // we want the viewport itself to be shown in this case
+                            comp = cont;
+                            cont = cont.getParent();
+                        }
+                        if (cont instanceof JComponent) {
+                            ((JComponent)cont).scrollRectToVisible(comp.getBounds());
+                        }
+                    }
+                }
+            };
+        }
+        return scrollingFocusListener;
+    }
+
 }
-
-
-
- 
