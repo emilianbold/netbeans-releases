@@ -41,9 +41,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,8 +56,8 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 
 /**
  * Data model used across the <em>New Action Wizard</em>.
@@ -222,7 +221,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // Copy action icon
         String relativeIconPath = null;
-        if (origIconPath != null) {
+        if (origIconPath != null && FileUtil.toFileObject(new File(origIconPath)) != null) {
             relativeIconPath = addCreateIconOperation(cmf, origIconPath);
             replaceTokens.put("ICON_RESOURCE_METHOD", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", ""); // NOI18N
