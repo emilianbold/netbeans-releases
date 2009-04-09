@@ -161,6 +161,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Lock for initialization */
     private static final Object INIT_LOCK = new Object();
 
+    /** private lock to avoid synchronize on this */
+    private static final Object LOCK = new Object();
+
     /** children representing parent node (Children or ChildrenArray),
     * for synchronization reasons must be changed only
     * under the Children.MUTEX lock
@@ -323,45 +326,51 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @param index index that will be assigned to this node
     * @exception IllegalStateException if this node already belongs to a children
     */
-    final synchronized void assignTo(Children parent, int index) {
-        Children ch = getParentChildren();
+    final void assignTo(Children parent, int index) {
+        synchronized (LOCK) {
+            Children ch = getParentChildren();
 
-        if ((ch != null) && (ch != parent)) {
-            throw new IllegalStateException(
-                "Cannot initialize " + index + "th child of node " + parent.getNode() +
-                "; it already belongs to node " + ch.getNode()
-            ); // NOI18N
-        }
+            if ((ch != null) && (ch != parent)) {
+                throw new IllegalStateException(
+                    "Cannot initialize " + index + "th child of node " + parent.getNode() +
+                    "; it already belongs to node " + ch.getNode()
+                ); // NOI18N
+            }
 
-        if (!(this.parent instanceof ChildrenArray)) {
-            this.parent = parent;
+            if (!(this.parent instanceof ChildrenArray)) {
+                this.parent = parent;
+            }
         }
     }
 
     /** Code that reassigns the reference from to parent from its
      * Children to its ChildrenArray.
      */
-    final synchronized void reassignTo(Children currentParent, ChildrenArray itsArray) {
-        if ((this.parent != currentParent) && (this.parent != itsArray)) {
-            throw new IllegalStateException(
-                "Unauthorized call to change parent: " + this.parent + " and should be: " + currentParent
-            );
-        }
+    final void reassignTo(Children currentParent, ChildrenArray itsArray) {
+        synchronized (LOCK) {
+            if ((this.parent != currentParent) && (this.parent != itsArray)) {
+                throw new IllegalStateException(
+                    "Unauthorized call to change parent: " + this.parent + " and should be: " + currentParent
+                );
+            }
 
-        this.parent = itsArray;
+            this.parent = itsArray;
+        }
     }
 
     /** Deassigns the node from a children, when it is removed from
     * a children.
     */
-    final synchronized void deassignFrom(Children parent) {
-        Children p = getParentChildren();
+    final void deassignFrom(Children parent) {
+        synchronized (LOCK) {
+            Children p = getParentChildren();
 
-        if (parent != p) {
-            throw new IllegalArgumentException("Deassign from wrong parent. Old: " + p + " Caller: " + parent); //NOI18N
+            if (parent != p) {
+                throw new IllegalArgumentException("Deassign from wrong parent. Old: " + p + " Caller: " + parent); //NOI18N
+            }
+
+            this.parent = null;
         }
-
-        this.parent = null;
     }
 
     /** Set the system name. Fires a property change event.
