@@ -93,6 +93,7 @@ public class TaskIndexer extends CustomIndexer {
                         if( filter.isEnabled(s) ) {
                             s.notifyPrepare();
                             scanners.add(s);
+                            LOG.fine("Using FileTaskScanner: " + s); //NOI18N
                         }
                     }
                 }
