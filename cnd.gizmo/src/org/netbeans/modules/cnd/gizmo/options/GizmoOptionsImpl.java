@@ -62,12 +62,16 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
     // Profile on Run
     private BooleanConfiguration profileOnRun;
+    public static String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
     // Cpu
     private BooleanConfiguration cpu;
+    public static String CPU_PROP = "cpu"; // NOI18N
     // Memory
     private BooleanConfiguration memory;
+    public static String MEMORY_PROP = "memory"; // NOI18N
     // Synchronization
     private BooleanConfiguration synchronization;
+    public static String SYNCHRONIZATION_PROP = "synchronization"; // NOI18N
     // Data Provider
     public static final int SUN_STUDIO = 0;
     public static final int DTRACE = 1;
@@ -76,6 +80,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 	  getString("DTrace"),
     };
     private IntConfiguration dataProvider;
+    public static String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
     
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
@@ -105,6 +110,17 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return PROFILE_ID;
     }
 
+    private void checkPropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+        if (oldValue != newValue && pcs != null) {
+            pcs.firePropertyChange(propertyName, oldValue, newValue);
+        }
+    }
+
+    private void checkPropertyChange(String propertyName, Object oldValue, Object newValue) {
+        if (oldValue != newValue && pcs != null) {
+            pcs.firePropertyChange(propertyName, oldValue, newValue);
+        }
+    }
 
     /**
      * Profile On Run
@@ -122,7 +138,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public void setProfileOnRunValue(boolean profileOnRunValue) {
+        boolean oldValue = getProfileOnRunValue();
         getProfileOnRun().setValue(profileOnRunValue);
+        checkPropertyChange(PROFILE_ON_RUN_PROP, oldValue, getProfileOnRunValue());
     }
 
 
@@ -142,7 +160,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public void setCpuValue(boolean cpu) {
+        boolean oldValue = getCpuValue();
         getCpu().setValue(cpu);
+        checkPropertyChange(CPU_PROP, oldValue, getCpuValue());
     }
 
     /**
@@ -161,7 +181,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public void setMemoryValue(boolean memory) {
+        boolean oldValue = getMemoryValue();
         getMemory().setValue(memory);
+        checkPropertyChange(MEMORY_PROP, oldValue, getMemoryValue());
     }
 
     /**
@@ -180,7 +202,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public void setSynchronizationValue(boolean synchronization) {
+        boolean oldValue = getSynchronizationValue();
         getSynchronization().setValue(synchronization);
+        checkPropertyChange(MEMORY_PROP, oldValue, getSynchronizationValue());
     }
 
     /**
@@ -216,27 +240,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         else {
             assert true;
         }
+        DataProvider oldValue = getDataProviderValue();
         getDataProvider().setValue(value);
-    }
-
-    /**
-     *  Adds property change listener.
-     *  @param l new listener.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        if (pcs != null) {
-            pcs.addPropertyChangeListener(l);
-        }
-    }
-    
-    /**
-     *  Removes property change listener.
-     *  @param l removed listener.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        if (pcs != null) {
-            pcs.removePropertyChangeListener(l);
-        }
+        checkPropertyChange(DATA_PROVIDER_PROP, oldValue, getDataProviderValue());
     }
 
     public boolean shared() {
@@ -262,13 +268,29 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
     
     public void assign(ConfigurationAuxObject auxObject) {
+        boolean oldBoolValue;
+        DataProvider oldDValue;
         GizmoOptionsImpl gizmoOptions = (GizmoOptionsImpl)auxObject;
-        
+
+        oldBoolValue = getProfileOnRun().getValue();
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
+        checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
+
+        oldBoolValue = getCpu().getValue();
         getCpu().assign(gizmoOptions.getCpu());
+        checkPropertyChange(CPU_PROP, oldBoolValue, getCpu().getValue());
+
+        oldBoolValue = getMemory().getValue();
         getMemory().assign(gizmoOptions.getMemory());
+        checkPropertyChange(MEMORY_PROP, oldBoolValue, getMemory().getValue());
+
+        oldBoolValue = getSynchronization().getValue();
         getSynchronization().assign(gizmoOptions.getSynchronization());
+        checkPropertyChange(SYNCHRONIZATION_PROP, oldBoolValue, getSynchronization().getValue());
+
+        oldDValue = getDataProviderValue();
         getDataProvider().assign(gizmoOptions.getDataProvider());
+        checkPropertyChange(DATA_PROVIDER_PROP, oldDValue, getDataProviderValue());
     }
 
     
