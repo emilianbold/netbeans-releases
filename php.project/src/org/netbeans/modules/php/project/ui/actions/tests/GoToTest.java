@@ -124,7 +124,8 @@ public class GoToTest implements TestLocator {
                 int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
                 assert lastIndexOf != -1;
                 String srcClassName = clsName.substring(0, lastIndexOf);
-                Collection<? extends FileObject> files = unitSupport.filesForClassName(testFo, srcClassName);
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(
+                        sources, srcClassName);
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(sources, fileObject)) {
@@ -144,7 +145,8 @@ public class GoToTest implements TestLocator {
             Collection<? extends String> classNames = unitSupport.getClassNames(srcFo);
             for (String clsName : classNames) {
                 String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
-                Collection<? extends FileObject> files = unitSupport.filesForClassName(srcFo, testClsName);
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(
+                        tests, testClsName);
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(tests, fileObject)) {
