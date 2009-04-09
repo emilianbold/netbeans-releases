@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,21 +31,17 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.railsprojects.server;
 
-import java.util.regex.Pattern;
-import junit.framework.TestCase;
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 
 /**
- *
  * @author Erno Mononen
  */
 public class RubyServerTest extends RubyTestBase {
@@ -55,31 +51,31 @@ public class RubyServerTest extends RubyTestBase {
     }
 
     public void testMongrelStartup() throws Exception {
-
         String mongrel = "** Mongrel available at 127.0.0.1:3000 **";
         String mongrel_with_version_nro = "** Mongrel 1.1.3 available at 127.0.0.1:3000 **";
         String mongrel_with_version_nro2 = "** Mongrel 1.1.3 available at 0.0.0.0:3000";
         String mongrel_dos_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\r\n";
         String mongrel_unix_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\n";
+        String mongrel_rails232 = "=> Ctrl-C to shutdown server";
 
         Mongrel mongrelInstance = new Mongrel(RubyPlatformManager.addPlatform(setUpRubyWithGems()), "1.1.3");
-        
+
         assertTrue(mongrelInstance.isStartupMsg(mongrel));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro2));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_dos_line_end));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_unix_line_end));
-
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_rails232));
     }
 
     public void testWebrickStartup() throws Exception {
-
         String webBrick = "=> Rails application started on http://0.0.0.0:3000";
         String webBrick2 = "=> Rails application started on http://localhost:3000";
         String webBrick_dos_line_end = "=> Rails application started on http://localhost:3000 \r\n";
         String webBrick_unix_line_end = "=> Rails application started on http://localhost:3000\n";
         String webBrick_rails210 = "=> Rails 2.1.0 application started on http://0.0.0.0:3000";
-        
+        String webBrick_rails232 = "[2009-04-09 12:19:16] INFO  WEBrick::HTTPServer#start: pid=15603 port=3000";
+
         WEBrick webrickInstance = new WEBrick(RubyPlatformManager.addPlatform(setUpRubyWithGems()));
 
         assertTrue(webrickInstance.isStartupMsg(webBrick));
@@ -87,7 +83,7 @@ public class RubyServerTest extends RubyTestBase {
         assertTrue(webrickInstance.isStartupMsg(webBrick_dos_line_end));
         assertTrue(webrickInstance.isStartupMsg(webBrick_unix_line_end));
         assertTrue(webrickInstance.isStartupMsg(webBrick_rails210));
-
+        assertTrue(webrickInstance.isStartupMsg(webBrick_rails232));
     }
 
     public void testIsAddressInUseMsg(){

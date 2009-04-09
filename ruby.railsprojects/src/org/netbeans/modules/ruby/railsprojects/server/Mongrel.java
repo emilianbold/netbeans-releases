@@ -65,7 +65,11 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     /**
      * The pattern for recognizing when an instance of Mongrel has started.
      */
-    private static final Pattern PATTERN = Pattern.compile("\\bMongrel.+available at.+", Pattern.DOTALL);
+    private static final Pattern[] STARTUP_PATTERNS = {
+        Pattern.compile(".*Mongrel.+available at.+", Pattern.DOTALL),
+        // rails 2.3
+        Pattern.compile(".*Ctrl-C to shutdown server.*", Pattern.DOTALL)
+    };
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
     private final RubyPlatform platform;
     private final String version;
@@ -108,7 +112,12 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     }
 
     public boolean isStartupMsg(String outputLine) {
-        return PATTERN.matcher(outputLine).find();
+        for (Pattern pattern : STARTUP_PATTERNS) {
+            if (pattern.matcher(outputLine).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<RailsApplication> getApplications() {

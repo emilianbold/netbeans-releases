@@ -64,7 +64,11 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     /**
      * The pattern for recognizing when an instance of WEBrick has started.
      */
-    private static final Pattern PATTERN = Pattern.compile("\\bRails.*application started on.+", Pattern.DOTALL);
+    private static final Pattern[] STARTUP_PATTERNS = {
+        Pattern.compile(".*Rails.*application started on.+", Pattern.DOTALL),
+        // rails 2.3
+        Pattern.compile(".*WEBrick::HTTPServer#start:.*pid=.+", Pattern.DOTALL),
+    };
     
     private final RubyPlatform platform;
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
@@ -105,7 +109,12 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     }
 
     public boolean isStartupMsg(String outputLine) {
-        return PATTERN.matcher(outputLine).find();
+        for (Pattern pattern : STARTUP_PATTERNS) {
+            if (pattern.matcher(outputLine).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getDisplayName() {
