@@ -262,6 +262,8 @@ public class IssuePanel extends javax.swing.JPanel {
         oldCommentCount = newCommentCount;
         commentsPanel.setIssue(issue);
         attachmentsPanel.setIssue(issue);
+        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         if (force) {
             addCommentArea.setText(""); // NOI18N
         }
