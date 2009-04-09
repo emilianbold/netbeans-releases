@@ -117,9 +117,9 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 new SoapClientSaasBean(wsm, p, JavaUtil.toJaxwsOperationInfos(wsm, p));
                 return true;
             } catch (Exception e) {
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, new IOException(
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, 
                     NbBundle.getMessage(CodeSetupPanel.class, "WARN_UnsupportedDropTarget")
-                ));
+                );
             }
         }
         return false;

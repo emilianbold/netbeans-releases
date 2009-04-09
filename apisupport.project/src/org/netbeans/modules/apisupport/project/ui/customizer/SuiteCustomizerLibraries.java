@@ -195,7 +195,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (project != null) {
             if (thisPrj.getProjectDirectory().equals(project.getProjectDirectory())) {
                 if (showMessages)
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddMyself")));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_TryingToAddMyself")));
                 return;
             }
             NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
@@ -204,7 +204,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
                     FileObject otherSuiteDir = FileUtil.toFileObject(sprv.getSuiteDirectory());
                     if (showMessages) {
-                        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UIUtil.class, "MSG_AddSuiteInstead", ProjectUtils.getInformation(project).getDisplayName(), Util.getDisplayName(otherSuiteDir)), NotifyDescriptor.YES_NO_OPTION);
+                        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AddSuiteInstead", ProjectUtils.getInformation(project).getDisplayName(), Util.getDisplayName(otherSuiteDir)), NotifyDescriptor.YES_NO_OPTION);
                         DialogDisplayer.getDefault().notify(confirmation);
                         if (confirmation.getValue() == NotifyDescriptor.YES_OPTION) {
                             try {
@@ -221,7 +221,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     File clusterDir = ClusterUtils.getClusterDirectory(project);
                     if (libChildren.findCluster(clusterDir) != null) {
                         if (showMessages)
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
                         return;
                     }
                     initNodes();
@@ -229,8 +229,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     libChildren.setMergedKeys();
                     return;
                 } else if (nmtp.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
-                    if (showMessages)
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNBORGModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                    assert false : "Trying to add NB.org module";
                     return;
                 }
             }
@@ -239,7 +238,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 File clusterDir = sprv.getClusterDirectory();
                 if (libChildren.findCluster(clusterDir) != null) {
                     if (showMessages)
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
                     return;
                 }
                 initNodes();
@@ -247,9 +246,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 libChildren.setMergedKeys();
                 return;
             }
-            // not a netbeans module
-            if (showMessages)
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+            assert false : "not a netbeans module";
         }
         return;
     }
@@ -683,8 +680,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private void addProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
         Project project = UIUtil.chooseProject(this);
-        if (project != null)
+        if (project != null) {
+            NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
+            if (nmtp != null && nmtp.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(
+                        SuiteCustomizerLibraries.class, "MSG_TryingToAddNBORGModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                return;
+            } else {
+                SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
+                if (sprv == null) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(
+                            SuiteCustomizerLibraries.class, "MSG_TryingToAddNonNBModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                    return;
+                }
+            }
             addProjectCluster(ClusterInfo.create(project, true),true);
+        }
     }//GEN-LAST:event_addProjectButtonActionPerformed
 
     private void addClusterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClusterButtonActionPerformed
@@ -692,7 +703,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (ci != null) {
             if (libChildren.findCluster(ci.getClusterDir()) != null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(UIUtil.class, "MSG_ClusterAlreadyOnClusterPath",
+                        NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_ClusterAlreadyOnClusterPath",
                         ci.getClusterDir())));
                 return;
             }
@@ -1661,7 +1672,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         String mdn = m.getDisplayName();
-        String mc = libChildren.findCluster(m.getCluster()).getDisplayName();
+        ClusterNode node = libChildren.findCluster(m.getCluster());
+        if (node == null) {
+            // #162155: dirty hack of race conditions; proper solution would be to copy everything for doUpdateDependencyWarnings,
+            // but null here means another refresh is in progress, thus it is safe to return here, last refresh in row will get everything straight.
+            return false;
+        }
+        String mc = node.getDisplayName();
         deps.addAll(m.getModuleDependencies());
         boolean ret = false;
         for (Dependency d : deps) {
@@ -1692,7 +1709,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
             String ddn = dep.getDisplayName();
             if (excluded.contains(dep)) {
-                String dc = libChildren.findCluster(dep.getCluster()).getDisplayName();
+                node = libChildren.findCluster(dep.getCluster());
+                if (node == null) // #162155
+                    return false;
+                String dc = node.getDisplayName();
                 // currently the only fixable error
                 FixInfo.putFixable(fi, cnb, new String[] {"ERR_excluded_dep", mdn, mc, ddn, dc});
                 // include added module again and see what happens...
@@ -1737,8 +1757,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             if (!found) {
                 if (wouldBeProvider != null) {
+                    node = libChildren.findCluster(wouldBeProvider.getCluster());
+                    if (node == null) // #162155
+                        return false;
                     String[] msg = new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
-                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()};
+                        wouldBeProvider.getDisplayName(), node.getDisplayName()};
                     if (possibleProviders.size() == 1) {
                         // exactly one (disabled) provider, can be fixed automatically
                         excluded.remove(wouldBeProvider);

@@ -167,13 +167,13 @@ public final class ClusterInfo {
         NbModuleProvider nbmp = project.getLookup().lookup(NbModuleProvider.class);
         SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
         File clusterDir;
-        if (nbmp != null) {
+        if (sprv != null) {
+            clusterDir = sprv.getClusterDirectory();
+        } else if (nbmp != null) {
             if (nbmp.getModuleType() == NbModuleProvider.STANDALONE)
                 clusterDir = ClusterUtils.getClusterDirectory(project);
             else
                 throw new IllegalArgumentException(NO_NBORG_PROJECTS);
-        } else if (sprv != null) {
-            clusterDir = sprv.getClusterDirectory();
         } else {
             throw new IllegalArgumentException(NO_NBORG_PROJECTS);
         }

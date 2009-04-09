@@ -76,7 +76,7 @@ public final class DocumentSerializer {
     private Runnable loader = new Runnable () {
         public void run () {
             DataObjectContext context = DocumentSerializer.this.context;
-            if (context == null)
+            if (context == null || context.getProjectType() == null)
                 return;
 
             undoRedoManager.discardAllEdits ();
