@@ -205,9 +205,13 @@ public class BindingPanel extends SectionInnerPanel {
                 this.setVisible(false);
             }
         } else if (configVersion == null) {
-            PolicyModelHelper.setConfigVersion(binding,
-                (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
-                project);
+            if ((supportedConfigVersions != null) && (supportedConfigVersions.size() > 0)) {
+                PolicyModelHelper.setConfigVersion(binding,
+                    (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
+                    project);
+            } else {
+                PolicyModelHelper.setConfigVersion(binding, ConfigVersion.CONFIG_1_0, project);
+            }
         }
 
         addImmediateModifier(cfgVersionCombo);
