@@ -265,9 +265,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 url = null;
                 issueUrl = null;
                 for (KenaiFeature f : features) {
-                    if (!f.getName().equals("jira") && // NOI18N
-                            !f.getLocation().toString().contains(JIRA_SUBSTRING)) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
-                    {
+                    if (!KenaiService.Names.JIRA.equals(f.getService())) { 
                         return null;
                     }
                     url = f.getLocation().toString();
