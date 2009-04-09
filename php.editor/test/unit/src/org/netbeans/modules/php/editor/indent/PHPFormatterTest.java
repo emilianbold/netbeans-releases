@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.indent;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -54,7 +53,6 @@ public class PHPFormatterTest extends PHPTestBase {
         super(testName);
     }
 
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -71,72 +69,79 @@ public class PHPFormatterTest extends PHPTestBase {
         }
     }
 
-    public void testCommentsInStatements() throws Exception{
+     public void testSpacesAfterObjectRefereneces() throws Exception {
+        reformatFileContents("testfiles/formatting/real_life/spacesAfterObjectReferences.php");
+    }
+
+    public void testStatementsWithoutSpaces() throws Exception {
+        reformatFileContents("testfiles/formatting/real_life/statementsWithoutSpaces.php");
+    }
+
+    public void testCommentsInStatements() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/comments_in_statements.php");
     }
 
-    public void testIfElseStatement() throws Exception{
+    public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");
     }
 
-    public void testContinuedExpression() throws Exception{
+    public void testContinuedExpression() throws Exception {
         reformatFileContents("testfiles/formatting/continued_expression.php");
     }
 
-    public void testContinuedExpression2() throws Exception{
+    public void testContinuedExpression2() throws Exception {
         reformatFileContents("testfiles/formatting/continued_expression2.php");
     }
 
-    public void testIfelseNobrackets() throws Exception{
+    public void testIfelseNobrackets() throws Exception {
         reformatFileContents("testfiles/formatting/ifelse_nobrackets.php");
     }
-    
-    public void testMultilineFunctionHeader() throws Exception{
+
+    public void testMultilineFunctionHeader() throws Exception {
         reformatFileContents("testfiles/formatting/multiline_function_header.php");
     }
 
-    public void testSimpleClassDef() throws Exception{
+    public void testSimpleClassDef() throws Exception {
         reformatFileContents("testfiles/formatting/simple_class_def.php");
     }
 
-    public void testSwitchStmt() throws Exception{
+    public void testSwitchStmt() throws Exception {
         reformatFileContents("testfiles/formatting/switch_stmt.php");
     }
 
-    public void testArrays1() throws Exception{
+    public void testArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/arrays1.php");
     }
 
-    public void testArrays2() throws Exception{
+    public void testArrays2() throws Exception {
         reformatFileContents("testfiles/formatting/arrays2.php");
     }
 
-    public void testSubsequentQuotes() throws Exception{
+    public void testSubsequentQuotes() throws Exception {
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
     }
 
-    public void testMultilineString() throws Exception{
+    public void testMultilineString() throws Exception {
         reformatFileContents("testfiles/formatting/multiline_string.php");
     }
-    
-    public void testIfElseAlternativeSyntax() throws Exception{
+
+    public void testIfElseAlternativeSyntax() throws Exception {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
 
-    public void test161049() throws Exception{
+    public void test161049() throws Exception {
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
 
-    public void test162126() throws Exception{
+    public void test162126() throws Exception {
         reformatFileContents("testfiles/formatting/issue162126.php");
     }
-    
-    public void test159339_161408() throws Exception{
+
+    public void test159339_161408() throws Exception {
         reformatFileContents("testfiles/formatting/issues_159339_161408.php");
     }
 
     private void reformatFileContents(String file) throws Exception {
-        reformatFileContents(file, new IndentPrefs(2,2));
+        reformatFileContents(file, new IndentPrefs(2, 2));
     }
-
 }
