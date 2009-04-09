@@ -65,6 +65,8 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -356,6 +358,10 @@ public class LayerIndex extends Task {
             maxlength = Math.max(maxlength, shortenCNB(cnb).length());
         }
         PrintWriter pw = output != null ? new PrintWriter(output, "UTF-8") : null;
+        Map<String,String> virtualEntries = computeMIMELookupEntries(files.keySet());
+        updateMap(files, virtualEntries);
+        updateMap(positions, virtualEntries);
+        updateMap(labels, virtualEntries);
         SortedSet<String> layerPaths = new TreeSet<String>(new LayerPathComparator(positions));
         layerPaths.addAll(files.keySet());
         SortedSet<String> remaining = new TreeSet<String>(files.keySet());
@@ -364,6 +370,9 @@ public class LayerIndex extends Task {
         for (String path : layerPaths) {
             String cnb = files.get(path);
             String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), shortenPath(path));
+            if (virtualEntries.containsKey(path)) {
+                line += " (merged)";
+            }
             Integer pos = positions.get(path);
             if (pos != null) {
                 line += String.format(" @%d", pos);
@@ -389,6 +398,53 @@ public class LayerIndex extends Task {
         }
         if (output != null) {
             log(output + ": layer index written");
+        }
+    }
+
+    /**
+     * Map from virtual file paths to original literal file path.
+     * E.g. Editors/text/html/Popup/foo.instance -> Editors/Popup/foo.instance
+     * See ValidateLayerConsistencyTest.testFolderOrdering for comparison.
+     */
+    private Map<String,String> computeMIMELookupEntries(Set<String> files) {
+        Pattern editorFolderPattern = Pattern.compile("Editors/(application|text)/([^/]+)(.*/)");
+        Map<String,String> result = new HashMap<String,String>();
+        for (String editorFolder : files) {
+            Matcher m = editorFolderPattern.matcher(editorFolder);
+            if (!m.matches()) {
+                continue;
+            }
+            // $0="Editors/text/html/Popup/" $1="text" $2="html" $3="/Popup/"
+            List<String> prefixen = new ArrayList<String>(2);
+            prefixen.add("Editors" + m.group(3)); // "Editors/Popup/"
+            if (m.group(2).endsWith("+xml")) { // Editors/text/x-ant+xml/Popup/
+                prefixen.add("Editors/" + m.group(1) + "/xml" + m.group(3)); // Editors/text/xml/Popup/
+            }
+            for (String prefix : prefixen) {
+                for (String file : files) {
+                    if (file.startsWith(prefix)) { // "Editors/Popup/foo.instance"
+                        String basename = file.substring(prefix.length());
+                        if (basename.contains("/")) {
+                            // Would technically be correct to show, but usually irrelevant.
+                            continue;
+                        }
+                        String virtual = editorFolder + basename; // Editors/text/html/Popup/foo.instance
+                        if (!files.contains(virtual)) {
+                            result.put(virtual, file);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private <T> void updateMap(Map<String,T> map, Map<String,String> virtualEntries) {
+        for (Map.Entry<String,String> entry : virtualEntries.entrySet()) {
+            String orig = entry.getValue();
+            if (map.containsKey(orig)) {
+                map.put(entry.getKey(), map.get(orig));
+            }
         }
     }
 

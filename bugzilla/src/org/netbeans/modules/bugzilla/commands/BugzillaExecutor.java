@@ -82,6 +82,8 @@ public class BugzillaExecutor {
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions) {
         try {
+            cmd.setFailed(true);
+
             cmd.execute();
 
             cmd.setFailed(false);
@@ -106,11 +108,9 @@ public class BugzillaExecutor {
             return;
                 
         } catch(MalformedURLException me) {
-            cmd.setFailed(true); // should not happen
             cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
         } catch(IOException ioe) {
-            cmd.setFailed(true);
             cmd.setErrorMessage(ioe.getMessage());
 
             if(!handleExceptions) {
@@ -230,14 +230,15 @@ public class BugzillaExecutor {
             if (status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
-                if(html != null && !html.trim().equals("")) {                       // NOI18N
+                if(html != null && !html.trim().equals("")) {                   // NOI18N
+                    html = parseHtmlMessage(html);
                     final HtmlPanel p = new HtmlPanel();
-                    String label = NbBundle.getMessage(BugzillaExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()});
-                    p.setHtml(html, label);
+                    String label = NbBundle.getMessage(BugzillaExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
+                    p.setHtml(repository.getUrl(), html, label);
                     DialogDescriptor dialogDescriptor = 
                             new DialogDescriptor(
                                 p,
-                                NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"),
+                                NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"), // NOI18N
                                 true,
                                 new Object[] {NotifyDescriptor.CANCEL_OPTION},
                                 NotifyDescriptor.CANCEL_OPTION,
@@ -246,13 +247,41 @@ public class BugzillaExecutor {
                                 null);
 
                     DialogDisplayer.getDefault().notify(dialogDescriptor);
-    //                 XXX show in browser ?
-
                     return;
                 }
             }
             String msg = getMessage(ce);
             notifyErrorMessage(msg);
+        }
+
+        @SuppressWarnings("empty-statement")
+        private static String parseHtmlMessage(String html) {
+            int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
+            if(idxS < 0) {
+                return html;
+            }
+            int idx = idxS;
+            int idxE = html.indexOf("</div>", idx);                             // NOI18N
+            int levels = 1;
+            while(true) {
+                idx = html.indexOf("<div", idx + 1);                            // NOI18N
+                if(idx < 0 || idx > idxE) {
+                    break;
+                }
+                levels++;
+            }
+
+            idxE = idxS;
+            for (int i = 0; i < levels; i++) {
+                idxE = html.indexOf("</div>", idxE + 1);                        // NOI18N
+            }
+            idxE = idxE > 6 ? idxE + 6 : html.length();
+            html = html.substring(idxS, idxE);
+
+            // very nice
+            html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
+
+            return html;
         }
 
         static void notifyErrorMessage(String msg) {
@@ -279,7 +308,7 @@ public class BugzillaExecutor {
             protected boolean handle() {
                 boolean ret = repository.authenticate(errroMsg);
                 if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser"));
+                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
                 return ret;
             }
@@ -296,7 +325,7 @@ public class BugzillaExecutor {
             protected boolean handle() {
                 boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
                 if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser"));
+                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
                 return ret;
             }

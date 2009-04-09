@@ -680,41 +680,52 @@ public class BugzillaIssue extends Issue {
         addAttachment(file, null, description, null, true);
     }
 
-    void submitAndRefresh() {
+    boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        BugzillaCommand cmd = new BugzillaCommand() {
+        final RepositoryResponse[] rr = new RepositoryResponse[1];
+        BugzillaCommand submitCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 // submit
-                RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+                rr[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
                 // XXX evaluate rr
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
 
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
+        
+        BugzillaCommand refreshCmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refresh(rr.getTaskId(), true);
-
-                }
-                // it was the user who made the changes, so preserve the seen status if seen already
-                if (wasSeenAlready) {
-                    try {
-                        repository.getIssueCache().setSeen(getID(), true);
-                        // it was the user who made the changes, so preserve the seen status if seen already
-                    } catch (IOException ex) {
-                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    refresh(rr[0].getTaskId(), true);
                 }
             }
         };
-        repository.getExecutor().execute(cmd);
+        repository.getExecutor().execute(refreshCmd);
 
+        // it was the user who made the changes, so preserve the seen status if seen already
+        if (wasSeenAlready) {
+            try {
+                repository.getIssueCache().setSeen(getID(), true);
+                // it was the user who made the changes, so preserve the seen status if seen already
+            } catch (IOException ex) {
+                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
         if(wasNew) {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+        return true;
     }
 
     public boolean refresh() {

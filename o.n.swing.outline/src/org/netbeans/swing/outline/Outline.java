@@ -67,6 +67,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -307,9 +308,13 @@ public class Outline extends ETable {
             cachedRootVisible = val ? Boolean.TRUE : Boolean.FALSE;
         }
         if (val != isRootVisible()) {
-            //TODO - need to force a property change on the model,
-            //the layout cache doesn't have direct listener support
             getLayoutCache().setRootVisible(val);
+            if( getLayoutCache().getRowCount() > 0 ) {
+                TreePath rootPath = getLayoutCache().getPathForRow(0);
+                if( null != rootPath )
+                    getLayoutCache().treeStructureChanged(new TreeModelEvent(this, rootPath));
+            }
+            sortAndFilter();
             firePropertyChange("rootVisible", !val, val); //NOI18N
         }
     }

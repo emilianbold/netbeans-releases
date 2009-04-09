@@ -167,16 +167,6 @@ public class IssuePanel extends javax.swing.JPanel {
         this.issue = issue;
         initCombos();
         reloadForm(true);
-        GroupLayout layout = (GroupLayout)getLayout();
-        if (issue.getTaskData().isNew()) {
-            if (productCombo.getParent() == null) {
-                layout.replace(productField, productCombo);
-            }
-        } else {
-            if (productField.getParent() == null) {
-                layout.replace(productCombo, productField);
-            }
-        }
     }
 
     private int oldCommentCount;
@@ -189,6 +179,16 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
+        GroupLayout layout = (GroupLayout)getLayout();
+        if (isNew) {
+            if (productCombo.getParent() == null) {
+                layout.replace(productField, productCombo);
+            }
+        } else {
+            if (productField.getParent() == null) {
+                layout.replace(productCombo, productField);
+            }
+        }
         headerLabel.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
         addCommentLabel.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
@@ -262,6 +262,8 @@ public class IssuePanel extends javax.swing.JPanel {
         oldCommentCount = newCommentCount;
         commentsPanel.setIssue(issue);
         attachmentsPanel.setIssue(issue);
+        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         if (force) {
             addCommentArea.setText(""); // NOI18N
         }
@@ -463,7 +465,12 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, JComboBox combo) {
-        storeFieldValue(field, combo.getSelectedItem().toString());
+        Object value = combo.getSelectedItem();
+        // It (normally) should not happen that value is null, but issue 159804 shows that
+        // some strange configurations (or other bugs) can lead into this situation
+        if (value != null) {
+            storeFieldValue(field, value.toString());
+        }
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, JTextComponent textComponent) {
@@ -1269,9 +1276,10 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                boolean ret = false;
                 try {
                     submitting = true;
-                    issue.submitAndRefresh();
+                    ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
                             if (attachment.description.trim().length() == 0) {
@@ -1285,7 +1293,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 } finally {
                     submitting = false;
                     handle.finish();
-                    reloadFormInAWT(true);
+                    if(ret) {
+                        reloadFormInAWT(true);
+                    }
                 }
             }
         });

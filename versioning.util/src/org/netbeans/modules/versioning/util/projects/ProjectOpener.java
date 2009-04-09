@@ -131,7 +131,6 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         descriptor.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
         descriptor.setOptions(options);
         descriptor.setClosingOptions(options);
-        descriptor.setHelpCtx(new HelpCtx(ProjectOpener.class));
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectOpener.class, "ACSD_CheckoutCompleted_Dialog")); // NOI18N
         EventQueue.invokeLater(new Runnable() {

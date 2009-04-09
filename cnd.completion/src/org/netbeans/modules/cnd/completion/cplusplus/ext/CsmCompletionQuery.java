@@ -1917,10 +1917,10 @@ abstract public class CsmCompletionQuery {
 
         private CsmType findBuiltInFunctionReturnType(String mtdName, int tokenOffset) {
             CsmType out = null;
-            if ("typeid".contentEquals(mtdName)) {
-                CsmClassifier cls = getFinder().getExactClassifier("std::type_info");
+            if ("typeid".contentEquals(mtdName)) { // NOI18N
+                CsmClassifier cls = getFinder().getExactClassifier("std::type_info"); // NOI18N
                 if (cls == null) {
-                    CsmNamespace ns = findExactNamespace("std", tokenOffset);
+                    CsmNamespace ns = findExactNamespace("std", tokenOffset); // NOI18N
                     if (ns != null) {
                         List<CsmClassifier> findClasses = getFinder().findClasses(ns, mtdName, true, false);
                         for (CsmClassifier csmClassifier : findClasses) {
