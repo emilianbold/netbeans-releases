@@ -122,6 +122,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         refreshCheckBox.setVisible(false);
         noContentPanel.setVisible(false);
 
+        bugAssigneeCheckBox.setOpaque(false);
+        reporterCheckBox.setOpaque(false);
+        ccCheckBox.setOpaque(false);
+        commenterCheckBox.setOpaque(false);
+
         summaryComboBox.setModel(new DefaultComboBoxModel());
         commentComboBox.setModel(new DefaultComboBoxModel());
         keywordsComboBox.setModel(new DefaultComboBoxModel());
