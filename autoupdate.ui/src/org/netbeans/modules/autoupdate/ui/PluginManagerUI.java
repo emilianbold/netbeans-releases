@@ -96,6 +96,10 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public static final String[] TAB_NAMES = { "update", "available", "local", "installed" }; //NOI18N
     private final int initialTabToSelect;
     
+    public PluginManagerUI (JButton closeButton ) {
+        this( closeButton, null );
+    }
+    
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton, Object initialTab) {
         this.closeButton = closeButton;
