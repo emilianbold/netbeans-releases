@@ -76,6 +76,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -111,6 +112,7 @@ public class KenaiSearchPanel extends JPanel {
         panelType = type;
         multiSelection = multiSel;
         initComponents();
+        kenaiProjectsList.setUI(new TreeListUI());
 
         noSearchLabelPanel = createLabelPanel(noSearchResultsLabel);
         noMatchingLabelPanel = createLabelPanel(noMatchingResultsLabel);
