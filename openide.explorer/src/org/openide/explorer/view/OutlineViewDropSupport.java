@@ -73,9 +73,6 @@ import javax.swing.tree.TreePath;
 final class OutlineViewDropSupport implements DropTargetListener, Runnable {
     final static protected int FUSSY_POINTING = 3;
     final static private int DELAY_TIME_FOR_EXPAND = 1000;
-    final static private int SHIFT_DOWN = -1;
-    final static private int SHIFT_RIGHT = 0;//10;
-    final static private int SHIFT_LEFT = 0;//15;
 
     /** true if support is active, false otherwise */
     boolean active = false;
@@ -242,7 +239,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
             if (pointAt == DragDropUtilities.NODE_UP) {
                 lowerNodeIdx = indexCookie.indexOf(getNodeForDrop(p));
                 upperNodeIdx = lowerNodeIdx - 1;
-                dropIndex = upperNodeIdx;
+                dropIndex = lowerNodeIdx;
             } else if (pointAt == DragDropUtilities.NODE_DOWN) {
                 upperNodeIdx = indexCookie.indexOf(getNodeForDrop(p));
                 lowerNodeIdx = upperNodeIdx + 1;
@@ -300,28 +297,18 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         } else {
             // line and selection of parent if any
             if (pointAt == DragDropUtilities.NODE_UP) {
-                Line2D line = new Double(
-                        0, nodeArea.y + SHIFT_DOWN, table.getWidth(), nodeArea.y + SHIFT_DOWN
-                    );
+                Line2D line = new Double( 0, nodeArea.y, table.getWidth(), nodeArea.y );
                 convertBoundsAndSetDropLine(line);
 
                 // enlagre node area with area for line
-                Rectangle lineArea = new Rectangle(
-                        0, (nodeArea.y + SHIFT_DOWN) - 3, table.getWidth() + SHIFT_LEFT, 5
-                    );
+                Rectangle lineArea = new Rectangle( 0, nodeArea.y - 5, table.getWidth(), 10 );
                 nodeArea = (Rectangle) nodeArea.createUnion(lineArea);
             } else {
-                Line2D line = new Double(
-                        0, nodeArea.y + nodeArea.height + SHIFT_DOWN, table.getWidth(),
-                        nodeArea.y + nodeArea.height + SHIFT_DOWN
-                    );
+                Line2D line = new Double( 0, nodeArea.y + nodeArea.height, table.getWidth(), nodeArea.y + nodeArea.height );
                 convertBoundsAndSetDropLine(line);
 
                 // enlagre node area with area for line
-                Rectangle lineArea = new Rectangle(
-                        0, nodeArea.y + nodeArea.height, table.getWidth(),
-                        SHIFT_DOWN + 3
-                    );
+                Rectangle lineArea = new Rectangle( 0, nodeArea.y + nodeArea.height - 5, table.getWidth(), 10 );
                 nodeArea = (Rectangle) nodeArea.createUnion(lineArea);
             }
         }
@@ -357,7 +344,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
      * because some parts was not repainted correctly.
      * @param Rectangle r rectangle which will be repainted.*/
     private void repaint(Rectangle r) {
-        table.repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
+        table.getParent().repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
     }
 
     /** Converts line's bounds by the bounds of the root pane. Drop glass pane

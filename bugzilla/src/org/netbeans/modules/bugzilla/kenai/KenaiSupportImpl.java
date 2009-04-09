@@ -55,6 +55,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 
 /**
  *
@@ -76,9 +77,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         try {
             KenaiFeature[] features = project.getFeatures(Type.ISSUES);
             for (KenaiFeature f : features) {
-                if (!f.getName().equals("bz") &&   // NOI18N
-                        !f.getLocation().toString().contains("kenai.com/bugzilla")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505 // NOI18N
-                {
+                if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
                     return null;
                 }
                 String host = f.getLocation().getHost();
