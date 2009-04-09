@@ -306,11 +306,15 @@ public class MavenSettings  {
     private static class RegExpConsumer implements StreamConsumer {
 
         private static final Pattern PATTERN = Pattern.compile("^Maven version:(.*)");
+        private static final Pattern PATTERN_210 = Pattern.compile("^Apache Maven ([0-9\\.]*) .*");
         boolean hasMavenAround = false;
         String version = null;
 
         public void consumeLine(String line) {
             Matcher match = PATTERN.matcher(line);
+            if (!match.matches()) {
+                match = PATTERN_210.matcher(line);
+            }
             if (match.matches()) {
                 hasMavenAround = true;
                 version = match.group(1);
