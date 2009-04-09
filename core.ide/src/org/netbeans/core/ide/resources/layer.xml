@@ -122,5 +122,10 @@ made subject to such option by the copyright holder.
         <folder name="Components">
             <file name="services.settings" url="services.settings"/>
         </folder>
+        <folder name="Groups">
+            <folder name="OpenedProjects">
+                <file name="services.wstcgrp" url="services.wstcgrp"/>
+            </folder>
+        </folder>
     </folder>
 </filesystem>
