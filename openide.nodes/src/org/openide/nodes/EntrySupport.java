@@ -156,7 +156,6 @@ abstract class EntrySupport {
             }
             boolean[] results = new boolean[2];
             for (;;) {
-                results[1] = isInitialized();
 
                 // initializes the ChildrenArray possibly calls
                 // addNotify if this is for the first time
@@ -170,6 +169,7 @@ abstract class EntrySupport {
                         // support was switched while we were waiting for access
                         return new Node[0];
                     }
+                    results[1] = inited;
                     nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();

@@ -82,6 +82,8 @@ public class BugzillaExecutor {
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions) {
         try {
+            cmd.setFailed(true);
+
             cmd.execute();
 
             cmd.setFailed(false);
@@ -106,11 +108,9 @@ public class BugzillaExecutor {
             return;
                 
         } catch(MalformedURLException me) {
-            cmd.setFailed(true); // should not happen
             cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
         } catch(IOException ioe) {
-            cmd.setFailed(true);
             cmd.setErrorMessage(ioe.getMessage());
 
             if(!handleExceptions) {
