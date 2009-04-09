@@ -193,8 +193,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         if (stmts.size() > 0){
             ASTNode firstNode = stmts.get(0);
             ASTNode lastNode = stmts.get(stmts.size() - 1);
-            int start = firstNonWSBwd(doc, firstNode.getStartOffset());
-            int end = firstNonWSFwd(doc, lastNode.getEndOffset());
+            int start = firstNonWSBwd(doc, firstNode.getStartOffset()) + 1;
+            int end = firstNonWSFwd(doc, lastNode.getEndOffset()) - 1;
             addIndentLevel(start, indentSize);
             addIndentLevel(end, -1 * indentSize);
         }
@@ -215,12 +215,31 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private void indentNonBlockStatement(ASTNode node) {
-        if (node != null && !(node instanceof Block)) {
-            int start = firstNonWSBwd(doc, node.getStartOffset());
-            int end = firstNonWSFwd(doc, node.getEndOffset());
-            addIndentLevel(start, indentSize);
-            addIndentLevel(end, -1 * indentSize);
+        if (node == null || node instanceof Block) {
+            return;
         }
+
+        // BEGIN AN UGLY HACK
+        // AST info does not allow to distinguish
+        // between "if" and "elseif"
+        if (node instanceof IfStatement) {
+            String ELSE_IF = "elseif"; //NOI18N
+            try {
+                if (doc.getLength() > node.getStartOffset() + ELSE_IF.length()
+                        && ELSE_IF.equals(doc.getText(node.getStartOffset(),
+                        ELSE_IF.length()))) {
+                    return;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        // END AN UGLY HACK
+
+        int start = firstNonWSBwd(doc, node.getStartOffset()) + 1;
+        int end = firstNonWSFwd(doc, node.getEndOffset()) - 1;
+        addIndentLevel(start, indentSize);
+        addIndentLevel(end, -1 * indentSize);
     }
 
     private static int firstNonWSBwd(BaseDocument doc, int offset){
