@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.wadl.model.impl;
 
 import java.io.IOException;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
 import org.netbeans.modules.websvc.rest.wadl.model.spi.ElementFactory;
 import org.netbeans.modules.websvc.rest.wadl.model.visitor.DefaultVisitor;
@@ -54,13 +54,13 @@ import org.w3c.dom.Element;
  * @author Ayub Khan
  */
 public class SyncReviewVisitor extends DefaultVisitor {
-    
+
     private SyncUnit unit;
-    
+
     /** Creates a new instance of SyncUnitReviewVisistor */
     public SyncReviewVisitor() {
     }
- 
+
     SyncUnit review(SyncUnit toReview) {
         this.unit = toReview;
         if (unit.getTarget() instanceof WadlComponent) {
@@ -69,7 +69,82 @@ public class SyncReviewVisitor extends DefaultVisitor {
         return unit;
     }
 
-    private void reviewMethod(Method target) {
+    @Override
+    public void visit(Doc target) {
+        review(target, WadlQNames.DOC.getQName());
+    }
+
+    @Override
+    public void visit(Application target) {
+        review(target, WadlQNames.APPLICATION.getQName());
+    }
+
+    @Override
+    public void visit(Grammars target) {
+        review(target, WadlQNames.GRAMMARS.getQName());
+    }
+
+    @Override
+    public void visit(Resources target) {
+        review(target, WadlQNames.RESOURCES.getQName());
+    }
+
+    @Override
+    public void visit(Resource target) {
+        review(target, WadlQNames.RESOURCE.getQName());
+    }
+
+    @Override
+    public void visit(ResourceType target) {
+        review(target, WadlQNames.RESOURCE_TYPE.getQName());
+    }
+
+    @Override
+    public void visit(Method target) {
+        review(target, WadlQNames.METHOD.getQName());
+    }
+
+    @Override
+    public void visit(Request target) {
+        review(target, WadlQNames.REQUEST.getQName());
+    }
+
+    @Override
+    public void visit(Response target) {
+        review(target, WadlQNames.RESPONSE.getQName());
+    }
+
+    @Override
+    public void visit(Param target) {
+        review(target, WadlQNames.PARAM.getQName());
+    }
+
+    @Override
+    public void visit(Option target) {
+        review(target, WadlQNames.OPTION.getQName());
+    }
+
+    @Override
+    public void visit(Link target) {
+        review(target, WadlQNames.LINK.getQName());
+    }
+
+    @Override
+    public void visit(Include target) {
+        review(target, WadlQNames.INCLUDE.getQName());
+    }
+
+    @Override
+    public void visit(Representation target) {
+        review(target, WadlQNames.REPRESENTATION.getQName());
+    }
+
+    @Override
+    public void visit(Fault target) {
+        review(target, WadlQNames.FAULT.getQName());
+    }
+
+    private void review(WadlComponent target, QName name) {
         if (unit.getToAddList().size() > 0 || unit.getToRemoveList().size() > 0) {
             SyncUnit reviewed = new SyncUnit(target.getParent());
             ChangeInfo change = unit.getLastChange();
@@ -78,21 +153,17 @@ public class SyncReviewVisitor extends DefaultVisitor {
             change.setParentComponent(target.getParent());
             reviewed.addChange(change);
             reviewed.addToRemoveList(target);
-            reviewed.addToAddList(createMethod(target.getParent(), peer));
+            reviewed.addToAddList(create(target.getParent(), peer, name));
             unit = reviewed;
         }
     }
-    
-    private Method createMethod(WadlComponent parent, Element e) {
-        ElementFactory factory = ElementFactoryRegistry.getDefault().get(WadlQNames.METHOD.getQName());
+
+    private WadlComponent create(WadlComponent parent, Element e, QName name) {
+        ElementFactory factory = ElementFactoryRegistry.getDefault().get(name);
         WadlComponent component = factory.create(parent, e);
         if (component == null) {
-            throw new IllegalArgumentException(new IOException("Cannot create operation."));
+            throw new IllegalArgumentException(new IOException("Cannot create Wadl component: " + name.getLocalPart()));
         }
-        return (Method) component;
-    }
-    
-    public void visit(Method target) {
-        reviewMethod(target);
+        return component;
     }
 }
