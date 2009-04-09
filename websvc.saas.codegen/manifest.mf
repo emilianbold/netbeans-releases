@@ -3,5 +3,4 @@ OpenIDE-Module: org.netbeans.modules.websvc.saas.codegen
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/saas/codegen/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Recommends: org.netbeans.modules.websvc.saas.codegen.java
 

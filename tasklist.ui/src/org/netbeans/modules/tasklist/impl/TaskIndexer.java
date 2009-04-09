@@ -77,6 +77,10 @@ public class TaskIndexer extends CustomIndexer {
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         TaskManagerImpl tm = TaskManagerImpl.getInstance();
+        if( !tm.isObserved() ) {
+            tm.makeCacheDirty();
+            return;
+        }
         TaskFilter filter = tm.getFilter();
         TaskScanningScope scope = tm.getScope();
         ArrayList<FileTaskScanner> scanners = null;
@@ -89,6 +93,7 @@ public class TaskIndexer extends CustomIndexer {
                         if( filter.isEnabled(s) ) {
                             s.notifyPrepare();
                             scanners.add(s);
+                            LOG.fine("Using FileTaskScanner: " + s); //NOI18N
                         }
                     }
                 }
