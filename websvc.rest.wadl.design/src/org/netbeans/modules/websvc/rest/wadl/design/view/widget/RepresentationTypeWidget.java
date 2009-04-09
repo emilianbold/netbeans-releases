@@ -93,6 +93,8 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
         removeAction = new RemoveBodyElementAction(Collections.singleton(rep), model);
         removeAction.addPropertyChangeListener((PropertyChangeListener) parent);
         initUI();
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
 
     @Override

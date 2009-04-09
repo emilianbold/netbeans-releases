@@ -74,7 +74,6 @@ import org.netbeans.modules.websvc.rest.wadl.design.view.widget.ListMethodsWidge
 import org.netbeans.modules.websvc.rest.wadl.design.view.widget.ResourcesWidget;
 import org.netbeans.modules.websvc.rest.wadl.design.view.widget.TabImageWidget;
 import org.netbeans.modules.websvc.rest.wadl.model.Resources;
-import org.netbeans.modules.xml.xam.Model;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -199,7 +198,7 @@ public class DesignView extends JPanel {
 
         // vlv: print
         getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-    }
+        }
 //    
 //    public static ListMethodsWidget getListMethodsWidget() {
 //        return listWidget;

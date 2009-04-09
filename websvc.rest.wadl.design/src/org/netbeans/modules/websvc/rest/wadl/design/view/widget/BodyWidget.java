@@ -92,7 +92,8 @@ public class BodyWidget<T extends WadlComponent> extends AbstractTitledWidget im
         addAction = new AddBodyElementAction(type, parent, wadlModel);
         addAction.addPropertyChangeListener(this);
         initUI();
-        setExpanded(false);
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
 
     public WadlModel getModel() {
@@ -208,12 +209,14 @@ public class BodyWidget<T extends WadlComponent> extends AbstractTitledWidget im
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        boolean expand = false;
         if (evt.getPropertyName().equals(AddBodyElementAction.ADD_BODYELEMENT)) {
             if (evt.getNewValue() instanceof Representation) {
                 try {
                     Representation m = (Representation) evt.getNewValue();
                     RepresentationWidget repWidget = new RepresentationWidget(getObjectScene(), this, m, getModel());
                     getContentWidget().addChild(repWidget);
+                    expand = true;
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -222,6 +225,7 @@ public class BodyWidget<T extends WadlComponent> extends AbstractTitledWidget im
                     Fault m = (Fault) evt.getNewValue();
                     FaultWidget faultWidget = new FaultWidget(getObjectScene(), this, m, getModel());
                     getContentWidget().addChild(faultWidget);
+                    expand = true;
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -239,7 +243,11 @@ public class BodyWidget<T extends WadlComponent> extends AbstractTitledWidget im
                 }
             }
             getContentWidget().removeChildren(removeList);
+            expand = true;
         }
         getScene().validate();
+        if(expand) {
+            expandWidget();
+        }
     }
 }

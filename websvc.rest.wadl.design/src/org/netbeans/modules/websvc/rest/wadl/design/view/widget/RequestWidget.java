@@ -77,6 +77,8 @@ public class RequestWidget extends WadlComponentWidget implements TabWidget {
                   model.getFactory().createRequest(), model);
         this.method = method;
         initUI();
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
 
     @Override

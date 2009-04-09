@@ -90,7 +90,7 @@ public class ResourcesWidget extends WadlComponentWidget implements PropertyChan
                     addAction,
                 })));
         initUI();
-        setExpanded(false);
+        setExpanded(true);
     }
 
     public Resources getResources() {
@@ -153,12 +153,14 @@ public class ResourcesWidget extends WadlComponentWidget implements PropertyChan
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        boolean expand = false;
         if (evt.getPropertyName().equals(AddResourceAction.ADD_RESOURCE)) {
             try {
                 Resource r = (Resource) evt.getNewValue();
                 ResourceWidget methodWidget = new ResourceWidget(getObjectScene(), this,
                         r, getModel());
                 getContentWidget().addChild(methodWidget);
+                expand = true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -174,7 +176,11 @@ public class ResourcesWidget extends WadlComponentWidget implements PropertyChan
                 }
             }
             getContentWidget().removeChildren(removeList);
+            expand = true;
         }
         getScene().validate();
+        if(expand) {
+            expandWidget();
+        }
     }
 }

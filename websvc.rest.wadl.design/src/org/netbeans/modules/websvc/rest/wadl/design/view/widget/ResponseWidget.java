@@ -79,6 +79,8 @@ public class ResponseWidget extends WadlComponentWidget implements TabWidget {
                   model.getFactory().createResponse(), model);
         this.method = method;
         initUI();
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
 
     public Response getResponse() {
