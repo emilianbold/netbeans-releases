@@ -92,7 +92,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
             if (parameterList.size() > 0) {
                 for (int i = 0, n = parameterList.size(); i < n; i++) {
                     if (i > 0) {
-                        sb.append(",");
+                        sb.append(", ");
                     }
                     sb.append(parameterList.get(i));
                 }

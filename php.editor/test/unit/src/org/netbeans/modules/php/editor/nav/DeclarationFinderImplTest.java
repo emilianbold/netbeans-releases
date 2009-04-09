@@ -2172,18 +2172,17 @@ public class DeclarationFinderImplTest extends TestBase {
 
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
         final DeclarationLocation[] found = new DeclarationLocation[1];
+        final ParserResult[] parserResult = new ParserResult[1];
         performTest(code, new UserTask() {
 
             public void cancel() {}
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-
-                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                found[0] = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
-
+                 parserResult[0] = (ParserResult) resultIterator.getParserResult();
             }
         });
+        found[0] = DeclarationFinderImpl.findDeclarationImpl(parserResult[0], caretOffset);
         assertNotNull(found[0]);
         assertNotNull(found[0].getFileObject());
         Set<Golden> result = new HashSet<Golden>();

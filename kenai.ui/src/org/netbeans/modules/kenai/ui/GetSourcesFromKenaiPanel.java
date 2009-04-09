@@ -77,6 +77,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -556,13 +557,13 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             String serviceName = featureItem.feature.getService(); // XXX service or name
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetSourcesFromKenaiPanel.RepositoryLabel");
-            if (Utilities.SVN_REPO.equals(serviceName)) {
+            if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                 enableFolderToGetUI(true);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                         "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
                 projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
                         "; Subversion " + repositoryText + ")"); // NOI18N
-            } else if (Utilities.HG_REPO.equals(serviceName)) {
+            } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
                 enableFolderToGetUI(false);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                         "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText"));
