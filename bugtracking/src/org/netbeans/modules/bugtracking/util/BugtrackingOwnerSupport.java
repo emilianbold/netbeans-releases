@@ -368,6 +368,7 @@ public class BugtrackingOwnerSupport {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 
         final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
+        selectorBuilder.setDisplayFormForExistingRepositories(true);
         selectorBuilder.setExistingRepositories(repos);
         selectorBuilder.setBugtrackingConnectors(connectors);
         selectorBuilder.setPreselectedRepository(suggestedRepo);
