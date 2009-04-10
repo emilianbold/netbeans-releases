@@ -174,10 +174,7 @@ public class RepositoryFormPanel extends JPanel {
             return false;
         }
 
-        if (selectedFormController != null) {
-            assert formDataListener != null;
-            selectedFormController.removePropertyChangeListener(formDataListener);
-        }
+        stopListeningOnController();
 
         String cardName = getCardName(repository);
         BugtrackingController controller = repository.getController();
@@ -192,10 +189,28 @@ public class RepositoryFormPanel extends JPanel {
         selectedFormController = controller;
         selectedRepository = repository;
 
-        selectedFormController.addPropertyChangeListener(formDataListener);
+        startListeningOnController();
         checkDataValidity();
 
         return firstTimeUse;
+    }
+
+    private void startListeningOnController() {
+        selectedFormController.addPropertyChangeListener(formDataListener);
+    }
+
+    private void stopListeningOnController() {
+        if (selectedFormController != null) {
+            assert formDataListener != null;
+            selectedFormController.removePropertyChangeListener(formDataListener);
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+
+        stopListeningOnController();
     }
 
     private static String getCardName(Repository repository) {
