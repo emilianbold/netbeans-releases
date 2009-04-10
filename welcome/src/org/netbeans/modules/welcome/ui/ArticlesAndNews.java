@@ -49,7 +49,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.CombinationRSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeed;
@@ -65,7 +64,7 @@ class ArticlesAndNews extends RSSFeedReaderPanel {
 
     private RSSFeed feed;
 
-    private static final int MAX_ARTICLES_COUNT = 4;
+    private static final int MAX_ARTICLES_COUNT = 3;
 
     public ArticlesAndNews() {
         super( "ArticlesAndNews", true ); // NOI18N
@@ -94,7 +93,8 @@ class ArticlesAndNews extends RSSFeedReaderPanel {
         WebLink articles = new WebLink( "AllArticles", false ); // NOI18N
         BundleSupport.setAccessibilityProperties( articles, "AllArticles" ); //NOI18N
 
-        JPanel panel = new BackgroundPanel( new GridBagLayout() );
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque(false);
 
         panel.add( news, new GridBagConstraints(0,1,1,1,0.0,0.0,
                 GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,

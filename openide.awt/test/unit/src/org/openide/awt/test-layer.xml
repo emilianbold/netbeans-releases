@@ -79,6 +79,19 @@ made subject to such option by the copyright holder.
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myContextAction'/>
                     <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
                 </file>
+                <file name="testExtraProperties.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myAction'/>
+                    <attr name='displayName' stringvalue='Name1'/>
+                    <attr name='ShortDescription' stringvalue='Short Desc1'/>
+                    <attr name='menuText' stringvalue='Menu Text1'/>
+                    <attr name='popupText' stringvalue='Popup Text1'/>
+                </file>
+                <file name="testDisplayNameDiffer.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myNamedAction'/>
+                    <attr name='displayName' stringvalue='Name1'/>
+                </file>
             </folder>
         </folder>
     </folder> 

@@ -4,9 +4,9 @@
 
 <% if (Boolean.parseBoolean("true")) {
 %>
-<table style="font-size: 12pt;
+<table style="font-size: 12pt; 
        font-weight: bold;
-       border: 1pt;"
+       border: 1pt;" 
        title="TITULEK"
        rules="groups">
     <tr>

@@ -394,7 +394,11 @@ public final class NbMavenProjectImpl implements Project {
             }
             oldProject = null;
             long endLoading = System.currentTimeMillis();
-            Logger.getLogger(NbMavenProjectImpl.class.getName()).fine( "Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
+            Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
+            logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
+            if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
+                logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
+            }
         }
 
         return project;

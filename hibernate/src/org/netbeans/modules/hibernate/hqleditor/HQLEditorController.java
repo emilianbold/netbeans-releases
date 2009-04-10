@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
@@ -167,6 +168,7 @@ public class HQLEditorController {
 
         try {
             org.dom4j.io.SAXReader saxReader = new org.dom4j.io.SAXReader();
+            saxReader.setEntityResolver(new HibernateCatalog());
             org.dom4j.Document document = saxReader.read(configFileObject.getInputStream());
             org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory"); //NOI18N
             Iterator mappingIterator = sessionFactoryElement.elementIterator("mapping"); //NOI18N
@@ -556,6 +558,7 @@ public class HQLEditorController {
     private Set<FileObject> getRelatedMappings(FileObject mappingFO, Set<FileObject> relatedMappings, Map<FileObject, List<String>> mappingPOJOMap) {
         try {
             org.dom4j.io.SAXReader xmlReader = new org.dom4j.io.SAXReader();
+            xmlReader.setEntityResolver(new HibernateCatalog());
             org.dom4j.Document document = xmlReader.read(FileUtil.toFile(mappingFO));
             Iterator classElementIterator = document.getRootElement().elementIterator("class");
             while (classElementIterator.hasNext()) {

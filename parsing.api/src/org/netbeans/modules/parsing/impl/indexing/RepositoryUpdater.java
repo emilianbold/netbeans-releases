@@ -682,18 +682,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                Set<CustomIndexerFactory> customIndexerFactories = new HashSet<CustomIndexerFactory>();
+                Set<EmbeddingIndexerFactory> embeddingIndexerFactories = new HashSet<EmbeddingIndexerFactory>();
                 for (String mimeType : Util.getAllMimeTypes()) {
-                    final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
-                    for (CustomIndexerFactory factory : factories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
-                        factory.filesDeleted(deleted, ctx);
-                    }
+                    Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                    customIndexerFactories.addAll(factories);
 
-                    final Collection<? extends EmbeddingIndexerFactory> embeddingFactories = MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class);
-                    for(EmbeddingIndexerFactory factory : embeddingFactories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
-                        factory.filesDeleted(deleted, ctx);
-                    }
+                    Collection<? extends EmbeddingIndexerFactory> embeddingFactories = MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class);
+                    embeddingIndexerFactories.addAll(embeddingFactories);
+                }
+
+                for (CustomIndexerFactory factory : customIndexerFactories) {
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                    factory.filesDeleted(deleted, ctx);
+                }
+
+                for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                    factory.filesDeleted(deleted, ctx);
                 }
             } finally {
                 for(Context ctx : transactionContexts) {
