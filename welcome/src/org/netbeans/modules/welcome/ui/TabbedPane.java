@@ -42,12 +42,13 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
@@ -119,7 +121,7 @@ class TabbedPane extends JPanel implements Constants, Scrollable {
         tabHeader = new TabHeader(leftButton, rightButton);
         add( tabHeader, BorderLayout.NORTH );
         
-        tabContent = new JPanel( new CardLayout() );
+        tabContent = new JPanel( new GridBagLayout() );
         tabContent.setOpaque(false);
         tabContent.setBorder(new ContentBorder());
 
@@ -137,10 +139,10 @@ class TabbedPane extends JPanel implements Constants, Scrollable {
 
     private void switchTab( boolean showLeftTab ) {
         if( showLeftTab && !leftTabAdded ) {
-            tabContent.add( leftTab, "left" ); //NOI18N
+            tabContent.add( leftTab, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) ); //NOI18N
             leftTabAdded = true;
         } else if( !showLeftTab && !rightTabAdded ) {
-            tabContent.add( rightTab, "right" ); //NOI18N
+            tabContent.add( rightTab, new GridBagConstraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) ); //NOI18N
             rightTabAdded = true;
         }
         JComponent compToShow = showLeftTab ? leftTab : rightTab;
@@ -151,20 +153,11 @@ class TabbedPane extends JPanel implements Constants, Scrollable {
         
         compToShow.setVisible( true );
         compToShow.requestFocusInWindow();
-        
-        invalidate();
-        revalidate();
-        repaint();
     }
 
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
-        if( null != tabHeader && leftTab.isVisible() ) {
-            d.height = tabHeader.getPreferredSize().height;
-            d.height += leftTab.getPreferredSize().height;
-        }
-
         if( null != getParent() && getParent().getHeight() > 0 && getParent().getHeight() > d.height )
             d.height = getParent().getHeight();
         if( null != getParent() && getParent().getWidth() > 0 ) {

@@ -42,7 +42,10 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
@@ -58,6 +61,8 @@ abstract class AbstractTab extends JPanel implements Constants {
 
     private boolean initialized = false;
     private final Image bottomBar;
+    private final Color gradientTop = Color.white;
+    private final Color gradientBottom = new Color(223,233,242);
     
     public AbstractTab( boolean paintBottomGraphics) {
         super( new BorderLayout() );
@@ -83,6 +88,10 @@ abstract class AbstractTab extends JPanel implements Constants {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int height = getHeight();
+        g2d.setPaint(new GradientPaint(0, height-60, gradientTop, 0, height, gradientBottom));
+        g2d.fillRect(0, height-60, getWidth(), 60);
         if( null != bottomBar ) {
             int imgWidth = bottomBar.getWidth(this);
             int imgHeight = bottomBar.getHeight(this);
