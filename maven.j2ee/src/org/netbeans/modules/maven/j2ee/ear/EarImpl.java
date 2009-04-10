@@ -55,7 +55,10 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import hidden.org.codehaus.plexus.util.StringInputStream;
+import hidden.org.codehaus.plexus.util.StringUtils;
 import java.util.Properties;
+import java.util.Set;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -365,9 +368,11 @@ class EarImpl implements EarImplementation,
     }
 
     public J2eeModule[] getModules() {
+        MavenProject mp = mavenproject.getMavenProject();
         @SuppressWarnings("unchecked")
-        Iterator<Artifact> it = mavenproject.getMavenProject().getArtifacts().iterator();
-
+        Set<Artifact> artifactSet = mp.getArtifacts();
+        @SuppressWarnings("unchecked")
+        List<Dependency> deps = mp.getRuntimeDependencies();
         String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear"); //NOI18N
         if (fileNameMapping == null) {
             fileNameMapping = "standard"; //NOI18N
@@ -376,32 +381,51 @@ class EarImpl implements EarImplementation,
         //for jar modules only..
         String defaultLibBundleDir = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "defaultLibBundleDir", "ear"); //NOI18N
 
-        EarImpl.MavenModule[] mm = readPomModules();
-
         List<J2eeModule> toRet = new ArrayList<J2eeModule>();
-        while (it.hasNext()) {
-            Artifact elem = it.next();
+        EarImpl.MavenModule[] mm = readPomModules();
+        //#162173 order by dependency list, artifacts is unsorted set.
+        for (Dependency d : deps) {
             //TODO do we really care about war and ejb only??
-            if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
-                File fil = elem.getFile();
-                FileObject fo = FileUtil.toFileObject(fil);
-                boolean found = false;
-                if (fo != null) {
-                    Project owner = FileOwnerQuery.getOwner(fo);
-                    if (owner != null) {
-                        J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
-                        if (prov != null) {
-                            J2eeModule mod = prov.getJ2eeModule();
-                            EarImpl.MavenModule m = findMavenModule(elem, mm);
-                            toRet.add(J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping)));
-                            found = true;
+            if ("war".equals(d.getType()) || "ejb".equals(d.getType())) {//NOI18N
+                for (Artifact a : artifactSet) {
+                    if (a.getGroupId().equals(d.getGroupId()) &&
+                            a.getArtifactId().equals(d.getArtifactId()) &&
+                            StringUtils.equals(a.getClassifier(), d.getClassifier()))
+                    {
+                        File fil = a.getFile();
+                        FileObject fo = FileUtil.toFileObject(fil);
+                        boolean found = false;
+                        if (fo != null) {
+                            Project owner = FileOwnerQuery.getOwner(fo);
+                            if (owner != null) {
+                                J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
+                                if (prov != null) {
+                                    J2eeModule mod = prov.getJ2eeModule();
+                                    EarImpl.MavenModule m = findMavenModule(a, mm);
+                                    J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
+                                    //#162173 respect order in pom configuration.. shall we?
+                                    if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
+                                        toRet.add(m.pomIndex, mod);
+                                    } else {
+                                        toRet.add(module);
+                                    }
+                                    found = true;
+                                }
+                            }
                         }
+                        if (!found) {
+                            J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion(), provider));
+                            EarImpl.MavenModule m = findMavenModule(a, mm);
+                            J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
+                            //#162173 respect order in pom configuration.. shall we?
+                            if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
+                                toRet.add(m.pomIndex, mod);
+                            } else {
+                                toRet.add(module);
+                            }
+                        }
+                        break;
                     }
-                }
-                if (!found) {
-                    J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(elem, getJ2eePlatformVersion(), provider));
-                    EarImpl.MavenModule m = findMavenModule(elem, mm);
-                    toRet.add(J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping)));
                 }
             }
         }
@@ -657,6 +681,7 @@ class EarImpl implements EarImplementation,
             Xpp3Dom dom = (Xpp3Dom)conf;
             Xpp3Dom modules = dom.getChild("modules"); //NOI18N
             if (modules != null) {
+                int index = 0;
                 for (Xpp3Dom module : modules.getChildren()) {
                     MavenModule mm = new MavenModule();
                     mm.type = module.getName();
@@ -691,6 +716,8 @@ class EarImpl implements EarImplementation,
                             }
                         }
                     }
+                    mm.pomIndex = index;
+                    index++;
                     toRet.add(mm);
                 }
             }
@@ -707,6 +734,7 @@ class EarImpl implements EarImplementation,
         String classifier;
         String bundleDir;
         String bundleFileName;
+        int pomIndex = -1;
         boolean excluded = false;
 
 

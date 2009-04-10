@@ -306,13 +306,15 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         final boolean isEmptyConent = list == null || list.isEmpty();
         setContent(isEmptyConent);
 
-        List<FunctionCallTreeTableNode> res = new ArrayList<FunctionCallTreeTableNode>();
+        if (!isEmptyConent) {
+            List<FunctionCallTreeTableNode> res = new ArrayList<FunctionCallTreeTableNode>();
 
-        for (FunctionCall c : list) {
-            res.add(new FunctionCallTreeTableNode(c));
+            for (FunctionCall c : list) {
+                res.add(new FunctionCallTreeTableNode(c));
+            }
+
+            updateList(res);
         }
-        
-        updateList(res);
     }
 
     @Override

@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.support;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -58,7 +57,7 @@ public class UnbufferSupport {
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
 
-    public static void initUnbuffer(final NativeProcessInfo info, final MacroMap env) throws ConnectException {
+    public static void initUnbuffer(final NativeProcessInfo info, final MacroMap env) throws IOException {
         // Setup LD_PRELOAD to load unbuffer library...
         if (!info.isUnbuffer()) {
             return;
