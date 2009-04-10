@@ -36,37 +36,76 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.visualizers;
 
-import java.awt.Color;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.spi.viewmodel.ColumnModel;
 
-public class GraphDescriptor {
+class TreeTableVisualizerColumnModel extends ColumnModel {
+    private final Column column;
+    boolean isVisible = true;
+    boolean isSorted = false;
+    boolean isSortedDescending = false;
+    int currentOrderNumber = -1;
 
-    private final Color color;
-    private final String description;
-    private final Kind kind;
-
-    public GraphDescriptor(Color color, String description, Kind kind) {
-        this.color = color;
-        this.description = description;
-        this.kind = kind;
+    TreeTableVisualizerColumnModel(Column column) {
+        this.column = column;
     }
 
-    public Color getColor() {
-        return color;
+    public String getID() {
+        return column.getColumnName();
     }
 
-    public String getDescription() {
-        return description;
+    public String getDisplayName() {
+        return column.getColumnUName();
     }
 
-    public Kind getKind() {
-        return kind;
+    public Class getType() {
+        return column.getColumnClass();
     }
 
-    public static enum Kind {
-        LINE,
-        ABS_SURFACE,
-        REL_SURFACE
+    @Override
+    public void setCurrentOrderNumber(int newOrderNumber) {
+        this.currentOrderNumber = newOrderNumber;
+    }
+
+    @Override
+    public int getCurrentOrderNumber() {
+        return currentOrderNumber;
+    }
+
+    @Override
+    public void setVisible(boolean arg0) {
+        this.isVisible = arg0;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    @Override
+    public boolean isSortable() {
+        return true;
+    }
+
+    @Override
+    public boolean isSorted() {
+        return isSorted;
+    }
+
+    @Override
+    public void setSorted(boolean sorted) {
+        this.isSorted = sorted;
+    }
+
+    @Override
+    public void setSortedDescending(boolean sortedDescending) {
+        this.isSortedDescending = sortedDescending;
+    }
+
+    @Override
+    public boolean isSortedDescending() {
+        return isSortedDescending;
     }
 }

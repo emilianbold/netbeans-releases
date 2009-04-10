@@ -49,8 +49,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.

@@ -48,14 +48,18 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -131,15 +135,22 @@ public class ConfigurationPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
-        errorLabel = new JLabel();
+        errorLabel = new JEditorPane();
         infoLabel = new JLabel();
         downloadButton = new JButton();
         progressPanel = new JPanel();
 
+        errorLabel.setContentType(NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.errorLabel.contentType")); // NOI18N
+        errorLabel.setEditable(false);
         errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
-        Mnemonics.setLocalizedText(errorLabel, "dummy");
+        errorLabel.setText(NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.errorLabel.text")); // NOI18N
+        errorLabel.setRequestFocusEnabled(false);
+
+        errorLabel.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent evt) {
+                errorLabelHyperlinkUpdate(evt);
+            }
+        });
         Mnemonics.setLocalizedText(infoLabel, "dummy");
         Mnemonics.setLocalizedText(downloadButton, "dummy");
         downloadButton.addActionListener(new ActionListener() {
@@ -160,20 +171,19 @@ public class ConfigurationPanel extends JPanel {
                     .add(progressPanel, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                     .add(infoLabel)
                     .add(downloadButton)
-                    .add(errorLabel))
+                    .add(errorLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(errorLabel)
+                .add(errorLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(infoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(downloadButton)
                 .add(18, 18, 18)
-                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -225,9 +235,15 @@ public class ConfigurationPanel extends JPanel {
         task.schedule(0);
     }//GEN-LAST:event_downloadButtonActionPerformed
 
+    private void errorLabelHyperlinkUpdate(HyperlinkEvent evt) {//GEN-FIRST:event_errorLabelHyperlinkUpdate
+        if (HyperlinkEvent.EventType.ACTIVATED == evt.getEventType()) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
+        }
+    }//GEN-LAST:event_errorLabelHyperlinkUpdate
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadButton;
-    private JLabel errorLabel;
+    private JEditorPane errorLabel;
     private JLabel infoLabel;
     private JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
@@ -277,6 +293,13 @@ public class ConfigurationPanel extends JPanel {
                     progressPanel.add(errorLabel);
                 }
             });
+        }
+    }
+
+    private static class HlinkListener implements HyperlinkListener {
+
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
