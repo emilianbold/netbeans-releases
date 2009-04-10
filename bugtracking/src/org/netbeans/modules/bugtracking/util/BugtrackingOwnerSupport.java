@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -52,10 +49,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -365,46 +364,20 @@ public class BugtrackingOwnerSupport {
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 
-        final RepositorySelectorPanel selectorPanel = new RepositorySelectorPanel(repos, connectors, suggestedRepo);
+        final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
+        selectorBuilder.setExistingRepositories(repos);
+        selectorBuilder.setBugtrackingConnectors(connectors);
+        selectorBuilder.setPreselectedRepository(suggestedRepo);
+        selectorBuilder.setLabelAboveComboBox();
 
         final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
-        final String selectButtonLabel = getMessage("CTL_Select");            //NOI18N
 
-        class ButtonActionListener implements ActionListener {
-            private Dialog dialog;
-            void setDialog(Dialog dialog) {
-                this.dialog = dialog;
-            }
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == selectButtonLabel) {
-                    boolean valuesAreValid = selectorPanel.validateValues();
-                    if (valuesAreValid) {
-                        assert dialog != null;
-                        dialog.setVisible(false);
-                        dialog.dispose();
-                    }
-                }
-            }
-        }
+        DialogDescriptor dialogDescriptor
+                = selectorBuilder.createDialogDescriptor(dialogTitle);
 
-        final ButtonActionListener actionListener = new ButtonActionListener();
-
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(selectorPanel,
-                             dialogTitle,
-                             true,
-                             new Object[] {selectButtonLabel, DialogDescriptor.CANCEL_OPTION},
-                             selectButtonLabel,
-                             DialogDescriptor.DEFAULT_ALIGN,
-                             null,      //HelpCtx
-                             actionListener);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        actionListener.setDialog(dialog);
-
-        dialog.pack();
-        dialog.setVisible(true);
-
-        if (dialogDescriptor.getValue() == selectButtonLabel) {
-            Repository repository = selectorPanel.getSelectedRepository();
+        Object selectedOption = DialogDisplayer.getDefault().notify(dialogDescriptor);
+        if (selectedOption == NotifyDescriptor.OK_OPTION) {
+            Repository repository = selectorBuilder.getSelectedRepository();
             try {
                 repository.getController().applyChanges();
             } catch (IOException ex) {
