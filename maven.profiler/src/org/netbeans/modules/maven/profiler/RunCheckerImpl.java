@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
@@ -82,10 +83,10 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 
         if (ACTION_PROFILE.equals(config.getActionName()) || ACTION_PROFILE_SINGLE.equals(config.getActionName()) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
-            final MavenProjectTypeProfiler ptp = (MavenProjectTypeProfiler)ProjectUtilities.getProjectTypeProfiler(project);
-            
+            final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
+            if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
             // Resolve profiling session properties
-            Properties sessionProperties = ptp.getLastSessionProperties();
+            Properties sessionProperties = ((MavenProjectTypeProfiler)ptp).getLastSessionProperties();
             for (Object k : configProperties.keySet()) {
                 String key = (String)k;
                 
@@ -109,7 +110,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Profiler.getDefault().connectToStartedApp(ptp.getLastProfilingSettings(), ptp.getLastSessionSettings());
+                    Profiler.getDefault().connectToStartedApp(((MavenProjectTypeProfiler)ptp).getLastProfilingSettings(), ((MavenProjectTypeProfiler)ptp).getLastSessionSettings());
                 }
             });
             
