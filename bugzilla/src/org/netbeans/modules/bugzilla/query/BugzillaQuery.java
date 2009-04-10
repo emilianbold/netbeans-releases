@@ -133,7 +133,7 @@ public class BugzillaQuery extends Query {
     }
 
     @Override
-    public boolean refresh() { // XXX sync???
+    public boolean refresh() { // XXX what if already running! - cancel task
 
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
