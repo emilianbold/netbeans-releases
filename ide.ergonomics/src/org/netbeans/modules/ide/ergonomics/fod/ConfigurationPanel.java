@@ -79,6 +79,9 @@ public class ConfigurationPanel extends JPanel {
     private final Boolean autoActivate;
 
     public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info, Boolean auto) {
+        if (displayName == null) {
+
+        }
         FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
         initComponents();
         this.callable = callable;
