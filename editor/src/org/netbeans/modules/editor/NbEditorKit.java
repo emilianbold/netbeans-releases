@@ -66,9 +66,11 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -185,16 +187,9 @@ public class NbEditorKit extends ExtKit implements Callable {
 
     protected @Override Action[] createActions() {
         Action[] nbEditorActions = new Action[] {
-                                       new NbBuildPopupMenuAction(),
                                        nbUndoActionDef,
                                        nbRedoActionDef,
-                                       new NbBuildToolTipAction(),
-                                       new NbToggleLineNumbersAction(),
-                                       new ToggleToolbarAction(),
-                                       new NbGenerateGoToPopupAction(),
                                        new GenerateFoldPopupAction(),
-                                       new NbGenerateCodeAction(),
-                                       new NavigationHistoryLastEditAction(),
                                        new NavigationHistoryBackAction(),
                                        new NavigationHistoryForwardAction(),
                                        new SearchBar.IncrementalSearchForwardAction(),
@@ -242,7 +237,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         addSystemActionMapping(deleteNextCharAction, org.openide.actions.DeleteAction.class);
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
-        addSystemActionMapping(SearchBar.IncrementalSearchForwardAction.ACTION_NAME, org.openide.actions.FindAction.class);
+        addSystemActionMapping(SearchBar.INCREMENTAL_SEARCH_FORWARD, org.openide.actions.FindAction.class);
         addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
 
@@ -280,11 +275,11 @@ public class NbEditorKit extends ExtKit implements Callable {
         return bundle;
     }
     
-    
+    @EditorActionRegistration(name = toggleToolbarAction)
     public static class ToggleToolbarAction extends BaseAction {
 
         public ToggleToolbarAction() {
-            super(ExtKit.toggleToolbarAction);
+            super(toggleToolbarAction); // Due to creation from MainMenuAction
             putValue ("helpID", ToggleToolbarAction.class.getName ()); // NOI18N
         }
 
@@ -366,9 +361,13 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
-    public class NbBuildPopupMenuAction extends BuildPopupMenuAction {
+    @EditorActionRegistration(name = buildPopupMenuAction)
+    public static class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
         static final long serialVersionUID =-8623762627678464181L;
+
+        public NbBuildPopupMenuAction() {
+        }
 
         protected @Override JPopupMenu createPopupMenu(JTextComponent component) {
             // to make keyboard navigation (Up/Down keys) inside popup work, we
@@ -426,9 +425,10 @@ public class NbEditorKit extends ExtKit implements Callable {
             Lookup contextLookup = getContextLookup(component);
             
             // issue #69688
-            if (contextLookup == null && 
-                    systemAction2editorAction.containsKey(action.getClass().getName())){
-                addAction(component, popupMenu, (String) systemAction2editorAction.get(action.getClass().getName()));
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (contextLookup == null && (kit instanceof NbEditorKit) &&
+                    ((NbEditorKit)kit).systemAction2editorAction.containsKey(action.getClass().getName())){
+                addAction(component, popupMenu, (String) ((NbEditorKit)kit).systemAction2editorAction.get(action.getClass().getName()));
                 return;
             }
             
@@ -567,6 +567,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
     /** Switch visibility of line numbers in editor */
+    @EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
     public static class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
         public NbToggleLineNumbersAction() {
@@ -584,10 +585,11 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
+    @EditorActionRegistration(name = generateGoToPopupAction)
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
         public NbGenerateGoToPopupAction() {
-            super(generateGoToPopupAction);
+            super(generateGoToPopupAction); // Because of action in Gsf
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -601,6 +603,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
 
+    @EditorActionRegistration(name = buildToolTipAction)
     public static class NbBuildToolTipAction extends BuildToolTipAction {
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -610,7 +613,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
 
     }
-    
+
+// No registration - NO_KEYBINDING property in constructor
+//    @EditorActionRegistration(name = generateFoldPopupAction)
     public static class GenerateFoldPopupAction extends BaseAction {
 
         private boolean addSeparatorBeforeNextAction;
@@ -653,7 +658,16 @@ public class NbEditorKit extends ExtKit implements Callable {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                itemText = actionName;
+                itemText = (String) a.getValue("popupText");
+                if (itemText == null) {
+                    itemText = (String) a.getValue("menuText");
+                    if (itemText == null) {
+                        itemText = (String) a.getValue(Action.SHORT_DESCRIPTION);
+                        if (itemText == null) {
+                            itemText = actionName;
+                        }
+                    }
+                }
             }
             return itemText;
         }
@@ -749,7 +763,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
         
         public LayerSubFolderMenu(JTextComponent target, FileObject folder) {
-            this(target, getLocalizedName(folder), ActionsList.convert(sort(folder.getChildren())));
+            this(target, getLocalizedName(folder), ActionsList.convert(sort(folder.getChildren()), false));
         }
         
         private static List<FileObject> sort( FileObject[] children ) {

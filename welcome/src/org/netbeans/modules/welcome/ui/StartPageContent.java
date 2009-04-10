@@ -42,28 +42,52 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
+import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class StartPageContent extends BackgroundPanel implements Constants {
+public class StartPageContent extends JPanel implements Constants {
+
+    private final static Color COLOR_TOP = new Color(198, 211, 223);
+    private final static Color COLOR_BOTTOM = new Color(235, 235, 235);
 
     public StartPageContent() {
         super( new BorderLayout() );
-        
+
         add( new TopBar(), BorderLayout.NORTH );
-        add( new Tabs( BundleSupport.getLabel( "WelcomeTab" ), new WelcomeTab(), //NOI18N
-                       BundleSupport.getLabel( "MyNetBeansTab"), new MyNetBeansTab()), //NOI18N
-                       BorderLayout.CENTER  );
+
+        JComponent tabs = new TabbedPane( BundleSupport.getLabel( "WelcomeTab" ), new WelcomeTab(), //NOI18N
+                       BundleSupport.getLabel( "MyNetBeansTab"), new MyNetBeansTab()); //NOI18N
+        tabs.setBorder(BorderFactory.createEmptyBorder(10,15,15,15));
+        tabs.setOpaque(false);
+
+        JScrollPane scroll = new JScrollPane(tabs);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setOpaque(false);
+        scroll.setOpaque(false);
+        scroll.getViewport().setPreferredSize(new Dimension(Constants.START_PAGE_MIN_WIDTH,100));
+
+        add( scroll, BorderLayout.CENTER  );
         
-        setBackground( Utils.getColor( COLOR_SCREEN_BACKGROUND ) );
-        setPreferredSize( new Dimension(START_PAGE_MIN_WIDTH,100) );
+        setOpaque(false);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP, 0, getHeight(), COLOR_BOTTOM));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
     }
 }

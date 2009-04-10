@@ -117,7 +117,7 @@ public final class SunStudioDCConfiguration
         /**
          * Collects synchronization information: Sync. Wait Time and Sync. Wait Count
          */
-        SYNCHRONIZARION,
+        SYNCHRONIZATION,
         /**
          * Collects information about memory leaks
          */

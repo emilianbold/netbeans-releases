@@ -56,6 +56,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
@@ -69,15 +70,17 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dusan Balek, Jan Lahoda
  */
+@EditorActionRegistration(
+        name = "generate-code",
+        shortDescription = "#desc-generate-code",
+        popupText = "#popup-generate-code"
+) // NOI18N
 public class NbGenerateCodeAction extends BaseAction {
 
     public static final String generateCode = "generate-code"; //NOI18N
     
     public NbGenerateCodeAction(){
-        super(generateCode);
         putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(NbGenerateCodeAction.class).getString("generate-code-trimmed")); //NOI18N
-        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(NbGenerateCodeAction.class).getString("desc-generate-code")); //NOI18N
-        putValue(POPUP_MENU_TEXT, NbBundle.getBundle(NbGenerateCodeAction.class).getString("popup-generate-code")); //NOI18N
     }
     
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {

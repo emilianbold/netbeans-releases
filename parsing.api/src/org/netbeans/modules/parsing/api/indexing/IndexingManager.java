@@ -133,7 +133,8 @@ public final class IndexingManager {
     private static IndexingManager instance;
 
     private IndexingManager() {
-        // no-op
+        // Start ReporistoryUpdater if it has not been already started
+        RepositoryUpdater.getDefault().start(false);
     }
 
 }

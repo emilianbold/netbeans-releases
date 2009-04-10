@@ -127,6 +127,14 @@ public abstract class BaseAction extends TextAction {
 
     static final long serialVersionUID =-4255521122272110786L;
 
+    public BaseAction() {
+        this(null);
+    }
+
+    public BaseAction(int updateMask) {
+        this(null, updateMask);
+    }
+
     public BaseAction(String name) {
         this(name, 0);
     }
@@ -156,7 +164,27 @@ public abstract class BaseAction extends TextAction {
 
         return obj;
     }
-    
+
+    @Override
+    public void putValue(String key, Object value) {
+        super.putValue(key, value);
+        if (Action.NAME.equals(key) && value instanceof String) {
+            actionNameUpdate((String)value);
+        }
+    }
+
+    /**
+     * Called by {@link #putValue(String,String)} when {@link Action#NAME} property
+     * is set to a non-null String value. This allows a "polymorphic" action (with
+     * Action.NAME-specific behavior) to update certain properties (e.g. an icon)
+     * according to the name that was set.
+     *
+     * @param actionName non-null action's name (value of Action.NAME property).
+     * @since 1.34
+     */
+    protected void actionNameUpdate(String actionName) {
+    }
+
     /**
      * This method is called when there is no value for the particular key.
      * <br/>

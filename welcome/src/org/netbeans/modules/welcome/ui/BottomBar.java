@@ -45,31 +45,33 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
+import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Logo;
 
 /**
  *
  * @author S. Aubrecht
  */
-class BottomBar extends BackgroundPanel {
+class BottomBar extends JPanel {
 
     public BottomBar() {
         super( new GridBagLayout() );
+        setOpaque(false);
         
         add( Logo.createSunLogo(), new GridBagConstraints(0,0,1,1,0.0,0.0,
-                GridBagConstraints.WEST,GridBagConstraints.VERTICAL,new Insets(0,12,6,5),0,0 ) );
+                GridBagConstraints.SOUTHWEST,GridBagConstraints.NONE,new Insets(0,12,0,5),0,0 ) );
         
         add( new JLabel(), new GridBagConstraints(1,0,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
         
         add( new ShowNextTime(), new GridBagConstraints(2,0,1,1,0.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,6,0),0,0 ) );
+                GridBagConstraints.SOUTH,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
         
-            add( new JLabel(), new GridBagConstraints(3,0,1,1,1.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
+        add( new JLabel(), new GridBagConstraints(3,0,1,1,1.0,0.0,
+            GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
+
         add( Logo.createJavaLogo(), new GridBagConstraints(4,0,1,1,0.0,0.0,
-                GridBagConstraints.EAST,GridBagConstraints.VERTICAL,new Insets(0,5,6,12),0,0 ) );
+                GridBagConstraints.SOUTHEAST,GridBagConstraints.NONE,new Insets(0,5,0,12),0,0 ) );
     }
 
 }

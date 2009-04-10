@@ -46,8 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
-import org.openide.util.Mutex;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -57,69 +56,78 @@ import org.openide.util.RequestProcessor;
 public class DLightExecutorService {
 
     private final static String PREFIX = "DLIGHT: "; // NOI18N
+    private final static RequestProcessor processor = new RequestProcessor(PREFIX, 50);
     private final static Object lock;
-    private final static Logger log;
 
 
     static {
-        log = DLightLogger.getLogger(DLightExecutorService.class);
         lock = new String(DLightExecutorService.class.getName());
     }
 
-    public static <T> Future<T> submit(final Callable<T> task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        final FutureTask<T> ftask = new FutureTask<T>(task);
-        processor.post(ftask);
+    public static <T> Future<T> submit(final Callable<T> task, final String name) {
+        final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
 
+            public T call() throws Exception {
+                Thread.currentThread().setName(PREFIX + name);
+                return task.call();
+            }
+        });
+
+        processor.post(ftask);
         return ftask;
     }
 
-    public static void submit(final Runnable task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        processor.post(task);
+    public static void submit(final Runnable task, final String name) {
+        processor.post(new Runnable() {
+
+            public void run() {
+                Thread.currentThread().setName(PREFIX + name);
+                task.run();
+            }
+        });
     }
 
     public static Future scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
         synchronized (lock) {
+            final FutureHolder futureHolder = new FutureHolder();
+
             Runnable runnable = new Runnable() {
 
                 public void run() {
                     final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
                             new TaskThreadFactory(descr));
-                    final Future taskResult = service.scheduleAtFixedRate(task, 0, period, unit);
+
+                    service.scheduleAtFixedRate(task, 0, period, unit);
+
                     try {
                         while (true) {
-                            if (Thread.currentThread().isInterrupted()) {
+                            if (futureHolder.future.isDone()) {
                                 break;
                             }
 
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(500);
                             } catch (InterruptedException ex) {
-                                Thread.currentThread().interrupt();
+                                break;
                             }
                         }
                     } finally {
-                        try {
-                            taskResult.cancel(true);
-                            Mutex.EVENT.readAccess(new Runnable() {
-                                public void run() {
-                                    service.shutdownNow();
-                                }
-                            });
-                        } catch (Exception ex) {
-                            // TODO: ????? AccessControlException if shutdown in
-                            // RequestProcessor's thread!!!! What to do???
-                            System.out.println("!!!!!!!!!!!!!! " + ex.getMessage());
-                        }
+                        service.shutdownNow();
                     }
                 }
             };
 
             final FutureTask<Boolean> ftask = new FutureTask<Boolean>(runnable, Boolean.TRUE);
+            futureHolder.future = ftask;
             RequestProcessor.getDefault().post(ftask);
+
             return ftask;
         }
+    }
+
+    private static class FutureHolder {
+
+        private volatile FutureTask future;
     }
 
     static class TaskThreadFactory implements ThreadFactory {

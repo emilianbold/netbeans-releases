@@ -298,7 +298,7 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
     static String toNameField(Variable var) {
         String retval = CodeUtils.extractVariableName(var);
-        if (!retval.startsWith("$")) {
+        if (retval != null && !retval.startsWith("$")) {
             retval = "$"+retval;
         }
         return retval;
