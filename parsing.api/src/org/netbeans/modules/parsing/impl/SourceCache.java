@@ -96,11 +96,13 @@ public final class SourceCache {
         mimeType.getClass();
     }
 
-    public void setEmbedding (
+    private void setEmbedding (
         Embedding           embedding
     ) {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
+            assert embedding.getMimeType ().equals (mimeType);
             this.embedding = embedding;
+            snapshot = null;
         }
     }
     //@GuardedBy(this)
@@ -136,7 +138,9 @@ public final class SourceCache {
     }
 
     private Snapshot createSnapshot (boolean isEmbedding) {
-        return isEmbedding ? embedding.getSnapshot () : source.createSnapshot ();
+        Snapshot _snapshot = isEmbedding ? embedding.getSnapshot () : source.createSnapshot ();
+        assert mimeType.equals (_snapshot.getMimeType ());
+        return _snapshot;
     }
 
     //@GuarderBy(this)
@@ -208,7 +212,6 @@ public final class SourceCache {
     public void invalidate () {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             snapshot = null;
-            embedding = null;
             parsed = false;
             embeddings = null;
             upToDateEmbeddingProviders.clear();
@@ -284,9 +287,12 @@ public final class SourceCache {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
                 for (int i = 0; i < embeddings.size (); i++) {
+                    if (embeddings.get (i) == null)
+                        throw new NullPointerException ();
                     SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
                     if (cache != null) {
                         cache.setEmbedding (embeddings.get (i));
+                        assert embeddings.get (i).getMimeType ().equals (cache.getSnapshot ().getMimeType ());
                         embeddingToCache.put (embeddings.get (i), cache);
                     } else {
                         cache = getCache(embeddings.get(i));
@@ -323,6 +329,7 @@ public final class SourceCache {
             SourceCache sourceCache = embeddingToCache.get (embedding);
             if (sourceCache == null) {
                 sourceCache = new SourceCache (source, embedding);
+                assert embedding.getMimeType ().equals (sourceCache.getSnapshot ().getMimeType ());
                 embeddingToCache.put (embedding, sourceCache);
             }
             return sourceCache;
