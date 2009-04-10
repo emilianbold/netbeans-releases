@@ -285,6 +285,11 @@ class ArtifactWidget extends Widget implements ActionListener {
         addChild(contentW);
     }
 
+    void modelChanged () {
+        versionW.setLabel(node.getArtifact().getArtifact().getVersion());
+        repaint();
+    }
+
     @Override
     protected void paintBackground() {
         super.paintBackground();

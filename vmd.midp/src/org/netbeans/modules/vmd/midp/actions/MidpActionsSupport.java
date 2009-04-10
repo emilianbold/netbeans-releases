@@ -64,7 +64,11 @@ import org.openide.util.actions.SystemAction;
  */
 public final class MidpActionsSupport {
     
-    public static void addCommonActionsPresenters(List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
+    public static void addCommonActionsPresenters(List<Presenter> presenters,
+            boolean allowEdit, boolean allowGoToSource,
+            boolean allowRename, boolean allowDelete,
+            boolean allowProperties)
+    {
         if (allowEdit)
             presenters.add(ActionsPresenter.create(20,SystemAction.get(DesignerEditAction.class)));
         if (allowGoToSource)
@@ -75,6 +79,7 @@ public final class MidpActionsSupport {
             presenters.add(ActionsPresenter.create(40, SystemAction.get(DeleteAction.class)));
         if (allowProperties)
             presenters.add(ActionsPresenter.create(60, SystemAction.get(PropertiesAction.class)));
+         
     }
 
     public static void addCommonClassActionsPresenters(List<Presenter> presenters, 
