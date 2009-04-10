@@ -43,6 +43,9 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.maven.api.Constants;
@@ -56,6 +59,8 @@ import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -66,6 +71,7 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Exceptions;
@@ -81,6 +87,9 @@ public class POHImpl extends ProjectOpenedHook {
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
     private String contextPath;
+
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
+    public static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
 
     public POHImpl(Project prj, J2eeLookupProvider.Provider prov) {
         project = prj;
@@ -114,41 +123,49 @@ public class POHImpl extends ProjectOpenedHook {
             };
             watcher.addPropertyChangeListener(refreshListener);
         }
+
+        //USG logging.. log target app server type for the opened project..
+        String serverName = obtainServerName(project);
+        if (serverName == null) {
+            serverName = NbBundle.getMessage(POHImpl.class, "MSG_No_Server");  //NOI18N
+        }
+        String eeVersion = null;
+        NbMavenProject mavProj = project.getLookup().lookup(NbMavenProject.class);
+        if (mavProj != null) {
+            String pkgType = mavProj.getPackagingType();
+            if ("ear".equals(pkgType)) { //NOI18N
+                Ear earProj = Ear.getEar(project.getProjectDirectory());
+                if (earProj != null) {
+                    eeVersion = earProj.getJ2eePlatformVersion();
+                }
+            } else if ("war".equals(pkgType)) { //NOI18N
+                WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
+                if (webM != null) {
+                    eeVersion = webM.getJ2eePlatformVersion();
+                }
+            } else if ("ejb".equals(pkgType)) { //NOI18N
+                EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
+                if (ejbProj != null) {
+                    eeVersion = ejbProj.getJ2eePlatformVersion();
+                }
+            }
+        }
+        if (eeVersion == null) {
+            eeVersion = NbBundle.getMessage(POHImpl.class, "TXT_UnknownEEVersion"); //NOI18N
+        }
+
+        LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_OPEN_MAVEN_EE");  //NOI18N
+        record.setLoggerName(USG_LOGGER_NAME);
+        record.setParameters(new Object[] { serverName, eeVersion });
+        USG_LOGGER.log(record);
     }
 
     protected synchronized void refreshAppServerAssignment() {
         provider.hackModuleServerChange();
 
-        String instanceFound = null;
-        String server = null;
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc.getServerInstanceId() != null) {
-            instanceFound = sc.getServerInstanceId();
-        }
-        if (instanceFound == null) {
-            AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-
-            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
-            if (server == null) {
-                //try checking for old values..
-                server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-            }
-            if (server != null) {
-                String[] instances = Deployment.getDefault().getInstancesOfServer(server);
-                String inst = null;
-                if (instances != null && instances.length > 0) {
-                    inst = instances[0];
-                    for (int i = 0; i < instances.length; i++) {
-                        if (val != null && val.equals(instances[i])) {
-                            inst = instances[i];
-                            break;
-                        }
-                    }
-                    instanceFound = inst;
-                }
-            }
-        }
+        String[] ids = obtainServerIds(project);
+        String instanceFound = ids[0];
+        String server = ids[1];
 
         if (instanceFound != null) {
             WebModuleProviderImpl impl = project.getLookup().lookup(WebModuleProviderImpl.class);
@@ -196,8 +213,6 @@ public class POHImpl extends ProjectOpenedHook {
                 lastJ2eeProvider = null;
             }
         }
-
-
     }
 
     protected void projectClosed() {
@@ -211,6 +226,55 @@ public class POHImpl extends ProjectOpenedHook {
             Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
             lastJ2eeProvider = null;
         }
+    }
+
+    private static String[] obtainServerIds (Project project) {
+        String[] ids = new String[2];
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc.getServerInstanceId() != null) {
+            ids[0] = sc.getServerInstanceId();
+        }
+        if (ids[0] == null) {
+            AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+            ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
+            if (ids[1] == null) {
+                //try checking for old values..
+                ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+            }
+            if (ids[1] != null) {
+                String[] instances = Deployment.getDefault().getInstancesOfServer(ids[1]);
+                String inst = null;
+                if (instances != null && instances.length > 0) {
+                    inst = instances[0];
+                    for (int i = 0; i < instances.length; i++) {
+                        if (val != null && val.equals(instances[i])) {
+                            inst = instances[i];
+                            break;
+                        }
+                    }
+                    ids[0] = inst;
+                }
+            }
+        }
+        return ids;
+    }
+
+    public static String obtainServerName (Project project) {
+        String id = obtainServerIds(project)[0];
+
+        if (id != null) {
+            ServerInstance si = Deployment.getDefault().getServerInstance(id);
+            if (si != null) {
+                try {
+                    return si.getDisplayName();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
+                }
+            }
+        }
+
+        return null;
     }
     
     private static class AddServerAction extends AbstractAction {
