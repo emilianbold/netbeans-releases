@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewWebProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/web-emptyProject.html"/>
                 </file>
                 <file name="importWeb.xml">
                    <attr name="position" intvalue="200"/>
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/importProject.html"/>
+                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/web-importProject.html"/>
                 </file>
             </folder>
         </folder>

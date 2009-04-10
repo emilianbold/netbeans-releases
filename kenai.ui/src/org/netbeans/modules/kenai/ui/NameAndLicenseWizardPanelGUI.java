@@ -107,13 +107,14 @@ import org.openide.util.RequestProcessor;
  * @author Milan Kubec
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
+    private RequestProcessor errorChecker = new RequestProcessor("Error Checker");
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
     private Pattern prjNamePattern;
 
-    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9_-]+";
+    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+";
     private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/";
 
     private static final String EMPTY_ELEMENT = "";
@@ -140,12 +141,15 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         DocumentListener firingDocListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void removeUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void changedUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
         };
@@ -540,20 +544,19 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private void projectNameTextFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_projectNameTextFieldFocusLost
 
-        // XXX 
-        new Thread(new Runnable() {
+        if (getProjectName().length()<2) {
+            prjNameCheckMessage = "Project Name length must be between 2 and 20 characters.";
+            panel.fireChangeEvent();
+            return;
+        }
+        errorChecker.post(new Runnable() {
             public void run() {
-                String message = null;
                 try {
-                    message = KenaiProject.checkName(getProjectName());
-                    System.out.println("checkName message: " + message);
+                    prjNameCheckMessage = KenaiProject.checkName(getProjectName());
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                if (message != null) {
-                    prjNameCheckMessage = message;
-                    panel.fireChangeEvent();
-                }
+                panel.fireChangeEvent();
             }
         });
 
@@ -652,13 +655,18 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     // - not all errors are checked!
     private String checkForErrors() {
         String prjName = getProjectName();
-        if (prjName.length() > 0 && !checkPrjName(prjName)) {
+
+        if (prjName.length()>20) {
+            return "Project Name length must be between 2 and 20 characters.";
+        } else if (prjName.length() > 2 && !checkPrjName(prjName)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.invalidPrjName");
         } else if (/*getProjectTitle().length() < 2 ||*/ getProjectTitle().length() > 40) {
             return "Project Title length must be between 2 and 40 characters.";
         } else if (getProjectDesc().length() > 500) {
             return "Project Description must to be shorter than 500 characters.";
+        } else if (prjNameCheckMessage!=null) {
+            return prjNameCheckMessage;
         }
         return null;
     }
