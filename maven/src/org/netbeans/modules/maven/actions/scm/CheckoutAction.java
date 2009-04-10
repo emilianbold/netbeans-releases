@@ -39,6 +39,7 @@
 package org.netbeans.modules.maven.actions.scm;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
@@ -118,10 +119,11 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
             if (!rc.getExecutionDirectory().exists()) {
                 rc.getExecutionDirectory().mkdirs();
             }
+            final File checkoutDir = checkoutUI.getCheckoutDirectory();
             ExecutorTask task = RunUtils.executeMaven(rc);
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(Task task) {
-                    FileObject fo = FileUtil.toFileObject(rc.getExecutionDirectory());
+                    FileObject fo = FileUtil.toFileObject(checkoutDir);
                     if (fo != null) {
                         try {
                             Project prj = ProjectManager.getDefault().findProject(fo);
