@@ -47,7 +47,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;

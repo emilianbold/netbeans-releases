@@ -44,8 +44,13 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -195,9 +200,52 @@ public final class CompoundFolderChildren implements FileChangeListener {
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        if (FileUtil.affectsOrder(fe)) {
+        if (FileUtil.affectsOrder(fe) && !filterEvents(fe)) {
             rebuild();
         }
     }
 
+    // ignoring loads of fileAttributeChanged events fired when installing plugins
+    // see issue #161201
+    private final List<Reference<FileEvent>> recentEvents = new LinkedList<Reference<FileEvent>>();
+    private boolean filterEvents(FileEvent event) {
+        // filter out duplicate events
+        synchronized (recentEvents) {
+            for(Iterator<Reference<FileEvent>> i = recentEvents.iterator(); i.hasNext(); ) {
+                Reference<FileEvent> ref = i.next();
+                FileEvent e = ref.get();
+                if (e == null) {
+                    i.remove();
+                } else {
+                    if (e == event) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Filtering out duplicate filesystem event (1): original=[" + printEvent(e) + "]" //NOI18N
+                                + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
+                        }
+                        return true;
+                    }
+
+                    if (e.getTime() == event.getTime() && e.getFile().getPath().equals(event.getFile().getPath())) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Filtering out duplicate filesystem event (2): original=[" + printEvent(e) + "]" //NOI18N
+                                    + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            if (recentEvents.size() > 20) {
+                recentEvents.remove(recentEvents.size() - 1);
+            }
+            recentEvents.add(0, new WeakReference<FileEvent>(event));
+            return false;
+        }
+    }
+
+    private static String printEvent(FileEvent event) {
+        return event.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(event)) //NOI18N
+                + ", ts=" + event.getTime() //NOI18N
+                + ", path=" + event.getFile().getPath(); //NOI18N
+    }
 }

@@ -304,7 +304,7 @@ public class MarkOccurrencesTest extends NbTestCase {
         foundMarks=null;
         int cycles = 0;
         sleep(500);
-        while(foundMarks==null && cycles<10) {
+        while(foundMarks==null && cycles<30) {
             sleep(200);
             cycles++;
             js.runUserActionTask(new MyTask() ,false);

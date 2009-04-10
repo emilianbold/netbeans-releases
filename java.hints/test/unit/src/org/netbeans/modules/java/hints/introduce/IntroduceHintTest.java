@@ -88,9 +88,9 @@ public class IntroduceHintTest extends NbTestCase {
 
 //    public static TestSuite suite() {
 //        TestSuite s = new NbTestSuite();
-//        
+//
 //        s.addTest(new IntroduceHintTest("testCorrectSelection7"));
-//        
+//
 //        return s;
 //    }
     
@@ -959,6 +959,18 @@ public class IntroduceHintTest extends NbTestCase {
 //                       "package test; import java.io.IOException; public class Test { public static void test(int a) throws Exception { name(a); } private static void name(int a) throws IOException { if (a == 1) { throw new java.io.IOException(\"\"); } if (a == 2) { throw new java.io.FileNotFoundException(\"\"); } } }",
 //                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
 //    }
+
+    public void testIntroduceMethodArray162163() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(char[] test) {\n" +
+                       "        |test[0] = 'a';|\n"+
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test(char[] test) { name(test); } private static void name(char[] test) { test[0] = 'a'; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
 
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();

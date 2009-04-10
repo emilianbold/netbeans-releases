@@ -57,6 +57,7 @@ import org.netbeans.modules.editor.macros.storage.MacroDescription;
 import org.netbeans.modules.editor.macros.storage.MacrosStorage;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -67,15 +68,25 @@ import org.openide.util.WeakListeners;
 public final class MacroShortcutsInjector extends StorageFilter<Collection<KeyStroke>, MultiKeyBinding> implements PropertyChangeListener {
 
     public static void refreshShortcuts() {
-        assert instance != null;
-        LOG.fine("Shortcuts refresh forced, notifying 'Keybindings' storage..."); //NOI18N
-        instance.notifyChanges();
+        Collection<? extends MacroShortcutsInjector> injectors = Lookup.getDefault().lookupAll(MacroShortcutsInjector.class);
+        if (injectors.size() == 0) {
+            LOG.warning("No MacroShortcutsInjector found in default Lookup"); //NOI18N
+            return;
+        } else if (injectors.size() > 1) {
+            LOG.warning("Too many MacroShortcutsInjector instances found in default Lookup:"); //NOI18N
+            for(MacroShortcutsInjector msi : injectors) {
+                LOG.warning("  " + msi); //NOI18N
+            }
+        }
+
+        injectors.iterator().next().notifyChanges();
+//        assert instance != null;
+//        LOG.fine("Shortcuts refresh forced, notifying 'Keybindings' storage..."); //NOI18N
+//        instance.notifyChanges();
     }
     
     public MacroShortcutsInjector() {
         super("Keybindings"); //NOI18N
-        assert instance == null;
-        instance = this;
     }
     
     // ------------------------------------------------------------------------
@@ -141,7 +152,6 @@ public final class MacroShortcutsInjector extends StorageFilter<Collection<KeySt
     
     private static final Logger LOG = Logger.getLogger(MacroShortcutsInjector.class.getName());
     
-    private static MacroShortcutsInjector instance = null;
     private EditorSettingsStorage<String, MacroDescription> storage = null;
     
     private void collectMacroActions(MimePath mimePath, Map<String, MacroDescription> macros) {
