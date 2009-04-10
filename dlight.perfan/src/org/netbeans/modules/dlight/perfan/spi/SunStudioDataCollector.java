@@ -85,6 +85,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -279,7 +280,7 @@ public class SunStudioDataCollector
                     return validationStatus;
                 }
 
-            } catch (ConnectException ex) {
+            } catch (IOException ex) {
                 final ConnectionManager mgr = ConnectionManager.getInstance();
                 Runnable onConnect = new Runnable() {
 
@@ -290,7 +291,8 @@ public class SunStudioDataCollector
 
                 AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
-                validationStatus = ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
+                validationStatus = ValidationStatus.unknownStatus(
+                        loc("ValidationStatus.ErrorWhileValidation", ex.getMessage()), // NOI18N
                         connectAction);
                 return validationStatus;
             }
@@ -514,6 +516,10 @@ public class SunStudioDataCollector
 
             monitorsUpdater.start();
         }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
     }
 
     private static class StdErrRedirectorFactory

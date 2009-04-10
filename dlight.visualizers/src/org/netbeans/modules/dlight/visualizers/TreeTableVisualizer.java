@@ -78,6 +78,7 @@ import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -94,7 +95,6 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     //public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
     private final Object queryLock = new String(TreeTableVisualizer.class + " query lock"); // NOI18N
-    private final Object uiLock = new String(TreeTableVisualizer.class + " UI lock"); // NOI18N
     private boolean isShown = true;
     private JToolBar buttonsToolbar;
     private JButton refresh;
@@ -239,7 +239,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         synchronized (TREE_ROOT) {
             TREE_ROOT.removeAllChildren();
             fireTreeModelChanged();
-            
+
             if (nodes != null) {
                 for (DefaultMutableTreeNode node : nodes) {
                     TREE_ROOT.add(node);
@@ -248,23 +248,12 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             }
         }
     }
-//    protected DefaultMutableTreeNode getTreeRoot() {
-//        return TREE_ROOT;
-//    }
-//
 
     /**
      * Fire treeModelChanged event in AWT Thread
      */
     protected void fireTreeModelChanged() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                treeModelImpl.fireTreeModelChanged();
-            }
-        });
-
-
+        fireTreeModelChanged(null);
     }
 
     /**
@@ -274,7 +263,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                treeModelImpl.fireTreeModelChanged(node);
+                if (node == null) {
+                    treeModelImpl.fireTreeModelChanged();
+                } else {
+                    treeModelImpl.fireTreeModelChanged(node);
+                }
             }
         });
     }
@@ -289,13 +282,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected void initComponents() {
         this.removeAll();
         setLayout(new BorderLayout());
-        buttonsToolbar =
-                new JToolBar();
-        refresh =
-                new JButton();
+        buttonsToolbar = new JToolBar();
+        refresh = new JButton();
 
         buttonsToolbar.setFloatable(false);
-        buttonsToolbar.setOrientation(1);
+        buttonsToolbar.setOrientation(JToolBar.VERTICAL);
         buttonsToolbar.setRollover(true);
 
         // Refresh button...
@@ -318,159 +309,42 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         mainPanel.removeAll();
         add(mainPanel, BorderLayout.CENTER);
 
+        TreeTableVisualizerConfigurationAccessor configInfo =
+                TreeTableVisualizerConfigurationAccessor.getDefault();
+
+
         List<ColumnModel> columns = new ArrayList<ColumnModel>();
-        Column[] tableColumns = TreeTableVisualizerConfigurationAccessor.getDefault().getTableColumns(configuration);
-        for (final Column f : tableColumns) {
-            //      final int col = i;
-            ColumnModel column = new ColumnModel() {
+        Column[] tableColumns = configInfo.getTableColumns(configuration);
 
-                boolean isVisible = true;
-                boolean isSorted = false;
-                boolean isSortedDescending = false;
-                int currentOrderNumber = -1;
-
-                public String getID() {
-                    return f.getColumnName();
-                }
-
-                public String getDisplayName() {
-                    return f.getColumnUName();
-                }
-
-                public Class getType() {
-                    return f.getColumnClass();
-                }
-
-                @Override
-                public void setCurrentOrderNumber(int newOrderNumber) {
-                    this.currentOrderNumber = newOrderNumber;
-                }
-
-                @Override
-                public int getCurrentOrderNumber() {
-                    return currentOrderNumber;
-                }
-
-                @Override
-                public void setVisible(boolean arg0) {
-                    this.isVisible = arg0;
-                }
-
-                @Override
-                public boolean isVisible() {
-                    return isVisible;
-                }
-
-                @Override
-                public boolean isSortable() {
-                    return true;
-                }
-
-                @Override
-                public boolean isSorted() {
-                    return isSorted;
-                }
-
-                @Override
-                public void setSorted(boolean sorted) {
-                    this.isSorted = sorted;
-                }
-
-                @Override
-                public void setSortedDescending(boolean sortedDescending) {
-                    this.isSortedDescending = sortedDescending;
-                }
-
-                @Override
-                public boolean isSortedDescending() {
-                    return isSortedDescending;
-                }
-            };
-
-            columns.add(column);
+        for (final Column column : tableColumns) {
+            columns.add(new TreeTableVisualizerColumnModel(column));
         }
-        columns.add(new ColumnModel() {
 
-            boolean isVisible = true;
-            boolean isSorted = false;
-            boolean isSortedDescending = false;
-            int currentOrderNumber = -1;
-
-            @Override
-            public String getID() {
-                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnName();
-            }
-
-            @Override
-            public String getDisplayName() {
-                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
-            }
+        Column treeColumn = configInfo.getTreeColumn(configuration);
+        columns.add(new TreeTableVisualizerColumnModel(treeColumn) {
 
             @Override
             public Class getType() {
                 return null;
             }
-
-            @Override
-            public void setCurrentOrderNumber(int newOrderNumber) {
-                this.currentOrderNumber = newOrderNumber;
-            }
-
-            @Override
-            public int getCurrentOrderNumber() {
-                return currentOrderNumber;
-            }
-
-            @Override
-            public void setVisible(boolean arg0) {
-                this.isVisible = arg0;
-            }
-
-            @Override
-            public boolean isVisible() {
-                return isVisible;
-            }
-
-            @Override
-            public boolean isSortable() {
-                return true;
-            }
-
-            @Override
-            public boolean isSorted() {
-                return isSorted;
-            }
-
-            @Override
-            public void setSorted(boolean sorted) {
-                this.isSorted = sorted;
-            }
-
-            @Override
-            public void setSortedDescending(boolean sortedDescending) {
-                this.isSortedDescending = sortedDescending;
-            }
-
-            @Override
-            public boolean isSortedDescending() {
-                return isSortedDescending;
-            }
         });
-        List<Model> models = new ArrayList<Model>();
+
         treeModelImpl = new TreeModelImpl();
-        models.add(treeModelImpl);//tree model
-        tableModelImpl =
-                new TableModelImpl();
+        tableModelImpl = new TableModelImpl();
+        NodeActionsProvider nodesActionProvider =
+                configInfo.getNodesActionProvider(configuration);
+
+        List<Model> models = new ArrayList<Model>();
+        models.add(treeModelImpl);
         models.add(tableModelImpl);
         models.addAll(columns);
         models.add(new NodeModelImpl());
-        if (TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration) != null) {
-            models.add(TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration));
+        if (nodesActionProvider != null) {
+            models.add(nodesActionProvider);
         }
-        compoundModel =
-                Models.createCompoundModel(models);
-        treeTableView =
-                Models.createView(compoundModel);
+
+        compoundModel = Models.createCompoundModel(models);
+        treeTableView = Models.createView(compoundModel);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(treeTableView, BorderLayout.CENTER);
 
@@ -479,9 +353,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         //tableModelImpl.fireTableValueChanged();
         mainPanel.repaint();
         repaint();
-
         revalidate();
-
     }
 
     protected final void asyncFillModel(final List<Column> columns, boolean cancelIfNotDone) {
@@ -514,8 +386,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (list == null) {
             return;
         }
-        
-        List<DefaultMutableTreeNode> nodes = 
+
+        List<DefaultMutableTreeNode> nodes =
                 new ArrayList<DefaultMutableTreeNode>(list.size());
 
         for (T value : list) {
