@@ -190,11 +190,11 @@ public abstract class AbstractVariableNode extends AbstractModelNode
         }
         return getProperty().getChildren().size() == 0;
     }
-    
+        
     public int getContext() {
         return getRootContext().getIndex();
     }
-    
+
     protected void setProperty( Property property ) {
         Property old = getProperty();
         property.setName( old.getName() );
@@ -208,16 +208,16 @@ public abstract class AbstractVariableNode extends AbstractModelNode
         return myProperty;
     }
     
-    public ContextNode getRootContext() {
-        AbstractModelNode parent = getParent();
-        while ( !( parent instanceof ContextNode)) {
-            parent = parent.getParent();
+    private ContextNode getRootContext() {
+        AbstractModelNode retval = this;
+        while (retval != null && !( retval instanceof ContextNode)) {
+            retval = retval.getParent();
         }
-        assert parent instanceof ContextNode;
-        return (ContextNode)parent;
+        assert retval instanceof ContextNode : retval;
+        return (ContextNode)retval;
     }
     
-    private void setupCommand( PropertyCommand command ) {
+    private void setupCommand(PropertyCommand command) {
         command.setName(getFullName());
         command.setContext( getContext() );
     }
