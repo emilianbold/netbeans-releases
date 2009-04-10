@@ -101,9 +101,9 @@ public class ModulesInstaller {
         return installModules(null, info);
     }
 
+    static boolean success = false;
     public static boolean installModules (ProgressMonitor monitor, FeatureInfo info) {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
-        boolean success = false;
         
         FindComponentModules findModules = new FindComponentModules(info);
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();

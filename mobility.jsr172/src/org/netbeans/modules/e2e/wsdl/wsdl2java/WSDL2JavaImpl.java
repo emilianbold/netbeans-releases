@@ -140,7 +140,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( type.getSubconstructs().size() == 0 ) {
                 return element;
             } else if( type.getSubconstructs().size() == 1 ) {
-                return (Element) type.getSubconstructs().get( 0 );
+                return getSimplifiedElement(
+                        (Element) type.getSubconstructs().get( 0 ));
             }
         }
         return element;
@@ -257,6 +258,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                     Element re = definition.getSchemaHolder().
                                         getSchemaElement( part.getElementName());
                                     Element e = getReturnElement( re );
+       
                                     if( isElementComplex( e )) {
                                         usedTypes.add( e.getName());
                                         usedReturnTypeNames.add( re.getName());
