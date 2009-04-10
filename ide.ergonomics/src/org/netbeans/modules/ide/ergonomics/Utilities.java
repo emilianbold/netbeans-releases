@@ -76,9 +76,9 @@ public class Utilities {
                 return new JPanel();
             }
         };
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
-                descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFoundMessage);
+        descriptor[0] = Mutex.EVENT.readAccess(new Mutex.Action<DialogDescriptor>() {
+            public DialogDescriptor run() {
+                return new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFoundMessage);
             }
         });
         descriptor[0].setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });

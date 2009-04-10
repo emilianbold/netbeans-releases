@@ -39,21 +39,14 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.awt.EventQueue;
-import java.awt.Frame;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.ide.ergonomics.Utilities;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -69,9 +62,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
@@ -120,13 +110,10 @@ public class FodDataObjectFactory implements DataObject.Factory {
     }
 
     private final class Cookies extends MultiDataObject
-    implements OpenCookie, EditCookie, Runnable, ChangeListener {
+    implements OpenCookie, EditCookie, ChangeListener {
         private final FileObject fo;
         private final ChangeListener weakL;
-        private boolean success;
         private boolean open;
-        private ProgressHandle handle;
-        private JDialog dialog;
         
         private Cookies(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
             super(fo, loader);
@@ -142,6 +129,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
             return dn;
         }
 
+        @Override
         public Lookup getLookup() {
             return getCookieSet().getLookup();
         }
@@ -155,92 +143,40 @@ public class FodDataObjectFactory implements DataObject.Factory {
         }
 
         private void delegate(boolean open) {
-            if (dialog != null) {
-                return;
-            }
-
-            if (EventQueue.isDispatchThread()) {
-                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(FodDataObjectFactory.class, "MSG_Opening_File", fo.getPath()));
-                Frame[] arr = JFrame.getFrames();
-                final Frame mainWindow = arr.length > 0 ? arr[0] : null;
-                dialog = new JDialog(mainWindow, NbBundle.getMessage(FodDataObjectFactory.class, "CAP_Opening_File"), true);
-                dialog.getContentPane().add(new FodDataObjectFactoryPanel(handle, fo, null));
-                dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-                dialog.pack();
-                dialog.setBounds(Utilities.findCenterBounds(dialog.getPreferredSize()));
-                FoDFileSystem.LOG.log(Level.FINE, "Bounds {0}", dialog.getBounds());
-            } else {
-                dialog = null;
-            }
+            FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
+            String msg = NbBundle.getMessage(FodDataObjectFactory.class, "MSG_Opening_File", fo.getNameExt());
 
             FoDFileSystem.LOG.log(Level.FINER, "Opening file {0}", this);
             this.open = open;
-            Task task = RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
-            if (dialog != null) {
-                dialog.setVisible(true);
+            boolean success = Utilities.featureDialog(info, msg, msg);
+            if (success) {
+                finishOpen();
             }
-            task.waitFinished ();
         }
 
 
         private void finishOpen() {
-            if (success) {
-                ignore.add(getPrimaryFile());
-                try {
-                    DataObject obj = DataObject.find(fo);
-                    FoDFileSystem.LOG.log(Level.FINER, "finishOpen {0}", obj);
-                    Class<?> what = open ? OpenCookie.class : EditCookie.class;
-                    Object oc = obj.getLookup().lookup(what);
-                    if (oc == this) {
-                        obj.setValid(false);
-                        obj = DataObject.find(fo);
-                        oc = obj.getLookup().lookup(what);
-                    }
-                    if (oc instanceof OpenCookie) {
-                        ((OpenCookie)oc).open();
-                    }
-                    if (oc instanceof EditCookie) {
-                        ((EditCookie)oc).edit();
-                    }
-                } catch (PropertyVetoException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+            ignore.add(getPrimaryFile());
+            try {
+                DataObject obj = DataObject.find(fo);
+                FoDFileSystem.LOG.log(Level.FINER, "finishOpen {0}", obj);
+                Class<?> what = open ? OpenCookie.class : EditCookie.class;
+                Object oc = obj.getLookup().lookup(what);
+                if (oc == this) {
+                    obj.setValid(false);
+                    obj = DataObject.find(fo);
+                    oc = obj.getLookup().lookup(what);
                 }
-            }
-        }
-
-        public void run() {
-            FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
-            FeatureManager.logUI("ERGO_FILE_OPEN", info.clusterName);
-            FindComponentModules findModules = new FindComponentModules(info);
-            Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
-            Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
-            if (toInstall != null && ! toInstall.isEmpty ()) {
-                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                installer.getInstallTask ().waitFinished ();
-                success = true;
-            } else if (toEnable != null && ! toEnable.isEmpty ()) {
-                ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
-                if (handle != null) {
-                    enabler.assignEnableHandle(handle);
+                if (oc instanceof OpenCookie) {
+                    ((OpenCookie)oc).open();
                 }
-                enabler.getEnableTask ().waitFinished ();
-                success = true;
-            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                success = true;
-                handle = null;
-            }
-
-            finishOpen();
-
-            if (dialog != null) {
-                if (handle != null) {
-                    handle.finish();
+                if (oc instanceof EditCookie) {
+                    ((EditCookie)oc).edit();
                 }
-                dialog.setVisible(false);
-                dialog = null;
-                handle = null;
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
