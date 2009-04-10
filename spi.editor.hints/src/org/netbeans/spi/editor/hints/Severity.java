@@ -41,7 +41,7 @@
 package org.netbeans.spi.editor.hints;
 
 /**
- *
+ * Severity of the hint.
  * @author Jan Lahoda
  */
 public enum Severity {
