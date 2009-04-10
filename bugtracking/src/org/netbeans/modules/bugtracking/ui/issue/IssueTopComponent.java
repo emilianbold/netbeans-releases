@@ -313,6 +313,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             issue.addPropertyChangeListener(IssueTopComponent.this);
                             revalidate();
                             repaint();
+
+                            focusFirstEnabledComponent();
                         }
                     });
                 } finally {
@@ -321,6 +323,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
+    }
+
+    private void focusFirstEnabledComponent() {
+        repositoryComboBox.requestFocusInWindow();
+        if(!repositoryComboBox.isEnabled()) {
+            newButton.requestFocusInWindow();
+            if(!newButton.isEnabled()) {
+                newButton.transferFocus();
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -344,11 +356,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                repositoryComboBox.requestFocus();
-            }
-        });
     }
 
     @Override
