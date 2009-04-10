@@ -1834,10 +1834,13 @@ exists or setup the property manually. For example like this:
                                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                                 <property name="{@name}" value="{.}"/>
                                             </xsl:for-each>
+                                            <property name="deploy.on.save" value="false"/>
                                         </ant>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </ant>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:when>
@@ -1867,10 +1870,21 @@ exists or setup the property manually. For example like this:
                                     <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                         <property name="{@name}" value="{.}"/>
                                     </xsl:for-each>
+                                    <xsl:choose>
+                                        <xsl:when test="$subtarget = 'jar'">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </xsl:when>
+                                    </xsl:choose>
                                 </ant>
                             </xsl:when>
                             <xsl:otherwise>
-                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                    <xsl:choose>
+                                        <xsl:when test="$subtarget = 'jar'">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                </ant>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:otherwise>
@@ -1897,7 +1911,9 @@ exists or setup the property manually. For example like this:
                         <xsl:choose>
                             <!-- call standart target if the artifact type is jar (java libraries) -->
                             <xsl:when test="$subtarget = 'jar'">
-                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="deploy.on.save" value="false"/>
+                                </ant>
                             </xsl:when>
                             <xsl:otherwise>
                                 <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
@@ -1907,7 +1923,16 @@ exists or setup the property manually. For example like this:
                         </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
-                        <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                        <xsl:choose>
+                            <xsl:when test="$subtarget = 'jar'">
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="deploy.on.save" value="false"/>
+                                </ant>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:otherwise>
                 </xsl:choose>
                 

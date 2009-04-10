@@ -45,6 +45,8 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -267,6 +269,24 @@ public final class ExtractLayer extends Task {
         concat.addFooter(te);
         concat.execute();
 
+        {
+            HashMap<String,Resource> names = new HashMap<String,Resource>();
+            HashSet<String> duplicates = new HashSet<String>();
+            for (Resource r : icons) {
+                String name = r.getName().replaceFirst(".*/", "");
+                Resource prev = names.put(name, r);
+                if (prev != null) {
+                    if (prev.getName().equals(r.getName())) {
+                        continue;
+                    }
+                    duplicates.add(r.getName());
+                    duplicates.add(prev.getName());
+                }
+            }
+            if (!duplicates.isEmpty()) {
+                throw new BuildException("Duplicated resources are forbidden: " + duplicates.toString().replace(',', '\n'));
+            }
+        }
 
         Copy copy = new Copy();
         copy.setProject(getProject());
