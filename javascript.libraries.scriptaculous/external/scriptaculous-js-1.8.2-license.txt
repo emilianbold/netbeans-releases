@@ -1,10 +1,10 @@
 Name: Scriptaculous
-Version: 1.8.1
+Version: 1.8.2
 Description: JavaScript Library
 License: MIT
-OSR:
+OSR: 11658
 Origin: http://script.aculo.us/downloads
-files: scriptaculous-1.8.1.zip
+files: scriptaculous-1.8.2.zip
 Source:
 Comment: JavaScript source for script.aculo.us JavaScript Library Manager  NBM
 
