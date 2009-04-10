@@ -72,13 +72,13 @@ public class KenaiQuery extends BugzillaQuery {
     }
 
     @Override
-    protected void logQueryEvent(int count) {
+    protected void logQueryEvent(int count, boolean autoRefresh) {
         BugtrackingUtil.logQueryEvent(
             BugzillaConnector.getConnectorName(),
             getDisplayName(),
             count,
             true,
-            getController().isAutoRefresh());
+            autoRefresh);
 }
 
 }

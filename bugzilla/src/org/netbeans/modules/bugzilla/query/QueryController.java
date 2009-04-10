@@ -659,7 +659,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
                         BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
                     }
-                    refresh();
+                    refreshIntern(false);
                 } finally {
                     panel.setQueryRunning(false);
                     task = null;
@@ -667,8 +667,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         });
     }
-
-
 
     public void autoRefresh() {
         onRefresh(true);
@@ -682,31 +680,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
         post(new Runnable() {
             public void run() {
                 panel.setQueryRunning(true);
-                autoRefresh = auto;
                 try {
-                    refresh();
+                    refreshIntern(auto);
                 } finally {
-                    autoRefresh = false;
                     panel.setQueryRunning(false);
                     task = null;
                 }
             }
-
         });        
     }
 
-    private boolean autoRefresh = false;
-    public boolean isAutoRefresh() {
-        return autoRefresh;
-    }
-
-    public void refresh() {
+    private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {
             // XXX check url format etc...
             // XXX what if there is a different host in queries repository as in the url?
-            query.refresh(panel.urlTextField.getText());
+            query.refresh(panel.urlTextField.getText(), autoRefresh);
         } else {
-            query.refresh(getUrlParameters());
+            query.refresh(getUrlParameters(), autoRefresh);
         }
     }
 

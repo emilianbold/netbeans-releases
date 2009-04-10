@@ -134,6 +134,10 @@ public class BugzillaQuery extends Query {
 
     @Override
     public boolean refresh() { // XXX what if already running! - cancel task
+        return refreshIntern(false);
+    }
+
+    boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
 
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -177,7 +181,7 @@ public class BugzillaQuery extends Query {
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
-                    repository.getExecutor().execute(queryCmd);
+                    repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = queryCmd.hasFailed();
                     if(ret[0]) {
                         return;
@@ -192,10 +196,10 @@ public class BugzillaQuery extends Query {
                     queryIssues.addAll(issues);
 
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
-                    repository.getExecutor().execute(dataCmd);
+                    repository.getExecutor().execute(dataCmd, !autoRefresh);
                     ret[0] = dataCmd.hasFailed();
                 } finally {
-                    logQueryEvent(issues.size());
+                    logQueryEvent(issues.size(), autoRefresh);
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 }
             }
@@ -203,19 +207,19 @@ public class BugzillaQuery extends Query {
         return ret[0];
     }
 
-    protected void logQueryEvent(int count) {
+    protected void logQueryEvent(int count, boolean autoRefresh) {
         BugtrackingUtil.logQueryEvent(
             BugzillaConnector.getConnectorName(),
             name,
             count,
             false,
-            getController().isAutoRefresh());
+            autoRefresh);
     }
 
-    public void refresh(String urlParameters) {
+    void refresh(String urlParameters, boolean autoReresh) {
         assert urlParameters != null;
         this.urlParameters = urlParameters;
-        refresh();
+        refreshIntern(autoReresh);
     }
 
     void remove() {
