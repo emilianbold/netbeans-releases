@@ -15,7 +15,8 @@ import org.openide.util.NbBundle;
 /*package*/ class SyncIndicatorPanel {
 
     private static final Color GRAPH_COLOR = GraphConfig.COLOR_4;
-    private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
+    private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(
+            GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks"), GraphDescriptor.Kind.LINE); // NOI18N
     private static final String THREADS_DETAIL_ID = "thread-count";//NOI18N
 
     private final Graph graph;

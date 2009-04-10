@@ -455,7 +455,9 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     public void itemStateChanged(ItemEvent e) {
-        itemSelected(e.getItem());
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            itemSelected(e.getItem());
+        }
     }
 
     private void itemSelected(Object selectedItem) {
@@ -680,7 +682,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
             repository = connector.createRepository();
             return repository;
         }
-    }
+            }
 
     private static final class ComboItemsRenderer implements ListCellRenderer {
 

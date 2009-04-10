@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                 <attr name="position" intvalue="9010"/>
             </file>
-            <file name="PaletteItemResolver.xml" url="resources/PaletteItemResolver.xml">
+            <file name="PaletteItemResolver.xml" url="resources/UMLPaletteItemResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                 <attr name="position" intvalue="9020"/>
             </file>
