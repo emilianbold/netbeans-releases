@@ -50,7 +50,6 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -73,12 +72,18 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
     private String MAPPING_DTD = "hibernate-mapping-3.0.dtd"; //NOI18N
     private String MAPPING = "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"; //NOI18N
     private String MAPPING_DTD_URL = "nbres:/org/netbeans/modules/hibernate/resources/" + MAPPING_DTD; //NOI18N
-    
+
+    private String REVERSE_ENG_PUBLIC_ID = "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN"; //NOI18N
+    private String REVERSE_ENG_DTD = "hibernate-reverse-engineering-3.0.dtd"; //NOI18N
+    private String REVERSE_ENG = "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd"; //NOI18N
+    private String REVERSE_ENG_DTD_URL = "nbres:/org/netbeans/modules/hibernate/resources/" + REVERSE_ENG_DTD; //NOI18N
+
     public Iterator getPublicIDs() {
         List<String> publicIdList = new ArrayList<String>();
         publicIdList.add(CONFIG_PUBLIC_ID);
         publicIdList.add(MAPPING_PUBLIC_ID);
-        
+        publicIdList.add(REVERSE_ENG_PUBLIC_ID);
+
         return publicIdList.listIterator();
     }
 
@@ -92,6 +97,8 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
             return CONFIG_DTD_URL;
         } else if(MAPPING_PUBLIC_ID.equals(publicId)) {
             return MAPPING_DTD_URL;
+        } else if(REVERSE_ENG_PUBLIC_ID.equals(publicId)) {
+            return REVERSE_ENG_DTD_URL;
         }
         
         return null;
@@ -138,6 +145,8 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
             return new org.xml.sax.InputSource(CONFIG_DTD_URL);
         } else if(MAPPING_PUBLIC_ID.equals(publicId)) {
             return new org.xml.sax.InputSource(MAPPING_DTD_URL);
+        } else if(REVERSE_ENG_PUBLIC_ID.equals(publicId)) {
+            return new org.xml.sax.InputSource(REVERSE_ENG_DTD_URL);
         }
         
         return null;
