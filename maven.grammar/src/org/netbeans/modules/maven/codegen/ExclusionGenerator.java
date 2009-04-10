@@ -147,7 +147,7 @@ public class ExclusionGenerator implements CodeGenerator {
                             dep.setType(directArt.getType());
                             dep.setVersion(directArt.getVersion());
                             model.getProject().addDependency(dep);
-                            //mkleint: TODO why is the dependency being added? i forgot already..
+                            
                         }
                         Exclusion ex = dep.findExclusionById(exclude.getGroupId(), exclude.getArtifactId());
                         if (ex == null) {

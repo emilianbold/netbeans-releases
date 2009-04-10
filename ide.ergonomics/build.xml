@@ -202,6 +202,7 @@
             </modules>
            <entries dir="${netbeans.dest.dir}">
                 <include name="**/modules/*.jar"/>
+                <exclude name="ergonomics*/**/*"/>
             </entries>
             <bundlefilter>
                 <concatfilter prepend="${proxyprop}"/>
