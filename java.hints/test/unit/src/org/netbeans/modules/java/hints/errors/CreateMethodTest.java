@@ -122,13 +122,12 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;}}",
                        116 - 25,
                        "CreateMethodFix:fff(java.util.Collection<java.lang.String> strings)void:test.Test",
-                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not yet implemented\"); } private static Collection<String> getStrings() {return null;}}");
+                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
     }
     
     public void testCreateMethod74129() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel {}",
-                       89 - 25,
+                       "package test; public class Test {public void test() {TopLevel.f|ff();}} class TopLevel {}",
                        "CreateMethodFix:fff()void:test.TopLevel",
                        "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel { static void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
     }
@@ -138,7 +137,7 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test {public static class T extends Test {public void test() {super.fff();}}}",
                        122 - 25,
                        "CreateMethodFix:fff()void:test.Test",
-                       "package test; public class Test {public static class T extends Test {public void test() {super.fff();}} private void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test { private void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } public static class T extends Test {public void test() {super.fff();}}}");
     }
     
     public void testCreateMethod75069() throws Exception {
