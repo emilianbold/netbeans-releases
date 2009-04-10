@@ -459,7 +459,7 @@ public class SunStudioDataCollector
         }
     }
 
-    final void updateIndicators(List<DataRow> data) {
+    protected void updateIndicators(List<DataRow> data) {
         this.notifyIndicators(data);
     }
 
