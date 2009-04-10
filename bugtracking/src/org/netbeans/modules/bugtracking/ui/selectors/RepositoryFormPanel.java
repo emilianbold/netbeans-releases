@@ -46,14 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.ImageUtilities;
@@ -101,13 +100,18 @@ public class RepositoryFormPanel extends JPanel {
                 "org/netbeans/modules/bugtracking/ui/resources/error.gif")));   //NOI18N
         updateErrorMessage(" ");                                        //NOI18N
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(cardsPanel);
-        add(Box.createVerticalStrut(14));
-        add(errorLabel);
-
-        cardsPanel.setAlignmentX(0.0f);
-        errorLabel.setAlignmentX(0.0f);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup()
+                        .add(cardsPanel)
+                        .add(errorLabel));
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .add(cardsPanel)
+                        .add(6, 14, 14)
+                        .add(errorLabel));
+        layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 
     public boolean displayForm(Repository repository) {
