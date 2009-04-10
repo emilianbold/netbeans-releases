@@ -68,7 +68,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.SourceUtilsTestUtil2;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.InputAttributes;
@@ -104,6 +103,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class HintsTestBase extends NbTestCase {
     private static final String DATA_EXTENSION = "org/netbeans/test/java/hints/";
+    private Document doc;
     
     /** Need to be defined because of JUnit */
     public HintsTestBase(String name) {
@@ -219,11 +219,18 @@ public class HintsTestBase extends NbTestCase {
         
         assertNotNull(testSource);
 
+        DataObject od = DataObject.find(testSource);
+        EditorCookie ec = od.getCookie(EditorCookie.class);
+
+        assertNotNull(ec);
+
+        doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
+
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
         IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
-//        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
-//        latch.await();
 
         js = JavaSource.forFileObject(testSource);
         
