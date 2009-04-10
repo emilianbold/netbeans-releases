@@ -114,16 +114,16 @@ import org.netbeans.junit.NbModuleSuite;
             if (selectionStart != Math.min(caretPosToSet, etalon) ||
                     selectionEnd != Math.max(caretPosToSet, etalon)){
                 String keyString = KeyStroke.getKeyStroke(key, mod).toString();
-                //fail(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+
-                //        newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
-                System.out.println(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
+                fail(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+
+                        newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
+//                System.out.println(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
             }
         }else{
             if (etalon != newCaretOffset){
                 String keyString = KeyStroke.getKeyStroke(key, mod).toString();
-                //fail(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+
-                //        newCaretOffset+"]");
-                System.out.println(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+ newCaretOffset+"]");
+                fail(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+
+                        newCaretOffset+"]");
+//                System.out.println(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+ newCaretOffset+"]");
             }
         }
     }
@@ -189,10 +189,10 @@ import org.netbeans.junit.NbModuleSuite;
             checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 78, 70, true);
             
             // check down action
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 70, 78, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 70, 79, false);
             
             // check down action, selection
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 70, 78, true);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 70, 79, true);
             
             // check magic position
             checkActionByKeyStroke(KeyEvent.VK_UP, 0, 80, 70, false);
@@ -250,10 +250,10 @@ import org.netbeans.junit.NbModuleSuite;
             checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 467, 454, true);
             
             // check down action
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 454, 467, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 454, 468, false);
             
             // check down action, selection
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 454, 467, true);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 454, 468, true);
             
             // check magic position
             checkActionByKeyStroke(KeyEvent.VK_UP, 0, 469, 454, false);
@@ -302,16 +302,16 @@ import org.netbeans.junit.NbModuleSuite;
              
             // checking end of fold
             // check up action
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 1035, 920, false);
+            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 1038, 920, false);
             
             // check up action, selection
-            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 1035, 920, true);
+            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 1038, 920, true);
             
             // check down action
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 920, 1037, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 920, 1038, false);
             
             // check down action, selection
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 920, 1037, true);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 920, 1038, true);
             
             // check magic position
             checkActionByKeyStroke(KeyEvent.VK_UP, 0, 1033, 917, false);

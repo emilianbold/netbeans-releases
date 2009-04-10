@@ -111,17 +111,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
                 return;
             }
-            final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
+                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath);
+                            if (javaContext.uq == null)
+                                return null; //IDE is exiting, indeces are already closed.
                             final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath);
-                            ClassIndexImpl uq = cim.getUsagesQuery(context.getRootURI());
-                            uq.setDirty(null);
+                            javaContext.uq.setDirty(null);
                             for (Indexable i : files) {
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
@@ -163,7 +163,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             javaContext.sa.store();
-                            uq.typesEvent(_at, _rt, compileResult.addedTypes);
+                            javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
                             BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
 
                             for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
@@ -183,14 +183,15 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
+                            final JavaParsingContext javaContext = new JavaParsingContext(context.getRoot());
+                            if (javaContext.uq == null)
+                                return null; //IDE is exiting, indeces are already closed.
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
-                            JavaParsingContext javaContext = new JavaParsingContext(context.getRoot());
                             for (Indexable i : files) {
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
@@ -198,7 +199,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removedTypes);
                             javaContext.sa.store();
                             BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet());
-                            cim.getUsagesQuery(context.getRootURI()).typesEvent(null, removedTypes, null);
+                            javaContext.uq.typesEvent(null, removedTypes, null);
                             for (Map.Entry<URL, Collection<URL>> entry : root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }

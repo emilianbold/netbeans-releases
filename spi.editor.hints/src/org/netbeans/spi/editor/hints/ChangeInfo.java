@@ -66,31 +66,54 @@ import org.openide.filesystems.FileObject;
 public final class ChangeInfo {
     private List<Change> changes = null;
     
-    /** Create an instance of ChangeInfo prepopulated with a 
-     * single change */
+    /**
+     * Create an instance of ChangeInfo prepopulated with a
+     * single change
+     */
     public ChangeInfo(FileObject fileObject, Position start, Position end) {
         add (fileObject, start, end);
     }
     
+    /**
+     * Create an instance of ChangeInfo prepopulated with a
+     * single change without associated file object.
+     */
     public ChangeInfo(Position start, Position end) {
         add (null, start, end);
     }
     
-    
+    /**
+     * Create an empty instance of ChangeInfo .
+     */
     public ChangeInfo() {
     }
-    
+
+    /**
+     * @return number of changes
+     */
     public final int size() {
         return changes != null ? changes.size() : 0;
     }
-    
+
+    /**
+     * Adds one change.
+     * @param fileObject
+     * @param start
+     * @param end
+     */
     public final void add (FileObject fileObject, Position start, Position end) {
         if (changes == null) {
             changes = new ArrayList<Change>(5);
         }
         changes.add (new ChangeImpl (fileObject, start, end));
     }
-    
+
+    /**
+     * Getter for the i-th change
+     * @param i index of the change
+     * @return the change or throws ArrayIndexOutOfBoundsException if there are
+     *         no changes in the ChangeInfo
+     */
     public final Change get (int i) {
         if (changes == null) {
             throw new ArrayIndexOutOfBoundsException ("No changes");
@@ -98,6 +121,7 @@ public final class ChangeInfo {
         return (Change) changes.get(i);
     }
     
+    @Override
     public String toString() {
         int size = size();
         if (size == 0) {
@@ -121,8 +145,19 @@ public final class ChangeInfo {
      * change.
      */
     public static interface Change {
+        /**
+         * @return start position of the change
+         */
         public Position getStart();
+
+        /**
+         * @return end position of the change
+         */
         public Position getEnd();
+        /**
+         * @return the associated file or <code>null</code> if there is no
+         *         file associated with the chage
+         */
         public FileObject getFileObject();
     }
     
