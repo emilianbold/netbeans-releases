@@ -1419,7 +1419,7 @@ to simulate
     Feel free to copy into other modules.
     @param targetname required name of target to generate
     @param type artifact-type from project.xml to filter on; optional, if not specified, uses
-                all references, and looks for clean targets rather than build targets
+    all references, and looks for clean targets rather than build targets
     @return an Ant target which builds (or cleans) all known subprojects
     -->
     <xsl:template name="deps.target">
@@ -1428,7 +1428,7 @@ to simulate
         <xsl:param name="ear"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            
+
             <xsl:choose>
                 <xsl:when test="$ear">
                     <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
@@ -1439,7 +1439,7 @@ to simulate
                     <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
-            
+
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps2:foreign-project"/>
@@ -1466,10 +1466,13 @@ to simulate
                                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                                 <property name="{@name}" value="{.}"/>
                                             </xsl:for-each>
+                                            <property name="deploy.on.save" value="false"/>
                                         </ant>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </ant>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:when>
@@ -1499,16 +1502,27 @@ to simulate
                                     <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                         <property name="{@name}" value="{.}"/>
                                     </xsl:for-each>
+                                    <xsl:choose>
+                                        <xsl:when test="$subtarget = 'jar'">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </xsl:when>
+                                    </xsl:choose>
                                 </ant>
                             </xsl:when>
                             <xsl:otherwise>
-                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                    <xsl:choose>
+                                        <xsl:when test="$subtarget = 'jar'">
+                                            <property name="deploy.on.save" value="false"/>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                </ant>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:for-each>
-            
+
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -1529,19 +1543,31 @@ to simulate
                         <xsl:choose>
                             <!-- call standart target if the artifact type is jar (java libraries) -->
                             <xsl:when test="$subtarget = 'jar'">
-                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="deploy.on.save" value="false"/>
+                                </ant>
                             </xsl:when>
                             <xsl:otherwise>
                                 <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
                                     <property name="dist.ear.dir" location="${{build.dir}}"/>
-                                </ant>                            
+                                </ant>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
-                        <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                        <xsl:choose>
+                            <xsl:when test="$subtarget = 'jar'">
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="deploy.on.save" value="false"/>
+                                </ant>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:otherwise>
                 </xsl:choose>
+
             </xsl:for-each>
         </target>
     </xsl:template>

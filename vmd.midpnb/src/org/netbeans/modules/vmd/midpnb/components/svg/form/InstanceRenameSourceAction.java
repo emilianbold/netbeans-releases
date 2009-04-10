@@ -50,7 +50,8 @@ import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameAction;
 
         @Override
         public void setComponent(DesignComponent component) {
-            DesignComponent comp = component.readProperty(SVGButtonEventSourceCD.PROP_SVGCOMPONENT).getComponent();
+            DesignComponent comp = component.readProperty(
+                    SVGButtonEventSourceCD.PROP_SVGCOMPONENT).getComponent();
             super.setComponent(component);
             setActionComponent(comp);
         }

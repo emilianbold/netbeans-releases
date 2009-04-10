@@ -189,7 +189,7 @@ public class GeneralSanityTest extends NbTestCase {
                     "Please make sure that your plugins correctly declare AutoUpdate-Show-In-Client \n" +
                     "property in their manifest file. If your change to the list of plugins is intentional, \n" +
                     "please follow the UI review process: http://wiki.netbeans.org/UIReviewProcess and change \n" +
-                    "the golden file in ide.kit/qa-functional/data/permanentUI/plugins/installed-plugins.txt.\n" +
+                    "the golden file in ide.kit/test/qa-functional/data/permanentUI/plugins/installed-plugins.txt.\n" +
                     Utilities.readFileToString(diffFile);
 
             assertFile(message, getPluginsGoldenFile() , idePluginsLogFile, diffFile);

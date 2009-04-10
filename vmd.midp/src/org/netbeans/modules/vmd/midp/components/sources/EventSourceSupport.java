@@ -79,13 +79,19 @@ public final class EventSourceSupport {
     }
     
     static void addActionsPresentres(List<Presenter> presenters) {
+        addActionsPresentres(presenters, true);
+    }
+
+    static void addActionsPresentres(List<Presenter> presenters, boolean allowRename)
+    {
         for (Presenter presenter : presenters.toArray(new Presenter[presenters.size()])) {
             if (presenter instanceof ActionsPresenter)
                 presenters.remove(presenter);
              if (presenter instanceof ActionsPresenter)
                 presenters.remove(presenter);
         }
-        MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, true, true, false);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, true,
+                    true, allowRename, true, false);
         MidpActionsSupport.addMoveActionPresenter(presenters, DisplayableCD.PROP_COMMANDS);
         presenters.addAll(ActionsSupport.createByReference(PROP_COMMAND, PropertiesAction.class)); //NOI18N
     }
