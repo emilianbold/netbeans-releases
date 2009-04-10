@@ -65,7 +65,7 @@ public final class NativeProcessInfo {
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
     private boolean unbuffer;
-    protected final MacroExpander macroExpander;
+    public final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(NativeProcessInfo info) {

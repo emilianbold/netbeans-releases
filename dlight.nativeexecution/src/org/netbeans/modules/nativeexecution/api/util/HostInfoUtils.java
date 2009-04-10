@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
@@ -34,11 +35,11 @@ public final class HostInfoUtils {
      * String constant that can be used to identify a localhost.
      */
     public static final String LOCALHOST = "127.0.0.1"; // NOI18N
-    private static List<String> myIPAdresses = new ArrayList<String>();
-    private static Map<String, Boolean> filesExistenceHash =
+    private static final List<String> myIPAdresses = new ArrayList<String>();
+    private static final Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
-    private static Map<ExecutionEnvironment, HostInfo> hostInfo =
-            Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, HostInfo>());
+    private static final Map<ExecutionEnvironment, ExecEnvInfo> execEnvInfo =
+            Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, ExecEnvInfo>());
     private static final String cmd_test = "/bin/test"; // NOI18N
 
 
@@ -77,7 +78,7 @@ public final class HostInfoUtils {
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws ConnectException {
+            final String fname) throws IOException {
         return fileExists(execEnv, fname, true);
     }
 
@@ -98,7 +99,7 @@ public final class HostInfoUtils {
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname, final boolean useCache)
-            throws ConnectException {
+            throws IOException {
         String key = execEnv.toString() + fname;
 
         if (useCache && filesExistenceHash.containsKey(key)) {
@@ -120,9 +121,7 @@ public final class HostInfoUtils {
             try {
                 fileExists = npb.call().waitFor() == 0;
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IOException(ex.getMessage());
             }
         }
 
@@ -145,7 +144,7 @@ public final class HostInfoUtils {
      */
     public static String getOS(final ExecutionEnvironment execEnv)
             throws ConnectException {
-        HostInfo info = getHostInfo(execEnv);
+        ExecEnvInfo info = getHostInfo(execEnv);
         return info.os;
     }
 
@@ -160,7 +159,7 @@ public final class HostInfoUtils {
      */
     public static String getPlatform(final ExecutionEnvironment execEnv)
             throws ConnectException {
-        HostInfo info = getHostInfo(execEnv);
+        ExecEnvInfo info = getHostInfo(execEnv);
         return info.platform;
     }
 
@@ -177,7 +176,7 @@ public final class HostInfoUtils {
      */
     public static String getIsaBits(ExecutionEnvironment execEnv)
             throws ConnectException {
-        HostInfo info = getHostInfo(execEnv);
+        ExecEnvInfo info = getHostInfo(execEnv);
         return info.instructionSet;
     }
 
@@ -201,36 +200,38 @@ public final class HostInfoUtils {
 
     public static String getShell(ExecutionEnvironment execEnv)
             throws ConnectException {
-        HostInfo info = getHostInfo(execEnv);
+        ExecEnvInfo info = getHostInfo(execEnv);
         return info.shell;
     }
 
-    static synchronized void updateHostInfo(ExecutionEnvironment execEnv) {
-        if (execEnv.isLocal()) {
-            hostInfo.put(execEnv, getLocalHostInfo());
-        } else {
-            Session session =
-                    ConnectionManager.getInstance().getSession(execEnv);
-            hostInfo.put(execEnv, getRemoteHostInfo(session));
+    static void updateHostInfo(ExecutionEnvironment execEnv) {
+        synchronized (execEnvInfo) {
+            if (execEnv.isLocal()) {
+                execEnvInfo.put(execEnv, getLocalHostInfo());
+            } else {
+                execEnvInfo.put(execEnv, getRemoteHostInfo(execEnv));
+            }
         }
     }
 
-    private static HostInfo getHostInfo(ExecutionEnvironment execEnv) throws ConnectException {
-        HostInfo info = hostInfo.get(execEnv);
-        if (info == null) {
-            if (execEnv.isRemote()) {
-                throw new ConnectException();
+    private static ExecEnvInfo getHostInfo(ExecutionEnvironment execEnv) throws ConnectException {
+        synchronized (execEnvInfo) {
+            ExecEnvInfo info = execEnvInfo.get(execEnv);
+            if (info == null) {
+                updateHostInfo(execEnv);
+                info = execEnvInfo.get(execEnv);
             }
 
-            updateHostInfo(execEnv);
-            info = hostInfo.get(execEnv);
-        }
+            if (info == null) {
+                throw new ConnectException("Unable to get host info"); // NOI18N
+            }
 
-        return info;
+            return info;
+        }
     }
 
-    private static HostInfo getLocalHostInfo() {
-        HostInfo info = new HostInfo();
+    private static ExecEnvInfo getLocalHostInfo() {
+        ExecEnvInfo info = new ExecEnvInfo();
         info.os = System.getProperty("os.name").replaceAll(" ", "_"); // NOI18N
         info.platform = System.getProperty("os.arch"); // NOI18N
 
@@ -264,30 +265,88 @@ public final class HostInfoUtils {
             info.instructionSet = isalist.contains("amd64") ? "64" : "32"; // NOI18N
         }
 
+        String tmpDirBase = System.getProperty("java.io.tmpdir"); // NOI18N
+
+        if (tmpDirBase == null) {
+            tmpDirBase = "/var/tmp"; // NOI18N
+        }
+
+        File tmpDir = new File(tmpDirBase, "dlight_" + System.getProperty("user.name")); // NOI18N
+
+        if (!tmpDir.exists()) {
+            tmpDir.mkdirs();
+        }
+
+        boolean fail = false;
+        int idx = 0;
+
+        do {
+            if (fail) {
+                tmpDir = new File(tmpDirBase, "dlight_" + System.getProperty("user.name") + "_" + (++idx)); // NOI18N
+
+                if (!tmpDir.exists()) {
+                    if (!tmpDir.mkdirs()) {
+                        fail = true;
+                        continue;
+                    }
+                }
+
+            }
+
+            fail = false;
+            File testFile = new File(tmpDir, "test"); // NOI18N
+
+            if (testFile.exists()) {
+                if (!testFile.delete()) {
+                    fail = true;
+                    continue;
+                }
+            }
+
+            try {
+                if (testFile.createNewFile()) {
+                    testFile.delete();
+                } else {
+                    fail = true;
+                }
+            } catch (IOException ex) {
+                fail = true;
+            }
+
+        } while (fail);
+
+        info.tmpDirBase = tmpDir.getAbsolutePath();
+
         return info;
     }
 
-    private static HostInfo getRemoteHostInfo(Session session) {
-        ChannelExec echannel = null;
-        StringBuilder command = new StringBuilder();
+    private static ExecEnvInfo getRemoteHostInfo(final ExecutionEnvironment execEnv) {
+        final ConnectionManager cm = ConnectionManager.getInstance();
+        final Session session = ConnectionManagerAccessor.getDefault().
+                getConnectionSession(cm, execEnv, true);
 
-        command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
-        command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
-        command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
-        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
-        command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
-
-        try {
-            echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-            echannel.setCommand(command.toString());
-            echannel.connect();
-        } catch (JSchException ex) {
-            Exceptions.printStackTrace(ex);
+        if (session == null) {
+            return null;
         }
 
-        HostInfo info = new HostInfo();
+        ChannelExec echannel = null;
+        ExecEnvInfo info = new ExecEnvInfo();
 
         try {
+            StringBuilder command = new StringBuilder();
+
+            command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
+            command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
+            command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
+            command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
+            command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
+
+            synchronized (session) {
+                echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+                echannel.setCommand(command.toString());
+                echannel.connect();
+            }
+
             InputStream out = echannel.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(out));
             String str;
@@ -315,19 +374,71 @@ public final class HostInfoUtils {
                 }
                 lineno++;
             }
+
+            echannel.getExitStatus();
+        } catch (JSchException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+            return null;
+        } finally {
+            if (echannel != null) {
+                echannel.disconnect();
+            }
         }
+
+        // find-out tmpdir
+        String tmpDirBase = "/var/tmp/dlight_" + execEnv.getUser() + "/"; // NOI18N
+        int idx = 0;
+
+        try {
+            while (true) {
+                synchronized (session) {
+                    echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+                    echannel.setCommand("/bin/mkdir -p " + tmpDirBase + " && test -w " + tmpDirBase); // NOI18N
+                    echannel.connect();
+                }
+
+                // Wait result
+                while (echannel.isConnected()) {
+                    Thread.sleep(50);
+                }
+
+                if (echannel.getExitStatus() == 0) {
+                    break;
+                }
+
+                tmpDirBase = "/var/tmp/dlight_" + execEnv.getUser() + "_" + (++idx) + "/"; // NOI18N
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (JSchException ex) {
+            return null;
+        } finally {
+            if (echannel != null) {
+                echannel.disconnect();
+            }
+        }
+
+        info.tmpDirBase = tmpDirBase;
 
         return info;
     }
 
-    private static class HostInfo {
+    public static String getTempDir(ExecutionEnvironment execEnv) throws ConnectException {
+        ExecEnvInfo info = getHostInfo(execEnv);
+        return info.tmpDirBase;
+    }
+
+    private static class ExecEnvInfo {
 
         String os;
         String platform;
         String instructionSet;
         String shell;
+        String tmpDirBase;
 
         @Override
         public String toString() {

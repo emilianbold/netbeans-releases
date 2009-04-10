@@ -36,65 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.nativeexecution.api;
 
-import java.io.IOException;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 
-/**
- * A {@link NativeProcessBuilder} starts a system process and returns an
- * instance of the {@link NativeProcess} which is a subclass of the
- * {@link Process java.lang.Process}.
- * The differentiator is that this implementation can represent as local as well
- * as remote process, has information about process' PID and about it's
- * {@link NativeProcess.State state}.
- */
-public abstract class NativeProcess extends Process {
+public class NativeProcessChangeEvent extends ChangeEvent {
+    public final NativeProcess.State state;
+    public final int pid;
 
-    /**
-     * Returns PID of the underlaying system process.<br>
-     * @return PID of the underlaying system process.
-     * @throws IllegalStateException if no PID was obtained prior to method
-     *         invocation.
-     */
-    public abstract int getPID() throws IOException;
-
-    /**
-     * Returns the current {@link NativeProcess.State state} of the process.
-     * @return current state of the process.
-     */
-    public abstract State getState();
-
-    /**
-     * Enumerates possible states of the {@link NativeProcess}.
-     */
-    public static enum State {
-
-        /**
-         * Native process is in an Initial state. This means that it has not been
-         * started yet.
-         */
-        INITIAL,
-        /**
-         * Native process is starting. This means that it has been submitted,
-         * but no PID is recieved so far.
-         */
-        STARTING,
-        /**
-         * Native process runs. This means that process successfully started and
-         * it's PID is already known.
-         */
-        RUNNING,
-        /**
-         * Native process exited.
-         */
-        FINISHED,
-        /**
-         * Native process submission failed due to some exception.
-         */
-        ERROR,
-        /**
-         * Native process forcibly terminated.
-         */
-        CANCELLED
+    public NativeProcessChangeEvent(NativeProcess process, State state, int pid) {
+        super(process);
+        this.state = state;
+        this.pid = pid;
     }
 }

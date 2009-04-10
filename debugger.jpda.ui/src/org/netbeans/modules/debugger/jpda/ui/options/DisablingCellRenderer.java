@@ -36,65 +36,65 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
 
-import java.io.IOException;
+package org.netbeans.modules.debugger.jpda.ui.options;
+
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
 /**
- * A {@link NativeProcessBuilder} starts a system process and returns an
- * instance of the {@link NativeProcess} which is a subclass of the
- * {@link Process java.lang.Process}.
- * The differentiator is that this implementation can represent as local as well
- * as remote process, has information about process' PID and about it's
- * {@link NativeProcess.State state}.
+ * Cell renderer that makes setEnabled() to work.
+ * 
+ * @author Martin Entlicher
  */
-public abstract class NativeProcess extends Process {
+public class DisablingCellRenderer implements TableCellRenderer {
 
-    /**
-     * Returns PID of the underlaying system process.<br>
-     * @return PID of the underlaying system process.
-     * @throws IllegalStateException if no PID was obtained prior to method
-     *         invocation.
-     */
-    public abstract int getPID() throws IOException;
+    private TableCellRenderer r;
+    private JTable t;
+    private Color background;
 
-    /**
-     * Returns the current {@link NativeProcess.State state} of the process.
-     * @return current state of the process.
-     */
-    public abstract State getState();
-
-    /**
-     * Enumerates possible states of the {@link NativeProcess}.
-     */
-    public static enum State {
-
-        /**
-         * Native process is in an Initial state. This means that it has not been
-         * started yet.
-         */
-        INITIAL,
-        /**
-         * Native process is starting. This means that it has been submitted,
-         * but no PID is recieved so far.
-         */
-        STARTING,
-        /**
-         * Native process runs. This means that process successfully started and
-         * it's PID is already known.
-         */
-        RUNNING,
-        /**
-         * Native process exited.
-         */
-        FINISHED,
-        /**
-         * Native process submission failed due to some exception.
-         */
-        ERROR,
-        /**
-         * Native process forcibly terminated.
-         */
-        CANCELLED
+    public DisablingCellRenderer(TableCellRenderer r, JTable t) {
+        this(r, t, null);
     }
+
+    public DisablingCellRenderer(TableCellRenderer r, JTable t, Color background) {
+        this.r = r;
+        this.t = t;
+        this.background = background;
+    }
+
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        Component c = r.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        c.setEnabled(t.isEnabled());
+        if (background != null) {
+            c.setBackground(background);
+        }
+        return c;
+    }
+
+    /**
+     * Applies DisablingCellRenderer to all cell renderers in the table.
+     * @param t the table
+     */
+    public static void apply(JTable t) {
+        apply(t, null);
+    }
+
+    /**
+     * Applies DisablingCellRenderer to all cell renderers in the table.
+     * @param t the table
+     * @param disabled if the table content should be disabled
+     */
+    public static void apply(JTable t, Color background) {
+        int nc = t.getColumnModel().getColumnCount();
+        for (int i = 0; i < nc; i++) {
+            TableCellRenderer columnRenderer = t.getColumnModel().getColumn(i).getCellRenderer();
+            if (columnRenderer == null) columnRenderer = t.getDefaultRenderer(t.getColumnClass(i));
+            t.getColumnModel().getColumn(i).setCellRenderer(
+                new DisablingCellRenderer(columnRenderer, t, background));
+        }
+    }
+
 }

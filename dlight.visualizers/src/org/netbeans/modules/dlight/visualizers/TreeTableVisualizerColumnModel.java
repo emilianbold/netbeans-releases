@@ -36,65 +36,76 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.dlight.visualizers;
 
-import java.io.IOException;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.spi.viewmodel.ColumnModel;
 
-/**
- * A {@link NativeProcessBuilder} starts a system process and returns an
- * instance of the {@link NativeProcess} which is a subclass of the
- * {@link Process java.lang.Process}.
- * The differentiator is that this implementation can represent as local as well
- * as remote process, has information about process' PID and about it's
- * {@link NativeProcess.State state}.
- */
-public abstract class NativeProcess extends Process {
+class TreeTableVisualizerColumnModel extends ColumnModel {
+    private final Column column;
+    boolean isVisible = true;
+    boolean isSorted = false;
+    boolean isSortedDescending = false;
+    int currentOrderNumber = -1;
 
-    /**
-     * Returns PID of the underlaying system process.<br>
-     * @return PID of the underlaying system process.
-     * @throws IllegalStateException if no PID was obtained prior to method
-     *         invocation.
-     */
-    public abstract int getPID() throws IOException;
+    TreeTableVisualizerColumnModel(Column column) {
+        this.column = column;
+    }
 
-    /**
-     * Returns the current {@link NativeProcess.State state} of the process.
-     * @return current state of the process.
-     */
-    public abstract State getState();
+    public String getID() {
+        return column.getColumnName();
+    }
 
-    /**
-     * Enumerates possible states of the {@link NativeProcess}.
-     */
-    public static enum State {
+    public String getDisplayName() {
+        return column.getColumnUName();
+    }
 
-        /**
-         * Native process is in an Initial state. This means that it has not been
-         * started yet.
-         */
-        INITIAL,
-        /**
-         * Native process is starting. This means that it has been submitted,
-         * but no PID is recieved so far.
-         */
-        STARTING,
-        /**
-         * Native process runs. This means that process successfully started and
-         * it's PID is already known.
-         */
-        RUNNING,
-        /**
-         * Native process exited.
-         */
-        FINISHED,
-        /**
-         * Native process submission failed due to some exception.
-         */
-        ERROR,
-        /**
-         * Native process forcibly terminated.
-         */
-        CANCELLED
+    public Class getType() {
+        return column.getColumnClass();
+    }
+
+    @Override
+    public void setCurrentOrderNumber(int newOrderNumber) {
+        this.currentOrderNumber = newOrderNumber;
+    }
+
+    @Override
+    public int getCurrentOrderNumber() {
+        return currentOrderNumber;
+    }
+
+    @Override
+    public void setVisible(boolean arg0) {
+        this.isVisible = arg0;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    @Override
+    public boolean isSortable() {
+        return true;
+    }
+
+    @Override
+    public boolean isSorted() {
+        return isSorted;
+    }
+
+    @Override
+    public void setSorted(boolean sorted) {
+        this.isSorted = sorted;
+    }
+
+    @Override
+    public void setSortedDescending(boolean sortedDescending) {
+        this.isSortedDescending = sortedDescending;
+    }
+
+    @Override
+    public boolean isSortedDescending() {
+        return isSortedDescending;
     }
 }

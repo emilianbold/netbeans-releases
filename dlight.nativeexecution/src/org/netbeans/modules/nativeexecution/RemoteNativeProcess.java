@@ -8,14 +8,18 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -32,31 +36,27 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         super(info);
 
         final String commandLine = info.getCommandLine();
+
         final ConnectionManager mgr = ConnectionManager.getInstance();
         ChannelStreams cs = null;
 
-        synchronized (mgr) {
-            final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+        final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
-            try {
-                ConnectionManager.getInstance().connectTo(execEnv);
-            } catch (Throwable ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
+        try {
             final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(mgr, execEnv);
+                    getConnectionSession(mgr, execEnv, true);
 
-            if (session == null) {
-                throw new IOException("Unable to create remote session!"); // NOI18N
-            }
+            final String sh = HostInfoUtils.getShell(execEnv);
+            final MacroMap envVars = info.getEnvVariables();
+
+            // Setup LD_PRELOAD to load unbuffer library...
+            UnbufferSupport.initUnbuffer(info, envVars);
 
             try {
-                cs = execCommand(session, HostInfoUtils.getShell(execEnv) + " -s"); // NOI18N
+                cs = execCommand(session, sh + " -s"); // NOI18N
             } catch (JSchException ex) {
-                throw new IOException("Unable to create remote session! " + ex.toString()); // NOI18N
+                throw new IOException("Unable to start " + sh + " on " + ex.toString()); // NOI18N
             }
-
 
             cs.in.write("echo $$\n".getBytes()); // NOI18N
             cs.in.flush();
@@ -68,20 +68,43 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 cs.in.flush();
             }
 
-            final MacroMap envVars = info.getEnvVariables();
 
             EnvWriter ew = new EnvWriter(cs.in);
             ew.write(envVars);
 
             cs.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
             cs.in.flush();
+
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+            interrupt();
+        } catch (Throwable ex) {
+            interrupt();
+        }
+
+        if (cs == null || isInterrupted()) {
+            if (cs != null && cs.channel != null) {
+                cs.channel.disconnect();
+            }
+
+            cstreams = new ChannelStreams(
+                    null,
+                    new ByteArrayInputStream(new byte[0]),
+                    new ByteArrayInputStream(new byte[0]),
+                    new ByteArrayOutputStream());
+            return;
         }
 
         cstreams = cs;
+
         try {
             readPID(cs.out);
-        } catch (InterruptedException ex) {
+        } catch (IOException ex) {
             interrupt();
+        } finally {
+//            if (isInterrupted()) {
+//                throw new InterruptedIOException("Process interrupted"); // NOI18N
+//            }
         }
     }
 
@@ -122,9 +145,15 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     @Override
     public void cancel() {
-        if (cstreams.channel != null && cstreams.channel.isConnected()) {
-            cstreams.channel.disconnect();
-//                NativeTaskSupport.kill(execEnv, 9, getPID());
+        ChannelExec channel;
+
+        synchronized (this) {
+            channel = cstreams == null ? null : cstreams.channel;
+        }
+
+        if (channel != null && channel.isConnected()) {
+            channel.disconnect();
+//          NativeTaskSupport.kill(execEnv, 9, getPID());
         }
     }
 
@@ -139,9 +168,14 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
         while (retry-- > 0) {
             try {
-                ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                echannel.setCommand(command);
-                echannel.connect();
+                ChannelExec echannel;
+
+                synchronized (session) {
+                    echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+                    echannel.setCommand(command);
+                    echannel.connect();
+                }
+
                 return new ChannelStreams(echannel,
                         echannel.getInputStream(),
                         echannel.getErrStream(),

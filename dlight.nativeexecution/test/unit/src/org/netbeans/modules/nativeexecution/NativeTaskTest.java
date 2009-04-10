@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -275,8 +276,11 @@ public class NativeTaskTest {
                     System.out.println("Unable to start process!"); // NOI18N
                     return;
                 }
-
-                System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState); // NOI18N
+                try {
+                    System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         };
 
