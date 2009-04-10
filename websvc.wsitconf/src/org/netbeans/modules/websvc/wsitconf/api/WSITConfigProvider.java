@@ -223,8 +223,12 @@ public final class WSITConfigProvider extends Object {
                     }
                 }
                 WSStackVersion projectVersion = WSStackFactory.createWSStackVersion(ver);
-                if (projectVersion.compareTo(version) > 0) {
+                if (version == null) {
                     version = projectVersion;
+                } else {
+                    if (projectVersion.compareTo(version) > 0) {
+                        version = projectVersion;
+                    }
                 }
             }
         } catch (FileNotFoundException ex) {
