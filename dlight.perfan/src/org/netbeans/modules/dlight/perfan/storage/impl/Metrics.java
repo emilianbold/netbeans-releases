@@ -59,7 +59,7 @@ public class Metrics {
         });
     }
 
-    private Metrics(String mspec, String msort) {
+    Metrics(String mspec, String msort) {
         this.mspec = mspec;
         this.msort = msort;
     }

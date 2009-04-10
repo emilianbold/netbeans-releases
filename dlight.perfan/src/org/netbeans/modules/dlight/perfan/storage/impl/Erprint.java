@@ -39,384 +39,286 @@
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.openide.windows.InputOutput;
 
-/**
- *
- */
-public final class Erprint {
-    private final Logger log = DLightLogger.getLogger(Erprint.class);
-    private final Object lock = new String(Erprint.class.getName());
-    private final ExecutionEnvironment execEnv;
-    private final String er_printCmd;
-    private final String experimentDirectory;
-    private Future<Integer> er_printTask;
-    private PrintWriter in;
-    private final FilteredInputProcessor erOutputProcessor;
+final class Erprint {
 
-    public Erprint(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
-        this.execEnv = execEnv;
-        this.er_printCmd = sproHome + "/bin/er_print"; // NOI18N
-        this.experimentDirectory = experimentDirectory;
-        this.erOutputProcessor = new FilteredInputProcessor();
+    private final Logger log = DLightLogger.getLogger(ErprintSession.class);
+    private final AtomicInteger locks = new AtomicInteger();
+    private final NativeProcess process;
+    private final InputStream out;
+    private final InputStream err;
+    private final OutputStream in;
+    private final OutputProcessor outProcessor;
+    private int currentLimit = -1;
+    private boolean stopped = false;
+    private final String logPrefix;
+    private static final Pattern specPattern = Pattern.compile("[^:]*: (.*)"); // NOI18N
+    private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
+
+    Erprint(NativeProcessBuilder npb, int sessionID) throws IOException {
+        process = npb.call();
+        logPrefix = "er_print [" + process.getPID() + "]: "; // NOI18N
+        addLock();
+        log.finest(logPrefix + "started"); // NOI18N
+        out = process.getInputStream();
+        in = process.getOutputStream();
+        err = process.getErrorStream();
+        outProcessor = new OutputProcessor();
+        releaseLock();
     }
 
-    public ExperimentStatistics getExperimentStatistics(boolean restart) {
-        restart(restart);
+    void addLock() throws IllegalStateException {
+        synchronized (this) {
+            if (stopped) {
+                throw new IllegalStateException("er_print is scheduled to be stopped already!"); // NOI18N
+            }
+            locks.incrementAndGet();
+            log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+        }
+    }
+
+    void releaseLock() {
+        synchronized (this) {
+            locks.decrementAndGet();
+            log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+        }
+    }
+
+    void stop() {
+        synchronized (this) {
+            if (stopped) {
+                return;
+            }
+
+            stopped = true;
+        }
+
+        DLightExecutorService.submit(new Runnable() {
+
+            public void run() {
+                log.finest(logPrefix + "Scheduled for termination"); // NOI18N
+                int attempts = 30;
+
+                while (locks.get() != 0 && --attempts > 0) {
+                    try {
+                        log.finest(logPrefix + "waiting for lock release [" + locks.get() + "] ..."); // NOI18N
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        log.log(Level.FINEST, logPrefix + "Exception while terminating", ex); // NOI18N
+                        break;
+                    }
+                }
+
+                if (locks.get() > 0) {
+                    log.finest(logPrefix + "do force termination"); // NOI18N
+                } else {
+                    log.finest(logPrefix + "do termination"); // NOI18N
+                }
+
+                process.destroy();
+            }
+        }, "Stopping er_print " + logPrefix); // NOI18N
+    }
+
+    private void post(String cmd) throws IOException {
+        in.write((cmd + "\n").getBytes()); // NOI18N
+        in.flush();
+    }
+
+    public synchronized int setLimit(int limit) throws IOException {
+        if (currentLimit == limit) {
+            return currentLimit;
+        }
+
+        int prevLimit = currentLimit;
+        exec("limit " + limit); // NOI18N
+        currentLimit = limit;
+
+        return prevLimit;
+    }
+
+    Metrics setMetrics(Metrics metrics) throws IOException {
+
+        synchronized (this) {
+            // Get current metrics ...
+            String[] data = exec("metrics"); // NOI18N
+
+            if (data == null || data.length != 2) {
+                return null;
+            }
+
+            Matcher specMatcher = specPattern.matcher(data[0]);
+            Matcher sortMatcher = sortPattern.matcher(data[1]);
+            Metrics prevMetrics = null;
+
+            if (specMatcher.matches() && sortMatcher.matches()) {
+                prevMetrics = new Metrics(specMatcher.group(1), sortMatcher.group(1));
+            }
+
+            // Set new metrics (ignore output)
+            exec("metrics " + metrics.mspec); // NOI18N
+            exec("sort " + metrics.msort); // NOI18N
+
+            return prevMetrics;
+        }
+    }
+
+    String[] getHotFunctions(String command, int limit) throws IOException {
+        String[] stat = exec(command);
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String str : stat) {
+            if (str.matches("^ *[0-9]+.*")) { // NOI18N
+                result.add(str.trim());
+                if (--limit == 0) {
+                    break;
+                }
+            }
+        }
+
+        return result.toArray(new String[0]);
+    }
+
+    String[] getHotFunctions(int limit) throws IOException {
+        return getHotFunctions("functions", limit); // NOI18N
+    }
+
+    ExperimentStatistics getExperimentStatistics() throws IOException {
         String[] stat = exec("statistics"); // NOI18N
         return new ExperimentStatistics(stat);
     }
 
-    LeaksStatistics getExperimentLeaks(boolean restart) {
-        restart(restart);
+    LeaksStatistics getExperimentLeaks() throws IOException {
         String[] stat = exec("leaks"); // NOI18N
         return new LeaksStatistics(stat);
     }
 
-    private final void start() {
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, er_printCmd);
-        npb = npb.addNativeProcessListener(new ErprintListener(doneSignal));
-        npb = npb.setArguments(experimentDirectory);
-
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.inputOutput(InputOutput.NULL);
-
-        if (log.isLoggable(Level.FINEST)) {
-            descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
-        }
-
-        descr = descr.outProcessorFactory(new InputProcessorFactory() {
-
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return erOutputProcessor;
-            }
-        });
-
-        ExecutionService service = ExecutionService.newService(npb, descr, "er_print"); // NOI18N
-        er_printTask = service.run();
-
-        try {
-            // Wait until prompt received ...
-            // comes from the listener (ErprintListener)
-            doneSignal.await();
-        } catch (InterruptedException ex) {
-        }
+    FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
+        String[] stat = exec("fsingle " + functionName + " 1"); // NOI18N
+        return new FunctionStatistic(stat);
     }
 
-    public final void stop() {
-        // TODO: do it more gracefully
-        synchronized (lock) {
-            if (er_printTask != null) {
-                er_printTask.cancel(true);
-                er_printTask = null;
-                try {
-                    erOutputProcessor.reset();
-                } catch (IOException ex) {
+    private synchronized String[] exec(String command) throws IOException {
+        try {
+            post(command);
+        } catch (IOException ex) {
+            Throwable cause = ex.getCause();
+            if (cause != null && cause instanceof InterruptedIOException) {
+                throw (InterruptedIOException) cause;
+            } else {
+                throw ex;
+            }
+        }
+
+        return outProcessor.getOutput();
+    }
+
+    private class OutputProcessor {
+
+        private final ArrayList<String> resultBuffer = new ArrayList<String>();
+        private final StringBuilder lineBuffer = new StringBuilder();
+        private final char[] prompt;
+        private final InputStream pis;
+
+        public OutputProcessor() throws IOException {
+            pis = process.getInputStream();
+            prompt = getPrompt();
+        }
+
+        public String[] getOutput() throws IOException {
+            int promptPos = 0;
+            resultBuffer.clear();
+            lineBuffer.setLength(0);
+
+            while (true) {
+                char c;
+                c = (char) pis.read();
+
+                if (c < 0) {
+                    break;
+                }
+
+                if (c == '\n') {
+                    resultBuffer.add(lineBuffer.toString());
+                    lineBuffer.setLength(0);
+                } else {
+                    lineBuffer.append(c);
+                }
+
+                if (prompt[promptPos] == c) {
+                    promptPos++;
+                    if (promptPos == prompt.length) {
+                        break;
+                    }
+                } else {
+                    promptPos = 0;
                 }
             }
-        }
-    }
 
-    public final void restart(boolean restart) {
-        if (!restart) {
-            return;
+            return resultBuffer.toArray(new String[0]);
         }
 
-        synchronized (lock) {
-            stop();
-            start();
-        }
-    }
+        private char[] getPrompt() throws IOException {
+            int currPos = 0;
+            int pos1 = 0;
+            int pos2 = 0;
+            char c;
+            char[] parray = new char[256];
+            char[] result = null;
 
-    private String[] exec(String command) {
-        return exec(command, -1);
-    }
-
-    private String[] exec(String command, int limit) {
-        String[] result = null;
-
-        synchronized (lock) {
-            if (er_printTask == null || er_printTask.isDone()) {
-                restart(true);
-            }
-
-            if (in == null) {
-                return null;
-            }
-
-            final CountDownLatch doneSignal = new CountDownLatch(limit > 0 ? 3 : 2);
-            erOutputProcessor.reset(doneSignal);
-
-            if (limit > 0) {
-                in.println("limit " + limit); // NOI18N
-                in.flush();
-            }
-
-            in.println(command);
-            in.flush();
-            in.println("limit -1"); // NOI18N
-            in.flush();
+            // Read first char before perform post...
+            // in other case er_print can jusr 'skip' this request...
 
             try {
-                doneSignal.await();
-            } catch (InterruptedException ex) {
+                parray[0] = (char) out.read();
+
+                post(""); // NOI18N
+
+                while (true) {
+                    c = (char) out.read();
+
+                    if (c < 0) {
+                        break;
+                    }
+
+                    parray[++currPos] = c;
+
+                    if (parray[pos1] == parray[currPos]) {
+                        if (pos2 == 0) {
+                            pos2 = currPos;
+                        }
+
+                        if (++pos1 == pos2) {
+                            break;
+                        }
+                    } else {
+                        pos2 = 0;
+                        pos1 = 0;
+                    }
+                }
+
+                result = new char[pos1];
+                System.arraycopy(parray, 0, result, 0, pos1);
+            } catch (InterruptedIOException ex) {
                 Thread.currentThread().interrupt();
+                stop();
+                result = "<Terminated>".toCharArray(); // NOI18N
             }
 
-            result = erOutputProcessor.getBuffer();
-        }
-
-        return result;
-    }
-
-    String setMetrics(String mspec) {
-        String[] result = null;
-        result = exec("metrics " + mspec); // NOI18N
-        return (result == null || result.length == 0) ? "" // NOI18N
-                : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
-    }
-
-    String setSortBy(String msort) {
-        String[] result = exec("sort " + msort); // NOI18N
-        return (result == null || result.length == 0) ? "" // NOI18N
-                : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
-    }
-
-    public String[] getHotFunctions(Metrics metrics, int limit, boolean restart) {
-        String[] result = null;
-        synchronized (lock) {
-            restart(restart);
-            setMetrics(metrics.mspec);
-            setSortBy(metrics.msort);
-            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
-            result = exec("functions", limit); // NOI18N
-            erOutputProcessor.setFilterType(FilterType.noFiltering);
-        }
-        return result;
-    }
-
-    public String[] getHotFunctions(String command, Metrics metrics, int limit, boolean restart) {
-        String[] result = null;
-        synchronized (lock) {
-            restart(restart);
-            setMetrics(metrics.mspec);
-            setSortBy(metrics.msort);
-            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
-            result = exec(command, limit); // NOI18N
-            erOutputProcessor.setFilterType(FilterType.noFiltering);
-        }
-        return result;
-    }
-
-    public FunctionStatistic getFunctionStatistic(String functionName, boolean restart){
-        FunctionStatistic result = null;
-        synchronized (lock) {
-            restart(restart);
-            result = new FunctionStatistic(exec("fsingle " + functionName, Integer.MAX_VALUE)); // NOI18N
-        }
-        return result;
-    }
-
-    String[] getCallersCallees(int limit) {
-        String[] ccOut = exec("callers-callees", limit); // NOI18N
-        // TODO: process output
-        return new String[0];
-    }
-
-    private static class ErprintErrorRedirectorFactory
-            implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor p) {
-            return InputProcessors.copying(new OutputStreamWriter(System.err) {
-
-                final StringBuilder sb = new StringBuilder();
-                final static String prefix = "!!!!! ER_PRINT SAYS !!!! : "; // NOI18N
-
-                @Override
-                public void write(char[] chars) throws IOException {
-                    sb.setLength(0);
-                    sb.append(prefix);
-                    for (int i = 0; i < chars.length; i++) {
-                        sb.append(chars[i]);
-                        if (i < chars.length - 1 && chars[i] == '\n') {
-                            sb.append(prefix);
-                        }
-                    }
-                    super.write(sb.toString().toCharArray());
-                }
-            });
-        }
-    }
-
-    private static class FilteredInputProcessor implements InputProcessor {
-        // Buffer must be synchronized, because it caould be accessed
-        // from several threads (example: one thread - onTimer, another one -
-        // user clicks on indicator)
-        // The problem may appear when one thread gets buffer, while another one
-        // cleans it...
-
-        private final Object lock = new String(FilteredInputProcessor.class.getName());
-        private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
-        private FilterType filterType = FilterType.noFiltering;
-        private String prompt = null;
-        private CountDownLatch doneSignal;
-
-        public void setFilterType(FilterType filterType) {
-            this.filterType = filterType;
-        }
-
-        public void setPrompt(String prompt) {
-            this.prompt = prompt;
-        }
-
-        @Override
-        public void processInput(char[] chars) throws IOException {
-            synchronized (lock) {
-                String data = new String(chars, 0, chars.length);
-                String[] lines = data.split("\n"); // NOI18N
-
-                for (String line : lines) {
-                    if (prompt != null && line.startsWith(prompt)) {
-                        do {
-                            doneSignal.countDown();
-                            line = line.substring(prompt.length());
-                        } while (line.contains(prompt));
-                    }
-
-                    if (line.length() != 0) {
-                        switch (filterType) {
-                            // TODO: fixme Need correct filtering.
-                            case startsWithNumber:
-                                if (!line.matches("^ *[0-9]+.*")) { // NOI18N
-                                    continue;
-                                }
-                        }
-                        buffer.add(line.trim());
-                    }
-                }
-            }
-        }
-
-        public void reset() throws IOException {
-            synchronized (lock) {
-                if (doneSignal != null) {
-                    while (doneSignal.getCount() > 0) {
-                        doneSignal.countDown();
-                    }
-                }
-
-                reset(null);
-            }
-        }
-
-        public void close() throws IOException {
-            // do nothing
-        }
-
-        public String[] getBuffer() {
-            return buffer.toArray(new String[0]);
-        }
-
-        private void reset(CountDownLatch doneSignal) throws IllegalThreadStateException {
-            if (this.doneSignal != null && this.doneSignal.getCount() > 0) {
-                String message = "SYNCHRONIZATION PROBLEM!!!\n" + // NOI18N
-                        "An attempt to reset er_print input processor \n" + // NOI18N
-                        "BEFORE previous output is processed"; // NOI18N
-
-                throw new IllegalThreadStateException(message);
-            }
-            buffer.clear();
-            this.doneSignal = doneSignal;
-            // null - a special case. This means that er_print process has
-            // changed. So, prompt will be fetched again....
-            if (doneSignal == null) {
-                prompt = null;
-            }
-        }
-    }
-
-    private static enum FilterType {
-
-        noFiltering,
-        startsWithNumber,
-    }
-
-    private final class ErprintListener implements ChangeListener {
-
-        private final CountDownLatch doneSignal;
-
-        public ErprintListener(CountDownLatch doneSignal) {
-            this.doneSignal = doneSignal;
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            NativeProcess process = (NativeProcess) e.getSource();
-
-            switch (process.getState()) {
-                case RUNNING:
-                    final PrintWriter writer = new PrintWriter(process.getOutputStream());
-                    final Runnable onStart = new Runnable() {
-
-                        public void run() {
-                            try {
-                                writer.println("limit -1"); // NOI18N
-                                writer.flush();
-                                String[] er_output;
-                                while (true) {
-                                    if (Thread.currentThread().isInterrupted()) {
-                                        break;
-                                    }
-
-                                    er_output = erOutputProcessor.getBuffer();
-                                    if (er_output.length == 1) {
-                                        erOutputProcessor.setPrompt(er_output[0]);
-                                        break;
-                                    } else {
-                                        try {
-                                            Thread.sleep(100);
-                                        } catch (InterruptedException ex) {
-                                            Thread.currentThread().interrupt();
-                                        }
-                                    }
-                                }
-
-                                in = writer;
-                            } finally {
-                                doneSignal.countDown();
-                            }
-                        }
-                    };
-
-                    DLightExecutorService.submit(onStart, "ER_PRINT Prompt Thread Reader"); // NOI18N
-
-                    break;
-                case ERROR:
-                    doneSignal.countDown();
-                    break;
-            }
+            return result;
         }
     }
 }
