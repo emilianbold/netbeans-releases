@@ -86,7 +86,7 @@ public class ErprintSession {
         stop_er_print();
     }
 
-    public ExperimentStatistics getExperimentStatistics(boolean restart) throws IOException {
+    public ExperimentStatistics getExperimentStatistics(int timeout, boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getExperimentStatistics();
@@ -118,7 +118,7 @@ public class ErprintSession {
         }
     }
 
-    public String[] getHotFunctions(Metrics metrics, int limit, boolean restart) throws IOException {
+    public String[] getHotFunctions(Metrics metrics, int limit, int timeout, boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
 
         synchronized (erp) {

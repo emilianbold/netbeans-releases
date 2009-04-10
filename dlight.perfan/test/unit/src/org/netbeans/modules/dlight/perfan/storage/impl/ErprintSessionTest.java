@@ -84,7 +84,7 @@ public class ErprintSessionTest {
 //    @Test
     public void setMetricsTest() throws Exception {
         final ErprintSession session = new ErprintSession(new ExecutionEnvironment(), "/", "/var/tmp/dlightExperiment_31.er/");
-        String[] funcs = session.getHotFunctions(null, 10, false);
+        String[] funcs = session.getHotFunctions(null, 10, 0, false);
         for (String f : funcs) {
             System.out.println(f);
         }
@@ -122,7 +122,7 @@ public class ErprintSessionTest {
                         ExperimentStatistics stat = null;
                         try {
                             for (int j = 0; j < 5; j++) {
-                                String[] funcs = session.getHotFunctions(m, 10, j%3 == 0);
+                                String[] funcs = session.getHotFunctions(m, 10, 0, j%3 == 0);
                                 for (String f : funcs) {
                                     System.out.println(f);
                                 }

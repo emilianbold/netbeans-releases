@@ -100,7 +100,7 @@ public final class PerfanDataStorage extends DataStorage {
         String[] result = null;
 
         try {
-            result = er_print.getHotFunctions(metrics, limit, true);
+            result = er_print.getHotFunctions(metrics, limit, 0, true);
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
@@ -110,13 +110,14 @@ public final class PerfanDataStorage extends DataStorage {
         return result == null ? new String[0] : result;
     }
 
-    public String[] getTopFunctions(String command, Metrics metrics, int limit) {
+    public String[] getTopFunctions(String command, Metrics metrics, int limit) throws InterruptedException {
         String[] result = null;
 
         try {
             result = er_print.getHotFunctions(command, metrics, limit, true);
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
+            throw new InterruptedException();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -142,7 +143,7 @@ public final class PerfanDataStorage extends DataStorage {
         ExperimentStatistics result = null;
 
         try {
-            result = er_print.getExperimentStatistics(true);
+            result = er_print.getExperimentStatistics(0, true);
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
