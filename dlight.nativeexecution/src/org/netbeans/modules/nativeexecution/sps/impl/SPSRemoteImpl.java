@@ -115,7 +115,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         ConnectionManager mgr = ConnectionManager.getInstance();
 
         final Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(mgr, execEnv);
+                getConnectionSession(mgr, execEnv, true);
 
         if (session == null) {
             return;
