@@ -156,7 +156,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
 
                 index = end;
 
-                String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
+                String description = new String( text.subSequence(begin, Math.min(nonwhite+1, text.length())).toString().toCharArray() );
                 description = trim( description, patterns );
 
                 Task task = Task.create( resource, GROUP_NAME, description, lineno );
@@ -270,7 +270,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
 
                 index = end;
 
-                String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
+                String description = new String( text.subSequence(begin, Math.min(nonwhite+1, text.length())).toString().toCharArray() );
                 description = trim( description, patterns );
 
                 Task task = Task.create( resource, GROUP_NAME, description, lineno );
