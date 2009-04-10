@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
-import javax.swing.text.TextAction;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
@@ -265,7 +264,7 @@ public final class EditorBridge extends KeymapManager {
                 continue; // ignore hidden actions
             }
             
-            EditorAction action = new EditorAction((TextAction) as [i]);
+            EditorAction action = new EditorAction(as [i]);
             String id = action.getId();
 
             // filter out actions inherited from an empty mime path (all editors actions)
@@ -482,12 +481,12 @@ public final class EditorBridge extends KeymapManager {
 
     private static final class EditorAction implements ShortcutAction {
 
-        private TextAction action;
+        private Action action;
         private String name;
         private String id;
         private String delegaitngActionId;
 
-        public EditorAction(TextAction a) {
+        public EditorAction(Action a) {
             action = a;
         }
 
@@ -550,7 +549,7 @@ public final class EditorBridge extends KeymapManager {
             }
         }
 
-        public TextAction getRealAction() {
+        public Action getRealAction() {
             return action;
         }
     } // End of EditorAction

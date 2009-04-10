@@ -506,9 +506,7 @@ class FilesystemHandler extends VCSInterceptor {
                 while (true) {
                     try {
                         ISVNStatus toStatus = getStatus(client, to);
-                        // check if the file wasn't just deleted in this session
-                        revertDeleted(client, toStatus, to, false);
-
+                        
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
                         ISVNStatus status = getStatus(client, from);
@@ -524,9 +522,16 @@ class FilesystemHandler extends VCSInterceptor {
                                 // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
                                 // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
                                 // otherwise svn move should be invoked
+
+                                // check if the file wasn't just deleted in this session
+                                revertDeleted(client, toStatus, to, false);
+
                                 client.revert(from, true);
                                 from.renameTo(to);
                             } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                                // check if the file wasn't just deleted in this session
+                                revertDeleted(client, toStatus, to, false);
+
                                 from.renameTo(to);
                             } else {
                                 SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);

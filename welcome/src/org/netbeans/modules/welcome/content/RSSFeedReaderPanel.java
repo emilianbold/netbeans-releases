@@ -46,26 +46,28 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class RSSFeedReaderPanel extends BackgroundPanel implements PropertyChangeListener {
+public class RSSFeedReaderPanel extends JPanel implements PropertyChangeListener {
 
-    private static final int FEED_PANEL_MIN_WIDTH = 200;
     private static final int FEED_PANEL_MAX_WIDTH = 600;
 
     /** Creates a new instance of AbstractFeedReaderPanel */
     public RSSFeedReaderPanel( String url ) {
         super( new BorderLayout() );
+        setOpaque(false);
         add( buildContent( url, false ), BorderLayout.CENTER );
-        setMaximumSize( new Dimension(400, Integer.MAX_VALUE) );
+        setMaximumSize( new Dimension(FEED_PANEL_MAX_WIDTH, Integer.MAX_VALUE) );
     }
 
     /** Creates a new instance of AbstractFeedReaderPanel */
     public RSSFeedReaderPanel( String key, boolean showProxyButton ) {
         super( new BorderLayout() );
+        setOpaque(false);
         add( buildContent( BundleSupport.getURL( key ), showProxyButton ), BorderLayout.CENTER );
     }
 

@@ -193,16 +193,12 @@ public class VariousUtils {
                 if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
