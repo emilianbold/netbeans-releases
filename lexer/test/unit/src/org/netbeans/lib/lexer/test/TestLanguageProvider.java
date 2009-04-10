@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.util.Lookup;
 
 /**
  * Language provider for various lexer-related tests.
@@ -63,21 +64,21 @@ import org.netbeans.spi.lexer.LanguageProvider;
  */
 public class TestLanguageProvider extends LanguageProvider {
     
-    private static TestLanguageProvider INSTANCE;
+//    private static TestLanguageProvider INSTANCE;
     
     private static Map<String,Language<?>> mime2language = new HashMap<String,Language<?>>();
     
     private static Map<String,Map<TokenId,LanguageEmbedding<?>>> mime2embeddings
             = new HashMap<String,Map<TokenId,LanguageEmbedding<?>>>();
     
-    private static Object LOCK = new String("TestLanguageProvider.LOCK");
+    private static final Object LOCK = new String("TestLanguageProvider.LOCK");
     
     public static void register(Language language) {
         register(language.mimeType(), language);
     }
 
     public static void register(String mimePath, Language language) {
-        checkInstanceExists();
+//        checkInstanceExists();
         synchronized (LOCK) {
             mime2language.put(mimePath, language);
         }
@@ -90,7 +91,7 @@ public class TestLanguageProvider extends LanguageProvider {
     }
 
     public static void registerEmbedding(String mimePath, TokenId id, LanguageEmbedding<?> embedding) {
-        checkInstanceExists();
+//        checkInstanceExists();
         synchronized (LOCK) {
             Map<TokenId,LanguageEmbedding<?>> id2embedding = mime2embeddings.get(mimePath);
             if (id2embedding == null) {
@@ -103,20 +104,24 @@ public class TestLanguageProvider extends LanguageProvider {
     }
     
     public static void fireChange() {
-        checkInstanceExists();
-        INSTANCE.firePropertyChange(PROP_LANGUAGE);
-        INSTANCE.firePropertyChange(PROP_EMBEDDED_LANGUAGE);
+//        checkInstanceExists();
+//        INSTANCE.firePropertyChange(PROP_LANGUAGE);
+//        INSTANCE.firePropertyChange(PROP_EMBEDDED_LANGUAGE);
+        TestLanguageProvider tlp = Lookup.getDefault().lookup(TestLanguageProvider.class);
+        assert tlp != null : "No TestLanguageProvider in default Lookup";
+        tlp.firePropertyChange(PROP_LANGUAGE);
+        tlp.firePropertyChange(PROP_EMBEDDED_LANGUAGE);
     }
     
     public TestLanguageProvider() {
-        assert (INSTANCE == null) : "More than one instance of this class prohibited";
-        INSTANCE = this;
+//        assert (INSTANCE == null) : "More than one instance of this class prohibited";
+//        INSTANCE = this;
     }
     
-    private static void checkInstanceExists() {
-        if (INSTANCE == null)
-            throw new IllegalStateException("No instance of created yet.");
-    }
+//    private static void checkInstanceExists() {
+//        if (INSTANCE == null)
+//            throw new IllegalStateException("No instance of created yet.");
+//    }
 
     public Language<?> findLanguage(String mimeType) {
         synchronized (LOCK) {
