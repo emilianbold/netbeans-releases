@@ -85,7 +85,6 @@ public class WelcomeComponent extends TopComponent {
         if( null == content ) {
             WelcomeOptions.getDefault().incrementStartCounter();
             content = new StartPageContent();
-
             add( content, BorderLayout.CENTER );
             setFocusable( false );
         }

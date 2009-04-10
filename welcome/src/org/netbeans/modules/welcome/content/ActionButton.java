@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.welcome.content;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
@@ -53,7 +54,11 @@ public class ActionButton extends LinkButton {
     private boolean visited = false;
 
     public ActionButton( Action a, boolean showBullet, String urlString ) {
-        super( a.getValue( Action.NAME ).toString(), showBullet );
+        this( a, showBullet, urlString, Utils.getColor(LINK_COLOR) );
+    }
+
+    public ActionButton( Action a, boolean showBullet, String urlString, Color foreground ) {
+        super( a.getValue( Action.NAME ).toString(), showBullet, foreground );
         this.action = a;
         this.urlString = urlString;
         Object icon = a.getValue( Action.SMALL_ICON );
