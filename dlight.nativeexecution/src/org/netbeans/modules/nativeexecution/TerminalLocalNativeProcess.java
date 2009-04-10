@@ -261,7 +261,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         try {
             pid = getPID();
-        } catch (IllegalThreadStateException ex) {
+        } catch (IOException ex) {
         }
 
         if (pid < 0) {
@@ -303,7 +303,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         try {
             pid = getPID();
-        } catch (IllegalThreadStateException ex) {
+        } catch (IOException ex) {
         }
 
         if (pid < 0) {
@@ -315,7 +315,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 Thread.sleep(300);
             }
         } else {
-            File f = new File("/proc/" + getPID()); // NOI18N
+            File f = new File("/proc/" + pid); // NOI18N
 
             while (f.exists()) {
                 Thread.sleep(300);
@@ -384,11 +384,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     readPID(pidIS);
                     pidIS.close();
                     break;
-                } catch (InterruptedException ex) {
-                    interrupt();
-                } catch (InterruptedIOException ex) {
-                    interrupt();
                 } catch (IOException ex) {
+                    interrupt();
                 }
             }
 
