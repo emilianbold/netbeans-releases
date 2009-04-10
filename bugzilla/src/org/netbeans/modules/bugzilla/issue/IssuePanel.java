@@ -45,7 +45,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -53,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -88,6 +93,8 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
+    private static final DateFormat creationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
+    private static final DateFormat modificationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
@@ -240,12 +247,31 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
+
+            // reported field
             format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-            String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
+            String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+            try {
+                Date creation = creationFormat.parse(creationTxt);
+                creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
+            } catch (ParseException pex) {
+                Bugzilla.LOG.log(Level.INFO, null, pex);
+            }
+            String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
             reportedField.setText(reportedTxt);
             fixPrefSize(reportedField);
-            modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
+            
+            // modified field
+            String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
+            try {
+                Date modification = modificationFormat.parse(modifiedTxt);
+                modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
+            } catch (ParseException pex) {
+                Bugzilla.LOG.log(Level.INFO, null, pex);
+            }
+            modifiedField.setText(modifiedTxt);
             fixPrefSize(modifiedField);
+
             reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
             reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
