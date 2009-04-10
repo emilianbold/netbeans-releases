@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.windows.InputOutput;
 
@@ -128,22 +129,19 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     public void stateChanged(ChangeEvent e) {
+        if (!(e instanceof NativeProcessChangeEvent)) {
+            return;
+        }
+
         DLightTarget.State targetPrevState;
         DLightTarget.State targetNewState;
+        NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+        NativeProcess process = (NativeProcess) event.getSource();
 
         synchronized (stateLock) {
-            final Object src = e.getSource();
-
-            if (!(src instanceof NativeProcess)) {
-                return;
-            }
-
-            final NativeProcess process = (NativeProcess) src;
-
-            final NativeProcess.State newState = process.getState();
             targetPrevState = state;
 
-            switch (newState) {
+            switch (event.state) {
                 case INITIAL:
                     state = State.INIT;
                     break;
@@ -152,15 +150,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     break;
                 case RUNNING:
                     state = State.RUNNING;
-                    this.pid = process.getPID();
+                    pid = event.pid;
                     break;
                 case CANCELLED:
                     state = State.TERMINATED;
-                    log.info("NativeTask " + process.toString() + " cancelled!"); // NOI18N
+                    log.fine("NativeTask " + process.toString() + " cancelled!"); // NOI18N
                     break;
                 case ERROR:
                     state = State.FAILED;
-                    log.info("NativeTask " + process.toString() + // NOI18N
+                    log.fine("NativeTask " + process.toString() + // NOI18N
                             " finished with error! "); // NOI18N
                     break;
                 case FINISHED:

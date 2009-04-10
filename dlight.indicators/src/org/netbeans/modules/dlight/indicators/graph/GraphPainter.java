@@ -218,24 +218,47 @@ class GraphPainter {
 
         int sampleCount = Math.min(w / GraphConfig.STEP_SIZE, data.size()) - 1;
         if (0 < sampleCount) {
+            int[] xx = new int[sampleCount + 2];
+            int[] yy = new int[sampleCount + 2];
             int firstSample = Math.max(0, data.size() - sampleCount);
             int effectiveHeight = (int)(h - GraphConfig.FONT_SIZE / 2);
             for (int ser = 0; ser < seriesCount; ++ser) {
-                g2.setStroke(LINE_STROKE);
-                g2.setColor(descriptors[ser].getColor());
                 int lastx = 0;
                 int lasty = 0;
-                for (int i = 1; i < sampleCount; ++i) {
-                    int prevValue = data.get(firstSample + i - 1)[ser] * effectiveHeight / scale;
-                    int currValue = data.get(firstSample + i)[ser] * effectiveHeight / scale;
-                    g.drawLine(x + GraphConfig.STEP_SIZE * (i - 1) , y + h - 2 - prevValue,
-                               lastx = x + GraphConfig.STEP_SIZE * i, lasty = y + h - 2 - currValue);
+                for (int i = 0; i < sampleCount; ++i) {
+                    int[] values = data.get(firstSample + i);
+                    int value = values[ser];
+                    if (descriptors[ser].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                        for (int j = ser + 1; j < seriesCount; ++j) {
+                            if (descriptors[j].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                                value += values[j];
+                            }
+                        }
+                    }
+                    xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
+                    yy[i] = lasty = y + h - 2 - value * effectiveHeight / scale;
                 }
-                g2.setStroke(BALL_STROKE);
-                g2.setColor(Color.WHITE);
-                g2.fillOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE  - 1, GraphConfig.BALL_SIZE  - 1);
                 g2.setColor(descriptors[ser].getColor());
-                g2.drawOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE  - 1, GraphConfig.BALL_SIZE  - 1);
+                switch (descriptors[ser].getKind()) {
+                    case LINE:
+                        g2.setStroke(LINE_STROKE);
+                        g2.drawPolyline(xx, yy, sampleCount);
+                        g2.setStroke(BALL_STROKE);
+                        g2.setColor(Color.WHITE);
+                        g2.fillOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
+                        g2.setColor(descriptors[ser].getColor());
+                        g2.drawOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
+                        break;
+                    case ABS_SURFACE:
+                    case REL_SURFACE:
+                        xx[sampleCount] = lastx;
+                        xx[sampleCount + 1] = x;
+                        yy[sampleCount] = yy[sampleCount + 1] = y + h;
+                        g2.fillPolygon(xx, yy, sampleCount + 2);
+                        break;
+                    default:
+                        System.err.println("Uknown graph kind: " + descriptors[ser].getKind()); // NOI18N
+                }
             }
         }
         g2.setStroke(oldStroke);
