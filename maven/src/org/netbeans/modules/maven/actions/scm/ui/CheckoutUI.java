@@ -347,18 +347,22 @@ public class CheckoutUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_developerConnectionActionPerformed
 
+    public File getCheckoutDirectory() {
+        return FileUtil.normalizeFile(new File(txtFolder.getText().trim()));
+    }
+
+
     public RunConfig getRunConfig() {
         BeanRunConfig brc = new BeanRunConfig();
-        brc.setExecutionDirectory(FileUtil.normalizeFile(new File(txtFolder.getText().trim())));
+        brc.setExecutionDirectory(getCheckoutDirectory().getParentFile());
         List<String> goals = new ArrayList<String>();
         goals.add(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_SCM_CHECKOUT));//NOI18N
         brc.setGoals(goals);
         brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", project.getArtifactId() + " : " + project.getVersion()));
         brc.setExecutionName(brc.getTaskDisplayName());
         Properties properties = new Properties();
-        String path = txtFolder.getText();
 
-        properties.put("checkoutDirectory", path);//NOI18N
+        properties.put("checkoutDirectory", getCheckoutDirectory().getAbsolutePath());//NOI18N
 
         properties.put("connectionUrl", txtUrl.getText());//NOI18N
 
