@@ -94,7 +94,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public static final int INDEX_OF_SETTINGS_TAB = 4;
 
     public static final String[] TAB_NAMES = { "update", "available", "local", "installed" }; //NOI18N
-    private final int initialTabToSelect;
+    private int initialTabToSelect;
     
     public PluginManagerUI (JButton closeButton ) {
         this( closeButton, null );
@@ -303,17 +303,28 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     }
 
     private void setSelectedTab() {
+        if( initialTabToSelect >= 0 && initialTabToSelect != tpTabs.getSelectedIndex()
+                && initialTabToSelect < tpTabs.getComponentCount() ) {
+            Component c = tpTabs.getComponentAt(initialTabToSelect);
+            if (c instanceof UnitTab) {
+                UnitTab unitTab = (UnitTab) c;
+                if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab() ) {
+                    tpTabs.setSelectedIndex(initialTabToSelect);
+                    initialTabToSelect = -1;
+                    return;
+                }
+            }
+        }
+        initialTabToSelect = -1;
         Component component = tpTabs.getSelectedComponent();
         if (component instanceof UnitTab) {
             UnitTab unitTab = (UnitTab) component;
-            if (!unitTab.getModel().isTabEnabled() 
-                    || (initialTabToSelect >= 0 && initialTabToSelect != tpTabs.getSelectedIndex())) {
+            if (!unitTab.getModel().isTabEnabled()) {
                 for (int i = 0; i < tpTabs.getComponentCount(); i++) {
                     component = tpTabs.getComponentAt(i);
                     if (component instanceof UnitTab) {
                         unitTab = (UnitTab) component;
-                        if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab()
-                                && (initialTabToSelect < 0 || initialTabToSelect == i)) {
+                        if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab()) {
                             tpTabs.setSelectedIndex(i);
                             break;
                         }

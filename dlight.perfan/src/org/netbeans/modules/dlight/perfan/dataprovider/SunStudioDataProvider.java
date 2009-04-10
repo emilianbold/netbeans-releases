@@ -55,7 +55,7 @@ import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
  * @author mt154047
  */
 final class SunStudioDataProvider extends SSStackDataProvider
-    implements TableDataProvider, FunctionsListDataProvider {
+        implements TableDataProvider, FunctionsListDataProvider {
 
     SunStudioDataProvider() {
     }
@@ -71,7 +71,7 @@ final class SunStudioDataProvider extends SSStackDataProvider
         }
 
         List<FunctionCallTreeTableNode> nodes =
-            super.getTableView(columns, null, Integer.MAX_VALUE);
+                super.getTableView(columns, null, Integer.MAX_VALUE);
 
         for (FunctionCallTreeTableNode node : nodes) {
             FunctionCall call = node.getDeligator();
@@ -90,23 +90,26 @@ final class SunStudioDataProvider extends SSStackDataProvider
     }
 
     public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDecsr, List<Column> metricsColumn) {
+            FunctionDatatableDescription functionDecsr, List<Column> metricsColumn) {
+
         List<FunctionCall> result = new ArrayList<FunctionCall>();
-        if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)){
-            List<Column> oldMetrics =  metricsColumn;
+
+        if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)) {
+            List<Column> oldMetrics = metricsColumn;
             metricsColumn = new ArrayList<Column>();
             metricsColumn.addAll(oldMetrics);
             metricsColumn.add(SunStudioDCConfiguration.c_name);
         }
+
         List<FunctionCallTreeTableNode> nodes =
-            super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
+                super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
 
         for (FunctionCallTreeTableNode node : nodes) {
             FunctionCall call = node.getDeligator();
             result.add(call);
         }
+
         return result;
 
     }
-    
 }

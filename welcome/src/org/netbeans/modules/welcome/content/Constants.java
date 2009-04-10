@@ -54,17 +54,20 @@ import javax.swing.border.Border;
 public interface Constants {
 
     static final String COLOR_SCREEN_BACKGROUND = "ScreenBackgroundColor"; //NOI18N
-    static final String COLOR_TAB_UNSEL_BACKGROUND = "TabUnselectedBackgroundColor"; //NOI18N
-    static final String COLOR_TAB_SEL_BACKGROUND = "TabSelectedBackgroundColor"; //NOI18N
     
     static final String COLOR_TAB_SEL_FOREGROUND = "TabSelForegroundColor"; //NOI18N
     static final String COLOR_TAB_UNSEL_FOREGROUND = "TabUnselForegroundColor"; //NOI18N
     static final String COLOR_SECTION_HEADER = "SectionHeaderColor"; //NOI18N
+
+    static final String COLOR_RSS_DATE = "RssDateTimeColor"; //NOI18N
+    static final String COLOR_RSS_DETAILS = "RssDetailsColor"; //NOI18N
+    static final String COLOR_HEADER1 = "HeaderForegroundColor1"; //NOI18N
+    static final String COLOR_HEADER2 = "HeaderForegroundColor2"; //NOI18N
     
     static final int FONT_SIZE = Utils.getDefaultFontSize();
     static final Font BUTTON_FONT = new Font( null, Font.BOLD, FONT_SIZE );
     static final Font RSS_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE-1 );
-    static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ); //NOI18N
+    static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
     static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+12 ); //NOI18N
     static final Font GET_STARTED_FONT = new Font( null, Font.BOLD, (int)(FONT_SIZE*1.4) ); //NOI18N
@@ -76,19 +79,6 @@ public interface Constants {
     static final String IMAGE_TOPBAR_CENTER = "org/netbeans/modules/welcome/resources/topbar_center.png"; // NOI18N
     static final String IMAGE_TOPBAR_LEFT = "org/netbeans/modules/welcome/resources/topbar_left.png"; // NOI18N
     static final String IMAGE_TOPBAR_RIGHT = "org/netbeans/modules/welcome/resources/topbar_right.png"; // NOI18N
-    
-    static final String IMAGE_STRIPE_PATTERN = "org/netbeans/modules/welcome/resources/pattern.png"; // NOI18N
-    static final String IMAGE_STRIPE_BORDER_UPPER = "org/netbeans/modules/welcome/resources/stripe_border_upper.png"; // NOI18N
-    static final String IMAGE_STRIPE_BORDER_LOWER = "org/netbeans/modules/welcome/resources/stripe_border_lower.png"; // NOI18N
-    static final String IMAGE_TAB_UNSEL = "org/netbeans/modules/welcome/resources/tab_unsel_bottom.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_LEFT = "org/netbeans/modules/welcome/resources/tab_sel_left.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_UPPER_LEFT = "org/netbeans/modules/welcome/resources/tab_sel_upper_left.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_LOWER_LEFT = "org/netbeans/modules/welcome/resources/tab_sel_lower_left.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_RIGHT = "org/netbeans/modules/welcome/resources/tab_sel_right.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_UPPER_RIGHT = "org/netbeans/modules/welcome/resources/tab_sel_upper_right.png"; // NOI18N
-    static final String IMAGE_TAB_SEL_LOWER_RIGHT = "org/netbeans/modules/welcome/resources/tab_sel_lower_right.png"; // NOI18N
-    
-    static final String IMAGE_BOTTOM_GRADIENT = "org/netbeans/modules/welcome/resources/bottom_gradient.png"; // NOI18N
     
     static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
     static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N

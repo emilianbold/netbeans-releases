@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -287,6 +288,33 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertTrue("Actions expected to be equal", a1.equals(a11));
     }
     
+    public void testExtraPropertiesAndNamePropagation() throws Exception {
+        Action a = readAction("testExtraProperties.instance");
+        assertNull(MyAction.last);
+        assertNotNull("Action created", a);
+        a.actionPerformed(new ActionEvent(this, 0, ""));
+        assertNotNull(MyAction.last);
+        assertPropertyPropagated(Action.NAME, "Name1", a, MyAction.last);
+        assertEquals("Short Desc1", a.getValue(Action.SHORT_DESCRIPTION));
+        assertEquals("Menu Text1", a.getValue("menuText"));
+        assertEquals("Popup Text1", a.getValue("popupText"));
+    }
+
+    public void testDisplayNameDiffer() throws Exception {
+        Action a = readAction("testDisplayNameDiffer.instance");
+        assertNull(MyAction.last);
+        assertNotNull("Action created", a);
+        a.actionPerformed(new ActionEvent(this, 0, ""));
+        // Check LOG for warning
+        assertEquals("MyNamedAction", a.getValue(Action.NAME)); // Queries the delegate
+        assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
+    }
+
+    private static void assertPropertyPropagated(String propertyName, Object value, Action a, Action delegate) {
+        assertEquals("Action's property \"" + propertyName + "\"", value, a.getValue(propertyName));
+        assertEquals("Delegate's property \"" + propertyName + "\"", value, delegate.getValue(propertyName));
+    }
+
     private static int myListenerCounter;
     private static int myListenerCalled;
     private static ActionListener myListener() {
@@ -296,6 +324,11 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private static ActionListener myAction() {
         myListenerCounter++;
         return new MyAction();
+    }
+    private static Action myNamedAction() {
+        MyAction a = new MyAction();
+        a.putValue(Action.NAME, "MyNamedAction");
+        return a;
     }
     private static ActionListener myContextAction() {
         myListenerCounter++;

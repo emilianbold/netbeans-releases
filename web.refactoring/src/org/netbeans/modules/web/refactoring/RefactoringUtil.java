@@ -55,7 +55,6 @@ import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -129,17 +128,14 @@ public class RefactoringUtil {
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
         if (p==null) return false;
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p.equals(opened[i]) || opened[i].equals(p)) {
-                SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                for (int j = 0; j < gr.length; j++) {
-                    if (fo==gr[j].getRootFolder()) return true;
-                    if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
-                        return true;
-                }
-                return false;
+        if (OpenProjects.getDefault().isProjectOpen(p)) {
+            SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (int j = 0; j < gr.length; j++) {
+                if (fo==gr[j].getRootFolder()) return true;
+                if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
+                    return true;
             }
+            return false;
         }
         return false;
     }

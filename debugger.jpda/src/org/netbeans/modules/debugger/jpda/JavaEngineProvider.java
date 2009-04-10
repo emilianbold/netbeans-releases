@@ -44,11 +44,13 @@ package org.netbeans.modules.debugger.jpda;
 import java.awt.Component;
 import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
+import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -105,10 +107,21 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
                 throw new UnsupportedOperationException("Not supported.");
             }
         }
-        
+
+        class WatchesComponentProxy extends ComponentProxy {
+            WatchesComponentProxy(String name, boolean openByDefault) {
+                super(name, openByDefault);
+            }
+            @Override
+            public boolean isDesignTime() {
+                Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+                return !preferences.getBoolean("show_watches", true); // NOI18N
+            }
+        }
+
         return new Object [] {
             new ComponentProxy("localsView", true),
-            new ComponentProxy("watchesView", true),
+            new WatchesComponentProxy("watchesView", true),
             new ComponentProxy("breakpointsView", true),
             new ComponentProxy("debugging", true),
             // Initially closed components
