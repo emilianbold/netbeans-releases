@@ -85,6 +85,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -185,7 +186,7 @@ public class SunStudioDataCollector
                     dtm.add(memSummaryInfoTable);
                     bAttachable = false;
                     break;
-                case SYNCHRONIZARION:
+                case SYNCHRONIZATION:
                     dtm.add(syncInfoTable);
                     bAttachable = false;
                     break;
@@ -279,7 +280,7 @@ public class SunStudioDataCollector
                     return validationStatus;
                 }
 
-            } catch (ConnectException ex) {
+            } catch (IOException ex) {
                 final ConnectionManager mgr = ConnectionManager.getInstance();
                 Runnable onConnect = new Runnable() {
 
@@ -290,7 +291,8 @@ public class SunStudioDataCollector
 
                 AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
-                validationStatus = ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
+                validationStatus = ValidationStatus.unknownStatus(
+                        loc("ValidationStatus.ErrorWhileValidation", ex.getMessage()), // NOI18N
                         connectAction);
                 return validationStatus;
             }
@@ -343,8 +345,16 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            this.experimentDir = "/var/tmp/dlightExperiment_" + target.getExecEnv().getUser() + '_' + uid.incrementAndGet() + ".er"; // NOI18N
+            String tmpDirBase = null;
 
+            try {
+                tmpDirBase = HostInfoUtils.getTempDir(target.getExecEnv());
+            } catch (ConnectException ex) {
+                // TODO: throw exception here
+                tmpDirBase = "/var/tmp"; // NOI18N
+            }
+
+            this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 
             startWarmUp();
@@ -392,7 +402,7 @@ public class SunStudioDataCollector
             args.add("-l"); // NOI18N
             args.add("USR1"); // NOI18N
 
-            if (collectedInfo.contains(CollectedInfo.SYNCHRONIZARION) ||
+            if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                 args.add("-s"); // NOI18N
                 args.add("30"); // NOI18N
@@ -451,7 +461,7 @@ public class SunStudioDataCollector
         }
     }
 
-    final void updateIndicators(List<DataRow> data) {
+    protected void updateIndicators(List<DataRow> data) {
         this.notifyIndicators(data);
     }
 
@@ -506,6 +516,10 @@ public class SunStudioDataCollector
 
             monitorsUpdater.start();
         }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
     }
 
     private static class StdErrRedirectorFactory
