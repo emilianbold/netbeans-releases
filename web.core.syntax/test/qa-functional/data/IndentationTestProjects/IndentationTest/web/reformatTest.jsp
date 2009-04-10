@@ -1,4 +1,4 @@
- <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" 
     prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="f" %>
@@ -7,10 +7,11 @@
 <title>Localized Dates</title></head>
            <body bgcolor="white">
 <jsp:useBean id="locales" scope="application"
-  class="mypkg.MyLocales"/>
+  class="java.lang.String"/>
 
                 <%
-                switch(Integer.MAX_INT){
+                int j = 3;
+                switch(j){
             case 10:
 break;
             case 20:
@@ -30,7 +31,7 @@ default:
     <c:choose>
   <c:when test="${selectedFlag}">
   <c:choose>
-      <c:when test="${f:contains("AUTOBUS", "BUS")}" >
+      <c:when test="${f:contains('AUTOBUS', 'BUS')}" >
         <option selected>${localeString}</option>
   </c:when>
       <c:otherwise>
@@ -54,7 +55,7 @@ default:
 <jsp:setProperty name="locales"
     property="selectedLocaleString"
     value="${selectedLocaleString}" />
-<jsp:useBean id="date" class="mypkg.MyDate"/>
+<jsp:useBean id="date" class="java.util.Date"/>
   <jsp:setProperty name="date" property="locale"
     value="${locales.selectedLocale}"/>
   <b>Date: </b>${date.date}
