@@ -28,21 +28,13 @@ import org.openide.util.Utilities;
  * @author Vita Stejskal
  */
 public class ActionsList {
-    
+
+    // -J-Dorg.netbeans.modules.editor.impl.ActionsList.level=FINE
     private static final Logger LOG = Logger.getLogger(ActionsList.class.getName());
     
     private final List<Object> all;
     private final List<Action> actions;
 
-    /**
-     * Create a new <code>ActionList</code> instance by calling<code>this(keys, false)</code>.
-     * 
-     * @param keys The list of objects to convert to <code>Action</code>s
-     */
-    protected ActionsList(List<FileObject> keys) {
-        this(keys, false);
-    }
-    
     /**
      * Create a new <code>ActionList</code> instance. The <code>ActionList</code>
      * converts a list of objects (keys) to the list of <code>Action</code>s
@@ -53,9 +45,14 @@ public class ActionsList {
      * 
      * @param keys The list of objects to convert to <code>Action</code>s
      * @param ignoreFolders <code>true</code> if the conversion should skipp folders
+     * @param prohibitSeparatorsAndActionNames Treat separators and references to actions
+     *  by using their Action.NAME as errors. This is useful for
      */
-    protected ActionsList(List<FileObject> keys, boolean ignoreFolders) {
-        Pair p = convertImpl(keys == null ? Collections.<FileObject>emptyList() : keys, ignoreFolders);
+    protected ActionsList(List<FileObject> keys, boolean ignoreFolders,
+            boolean prohibitSeparatorsAndActionNames)
+    {
+        Pair p = convertImpl(keys == null ? Collections.<FileObject>emptyList() : keys, ignoreFolders,
+                prohibitSeparatorsAndActionNames);
         this.all = p.all;
         this.actions = p.actions;
     }
@@ -68,8 +65,8 @@ public class ActionsList {
         return actions;
     }
 
-    public static List<Object> convert(List<FileObject> keys) {
-        return convertImpl(keys, false).all;
+    public static List<Object> convert(List<FileObject> keys, boolean prohibitSeparatorsAndActionNames) {
+        return convertImpl(keys, false, prohibitSeparatorsAndActionNames).all;
     }
     
     private static class Pair {
@@ -77,7 +74,9 @@ public class ActionsList {
         List<Action> actions;
     }
     
-    private static Pair convertImpl(List<FileObject> keys, boolean ignoreFolders) {
+    private static Pair convertImpl(List<FileObject> keys, boolean ignoreFolders,
+            boolean prohibitSeparatorsAndActionNames)
+    {
         List<Object> all = new ArrayList<Object>();
         List<Action> actions = new ArrayList<Action>();
 
@@ -85,16 +84,42 @@ public class ActionsList {
             DataObject dob;
             try {
                 dob = DataObject.find(item);
+                if (dob == null && prohibitSeparatorsAndActionNames) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("ActionsList: DataObject is null for item=" + item + "\n");
+                    }
+                }
             } catch (DataObjectNotFoundException dnfe) {
+                if (prohibitSeparatorsAndActionNames) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("ActionsList: DataObject not found for item=" + item + "\n");
+                    }
+                } else {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "DataObject not found for action fileObject=" + item);
+                    }
+                }
                 continue; // ignore
             }
 
             Object toAdd = null;
             InstanceCookie ic = dob.getLookup().lookup(InstanceCookie.class);
+            if (prohibitSeparatorsAndActionNames && ic == null) {
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.warning("ActionsList: InstanceCookie not found for item=" + item + "\n");
+                }
+                continue;
+            }
             if (ic != null) {
                 try {
                     if (!isSeparator(ic)) {
                         toAdd = ic.instanceCreate();
+                        if (toAdd == null && prohibitSeparatorsAndActionNames) {
+                            if (LOG.isLoggable(Level.WARNING)) {
+                                LOG.warning("ActionsList: InstanceCookie.instanceCreate() null for item=" +
+                                        item + "\n");
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     LOG.log(Level.WARNING, "Can't instantiate object", e); //NOI18N
@@ -120,6 +145,11 @@ public class ActionsList {
             if (toAdd instanceof Action) {
                 actions.add((Action) toAdd);
             } else if (isSeparator(toAdd)) {
+                if (prohibitSeparatorsAndActionNames) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("ActionsList: Separator for item=" + item + "\n");
+                    }
+                }
                 actions.add(null);
             }
             all.add(toAdd);

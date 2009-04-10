@@ -76,7 +76,7 @@ class ProxyClient {
         this.ideKey = PhpOptions.getInstance().getDebuggerSessionId();
     }
 
-    boolean init() {
+    boolean register() {
         boolean retval = false;
         String command = getProxyInitCommand(idePort, ideKey);
         try {
@@ -86,7 +86,7 @@ class ProxyClient {
             try {
                 sendCommand(outputStream, command);
                 String response = getResponse(inputStream, command);
-                retval = response != null && response.indexOf("success=\"1\"") != -1;
+                retval = response != null;
             } finally {
                 outputStream.close();
                 inputStream.close();
@@ -104,10 +104,11 @@ class ProxyClient {
         return retval;
     }
 
-    void close() {
+    void unregister() {
         String command = getProxyStopCommand(ideKey);
         try {
             Socket socket = new Socket(proxyHost, proxyPort);
+            socket.setSoTimeout(5000);
             OutputStream outputStream = socket.getOutputStream();
             try {
                 sendCommand(outputStream, command);
@@ -143,16 +144,21 @@ class ProxyClient {
 
     private static String getResponse(InputStream inputStream, String command) throws IOException {
         String retval = null;
-        int available = inputStream.available();
-        if (available > 0) {
-            byte[] responseBytes = new byte[available];
-            int read = inputStream.read(responseBytes);
-            if (read == available) {
-                retval = new String(responseBytes);
-            }
+        int available = 1024;
+        byte[] responseBytes = new byte[available];
+        int len = 0;
+        for (int nextByte = -1; (nextByte = inputStream.read()) != -1 && len < available; len++) {
+            responseBytes[len] = (byte) nextByte;
         }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, String.format("response(%s) is %s: ", command, retval));//NOI18N
+        if (len > 0) {
+            retval = new String(responseBytes, 0, len);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, String.format("response(%s) is %s: ", command, retval));//NOI18N
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, String.format("No response after command(\"%s\"): ", command));//NOI18N
+            }
         }
         return retval;
     }
