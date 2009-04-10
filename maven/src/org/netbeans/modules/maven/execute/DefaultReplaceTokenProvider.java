@@ -217,8 +217,10 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     for (int i = 0; i < grp.length; i++) {
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
-                            if (!SourceUtils.getMainClasses(fo).isEmpty()) {
-                                return action + ".main";//NOI18N
+                            if (!SourceUtils.isScanInProgress()) {
+                                if (!SourceUtils.getMainClasses(fo).isEmpty()) {
+                                    return action + ".main";//NOI18N
+                                }
                             }
                         }
                     }

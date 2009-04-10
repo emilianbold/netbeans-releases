@@ -42,31 +42,36 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
-import javax.swing.Scrollable;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
+import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * Base class for inner tabs in the Welcome Page
  * 
  * @author S. Aubrecht
  */
-abstract class AbstractTab extends BackgroundPanel implements Scrollable, Constants {
+abstract class AbstractTab extends JPanel implements Constants {
 
     private boolean initialized = false;
+    private final Image bottomBar;
+    private final Color gradientTop = Color.white;
+    private final Color gradientBottom = new Color(223,233,242);
     
-    private Image bottomGradient;
-
-    public AbstractTab() {
+    public AbstractTab( boolean paintBottomGraphics) {
         super( new BorderLayout() );
-        
-        this.bottomGradient = ImageUtilities.loadImage( IMAGE_BOTTOM_GRADIENT );
+        setOpaque(true);
+        setBackground(Utils.getColor(Constants.COLOR_SCREEN_BACKGROUND));
+        if( paintBottomGraphics )
+             bottomBar = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/bottom_bar.png"); //NOI18N
+        else
+            bottomBar = null;
     }
 
     @Override
@@ -79,54 +84,18 @@ abstract class AbstractTab extends BackgroundPanel implements Scrollable, Consta
     }
 
     protected abstract void buildContent();
-    
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        if( null != getParent() && getParent().getHeight() > 0 && getParent().getHeight() > d.height )
-            d.height = getParent().getHeight();
-        if( null != getParent() && getParent().getWidth() > 0 ) {
-            if( d.width > getParent().getWidth() ) {
-                d.width = Math.max(getParent().getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
-            } else if( d.width < getParent().getWidth() ) {
-                d.width = getParent().getWidth();
-            }
-        }
-        return d;
-    }
-    
-    public Dimension getPreferredScrollableViewportSize() {
-        return getPreferredSize();
-    }
-
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return Constants.FONT_SIZE;
-    }
-
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 30*Constants.FONT_SIZE;
-    }
-
-    public boolean getScrollableTracksViewportWidth() {
-        return false;
-    }
-
-    public boolean getScrollableTracksViewportHeight() {
-        return false;
-    }
 
     @Override
     protected void paintComponent(Graphics g) {
-        int width = getWidth();
-        int height = getBottomStripeOrigin();
-        
-        //bottom gradient
-        int gradHeigt = bottomGradient.getHeight(null);
-        int gradWidth = bottomGradient.getWidth(null);
-        for( int i=0; i<=width/gradWidth; i++ ) {
-            g.drawImage(bottomGradient, i*gradWidth, height-gradHeigt, null);
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int height = getHeight();
+        g2d.setPaint(new GradientPaint(0, height-60, gradientTop, 0, height, gradientBottom));
+        g2d.fillRect(0, height-60, getWidth(), 60);
+        if( null != bottomBar ) {
+            int imgWidth = bottomBar.getWidth(this);
+            int imgHeight = bottomBar.getHeight(this);
+            g.drawImage(bottomBar, getWidth()-imgWidth, getHeight()-imgHeight, this);
         }
     }
-    
-    protected abstract int getBottomStripeOrigin();
 }

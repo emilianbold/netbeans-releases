@@ -66,6 +66,7 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
     private Collection<ActionListener> listeners;
     private int lastSysValue;
     private int lastUsrValue;
+    private int seconds;
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
@@ -101,6 +102,7 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
         panel.addData(lastSysValue, lastUsrValue);
         panel.setSysValue(lastSysValue);
         panel.setUsrValue(lastUsrValue);
+        panel.setTime(++seconds);
     }
 
     /*package*/ void fireActionPerformed() {
