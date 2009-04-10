@@ -242,8 +242,6 @@ final class QueryTopComponent extends TopComponent
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         repoPanel.setNextFocusableComponent(newButton);
 
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         queriesPanel.setMaximumSize(new java.awt.Dimension(400, 32767));
         queriesPanel.setMinimumSize(new java.awt.Dimension(400, 26));
         queriesPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -639,17 +637,22 @@ final class QueryTopComponent extends TopComponent
         Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
         repoModel = new DefaultComboBoxModel(repos);
         repositoryComboBox.setModel(repoModel);
-        
-        for (int i = 0; i < repoModel.getSize(); i++) {
-            Repository r = (Repository) repoModel.getElementAt(i);
-            if(r == lastSelection) {
-                repoModel.setSelectedItem(r);
-                break;
+
+        if(lastSelection != null) {
+            for (int i = 0; i < repoModel.getSize(); i++) {
+                Repository r = (Repository) repoModel.getElementAt(i);
+                if(r == lastSelection) {
+                    repoModel.setSelectedItem(r);
+                    break;
+                }
             }
         }
     }
 
     private void updateSavedQueries(Repository repo) {
+        if(repo == null) {
+            return;
+        }
         synchronized (LOCK) {
             if(savedQueries != null) {
                 for (Query q : savedQueries) {
